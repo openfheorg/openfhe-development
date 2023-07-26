@@ -31,6 +31,7 @@
 #ifndef __BASETESTCASE_H__
 #define __BASETESTCASE_H__
 
+#include "config_core.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
@@ -49,6 +50,26 @@ private:
     std::vector<std::string> paramOverrides;
 
 public:
+    // there are cases when we don't support some features depending on different conditions.
+    // skipTest() is to check all those conditions, so we do not get our unit tests failed
+    bool skipTest() const {
+#if NATIVEINT == 128
+        lbcrypto::SCHEME schemeId = lbcrypto::convertToSCHEME(*paramOverrides.begin());
+        if (schemeId == lbcrypto::SCHEME::CKKSRNS_SCHEME) {
+            lbcrypto::CCParams<lbcrypto::CryptoContextCKKSRNS> parameters(paramOverrides);
+            // CKKS does not support FLEXIBLEAUTO or FLEXIBLEAUTOEXT for NATIVEINT == 128
+            switch (parameters.GetScalingTechnique()) {
+                case lbcrypto::ScalingTechnique::FLEXIBLEAUTO:
+                case lbcrypto::ScalingTechnique::FLEXIBLEAUTOEXT:
+                    return true;
+                default:
+                    break;
+            }
+        }
+#endif
+        return false;
+    }
+
     // const std::shared_ptr<lbcrypto::Params> getCryptoContextParams() const {
     //    return params;
     // }

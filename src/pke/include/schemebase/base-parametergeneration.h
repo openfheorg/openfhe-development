@@ -96,7 +96,8 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ) const {
+                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ,
+                                  COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
         OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
     }
 

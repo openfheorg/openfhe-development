@@ -163,11 +163,12 @@ public:
     }
 
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ) const {
+                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ,
+                                  COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
         if (!m_ParamsGen)
             OPENFHE_THROW(config_error, "m_ParamsGen is nullptr");
-        return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
-                                             numPartQ);
+        return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize, numPartQ,
+                                             mPIntBootCiphertextCompressionLevel);
     }
 
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
@@ -1291,6 +1292,46 @@ public:
 
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                                   const std::string& keyId);
+
+    virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        if (m_Multiparty) {
+            return m_Multiparty->IntMPBootAdjustScale(ciphertext);
+        }
+        OPENFHE_THROW(config_error, "IntMPBootAdjustScale operation has not been enabled");
+    }
+
+    virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
+                                                          const PublicKey<Element> publicKey) const {
+        if (m_Multiparty) {
+            return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
+        }
+        OPENFHE_THROW(config_error, "IntMPBootRandomElementGen operation has not been enabled");
+    }
+
+    virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+                                                              ConstCiphertext<Element> ciphertext,
+                                                              ConstCiphertext<Element> a) const {
+        if (m_Multiparty) {
+            return m_Multiparty->IntMPBootDecrypt(privateKey, ciphertext, a);
+        }
+        OPENFHE_THROW(config_error, "IntMPBootDecrypt operation has not been enabled");
+    }
+
+    std::vector<Ciphertext<Element>> IntMPBootAdd(std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+        if (m_Multiparty) {
+            return m_Multiparty->IntMPBootAdd(sharesPairVec);
+        }
+        OPENFHE_THROW(config_error, "IntMPBootAdd operation has not been enabled");
+    }
+
+    Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
+                                         const std::vector<Ciphertext<Element>>& sharesPair, ConstCiphertext<Element> a,
+                                         ConstCiphertext<Element> ciphertext) const {
+        if (m_Multiparty) {
+            return m_Multiparty->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
+        }
+        OPENFHE_THROW(config_error, "IntMPBootEncrypt operation has not been enabled");
+    }
 
     // FHE METHODS
 

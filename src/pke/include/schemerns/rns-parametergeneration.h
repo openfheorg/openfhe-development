@@ -88,7 +88,8 @@ public:
    *
    */
     bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-                          usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ) const override {
+                          usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,
+                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override {
         OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
     }
 

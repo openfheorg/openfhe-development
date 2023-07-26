@@ -62,14 +62,16 @@ protected:
           m_ksTechnique(BV),
           m_scalTechnique(FIXEDMANUAL),
           m_encTechnique(STANDARD),
-          m_multTechnique(HPS) {}
+          m_multTechnique(HPS),
+          m_MPIntBootCiphertextCompressionLevel(SLACK) {}
 
     CryptoParametersRNS(const CryptoParametersRNS& rhs)
         : CryptoParametersRLWE<DCRTPoly>(rhs),
           m_ksTechnique(rhs.m_ksTechnique),
           m_scalTechnique(rhs.m_scalTechnique),
           m_encTechnique(rhs.m_encTechnique),
-          m_multTechnique(rhs.m_multTechnique) {}
+          m_multTechnique(rhs.m_multTechnique),
+          m_MPIntBootCiphertextCompressionLevel(rhs.m_MPIntBootCiphertextCompressionLevel) {}
 
     /**
    * Constructor that initializes values.  Note that it is possible to set
@@ -93,23 +95,26 @@ protected:
    * relinearization key is generated
    * @param ksTech key switching method
    * @param scalTech scaling method
+   * @param mPIntBootCiphertextCompressionLevel compression level
    */
     CryptoParametersRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode             = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT)
+                        MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode                           = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist, INDCPA, multipartyMode, executionMode,
                                          decryptionNoiseMode) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
+        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -121,15 +126,17 @@ protected:
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties = 1)
+                        uint32_t thresholdNumOfParties                        = 1,
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                                          numAdversarialQueries, thresholdNumOfParties) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
+        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -1295,6 +1302,17 @@ public:
         return m_multipartyQInv;
     }
 
+    /////////////////////////////////////
+    // CKKS RNS MultiParty Bootstrapping Parameter
+    /////////////////////////////////////
+    /**
+   * Gets the Multi-Party Interactive Bootstrapping Ciphertext Compression Level
+   * @return m_MPIntBootCiphertextCompressionLevel
+   */
+    COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {
+        return m_MPIntBootCiphertextCompressionLevel;
+    }
+
 protected:
     /////////////////////////////////////
     // PrecomputeCRTTables
@@ -1713,6 +1731,11 @@ protected:
     // Stores \frac{1/q_i}
     std::vector<double> m_multipartyQInv;
 
+    /////////////////////////////////////
+    // CKKS RNS MultiParty Bootstrapping Parameter
+    /////////////////////////////////////
+    COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
+
 public:
     /////////////////////////////////////
     // SERIALIZATION
@@ -1728,6 +1751,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     template <class Archive>
@@ -1745,6 +1769,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     std::string SerializedObjectName() const override {

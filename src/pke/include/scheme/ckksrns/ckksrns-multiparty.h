@@ -33,9 +33,11 @@
 #define LBCRYPTO_CRYPTO_CKKSRNS_MULTIPARTY_H
 
 #include "schemerns/rns-multiparty.h"
+#include "ckksrns-cryptoparameters.h"
 
 #include <string>
 #include <vector>
+#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -51,6 +53,23 @@ public:
 
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           NativePoly* plaintext) const override;
+
+    Ciphertext<DCRTPoly> IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                   const PublicKey<DCRTPoly> publicKey) const override;
+
+    std::vector<Ciphertext<DCRTPoly>> IntMPBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
+                                                       ConstCiphertext<DCRTPoly> ciphertext,
+                                                       ConstCiphertext<DCRTPoly> a) const override;
+
+    std::vector<Ciphertext<DCRTPoly>> IntMPBootAdd(
+        std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const override;
+
+    Ciphertext<DCRTPoly> IntMPBootEncrypt(const PublicKey<DCRTPoly> publicKey,
+                                          const std::vector<Ciphertext<DCRTPoly>>& sharesPair,
+                                          ConstCiphertext<DCRTPoly> a,
+                                          ConstCiphertext<DCRTPoly> ciphertext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

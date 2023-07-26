@@ -164,6 +164,12 @@ class Params {
     // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
+    // Interactive multi-party bootstrapping parameter
+    // Set the compression level in ciphertext (SLACK or COMPACT)
+    // SLACK has weaker security assumption, thus less efficient
+    // COMPACT has stronger security assumption, thus more efficient
+    COMPRESSION_LEVEL interactiveBootCompressionLevel;
+
     void SetToDefaults(SCHEME scheme);
 
     void ValidateRingDim(usint ringDim);
@@ -194,7 +200,7 @@ public:
      *
      * @return a vector with names of all data members of Params
      */
-    static std::vector<std::string> getAllParamsDataMembers() {
+    static const std::vector<std::string> getAllParamsDataMembers() {
         return {"scheme",
                 "ptModulus",
                 "digitSize",
@@ -222,7 +228,9 @@ public:
                 "noiseEstimate",
                 "desiredPrecision",
                 "statisticalSecurity",
-                "numAdversarialQueries"};
+                "numAdversarialQueries",
+                "thresholdNumOfParties",
+                "interactiveBootCompressionLevel"};
     }
 
     // getters
@@ -315,6 +323,9 @@ public:
     usint GetMultiHopModSize() const {
         return multiHopModSize;
     }
+    COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
+        return interactiveBootCompressionLevel;
+    }
 
     // setters
     void SetPlaintextModulus(PlaintextModulus ptModulus0) {
@@ -404,6 +415,9 @@ public:
     }
     void SetMultiHopModSize(usint multiHopModSize0) {
         multiHopModSize = multiHopModSize0;
+    }
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+        interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);
