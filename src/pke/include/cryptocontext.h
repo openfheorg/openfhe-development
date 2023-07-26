@@ -2820,13 +2820,13 @@ public:
     }
 
     /**
-   * Threshold FHE: Adds two  partial evaluation keys for multiplication
-   *
-   * @param evalKey1 first evaluation key.
-   * @param evalKey2 second evaluation key.
-   * @param keyId - new key identifier used for the resulting evaluation key.
-   * @return the new joined key.
-   */
+    * Threshold FHE: Adds two  partial evaluation keys for multiplication
+    *
+    * @param evalKey1 first evaluation key.
+    * @param evalKey2 second evaluation key.
+    * @param keyId - new key identifier used for the resulting evaluation key.
+    * @return the new joined key.
+    */
     EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                           const std::string& keyId = "") {
         if (!evalKey1)
@@ -2838,59 +2838,60 @@ public:
     }
 
     /**
-   * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping.
-   *
-	 * @param ciphertext: Input Ciphertext
-   * @return: Resulting Ciphertext
-   */
+    * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping.
+    *
+    * @param ciphertext: Input Ciphertext
+    * @return: Resulting Ciphertext
+    */
     Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
 
     /**
-   * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
-   *
-   * @param publicKey: the scheme public key (you can also provide the lead party's public-key)
-   * @return: Resulting ring element
-   */
-  	Ciphertext<Element> IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const;
-
-  	 /**
-  	* Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
-  	* Each party calls this function as part of the protocol
-  	*
-  	* @param privateKey: secret key share for party i
-  	* @param ciphertext: input ciphertext
-  	* @param a: input common random polynomial
-  	* @return: Resulting masked decryption
-  	*/
-  	std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-  	      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const;
+    * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
+    *
+    * @param publicKey: the scheme public key (you can also provide the lead party's public-key)
+    * @return: Resulting ring element
+    */
+    Ciphertext<Element> IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const;
 
     /**
-     * Threshold FHE: Aggregates a vector of masked decryptions and re-encryotion shares,
-     * which is the second step of the interactive multiparty bootstrapping procedure.
-     *
-     * @param sharesPairVec: vector of pair of ciphertexts, each element of this vector contains
-     * (h_0i, h_1i) - the masked-decryption and encryption shares ofparty i
-     * @return: aggregated pair of shares ((h_0, h_1)
-     */
-    std::vector<Ciphertext<Element>> IntMPBootAdd(
-          std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const;
+    * Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
+    * Each party calls this function as part of the protocol
+    *
+    * @param privateKey: secret key share for party i
+    * @param ciphertext: input ciphertext
+    * @param a: input common random polynomial
+    * @return: Resulting masked decryption
+    */
+    std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+                                                      ConstCiphertext<Element> ciphertext,
+                                                      ConstCiphertext<Element> a) const;
 
     /**
-     *  Threshold FHE: Does public key encryption of lead party's masked decryption
-     * as part of interactive multi-party bootstrapping, which increases
-     * the ciphertext modulus and enables future computations.
-     * This operation is done by the lead party as the final step
-     * of interactive multi-party bootstrapping.
-     *
-     * @param publicKey: the lead party's public key
-     * @param sharesPair: aggregated decryption and re-encryption shares
-     * @param a: common random ring element
-     * @param ciphertext: input ciphertext
-     * @return: Resulting encryption
-     */
-    Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey, const std::vector<Ciphertext<Element>> &sharesPair,
-				 ConstCiphertext<Element> a, ConstCiphertext<Element> ciphertext) const;
+    * Threshold FHE: Aggregates a vector of masked decryptions and re-encryotion shares,
+    * which is the second step of the interactive multiparty bootstrapping procedure.
+    *
+    * @param sharesPairVec: vector of pair of ciphertexts, each element of this vector contains
+    * (h_0i, h_1i) - the masked-decryption and encryption shares ofparty i
+    * @return: aggregated pair of shares ((h_0, h_1)
+    */
+    std::vector<Ciphertext<Element>> IntMPBootAdd(std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const;
+
+    /**
+    *  Threshold FHE: Does public key encryption of lead party's masked decryption
+    * as part of interactive multi-party bootstrapping, which increases
+    * the ciphertext modulus and enables future computations.
+    * This operation is done by the lead party as the final step
+    * of interactive multi-party bootstrapping.
+    *
+    * @param publicKey: the lead party's public key
+    * @param sharesPair: aggregated decryption and re-encryption shares
+    * @param a: common random ring element
+    * @param ciphertext: input ciphertext
+    * @return: Resulting encryption
+    */
+    Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
+                                         const std::vector<Ciphertext<Element>>& sharesPair, ConstCiphertext<Element> a,
+                                         ConstCiphertext<Element> ciphertext) const;
 
     /**
    * Threshold FHE: secret sharing of secret key for Aborts

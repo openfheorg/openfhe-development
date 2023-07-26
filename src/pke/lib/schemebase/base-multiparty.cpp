@@ -424,87 +424,67 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     return EvalKeyMapSum;
 }
 
-template<class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(
-		ConstCiphertext<Element> ciphertext) const {
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+#if NATIVEINT != 64
+    std::string errmsg = "Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
+    OPENFHE_THROW(not_available_error, errmsg);
+#endif
 
-	#if NATIVEINT != 64
-	std::string errmsg =
-		"Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
-		OPENFHE_THROW(not_available_error, errmsg);
-	#endif
-
-  std::string msg =
-	"IntMPBootAdjustScale: supports only DCRTPoly as input";
-  OPENFHE_THROW(not_available_error, msg);
+    std::string msg = "IntMPBootAdjustScale: supports only DCRTPoly as input";
+    OPENFHE_THROW(not_available_error, msg);
 }
 
-template<class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(
-		std::shared_ptr<CryptoParametersCKKSRNS> params,
-		const PublicKey<Element> publicKey) const {
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                                       const PublicKey<Element> publicKey) const {
+#if NATIVEINT != 64
+    std::string errmsg = "Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
+    OPENFHE_THROW(not_available_error, errmsg);
+#endif
 
-	#if NATIVEINT != 64
-	std::string errmsg =
-		"Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
-		OPENFHE_THROW(not_available_error, errmsg);
-	#endif
-
-  std::string msg =
-	"IntMPBootRandomElementGen: supports only DCRTPoly as input";
-  OPENFHE_THROW(not_available_error, msg);
-
+    std::string msg = "IntMPBootRandomElementGen: supports only DCRTPoly as input";
+    OPENFHE_THROW(not_available_error, msg);
 }
 
-template<class Element>
+template <class Element>
 std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const {
+                                                                           ConstCiphertext<Element> ciphertext,
+                                                                           ConstCiphertext<Element> a) const {
+#if NATIVEINT != 64
+    std::string errmsg = "Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
+    OPENFHE_THROW(not_available_error, errmsg);
+#endif
 
-	#if NATIVEINT != 64
-	std::string errmsg =
-		"Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
-		OPENFHE_THROW(not_available_error, errmsg);
-	#endif
-
-	std::string msg =
-	"IntMPBootDecrypt: supports only DCRTPoly as input";
-  OPENFHE_THROW(not_available_error, msg);
-
+    std::string msg = "IntMPBootDecrypt: supports only DCRTPoly as input";
+    OPENFHE_THROW(not_available_error, msg);
 }
 
-template<class Element>
+template <class Element>
 std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootAdd(
-				std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
+    std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+#if NATIVEINT != 64
+    std::string errmsg = "Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
+    OPENFHE_THROW(not_available_error, errmsg);
+#endif
 
-	#if NATIVEINT != 64
-	std::string errmsg =
-		"Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
-		OPENFHE_THROW(not_available_error, errmsg);
-	#endif
-
-  std::string msg =
-	"IntMPBootAdd: supports only DCRTPoly as input";
-  OPENFHE_THROW(not_available_error, msg);
-
+    std::string msg = "IntMPBootAdd: supports only DCRTPoly as input";
+    OPENFHE_THROW(not_available_error, msg);
 }
 
-template<class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntMPBootEncrypt(
-		const PublicKey<Element> publicKey, const std::vector<Ciphertext<Element>> &sharesPair,
-		                     ConstCiphertext<Element> a, ConstCiphertext<Element> ciphertext) const {
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootEncrypt(const PublicKey<Element> publicKey,
+                                                              const std::vector<Ciphertext<Element>>& sharesPair,
+                                                              ConstCiphertext<Element> a,
+                                                              ConstCiphertext<Element> ciphertext) const {
+#if NATIVEINT != 64
+    std::string errmsg = "Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
+    OPENFHE_THROW(not_available_error, errmsg);
+#endif
 
-	#if NATIVEINT != 64
-	std::string errmsg =
-		"Interactive Multiparty Bootstrapping for CKKS is only supported with NATIVEINT = 64";
-		OPENFHE_THROW(not_available_error, errmsg);
-	#endif
-
-  std::string msg =
-	"IntMPBootEncrypt: supports only DCRTPoly as input";
-  OPENFHE_THROW(not_available_error, msg);
-
+    std::string msg = "IntMPBootEncrypt: supports only DCRTPoly as input";
+    OPENFHE_THROW(not_available_error, msg);
 }
-
 
 }  // namespace lbcrypto
 

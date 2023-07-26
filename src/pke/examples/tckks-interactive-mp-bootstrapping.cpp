@@ -121,13 +121,13 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     parameters.SetFirstModSize(firstMod);
 
     /*  A4) Multiplicative depth.
-    * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set 
-    * according the following formula: 
+    * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set
+    * according the following formula:
     * multDepth >= desired_depth + interactive_bootstrapping_depth
     * where,
     *   The desired_depth is the depth of the computation, as chosen by the user.
     *   The interactive_bootstrapping_depth is either 3 or 4, depending on the ciphertext compression mode: COMPACT vs SLACK (see below)
-    * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels 
+    * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels
     * for computation and 4 for interactive bootstrapping. You will need to bootstrap 3 times.
     */
     uint32_t multiplicativeDepth = 7;
@@ -136,7 +136,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     uint32_t batchSize = 4;
     parameters.SetBatchSize(batchSize);
-    
+
     /*  Protocol-specific parameters (SLACK or COMPACT)
     * SLACK (default) uses larger masks, which makes it more secure theoretically. However, it is also slightly less efficient.
     * COMPACT uses smaller masks, which makes it more efficient. However, it is relatively less secure theoretically.

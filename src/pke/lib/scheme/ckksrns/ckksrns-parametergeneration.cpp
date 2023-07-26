@@ -49,7 +49,7 @@ const size_t AUXMODSIZE = 60;
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                   usint cyclOrder, usint numPrimes, usint scalingModSize,
-                                                  usint firstModSize, uint32_t numPartQ, 
+                                                  usint firstModSize, uint32_t numPartQ,
                                                   COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
     const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 

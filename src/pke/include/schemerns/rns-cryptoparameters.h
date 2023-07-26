@@ -102,18 +102,18 @@ protected:
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode             = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                        MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode                           = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist, INDCPA, multipartyMode, executionMode,
                                          decryptionNoiseMode) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
@@ -126,16 +126,16 @@ protected:
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties = 1,
+                        uint32_t thresholdNumOfParties                        = 1,
                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                                          numAdversarialQueries, thresholdNumOfParties) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 

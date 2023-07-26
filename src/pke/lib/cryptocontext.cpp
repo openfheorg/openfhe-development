@@ -814,32 +814,34 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-		return GetScheme()->IntMPBootAdjustScale(ciphertext);
+    return GetScheme()->IntMPBootAdjustScale(ciphertext);
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const {
-		const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
-		return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
+    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+    return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const {
-		return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
+                                                                              ConstCiphertext<Element> ciphertext,
+                                                                              ConstCiphertext<Element> a) const {
+    return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootAdd(
-			std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
-		return GetScheme()->IntMPBootAdd(sharesPairVec);
+    std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+    return GetScheme()->IntMPBootAdd(sharesPairVec);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootEncrypt(
-		const PublicKey<Element> publicKey, const std::vector<Ciphertext<Element>> &sharesPair,
-		                     ConstCiphertext<Element> a, ConstCiphertext<Element> ciphertext) const {
-		return GetScheme()->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
+Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootEncrypt(const PublicKey<Element> publicKey,
+                                                                 const std::vector<Ciphertext<Element>>& sharesPair,
+                                                                 ConstCiphertext<Element> a,
+                                                                 ConstCiphertext<Element> ciphertext) const {
+    return GetScheme()->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
 }
 
 // Function for sharing and recovery of secret for Threshold FHE with aborts

@@ -56,13 +56,14 @@ public:
                             usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                            MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                            ExecutionMode executionMode             = EXEC_EVALUATION,
-                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                            MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode                           = EXEC_EVALUATION,
+                            DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
                             COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
-                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {}
+                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {
+    }
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
@@ -73,14 +74,13 @@ public:
                             MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                             ExecutionMode executionMode             = EXEC_EVALUATION,
                             DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
-                            PlaintextModulus noiseScale = 1,
-                            uint32_t statisticalSecurity = 30, 
-                            uint32_t numAdversarialQueries = 1,
-                            uint32_t thresholdNumOfParties = 1,
+                            PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
+                            uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
                             COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
-                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity, numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel) {}
+                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
+                              numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 

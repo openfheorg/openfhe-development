@@ -124,13 +124,13 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     parameters.SetFirstModSize(firstMod);
 
     /*  A4) Multiplicative depth.
-    * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set 
-    * according the following formula: 
+    * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set
+    * according the following formula:
     * multDepth >= desired_depth + interactive_bootstrapping_depth
     * where,
     *   The desired_depth is the depth of the computation, as chosen by the user.
     *   The interactive_bootstrapping_depth is either 3 or 4, depending on the ciphertext compression mode: COMPACT vs SLACK (see below)
-    * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels 
+    * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels
     * for computation and 4 for interactive bootstrapping. You will need to bootstrap 3 times.
     */
     parameters.SetMultiplicativeDepth(10);
@@ -139,7 +139,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     uint32_t batchSize = 16;
     parameters.SetBatchSize(batchSize);
 
-      /*  Protocol-specific parameters (SLACK or COMPACT)
+    /*  Protocol-specific parameters (SLACK or COMPACT)
     * SLACK (default) uses larger masks, which makes it more secure theoretically. However, it is also slightly less efficient.
     * COMPACT uses smaller masks, which makes it more efficient. However, it is relatively less secure theoretically.
     * Both options can be used for practical security.
@@ -313,7 +313,8 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     std::cout << "Ground Truth: \n\t" << plaintextResult->GetCKKSPackedValue() << std::endl;
     std::cout << "Computed Res: \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
 
-    checkApproximateEquality(plaintextResult->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), encodedLength, eps);
+    checkApproximateEquality(plaintextResult->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(),
+                             encodedLength, eps);
 
     std::cout << "\n============================ INTERACTIVE DECRYPTION ENDED ============================\n";
 
