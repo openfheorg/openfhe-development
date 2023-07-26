@@ -329,9 +329,10 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
     std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
     std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
 
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
-#pragma omp parallel for num_threads(N)
-#endif
+// TODO (cpascoe/dsuponit): this pragma needs to be revised as it may have to be removed completely
+// #if !defined(__MINGW32__) && !defined(__MINGW64__)
+// #pragma omp parallel for num_threads(N)
+// #endif
     for (size_t i = 0; i < N; ++i) {
         std::vector<std::vector<NativeVector>> vector1A;
         vector1A.reserve(baseKS);
