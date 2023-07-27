@@ -45,9 +45,9 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
     auto& ek00 = (*ek)[0][0];
     auto& ek01 = (*ek)[0][1];
 
-    // handles ternary secrets using signed mod 3 arithmetic; 0 -> {0,0}, 1 ->
-    // {1,0}, -1 -> {0,1}
-#pragma omp parallel for
+    // handles ternary secrets using signed mod 3 arithmetic
+    // 0 -> {0,0}, 1 -> {1,0}, -1 -> {0,1}
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (uint32_t i = 0; i < n; ++i) {
         auto s  = sv[i].ConvertToInt();
         ek00[i] = KeyGenCGGI(params, skNTT, s == 1 ? 1 : 0);
@@ -112,6 +112,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
 
     SignedDigitDecompose(params, ct, dct);
 
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
     for (uint32_t i = 0; i < digitsG2; ++i)
         dct[i].SetFormat(Format::EVALUATION);
 

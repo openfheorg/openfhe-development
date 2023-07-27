@@ -300,44 +300,56 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
-    auto modulus = element->GetModulus();
-    usint n      = (element->GetLength() >> 1);
-    usint t      = n;
-    usint logt1  = lbcrypto::GetMSB(t);
-    for (usint m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
-        for (usint i = 0; i < m; ++i) {
-            usint j1         = i << logt1;
-            usint j2         = j1 + t;
-            usint indexOmega = i + m;
-            auto omega       = rootOfUnityTable[indexOmega];
-            auto preconOmega = preconRootOfUnityTable[indexOmega];
-            for (usint indexLo = j1; indexLo < j2; ++indexLo) {
-                usint indexHi    = indexLo + t;
-                auto omegaFactor = (*element)[indexHi];
+    auto modulus{element->GetModulus()};
+    uint32_t n(element->GetLength() >> 1), t{n}, logt{lbcrypto::GetMSB(t)};
+    for (uint32_t m{1}; m < n; m <<= 1, t >>= 1, --logt) {
+        for (uint32_t i{0}; i < m; ++i) {
+            auto omega{rootOfUnityTable[i + m]};
+            auto preconOmega{preconRootOfUnityTable[i + m]};
+            for (uint32_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
+                auto omegaFactor{(*element)[j1 + t]};
                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-                auto loVal = (*element)[indexLo];
-
+                auto loVal{(*element)[j1 + 0]};
+#if defined(__GNUC__) && !defined(__clang__)
+                auto hiVal{loVal + omegaFactor};
+                if (hiVal >= modulus)
+                    hiVal -= modulus;
+                if (loVal < omegaFactor)
+                    loVal += modulus;
+                loVal -= omegaFactor;
+                (*element)[j1 + 0] = hiVal;
+                (*element)[j1 + t] = loVal;
+#else
                 // fixes Clang slowdown issue, but requires lowVal be less than modulus
-                (*element)[indexLo] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
+                (*element)[j1 + 0] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
                 if (omegaFactor > loVal)
                     loVal += modulus;
-                (*element)[indexHi] = loVal - omegaFactor;
+                (*element)[j1 + t] = loVal - omegaFactor;
+#endif
             }
         }
     }
-    for (usint i = 0; i < n; ++i) {
-        usint j1         = i << 1;
-        usint j2         = j1 + 1;
-        usint indexOmega = i + n;
-        auto omegaFactor = (*element)[j2];
-        auto omega       = rootOfUnityTable[indexOmega];
-        auto preconOmega = preconRootOfUnityTable[indexOmega];
+    for (uint32_t i{0}; i < (n << 1); i += 2) {
+        auto omegaFactor{(*element)[i + 1]};
+        auto omega{rootOfUnityTable[(i >> 1) + n]};
+        auto preconOmega{preconRootOfUnityTable[(i >> 1) + n]};
         omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-        auto loVal = (*element)[j1];
-        (*element)[j1] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
+        auto loVal{(*element)[i + 0]};
+#if defined(__GNUC__) && !defined(__clang__)
+        auto hiVal{loVal + omegaFactor};
+        if (hiVal >= modulus)
+            hiVal -= modulus;
+        if (loVal < omegaFactor)
+            loVal += modulus;
+        loVal -= omegaFactor;
+        (*element)[i + 0] = hiVal;
+        (*element)[i + 1] = loVal;
+#else
+        (*element)[i + 0] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
         if (omegaFactor > loVal)
             loVal += modulus;
-        (*element)[j2] = loVal - omegaFactor;
+        (*element)[i + t] = loVal - omegaFactor;
+#endif
     }
 }
 
@@ -480,44 +492,60 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
-    auto modulus = element->GetModulus();
-    usint n      = element->GetLength() >> 1;
-    for (usint i = 0; i < n; ++i) {
-        usint j1         = i << 1;
-        usint j2         = j1 + 1;
-        usint indexOmega = i + n;
-        auto omega       = rootOfUnityInverseTable[indexOmega];
-        auto preconOmega = preconRootOfUnityInverseTable[indexOmega];
-        auto hiVal       = (*element)[j2];
-        auto loVal       = (*element)[j1];
-        auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
+    auto modulus{element->GetModulus()};
+    uint32_t n(element->GetLength());
+    for (uint32_t i{0}; i < n; i += 2) {
+        auto omega{rootOfUnityInverseTable[(i + n) >> 1]};
+        auto preconOmega{preconRootOfUnityInverseTable[(i + n) >> 1]};
+        auto hiVal{(*element)[i + 1]};
+        auto loVal{(*element)[i + 0]};
+#if defined(__GNUC__) && !defined(__clang__)
+        auto omegaFactor{loVal};
+        if (omegaFactor < hiVal)
+            omegaFactor += modulus;
+        omegaFactor -= hiVal;
         loVal += hiVal;
-        omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-        (*element)[j2] = omegaFactor.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
         if (loVal >= modulus)
             loVal -= modulus;
-        (*element)[j1] = loVal.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        loVal.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
+        omegaFactor.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        (*element)[i + 0] = loVal;
+        (*element)[i + 1] = omegaFactor;
+#else
+        auto omegaFactor{loVal + (hiVal > loVal ? modulus : 0) - hiVal};
+        loVal += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
+        loVal.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        (*element)[i + 0] = loVal;
+        omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
+        omegaFactor.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        (*element)[i + 1] = omegaFactor;
+#endif
     }
-    usint t     = 2;
-    usint logt1 = 2;
-    for (usint m = (n >> 1); m >= 1; m >>= 1, t <<= 1, ++logt1) {
-        for (usint i = 0; i < m; ++i) {
-            usint j1         = i << logt1;
-            usint j2         = j1 + t;
-            usint indexOmega = i + m;
-            auto omega       = rootOfUnityInverseTable[indexOmega];
-            auto preconOmega = preconRootOfUnityInverseTable[indexOmega];
-            for (usint indexLo = j1; indexLo < j2; ++indexLo) {
-                usint indexHi    = indexLo + t;
-                auto hiVal       = (*element)[indexHi];
-                auto loVal       = (*element)[indexLo];
-                auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
+    for (uint32_t m{n >> 2}, t{2}, logt{2}; m >= 1; m >>= 1, t <<= 1, ++logt) {
+        for (uint32_t i{0}; i < m; ++i) {
+            auto omega{rootOfUnityInverseTable[i + m]};
+            auto preconOmega{preconRootOfUnityInverseTable[i + m]};
+            for (uint32_t j1{i << logt},  j2{j1 + t}; j1 < j2; ++j1) {
+                auto hiVal{(*element)[j1 + t]};
+                auto loVal{(*element)[j1 + 0]};
+#if defined(__GNUC__) && !defined(__clang__)
+                auto omegaFactor{loVal};
+                if (omegaFactor < hiVal)
+                    omegaFactor += modulus;
+                omegaFactor -= hiVal;
                 loVal += hiVal;
-                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-                (*element)[indexHi] = omegaFactor;
                 if (loVal >= modulus)
                     loVal -= modulus;
-                (*element)[indexLo] = loVal;
+                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
+                (*element)[j1 + 0] = loVal;
+                (*element)[j1 + t] = omegaFactor;
+#else
+                (*element)[j1 + 0] += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
+                auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
+                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
+                (*element)[j1 + t] = omegaFactor;
+#endif
             }
         }
     }

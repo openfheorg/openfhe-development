@@ -321,46 +321,41 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW(lbcrypto::math_error, "ModMul called on NativeVectorT's with different parameters.");
+    auto ans(*this);
+    uint32_t size(m_data.size());
+    auto mv{m_modulus};
 #ifdef NATIVEINT_BARRET_MOD
     auto mu{m_modulus.ComputeMu()};
-    auto mv{m_modulus};
-    auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
+    for (uint32_t i = 0; i < size; ++i)
         ans[i].ModMulFastEq(b[i], mv, mu);
-    return ans;
 #else
-    auto mv{m_modulus};
-    auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
+    for (uint32_t i = 0; i < size; ++i)
         ans[i].ModMulFastEq(b[i], mv);
-    return ans;
 #endif
+    return ans;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW(lbcrypto::math_error, "ModMulEq called on NativeVectorT's with different parameters.");
+    auto mv{m_modulus};
+    size_t size{m_data.size()};
 #ifdef NATIVEINT_BARRET_MOD
     auto mu{m_modulus.ComputeMu()};
-    auto mv{m_modulus};
-    auto size{m_data.size()};
     for (size_t i = 0; i < size; ++i)
         m_data[i].ModMulFastEq(b[i], mv, mu);
-    return *this;
 #else
-    auto mv{m_modulus};
-    auto size{m_data.size()};
     for (size_t i = 0; i < size; ++i)
         m_data[i].ModMulFastEq(b[i], mv);
-    return *this;
 #endif
+    return *this;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModByTwo() const {
-    auto halfQ{m_modulus.m_value >> 1};
     auto ans(*this);
+    auto halfQ{m_modulus.m_value >> 1};
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i].m_value = 0x1 & (ans[i].m_value ^ (ans[i].m_value > halfQ));
     return ans;

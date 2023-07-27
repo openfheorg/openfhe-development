@@ -1390,12 +1390,17 @@ public:
         const std::vector<NativeInteger>& BModq, const std::vector<NativeInteger>& BModqPrecon) = 0;
 
     /**
-   * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse
-   * FFT.
+   * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
    *
    * @warning use @see SetFormat(format) instead
    */
     void SwitchFormat() override = 0;
+
+    /**
+   * @brief Sets format to value without calling FFT. Only use if you know what you're doing.
+   *
+   */
+    virtual void OverrideFormat(const Format f) = 0;
 
     /**
    * @brief Switch modulus and adjust the values

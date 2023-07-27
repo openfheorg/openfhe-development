@@ -394,6 +394,7 @@ public:
    * @return is the result of the component wise modulus addition operation.
    */
     mubintvec& ModAddEq(const mubintvec& b);
+    mubintvec& ModAddNoCheckEq(const mubintvec& b);
 
     /**
    * Scalar-from-vector modulus subtraction operation.
@@ -460,6 +461,7 @@ public:
    * operation.
    */
     mubintvec& ModMulEq(const mubintvec& b);
+    mubintvec& ModMulNoCheckEq(const mubintvec& b);
 
     /**
    * Scalar modulus exponentiation operation.

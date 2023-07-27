@@ -345,6 +345,12 @@ public:
         return *this;
     }
 
+    myVecP& ModAddNoCheckEq(const myVecP& b) {
+        for (usint i = 0; i < this->GetLength(); i++)
+            this->operator[](i).ModAddEq(b[i], this->m_modulus);
+        return *this;
+    }
+
     /// procedural version for the vector component wise modulus addition
     /// operation.
     void modadd_p(myVecP& x, const myVecP& a, const myVecP& b) const;
@@ -460,6 +466,12 @@ public:
         for (usint i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModMulEq(b[i], this->m_modulus);
         }
+        return (*this);
+    }
+
+    myVecP& ModMulNoCheckEq(const myVecP& b) {
+        for (usint i = 0; i < this->GetLength(); i++)
+            this->operator[](i).ModMulEq(b[i], this->m_modulus);
         return (*this);
     }
 

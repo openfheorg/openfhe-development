@@ -76,17 +76,54 @@ public:
     using BugType           = typename PolyInterfaceType::BugType;
 
     constexpr PolyImpl() = default;
+
     PolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-             bool initializeElementToZero = false);
+             bool initializeElementToZero = false)
+        : m_format{format}, m_params{params} {
+        if (initializeElementToZero)
+            PolyImpl::SetValuesToZero();
+    }
     PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>>& params, Format format = Format::EVALUATION,
              bool initializeElementToZero = false);
-    PolyImpl(bool initializeElementToMax, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
+
+    PolyImpl(bool initializeElementToMax, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION)
+        : m_format{format}, m_params{params} {
+        if (initializeElementToMax)
+            PolyImpl::SetValuesToMax();
+    }
     PolyImpl(const DggType& dgg, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     PolyImpl(DugType& dug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     PolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     PolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
              uint32_t h = 0);
-    PolyImpl(const PolyNative& element, Format format);
+
+    template <typename T = VecType>
+    PolyImpl(const PolyNative& rhs, Format format,
+             typename std::enable_if_t<std::is_same_v<T, NativeVector>, bool> = true)
+        : m_format{rhs.m_format},
+          m_params{rhs.m_params},
+          m_values{rhs.m_values ? std::make_unique<VecType>(*rhs.m_values) : nullptr} {
+        PolyImpl<VecType>::SetFormat(format);
+    }
+
+    template <typename T = VecType>
+    PolyImpl(const PolyNative& rhs, Format format,
+             typename std::enable_if_t<!std::is_same_v<T, NativeVector>, bool> = true)
+        : m_format{rhs.GetFormat()} {
+        auto c{rhs.GetParams()->GetCyclotomicOrder()};
+        auto m{rhs.GetParams()->GetModulus().ConvertToInt()};
+        auto r{rhs.GetParams()->GetRootOfUnity().ConvertToInt()};
+        m_params = std::make_shared<PolyImpl::Params>(c, m, r);
+
+        const auto& v{rhs.GetValues()};
+        uint32_t vlen{m_params->GetRingDimension()};
+        VecType tmp(vlen);
+        tmp.SetModulus(m_params->GetModulus());
+        for (uint32_t i{0}; i < vlen; ++i)
+            tmp[i] = Integer(v[i]);
+        m_values = std::make_unique<VecType>(tmp);
+        PolyImpl<VecType>::SetFormat(format);
+    }
 
     PolyImpl(const PolyType& p) noexcept
         : m_format{p.m_format},
@@ -98,7 +135,7 @@ public:
 
     PolyType& operator=(const PolyType& rhs) noexcept override;
     PolyType& operator=(PolyType&& rhs) noexcept override {
-        m_format = rhs.m_format;
+        m_format = std::move(rhs.m_format);
         m_params = std::move(rhs.m_params);
         m_values = std::move(rhs.m_values);
         return *this;
@@ -117,14 +154,13 @@ public:
 
     void SetValuesToZero() override {
         usint r{m_params->GetRingDimension()};
-        auto& m{m_params->GetModulus()};
-        m_values = std::make_unique<VecType>(r, m);
+        m_values = std::make_unique<VecType>(r, m_params->GetModulus());
     }
 
     void SetValuesToMax() override {
-        usint size{m_params->GetRingDimension()};
+        usint r{m_params->GetRingDimension()};
         auto max{m_params->GetModulus() - Integer(1)};
-        m_values = std::make_unique<VecType>(size, m_params->GetModulus(), max);
+        m_values = std::make_unique<VecType>(r, m_params->GetModulus(), max);
     }
 
     inline Format GetFormat() const final {
@@ -170,13 +206,21 @@ public:
     }
 
     PolyImpl Plus(const PolyImpl& rhs) const override {
-        // auto tmp(*this);
-        // tmp.m_values->ModAddEq(*rhs.m_values);
-        PolyImpl tmp(m_params, m_format);
-        tmp.SetValues((*m_values).ModAdd(*(rhs.m_values)), m_format);
+        if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
+            OPENFHE_THROW(math_error, "RingDimension missmatch");
+        if (m_params->GetModulus() != rhs.m_params->GetModulus())
+            OPENFHE_THROW(math_error, "Modulus missmatch");
+        if (m_format != rhs.m_format)
+            OPENFHE_THROW(not_implemented_error, "Format missmatch");
+        auto tmp(*this);
+        tmp.m_values->ModAddNoCheckEq(*rhs.m_values);
         return tmp;
     }
-
+    PolyImpl PlusNoCheck(const PolyImpl& rhs) const {
+        auto tmp(*this);
+        tmp.m_values->ModAddNoCheckEq(*rhs.m_values);
+        return tmp;
+    }
     PolyImpl& operator+=(const PolyImpl& element) override;
 
     PolyImpl Plus(const Integer& element) const override;
@@ -193,9 +237,36 @@ public:
         return *this;
     }
 
-    PolyImpl Times(const PolyImpl& element) const override;
-    PolyImpl TimesNoCheck(const PolyImpl& element) const;
-    PolyImpl& operator*=(const PolyImpl& element) override;
+    PolyImpl Times(const PolyImpl& rhs) const override {
+        if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
+            OPENFHE_THROW(math_error, "RingDimension missmatch");
+        if (m_params->GetModulus() != rhs.m_params->GetModulus())
+            OPENFHE_THROW(math_error, "Modulus missmatch");
+        if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
+            OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
+        auto tmp(*this);
+        tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
+        return tmp;
+    }
+    PolyImpl TimesNoCheck(const PolyImpl& rhs) const {
+        auto tmp(*this);
+        tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
+        return tmp;
+    }
+    PolyImpl& operator*=(const PolyImpl& rhs) override {
+        if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
+            OPENFHE_THROW(math_error, "RingDimension missmatch");
+        if (m_params->GetModulus() != rhs.m_params->GetModulus())
+            OPENFHE_THROW(math_error, "Modulus missmatch");
+        if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
+            OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
+        if (m_values) {
+            m_values->ModMulNoCheckEq(*rhs.m_values);
+            return *this;
+        }
+        m_values = std::make_unique<VecType>(m_params->GetRingDimension(), m_params->GetModulus());
+        return *this;
+    }
 
     PolyImpl Times(const Integer& element) const override;
     PolyImpl& operator*=(const Integer& element) override {

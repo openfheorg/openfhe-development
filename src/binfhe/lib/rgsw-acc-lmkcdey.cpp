@@ -35,31 +35,25 @@
 
 namespace lbcrypto {
 
-// TODO: optimize this
-
 // Key generation as described in https://eprint.iacr.org/2022/198
 RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                    const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
-    auto sv              = LWEsk->GetElement();
-    int32_t mod          = sv.GetModulus().ConvertToInt();
-    int32_t modHalf      = mod >> 1;
-    uint32_t N           = params->GetN();
-    size_t n             = sv.GetLength();
-    uint32_t numAutoKeys = params->GetNumAutoKeys();
+    auto sv{LWEsk->GetElement()};
+    auto mod{sv.GetModulus().ConvertToInt<int32_t>()};
+    auto modHalf{mod >> 1};
+    uint32_t N{params->GetN()};
+    size_t n{sv.GetLength()};
+    uint32_t numAutoKeys{params->GetNumAutoKeys()};
 
     // dim2, 0: for RGSW(X^si), 1: for automorphism keys
     // only w automorphism keys required
     // allocates (n - w) more memory for pointer (not critical for performance)
     RingGSWACCKey ek = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (size_t i = 0; i < n; ++i) {
-        int32_t s = (int32_t)sv[i].ConvertToInt();
-        if (s > modHalf) {
-            s -= mod;
-        }
-
-        (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s);
+        auto s{sv[i].ConvertToInt<int32_t>()};
+        (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s);
     }
 
     NativeInteger gen = NativeInteger(5);
@@ -67,9 +61,9 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2 * N - gen.ConvertToInt());
 
     // m_window: window size, consider parameterization in the future
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numAutoKeys))
     for (uint32_t i = 1; i <= numAutoKeys; ++i)
-        (*ek)[0][1][i] = KeyGenAuto(params, skNTT, gen.ModExp(i, 2 * N).ConvertToInt());
+        (*ek)[0][1][i] = KeyGenAuto(params, skNTT, gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>());
     return ek;
 }
 
@@ -247,6 +241,7 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
     SignedDigitDecompose(params, ct, dct);
 
     // calls digitsG2 NTTs
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
     for (uint32_t d = 0; d < digitsG2; ++d)
         dct[d].SetFormat(Format::EVALUATION);
 
@@ -281,6 +276,7 @@ void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCrypto
 
     SignedDigitDecompose(params, cta, dcta);
 
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG))
     for (uint32_t d = 0; d < digitsG; ++d)
         dcta[d].SetFormat(Format::EVALUATION);
 

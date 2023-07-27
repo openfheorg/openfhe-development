@@ -318,6 +318,7 @@ public:
    * @return is the result of the component wise modulus addition operation.
    */
     BigVectorFixedT& ModAddEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModAddNoCheckEq(const BigVectorFixedT& b);
 
     /**
    * Scalar-from-vector modulus subtraction operation.
@@ -386,6 +387,7 @@ public:
    * operation.
    */
     BigVectorFixedT& ModMulEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModMulNoCheckEq(const BigVectorFixedT& b);
 
     /**
    * Scalar modulus exponentiation operation.

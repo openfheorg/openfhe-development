@@ -139,9 +139,7 @@ public:
     constexpr NativeVectorT() = default;
 
     static constexpr NativeVectorT Single(const IntegerType& val, const IntegerType& modulus) noexcept {
-        NativeVectorT vec(1, modulus);
-        vec[0].m_value = val.m_value;
-        return vec;
+        return NativeVectorT(1, modulus, val);
     }
 
     /**
@@ -168,7 +166,7 @@ public:
 
     constexpr NativeVectorT(usint length, const IntegerType& modulus, const IntegerType& val) noexcept
         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {
-        //        : m_modulus{modulus}, m_data(length, val) {
+        // TODO: better performance if this check is done at poly level
         //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
         //            OPENFHE_THROW(lbcrypto::not_available_error, std::to_string(modulus.GetMSB()) +
         //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
@@ -186,7 +184,8 @@ public:
    *
    * @param &&bigVector is the native vector to be moved.
    */
-    constexpr NativeVectorT(NativeVectorT&& v) noexcept : m_modulus{v.m_modulus}, m_data{std::move(v.m_data)} {}
+    constexpr NativeVectorT(NativeVectorT&& v) noexcept
+        : m_modulus{std::move(v.m_modulus)}, m_data{std::move(v.m_data)} {}
 
     /**
    * Basic constructor for specifying the length of the vector
@@ -219,13 +218,13 @@ public:
    */
     NativeVectorT& operator=(const NativeVectorT& rhs) noexcept {
         m_modulus = rhs.m_modulus;
-        if (rhs.m_data.size() > m_data.size()) {
-            m_data = rhs.m_data;
+        if (m_data.size() >= rhs.m_data.size()) {
+            std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());
+            if (m_data.size() > rhs.m_data.size())
+                m_data.resize(rhs.m_data.size());
             return *this;
         }
-        std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());
-        if (m_data.size() > rhs.m_data.size())
-            m_data.resize(rhs.m_data.size());
+        m_data = rhs.m_data;
         return *this;
     }
 
@@ -236,7 +235,7 @@ public:
    * @return moved NativeVectorT object
    */
     NativeVectorT& operator=(NativeVectorT&& rhs) noexcept {
-        m_modulus = rhs.m_modulus;
+        m_modulus = std::move(rhs.m_modulus);
         m_data    = std::move(rhs.m_data);
         return *this;
     }
@@ -266,8 +265,8 @@ public:
    * @return Assigned NativeVectorT.
    */
     constexpr NativeVectorT& operator=(uint64_t val) {
+        std::fill(m_data.begin(), m_data.end(), 0);
         m_data.at(0) = val;
-        std::fill(m_data.begin() + 1, m_data.end(), 0);
         return *this;
     }
 
@@ -409,6 +408,13 @@ public:
    * @return is the result of the modulus addition operation.
    */
     NativeVectorT& ModAddEq(const NativeVectorT& b);
+    NativeVectorT& ModAddNoCheckEq(const NativeVectorT& b) {
+        size_t size{m_data.size()};
+        auto mv{m_modulus};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].ModAddFastEq(b[i], mv);
+        return *this;
+    }
 
     /**
    * Scalar modulus subtraction.
@@ -477,6 +483,19 @@ public:
    * @return is the result of the modulus multiplication operation.
    */
     NativeVectorT& ModMulEq(const NativeVectorT& b);
+    NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b) {
+        size_t size{m_data.size()};
+        auto mv{m_modulus};
+#ifdef NATIVEINT_BARRET_MOD
+        auto mu{m_modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].ModMulFastEq(b[i], mv, mu);
+#else
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].ModMulFastEq(b[i], mv);
+#endif
+        return *this;
+    }
 
     /**
    * Vector multiplication without applying the modulus operation.
@@ -510,10 +529,11 @@ public:
    * @return a new vector which is the result of the modulus inverse operation.
    */
     NativeVectorT ModInverse() const {
-        auto ans(*this);
+        size_t size{m_data.size()};
         auto mv{m_modulus};
-        for (size_t i = 0; i < ans.m_data.size(); ++i)
-            ans[i] = ans[i].ModInverse(mv);
+        NativeVectorT ans(size, mv);
+        for (size_t i{0}; i < size; ++i)
+            ans[i] = m_data[i].ModInverse(mv);
         return ans;
     }
 
@@ -523,8 +543,9 @@ public:
    * @return a new vector which is the result of the modulus inverse operation.
    */
     NativeVectorT& ModInverseEq() {
+        size_t size{m_data.size()};
         auto mv{m_modulus};
-        for (size_t i = 0; i < m_data.size(); ++i)
+        for (size_t i{0}; i < size; ++i)
             m_data[i] = m_data[i].ModInverse(mv);
         return *this;
     }

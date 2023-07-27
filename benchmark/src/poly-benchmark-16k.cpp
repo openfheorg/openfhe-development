@@ -44,8 +44,6 @@
 
 using namespace lbcrypto;
 
-namespace lbcrypto {
-
 static std::vector<usint> tow_args({1, 2, 4, 8});
 
 static const usint DCRTBITS     = MAX_MODULUS_SIZE;
@@ -136,8 +134,6 @@ static void GenerateDCRTPolys(std::map<usint, std::shared_ptr<ILDCRTParams<BigIn
     }
 }
 
-}  // namespace lbcrypto
-
 std::shared_ptr<ILNativeParams> Nativeparms;
 std::map<usint, std::shared_ptr<ILDCRTParams<BigInteger>>> DCRTparms;
 
@@ -209,7 +205,6 @@ static void Native_mul(benchmark::State& state) {
         c = a->Times(*b);
     }
 }
-
 BENCHMARK(Native_mul)->Unit(benchmark::kMicrosecond);
 
 static void DCRT_mul(benchmark::State& state) {

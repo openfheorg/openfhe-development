@@ -246,6 +246,7 @@ public:
    * @return is the result of the component wise modulus addition operation.
    */
     T& ModAddEq(const T& b);
+    T& ModAddNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus addition
     /// operations.
@@ -353,6 +354,7 @@ public:
    * operation.
    */
     T& ModMulEq(const T& b);
+    T& ModMulNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus multiplication
     /// operations.
