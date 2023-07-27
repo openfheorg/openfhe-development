@@ -113,7 +113,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM        = 512;
+constexpr usint RING_DIM        = 32;
 constexpr usint MULT_DEPTH      = 3;
 constexpr usint MAX_RELIN_DEG   = 2;
 constexpr usint DSIZE           = 4;

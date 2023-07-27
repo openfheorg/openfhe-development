@@ -113,7 +113,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SER&
  *        Use small values (3-4?) if you need rotations before any multiplications.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM   = 512;
+constexpr usint RING_DIM   = 32;
 constexpr usint SMODSIZE   = 50;
 constexpr usint MULT_DEPTH = 3;
 constexpr usint DSIZE      = 20;
