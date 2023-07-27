@@ -706,12 +706,12 @@ public:
         auto bv{b.m_value};
         auto& mv{modulus.m_value};
         if (av >= mv)
-            av = av % mv;
+            av %= mv;
         if (bv >= mv)
-            bv = bv % mv;
-        av = av + bv;
+            bv %= mv;
+        av += bv;
         if (av >= mv)
-            return {av - mv};
+            av -= mv;
         return {av};
     }
 
@@ -729,9 +729,9 @@ public:
             m_value = m_value % mv;
         if (bv >= mv)
             bv = bv % mv;
-        m_value = m_value + bv;
+        m_value += bv;
         if (m_value >= mv)
-            return *this = m_value - mv;
+            m_value -= mv;
         return *this;
     }
 
@@ -746,7 +746,7 @@ public:
         auto r{m_value + b.m_value};
         auto& mv{modulus.m_value};
         if (r >= mv)
-            return {r - mv};
+            r -= mv;
         return {r};
     }
     /**
@@ -757,12 +757,11 @@ public:
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT& ModAddFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
-        auto r{m_value + b.m_value};
         auto& mv{modulus.m_value};
-        // TODO: This should be (. >= mv), but using > for performance. Fix This.
-        if (r > mv)
-            return *this = r - mv;
-        return *this = r;
+        m_value += b.m_value;
+        if (m_value >= mv)
+            m_value -= mv;
+        return *this;
     }
 
     /**
@@ -784,9 +783,9 @@ public:
             av.ModEq(modulus, mu);
         if (bv.m_value >= mv)
             bv.ModEq(modulus, mu);
-        av.m_value = av.m_value + bv.m_value;
+        av.m_value += bv.m_value;
         if (av.m_value >= mv)
-            return {av.m_value - mv};
+            av.m_value -= mv;
         return av;
 #else
         auto bv{b.m_value};
@@ -812,9 +811,9 @@ public:
             av.ModEq(modulus, mu);
         if (bv.m_value >= mv)
             bv.ModEq(modulus, mu);
-        av.m_value = av.m_value + bv.m_value;
+        av.m_value += bv.m_value;
         if (av.m_value >= mv)
-            return {av.m_value - mv};
+            av.m_value -= mv;
         return av;
     }
 
@@ -882,9 +881,9 @@ public:
         auto bv{b.m_value};
         auto& mv{modulus.m_value};
         if (av >= mv)
-            av = av % mv;
+            av %= mv;
         if (bv >= mv)
-            bv = bv % mv;
+            bv %= mv;
         if (av < bv)
             return {av + mv - bv};
         return {av - bv};
@@ -1048,7 +1047,7 @@ public:
         DNativeInt rv{static_cast<DNativeInt>(av) * bv};
         DNativeInt dmv{mv};
         if (rv >= dmv)
-            return {rv % dmv};
+            rv %= dmv;
         return {rv};
     }
 
@@ -1071,7 +1070,7 @@ public:
         MultD(RShiftD(tmp, n + 7), mv, tmp);
         SubtractD(r, tmp);
         if (r.lo >= mv)
-            return {r.lo - mv};
+            r.lo -= mv;
         return {r.lo};
     }
 
@@ -1095,7 +1094,7 @@ public:
         DNativeInt rv{static_cast<DNativeInt>(av) * bv};
         DNativeInt dmv{mv};
         if (rv >= dmv)
-            return *this = static_cast<NativeInt>(rv % dmv);
+            rv %= dmv;
         return *this = static_cast<NativeInt>(rv);
     }
 
@@ -1186,7 +1185,7 @@ public:
         MultD(RShiftD(tmp, n + 7), mv, tmp);
         SubtractD(r, tmp);
         if (r.lo >= mv)
-            return {r.lo - mv};
+            r.lo -= mv;
         return {r.lo};
     }
 
@@ -1271,9 +1270,8 @@ public:
                               typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
         DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
         DNativeInt dmv{modulus.m_value};
-        // TODO: This should be (. >= mv), but using > for performance. Fix This.
-        if (rv > dmv)
-            return {rv % dmv};
+        if (rv >= dmv)
+            rv %= dmv;
         return {rv};
     }
 
@@ -1289,7 +1287,7 @@ public:
         MultD(RShiftD(prod, n + 7), mv, prod);
         SubtractD(r, prod);
         if (r.lo >= mv)
-            return {r.lo - mv};
+            r.lo -= mv;
         return {r.lo};
     }
 
@@ -1308,7 +1306,7 @@ public:
         DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
         DNativeInt dmv{modulus.m_value};
         if (rv >= dmv)
-            return *this = static_cast<NativeInt>(rv % dmv);
+            rv %= dmv;
         return *this = static_cast<NativeInt>(rv);
     }
 
@@ -1382,7 +1380,7 @@ public:
         MultD(RShiftD(prod, n + 7), mv, prod);
         SubtractD(r, prod);
         if (r.lo >= mv)
-            return {r.lo - mv};
+            r.lo -= mv;
         return {r.lo};
     }
 
@@ -1584,7 +1582,7 @@ public:
             x       = t;
         }
         if (x < 0)
-            return {x + mod.m_value};
+            x += mod.m_value;
         return {x};
     }
 
