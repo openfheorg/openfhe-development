@@ -71,6 +71,9 @@ enum BINFHE_PARAMSET {
                         // optimize runtime by finding a non-power-of-two n
     STD128_3,           // more than 128 bits of security for classical computer attacks -
                         // optimize runtime by finding a non-power-of-two n for 3 binary inputs
+    STD128_3_LMKCDEY,   // Optimized for LMKCDEY (using Gaussian secrets) -
+                        // more than 128 bits of security for classical computer attacks -
+                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
     STD128Q_3,          // more than 128 bits of security for quantum computer attacks -
                         // optimize runtime by finding a non-power-of-two n for 3 binary inputs
     STD128Q_3_LMKCDEY,  // Optimized for LMKCDEY (using Gaussian secrets) -
@@ -81,6 +84,9 @@ enum BINFHE_PARAMSET {
     STD256Q_3,          // more than 256 bits of security for quantum computer attacks -
                         // optimize runtime by finding a non-power-of-two n for 3 binary inputs
     STD128_4,           // more than 128 bits of security for classical computer attacks -
+                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
+    STD128_4_LMKCDEY,   // Optimized for LMKCDEY (using Gaussian secrets) -
+                        // more than 128 bits of security for classical computer attacks -
                         // optimize runtime by finding a non-power-of-two n for 4 binary inputs
     STD128Q_4,          // more than 128 bits of security for quantum computer attacks -
                         // optimize runtime by finding a non-power-of-two n for 4 binary inputs

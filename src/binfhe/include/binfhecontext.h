@@ -202,7 +202,7 @@ public:
     LWEPrivateKey KeyGenN() const;
 
     /**
-   * Encrypts a bit using a secret key (symmetric key encryption)
+   * Encrypts a bit or integer using a secret key (symmetric key encryption)
    *
    * @param sk the secret key
    * @param m the plaintext
@@ -216,7 +216,7 @@ public:
                           LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
-   * Encrypts a bit using a public key (public key encryption)
+   * Encrypts a bit or integer using a public key (public key encryption)
    *
    * @param pk the public key
    * @param m the plaintext
@@ -307,7 +307,7 @@ public:
     /**
    * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
    *
-   * @param gate the gate; can be MAJORITY as of now
+   * @param gate the gate; can be MAJORITY, AND3, OR3, AND4, OR4, or CMUX
    * @param ctvector vector of ciphertexts
    * @return a shared pointer to the resulting ciphertext
    */

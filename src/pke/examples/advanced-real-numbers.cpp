@@ -49,10 +49,10 @@ void FastRotationsDemo2();
 
 int main(int argc, char* argv[]) {
     /*
-   * Our implementation of CKKS includes two variants called
-   * "FLEXIBLEAUTO" and "FIXED" respectively. Starting
-   * with version 1.10, we have added the FIXEDAUTO variant that works the same
-   * way as FIXEDMANUAL but also does automated rescaling.
+   * Our implementation of CKKS includes four rescaling methods called
+   * "FIXEDMANUAL*, *FIXEDAUTO*, "FLEXIBLEAUTO", and "FLEXIBLEAUTOEXT".
+   * THese rescaling methods are explained in the CKKS section of
+   * https://eprint.iacr.org/2022/915.
    *
    * Before we start, we need to say a few words about the rescale
    * operation, which is central in CKKS. Whenever we multiply two
@@ -73,43 +73,43 @@ int main(int argc, char* argv[]) {
    * There are two ways to deal with this. The first is to choose prime
    * numbers as close to 2^p as possible, and assume that the scaling
    * factor remains the same. This inevitably incurs some approximation
-   * error, and this is why we refer to it as the FIXEDMANUAL variant.
+   * error, and there are two variants for this scenario: FLEXIBLEAUTO
+   * and FLEXIBLEAUTOEXT.
+   *
    * The second way of dealing with this is to track how the scaling
-   * factor changes and try to adjust for it. This is what we call the
-   * FLEXIBLEAUTO variant of CKKS. The tradeoff is that FLEXIBLEAUTO
-   * computations are typically somewhat slower (based on our experience
+   * factor changes and try to adjust for it. This is what we do for the
+   * FLEXIBLEAUTO and FLEXIBALEAUTOEXT variants of CKKS. The tradeoff is
+   * that FLEXIBLEAUTO*    * computations are typically somewhat slower (based on our experience
    * the slowdown is around 5-35% depending on the complexity of the
    * computation), because of the adjustment of values that need to
    * take place.
    *
-   * We have designed FLEXIBLEAUTO so it hides all the nuances of
+   * We have designed FLEXIBLEAUTO(EXT) so it hides all the nuances of
    * tracking the depth of ciphertexts and having to call the rescale
-   * operation. Therefore, FLEXIBLEAUTO is more appropriate for users
+   * operation. Therefore, FLEXIBLEAUTO(EXT) is more appropriate for users
    * who do not want to get into the details of the underlying crypto
    * and math, or who want to put together a quick prototype. On the
    * contrary, FIXEDMANUAL is more appropriate for production
    * applications that have been optimized by experts.
    *
-   * The first two parts of this demo introduce the two variants, by
-   * implementing the same computation, i.e, the function
-   * f(x) = x^18 + x^9 + 1, using both FLEXIBLEAUTO and FIXEDMANUAL.
+   * The first two parts of this demo implement the same computation, i.e, the function
+   * f(x) = x^18 + x^9 + 1, using all four methods.
    *
    */
     AutomaticRescaleDemo(FLEXIBLEAUTO);
-
-    // A new example that was added in OpenFHE v1.10
+    // default
+    AutomaticRescaleDemo(FLEXIBLEAUTOEXT);
     AutomaticRescaleDemo(FIXEDAUTO);
-
     ManualRescaleDemo(FIXEDMANUAL);
 
     /*
-   * Our implementation of CKKS supports three different algorithms
-   * for key switching, namely BV, GHS, and HYBRID. BV corresponds to
+   * Our implementation of CKKS supports two different algorithms
+   * for key switching, namely BV and HYBRID. BV corresponds to
    * a technique also known as digit decomposition (both RNS and based
-   * on a digit size). GHS corresponds to ciphertext
+   * on a digit size). GHS (not implemented separately anymore) corresponds to ciphertext
    * modulus doubling, and HYBRID combines the characteristics of both
-   * BV and GHS. Please refer to the documentation of KeySwitchBVGen,
-   * KeySwitchGHSGen, and KeySwitchHybridGen in scheme/ckks/ckks.h for more
+   * BV and GHS. Please refer to the documentation of KeySwitchGen in
+   * keyswitch-bv.h/cpp and keyswitch-hybrid.h/cpp for more
    * details about the different key switch techniques.
    *
    * For most cases, HYBRID will be the most appropriate and efficient
@@ -125,9 +125,8 @@ int main(int argc, char* argv[]) {
    * we want to perform multiple different rotations to the same
    * ciphertext, we can compute one part of the rotation algorithm once,
    * and reuse it multiple times. Please refer to the documentation of
-   * EvalFastRotationPrecomputeBV, EvalFastRotationPrecomputeGHS, and
-   * EvalFastRotationPrecomputeHybrid in scheme/ckks/ckks.h for more details on
-   * hoisting in BV, GHS, and HYBRID key switching.
+   * EvalFastRotationPrecompute in keyswitch-bv.h/cpp and keyswitch-hybrid.h/cpp
+   * for more details on hoisting in BV and HYBRID key switching.
    */
     FastRotationsDemo1();
     FastRotationsDemo2();
@@ -218,93 +217,93 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
    * and observe the changes in scaling factors and depths.
    */
 
-     //#if 0
-     // const auto cryptoParamsCKKS =
-     //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
-     //         cc->GetCryptoParameters());
-    
-     // std::cout << std::fixed;
-     // std::cout.precision(2);
-     // // We have designed FLEXIBLEAUTO so that ciphertexts of a
-     // // given level have a specific scaling factor.
-     // std::cout << "\nScaling factors of levels: " << std::endl;
-     // for (uint32_t i = 0; i < parameters.GetMultiplicativeDepth(); i++) {
-     //   std::cout << "Level " << i << ": "
-     //             << cryptoParamsCKKS->GetScalingFactorReal(i) << std::endl;
-     // }
-    
-     // std::cout << std::endl;
-    
-     // // The initial ciphertext has level 0 and depth 1.
-     // // One can use additional arguments in
-     // // cc->MakeCKKSPackedPlaintext(x, depth, level) create
-     // // plaintexts/ciphertexts at any desired depth/level.
-     // // Also, in all of the following, notice that scaling
-     // // factors change at every level and they match the
-     // // ones printed above.
-     // std::cout << "Ciphertext c:" << std::endl;
-     // std::cout << "\t scaling factor: " << c->GetScalingFactor() << std::endl;
-     // std::cout << "\t scaling factor degree: " << c->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c->GetLevel() << std::endl;
-    
-     // // Notice how the result of EvalMult(c,c) is of depth 2.
-     // // This is because the Rescale operation is performed lazily,
-     // // i.e., only when we want to multiply ciphertexts of depth > 1.
-     // // Level is still 0 because no rescale operation has been run.
-     // std::cout << "Ciphertext c2:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(c2->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << c2->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c2->GetLevel() << std::endl;
-    
-     // // Here, the c2 inputs where of depth 2, so they had to be rescaled
-     // // before computing c4. Hence, the level has become 1. Again,
-     // // rescaling happens lazily, so depth of the result is 2.
-     // std::cout << "Ciphertext c4:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(c4->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << c4->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c4->GetLevel() << std::endl;
-    
-     // std::cout << "Ciphertext c8:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(c8->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << c8->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c8->GetLevel() << std::endl;
-    
-     // std::cout << "Ciphertext c16:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(c16->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << c16->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c16->GetLevel() << std::endl;
-    
-     // // c9 is the result of EvalMult between c8 (depth:2, level:2) and
-     // // c (depth: 1, level: 0). Inputs are automatically brought to the
-     // // correct depth and level before the operation and the user does
-     // // not need to care about these low level details.
-     // std::cout << "Ciphertext c9:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(c9->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << c9->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c9->GetLevel() << std::endl;
-    
-     // std::cout << "Ciphertext c18:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(c18->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << c18->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << c18->GetLevel() << std::endl;
-    
-     // // The result has the same depth and level as c18 because
-     // // additions do not require any rescaling.
-     // std::cout << "Ciphertext cRes:" << std::endl;
-     // std::cout << "\t scaling factor: (" << sqrt(cRes->GetScalingFactor()) << ")^2"
-     //           << std::endl;
-     // std::cout << "\t scaling factor degree: " << cRes->GetNoiseScaleDeg() << std::endl;
-     // std::cout << "\t level: " << cRes->GetLevel() << std::endl;
-    
-     // std::cout << std::defaultfloat;
-     // std::cout.precision(8);
-     //#endif
+    // #if 0
+    // const auto cryptoParamsCKKS =
+    //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+    //         cc->GetCryptoParameters());
+
+    // std::cout << std::fixed;
+    // std::cout.precision(2);
+    // // We have designed FLEXIBLEAUTO so that ciphertexts of a
+    // // given level have a specific scaling factor.
+    // std::cout << "\nScaling factors of levels: " << std::endl;
+    // for (uint32_t i = 0; i < parameters.GetMultiplicativeDepth(); i++) {
+    //   std::cout << "Level " << i << ": "
+    //             << cryptoParamsCKKS->GetScalingFactorReal(i) << std::endl;
+    // }
+
+    // std::cout << std::endl;
+
+    // // The initial ciphertext has level 0 and depth 1.
+    // // One can use additional arguments in
+    // // cc->MakeCKKSPackedPlaintext(x, depth, level) create
+    // // plaintexts/ciphertexts at any desired depth/level.
+    // // Also, in all of the following, notice that scaling
+    // // factors change at every level and they match the
+    // // ones printed above.
+    // std::cout << "Ciphertext c:" << std::endl;
+    // std::cout << "\t scaling factor: " << c->GetScalingFactor() << std::endl;
+    // std::cout << "\t scaling factor degree: " << c->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c->GetLevel() << std::endl;
+
+    // // Notice how the result of EvalMult(c,c) is of depth 2.
+    // // This is because the Rescale operation is performed lazily,
+    // // i.e., only when we want to multiply ciphertexts of depth > 1.
+    // // Level is still 0 because no rescale operation has been run.
+    // std::cout << "Ciphertext c2:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(c2->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << c2->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c2->GetLevel() << std::endl;
+
+    // // Here, the c2 inputs where of depth 2, so they had to be rescaled
+    // // before computing c4. Hence, the level has become 1. Again,
+    // // rescaling happens lazily, so depth of the result is 2.
+    // std::cout << "Ciphertext c4:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(c4->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << c4->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c4->GetLevel() << std::endl;
+
+    // std::cout << "Ciphertext c8:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(c8->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << c8->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c8->GetLevel() << std::endl;
+
+    // std::cout << "Ciphertext c16:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(c16->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << c16->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c16->GetLevel() << std::endl;
+
+    // // c9 is the result of EvalMult between c8 (depth:2, level:2) and
+    // // c (depth: 1, level: 0). Inputs are automatically brought to the
+    // // correct depth and level before the operation and the user does
+    // // not need to care about these low level details.
+    // std::cout << "Ciphertext c9:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(c9->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << c9->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c9->GetLevel() << std::endl;
+
+    // std::cout << "Ciphertext c18:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(c18->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << c18->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << c18->GetLevel() << std::endl;
+
+    // // The result has the same depth and level as c18 because
+    // // additions do not require any rescaling.
+    // std::cout << "Ciphertext cRes:" << std::endl;
+    // std::cout << "\t scaling factor: (" << sqrt(cRes->GetScalingFactor()) << ")^2"
+    //           << std::endl;
+    // std::cout << "\t scaling factor degree: " << cRes->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "\t level: " << cRes->GetLevel() << std::endl;
+
+    // std::cout << std::defaultfloat;
+    // std::cout.precision(8);
+    // #endif
 }
 
 void ManualRescaleDemo(ScalingTechnique scalTech) {
@@ -512,41 +511,41 @@ void HybridKeySwitchingDemo1() {
    * and how these change with the number of digits
    * dnum.
    */
-     //#if 0
-     // const auto cryptoParamsCKKS =
-     //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
-     //         cc->GetCryptoParameters());
-    
-     // auto paramsQ = cc->GetElementParams()->GetParams();
-     // std::cout << "\nModuli in Q:" << std::endl;
-     // for (uint32_t i = 0; i < paramsQ.size(); i++) {
-     //   // q0 is a bit larger because its default size is 60 bits.
-     //   // One can change this by supplying the firstModSize argument
-     //   // in genCryptoContextCKKS.
-     //   std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
-     // }
-     // auto paramsQP = cryptoParamsCKKS->GetParamsQP();
-     // std::cout << "Moduli in P: " << std::endl;
-     // BigInteger P = BigInteger(1);
-     // for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
-     //   if (i > paramsQ.size()) {
-     //     P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
-     //     std::cout << "p" << i - paramsQ.size() << ": "
-     //               << paramsQP->GetParams()[i]->GetModulus() << std::endl;
-     //   }
-     // }
-     // auto QBitLength = cc->GetModulus().GetLengthForBase(2);
-     // auto PBitLength = P.GetLengthForBase(2);
-     // std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
-     //           << ")" << std::endl;
-     // std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
-     //           << std::endl;
-     // std::cout << "Total bit-length of ciphertext modulus: "
-     //           << QBitLength + PBitLength << std::endl;
-     // std::cout << "Given this ciphertext modulus, a ring dimension of "
-     //           << cc->GetRingDimension() << " gives us 128-bit security."
-     //           << std::endl;
-     //#endif
+    // #if 0
+    // const auto cryptoParamsCKKS =
+    //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+    //         cc->GetCryptoParameters());
+
+    // auto paramsQ = cc->GetElementParams()->GetParams();
+    // std::cout << "\nModuli in Q:" << std::endl;
+    // for (uint32_t i = 0; i < paramsQ.size(); i++) {
+    //   // q0 is a bit larger because its default size is 60 bits.
+    //   // One can change this by supplying the firstModSize argument
+    //   // in genCryptoContextCKKS.
+    //   std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
+    // }
+    // auto paramsQP = cryptoParamsCKKS->GetParamsQP();
+    // std::cout << "Moduli in P: " << std::endl;
+    // BigInteger P = BigInteger(1);
+    // for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
+    //   if (i > paramsQ.size()) {
+    //     P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
+    //     std::cout << "p" << i - paramsQ.size() << ": "
+    //               << paramsQP->GetParams()[i]->GetModulus() << std::endl;
+    //   }
+    // }
+    // auto QBitLength = cc->GetModulus().GetLengthForBase(2);
+    // auto PBitLength = P.GetLengthForBase(2);
+    // std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
+    //           << ")" << std::endl;
+    // std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
+    //           << std::endl;
+    // std::cout << "Total bit-length of ciphertext modulus: "
+    //           << QBitLength + PBitLength << std::endl;
+    // std::cout << "Given this ciphertext modulus, a ring dimension of "
+    //           << cc->GetRingDimension() << " gives us 128-bit security."
+    //           << std::endl;
+    // #endif
 }
 
 void HybridKeySwitchingDemo2() {
@@ -625,39 +624,39 @@ void HybridKeySwitchingDemo2() {
    * and how these change with the number of digits
    * dnum.
    */
-     //#if 0
-     // const auto cryptoParamsCKKS =
-     //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
-     //         cc->GetCryptoParameters());
-    
-     // auto paramsQ = cc->GetElementParams()->GetParams();
-     // std::cout << "\nModuli in Q:" << std::endl;
-     // for (uint32_t i = 0; i < paramsQ.size(); i++) {
-     //   // q0 is a bit larger because its default size is 60 bits.
-     //   // One can change this by supplying the firstModSize argument
-     //   // in genCryptoContextCKKS.
-     //   std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
-     // }
-     // auto paramsQP = cryptoParamsCKKS->GetParamsQP();
-     // std::cout << "Moduli in P: " << std::endl;
-     // BigInteger P = BigInteger(1);
-     // for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
-     //   if (i > paramsQ.size()) {
-     //     P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
-     //     std::cout << "p" << i - paramsQ.size() << ": "
-     //               << paramsQP->GetParams()[i]->GetModulus() << std::endl;
-     //   }
-     // }
-     // auto QBitLength = cc->GetModulus().GetLengthForBase(2);
-     // auto PBitLength = P.GetLengthForBase(2);
-     // std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
-     //           << ")" << std::endl;
-     // std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
-     //           << std::endl;
-     // std::cout << "Given this ciphertext modulus, a ring dimension of "
-     //           << cc->GetRingDimension() << " gives us 128-bit security."
-     //           << std::endl;
-     //#endif
+    // #if 0
+    // const auto cryptoParamsCKKS =
+    //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+    //         cc->GetCryptoParameters());
+
+    // auto paramsQ = cc->GetElementParams()->GetParams();
+    // std::cout << "\nModuli in Q:" << std::endl;
+    // for (uint32_t i = 0; i < paramsQ.size(); i++) {
+    //   // q0 is a bit larger because its default size is 60 bits.
+    //   // One can change this by supplying the firstModSize argument
+    //   // in genCryptoContextCKKS.
+    //   std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
+    // }
+    // auto paramsQP = cryptoParamsCKKS->GetParamsQP();
+    // std::cout << "Moduli in P: " << std::endl;
+    // BigInteger P = BigInteger(1);
+    // for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
+    //   if (i > paramsQ.size()) {
+    //     P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
+    //     std::cout << "p" << i - paramsQ.size() << ": "
+    //               << paramsQP->GetParams()[i]->GetModulus() << std::endl;
+    //   }
+    // }
+    // auto QBitLength = cc->GetModulus().GetLengthForBase(2);
+    // auto PBitLength = P.GetLengthForBase(2);
+    // std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
+    //           << ")" << std::endl;
+    // std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
+    //           << std::endl;
+    // std::cout << "Given this ciphertext modulus, a ring dimension of "
+    //           << cc->GetRingDimension() << " gives us 128-bit security."
+    //           << std::endl;
+    // #endif
 }
 
 void FastRotationsDemo1() {
