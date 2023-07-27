@@ -231,10 +231,10 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     int32_t logc = 0;
     for (size_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
-        int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+        int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
         if (logc < logci)
             logc = logci;
-        logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+        logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
         if (logc < logci)
             logc = logci;
     }
@@ -741,7 +741,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
 
 #pragma omp parallel for
     for (uint32_t j = 0; j < gStep; j++) {
-        int offset = -static_cast<int>(bStep * j);
+        int32_t offset = -static_cast<int32_t>(bStep * j);
         for (uint32_t i = 0; i < bStep; i++) {
             if (bStep * j + i < slots) {
                 // shifted diagonal is computed for rectangular map newA of dimension slots x 2*slots
@@ -805,7 +805,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     std::vector<ConstPlaintext> result(slots);
 #pragma omp parallel for
     for (uint32_t j = 0; j < gStep; j++) {
-        int offset = -static_cast<int>(bStep * j);
+        int32_t offset = -static_cast<int32_t>(bStep * j);
         for (uint32_t i = 0; i < bStep; i++) {
             if (bStep * j + i < slots) {
                 auto diag = ExtractShiftedDiagonal(A, bStep * j + i);
@@ -984,9 +984,9 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     DCRTPoly first;
 
     for (uint32_t j = 0; j < gStep; j++) {
-        int offset = (j == 0) ? 0 : -static_cast<int>(bStep * j);
-        auto temp  = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j], N / 2), offset), 1, towersToDrop,
-                                                elementParamsPtr2, N / 2);
+        int32_t offset = (j == 0) ? 0 : -static_cast<int32_t>(bStep * j);
+        auto temp      = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j], N / 2), offset), 1, towersToDrop,
+                                                    elementParamsPtr2, N / 2);
         Ciphertext<DCRTPoly> inner = EvalMultExt(cc.KeySwitchExt(ct, true), temp);
 
         for (uint32_t i = 1; i < bStep; i++) {
@@ -1189,7 +1189,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
 
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTRotationIndicesSwitch(m_dim1CF, M, slots);
-    indexRotationS2C.emplace_back(static_cast<int>(slots));
+    indexRotationS2C.emplace_back(static_cast<int32_t>(slots));
 
     // Remove possible duplicates
     sort(indexRotationS2C.begin(), indexRotationS2C.end());
@@ -1665,15 +1665,15 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
 
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTRotationIndicesSwitch(m_dim1CF, M, slots);
-    indexRotationS2C.emplace_back(static_cast<int>(slots));
+    indexRotationS2C.emplace_back(static_cast<int32_t>(slots));
 
     // Compute indices for rotations for sparse packing
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
         indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots) - 1);
         for (uint32_t i = 1; i < ringDim / 2; i <<= 1) {
-            indexRotationS2C.emplace_back(static_cast<int>(i));
+            indexRotationS2C.emplace_back(static_cast<int32_t>(i));
             if (i <= slots)
-                indexRotationS2C.emplace_back(-static_cast<int>(i));
+                indexRotationS2C.emplace_back(-static_cast<int32_t>(i));
         }
     }
 
@@ -1698,14 +1698,14 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
 
     /* Compute indices for Argmin if numValues != 0. Otherwise, the KeyGen is not used for Argmin*/
     if (numValues > 0) {
-        indexRotationArgmin.reserve(GetMSB(numValues) - 2 + static_cast<int>(!alt) * 2 * (GetMSB(numValues) - 2));
+        indexRotationArgmin.reserve(GetMSB(numValues) - 2 + static_cast<int32_t>(!alt) * 2 * (GetMSB(numValues) - 2));
         for (uint32_t i = 1; i < numValues; i <<= 1) {
-            indexRotationArgmin.emplace_back(static_cast<int>(numValues / (2 * i)));
+            indexRotationArgmin.emplace_back(static_cast<int32_t>(numValues / (2 * i)));
             if (!alt) {
-                indexRotationArgmin.emplace_back(-static_cast<int>(numValues / (2 * i)));
+                indexRotationArgmin.emplace_back(-static_cast<int32_t>(numValues / (2 * i)));
                 if (i > 1) {
                     for (uint32_t j = numValues / i; j < numValues; j <<= 1)
-                        indexRotationArgmin.emplace_back(-static_cast<int>(j));
+                        indexRotationArgmin.emplace_back(-static_cast<int32_t>(j));
                 }
             }
         }
@@ -1871,13 +1871,13 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
-        cSelect            = cc->EvalAdd(cSelect,
-                                         cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int>(numValues / (2 * M))));
+        cSelect            = cc->EvalAdd(
+            cSelect, cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
 
         auto cExpandSelect = cSelect;
         if (M > 1) {
             for (uint32_t j = numValues / M; j < numValues; j <<= 1)
-                cExpandSelect = cc->EvalAdd(cExpandSelect, cc->EvalAtIndex(cExpandSelect, -static_cast<int>(j)));
+                cExpandSelect = cc->EvalAdd(cExpandSelect, cc->EvalAtIndex(cExpandSelect, -static_cast<int32_t>(j)));
         }
 
         // Update the ciphertext of values and the indicator
@@ -2037,12 +2037,12 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
         cSelect            = cc->EvalAdd(cc->EvalSub(ptxtOnes, cSelect),
-                                         cc->EvalAtIndex(cSelect, -static_cast<int>(numValues / (2 * M))));
+                                         cc->EvalAtIndex(cSelect, -static_cast<int32_t>(numValues / (2 * M))));
 
         auto cExpandSelect = cSelect;
         if (M > 1) {
             for (uint32_t j = numValues / M; j < numValues; j <<= 1)
-                cExpandSelect = cc->EvalAdd(cExpandSelect, cc->EvalAtIndex(cExpandSelect, -static_cast<int>(j)));
+                cExpandSelect = cc->EvalAdd(cExpandSelect, cc->EvalAtIndex(cExpandSelect, -static_cast<int32_t>(j)));
         }
 
         // Update the ciphertext of values and the indicator

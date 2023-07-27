@@ -362,10 +362,10 @@ protected:
             LWEPrivateKey lwesk;
             lwesk = ccLWE.KeyGen();
 
-            auto modulus_LWE    = 1 << testData.logQ;
-            uint32_t pLWE       = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());  // larger precision
-            std::vector<int> x1 = {0, 0, 1, 1, 0, 0, 1, 1};
-            std::vector<int> x2 = {0, -1, 2, -3, 4, -8, 16, -32};
+            auto modulus_LWE        = 1 << testData.logQ;
+            uint32_t pLWE           = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());  // larger precision
+            std::vector<int32_t> x1 = {0, 0, 1, 1, 0, 0, 1, 1};
+            std::vector<int32_t> x2 = {0, -1, 2, -3, 4, -8, 16, -32};
             std::vector<LWECiphertext> ctxtsLWE1(testData.slots);
             for (uint32_t i = 0; i < testData.slots; i++) {
                 ctxtsLWE1[i] =
