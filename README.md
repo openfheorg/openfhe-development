@@ -10,7 +10,7 @@ OpenFHE is an open-source FHE library that includes efficient implementations of
 
 OpenFHE also includes the following multiparty extensions of FHE:
   * Threshold FHE for BGV, BFV, and CKKS schemes
-  * Interactive Bootstrapping for Threshold CKKS
+  * Interactive bootstrapping for Threshold CKKS
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
 OpenFHE also supports switching between CKKS and FHEW/TFHE to evaluate non-smooth functions, e.g., comparison, using FHEW/TFHE functional bootstrapping.
