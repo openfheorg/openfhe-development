@@ -10,6 +10,8 @@ Boolean FHE (BinFHE) documentation
 
 - `Chillotti-Gama-Georgieva-Izabachene (CGGI or TFHE)  <https://eprint.iacr.org/2018/421.pdf>`_
 
+- `Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo (LMKCDEY)  <https://eprint.iacr.org/2022/198.pdf>`_
+
 `Github Source PKE <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/pke>`_: Implements the public key encryption (pke) version of the boolean examples.
 
 File Listings
