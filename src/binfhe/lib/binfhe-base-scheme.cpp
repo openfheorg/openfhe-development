@@ -68,10 +68,9 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
-LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                        const RingGSWBTKey& EK, ConstLWECiphertext& ct1,
-                                        ConstLWECiphertext& ct2) const {
-    if (ct1 == ct2)
+LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
+                                        const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const {
+    if (ct1 == ct2) {
         OPENFHE_THROW(config_error, "Input ciphertexts should be independant");
 
     // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT gates
@@ -180,11 +179,11 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
         OPENFHE_THROW(not_implemented_error, "This gate is not implemented for vector of ciphertexts at this time");
     }
 }
+
 // Full evaluation as described in https://eprint.iacr.org/2020/086
-LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext& ct) const {
-    NativeInteger p = ct->GetptModulus();
-    LWECiphertext ctprep{std::make_shared<LWECiphertextImpl>(*ct)};
+LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
+                                      ConstLWECiphertext ct) const {
+    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct);
     // ctprep = ct + q/4
     LWEscheme->EvalAddConstEq(ctprep, (ct->GetModulus() >> 2));
 

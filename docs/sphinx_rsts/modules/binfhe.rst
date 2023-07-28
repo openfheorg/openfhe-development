@@ -27,10 +27,9 @@ File Listings
 - A CryptoContext is the primary object through which we interact with the various ``OpenFHE`` capabilities
 
 .. note:: various parameter ``enum`` are also provided
-- ``BINFHEPARAMSET`` that defines the security level and parameters
-- ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
-- ``BINFHE_OUTPUT`` specifies whether fresh ciphertext should be bootstrapped. The FRESH and BOOTSTRAPPED are now obsolete but kept for backward compatibility. This option is now used to specify LARGE_DIM (ciphertext of dimension N) or SMALL_DIM (ciphertext of dimension n after modswitch and keyswitch)
-- ``KEYGEN_MODE`` specifies if a public key along with the bootstrapping keys are generated
+.. - ``BINFHEPARAMSET`` that defines the security level and parameters
+.. - ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
+.. - ``BINFHE_METHOD`` specifies whther fresh ciphertext should be bootstrapped.
 
 `DM/CGGI Cryptosystem (binfhe-base-scheme) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-base-scheme.h>`_
 
@@ -43,7 +42,7 @@ File Listings
 
 `Constants for DM/CGGI Cryptosystem (binfhe-base-params) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-constants.h>`_
 
-- Defines all options for ``BINFHEPARAMSET``, ``BINFHE_METHOD``, and ``BINFHE_OUTPUT`` enums
+- Defines all options for ``BINFHEPARAMSET``, ``BINFHE_METHOD``, and ``BINFHE_METHOD`` enums
 
 `LWE Ciphertext (lwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-ciphertext.h>`_
 
@@ -54,10 +53,6 @@ File Listings
 `LWE Scheme (lwe-pke) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-pke.h>`_
 
 `LWE Private Key (lwe-privatekey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-privatekey.h>`_
-
-`LWE Public Key (lwe-publickey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-publickey.h>`_
-
-`LWE Key Pair (lwe-keypair) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-keypair.h>`_
 
 `Parent RGSW Accumulator Scheme (rgsw-acc) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc.h>`_
 

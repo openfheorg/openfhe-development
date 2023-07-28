@@ -56,6 +56,17 @@ enum PKESchemeFeature {
 };
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 
+/**
+ * @brief Lists all modes for RLWE schemes, such as BGV and BFV
+ */
+enum SecretKeyDist {
+    GAUSSIAN        = 0,
+    UNIFORM_TERNARY = 1,
+    SPARSE_TERNARY  = 2,
+};
+SecretKeyDist convertToSecretKeyDist(uint32_t num);
+std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
+
 enum ScalingTechnique {
     FIXEDMANUAL = 0,
     FIXEDAUTO,
@@ -64,7 +75,6 @@ enum ScalingTechnique {
     NORESCALE,
     INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
 };
-ScalingTechnique convertToScalingTechnique(const std::string& str);
 ScalingTechnique convertToScalingTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
@@ -75,7 +85,6 @@ enum ProxyReEncryptionMode {
     NOISE_FLOODING_HRA,
     DIVIDE_AND_ROUND_HRA,
 };
-ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str);
 ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
@@ -84,7 +93,6 @@ enum MultipartyMode {
     FIXED_NOISE_MULTIPARTY,
     NOISE_FLOODING_MULTIPARTY,
 };
-MultipartyMode convertToMultipartyMode(const std::string& str);
 MultipartyMode convertToMultipartyMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, MultipartyMode t);
 
@@ -92,7 +100,6 @@ enum ExecutionMode {
     EXEC_EVALUATION = 0,
     EXEC_NOISE_ESTIMATION,
 };
-ExecutionMode convertToExecutionMode(const std::string& str);
 ExecutionMode convertToExecutionMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ExecutionMode t);
 
@@ -100,7 +107,6 @@ enum DecryptionNoiseMode {
     FIXED_NOISE_DECRYPT = 0,
     NOISE_FLOODING_DECRYPT,
 };
-DecryptionNoiseMode convertToDecryptionNoiseMode(const std::string& str);
 DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
 
@@ -109,7 +115,6 @@ enum KeySwitchTechnique {
     BV,
     HYBRID,
 };
-KeySwitchTechnique convertToKeySwitchTechnique(const std::string& str);
 KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
@@ -117,7 +122,6 @@ enum EncryptionTechnique {
     STANDARD = 0,
     EXTENDED,
 };
-EncryptionTechnique convertToEncryptionTechnique(const std::string& str);
 EncryptionTechnique convertToEncryptionTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
@@ -127,7 +131,6 @@ enum MultiplicationTechnique {
     HPSPOVERQ,
     HPSPOVERQLEVELED,
 };
-MultiplicationTechnique convertToMultiplicationTechnique(const std::string& str);
 MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
@@ -163,7 +166,7 @@ enum NOISE_FLOODING {
     NUM_MODULI_MULTIPARTY = 2,
 // modulus size for additional moduli in NOISE_FLOODING_MULTIPARTY mode
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-    MULTIPARTY_MOD_SIZE = 60,
+const size_t MULTIPARTY_MOD_SIZE = 60;
 #else
     MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE,
 #endif

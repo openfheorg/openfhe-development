@@ -100,33 +100,38 @@ public:
 
     bool operator==(const RingGSWACCKeyImpl& other) const {
         // as RingGSWEvalKey is shared_ptr<RingGSWEvalKeyImpl>, we have to loop through all elements to compare them
-        if (m_key.size() != other.m_key.size())
-            return false;
-        for (size_t i = 0; i < m_key.size(); ++i) {
-            const auto& l1 = m_key[i];
-            const auto& o1 = other.m_key[i];
-            if (l1.size() != o1.size())
-                return false;
-            for (size_t j = 0; j < l1.size(); ++j) {
-                const auto& l2 = l1[j];
-                const auto& o2 = o1[j];
-                if (l2.size() != o2.size())
-                    return false;
-                for (size_t k = 0; k < l2.size(); ++k) {
-                    const auto& l3 = l2[k];
-                    const auto& o3 = o2[k];
-                    if (l3.get() == nullptr || o3.get() == nullptr) {
-                        if (l3.get() != o3.get())
-                            return false;
-                    }
-                    else {
-                        if (*l3 != *o3)
-                            return false;
+        if(m_key.size() == other.m_key.size()) {
+            for (size_t i = 0; i < m_key.size(); ++i) {
+                const auto& l1 = m_key[i];
+                const auto& o1 = other.m_key[i];
+
+                if(l1.size() == o1.size()) {
+                    for (size_t j = 0; j < l1.size(); ++j) {
+                        const auto& l2 = l1[j];
+                        const auto& o2 = o1[j];
+
+                        if(l2.size() == o2.size()) {
+                            for (size_t k = 0; k < l2.size(); ++k) {
+                                const auto& l3 = l2[k];
+                                const auto& o3 = o2[k];
+
+                                if(l3.get() == nullptr || o3.get() == nullptr) {
+                                    if(l3.get() != o3.get())
+                                        return false;
+                                }
+                                else {
+                                    if(*l3 != *o3)
+                                        return false;
+                                }
+                            }
+                        }
                     }
                 }
             }
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     bool operator!=(const RingGSWACCKeyImpl& other) const {

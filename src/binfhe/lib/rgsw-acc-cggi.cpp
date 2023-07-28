@@ -68,10 +68,14 @@ void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>&
 }
 
 // Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/086
-RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                  const NativePoly& skNTT, LWEPlaintext m) const {
-    const auto& Gpow       = params->GetGPower();
-    const auto& polyParams = params->GetPolyParams();
+RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams> params,
+                                                  const NativePoly& skNTT, const LWEPlaintext& m) const {
+    NativeInteger Q   = params->GetQ();
+    uint32_t digitsG  = params->GetDigitsG();
+    uint32_t digitsG2 = digitsG << 1;
+    auto Gpow         = params->GetGPower();
+    auto polyParams   = params->GetPolyParams();
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};

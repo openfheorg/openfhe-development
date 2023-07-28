@@ -2231,7 +2231,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     double powP = scFact;
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    constexpr int32_t MAX_BITS_IN_WORD = 61;
+    int32_t MAX_BITS_IN_WORD = 61;
 
     int32_t logc = 0;
     for (size_t i = 0; i < slots; ++i) {
@@ -2465,7 +2465,7 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
 }
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
+void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                                    NativeVector* nativeVec) const {
     if (nativeVec == nullptr)
         OPENFHE_THROW(config_error, "The passed native vector is empty.");

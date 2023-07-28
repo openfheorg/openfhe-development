@@ -277,7 +277,18 @@ protected:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound, NativeVector* nativeVec) const;
+    void FitToNativeVector(const std::vector<__int128>& vec, __int128 bigBound, NativeVector* nativeVec) const;
+
+    constexpr __int128 Max128BitValue() const {
+        // 2^127-2^73-1 - max value that could be rounded to int128_t
+        return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1;
+    }
+
+    inline bool is128BitOverflow(double d) const {
+        const double EPSILON = 0.000001;
+
+        return EPSILON < (std::abs(d) - Max128BitValue());
+    }
 #endif
 };
 

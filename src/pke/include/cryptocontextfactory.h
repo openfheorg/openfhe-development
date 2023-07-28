@@ -59,8 +59,11 @@ class CryptoContextFactory {
 
 protected:
     static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-                                              std::shared_ptr<SchemeBase<Element>> scheme);
+        std::shared_ptr<SchemeBase<Element>> scheme);
     static void AddContext(CryptoContext<Element>);
+
+public:
+    static void ReleaseAllContexts();
 
 public:
     static void ReleaseAllContexts() {

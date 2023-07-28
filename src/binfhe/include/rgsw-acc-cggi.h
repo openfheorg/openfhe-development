@@ -40,7 +40,7 @@ namespace lbcrypto {
 
 /**
  * @brief Ring GSW accumulator schemes described in
- * https://eprint.iacr.org/2018/421.pdf and https://eprint.iacr.org/2020/086
+ * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
  */
 class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
 public:

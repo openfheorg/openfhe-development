@@ -188,7 +188,6 @@ public:
         ar(::cereal::make_nvp("bs", m_dgg.GetStd()));
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
-        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
     }
 
     template <class Archive>
@@ -208,7 +207,6 @@ public:
         m_dgg.SetStd(sigma);
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
-        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
 
         PreCompute();
     }

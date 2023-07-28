@@ -468,17 +468,39 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
 // reference:http://guan.cse.nsysu.edu.tw/note/expn.pdf
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const {
-    ubint t(this->Mod(modulus));
-    ubint p(b);
-    ubint r(1);
-    if (p.m_value[0] & 0x1)
-        r = r.ModMulFast(t, modulus);
-    while ((p >>= 1).m_MSB) {
-        t = t.ModMulFast(t, modulus);
-        if (p.m_value[0] & 0x1)
-            r = r.ModMulFast(t, modulus);
+    ubint mid = this->Mod(modulus);
+    ubint product(1);
+    ubint Exp(b);
+
+#if 1
+    while (true) {
+        // product is multiplied only if lsb bitvalue is 1
+        if (Exp.m_value[0] % 2 == 1) {
+            product = product * mid;
+        }
+        if (product > modulus) {
+            product = product.Mod(modulus);
+        }
+        Exp = Exp >> 1;
+        if (Exp == 0) {
+            break;
+        }
+        mid = mid * mid;
+        mid = (mid.Mod(modulus));
     }
-    return r;
+#else
+    while (true) {
+        if ((Exp.m_value[0] & 1) == 1) {
+            product = product.ModMul(mid, modulus);
+        }
+        Exp >>= 1;
+        if (Exp == 0) {
+            break;
+        }
+        mid = (mid.ModMul(mid, modulus));
+    }
+#endif
+    return product;
 }
 
 template <typename limb_t>

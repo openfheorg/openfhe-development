@@ -716,10 +716,13 @@ bool DCRTPolyImpl<VecType>::IsEmpty() const {
 
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElement() {
-    if (m_vectors.size() == 0)
+    if (m_vectors.size() == 0) {
         OPENFHE_THROW(config_error, "Input has no elements to drop!");
-    if (m_vectors.size() == 1)
+    }
+    if (m_vectors.size() == 1) {
         OPENFHE_THROW(config_error, "Removing last element of DCRTPoly object renders it invalid!");
+    }
+
     m_vectors.resize(m_vectors.size() - 1);
     DCRTPolyImpl::Params* newP = new DCRTPolyImpl::Params(*m_params);
     newP->PopLastParam();
@@ -1029,6 +1032,7 @@ void DCRTPolyImpl<VecType>::TimesQovert(const std::shared_ptr<Params>& paramsQ,
     }
 }
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
@@ -1173,6 +1177,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     return ans;
 }
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_ptr<Params>& paramsP,
                                                             const std::vector<NativeInteger>& QHatInvModq,
@@ -1408,6 +1413,7 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
     m_vectors = temp;
 }
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const Precomputations& precomputed) {
     usint ringDim = m_params->GetRingDimension();
@@ -1812,6 +1818,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
     return result;
 }
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
     const std::shared_ptr<Params>& paramsP, const std::vector<std::vector<NativeInteger>>& tPSHatInvModsDivsModp,
@@ -1871,22 +1878,22 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
 }
 #endif
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
-    const std::shared_ptr<Params>& paramsOutput, const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsOutput,
+    const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
     const std::vector<double>& tOSHatInvModsDivsFrac, const std::vector<DoubleNativeInt>& modoBarretMu) const {
-    if constexpr (NATIVEINT == 32)
-        OPENFHE_THROW(math_error, "Use of ScaleAndRound with NATIVEINT == 32 may lead to overflow");
+    DCRTPolyType ans(paramsOutput, this->GetFormat(), true);
 
-    DCRTPolyImpl<VecType> ans(paramsOutput, m_format, true);
-    usint ringDim      = m_params->GetRingDimension();
-    size_t sizeQP      = m_vectors.size();
-    size_t sizeO       = ans.m_vectors.size();
-    size_t sizeI       = sizeQP - sizeO;
+    usint ringDim = this->GetRingDimension();
+    size_t sizeQP = m_vectors.size();
+    size_t sizeO  = ans.m_vectors.size();
+    size_t sizeI  = sizeQP - sizeO;
+
     size_t inputIndex  = 0;
     size_t outputIndex = 0;
-
-    if (paramsOutput->GetParams()[0]->GetModulus() == m_params->GetParams()[0]->GetModulus()) {
+    if (paramsOutput->GetParams()[0]->GetModulus() == this->m_params->GetParams()[0]->GetModulus()) {
         // If the output modulus is Q, then the input index refers to the values (mod p_j), shifted by sizeQ.
         inputIndex = sizeO;
     }
@@ -1920,33 +1927,138 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
                 const NativeInteger& xi = m_vectors[outputIndex + j][ri];
                 curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[sizeI].ConvertToInt());
 
-                const NativeInteger& oj = paramsOutput->GetParams()[j]->GetModulus();
-                auto&& curNativeValue   = BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]);
+        if (!is64BitOverflow(nu)) {
+            NativeInteger alpha = static_cast<uint64_t>(nu);
 
-                auto curAlpha{alpha};
-                if (alpha >= oj)
-                    curAlpha = alpha.Mod(oj, mu[j]);
-                ans.m_vectors[j][ri] = NativeInteger(curNativeValue).ModAddFast(curAlpha, oj);
-            }
-        }
-        else {
-            auto alpha = static_cast<DoubleNativeInt>(nu);
-            for (size_t j = 0; j < sizeO; ++j) {
-                const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
-                DoubleNativeInt curValue{0};
-                for (size_t i = 0; i < sizeI; ++i) {
+            for (usint j = 0; j < sizeO; j++) {
+                DoubleNativeInt curValue = 0;
+
+                const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
+                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+
+                for (usint i = 0; i < sizeI; i++) {
                     const NativeInteger& xi = m_vectors[i + inputIndex][ri];
                     curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[i].ConvertToInt());
                 }
+
                 const NativeInteger& xi = m_vectors[outputIndex + j][ri];
                 curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[sizeI].ConvertToInt());
 
-                const NativeInteger& oj = paramsOutput->GetParams()[j]->GetModulus();
-                auto&& curNativeValue   = BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]);
+                const NativeInteger& curNativeValue =
+                    NativeInteger(BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]));
+
+                ans.m_vectors[j][ri] = curNativeValue.ModAdd(alpha, oj, mu[j]);
+            }
+        }
+        else {
+            int exp;
+            double mant           = std::frexp(nu, &exp);
+            uint64_t mantissa     = static_cast<uint64_t>(mant * (1ULL << 53));
+            uint64_t exponent     = static_cast<uint64_t>(1ULL << (exp - 53));
+            DoubleNativeInt alpha = Mul128(mantissa, exponent);
+
+            for (usint j = 0; j < sizeO; j++) {
+                DoubleNativeInt curValue = 0;
+
+                const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
+                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+
+                for (usint i = 0; i < sizeI; i++) {
+                    const NativeInteger& xi = m_vectors[i + inputIndex][ri];
+                    curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[i].ConvertToInt());
+                }
+
+                const NativeInteger& xi = m_vectors[outputIndex + j][ri];
+                curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[sizeI].ConvertToInt());
+
+                const NativeInteger& curNativeValue =
+                    NativeInteger(BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]));
 
                 ans.m_vectors[j][ri] =
-                    NativeInteger(curNativeValue)
-                        .ModAddFast(BarrettUint128ModUint64(alpha, oj.ConvertToInt(), modoBarretMu[j]), oj);
+                    curNativeValue.ModAddFast(BarrettUint128ModUint64(alpha, oj.ConvertToInt(), modoBarretMu[j]), oj);
+            }
+        }
+    }
+
+    return ans;
+}
+#else
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsOutput,
+    const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
+    const std::vector<double>& tOSHatInvModsDivsFrac, const std::vector<DoubleNativeInt>& modoBarretMu) const {
+    DCRTPolyType ans(paramsOutput, this->GetFormat(), true);
+
+    usint ringDim = this->GetRingDimension();
+    size_t sizeQP = m_vectors.size();
+    size_t sizeO  = ans.m_vectors.size();
+    size_t sizeI  = sizeQP - sizeO;
+
+    size_t inputIndex  = 0;
+    size_t outputIndex = 0;
+
+    if (paramsOutput->GetParams()[0]->GetModulus() == this->m_params->GetParams()[0]->GetModulus()) {
+        // If the output modulus is Q, then the input index refers to the values (mod p_j), shifted by sizeQ.
+        inputIndex = sizeO;
+    }
+    else {
+        // If the output modulus is P, then the output index refers to the values (mod p_j), shifted by sizeQ.
+        outputIndex = sizeI;
+    }
+
+    std::vector<NativeInteger> mu(sizeO);
+    for (usint j = 0; j < sizeO; j++) {
+        mu[j] = (paramsOutput->GetParams()[j]->GetModulus()).ComputeMu();
+    }
+
+    #pragma omp parallel for
+    for (usint ri = 0; ri < ringDim; ri++) {
+        double nu = 0.5;
+
+        for (usint i = 0; i < sizeI; i++) {
+            const NativeInteger& xi = m_vectors[i + inputIndex][ri];
+            nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToInt();
+        }
+
+        if (!is64BitOverflow(nu)) {
+            NativeInteger alpha = static_cast<uint64_t>(nu);
+
+            for (usint j = 0; j < sizeO; j++) {
+                const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
+                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+
+                for (usint i = 0; i < sizeI; i++) {
+                    const NativeInteger& xi = m_vectors[i + inputIndex][ri];
+                    const NativeInteger& oj = ans.m_vectors[j].GetModulus();
+                    ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
+                }
+
+                const NativeInteger& xi = m_vectors[outputIndex + j][ri];
+                ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[sizeI], oj, mu[j]), oj);
+                ans.m_vectors[j][ri].ModAddEq(alpha, oj, mu[j]);
+            }
+        }
+        else {
+            int exp;
+            double mant            = std::frexp(nu, &exp);
+            NativeInteger mantissa = NativeInteger(static_cast<uint64_t>(mant * (1ULL << 53)));
+            NativeInteger exponent = NativeInteger(static_cast<uint64_t>(1ULL << (exp - 53)));
+
+            for (usint j = 0; j < sizeO; j++) {
+                const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
+                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+
+                for (usint i = 0; i < sizeI; i++) {
+                    const NativeInteger& xi = m_vectors[i + inputIndex][ri];
+                    const NativeInteger& oj = ans.m_vectors[j].GetModulus();
+                    ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
+                }
+                const NativeInteger& xi = m_vectors[outputIndex + j][ri];
+                ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[sizeI], oj, mu[j]), oj);
+
+                NativeInteger alpha = exponent.ModMul(mantissa, oj, mu[j]);
+                ans.m_vectors[j][ri].ModAddFastEq(alpha, oj);
             }
         }
     }
@@ -2063,7 +2175,7 @@ void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(const std::shared_ptr<Params>& p
     *this    = this->Times(pInvModq);
 }
 
-// TODO: tune omp performance
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
@@ -2206,7 +2318,8 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     delete[] ximtildeQHatModqi;
     ximtildeQHatModqi = nullptr;
 }
-
+#endif
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastRNSFloorq(
     const NativeInteger& t, const std::vector<NativeInteger>& moduliQ, const std::vector<NativeInteger>& moduliBsk,
@@ -2304,6 +2417,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
 }
 #endif
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvSK(
     const std::shared_ptr<Params>& paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,

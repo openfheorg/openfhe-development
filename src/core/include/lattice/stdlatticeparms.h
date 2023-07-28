@@ -75,7 +75,6 @@ enum SecurityLevel {
     HEStd_NotSet,
 };
 
-SecurityLevel convertToSecurityLevel(const std::string& str);
 SecurityLevel convertToSecurityLevel(uint32_t num);
 inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     switch (sl) {

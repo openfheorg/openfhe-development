@@ -126,17 +126,15 @@ protected:
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
-        : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter, assuranceMeasure, securityLevel,
+                        uint32_t thresholdNumOfParties = 1)
+        : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                                          numAdversarialQueries, thresholdNumOfParties) {
-        m_ksTechnique                         = ksTech;
-        m_scalTechnique                       = scalTech;
-        m_encTechnique                        = encTech;
-        m_multTechnique                       = multTech;
-        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_ksTechnique   = ksTech;
+        m_scalTechnique = scalTech;
+        m_encTechnique  = encTech;
+        m_multTechnique = multTech;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -229,7 +227,8 @@ public:
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
         if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET))
             return m_paramsQP;
-        if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr))
+        }
+        else if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr)) {
             return m_paramsQr;
         return m_params;
     }

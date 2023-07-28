@@ -130,80 +130,66 @@ bool TestNative = true;
 
 inline const std::string& GetMathBackendParameters() {
     static std::string id = "Backend " + std::to_string(MATHBACKEND) +
-#ifdef WITH_BE2
-                            (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
-                                                    " BitLength " + std::to_string(BigIntegerBitLength) :
-                                                "") +
-#endif
-                            "";
+        (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
+            " BitLength " + std::to_string(BigIntegerBitLength) :
+         "");
     return id;
 }
 
 int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-    bool terse = false;
-    bool beset = false;
-    for (int i = 1; i < argc; i++) {
-        if (string(argv[i]) == "-t") {
-            terse = true;
-        }
-        else if (string(argv[i]) == "-all") {
-#ifdef WITH_BE2
-            TestB2 = true;
-#endif
-#ifdef WITH_BE4
-            TestB4 = true;
-#endif
-#ifdef WITH_NTL
-            TestB6 = true;
-#endif
-            beset = true;
-        }
-        else if (string(argv[i]) == "-2") {
-            TestB2 = true;
-            beset  = true;
-        }
-        else if (string(argv[i]) == "-4") {
-            TestB4 = true;
-            beset  = true;
-        }
-        else if (string(argv[i]) == "-6") {
-            TestB6 = true;
-            beset  = true;
-        }
+  bool terse = false;
+  bool beset = false;
+  for (int i = 1; i < argc; i++) {
+    if (string(argv[i]) == "-t") {
+      terse = true;
+    } else if (string(argv[i]) == "-all") {
+      TestB2 = TestB4 = TestB6 = true;
+      beset = true;
+    } else if (string(argv[i]) == "-2") {
+      TestB2 = true;
+      beset = true;
+    } else if (string(argv[i]) == "-4") {
+      TestB4 = true;
+      beset = true;
+    } else if (string(argv[i]) == "-6") {
+      TestB6 = true;
+      beset = true;
     }
+  }
 
-    // if there are no filters used, default to omitting VERY_LONG tests
-    // otherwise we lose control over which tests we can run
+  // if there are no filters used, default to omitting VERY_LONG tests
+  // otherwise we lose control over which tests we can run
 
-    if (::testing::GTEST_FLAG(filter) == "*") {
-        ::testing::GTEST_FLAG(filter) = "-*_VERY_LONG";
-    }
+  if (::testing::GTEST_FLAG(filter) == "*") {
+    ::testing::GTEST_FLAG(filter) = "-*_VERY_LONG";
+  }
 
-    ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
+  ::testing::TestEventListeners& listeners =
+      ::testing::UnitTest::GetInstance()->listeners();
 
-    if (!beset) {
-        if (MATHBACKEND == 2)
-            TestB2 = true;
-        else if (MATHBACKEND == 4)
-            TestB4 = true;
-        else if (MATHBACKEND == 6)
-            TestB6 = true;
-    }
+  if (!beset) {
+    if (MATHBACKEND == 2)
+      TestB2 = true;
+    else if (MATHBACKEND == 4)
+      TestB4 = true;
+    else if (MATHBACKEND == 6)
+      TestB6 = true;
+  }
 
-    if (terse) {
-        // Adds a listener to the end.  Google Test takes the ownership.
-        delete listeners.Release(listeners.default_result_printer());
-        listeners.Append(new MinimalistPrinter);
-    }
-    else {
-        cout << "OpenFHE Version " << GetOPENFHEVersion() << endl;
-        cout << "Default Backend " << GetMathBackendParameters() << endl;
-    }
+  if (terse) {
+    // Adds a listener to the end.  Google Test takes the ownership.
+    delete listeners.Release(listeners.default_result_printer());
+    listeners.Append(new MinimalistPrinter);
+  } else {
+    cout << "OpenFHE Version " << GetOPENFHEVersion() << endl;
+    cout << "Default Backend " << GetMathBackendParameters() << endl;
+  }
 
-    std::cout << "Testing Backends: " << (TestB2 ? "2 " : "") << (TestB4 ? "4 " : "") << (TestB6 ? "6 " : "")
-              << (TestNative ? "Native " : "") << std::endl;
+  std::cout << "Testing Backends: " << (TestB2 ? "2 " : "")
+            << (TestB4 ? "4 " : "") << (TestB6 ? "6 " : "")
+            << (TestNative ? "Native " : "") << std::endl;
 
-    return RUN_ALL_TESTS();
+  return RUN_ALL_TESTS();
 }

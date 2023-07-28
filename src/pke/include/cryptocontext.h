@@ -263,14 +263,6 @@ class CryptoContextImpl : public Serializable {
                                                value2);
     }
 
-private:
-    // cached evalmult keys, by secret key UID
-    static inline std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap{};
-    // cached evalsum keys, by secret key UID
-    static inline std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap{};
-    // cached evalautomorphism keys, by secret key UID
-    static inline std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap{};
-
 protected:
     // crypto parameters used for this context
     std::shared_ptr<CryptoParametersBase<Element>> params;
@@ -1054,12 +1046,11 @@ public:
    * @param level is the level to encode the plaintext at
    * @return plaintext
    */
-    Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1,
-                                      uint32_t level = 0) const {
+    Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
-        return MakePlaintext(COEF_PACKED_ENCODING, value, noiseScaleDeg, level);
+        return MakePlaintext(COEF_PACKED_ENCODING, value, depth, level);
     }
 
     /**
@@ -1069,16 +1060,15 @@ public:
    * @param level is the level to encode the plaintext at
    * @return plaintext
    */
-    Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1,
-                                  uint32_t level = 0) const {
+    Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
-        return MakePlaintext(PACKED_ENCODING, value, noiseScaleDeg, level);
+        return MakePlaintext(PACKED_ENCODING, value, depth, level);
     }
 
     /**
-   * COMPLEX ARITHMETIC IS NOT AVAILABLE,
+   * COMPLEX ARITHMETIC IS NOT AVAILABLE STARTING WITH 1.10.6,
    * AND THIS METHOD BE DEPRECATED. USE THE REAL-NUMBER METHOD INSTEAD.
    * MakeCKKSPackedPlaintext constructs a CKKSPackedEncoding in this context
    * from a vector of complex numbers
@@ -1094,7 +1084,7 @@ public:
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
-        return MakeCKKSPackedPlaintextInternal(value, scaleDeg, level, params, slots);
+        return MakeCKKSPackedPlaintextInternal(value, depth, level, params, slots);
     }
 
     /**

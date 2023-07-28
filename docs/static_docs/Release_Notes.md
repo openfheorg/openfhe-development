@@ -1,16 +1,3 @@
-07/28/2024: OpenFHE 1.1.0 (development) is released
-
-* Adds scheme switching between CKKS and FHEW/TFHE
-* Adds comparison and (arg)min evaluation in CKKS via scheme switching to FHEW/FHEW
-* Implements a new FHEW/TFHE bootstrapping method proposed in https://eprint.iacr.org/2022/198 (EUROCRYPT'23)
-* Adds support for multi-input Boolean gates
-* Implements interactive CKKS bootstrapping based on threshold FHE
-* Includes many optimizations for all FHE schemes, e.g., FHEW/TFHE bootstrapping is now 2x faster (takes 26 ms on a commodity laptop)
-* Improves the Hardware Abstraction Layer
-* Many bug fixes and documentation changes
-
-The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/pulls?q=is%3Apr+milestone%3A%22Release+1.1.0%22
-
 06/19/2023: OpenFHE 1.0.4 (stable) is released
 
 * Optimizes hybrid key switching (#377)

@@ -61,6 +61,22 @@
 #include <vector>
 #include <utility>
 
+#include "math/hal/integer.h"
+#include "math/hal/basicint.h"
+
+#include "math/nbtheory.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/memory.h"
+#include "utils/openfhebase64.h"
+#include "utils/serializable.h"
+
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    // need the BigInteger to handle double 128-bit word
+    #include "math/hal/bigintbackend.h"
+#endif
+
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
 // in the native integer code

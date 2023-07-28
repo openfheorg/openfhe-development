@@ -291,6 +291,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double sigma              = cryptoParamsBGVRNS->GetDistributionParameter();
     double alpha              = cryptoParamsBGVRNS->GetAssuranceMeasure();
     usint r                   = cryptoParamsBGVRNS->GetDigitSize();
+    double log2q              = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
     double B_e                = sqrt(alpha) * sigma;
     uint32_t auxBits          = DCRT_MODULUS::MAX_SIZE;
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
@@ -299,9 +300,6 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     // parties is 1 by default but can be set to the number of parties in a threshold application.
     // Bkey set to thresholdParties * 1 for ternary distribution
     double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : thresholdParties;
-
-    double stat_sec_half = cryptoParamsBGVRNS->GetStatisticalSecurity() / 2;
-    double num_queries   = cryptoParamsBGVRNS->GetNumAdversarialQueries();
 
     // get the flooding discrete gaussian distribution
     auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();

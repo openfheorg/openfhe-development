@@ -137,7 +137,3 @@ TEST(UnitTestFHEWSerialGINX, BINARY) {
     UnitTestFHEWSerial(SerType::BINARY, TOY, GINX, FRESH, msg);
 }
 
-TEST(UnitTestFHEWSerialLMKCDEY, BINARY) {
-    std::string msg = "UnitTestFHEWSerialGINX.BINARY serialization test failed: ";
-    UnitTestFHEWSerial(SerType::BINARY, TOY, LMKCDEY, FRESH, msg);
-}

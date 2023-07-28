@@ -13,8 +13,6 @@ OpenFHE also includes the following multiparty extensions of FHE:
   * Interactive bootstrapping for Threshold CKKS
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
-OpenFHE also supports switching between CKKS and FHEW/TFHE to evaluate non-smooth functions, e.g., comparison, using FHEW/TFHE functional bootstrapping.
-
 OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above.
 
 ## Links and Resources
@@ -74,15 +72,7 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        1. [Examples with Scheme Switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
-       1. [Simple Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)
-       1. [Interactive Bootstrapping after Chebyshev Approximation](src/pke/examples/tckks-interactive-mp-bootstrapping-Chebyshev.cpp)
        1. [Code Example for BFV with 5 parties](src/pke/examples/threshold-fhe-5p.cpp)
-
-## Main API
-
-- [PKE CryptoContext API (BGV/BFV/CKKS)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1CryptoContextImpl.html)
-
-- [BinFHE Context API (FHEW/TFHE)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1BinFHEContext.html)
 
 ## Code of Conduct
 

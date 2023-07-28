@@ -53,6 +53,48 @@ namespace bigintbackend {
 // Selecting a math backend by defining MATHBACKEND means defining which
 // underlying implementation is the default BigInteger and BigVector
 
+// note that we #define how many bits the underlying integer can store as a
+// guide for users of the backends
+
+// MATHBACKEND 2
+//    Uses bigintfxd:: definition as default
+//    Implemented as a vector of integers
+//    Configurable maximum bit length and type of underlying integer
+
+// MATHBACKEND 4
+//     This uses bigintdyn:: definition as default
+//     This backend supports arbitrary bitwidths; no memory pool is
+// used; can grow up to RAM limitation
+//    Configurable type of underlying integer (either 32 or 64 bit)
+
+// passes all tests with UBINTDYN_32
+// fails tests with UBINTDYN_64
+// there is a bug in the way modulus is computed. do not use.
+
+// MATHBACKEND 6
+//     This uses bigintntl:: definition as default
+//     GMP 6.1.2 / NTL 10.3.0 backend
+
+// To select backend, please UNCOMMENT the appropriate line rather than changing
+// the number on the uncommented line (and breaking the documentation of the
+// line)
+
+#include "math/hal/bigintfxd/backendfxd.h"
+#include "math/hal/bigintdyn/backenddyn.h"
+#include "math/hal/bigintntl/backendntl.h"
+#include "config_core.h"
+
+
+#if MATHBACKEND != 2 && MATHBACKEND != 4 && MATHBACKEND != 6
+    #error "MATHBACKEND value is not valid"
+#endif
+
+/**
+ * @namespace bigintbackend
+ * The namespace of bigintbackend
+ */
+namespace bigintbackend {
+
 #if MATHBACKEND == 2
 // Uses bigintfxd:: definition as default
 // Implemented as an array of integers

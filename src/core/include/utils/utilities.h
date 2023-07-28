@@ -108,37 +108,21 @@ inline constexpr usint GetIntegerTypeBitLength() {
 
 // TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
 // that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
-inline constexpr int64_t Max64BitValue() {
-    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 9) - 1);
+constexpr int64_t Max64BitValue() {
+    // (2^63-1)-(2^10-1) => 2^63-2^10 - max value that could be rounded to int64_t
+    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 10));
 }
 
-// TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if double can be
-// converted to int64_t. The name should reflect that. Something like isConvertableToInt64(). The function must be renamed!!!
 inline bool is64BitOverflow(double d) {
-    return std::abs(d) > static_cast<double>(Max64BitValue());
-}
+    // 1. TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if
+    // double can be converted to int64_t. The name should reflect that. something like isConvertableToInt64() The function must be renamed!!!
+    // 2. TODO (dsuponit): the body of this function should probably be just 1 line as this function is asking a simple binary question if
+    // there is an overflow or not:
+    // return (std::abs(d) > Max64BitValue());
+    // TO BE REVIEWED...
+    const double EPSILON = 0.000001;
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-inline constexpr __int128 Max128BitValue() {
-    return static_cast<__int128>(((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1);
-}
-
-inline bool is128BitOverflow(double d) {
-    return std::abs(d) > static_cast<double>(Max128BitValue());
-}
-
-enum { MAX_DOUBLE_PRECISION = 52 };
-#endif
-
-inline bool isConvertableToNativeInt(double d) {
-    if constexpr (NATIVEINT == 32)
-        return std::abs(d) <= static_cast<double>(std::numeric_limits<int32_t>::max());
-    if constexpr (NATIVEINT == 64)
-        return std::abs(d) <= static_cast<double>(Max64BitValue());
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-    if constexpr (NATIVEINT == 128)
-        return std::abs(d) <= static_cast<double>(Max128BitValue());
-#endif
+    return EPSILON < (std::abs(d) - Max64BitValue());
 }
 
 }  // namespace lbcrypto

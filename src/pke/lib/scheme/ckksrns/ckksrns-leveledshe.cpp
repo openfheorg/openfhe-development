@@ -227,7 +227,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     }
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    int32_t logSF       = static_cast<int32_t>(ceil(log2(fabs(operand * scFactor))));
+    int32_t logSF       = static_cast<int32_t>(ceil(log2(fabs(constant * scFactor))));
     int32_t logValid    = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
                               logSF :
                               LargeScalingFactorConstants::MAX_BITS_IN_WORD;
@@ -345,7 +345,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     #endif
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    int32_t logSF       = static_cast<int32_t>(ceil(log2(fabs(operand * scFactor))));
+    int32_t logSF       = static_cast<int32_t>(ceil(log2(fabs(constant * scFactor))));
     int32_t logValid    = (logSF <= MAX_BITS_IN_WORD) ? logSF : MAX_BITS_IN_WORD;
     int32_t logApprox   = logSF - logValid;
     double approxFactor = pow(2, logApprox);

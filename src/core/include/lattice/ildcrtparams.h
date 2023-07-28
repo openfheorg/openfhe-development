@@ -109,6 +109,14 @@ public:
         // we don't populate, and we just return
         if (cyclotomic_order == 0)
             return;
+
+        OPENFHE_DEBUG_FLAG(false);
+        OPENFHE_DEBUG(
+            "in ILDCRTParams(const usint cyclotomic_order, const IntType &modulus, "
+            "const IntType& rootOfUnity");
+        OPENFHE_DEBUGEXP(cyclotomic_order);
+        OPENFHE_DEBUGEXP(modulus);
+        OPENFHE_DEBUGEXP(rootOfUnity);
         std::vector<NativeInteger> moduli;
         std::vector<NativeInteger> rootsOfUnity;
         auto q{FirstPrime<NativeInteger>(DEFAULT_NBITS, cyclotomic_order)};

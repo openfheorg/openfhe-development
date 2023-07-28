@@ -26,8 +26,8 @@ endif()
 project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
-set(OPENFHE_VERSION_MINOR 1)
-set(OPENFHE_VERSION_PATCH 0)
+set(OPENFHE_VERSION_MINOR 0)
+set(OPENFHE_VERSION_PATCH 4)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -367,14 +367,14 @@ if(WITH_TCM OR WITH_NTL)
     execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
     # execute_process in MINGW by default does not run in a shell
     if(MINGW)
-        execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+	    execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
     else()
-        execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+	    execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
     endif()
 
     string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
     if( ${AUTOCONF_VER_LEN} EQUAL 0 )
-        message(SEND_ERROR "Autoconf is not installed.")
+	    message(SEND_ERROR "Autoconf is not installed.")
     endif()
 endif()
 

@@ -42,10 +42,6 @@
     #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
         #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
 
-        #include "math/hal/bigintfxd/ubintfxd.h"
-        #include "math/hal/bigintfxd/mubintvecfxd.h"
-        #include "math/hal/bigintfxd/transformfxd.h"
-
 static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value, "Data type provided is not supported in BigInteger");
 
 // Global alias for MATHBACKEND 2 Integer
