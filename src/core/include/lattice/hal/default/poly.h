@@ -147,7 +147,16 @@ public:
     PolyType& operator=(uint64_t val);
 
     PolyNative DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
-    PolyNative ToNativePoly() const final;
+    PolyNative ToNativePoly() const final {
+        usint vlen{m_params->GetRingDimension()};
+        auto c{m_params->GetCyclotomicOrder()};
+        NativeInteger m{std::numeric_limits<BasicInteger>::max()};
+        auto params{std::make_shared<ILParamsImpl<NativeInteger>>(c, m, 1)};
+        typename PolyImpl<VecType>::PolyNative tmp(params, m_format, true);
+        for (usint i = 0; i < vlen; ++i)
+            tmp[i] = NativeInteger((*m_values)[i]);
+        return tmp;
+    }
 
     void SetValues(const VecType& values, Format format) override;
     void SetValues(VecType&& values, Format format) override;
