@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,21 +33,13 @@
   This code contains the discrete fourier transform definitions
  */
 
-#ifndef LBCRYPTO_MATH_DFTRANSFORM_H
-#define LBCRYPTO_MATH_DFTRANSFORM_H
+#ifndef LBCRYPTO_INC_MATH_DFTRANSFORM_H
+#define LBCRYPTO_INC_MATH_DFTRANSFORM_H
 
-#include <time.h>
-#include <chrono>
 #include <complex>
-#include <fstream>
-#include <map>
-#include <thread>
-#include <vector>
 #include <cstdint>
-
-#include "math/hal.h"
-#include "math/nbtheory.h"
-#include "utils/utilities.h"
+#include <unordered_map>
+#include <vector>
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -98,7 +90,7 @@ public:
    *
    * @param vals is a vector of complex numbers.
    */
-    static void FFTSpecialInv(std::vector<std::complex<double>>& vals);
+    static void FFTSpecialInv(std::vector<std::complex<double>>& vals, uint32_t cyclOrder);
 
     /**
    * In-place FFT-like algorithm used in CKKS decoding. For more details,
@@ -106,7 +98,7 @@ public:
    *
    * @param vals is a vector of complex numbers.
    */
-    static void FFTSpecial(std::vector<std::complex<double>>& vals);
+    static void FFTSpecial(std::vector<std::complex<double>>& vals, uint32_t cyclOrder);
 
     /**
    * Reset cached values for the transform to empty.
@@ -115,24 +107,25 @@ public:
 
     static void PreComputeTable(uint32_t s);
 
-    static void Initialize(size_t m, size_t nh);
+    static void Initialize(uint32_t m, uint32_t nh);
 
 private:
     static std::complex<double>* rootOfUnityTable;
 
-    static size_t m_M;
-    static size_t m_Nh;
+    // structure to keep values precomputed by Initialize() for every cyclotomic order value
+    struct PrecomputedValues {
+        // cyclotomic order
+        uint32_t m_M;
+        uint32_t m_Nh;
+        // rotation group indexes
+        std::vector<uint32_t> m_rotGroup;
+        // ksi powers
+        std::vector<std::complex<double>> m_ksiPows;
 
-    // flag that is set to false
-    // when initialization is in progress
-    static bool m_isInitialized;
-
-    /// precomputed rotation group indexes
-    static std::vector<uint32_t> m_rotGroup;
-    /// precomputed ksi powers
-    static std::vector<std::complex<double>> m_ksiPows;
-
-    static void FFTSpecialInvLazy(std::vector<std::complex<double>>& vals);
+        PrecomputedValues(uint32_t m, uint32_t nh);
+    };
+    // precomputedValues: key - cyclotomic order, data - values precomputed for the given cyclotomic order
+    static std::unordered_map<uint32_t, PrecomputedValues> precomputedValues;
 
     static void BitReverse(std::vector<std::complex<double>>& vals);
 };

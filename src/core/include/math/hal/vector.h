@@ -36,8 +36,9 @@
 #ifndef LBCRYPTO_MATH_VECTOR_H
 #define LBCRYPTO_MATH_VECTOR_H
 
-#include <string>
 #include "utils/inttypes.h"
+
+#include <string>
 
 namespace lbcrypto {
 
@@ -60,7 +61,7 @@ public:
    * @param &vec is the vector to be assigned from.
    * @return assigned vector ref.
    */
-    const T& operator=(const T& vec);
+    T& operator=(const T& vec);
 
     /**
    * Move assignment operator.
@@ -68,7 +69,7 @@ public:
    * @param &vec is the vector to be assigned from.
    * @return assigned vector ref.
    */
-    const T& operator=(T&& vec);
+    T& operator=(T&& vec);
 
     /**
    * Assignment operator from initializer list of strings.
@@ -76,7 +77,7 @@ public:
    * @param &&strvec is the list of strings.
    * @return assigned vector ref.
    */
-    const T& operator=(std::initializer_list<std::string> strvec);
+    T& operator=(std::initializer_list<std::string> strvec);
 
     /**
    * Assignment operator from initializer list of unsigned integers.
@@ -84,7 +85,7 @@ public:
    * @param &&vec is the list of integers.
    * @return assigned vector ref.
    */
-    const T& operator=(std::initializer_list<uint64_t> vec);
+    T& operator=(std::initializer_list<uint64_t> vec);
 
     /**
    * Assignment operator to assign value val to first entry, 0 for the rest of
@@ -93,7 +94,7 @@ public:
    * @param val is the unsigned integer the first entry to be assigned from.
    * @return assigned vector ref.
    */
-    const T& operator=(uint64_t val);
+    T& operator=(uint64_t val);
 
     // EQUALS OPERATORS
 
@@ -107,7 +108,7 @@ public:
         if ((a.GetLength() != b.GetLength()) || (a.GetModulus() != b.GetModulus())) {
             return false;
         }
-        for (size_t i = 0; i < a.GetLength(); ++i) {
+        for (usint i = 0; i < a.GetLength(); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -178,13 +179,13 @@ public:
    * @param &modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
-    const T& ModEq(const I& modulus);
+    T& ModEq(const I& modulus);
 
     /// inline operators for the modulus operations.
-    inline friend T operator%(const T& a, const I& b) {
+    friend T operator%(const T& a, const I& b) {
         return a.Mod(b);
     }
-    inline friend const T& operator%=(T& a, const I& b) {
+    friend T& operator%=(T& a, const I& b) {
         return a.ModEq(b);
     }
 
@@ -202,13 +203,13 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
-    const T& ModAddEq(const I& b);
+    T& ModAddEq(const I& b);
 
     /// inline operators for the scara-to-vector modulus addition operations.
-    inline friend T operator+(const T& a, const I& b) {
+    friend T operator+(const T& a, const I& b) {
         return a.ModAdd(b);
     }
-    inline friend const T& operator+=(T& a, const I& b) {
+    friend T& operator+=(T& a, const I& b) {
         return a.ModAddEq(b);
     }
 
@@ -228,7 +229,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    const T& ModAddAtIndexEq(usint i, const I& b);
+    T& ModAddAtIndexEq(usint i, const I& b);
 
     /**
    * Vector component wise modulus addition.
@@ -244,14 +245,15 @@ public:
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
-    const T& ModAddEq(const T& b);
+    T& ModAddEq(const T& b);
+    T& ModAddNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus addition
     /// operations.
-    inline friend T operator+(const T& a, const T& b) {
+    friend T operator+(const T& a, const T& b) {
         return a.ModAdd(b);
     }
-    inline friend const T& operator+=(T& a, const T& b) {
+    friend T& operator+=(T& a, const T& b) {
         return a.ModAddEq(b);
     }
 
@@ -269,14 +271,14 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
-    const T& ModSubEq(const I& b);
+    T& ModSubEq(const I& b);
 
     /// inline operators for the scalar-from-vector modulus subtraction
     /// operations.
-    inline friend T operator-(const T& a, const I& b) {
+    friend T operator-(const T& a, const I& b) {
         return a.ModSub(b);
     }
-    inline friend const T& operator-=(T& a, const I& b) {
+    friend T& operator-=(T& a, const I& b) {
         return a.ModSubEq(b);
     }
 
@@ -294,7 +296,7 @@ public:
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
-    const T& ModSubEq(const T& b);
+    T& ModSubEq(const T& b);
 
     /// inline operators for the vector component wise modulus subtraction
     /// operations.
@@ -324,14 +326,14 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
-    const T& ModMulEq(const I& b);
+    T& ModMulEq(const I& b);
 
     /// inline operators for the scalar-to-vector modulus multiplication
     /// operations.
-    inline friend T operator*(const T& a, const I& b) {
+    friend T operator*(const T& a, const I& b) {
         return a.ModMul(b);
     }
-    inline friend const T& operator*=(T& a, const I& b) {
+    friend T& operator*=(T& a, const I& b) {
         return a.ModMulEq(b);
     }
 
@@ -351,14 +353,15 @@ public:
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
-    const T& ModMulEq(const T& b);
+    T& ModMulEq(const T& b);
+    T& ModMulNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus multiplication
     /// operations.
-    inline friend T operator*(const T& a, const T& b) {
+    friend T operator*(const T& a, const T& b) {
         return a.ModMul(b);
     }
-    inline friend const T& operator*=(T& a, const T& b) {
+    friend T& operator*=(T& a, const T& b) {
         return a.ModMulEq(b);
     }
 
@@ -376,7 +379,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
-    const T& ModExpEq(const I& b);
+    T& ModExpEq(const I& b);
 
     /**
    * Modulus inverse operation.
@@ -390,7 +393,7 @@ public:
    *
    * @return is the result of the component wise modulus inverse operation.
    */
-    const T& ModInverseEq();
+    T& ModInverseEq();
 
     /**
    * Modulus 2 operation, also a least significant bit.
@@ -406,7 +409,7 @@ public:
    * @return is the result of the component wise modulus 2 operation, also a
    * least significant bit.
    */
-    const T& ModByTwoEq();
+    T& ModByTwoEq();
 
     /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -426,7 +429,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-    const T& MultiplyAndRoundEq(const I& p, const I& q);
+    T& MultiplyAndRoundEq(const I& p, const I& q);
 
     /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -444,7 +447,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-    const T& DivideAndRoundEq(const I& q);
+    T& DivideAndRoundEq(const I& q);
 
     // OTHER FUNCTIONS
 
@@ -465,6 +468,9 @@ public:
    * base
    */
     T GetDigitAtIndexForBase(usint index, usint base) const;
+
+protected:
+    ~BigVectorInterface() = default;
 
     // STRINGS & STREAMS
 

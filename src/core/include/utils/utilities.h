@@ -32,10 +32,12 @@
 #ifndef LBCRYPTO_UTILS_UTILITIES_H
 #define LBCRYPTO_UTILS_UTILITIES_H
 
+#include "config_core.h"
 #include "utils/inttypes.h"
 
+#include <climits>  // CHAR_BIT
+#include <limits>   // std::numeric_limits
 #include <string>
-#include <climits>      // CHAR_BIT
 #include <type_traits>  // std::is_integral
 
 /**
@@ -45,40 +47,13 @@
 namespace lbcrypto {
 
 /**
- * Zero Padding of Elements.
- * Adds zeros to form a polynomial of length 2n  (corresponding to cyclotomic
- * order m = 2n). It is used by the forward transform of
- * ChineseRemainderTransform (a modified version of ZeroPadd will be used for
- * the non-power-of-2 case).
- *
- * @param &InputPoly is the element to perform the transform on.
- * @param target_order is the intended target ordering.
- * @return is the output of the zero padding.
- */
-template <typename V>
-V ZeroPadForward(const V& InputPoly, usint target_order);
-
-/**
- * Zero Pad Inverse of Elements.
- * Adds alternating zeroes to form a polynomial of length of length 2n
- * (corresponding to cyclotomic order m = 2n). It is used by the inverse
- * transform of ChineseRemainderTransform (a modified version of ZeroPadInverse
- * will be used for the non-power-of-2 case).
- *
- * @param &InputPoly is the element to perform the transform on.
- * @param target_order is the intended target ordering.
- * @return is the output of the zero padding.
- */
-template <typename V>
-V ZeroPadInverse(const V& InputPoly, usint target_order);
-
-/**
  * Determines if a number is a power of 2.
  *
  * @param Input to test if it is a power of 2.
  * @return is true if the unsigned int is a power of 2.
  */
-inline bool IsPowerOfTwo(usint Input) {
+template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+inline constexpr bool IsPowerOfTwo(T Input) {
     return Input && !(Input & (Input - 1));
 }
 
@@ -103,12 +78,8 @@ std::string replaceChar(std::string str, char in, char out);
  * @param b: operand 2
  * @return 1 if overflow occurs, 0 otherwise
  */
-inline uint32_t IsAdditionOverflow(uint64_t a, uint64_t b) {
-    a += b;
-    if (a < b)
-        return 1;
-    else
-        return 0;
+inline uint64_t IsAdditionOverflow(uint64_t a, uint64_t b) {
+    return (a + b) < b;
 }
 
 /**
@@ -119,13 +90,8 @@ inline uint32_t IsAdditionOverflow(uint64_t a, uint64_t b) {
  * @return 1 if overflow occurs, 0 otherwise
  */
 
-inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
-    a += b;
-    c = a;
-    if (a < b)
-        return 1;
-    else
-        return 0;
+inline uint64_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
+    return (c = a + b) < b;
 }
 
 /**
@@ -135,29 +101,44 @@ inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
  * any class or struct (ex.: BigInteger, NativeIntegerT, etc.)
  * Ex: auto bitlen = GetIntegerTypeBitLength<short>(); bitlen == 16
  */
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type = true>
-constexpr usint GetIntegerTypeBitLength() {
+template <typename T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>, bool> = true>
+inline constexpr usint GetIntegerTypeBitLength() {
     return sizeof(T) * CHAR_BIT;
 }
 
 // TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
 // that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
-constexpr int64_t Max64BitValue() {
-    // (2^63-1)-(2^10-1) => 2^63-2^10 - max value that could be rounded to int64_t
-    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 10));
+inline constexpr int64_t Max64BitValue() {
+    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 9) - 1);
 }
 
+// TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if double can be
+// converted to int64_t. The name should reflect that. Something like isConvertableToInt64(). The function must be renamed!!!
 inline bool is64BitOverflow(double d) {
-    // 1. TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if
-    // double can be converted to int64_t. The name should reflect that. something like isConvertableToInt64() The function must be renamed!!!
-    // 2. TODO (dsuponit): the body of this function should probably be just 1 line as this function is asking a simple binary question if
-    // there is an overflow or not:
-    // return (std::abs(d) > Max64BitValue());
-    // TO BE REVIEWED...
-    const double EPSILON = 0.000001;
+    return std::abs(d) > static_cast<double>(Max64BitValue());
+}
 
-    return EPSILON < (std::abs(d) - Max64BitValue());
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+inline constexpr __int128 Max128BitValue() {
+    return static_cast<__int128>(((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1);
+}
+
+inline bool is128BitOverflow(double d) {
+    return std::abs(d) > static_cast<double>(Max128BitValue());
+}
+
+enum { MAX_DOUBLE_PRECISION = 52 };
+#endif
+
+inline bool isConvertableToNativeInt(double d) {
+    if constexpr (NATIVEINT == 32)
+        return std::abs(d) <= static_cast<double>(std::numeric_limits<int32_t>::max());
+    if constexpr (NATIVEINT == 64)
+        return std::abs(d) <= static_cast<double>(Max64BitValue());
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    if constexpr (NATIVEINT == 128)
+        return std::abs(d) <= static_cast<double>(Max128BitValue());
+#endif
 }
 
 }  // namespace lbcrypto

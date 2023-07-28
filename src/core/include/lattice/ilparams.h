@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,15 +33,19 @@
   Wraps parameters for integer lattice operations. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_LATTICE_ILPARAMS_H
-#define LBCRYPTO_LATTICE_ILPARAMS_H
-
-#include <string>
+#ifndef LBCRYPTO_INC_LATTICE_ILPARAMS_H
+#define LBCRYPTO_INC_LATTICE_ILPARAMS_H
 
 #include "lattice/elemparams.h"
-#include "math/hal.h"
+
+#include "math/math-hal.h"
 #include "math/nbtheory.h"
+
+#include "utils/exception.h"
 #include "utils/inttypes.h"
+
+#include <string>
+#include <utility>
 
 namespace lbcrypto {
 
@@ -52,15 +56,15 @@ namespace lbcrypto {
  * and their inheritors.
  */
 template <typename IntType>
-class ILParamsImpl : public ElemParams<IntType> {
+class ILParamsImpl final : public ElemParams<IntType> {
 public:
-    typedef IntType Integer;
+    using Integer = IntType;
 
     /**
    * Constructor that initializes nothing.
    * All of the private members will be initialized to zero.
    */
-    ILParamsImpl() : ElemParams<IntType>(0, 0) {}
+    constexpr ILParamsImpl() : ElemParams<IntType>() {}
 
     /**
    * @brief Constructor for the case of partially pre-computed parameters.
@@ -73,8 +77,8 @@ public:
    * operations.
    * @return
    */
-    ILParamsImpl(const usint order, const IntType& modulus, const IntType& rootOfUnity, const IntType& bigModulus = 0,
-                 const IntType& bigRootOfUnity = 0)
+    ILParamsImpl(usint order, const IntType& modulus, const IntType& rootOfUnity,
+                 const IntType& bigModulus = IntType(0), const IntType& bigRootOfUnity = IntType(0))
         : ElemParams<IntType>(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}
 
     /**
@@ -83,9 +87,8 @@ public:
    * @param &order the order of the ciphertext.
    * @param &modulus the ciphertext modulus.
    */
-    ILParamsImpl(const usint order, const IntType& modulus) : ElemParams<IntType>(order, modulus) {
-        this->rootOfUnity = RootOfUnity<IntType>(order, modulus);
-    }
+    ILParamsImpl(usint order, const IntType& modulus)
+        : ElemParams<IntType>(order, modulus, RootOfUnity<IntType>(order, modulus)) {}
 
     /**
    * @brief Copy constructor.
@@ -100,7 +103,7 @@ public:
    * @param &rhs the params to be copied.
    * @return this object
    */
-    const ILParamsImpl& operator=(const ILParamsImpl& rhs) {
+    ILParamsImpl& operator=(const ILParamsImpl& rhs) {
         ElemParams<IntType>::operator=(rhs);
         return *this;
     }
@@ -110,12 +113,17 @@ public:
    *
    * @param &rhs the input set of parameters which is copied.
    */
-    ILParamsImpl(const ILParamsImpl&& rhs) : ElemParams<IntType>(rhs) {}
+    ILParamsImpl(ILParamsImpl&& rhs) noexcept : ElemParams<IntType>(std::move(rhs)) {}
+
+    ILParamsImpl& operator=(ILParamsImpl&& rhs) noexcept {
+        ElemParams<IntType>::operator=(std::move(rhs));
+        return *this;
+    }
 
     /**
    * @brief Standard Destructor method.
    */
-    ~ILParamsImpl() {}
+    ~ILParamsImpl() override = default;
 
     /**
    * @brief Equality operator compares ElemParams (which will be dynamic casted)
@@ -124,22 +132,12 @@ public:
    * @return True if this Poly represents the same values as the specified
    * DCRTPoly, False otherwise
    */
-    bool operator==(const ElemParams<IntType>& rhs) const {
+    bool operator==(const ElemParams<IntType>& rhs) const override {
         if (dynamic_cast<const ILParamsImpl<IntType>*>(&rhs) == nullptr)
             return false;
-
         return ElemParams<IntType>::operator==(rhs);
     }
 
-private:
-    std::ostream& doprint(std::ostream& out) const {
-        out << "ILParams ";
-        ElemParams<IntType>::doprint(out);
-        out << std::endl;
-        return out;
-    }
-
-public:
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<ElemParams<IntType>>(this));
@@ -154,11 +152,19 @@ public:
         ar(::cereal::base_class<ElemParams<IntType>>(this));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "ILParms";
     }
     static uint32_t SerializedVersion() {
         return 1;
+    }
+
+private:
+    std::ostream& doprint(std::ostream& out) const override {
+        out << "ILParams ";
+        ElemParams<IntType>::doprint(out);
+        out << std::endl;
+        return out;
     }
 };
 

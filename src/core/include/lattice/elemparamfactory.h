@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,16 +33,18 @@
   Creates ElemParams objects for OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_
-#define SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_
-
-#include <memory>
-#include <string>
+#ifndef LBCRYPTO_INC_LATTICE_ELEMPARAMFACTORY_H_
+#define LBCRYPTO_INC_LATTICE_ELEMPARAMFACTORY_H_
 
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilparams.h"
-#include "math/hal.h"
+
+#include "utils/debug.h"
+#include "utils/inttypes.h"
 #include "utils/parmfactory.h"
+
+#include <memory>
+#include <string>
 
 namespace lbcrypto {
 
@@ -141,6 +143,7 @@ public:
     }
 };
 
+#ifdef WITH_BE2
 template <>
 inline std::shared_ptr<ILDCRTParams<M2Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(
     usint m, usint bits, usint towersize) {
@@ -153,7 +156,9 @@ inline std::shared_ptr<ILDCRTParams<M2Integer>> ElemParamFactory::GenElemParams<
     OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M2Integer>(m, towersize, bits);
 }
+#endif
 
+#ifdef WITH_BE4
 template <>
 inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(
     usint m, usint bits, usint towersize) {
@@ -166,6 +171,8 @@ inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<
     OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M4Integer>(m, towersize, bits);
 }
+#endif
+
 #ifdef WITH_NTL
 template <>
 inline std::shared_ptr<ILDCRTParams<M6Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M6Integer>>(
@@ -180,6 +187,7 @@ inline std::shared_ptr<ILDCRTParams<M6Integer>> ElemParamFactory::GenElemParams<
     return GenerateDCRTParams<M6Integer>(m, towersize, bits);
 }
 #endif
+
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_ */
+#endif

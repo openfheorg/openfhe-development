@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -63,33 +63,27 @@
  * It should be also noted that the memory requirement grows with the standard
  * deviation, therefore it is advised to use it with smaller deviations.   */
 
-#ifndef LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATOR_H_
-#define LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include <math.h>
+#include "math/math-hal.h"
+#include "math/distributiongenerator.h"
+
 #include <memory>
 #include <random>
 #include <vector>
 
-#include "math/hal.h"
-#include "math/distributiongenerator.h"
-
 namespace lbcrypto {
 
-const double KARNEY_THRESHOLD = 300;
-
-template <typename VecType>
-class DiscreteGaussianGeneratorImpl;
-
-typedef DiscreteGaussianGeneratorImpl<BigVector> DiscreteGaussianGenerator;
+constexpr double KARNEY_THRESHOLD = 300.0;
 
 /**
  * @brief The class for Discrete Gaussion Distribution generator.
  */
 template <typename VecType>
-class DiscreteGaussianGeneratorImpl : public DistributionGenerator<VecType> {
+class DiscreteGaussianGeneratorImpl {
 public:
     /**
    * @brief         Basic constructor for specifying distribution parameter and
@@ -102,7 +96,7 @@ public:
     /**
    * @brief Destructor
    */
-    ~DiscreteGaussianGeneratorImpl() {}
+    ~DiscreteGaussianGeneratorImpl() = default;
 
     /**
      * @brief Check if the gaussian generator has been initialized with a standard deviation
@@ -201,6 +195,14 @@ public:
     static int64_t GenerateIntegerKarney(double mean, double stddev);
 
 private:
+    // Gyana to add precomputation methods and data members
+    // all parameters are set as int because it is assumed that they are used for
+    // generating "small" polynomials only
+    double m_std{1.0};
+    double m_a{0.0};
+    std::vector<double> m_vals;
+    bool peikert{false};
+
     usint FindInVector(const std::vector<double>& S, double search) const;
 
     static double UnnormalizedGaussianPDF(const double& mean, const double& sigma, int32_t x) {
@@ -257,19 +259,6 @@ private:
    * @return Whether the number of runs are even or not
    */
     static bool AlgorithmBDouble(PRNG& g, int32_t k, double x);
-
-    // Gyana to add precomputation methods and data members
-    // all parameters are set as int because it is assumed that they are used for
-    // generating "small" polynomials only
-    double m_a;
-
-    std::vector<double> m_vals;
-
-    /**
-   * The standard deviation of the distribution.
-   */
-    double m_std;
-    bool peikert = false;
 };
 
 }  // namespace lbcrypto

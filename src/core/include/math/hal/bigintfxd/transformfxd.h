@@ -33,18 +33,21 @@
   This file contains the linear transform interface functionality for the fixed math backend
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H
-#define LBCRYPTO_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H
+#include "config_core.h"
+#ifdef WITH_BE2
 
-#include <map>
-#include <unordered_map>
-#include <mutex>
-#include <vector>
-#include <utility>
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H
+        #define LBCRYPTO_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H
 
-#include "math/hal/transform.h"
-#include "math/hal/bigintfxd/ubintfxd.h"
-#include "math/hal/bigintfxd/mubintvecfxd.h"
+        #include <map>
+        #include <unordered_map>
+        #include <mutex>
+        #include <vector>
+        #include <utility>
+
+        #include "math/hal/transform.h"
+        #include "math/hal/bigintfxd/ubintfxd.h"
+        #include "math/hal/bigintfxd/mubintvecfxd.h"
 
 /**
  * @namespace bigintfxd
@@ -608,6 +611,8 @@ private:
 
 }  // namespace bigintfxd
 
-#include "math/hal/bigintfxd/transformfxd-impl.h"
+        #include "math/hal/bigintfxd/transformfxd-impl.h"
+
+    #endif
 
 #endif

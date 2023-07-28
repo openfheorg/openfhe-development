@@ -449,7 +449,8 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         EXPECT_THROW(ilva1.MultiplicativeInverse(), math_error) << msg << " Failure: throw MultiplicativeInverse()";
     }
 
-    {
+    // DCRTPoly::MakeSparse() Only used by RingSwitching, which is no longer supported
+    if (false) {
         Element ilvaCopy(ilva);
 
         ilvaCopy.MakeSparse(2);

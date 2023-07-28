@@ -62,14 +62,16 @@ protected:
           m_ksTechnique(BV),
           m_scalTechnique(FIXEDMANUAL),
           m_encTechnique(STANDARD),
-          m_multTechnique(HPS) {}
+          m_multTechnique(HPS),
+          m_MPIntBootCiphertextCompressionLevel(SLACK) {}
 
     CryptoParametersRNS(const CryptoParametersRNS& rhs)
         : CryptoParametersRLWE<DCRTPoly>(rhs),
           m_ksTechnique(rhs.m_ksTechnique),
           m_scalTechnique(rhs.m_scalTechnique),
           m_encTechnique(rhs.m_encTechnique),
-          m_multTechnique(rhs.m_multTechnique) {}
+          m_multTechnique(rhs.m_multTechnique),
+          m_MPIntBootCiphertextCompressionLevel(rhs.m_MPIntBootCiphertextCompressionLevel) {}
 
     /**
    * Constructor that initializes values.  Note that it is possible to set
@@ -93,23 +95,26 @@ protected:
    * relinearization key is generated
    * @param ksTech key switching method
    * @param scalTech scaling method
+   * @param mPIntBootCiphertextCompressionLevel compression level
    */
     CryptoParametersRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode             = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT)
-        : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
+                        MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode                           = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+        : CryptoParametersRLWE<DCRTPoly>(std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist, INDCPA, multipartyMode, executionMode,
                                          decryptionNoiseMode) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
+        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -121,15 +126,17 @@ protected:
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties = 1)
-        : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
+                        uint32_t thresholdNumOfParties                        = 1,
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+        : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                                          numAdversarialQueries, thresholdNumOfParties) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
+        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -220,12 +227,10 @@ public:
     }
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
-        if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET)) {
+        if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET))
             return m_paramsQP;
-        }
-        else if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr)) {
+        if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr))
             return m_paramsQr;
-        }
         return m_params;
     }
 
@@ -959,8 +964,8 @@ public:
    *
    * @return the precomputed CRT params
    */
-    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsBsk() const {
-        return m_paramsBsk;
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQBsk() const {
+        return m_paramsQBsk;
     }
 
     /**
@@ -1031,7 +1036,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<uint16_t> const& GetQHatModmtilde() const {
+    std::vector<uint64_t> const& GetQHatModmtilde() const {
         return m_QHatModmtilde;
     }
 
@@ -1058,7 +1063,7 @@ public:
    *
    * @return the precomputed value
    */
-    uint16_t const& GetNegQInvModmtilde() const {
+    uint64_t const& GetNegQInvModmtilde() const {
         return m_negQInvModmtilde;
     }
 
@@ -1295,6 +1300,17 @@ public:
    */
     std::vector<double> const& GetMultipartyQInv() const {
         return m_multipartyQInv;
+    }
+
+    /////////////////////////////////////
+    // CKKS RNS MultiParty Bootstrapping Parameter
+    /////////////////////////////////////
+    /**
+   * Gets the Multi-Party Interactive Bootstrapping Ciphertext Compression Level
+   * @return m_MPIntBootCiphertextCompressionLevel
+   */
+    COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {
+        return m_MPIntBootCiphertextCompressionLevel;
     }
 
 protected:
@@ -1586,7 +1602,7 @@ protected:
     /////////////////////////////////////
 
     // Auxiliary CRT basis {Bsk} = {B U msk} = {{b_j} U msk}
-    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsBsk;
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQBsk;
 
     // number of moduli in the base {Q}
     uint32_t m_numq = 0;
@@ -1595,7 +1611,7 @@ protected:
     uint32_t m_numb = 0;
 
     // mtilde = 2^16
-    NativeInteger m_mtilde = NativeInteger((uint64_t)1 << 16);
+    NativeInteger m_mtilde = NativeInteger(BasicInteger(1) << 16);
 
     // Auxiliary modulus msk
     NativeInteger m_msk;
@@ -1628,7 +1644,7 @@ protected:
     std::vector<std::vector<NativeInteger>> m_qInvModbsk;
 
     // Stores [Q/q_i]_{mtilde}
-    std::vector<uint16_t> m_QHatModmtilde;
+    std::vector<uint64_t> m_QHatModmtilde;
 
     // Stores [Q]_{bsk_j}
     std::vector<NativeInteger> m_QModbsk;
@@ -1636,7 +1652,7 @@ protected:
     std::vector<NativeInteger> m_QModbskPrecon;
 
     // Stores [-Q^{-1}]_{mtilde}
-    uint16_t m_negQInvModmtilde = 0;
+    uint64_t m_negQInvModmtilde = 0;
 
     // Stores [mtilde^{-1}]_{bsk_j}
     std::vector<NativeInteger> m_mtildeInvModbsk;
@@ -1715,6 +1731,11 @@ protected:
     // Stores \frac{1/q_i}
     std::vector<double> m_multipartyQInv;
 
+    /////////////////////////////////////
+    // CKKS RNS MultiParty Bootstrapping Parameter
+    /////////////////////////////////////
+    COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
+
 public:
     /////////////////////////////////////
     // SERIALIZATION
@@ -1730,6 +1751,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     template <class Archive>
@@ -1747,6 +1769,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     std::string SerializedObjectName() const override {

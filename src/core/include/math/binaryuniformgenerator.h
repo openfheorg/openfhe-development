@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,30 +34,29 @@
   relies on the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_MATH_BINARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_MATH_BINARYUNIFORMGENERATOR_H_
+#ifndef LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
+#define LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
+
+#include "math/distributiongenerator.h"
+#include "math/math-hal.h"
+
+#include "utils/inttypes.h"
 
 #include <random>
-#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
-
-template <typename VecType>
-class BinaryUniformGeneratorImpl;
-
-typedef BinaryUniformGeneratorImpl<BigVector> BinaryUniformGenerator;
 
 /**
  * @brief A generator of the Binary Uniform Distribution.
  */
 template <typename VecType>
-class BinaryUniformGeneratorImpl : public DistributionGenerator<VecType> {
+class BinaryUniformGeneratorImpl {
 public:
     /**
    * @brief Basic constructor for Binary Uniform Generator.
    */
-    BinaryUniformGeneratorImpl() : DistributionGenerator<VecType>() {}
-    ~BinaryUniformGeneratorImpl() {}
+    BinaryUniformGeneratorImpl()  = default;
+    ~BinaryUniformGeneratorImpl() = default;
 
     /**
    * @brief  Generates a random value within the Binary Uniform Distribution.
@@ -78,4 +77,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_BINARYUNIFORMGENERATOR_H_
+#endif  // LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_

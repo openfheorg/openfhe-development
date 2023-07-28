@@ -46,34 +46,28 @@
         #include <NTL/ZZ.h>
         #include <NTL/ZZ_limbs.h>
 
+        #include "math/hal/basicint.h"
+        #include "math/hal/integer.h"
+
+        #include "utils/openfhebase64.h"
+        #include "utils/parallel.h"
+        #include "utils/serializable.h"
+        #include "utils/exception.h"
+        #include "utils/inttypes.h"
+        #include "utils/memory.h"
+        #include "utils/debug.h"
+
         #include <exception>
         #include <fstream>
         #include <functional>
         #include <iostream>
         #include <limits>
         #include <memory>
+        #include <sstream>
         #include <string>
         #include <type_traits>
         #include <typeinfo>
         #include <vector>
-
-        #include "math/hal/integer.h"
-        #include "math/hal/basicint.h"
-
-        #include "utils/openfhebase64.h"
-        #include "utils/parallel.h"
-        #include "utils/serializable.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/memory.h"
-
-        #include "utils/debug.h"
-// #ifdef WITH_INTEL_HEXL
-// #include "math/hal/intnat-hexl/backendnathexl.h"
-// #else
-// #include "math/hal/intnat/backendnat.h"
-// #endif
 
 /**
  *@namespace NTL
@@ -150,7 +144,7 @@ public:
    */
     myZZ(uint64_t val);  // NOLINT
         #if defined(HAVE_INT128)
-    myZZ(unsigned __int128 val);  // NOLINT
+    myZZ(uint128_t val);  // NOLINT
         #endif
 
     /**
@@ -193,7 +187,7 @@ public:
    * @param &val is the myZZ to be assigned from.
    * @return assigned myZZ ref.
    */
-    const myZZ& operator=(const myZZ& val);
+    myZZ& operator=(const myZZ& val);
 
     // TODO move assignment operator?
 
@@ -214,7 +208,7 @@ public:
    * @param val is the unsigned integer to be assigned from.
    * @return the assigned myZZ ref.
    */
-    const myZZ& operator=(uint64_t val) {
+    myZZ& operator=(uint64_t val) {
         *this = myZZ(val);
         return *this;
     }
@@ -257,7 +251,7 @@ public:
    * @param &b is the value to add.
    * @return result of the addition operation.
    */
-    const myZZ& AddEq(const myZZ& b) {
+    myZZ& AddEq(const myZZ& b) {
         *static_cast<ZZ*>(this) += static_cast<const ZZ&>(b);
         return *this;
     }
@@ -280,7 +274,7 @@ public:
    * @param &b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
-    const myZZ& SubEq(const myZZ& b) {
+    myZZ& SubEq(const myZZ& b) {
         if (*this < b) {
             *this = ZZ(0);
         }
@@ -306,7 +300,7 @@ public:
    * @param &b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
-    const myZZ& MulEq(const myZZ& b) {
+    myZZ& MulEq(const myZZ& b) {
         *static_cast<ZZ*>(this) *= static_cast<const ZZ&>(b);
         return *this;
     }
@@ -327,7 +321,7 @@ public:
    * @param &b is the value to divide by.
    * @return is the result of the division operation.
    */
-    const myZZ& DividedByEq(const myZZ& b) {
+    myZZ& DividedByEq(const myZZ& b) {
         *static_cast<ZZ*>(this) /= static_cast<const ZZ&>(b);
         return *this;
     }
@@ -348,7 +342,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    const myZZ& ExpEq(const usint p) {
+    myZZ& ExpEq(const usint p) {
         *this = power(*this, p);
         return *this;
     }
@@ -371,7 +365,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-    const myZZ& MultiplyAndRoundEq(const myZZ& p, const myZZ& q);
+    myZZ& MultiplyAndRoundEq(const myZZ& p, const myZZ& q);
 
     /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -389,7 +383,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-    const myZZ& DivideAndRoundEq(const myZZ& q);
+    myZZ& DivideAndRoundEq(const myZZ& q);
 
     // MODULAR ARITHMETIC OPERATIONS
 
@@ -409,7 +403,7 @@ public:
    * @param &modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
-    const myZZ& ModEq(const myZZ& modulus) {
+    myZZ& ModEq(const myZZ& modulus) {
         *static_cast<ZZ*>(this) %= static_cast<const ZZ&>(modulus);
         return *this;
     }
@@ -448,7 +442,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
-    const myZZ& ModEq(const myZZ& modulus, const myZZ& mu) {
+    myZZ& ModEq(const myZZ& modulus, const myZZ& mu) {
         *static_cast<ZZ*>(this) %= static_cast<const ZZ&>(modulus);
         return *this;
     }
@@ -471,7 +465,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
-    const myZZ& ModAddEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModAddEq(const myZZ& b, const myZZ& modulus) {
         AddMod(*this, this->Mod(modulus), b.Mod(modulus), modulus);
         return *this;
     }
@@ -494,7 +488,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
-    const myZZ& ModAddFastEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModAddFastEq(const myZZ& b, const myZZ& modulus) {
         *this = AddMod(*this, b, modulus);
         return *this;
     }
@@ -519,7 +513,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    const myZZ& ModAddEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
+    myZZ& ModAddEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         *this = AddMod(*this, b, modulus);
         return *this;
     }
@@ -555,7 +549,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
-    const myZZ& ModSubEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModSubEq(const myZZ& b, const myZZ& modulus) {
         this->ModEq(modulus);
         myZZ newb(b % modulus);
         if (*this >= newb) {
@@ -592,7 +586,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
-    const myZZ& ModSubFastEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModSubFastEq(const myZZ& b, const myZZ& modulus) {
         if (*this >= b) {
             return *this = SubMod(*this, b, modulus);  // normal mod sub
         }
@@ -630,7 +624,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
-    const myZZ& ModSubEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
+    myZZ& ModSubEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         this->ModEq(modulus);
         myZZ newb(b % modulus);
         if (*this >= newb) {
@@ -662,7 +656,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    const myZZ& ModMulEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModMulEq(const myZZ& b, const myZZ& modulus) {
         MulMod(*this, this->Mod(modulus), b.Mod(modulus), modulus);
         return *this;
     }
@@ -687,7 +681,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    const myZZ& ModMulEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
+    myZZ& ModMulEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         MulMod(*this, this->Mod(modulus), b.Mod(modulus), modulus);
         return *this;
     }
@@ -711,7 +705,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    const myZZ& ModMulFastEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModMulFastEq(const myZZ& b, const myZZ& modulus) {
         *this = MulMod(*this, b, modulus);
         return *this;
     }
@@ -737,7 +731,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    const myZZ& ModMulFastEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
+    myZZ& ModMulFastEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         *this = MulMod(*this, b, modulus);
         return *this;
     }
@@ -746,7 +740,7 @@ public:
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 6");
     }
 
-    const myZZ& ModMulFastConstEq(const myZZ& b, const myZZ& modulus, const myZZ& bInv) {
+    myZZ& ModMulFastConstEq(const myZZ& b, const myZZ& modulus, const myZZ& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 6");
     }
 
@@ -770,7 +764,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
-    const myZZ& ModExpEq(const myZZ& b, const myZZ& modulus) {
+    myZZ& ModExpEq(const myZZ& b, const myZZ& modulus) {
         PowerMod(*this, *this, b, modulus);
         return *this;
     }
@@ -806,7 +800,7 @@ public:
    * @param &modulus is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
-    const myZZ& ModInverseEq(const myZZ& modulus) {
+    myZZ& ModInverseEq(const myZZ& modulus) {
         if (modulus == myZZ(0)) {
             OPENFHE_THROW(lbcrypto::math_error, "zero has no inverse");
         }
@@ -840,7 +834,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    const myZZ& LShiftEq(usshort shift) {
+    myZZ& LShiftEq(usshort shift) {
         *static_cast<ZZ*>(this) <<= shift;
         return *this;
     }
@@ -861,7 +855,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    const myZZ& RShiftEq(usshort shift) {
+    myZZ& RShiftEq(usshort shift) {
         *static_cast<ZZ*>(this) >>= shift;
         return *this;
     }
@@ -876,10 +870,21 @@ public:
     // CONVERTING
 
     // OpenFHE conversion methods
-    uint64_t ConvertToInt() const;
+    template <typename T = BasicInteger>
+    T ConvertToInt() const {
+        std::stringstream s;  // slower
+        s << *this;
+        T result;
+        s >> result;
 
+        if ((this->GetMSB() > (sizeof(T) * 8)) || (this->GetMSB() > NTL_ZZ_NBITS)) {
+            std::cerr << "Warning myZZ::ConvertToInt() Loss of precision. " << std::endl;
+            std::cerr << "input  " << *this << std::endl;
+            std::cerr << "result  " << result << std::endl;
+        }
+        return result;
+    }
     uint64_t ConvertToUint64() const;
-
     double ConvertToDouble() const;
 
     /**

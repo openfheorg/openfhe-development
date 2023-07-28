@@ -42,6 +42,7 @@
 #include "scheme/ckksrns/ckksrns-leveledshe.h"
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
 #include "scheme/ckksrns/ckksrns-multiparty.h"
+#include "scheme/ckksrns/ckksrns-schemeswitching.h"
 
 #include <string>
 #include <memory>

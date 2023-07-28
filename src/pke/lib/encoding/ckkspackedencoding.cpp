@@ -31,7 +31,18 @@
 
 #include "encoding/ckkspackedencoding.h"
 
+#include "lattice/lat-hal.h"
+
+#include "math/hal/basicint.h"
 #include "math/dftransform.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
+
+#include <complex>
+#include <cmath>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -132,7 +143,7 @@ bool CKKSPackedEncoding::Encode() {
     inverse.resize(slots);
 
     if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse);
+        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
         uint64_t pBits     = encodingParams->GetPlaintextModulus();
         uint32_t precision = 52;
 
@@ -144,7 +155,7 @@ bool CKKSPackedEncoding::Encode() {
         // into (input_mantissa * 2^52) * 2^(p - 52 + input_exponent)
         // to preserve 52-bit precision of doubles
         // when converting to 128-bit numbers
-        std::vector<__int128> temp(2 * slots);
+        std::vector<int128_t> temp(2 * slots);
         for (size_t i = 0; i < slots; ++i) {
             // Check for possible overflow in llround function
             int32_t n1 = 0;
@@ -159,23 +170,23 @@ bool CKKSPackedEncoding::Encode() {
 
             int64_t re64       = std::llround(dre);
             int32_t pRemaining = pCurrent + n1;
-            __int128 re        = 0;
+            int128_t re        = 0;
             if (pRemaining < 0) {
                 re = re64 >> (-pRemaining);
             }
             else {
-                __int128 pPowRemaining = ((__int128)1) << pRemaining;
+                int128_t pPowRemaining = ((int128_t)1) << pRemaining;
                 re                     = pPowRemaining * re64;
             }
 
             int64_t im64 = std::llround(dim);
             pRemaining   = pCurrent + n2;
-            __int128 im  = 0;
+            int128_t im  = 0;
             if (pRemaining < 0) {
                 im = im64 >> (-pRemaining);
             }
             else {
-                __int128 pPowRemaining = ((int64_t)1) << pRemaining;
+                int128_t pPowRemaining = ((int64_t)1) << pRemaining;
                 im                     = pPowRemaining * im64;
             }
 
@@ -251,7 +262,7 @@ bool CKKSPackedEncoding::Encode() {
     inverse.resize(slots);
 
     if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse);
+        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
         double powP = scalingFactor;
 
         // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
@@ -298,7 +309,7 @@ bool CKKSPackedEncoding::Encode() {
                 // this to report it to the user, so they can identify
                 // large inputs.
 
-                DiscreteFourierTransform::FFTSpecial(inverse);
+                DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 2);
 
                 double invLen = static_cast<double>(inverse.size());
                 double factor = 2 * M_PI * i;
@@ -365,7 +376,7 @@ bool CKKSPackedEncoding::Encode() {
             moduli[i] = nativeParams[i]->GetModulus();
         }
 
-        DCRTPoly::Integer intPowP = std::llround(powP);
+        DCRTPoly::Integer intPowP(static_cast<uint64_t>(std::llround(powP)));
         std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
 
         auto currPowP = crtPowP;
@@ -412,7 +423,7 @@ bool CKKSPackedEncoding::Encode() {
 }
 #endif
 
-bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, enum ScalingTechnique scalTech,
+bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, ScalingTechnique scalTech,
                                 ExecutionMode executionMode) {
     double p       = encodingParams->GetPlaintextModulus();
     double powP    = 0.0;
@@ -558,7 +569,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, enum
         // Z[X + 1/X]/(X^n + 1). This would change the complexity from n*logn to
         // roughly (n/2)*log(n/2). This change should be done together with the one
         // above.
-        DiscreteFourierTransform::FFTSpecial(realValues);
+        DiscreteFourierTransform::FFTSpecial(realValues, GetElementRingDimension() * 2);
 
         // clears all imaginary values for security reasons
         for (size_t i = 0; i < realValues.size(); ++i)
@@ -595,16 +606,16 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
 }
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-void CKKSPackedEncoding::FitToNativeVector(const std::vector<__int128>& vec, __int128 bigBound,
+void CKKSPackedEncoding::FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound,
                                            NativeVector* nativeVec) const {
-    NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);
+    NativeInteger bigValueHf((uint128_t)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
-    NativeInteger diff = NativeInteger((unsigned __int128)bigBound) - modulus;
+    NativeInteger diff = NativeInteger((uint128_t)bigBound) - modulus;
     uint32_t ringDim   = GetElementRingDimension();
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
     for (usint i = 0; i < vec.size(); i++) {
-        NativeInteger n((unsigned __int128)vec[i]);
+        NativeInteger n((uint128_t)vec[i]);
         if (n > bigValueHf) {
             (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
         }

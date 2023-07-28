@@ -395,7 +395,7 @@ public:
     /**
    * Set the Metadata map of the ciphertext.
    */
-    void SetMetadataMap(MetadataMap mdata) {
+    void SetMetadataMap(const MetadataMap& mdata) {
         this->m_metadataMap = mdata;
     }
 
@@ -437,7 +437,7 @@ public:
     /**
    * Get a Metadata element from the Metadata map of the ciphertext.
    */
-    std::shared_ptr<Metadata> GetMetadataByKey(std::string key) const {
+    std::shared_ptr<Metadata> GetMetadataByKey(const std::string& key) const {
         auto it = m_metadataMap->find(key);
         if(it == m_metadataMap->end()) {
             OPENFHE_THROW(openfhe_error, "Metadata element with key [" + key + "] is not found in the Metadata map.");
@@ -448,8 +448,8 @@ public:
     /**
    * Set a Metadata element in the Metadata map of the ciphertext.
    */
-    void SetMetadataByKey(std::string key, std::shared_ptr<Metadata> value) {
-        (*m_metadataMap)[key] = value;
+    void SetMetadataByKey(const std::string& key, std::shared_ptr<Metadata> value) {
+        (*m_metadataMap)[key] = std::move(value);
     }
 
     virtual Ciphertext<Element> Clone() const {

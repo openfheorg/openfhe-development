@@ -55,5 +55,6 @@ using M6Integer = NTL::BigInteger;
 using M6Vector = NTL::BigVector;
 
     #endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
-
+#else
+using M6Integer = void;
 #endif  // WITH_NTL

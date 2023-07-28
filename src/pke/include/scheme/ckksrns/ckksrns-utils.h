@@ -88,6 +88,16 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
 std::vector<uint32_t> ComputeDegreesPS(const uint32_t n);
 
 /**
+ * Get the depth for a given vector of coefficients for the Paterson-Stockmeyer algorithm.
+ * The functions is based on the table described in src/pke/examples/FUNCTION_EVALUATION.md
+ *
+ * @param vec vector of coefficients
+ * @param isNormalized true if the vector normalized. false is the default value
+ * @return multiplicative depth
+ */
+uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized = false);
+
+/**
  * Extracts shifted diagonal of matrix A.
  *
  * @param &A square linear map.
@@ -192,12 +202,30 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4);
  * operation and returns them as a vector. The returned vector's data can be accessed using
  * enum'ed indices from CKKS_BOOT_PARAMS that are defined below.
  *
- * @param slots number of slots.
+ * @param slots number of slots
  * @param levelBudget the allocated level budget for the computation.
  * @param dim1 the value for the inner dimension in the baby-step giant-step strategy
  * @return vector with parameters for the homomorphic encoding and decoding in bootstrapping
  */
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget = 4, uint32_t dim1 = 0);
+
+/**
+ *  Gets inner loop dimension for baby step giant step algorithm for linear transform,
+ * taking into account the cost efficiency of hoisted automorphisms.
+ * @param slots number of slots.
+ * @return the value for the inner dimension in the baby-step giant-step strategy
+*/
+uint32_t getRatioBSGSLT(uint32_t slots);
+
+/**
+ * Assembles a list of rotation indices necessary to perform the
+ * linear transform in SS (needs to be ran once to each LT).
+ * @param dim1 baby-step dimension
+ * @param m cyclotomic order
+ * @param blockdimension dimension related to the linear transform computation matrix
+ * @return vector of rotation indices necessary
+*/
+std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension);
 
 namespace CKKS_BOOT_PARAMS {
 /**

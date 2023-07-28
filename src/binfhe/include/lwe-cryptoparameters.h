@@ -32,8 +32,10 @@
 #ifndef _LWE_CRYPTOPARAMETERS_H_
 #define _LWE_CRYPTOPARAMETERS_H_
 
-#include "math/hal.h"
+#include "binfhe-constants.h"
+
 #include "math/discretegaussiangenerator.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <string>
@@ -55,59 +57,68 @@ public:
    *
    * @param n lattice parameter for additive LWE scheme
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param &q modulus for additive LWE
-   * @param &Q modulus for RingGSW/RLWE used in bootstrapping
-   * @param &q_KS modulus for key switching
+   * @param q modulus for additive LWE
+   * @param Q modulus for RingGSW/RLWE used in bootstrapping
+   * @param q_KS modulus for key switching
    * @param std standard deviation
    * @param baseKS the base used for key switching
+   * @param keyDist the key distribution
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
-                             const NativeInteger& q_KS, double std, uint32_t baseKS)
-        : m_n(n), m_N(N), m_q(q), m_Q(Q), m_qKS(q_KS), m_baseKS(baseKS) {
-        if (Q.GetMSB() > MAX_MODULUS_SIZE) {
-            std::string errMsg = "ERROR: Maximum size of Q supported for FHEW is 60 bits.";
-            OPENFHE_THROW(config_error, errMsg);
-        }
-
+                             const NativeInteger& q_KS, double std, uint32_t baseKS,
+                             SecretKeyDist keyDist = UNIFORM_TERNARY)
+        : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
+        if (m_Q.GetMSB() > MAX_MODULUS_SIZE)
+            OPENFHE_THROW(config_error, "ERROR: Q.GetMSB() > MAX_MODULUS_SIZE");
         m_dgg.SetStd(std);
         m_ks_dgg.SetStd(std);
     }
 
-    explicit LWECryptoParams(const LWECryptoParams& rhs) {
-        this->m_n      = rhs.m_n;
-        this->m_N      = rhs.m_N;
-        this->m_q      = rhs.m_q;
-        this->m_Q      = rhs.m_Q;
-        this->m_baseKS = rhs.m_baseKS;
+    // TODO: add m_qKS, m_ks_dgg, and m_keyDist to copy/move operations?
+
+    LWECryptoParams(const LWECryptoParams& rhs)
+        : m_q(rhs.m_q),
+          m_Q(rhs.m_Q),
+          // m_qKS(rhs.m_qKS),
+          m_n(rhs.m_n),
+          m_N(rhs.m_N),
+          m_baseKS(rhs.m_baseKS) {
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
+        // this->m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
     }
 
-    explicit LWECryptoParams(const LWECryptoParams&& rhs) {
-        this->m_n      = std::move(rhs.m_n);
-        this->m_N      = std::move(rhs.m_N);
-        this->m_q      = std::move(rhs.m_q);
-        this->m_Q      = std::move(rhs.m_Q);
-        this->m_baseKS = std::move(rhs.m_baseKS);
+    LWECryptoParams(LWECryptoParams&& rhs) noexcept
+        : m_q(std::move(rhs.m_q)),
+          m_Q(std::move(rhs.m_Q)),
+          // m_qKS(std::move(rhs.m_qKS)),
+          m_n(rhs.m_n),
+          m_N(rhs.m_N),
+          m_baseKS(rhs.m_baseKS) {
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
+        // this->m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
     }
 
-    const LWECryptoParams& operator=(const LWECryptoParams& rhs) {
+    LWECryptoParams& operator=(const LWECryptoParams& rhs) {
+        this->m_q = rhs.m_q;
+        this->m_Q = rhs.m_Q;
+        // this->m_qKS    = rhs.m_qKS;
         this->m_n      = rhs.m_n;
         this->m_N      = rhs.m_N;
-        this->m_q      = rhs.m_q;
-        this->m_Q      = rhs.m_Q;
         this->m_baseKS = rhs.m_baseKS;
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
+        // this->m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
         return *this;
     }
 
-    const LWECryptoParams& operator=(const LWECryptoParams&& rhs) {
-        this->m_n      = std::move(rhs.m_n);
-        this->m_N      = std::move(rhs.m_N);
-        this->m_q      = std::move(rhs.m_q);
-        this->m_Q      = std::move(rhs.m_Q);
-        this->m_baseKS = std::move(rhs.m_baseKS);
+    LWECryptoParams& operator=(LWECryptoParams&& rhs) noexcept {
+        this->m_q = std::move(rhs.m_q);
+        this->m_Q = std::move(rhs.m_Q);
+        // this->m_qKS    = std::move(rhs.m_qKS);
+        this->m_n      = rhs.m_n;
+        this->m_N      = rhs.m_N;
+        this->m_baseKS = rhs.m_baseKS;
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
+        // this->m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
         return *this;
     }
 
@@ -141,6 +152,10 @@ public:
 
     const DiscreteGaussianGeneratorImpl<NativeVector>& GetDggKS() const {
         return m_ks_dgg;
+    }
+
+    SecretKeyDist GetKeyDist() const {
+        return m_keyDist;
     }
 
     bool operator==(const LWECryptoParams& other) const {
@@ -185,7 +200,7 @@ public:
         ar(::cereal::make_nvp("bKS", m_baseKS));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "LWECryptoParams";
     }
     static uint32_t SerializedVersion() {
@@ -193,22 +208,24 @@ public:
     }
 
 private:
-    // lattice parameter for the additive LWE scheme
-    uint32_t m_n = 0;
-    // ring dimension for RingGSW/RingLWE scheme
-    uint32_t m_N = 0;
     // modulus for the additive LWE scheme
-    NativeInteger m_q = 0;
+    NativeInteger m_q{};
     // modulus for the RingGSW/RingLWE scheme
-    NativeInteger m_Q = 0;
+    NativeInteger m_Q{};
     // modulus for key-switching
-    NativeInteger m_qKS = 0;
+    NativeInteger m_qKS{};
+    // lattice parameter for the additive LWE scheme
+    uint32_t m_n{};
+    // ring dimension for RingGSW/RingLWE scheme
+    uint32_t m_N{};
+    // Base used in key switching
+    uint32_t m_baseKS{};
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
+    SecretKeyDist m_keyDist{SecretKeyDist::UNIFORM_TERNARY};
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
     // Error distribution generator for key switching
     DiscreteGaussianGeneratorImpl<NativeVector> m_ks_dgg;
-    // Base used in key switching
-    uint32_t m_baseKS = 0;
 };
 
 }  // namespace lbcrypto

@@ -233,8 +233,6 @@ public:
    *
    * @param privateKey private key.
    * @param publicKey public key.
-   * @param rowSize size of rows in the matrix
-   * @param colSize size of columns in the matrix
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(

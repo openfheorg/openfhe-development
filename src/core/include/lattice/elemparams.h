@@ -36,14 +36,16 @@
 #ifndef LBCRYPTO_LATTICE_ELEMPARAMS_H
 #define LBCRYPTO_LATTICE_ELEMPARAMS_H
 
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
+
 #include <iostream>
 #include <string>
 #include <utility>
-
-#include "math/hal.h"
-#include "math/nbtheory.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -67,59 +69,66 @@ public:
    * operations.
    * @param bigRUnity the big root of unity used for bit packing operations.
    */
+
+    constexpr ElemParams() = default;
+
+    // uint64_t GetTotient(const uint64_t n) but order/ringdimension are usint?
     ElemParams(usint order, const IntegerType& ctModulus, const IntegerType& rUnity = IntegerType(0),
-               const IntegerType& bigCtModulus = IntegerType(0), const IntegerType& bigRUnity = IntegerType(0)) {
-        cyclotomicOrder      = order;
-        ringDimension        = GetTotient(order);
-        isPowerOfTwo         = ringDimension == cyclotomicOrder / 2;
-        ciphertextModulus    = ctModulus;
-        rootOfUnity          = rUnity;
-        bigCiphertextModulus = bigCtModulus;
-        bigRootOfUnity       = bigRUnity;
-    }
+               const IntegerType& bigCtModulus = IntegerType(0), const IntegerType& bigRUnity = IntegerType(0))
+        : m_cyclotomicOrder(order),
+          m_ringDimension(GetTotient(order)),
+          m_ciphertextModulus(ctModulus),
+          m_rootOfUnity(rUnity),
+          m_bigCiphertextModulus(bigCtModulus),
+          m_bigRootOfUnity(bigRUnity) {}
 
     /**
    * @brief Copy constructor using assignment to copy wrapped elements.
    * @param rhs the input ElemParams copied.
    * @return the resulting parameter set with parameters copied.
    */
-    ElemParams(const ElemParams& rhs) {
-        cyclotomicOrder      = rhs.cyclotomicOrder;
-        ringDimension        = rhs.ringDimension;
-        isPowerOfTwo         = rhs.isPowerOfTwo;
-        ciphertextModulus    = rhs.ciphertextModulus;
-        rootOfUnity          = rhs.rootOfUnity;
-        bigCiphertextModulus = rhs.bigCiphertextModulus;
-        bigRootOfUnity       = rhs.bigRootOfUnity;
-    }
+    ElemParams(const ElemParams& rhs)
+        : m_cyclotomicOrder(rhs.m_cyclotomicOrder),
+          m_ringDimension(rhs.m_ringDimension),
+          m_ciphertextModulus(rhs.m_ciphertextModulus),
+          m_rootOfUnity(rhs.m_rootOfUnity),
+          m_bigCiphertextModulus(rhs.m_bigCiphertextModulus),
+          m_bigRootOfUnity(rhs.m_bigRootOfUnity) {}
 
     /**
    * @brief Copy constructor using move semnantics to copy wrapped elements.
    * @param rhs the input ElemParams copied.
    * @return the resulting copy of the parameter set.
    */
-    ElemParams(const ElemParams&& rhs) {
-        cyclotomicOrder      = rhs.cyclotomicOrder;
-        ringDimension        = rhs.ringDimension;
-        isPowerOfTwo         = rhs.isPowerOfTwo;
-        ciphertextModulus    = std::move(rhs.ciphertextModulus);
-        rootOfUnity          = std::move(rhs.rootOfUnity);
-        bigCiphertextModulus = std::move(rhs.bigCiphertextModulus);
-        bigRootOfUnity       = std::move(rhs.bigRootOfUnity);
-    }
+    ElemParams(ElemParams&& rhs) noexcept
+        : m_cyclotomicOrder(rhs.m_cyclotomicOrder),
+          m_ringDimension(rhs.m_ringDimension),
+          m_ciphertextModulus(std::move(rhs.m_ciphertextModulus)),
+          m_rootOfUnity(std::move(rhs.m_rootOfUnity)),
+          m_bigCiphertextModulus(std::move(rhs.m_bigCiphertextModulus)),
+          m_bigRootOfUnity(std::move(rhs.m_bigRootOfUnity)) {}
 
     /**
    * @brief Assignment operator using assignment operations of wrapped elements.
    * @param rhs the ElemParams instance to copy.
    */
-    const ElemParams& operator=(const ElemParams& rhs) {
-        cyclotomicOrder      = rhs.cyclotomicOrder;
-        ringDimension        = rhs.ringDimension;
-        isPowerOfTwo         = rhs.isPowerOfTwo;
-        ciphertextModulus    = rhs.ciphertextModulus;
-        rootOfUnity          = rhs.rootOfUnity;
-        bigCiphertextModulus = rhs.bigCiphertextModulus;
-        bigRootOfUnity       = rhs.bigRootOfUnity;
+    ElemParams& operator=(const ElemParams& rhs) {
+        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
+        m_ringDimension        = rhs.m_ringDimension;
+        m_ciphertextModulus    = rhs.m_ciphertextModulus;
+        m_rootOfUnity          = rhs.m_rootOfUnity;
+        m_bigCiphertextModulus = rhs.m_bigCiphertextModulus;
+        m_bigRootOfUnity       = rhs.m_bigRootOfUnity;
+        return *this;
+    }
+
+    ElemParams& operator=(ElemParams&& rhs) noexcept {
+        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
+        m_ringDimension        = rhs.m_ringDimension;
+        m_ciphertextModulus    = std::move(rhs.m_ciphertextModulus);
+        m_rootOfUnity          = std::move(rhs.m_rootOfUnity);
+        m_bigCiphertextModulus = std::move(rhs.m_bigCiphertextModulus);
+        m_bigRootOfUnity       = std::move(rhs.m_bigRootOfUnity);
         return *this;
     }
 
@@ -127,14 +136,14 @@ public:
    * @brief Simple destructor method.
    * @return
    */
-    virtual ~ElemParams() {}
+    virtual ~ElemParams() = default;
 
     /**
    * @brief Simple getter method for cyclotomic order.
    * @return The cyclotomic order.
    */
     usint GetCyclotomicOrder() const {
-        return cyclotomicOrder;
+        return m_cyclotomicOrder;
     }
 
     /**
@@ -143,17 +152,7 @@ public:
    * @return the ring dimension.
    */
     usint GetRingDimension() const {
-        return ringDimension;
-    }
-
-    /**
-   * @brief Returns True if the cyclotomic order or ring dimension is a power
-   * of 2.
-   * @return True if the cyclotomic order or ring dimension is a power of 2.
-   * False otherwise.
-   */
-    bool OrderIsPowerOfTwo() const {
-        return isPowerOfTwo;
+        return m_ringDimension;
     }
 
     /**
@@ -162,7 +161,7 @@ public:
    * @return The ciphertext modulus, not the big ciphertext modulus.
    */
     const IntegerType& GetModulus() const {
-        return ciphertextModulus;
+        return m_ciphertextModulus;
     }
 
     /**
@@ -171,7 +170,7 @@ public:
    * @return The big ciphertext modulus.
    */
     const IntegerType& GetBigModulus() const {
-        return bigCiphertextModulus;
+        return m_bigCiphertextModulus;
     }
 
     /**
@@ -180,7 +179,7 @@ public:
    * @return The root of unity, not the big root of unity.
    */
     const IntegerType& GetRootOfUnity() const {
-        return rootOfUnity;
+        return m_rootOfUnity;
     }
 
     /**
@@ -188,7 +187,7 @@ public:
    * @return The the big root of unity.
    */
     const IntegerType& GetBigRootOfUnity() const {
-        return bigRootOfUnity;
+        return m_bigRootOfUnity;
     }
 
     /**
@@ -207,9 +206,9 @@ public:
    * @return True if all elements are equal, and False otherwise.
    */
     virtual bool operator==(const ElemParams<IntegerType>& other) const {
-        return cyclotomicOrder == other.cyclotomicOrder && ringDimension == other.ringDimension &&
-               ciphertextModulus == other.ciphertextModulus && rootOfUnity == other.rootOfUnity &&
-               bigCiphertextModulus == other.bigCiphertextModulus && bigRootOfUnity == other.bigRootOfUnity;
+        return m_cyclotomicOrder == other.m_cyclotomicOrder && m_ringDimension == other.m_ringDimension &&
+               m_ciphertextModulus == other.m_ciphertextModulus && m_rootOfUnity == other.m_rootOfUnity &&
+               m_bigCiphertextModulus == other.m_bigCiphertextModulus && m_bigRootOfUnity == other.m_bigRootOfUnity;
     }
 
     /**
@@ -223,13 +222,12 @@ public:
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("co", cyclotomicOrder));
-        ar(::cereal::make_nvp("rd", ringDimension));
-        ar(::cereal::make_nvp("2n", isPowerOfTwo));
-        ar(::cereal::make_nvp("cm", ciphertextModulus));
-        ar(::cereal::make_nvp("ru", rootOfUnity));
-        ar(::cereal::make_nvp("bm", bigCiphertextModulus));
-        ar(::cereal::make_nvp("br", bigRootOfUnity));
+        ar(::cereal::make_nvp("co", m_cyclotomicOrder));
+        ar(::cereal::make_nvp("rd", m_ringDimension));
+        ar(::cereal::make_nvp("cm", m_ciphertextModulus));
+        ar(::cereal::make_nvp("ru", m_rootOfUnity));
+        ar(::cereal::make_nvp("bm", m_bigCiphertextModulus));
+        ar(::cereal::make_nvp("br", m_bigRootOfUnity));
     }
 
     template <class Archive>
@@ -238,16 +236,15 @@ public:
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
-        ar(::cereal::make_nvp("co", cyclotomicOrder));
-        ar(::cereal::make_nvp("rd", ringDimension));
-        ar(::cereal::make_nvp("2n", isPowerOfTwo));
-        ar(::cereal::make_nvp("cm", ciphertextModulus));
-        ar(::cereal::make_nvp("ru", rootOfUnity));
-        ar(::cereal::make_nvp("bm", bigCiphertextModulus));
-        ar(::cereal::make_nvp("br", bigRootOfUnity));
+        ar(::cereal::make_nvp("co", m_cyclotomicOrder));
+        ar(::cereal::make_nvp("rd", m_ringDimension));
+        ar(::cereal::make_nvp("cm", m_ciphertextModulus));
+        ar(::cereal::make_nvp("ru", m_rootOfUnity));
+        ar(::cereal::make_nvp("bm", m_bigCiphertextModulus));
+        ar(::cereal::make_nvp("br", m_bigRootOfUnity));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "ElemParams";
     }
     static uint32_t SerializedVersion() {
@@ -255,14 +252,12 @@ public:
     }
 
 protected:
-    usint cyclotomicOrder;
-    usint ringDimension;  // True iff the Ring Dimension is a power of 2.
-
-    bool isPowerOfTwo;
-    IntegerType ciphertextModulus;
-    IntegerType rootOfUnity;
-    IntegerType bigCiphertextModulus;  // Used for only some applications.
-    IntegerType bigRootOfUnity;        // Used for only some applications.
+    usint m_cyclotomicOrder{};
+    usint m_ringDimension{};
+    IntegerType m_ciphertextModulus{0};
+    IntegerType m_rootOfUnity{0};
+    IntegerType m_bigCiphertextModulus{0};  // Used for only some applications.
+    IntegerType m_bigRootOfUnity{0};        // Used for only some applications.
 
     /**
    * @brief Pretty print operator for the ElemParams type.
@@ -270,9 +265,8 @@ protected:
    * @return the resulting output stream.
    */
     virtual std::ostream& doprint(std::ostream& out) const {
-        out << "[m=" << cyclotomicOrder << (isPowerOfTwo ? "* " : " ") << "n=" << ringDimension
-            << " q=" << ciphertextModulus << " ru=" << rootOfUnity << " bigq=" << bigCiphertextModulus
-            << " bigru=" << bigRootOfUnity << "]";
+        out << "[m=" << m_cyclotomicOrder << " n=" << m_ringDimension << " q=" << m_ciphertextModulus
+            << " ru=" << m_rootOfUnity << " bigq=" << m_bigCiphertextModulus << " bigru=" << m_bigRootOfUnity << "]";
         return out;
     }
 };

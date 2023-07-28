@@ -33,8 +33,8 @@
  * This code provides Chebyshev approximation utilities.
  */
 
-#ifndef LBCRYPTO_MATH_CHEBYSHEV_H
-#define LBCRYPTO_MATH_CHEBYSHEV_H
+#ifndef LBCRYPTO_INC_MATH_CHEBYSHEV_H
+#define LBCRYPTO_INC_MATH_CHEBYSHEV_H
 
 #include <cstdint>
 #include <functional>
@@ -45,6 +45,8 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+
+// move to cryptocontext?
 
 /**
  * Method for calculating Chebyshev coefficients for an input function

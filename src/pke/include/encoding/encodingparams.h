@@ -71,9 +71,9 @@ public:
                        NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
                        NativeInteger plaintextBigRootOfUnity = 0)
         : m_plaintextModulus(plaintextModulus),
-          m_plaintextRootOfUnity(plaintextRootOfUnity),
+          m_plaintextRootOfUnity(std::move(plaintextRootOfUnity)),
           m_plaintextBigModulus(plaintextBigModulus),
-          m_plaintextBigRootOfUnity(plaintextBigRootOfUnity),
+          m_plaintextBigRootOfUnity(std::move(plaintextBigRootOfUnity)),
           m_plaintextGenerator(plaintextGenerator),
           m_batchSize(batchSize) {}
 
@@ -96,7 +96,7 @@ public:
    *
    * @param &rhs the input set of parameters which is copied.
    */
-    EncodingParamsImpl(const EncodingParamsImpl&& rhs) {
+    EncodingParamsImpl(EncodingParamsImpl&& rhs) {
         m_plaintextModulus        = std::move(rhs.m_plaintextModulus);
         m_plaintextRootOfUnity    = std::move(rhs.m_plaintextRootOfUnity);
         m_plaintextBigModulus     = std::move(rhs.m_plaintextBigModulus);
@@ -308,12 +308,12 @@ public:
     }
 };
 
-inline std::ostream& operator<<(std::ostream& out, std::shared_ptr<EncodingParamsImpl> o) {
+inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<EncodingParamsImpl>& o) {
     if (o)
         out << *o;
     return out;
 }
-inline bool operator==(std::shared_ptr<EncodingParamsImpl> o1, std::shared_ptr<EncodingParamsImpl> o2) {
+inline bool operator==(const std::shared_ptr<EncodingParamsImpl>& o1, const std::shared_ptr<EncodingParamsImpl>& o2) {
     if (o1 && o2)
         return *o1 == *o2;
     if (!o1 && !o2)

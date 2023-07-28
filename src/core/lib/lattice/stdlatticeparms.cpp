@@ -33,11 +33,36 @@
   Implementation for the standard values for Lattice Parms, as determined by homomorphicencryption.org
  */
 
-#include <vector>
 #include "lattice/stdlatticeparms.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
+#include <map>
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 
+SecurityLevel convertToSecurityLevel(const std::string& str) {
+    if (str == "HEStd_128_classic")
+        return HEStd_128_classic;
+    else if (str == "HEStd_192_classic")
+        return HEStd_192_classic;
+    else if (str == "HEStd_256_classic")
+        return HEStd_256_classic;
+    else if (str == "HEStd_128_quantum")
+        return HEStd_128_quantum;
+    else if (str == "HEStd_192_quantum")
+        return HEStd_192_quantum;
+    else if (str == "HEStd_256_quantum")
+        return HEStd_256_quantum;
+    else if (str == "HEStd_NotSet")
+        return HEStd_NotSet;
+
+    std::string errMsg(std::string("Unknown SecurityLevel ") + str);
+    OPENFHE_THROW(config_error, errMsg);
+}
 SecurityLevel convertToSecurityLevel(uint32_t num) {
     auto secLevel = static_cast<SecurityLevel>(num);
     switch (secLevel) {

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,15 +35,18 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_LATTICE_TRAPDOOR_H
-#define LBCRYPTO_LATTICE_TRAPDOOR_H
+#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_H
+#define LBCRYPTO_INC_LATTICE_TRAPDOOR_H
+
+#include "lattice/dgsampling.h"
+#include "lattice/field2n.h"
+
+#include "math/matrix.h"
 
 #include <memory>
 #include <utility>
 
-#include "math/matrix.h"
-
-#include "lattice/dgsampling.h"
+#include "utils/debug.h"
 
 namespace lbcrypto {
 

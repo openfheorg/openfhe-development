@@ -48,20 +48,26 @@ EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivate
 template <class Element>
 Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
                                                 const PublicKey<Element> publicKey) const {
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
+    auto algo               = ciphertext->GetCryptoContext()->GetScheme();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     Ciphertext<Element> result = ciphertext->Clone();
+    std::vector<Element>& cv   = result->GetElements();
     if (publicKey != nullptr) {
-        const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
-
-        const DggType& floodingdist              = cryptoParams->GetFloodingDiscreteGaussianGenerator();
-        std::vector<Element>& cv                 = result->GetElements();
-        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey, floodingdist);
+        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey);
 
         cv[0] += (*ba)[0];
         cv[1] += (*ba)[1];
     }
 
+    if ((cryptoParams->GetPREMode() == FIXED_NOISE_HRA) || (cryptoParams->GetPREMode() == NOISE_FLOODING_HRA)) {
+        // noiseflooding
+        Element enf(cryptoParams->GetFloodingDiscreteGaussianGenerator(), cryptoParams->GetElementParams(),
+                    Format::EVALUATION);
+
+        auto noise_scale = cryptoParams->GetPlaintextModulus();
+        cv[0] += noise_scale * enf;
+    }
     algo->KeySwitchInPlace(result, evalKey);
 
     return result;

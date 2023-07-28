@@ -45,6 +45,8 @@
 #include "constants.h"
 
 #include <iosfwd>
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -111,11 +113,11 @@ class Params {
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
     // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
-    double statisticalSecurity;
+    usint statisticalSecurity;
 
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
-    double numAdversarialQueries;
+    usint numAdversarialQueries;
 
     // This is the number of parties in a threshold application, which is used for bound on the joint secret key
     usint thresholdNumOfParties;
@@ -162,6 +164,12 @@ class Params {
     // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
+    // Interactive multi-party bootstrapping parameter
+    // Set the compression level in ciphertext (SLACK or COMPACT)
+    // SLACK has weaker security assumption, thus less efficient
+    // COMPACT has stronger security assumption, thus more efficient
+    COMPRESSION_LEVEL interactiveBootCompressionLevel;
+
     void SetToDefaults(SCHEME scheme);
 
     void ValidateRingDim(usint ringDim);
@@ -171,6 +179,13 @@ public:
         SetToDefaults(scheme0);
     }
 
+    /**
+     * This Params' constructor "explicit Params(const std::vector<std::string>& vals)" is to be used by unittests only.
+     *
+     * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from getAllParamsDataMembers()
+     */
+    explicit Params(const std::vector<std::string>& vals);
+
     Params(const Params& obj) = default;
     Params(Params&& obj)      = default;
 
@@ -178,6 +193,45 @@ public:
     Params& operator=(Params&& obj)      = default;
 
     ~Params() = default;
+
+    /**
+     * getAllParamsDataMembers() returns names of all data members of Params and the scheme enum ALWAYS goes first.
+     * This function is meant for unittests only and holds the correct sequence of the parameters/column names.
+     *
+     * @return a vector with names of all data members of Params
+     */
+    static const std::vector<std::string> getAllParamsDataMembers() {
+        return {"scheme",
+                "ptModulus",
+                "digitSize",
+                "standardDeviation",
+                "secretKeyDist",
+                "maxRelinSkDeg",
+                "ksTech",
+                "scalTech",
+                "firstModSize",
+                "batchSize",
+                "numLargeDigits",
+                "multiplicativeDepth",
+                "scalingModSize",
+                "securityLevel",
+                "ringDim",
+                "evalAddCount",
+                "keySwitchCount",
+                "encryptionTechnique",
+                "multiplicationTechnique",
+                "multiHopModSize",
+                "PREMode",
+                "multipartyMode",
+                "executionMode",
+                "decryptionNoiseMode",
+                "noiseEstimate",
+                "desiredPrecision",
+                "statisticalSecurity",
+                "numAdversarialQueries",
+                "thresholdNumOfParties",
+                "interactiveBootCompressionLevel"};
+    }
 
     // getters
     SCHEME GetScheme() const {
@@ -269,6 +323,9 @@ public:
     usint GetMultiHopModSize() const {
         return multiHopModSize;
     }
+    COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
+        return interactiveBootCompressionLevel;
+    }
 
     // setters
     void SetPlaintextModulus(PlaintextModulus ptModulus0) {
@@ -304,10 +361,10 @@ public:
     void SetDesiredPrecision(double desiredPrecision0) {
         desiredPrecision = desiredPrecision0;
     }
-    void SetStatisticalSecurity(double statisticalSecurity0) {
+    void SetStatisticalSecurity(uint32_t statisticalSecurity0) {
         statisticalSecurity = statisticalSecurity0;
     }
-    void SetNumAdversarialQueries(double numAdversarialQueries0) {
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
         numAdversarialQueries = numAdversarialQueries0;
     }
 
@@ -358,6 +415,9 @@ public:
     }
     void SetMultiHopModSize(usint multiHopModSize0) {
         multiHopModSize = multiHopModSize0;
+    }
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+        interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

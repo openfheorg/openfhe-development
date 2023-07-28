@@ -39,12 +39,10 @@
 #ifdef PARALLEL
     #include <omp.h>
 #endif
-// #include <iostream>
+
 namespace lbcrypto {
 
 class ParallelControls {
-    int machineThreads;
-
 public:
     // @Brief CTOR, enables parallel operations as default
     // Cache the number of machine threads the system reports (can be
@@ -54,20 +52,23 @@ public:
 #ifdef PARALLEL
         machineThreads = omp_get_max_threads();
         Enable();
-#else
-        machineThreads = 1;
+            // omp_set_dynamic(0);
+            // omp_set_nested(0);
+            // omp_set_max_active_levels(1);
 #endif
     }
+
     // @Brief Enable() enables parallel operation
-    void Enable() {
+    void Enable() const {
 #ifdef PARALLEL
         omp_set_num_threads(machineThreads);
 #endif
     }
+
     // @Brief Disable() disables parallel operation
-    void Disable() {
+    void Disable() const {
 #ifdef PARALLEL
-        omp_set_num_threads(0);
+        omp_set_num_threads(1);
 #endif
     }
 
@@ -85,7 +86,7 @@ public:
 
     // @Brief returns current number of threads that are usable
     // @return int # threads
-    int GetNumThreads() {
+    int GetNumThreads() const {
 #ifdef PARALLEL
         int nthreads = 1;
         int tid      = 1;
@@ -101,26 +102,31 @@ public:
                 nthreads = omp_get_num_threads();
             }
         }
-        // std::cout << "\nNumber of threads = " << nthreads << std::endl;
         return nthreads;
-
 #else
-        return machineThreads;
+        return 1;
+#endif
+    }
+
+    // @Brief returns min of int n and machineThreads
+    int GetThreadLimit(int n) const {
+#ifdef PARALLEL
+        return n > machineThreads ? machineThreads : n;
+#else
+        return 1;
 #endif
     }
 
     // @Brief sets number of threads to use (limited by system value)
-
     void SetNumThreads(int nthreads) {
 #ifdef PARALLEL
-        // set number of thread, but limit it to the system set
-        // number of machine threads...
-        if (nthreads > machineThreads) {
-            nthreads = machineThreads;
-        }
-        omp_set_num_threads(nthreads);
+        // set number of thread, but limit to the system set number of machine threads...
+        omp_set_num_threads(nthreads > machineThreads ? machineThreads : nthreads);
 #endif
     }
+
+private:
+    int machineThreads{1};
 };
 
 extern ParallelControls OpenFHEParallelControls;

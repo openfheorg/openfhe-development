@@ -108,7 +108,7 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
             s = Element(tug, paramsPK, Format::EVALUATION);
             break;
         case SPARSE_TERNARY:
-            s = Element(tug, paramsPK, Format::EVALUATION, 64);
+            s = Element(tug, paramsPK, Format::EVALUATION, 192);
             break;
         default:
             break;
@@ -422,6 +422,38 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     }
 
     return EvalKeyMapSum;
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                                       const PublicKey<Element> publicKey) const {
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+                                                                           ConstCiphertext<Element> ciphertext,
+                                                                           ConstCiphertext<Element> a) const {
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootAdd(
+    std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootEncrypt(const PublicKey<Element> publicKey,
+                                                              const std::vector<Ciphertext<Element>>& sharesPair,
+                                                              ConstCiphertext<Element> a,
+                                                              ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
 }
 
 }  // namespace lbcrypto

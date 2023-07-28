@@ -63,95 +63,37 @@ public:
     /**
    * Main constructor for RingGSWCryptoParams
    *
-   * @param lweparams a shared poiter to an instance of LWECryptoParams
+   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+   * @param Q modulus for RingGSW/RLWE used in bootstrapping
+   * @param q ciphertext modulus for additive LWE
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (DM or CGGI)
+   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
+   * @param std standar deviation
+   * @param keyDist secret key distribution
+   * @param signEval flag if sign evaluation is needed
+   * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, bool signEval = false)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method) {
-        if (!IsPowerOfTwo(baseG)) {
+                                 BINFHE_METHOD method, double std, SecretKeyDist keyDist = UNIFORM_TERNARY,
+                                 bool signEval = false, uint32_t numAutoKeys = 10)
+        : m_Q(Q),
+          m_q(q),
+          m_N(N),
+          m_baseG(baseG),
+          m_baseR(baseR),
+          m_polyParams{std::make_shared<ILNativeParams>(2 * N, Q)},
+          m_method(method),
+          m_keyDist(keyDist),
+          m_numAutoKeys(numAutoKeys) {
+        if (!IsPowerOfTwo(baseG))
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
-        }
-
+        if ((method == LMKCDEY) & (numAutoKeys == 0))
+            OPENFHE_THROW(config_error, "numAutoKeys should be greater than 0.");
+        auto logQ{log(m_Q.ConvertToDouble())};
+        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / log(static_cast<double>(m_baseG))));
         m_dgg.SetStd(std);
-
-        NativeInteger rootOfUnity = RootOfUnity<NativeInteger>(2 * N, Q);
-
-        // Precomputes the table with twiddle factors to support fast NTT
-        ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootOfUnity, 2 * N, Q);
-
-        // Precomputes a polynomial for MSB extraction
-        m_polyParams = std::make_shared<ILNativeParams>(2 * N, Q, rootOfUnity);
-        m_digitsG    = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(m_baseG)));
-        if (m_method == AP) {
-            uint32_t digitCountR =
-                (uint32_t)std::ceil(log(static_cast<double>(q.ConvertToInt())) / log(static_cast<double>(m_baseR)));
-            // Populate digits
-            NativeInteger value = 1;
-            for (size_t i = 0; i < digitCountR; ++i) {
-                m_digitsR.push_back(value);
-                value *= m_baseR;
-            }
-        }
-
-        // Computes baseG^i
-        if (signEval) {
-            uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
-            for (size_t j = 0; j < 3; ++j) {
-                NativeInteger vTemp = NativeInteger(1);
-                auto tempdigits =
-                    (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseGlist[j])));
-                std::vector<NativeInteger> tempvec(tempdigits);
-                for (size_t i = 0; i < tempdigits; ++i) {
-                    tempvec[i] = vTemp;
-                    vTemp      = vTemp.ModMul(NativeInteger(baseGlist[j]), Q);
-                }
-                m_Gpower_map[baseGlist[j]] = tempvec;
-                if (m_baseG == baseGlist[j])
-                    m_Gpower = tempvec;
-            }
-        }
-        else {
-            NativeInteger vTemp = NativeInteger(1);
-            for (size_t i = 0; i < m_digitsG; ++i) {
-                m_Gpower.push_back(vTemp);
-                vTemp = vTemp.ModMul(NativeInteger(m_baseG), Q);
-            }
-        }
-
-        // Sets the gate constants for supported binary operations
-        m_gateConst = {
-            NativeInteger(5) * (q >> 3),  // OR
-            NativeInteger(7) * (q >> 3),  // AND
-            NativeInteger(1) * (q >> 3),  // NOR
-            NativeInteger(3) * (q >> 3),  // NAND
-            NativeInteger(5) * (q >> 3),  // XOR_FAST
-            NativeInteger(1) * (q >> 3)   // XNOR_FAST
-        };
-
-        // Computes polynomials X^m - 1 that are needed in the accumulator for the
-        // CGGI bootstrapping
-        if (m_method == GINX) {
-            // loop for positive values of m
-            for (size_t i = 0; i < N; ++i) {
-                NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
-                aPoly[i].ModAddEq(NativeInteger(1), Q);  // X^m
-                aPoly[0].ModSubEq(NativeInteger(1), Q);  // -1
-                aPoly.SetFormat(Format::EVALUATION);
-                m_monomials.push_back(aPoly);
-            }
-
-            // loop for negative values of m
-            for (size_t i = 0; i < N; ++i) {
-                NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
-                aPoly[i].ModSubEq(NativeInteger(1), Q);  // -X^m
-                aPoly[0].ModSubEq(NativeInteger(1), Q);  // -1
-                aPoly.SetFormat(Format::EVALUATION);
-                m_monomials.push_back(aPoly);
-            }
-        }
+        PreCompute(signEval);
     }
 
     /**
@@ -183,6 +125,10 @@ public:
         return m_baseR;
     }
 
+    uint32_t GetNumAutoKeys() const {
+        return m_numAutoKeys;
+    }
+
     const std::vector<NativeInteger>& GetDigitsR() const {
         return m_digitsR;
     }
@@ -193,6 +139,10 @@ public:
 
     const std::vector<NativeInteger>& GetGPower() const {
         return m_Gpower;
+    }
+
+    const std::vector<int32_t>& GetLogGen() const {
+        return m_logGen;
     }
 
     const std::map<uint32_t, std::vector<NativeInteger>>& GetGPowerMap() const {
@@ -215,6 +165,10 @@ public:
         return m_method;
     }
 
+    SecretKeyDist GetKeyDist() const {
+        return m_keyDist;
+    }
+
     bool operator==(const RingGSWCryptoParams& other) const {
         return m_N == other.m_N && m_Q == other.m_Q && m_baseR == other.m_baseR && m_baseG == other.m_baseG;
     }
@@ -234,6 +188,7 @@ public:
         ar(::cereal::make_nvp("bs", m_dgg.GetStd()));
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
+        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
     }
 
     template <class Archive>
@@ -253,11 +208,12 @@ public:
         m_dgg.SetStd(sigma);
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
+        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
 
         PreCompute();
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "RingGSWCryptoParams";
     }
     static uint32_t SerializedVersion() {
@@ -266,36 +222,45 @@ public:
 
     void Change_BaseG(uint32_t BaseG) {
         if (m_baseG != BaseG) {
-            m_baseG   = BaseG;
-            m_Gpower  = m_Gpower_map[m_baseG];
-            m_digitsG = (uint32_t)std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(m_baseG)));
+            m_baseG  = BaseG;
+            m_Gpower = m_Gpower_map[m_baseG];
+            m_digitsG =
+                static_cast<uint32_t>(std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(m_baseG))));
         }
     }
 
 private:
-    // ring dimension for RingGSW/RingLWE scheme
-    uint32_t m_N = 0;
-
     // modulus for the RingGSW/RingLWE scheme
-    NativeInteger m_Q = 0;
+    NativeInteger m_Q{};
 
     // modulus for the RingLWE scheme
-    NativeInteger m_q = 0;
+    NativeInteger m_q{};
+
+    // ring dimension for RingGSW/RingLWE scheme
+    uint32_t m_N{};
 
     // gadget base used in bootstrapping
-    uint32_t m_baseG = 0;
-
-    // number of digits in decomposing integers mod Q
-    uint32_t m_digitsG = 0;
+    uint32_t m_baseG{};
 
     // base used for the refreshing key (used only for DM bootstrapping)
-    uint32_t m_baseR = 0;
+    uint32_t m_baseR{};
+
+    // number of digits in decomposing integers mod Q
+    uint32_t m_digitsG{};
 
     // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
 
     // A vector of powers of baseG
     std::vector<NativeInteger> m_Gpower;
+
+    // A vector of log by generator g (=5) (only for LMKCDEY)
+    // Not exactly log, but a mapping similar to logarithm for efficiency
+    // m_logGen[5^i (mod M)] = i (i > 0)
+    // m_logGen[-5^i (mod M)] = -i ()
+    // m_logGen[1] = 0
+    // m_logGen[-1 (mod M)] = M (special case for efficiency)
+    std::vector<int32_t> m_logGen;
 
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
@@ -313,8 +278,14 @@ private:
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
 
-    // Bootstrapping method (DM or CGGI)
-    BINFHE_METHOD m_method = BINFHE_METHOD::INVALID_METHOD;
+    // Bootstrapping method (DM or CGGI or LMKCDEY)
+    BINFHE_METHOD m_method{BINFHE_METHOD::INVALID_METHOD};
+
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
+    SecretKeyDist m_keyDist{SecretKeyDist::UNIFORM_TERNARY};
+
+    // number of automorphism keys (used only for LMKCDEY bootstrapping)
+    uint32_t m_numAutoKeys{};
 };
 
 }  // namespace lbcrypto

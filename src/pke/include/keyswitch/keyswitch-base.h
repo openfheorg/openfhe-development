@@ -44,6 +44,7 @@ Base class for key switching algorithms.
 #include "schemebase/base-cryptoparameters.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 /**
@@ -73,20 +74,20 @@ public:
    * @param *KeySwitchHint is where the resulting keySwitchHint will be
    * placed.
    */
-    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey) const {
-        OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
+                                                  const PrivateKey<Element> newPrivateKey) const {
+        OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
     }
 
-    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey,
-                                          const EvalKey<Element> evalKey) const {
-        OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
+                                                  const PrivateKey<Element> newPrivateKey,
+                                                  const EvalKey<Element> evalKey) const {
+        OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
     }
 
-    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PublicKey<Element> newPublicKey) const {
-        OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
+                                                  const PublicKey<Element> newPublicKey) const {
+        OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
     }
 
     virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const;
@@ -110,12 +111,13 @@ public:
     // CORE OPERATIONS
     /////////////////////////////////////////
 
-    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(Element a, const EvalKey<Element> evalKey) const {
+    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(const Element& a,
+                                                                const EvalKey<Element> evalKey) const {
         OPENFHE_THROW(config_error, "KeySwitchCore is not supported");
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-        Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+        const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         OPENFHE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
     }
 

@@ -169,7 +169,7 @@ constexpr usint BATCH         = 8;
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 constexpr usint SMODSIZE = 90;
 #else
-constexpr usint RING_DIM_PREC = 4096;  // for test cases with approximation error comparison only
+constexpr usint RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 constexpr usint SMODSIZE      = 50;
 #endif
 // MIN_PRECISION_DIFF is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
@@ -859,6 +859,13 @@ protected:
             Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
+            // adding an extra multiplication so that precision tests could clearly
+            // show differences between different scaling techniques
+            ciphertext1 = cc->EvalMult(ciphertext1, 1.0);
+            cc->RescaleInPlace(ciphertext1);
+            ciphertext2 = cc->EvalMult(ciphertext2, 1.0);
+            cc->RescaleInPlace(ciphertext2);
+
             // Testing EvalMult
             Ciphertext<Element> cResult;
             Plaintext results;
@@ -902,8 +909,6 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                           failmsg + " EvalMult Ct and Pt fails");
-            approximationErrors.emplace_back(
-                CalculateApproximationError<T>(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * positive double
             cResult = cc->EvalMult(ciphertext1, 1.0);
@@ -911,8 +916,6 @@ protected:
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                           failmsg + " EvalMult Ct and positive double fails");
-            approximationErrors.emplace_back(
-                CalculateApproximationError<T>(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -923,8 +926,6 @@ protected:
                     << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                           failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
-            approximationErrors.emplace_back(
-                CalculateApproximationError<T>(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
@@ -967,13 +968,13 @@ protected:
 
         std::vector<double> lowPrecisions;
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        testDataLocal.params.scalTech = FLEXIBLEAUTO;
+        testDataLocal.params.scalTech = testDataLocal.lowerPrecisionTechnique;
         if (!UnitTest_Mult_Packed(testDataLocal, lowPrecisions, failmsg))
             return;
 
         std::vector<double> highPrecisions;
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        testDataLocal.params.scalTech = FLEXIBLEAUTOEXT;
+        testDataLocal.params.scalTech = testDataLocal.higherPrecisionTechnique;
         if (!UnitTest_Mult_Packed(testDataLocal, highPrecisions, failmsg))
             return;
 

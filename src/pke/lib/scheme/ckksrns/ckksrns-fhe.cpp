@@ -38,7 +38,20 @@
 #include "schemebase/base-scheme.h"
 #include "cryptocontext.h"
 #include "ciphertext.h"
+
+#include "lattice/lat-hal.h"
+
+#include "math/hal/basicint.h"
 #include "math/dftransform.h"
+
+#include "utils/exception.h"
+#include "utils/parallel.h"
+#include "utils/utilities.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
+
+#include <cmath>
+#include <memory>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -144,18 +157,14 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     NativeInteger q = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt();
     double qDouble  = q.ConvertToDouble();
 
-    unsigned __int128 factor = ((unsigned __int128)1 << ((uint32_t)std::round(std::log2(qDouble))));
-    double pre               = qDouble / factor;
-    double k                 = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
-    double scaleEnc          = pre / k;
-    double scaleDec          = 1 / pre;
+    uint128_t factor = ((uint128_t)1 << ((uint32_t)std::round(std::log2(qDouble))));
+    double pre       = qDouble / factor;
+    double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
+    double scaleEnc  = pre / k;
+    double scaleDec  = 1 / pre;
 
-    uint32_t approxModDepth = 8;
-    if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
-        approxModDepth += R - 1;
-    }
-
-    uint32_t depthBT = approxModDepth + 1 + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
+    uint32_t approxModDepth = GetModDepthInternal(cryptoParams->GetSecretKeyDist());
+    uint32_t depthBT        = approxModDepth + 1 + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
                        precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
 
     // compute # of levels to remain when encoding the coefficients
@@ -463,14 +472,20 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         ctxtEnc  = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
         ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
 
-        // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-        if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        // Double-angle iterations
+        if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
+            (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
                 algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
-            ApplyDoubleAngleIterations(ctxtEnc);
-            ApplyDoubleAngleIterations(ctxtEncI);
+            uint32_t numIter;
+            if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
+                numIter = R_UNIFORM;
+            else
+                numIter = R_SPARSE;
+            ApplyDoubleAngleIterations(ctxtEnc, numIter);
+            ApplyDoubleAngleIterations(ctxtEncI, numIter);
         }
 
         algo->MultByMonomialInPlace(ctxtEncI, M / 4);
@@ -562,12 +577,18 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Evaluate Chebyshev series for the sine wave
         ctxtEnc = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
 
-        // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-        if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        // Double-angle iterations
+        if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
+            (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
             }
-            ApplyDoubleAngleIterations(ctxtEnc);
+            uint32_t numIter;
+            if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
+                numIter = R_UNIFORM;
+            else
+                numIter = R_SPARSE;
+            ApplyDoubleAngleIterations(ctxtEnc, numIter);
         }
 
         // scale the message back up after Chebyshev interpolation
@@ -1959,19 +1980,33 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
 uint32_t FHECKKSRNS::GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                        SecretKeyDist secretKeyDist) {
     if (secretKeyDist == UNIFORM_TERNARY) {
-        approxModDepth += R - 1;
+        approxModDepth += R_UNIFORM - 1;
     }
 
     return approxModDepth + levelBudget[0] + levelBudget[1];
 }
 
+uint32_t FHECKKSRNS::GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist) {
+    uint32_t approxModDepth = GetModDepthInternal(secretKeyDist);
+
+    return approxModDepth + levelBudget[0] + levelBudget[1];
+}
 //------------------------------------------------------------------------------
 // Auxiliary Bootstrap Functions
 //------------------------------------------------------------------------------
-uint32_t FHECKKSRNS::GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
-                                       const CryptoContextImpl<DCRTPoly>& cc) {
+uint32_t FHECKKSRNS::GetBootstrapDepthInternal(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
+                                               const CryptoContextImpl<DCRTPoly>& cc) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     return GetBootstrapDepth(approxModDepth, levelBudget, cryptoParams->GetSecretKeyDist());
+}
+
+uint32_t FHECKKSRNS::GetModDepthInternal(SecretKeyDist secretKeyDist) {
+    if (secretKeyDist == UNIFORM_TERNARY) {
+        return GetMultiplicativeDepthByCoeffVector(g_coefficientsUniform, true) + R_UNIFORM;
+    }
+    else {
+        return GetMultiplicativeDepthByCoeffVector(g_coefficientsSparse, true) + R_SPARSE;
+    }
 }
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
@@ -2013,10 +2048,10 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
     }
 }
 
-void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) const {
+void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIter) const {
     auto cc = ciphertext->GetCryptoContext();
 
-    int32_t r = R;
+    int32_t r = numIter;
     for (int32_t j = 1; j < r + 1; j++) {
         cc->EvalSquareInPlace(ciphertext);
         ciphertext    = cc->EvalAdd(ciphertext, ciphertext);
@@ -2045,12 +2080,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
     inverse.resize(slots);
 
-    DiscreteFourierTransform::FFTSpecialInv(inverse);
-    uint64_t pBits     = cc.GetEncodingParams()->GetPlaintextModulus();
-    uint32_t precision = 52;
+    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
+    uint64_t pBits = cc.GetEncodingParams()->GetPlaintextModulus();
 
-    double powP      = std::pow(2, precision);
-    int32_t pCurrent = pBits - precision;
+    double powP      = std::pow(2.0, MAX_DOUBLE_PRECISION);
+    int32_t pCurrent = pBits - MAX_DOUBLE_PRECISION;
 
     std::vector<int128_t> temp(2 * slots);
     for (size_t i = 0; i < slots; ++i) {
@@ -2063,7 +2097,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         // Check for possible overflow
         if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse);
+            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
 
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
@@ -2108,23 +2142,23 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         int64_t re64       = std::llround(dre);
         int32_t pRemaining = pCurrent + n1;
-        __int128 re        = 0;
+        int128_t re        = 0;
         if (pRemaining < 0) {
             re = re64 >> (-pRemaining);
         }
         else {
-            __int128 pPowRemaining = ((__int128)1) << pRemaining;
+            int128_t pPowRemaining = ((int128_t)1) << pRemaining;
             re                     = pPowRemaining * re64;
         }
 
         int64_t im64 = std::llround(dim);
         pRemaining   = pCurrent + n2;
-        __int128 im  = 0;
+        int128_t im  = 0;
         if (pRemaining < 0) {
             im = im64 >> (-pRemaining);
         }
         else {
-            __int128 pPowRemaining = ((int64_t)1) << pRemaining;
+            int128_t pPowRemaining = ((int64_t)1) << pRemaining;
             im                     = pPowRemaining * im64;
         }
 
@@ -2193,11 +2227,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
     inverse.resize(slots);
 
-    DiscreteFourierTransform::FFTSpecialInv(inverse);
+    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
     double powP = scFact;
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    int32_t MAX_BITS_IN_WORD = 61;
+    constexpr int32_t MAX_BITS_IN_WORD = 61;
 
     int32_t logc = 0;
     for (size_t i = 0; i < slots; ++i) {
@@ -2216,11 +2250,12 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     if (logc < 0) {
         OPENFHE_THROW(math_error, "Too small scaling factor");
     }
-    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox = logc - logValid;
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
+
     for (size_t i = 0; i < slots; ++i) {
         // Scale down by approxFactor in case the value exceeds a 64-bit integer.
         double dre = inverse[i].real() / approxFactor;
@@ -2228,7 +2263,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         // Check for possible overflow
         if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse);
+            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
 
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
@@ -2247,11 +2282,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax = realVal;
+                    realMax    = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax = imagVal;
+                    imagMax    = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2274,11 +2309,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2295,7 +2330,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         moduli[i] = nativeParams[i]->GetModulus();
     }
 
-    DCRTPoly::Integer intPowP = std::llround(powP);
+    DCRTPoly::Integer intPowP{static_cast<uint64_t>(std::llround(powP))};
     std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
 
     auto currPowP = crtPowP;
@@ -2312,16 +2347,15 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     // Scale back up by the approxFactor to get the correct encoding.
-    int32_t MAX_LOG_STEP = 60;
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
         while (logApprox > 0) {
-            int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+            intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
             std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -2355,7 +2389,7 @@ void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphe
     std::vector<DCRTPoly>& cv1       = ciphertext1->GetElements();
     const std::vector<DCRTPoly>& cv2 = ciphertext2->GetElements();
 
-    for (usint i = 0; i < cv1.size(); ++i) {
+    for (size_t i = 0; i < cv1.size(); ++i) {
         cv1[i] += cv2[i];
     }
 }
@@ -2412,6 +2446,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
 
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                                    NativeVector* nativeVec) const {
+    if (nativeVec == nullptr)
+        OPENFHE_THROW(config_error, "The passed native vector is empty.");
     NativeInteger bigValueHf(bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = bigBound - modulus;
@@ -2429,15 +2465,17 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
 }
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
+void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                                    NativeVector* nativeVec) const {
-    NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);
+    if (nativeVec == nullptr)
+        OPENFHE_THROW(config_error, "The passed native vector is empty.");
+    NativeInteger bigValueHf((uint128_t)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
-    NativeInteger diff = NativeInteger((unsigned __int128)bigBound) - modulus;
+    NativeInteger diff = NativeInteger((uint128_t)bigBound) - modulus;
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
     for (usint i = 0; i < vec.size(); i++) {
-        NativeInteger n((unsigned __int128)vec[i]);
+        NativeInteger n((uint128_t)vec[i]);
         if (n > bigValueHf) {
             (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
         }

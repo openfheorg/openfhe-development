@@ -32,6 +32,13 @@
 #ifndef LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
 #define LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
 
+#include "constants.h"
+
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+
+#include "math/hal/basicint.h"
+
 #include <algorithm>
 #include <functional>
 #include <initializer_list>
@@ -39,10 +46,6 @@
 #include <numeric>
 #include <utility>
 #include <vector>
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-#include "constants.h"
 
 namespace lbcrypto {
 
@@ -61,7 +64,12 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {}
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {
+        this->slots = GetDefaultSlotSize();
+        if (this->slots > (GetElementRingDimension() / 2)) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        }
+    }
 
     /*
    * @param noiseScaleDeg degree of the scaling factor of a plaintext
@@ -75,19 +83,14 @@ public:
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& coeffs,
                        size_t noiseScaleDeg, uint32_t level, double scFact, size_t slots)
-        : PlaintextImpl(vp, ep), value(coeffs) {
+        : PlaintextImpl(vp, ep, CKKSRNS_SCHEME), value(coeffs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
             OPENFHE_THROW(config_error, "The number of slots should be a power of two");
         }
 
-        if (0 == slots) {
-            auto batchSize = GetEncodingParams()->GetBatchSize();
-            this->slots    = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
-        }
-        else {
-            this->slots = slots;
-        }
+        this->slots = (slots) ? slots : GetDefaultSlotSize();
+
         if (this->slots < coeffs.size()) {
             OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
         }
@@ -106,19 +109,14 @@ public:
    * @param rhs - The input object to copy.
    */
     explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& rhs, size_t slots)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME), value(rhs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
             OPENFHE_THROW(config_error, "The number of slots should be a power of two");
         }
 
-        if (0 == slots) {
-            auto batchSize = GetEncodingParams()->GetBatchSize();
-            this->slots    = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
-        }
-        else {
-            this->slots = slots;
-        }
+        this->slots = (slots) ? slots : GetDefaultSlotSize();
+
         if (this->slots < rhs.size()) {
             OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
         }
@@ -130,13 +128,18 @@ public:
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {}
+    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME) {
+        this->slots = GetDefaultSlotSize();
+        if (this->slots > (GetElementRingDimension() / 2)) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        }
+    }
 
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
         : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
 
-    CKKSPackedEncoding(const CKKSPackedEncoding&& rhs)
-        : PlaintextImpl(rhs), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
+    CKKSPackedEncoding(CKKSPackedEncoding&& rhs)
+        : PlaintextImpl(std::move(rhs)), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
 
     bool Encode();
 
@@ -253,6 +256,10 @@ private:
     double m_logError = 0;
 
 protected:
+    usint GetDefaultSlotSize() {
+        auto batchSize = GetEncodingParams()->GetBatchSize();
+        return (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+    }
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
@@ -270,18 +277,7 @@ protected:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(const std::vector<__int128>& vec, __int128 bigBound, NativeVector* nativeVec) const;
-
-    constexpr __int128 Max128BitValue() const {
-        // 2^127-2^73-1 - max value that could be rounded to int128_t
-        return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1;
-    }
-
-    inline bool is128BitOverflow(double d) const {
-        const double EPSILON = 0.000001;
-
-        return EPSILON < (std::abs(d) - Max128BitValue());
-    }
+    void FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound, NativeVector* nativeVec) const;
 #endif
 };
 

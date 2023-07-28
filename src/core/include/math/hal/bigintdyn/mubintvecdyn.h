@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,18 +33,24 @@
   This file contains mubintvecdyn, a <vector> of buintdyn, with associated modulus and modulo math operators
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
-#define LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#include <initializer_list>
-#include <iostream>
-#include <string>
-#include <vector>
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
+        #define LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
 
-#include "math/hal/vector.h"
-#include "math/hal/bigintdyn/ubintdyn.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+        #include "math/hal/vector.h"
+        #include "math/hal/bigintdyn/ubintdyn.h"
+
+        #include "utils/exception.h"
+        #include "utils/inttypes.h"
+        #include "utils/serializable.h"
+
+        #include <initializer_list>
+        #include <iostream>
+        #include <string>
+        #include <utility>
+        #include <vector>
 
 /**
  * @namespace bigintdyn
@@ -65,20 +71,14 @@ using BigVector  = xmubintvec;
  */
 
 template <class ubint_el_t>
-class mubintvec : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t>,
-                  public lbcrypto::Serializable {
+class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t>,
+                        public lbcrypto::Serializable {
 public:
-    // CONSTRUCTORS
-
-    /**
-   * Basic constructor.
-   */
-    mubintvec();
+    mubintvec() = default;
 
     static mubintvec Single(const ubint_el_t& val, const ubint_el_t& modulus) {
-        mubintvec vec(1);
+        mubintvec vec(1, modulus);
         vec.m_data[0] = val;
-        vec.SetModulus(modulus);
         return vec;
     }
 
@@ -87,7 +87,7 @@ public:
    *
    * @param length initial size in terms of the number of entries.
    */
-    explicit mubintvec(usint length);
+    explicit mubintvec(usint length) noexcept : m_data(length) {}
 
     /**
    * Basic constructor for specifying the length and modulus of the vector.
@@ -95,7 +95,9 @@ public:
    * @param length initial size in terms of the number of entries.
    * @param modulus usint associated with entries in the vector.
    */
-    explicit mubintvec(const usint length, const usint& modulus);
+    // TODO: what practical purpose with usint modulus??
+    //    explicit mubintvec(usint length, const usint& modulus) noexcept
+    //        : m_modulus(modulus), m_modulus_state(State::INITIALIZED), m_data(length) {}
 
     /**
    * Basic constructor for specifying the length of the vector with modulus
@@ -103,7 +105,11 @@ public:
    * @param length initial size in terms of the number of entries.
    * @param modulus ubint associated with entries in the vector.
    */
-    explicit mubintvec(const usint length, const ubint_el_t& modulus);
+    mubintvec(usint length, const ubint_el_t& modulus) noexcept
+        : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {}
+
+    mubintvec(usint length, const ubint_el_t& modulus, const ubint_el_t& val) noexcept
+        : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length, val) {}
 
     /**
    * Basic constructor for specifying the length and modulus of the vector.
@@ -111,21 +117,24 @@ public:
    * @param length initial size in terms of the number of entries.
    * @param modulus string associated with entries in the vector.
    */
-    explicit mubintvec(const usint length, const std::string& modulus);
+    explicit mubintvec(usint length, const std::string& modulus)
+        : m_modulus(modulus), m_modulus_state{State::INITIALIZED}, m_data(length) {}
 
     /**
    * Copy constructor for copying a vector
    *
    * @param rhs is the mubintvec to be copied.
    */
-    explicit mubintvec(const mubintvec& rhs);
+    mubintvec(const mubintvec& rhs) noexcept
+        : m_modulus{rhs.m_modulus}, m_modulus_state{rhs.m_modulus_state}, m_data(rhs.m_data) {}
 
     /**
    * Move constructor for moving a vector
    *
    * @param &&rhs is the mubintvec to be moved.
    */
-    mubintvec(mubintvec&& rhs);
+    mubintvec(mubintvec&& rhs) noexcept
+        : m_modulus{std::move(rhs.m_modulus)}, m_modulus_state{rhs.m_modulus_state}, m_data(std::move(rhs.m_data)) {}
 
     /**
    * Basic constructor for specifying the length of the vector with
@@ -135,7 +144,7 @@ public:
    * @param modulus ubint associated with entries in the vector.
    * @param rhs initialier list of strings
    */
-    explicit mubintvec(const usint length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs);
+    explicit mubintvec(usint length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept;
 
     /**
    * Basic constructor for specifying the length of the vector with
@@ -145,20 +154,13 @@ public:
    * @param modulus ubint associated with entries in the vector.
    * @param rhs initialier list of usints
    */
-    explicit mubintvec(const usint length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs);
+    explicit mubintvec(usint length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept;
 
     // constructor specifying the mubintvec as a vector of strings and modulus
-    explicit mubintvec(const std::vector<std::string>& s, const ubint_el_t& modulus);
+    explicit mubintvec(const std::vector<std::string>& s, const ubint_el_t& modulus) noexcept;
 
     // constructor specifying the mubintvec as a vector of strings and modulus
-    explicit mubintvec(const std::vector<std::string>& s, const std::string& modulus);
-
-    /**
-   * Destructor.
-   */
-    virtual ~mubintvec();
-
-    // ASSIGNMENT OPERATORS
+    explicit mubintvec(const std::vector<std::string>& s, const std::string& modulus) noexcept;
 
     /**
    * Assignment operator
@@ -166,7 +168,7 @@ public:
    * @param &rhs is the mubintvec to be assigned from.
    * @return assigned mubintvec ref.
    */
-    const mubintvec& operator=(const mubintvec& rhs);
+    mubintvec& operator=(const mubintvec& rhs) noexcept;
 
     /**
    * move assignment contructor
@@ -174,7 +176,12 @@ public:
    * @param &rhs is the mubintvec to move
    * @return the return value.
    */
-    const mubintvec& operator=(mubintvec&& rhs);
+    mubintvec& operator=(mubintvec&& rhs) noexcept {
+        m_modulus       = std::move(rhs.m_modulus);
+        m_modulus_state = rhs.m_modulus_state;
+        m_data          = std::move(rhs.m_data);
+        return *this;
+    }
 
     /**
    * Initializer list for mubintvec.
@@ -184,7 +191,7 @@ public:
    * note if  modulus is set then mod(input) is stored
    * note modulus remains unchanged.
    */
-    const mubintvec& operator=(std::initializer_list<std::string> rhs);
+    mubintvec& operator=(std::initializer_list<std::string> rhs) noexcept;
 
     /**
    * Initializer list for mubintvec.
@@ -194,18 +201,17 @@ public:
    * note if  modulus is set then mod(input) is stored
    * note modulus remains unchanged.
    */
-    const mubintvec& operator=(std::initializer_list<uint64_t> rhs);
+    mubintvec& operator=(std::initializer_list<uint64_t> rhs) noexcept;
 
     /**
    * @param &&rhs is the usint value to assign to the zeroth entry
    * @return resulting mubintvec
    * note that modulus remains untouched.
    */
-    const mubintvec& operator=(uint64_t val) {
-        this->m_data[0] = val;
-        for (size_t i = 1; i < GetLength(); ++i) {
-            this->m_data[i] = 0;
-        }
+    mubintvec& operator=(uint64_t val) {
+        m_data.at(0) = ubint_el_t(val);
+        for (size_t i = 1; i < m_data.size(); ++i)
+            m_data[i] = ubint_el_t();
         return *this;
     }
 
@@ -213,19 +219,16 @@ public:
    * @param &&rhs is the ubint value to assign to the zeroth entry
    * @return resulting mubintvec
    */
-    const mubintvec& operator=(const ubint_el_t& val) {
-        this->m_data[0] = val;
-        for (size_t i = 1; i < this->m_data.size(); ++i) {
-            this->m_data[i] = 0;
-        }
+    mubintvec& operator=(const ubint_el_t& val) {
+        m_data.at(0) = val;
+        for (size_t i = 1; i < m_data.size(); ++i)
+            m_data[i] = ubint_el_t();
         return *this;
     }
 
     size_t GetLength() const {
         return m_data.size();
     }
-
-    // ACCESSORS
 
     /**
    * Sets/gets a value at an index.
@@ -234,33 +237,31 @@ public:
    * @param index is the index to set a value at.
    */
     ubint_el_t& at(size_t i) {
-        if (!this->IndexCheck(i)) {
+        if (!mubintvec::IndexCheck(i))
             OPENFHE_THROW(lbcrypto::math_error, "index out of range");
-        }
-        return this->m_data[i];
+        return m_data[i];
     }
 
     const ubint_el_t& at(size_t i) const {
-        if (!this->IndexCheck(i)) {
+        if (!mubintvec::IndexCheck(i))
             OPENFHE_THROW(lbcrypto::math_error, "index out of range");
-        }
-        return this->m_data[i];
+        return m_data[i];
     }
 
     ubint_el_t& operator[](size_t i) {
-        return this->m_data[i];
+        return m_data[i];
     }
 
     const ubint_el_t& operator[](size_t i) const {
-        return this->m_data[i];
+        return m_data[i];
     }
 
     /**
    * checks the vector modulus state.
    * always returns true
    */
-    bool isModulusSet(void) const {
-        return true;
+    bool isModulusSet() const {
+        return m_modulus_state == State::INITIALIZED;
     }
 
     /**
@@ -268,28 +269,45 @@ public:
    *
    * @param value is the value to set.
    */
-    void SetModulus(const usint& value);
+    //    void SetModulus(const usint& value) noexcept {
+    //        m_modulus       = ubint_el_t(value);
+    //        m_modulus_state = State::INITIALIZED;
+    //    }
 
     /**
    * Sets the vector modulus.
    *
    * @param value is the value to set.
    */
-    void SetModulus(const ubint_el_t& value);
+    void SetModulus(const ubint_el_t& value) noexcept {
+        m_modulus       = value;
+        m_modulus_state = State::INITIALIZED;
+    }
+
+    void SetModulus(ubint_el_t&& value) noexcept {
+        m_modulus       = std::move(value);
+        m_modulus_state = State::INITIALIZED;
+    }
 
     /**
    * Sets the vector modulus.
    *
    * @param value is the value to set.
    */
-    void SetModulus(const std::string& value);
+    void SetModulus(const std::string& value) {
+        m_modulus       = ubint_el_t(value);
+        m_modulus_state = State::INITIALIZED;
+    }
 
     /**
    * Sets the vector modulus to the same as another mubintvec
    *
    * @param value is the vector whose modulus to use.
    */
-    void SetModulus(const mubintvec& value);
+    void SetModulus(const mubintvec& value) {
+        m_modulus       = value.GetModulus();
+        m_modulus_state = State::INITIALIZED;
+    }
 
     /**
    * Sets the vector modulus and changes the values to match the new modulus.
@@ -303,9 +321,11 @@ public:
    *
    * @return the vector modulus.
    */
-    const ubint_el_t& GetModulus() const;
-
-    // MODULUS ARITHMETIC OPERATIONS
+    const ubint_el_t& GetModulus() const {
+        if (m_modulus_state != State::INITIALIZED)
+            OPENFHE_THROW(lbcrypto::not_available_error, "GetModulus() on uninitialized mubintvec");
+        return m_modulus;
+    }
 
     /**
    * Vector modulus operator.
@@ -323,7 +343,7 @@ public:
    * @param &modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
-    const mubintvec& ModEq(const ubint_el_t& modulus);
+    mubintvec& ModEq(const ubint_el_t& modulus);
 
     /**
    * Scalar-to-vector modulus addition operation.
@@ -339,7 +359,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
-    const mubintvec& ModAddEq(const ubint_el_t& b);
+    mubintvec& ModAddEq(const ubint_el_t& b);
 
     /**
    * Scalar modulus addition at a particular index.
@@ -348,7 +368,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    mubintvec ModAddAtIndex(usint i, const ubint_el_t& b) const;
+    mubintvec ModAddAtIndex(size_t i, const ubint_el_t& b) const;
 
     /**
    * Scalar modulus addition at a particular index. In-place variant.
@@ -357,7 +377,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    const mubintvec& ModAddAtIndexEq(usint i, const ubint_el_t& b);
+    mubintvec& ModAddAtIndexEq(size_t i, const ubint_el_t& b);
 
     /**
    * Vector component wise modulus addition.
@@ -373,7 +393,8 @@ public:
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
-    const mubintvec& ModAddEq(const mubintvec& b);
+    mubintvec& ModAddEq(const mubintvec& b);
+    mubintvec& ModAddNoCheckEq(const mubintvec& b);
 
     /**
    * Scalar-from-vector modulus subtraction operation.
@@ -389,7 +410,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
-    const mubintvec& ModSubEq(const ubint_el_t& b);
+    mubintvec& ModSubEq(const ubint_el_t& b);
 
     /**
    * Vector component wise modulus subtraction.
@@ -405,7 +426,7 @@ public:
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
-    const mubintvec& ModSubEq(const mubintvec& b);
+    mubintvec& ModSubEq(const mubintvec& b);
 
     /**
    * Scalar-to-vector modulus multiplication operation.
@@ -421,7 +442,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
-    const mubintvec& ModMulEq(const ubint_el_t& b);
+    mubintvec& ModMulEq(const ubint_el_t& b);
 
     /**
    * Vector component wise modulus multiplication.
@@ -439,7 +460,8 @@ public:
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
-    const mubintvec& ModMulEq(const mubintvec& b);
+    mubintvec& ModMulEq(const mubintvec& b);
+    mubintvec& ModMulNoCheckEq(const mubintvec& b);
 
     /**
    * Scalar modulus exponentiation operation.
@@ -455,7 +477,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
-    const mubintvec& ModExpEq(const ubint_el_t& b);
+    mubintvec& ModExpEq(const ubint_el_t& b);
 
     /**
    * Modulus inverse operation.
@@ -469,7 +491,7 @@ public:
    *
    * @return is the result of the component wise modulus inverse operation.
    */
-    const mubintvec& ModInverseEq();
+    mubintvec& ModInverseEq();
 
     /**
    * Modulus 2 operation, also a least significant bit.
@@ -485,7 +507,7 @@ public:
    * @return is the result of the component wise modulus 2 operation, also a
    * least significant bit.
    */
-    const mubintvec& ModByTwoEq();
+    mubintvec& ModByTwoEq();
 
     /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -505,7 +527,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-    const mubintvec& MultiplyAndRoundEq(const ubint_el_t& p, const ubint_el_t& q);
+    mubintvec& MultiplyAndRoundEq(const ubint_el_t& p, const ubint_el_t& q);
 
     /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -523,7 +545,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-    const mubintvec& DivideAndRoundEq(const ubint_el_t& q);
+    mubintvec& DivideAndRoundEq(const ubint_el_t& q);
 
     // OTHER FUNCTIONS
 
@@ -556,14 +578,14 @@ public:
    * @return is the ostream object.
    */
     friend std::ostream& operator<<(std::ostream& os, const mubintvec& ptr_obj) {
-#if 0  // old way
+        #if 0  // old way
     os << std::endl;
     for (usint i = 0; i < ptr_obj.m_data.size(); i++) {
       os << ptr_obj.m_data[i] << std::endl;
     }
     os << "modulus: " << ptr_obj.m_modulus;
     os << std::endl;
-#else
+        #else
         auto len = ptr_obj.m_data.size();
         os << "[";
         for (usint i = 0; i < len; i++) {
@@ -571,7 +593,7 @@ public:
             os << ((i == (len - 1)) ? "]" : " ");
         }
         os << " modulus: " << ptr_obj.m_modulus;
-#endif
+        #endif
         return os;
     }
 
@@ -595,7 +617,7 @@ public:
         ar(::cereal::make_nvp("ms", m_modulus_state));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "ExpVector";
     }
 
@@ -604,23 +626,21 @@ public:
     }
 
 private:
-    ubint_el_t m_modulus;
+    enum State { GARBAGE, INITIALIZED };
 
-    enum State { INITIALIZED, GARBAGE };
+    ubint_el_t m_modulus{};
 
     // enum to store the state of the
-    State m_modulus_state;
+    State m_modulus_state{State::GARBAGE};
 
-    std::vector<ubint_el_t> m_data;
+    std::vector<ubint_el_t> m_data{};
 
     bool IndexCheck(size_t length) const {
-        if (length > m_data.size()) {
-            return false;
-        }
-        return true;
+        return length < m_data.size();
     }
 };
 
 }  // namespace bigintdyn
 
-#endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
+    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
+#endif

@@ -35,6 +35,8 @@
 
 #include "gtest/gtest.h"
 #include "lattice/field2n.h"
+#include "math/dftransform.h"
+#include "utils/debug.h"
 
 using namespace lbcrypto;
 

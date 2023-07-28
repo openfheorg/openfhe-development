@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -36,20 +36,25 @@
 #ifndef LBCRYPTO_MATH_MATRIX_H
 #define LBCRYPTO_MATH_MATRIX_H
 
-#include <cmath>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-#include <utility>
-
 #include "lattice/lat-hal.h"
+
 #include "math/distrgen.h"
+#include "math/math-hal.h"
 #include "math/nbtheory.h"
+
 #include "utils/inttypes.h"
 #include "utils/memory.h"
+#include "utils/parallel.h"
+#include "utils/serializable.h"
 #include "utils/utilities.h"
+
+#include <cmath>
+#include <functional>
+// #include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -683,7 +688,7 @@ public:
         // users will need to SetAllocator for any newly deserialized matrix
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "Matrix";
     }
     static uint32_t SerializedVersion() {

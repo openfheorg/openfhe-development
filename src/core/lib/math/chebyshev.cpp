@@ -2,7 +2,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,27 +35,29 @@
  */
 
 #include "math/chebyshev.h"
+
 #include <cmath>
+#include <cstdint>
+#include <functional>
+#include <vector>
 
 namespace lbcrypto {
 
 std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func, double a, double b, uint32_t degree) {
     double bMinusA = 0.5 * (b - a);
     double bPlusA  = 0.5 * (b + a);
+    double PiByDeg = M_PI / static_cast<double>(degree);
     std::vector<double> functionPoints(degree);
-    for (size_t i = 0; i < degree; i++) {
-        functionPoints[i] = func(std::cos(M_PI * (i + 0.5) / degree) * bMinusA + bPlusA);
-    }
-    double multFactor = 2.0 / degree;
+    for (uint32_t i = 0; i < degree; ++i)
+        functionPoints[i] = func(std::cos(PiByDeg * (i + 0.5)) * bMinusA + bPlusA);
 
-    std::vector<double> coefficients(degree, 0);
-    for (size_t i = 0; i < degree; i++) {
-        for (size_t j = 0; j < degree; j++) {
-            coefficients[i] += functionPoints[j] * std::cos(M_PI * i * (j + 0.5) / degree);
-        }
+    double multFactor = 2.0 / static_cast<double>(degree);
+    std::vector<double> coefficients(degree);
+    for (uint32_t i = 0; i < degree; ++i) {
+        for (uint32_t j = 0; j < degree; ++j)
+            coefficients[i] += functionPoints[j] * std::cos(PiByDeg * i * (j + 0.5));
         coefficients[i] *= multFactor;
     }
-
     return coefficients;
 }
 

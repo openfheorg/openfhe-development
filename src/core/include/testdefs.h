@@ -33,6 +33,8 @@
   common unit test definitions
  */
 
+// Should we move file location?
+
 #ifndef TESTDEFS_H_
 #define TESTDEFS_H_
 
@@ -41,149 +43,110 @@
 // COMMON TESTING DEFINITIONS
 extern bool TestB2;
 extern bool TestB4;
-#ifdef WITH_NTL
 extern bool TestB6;
-#endif
 extern bool TestNative;
 
 // macros for unit testing
-#ifdef WITH_NTL
-    #define RUN_BIG_BACKENDS_INT(FUNCTION, MESSAGE) \
-        {                                           \
-            if (TestB2) {                           \
-                using T = M2Integer;                \
-                FUNCTION<T>("BE2 " MESSAGE);        \
-            }                                       \
-            if (TestB4) {                           \
-                using T = M4Integer;                \
-                FUNCTION<T>("BE4 " MESSAGE);        \
-            }                                       \
-            if (TestB6) {                           \
-                using T = M6Integer;                \
-                FUNCTION<T>("BE6 " MESSAGE);        \
-            }                                       \
-        }
-    #define RUN_BIG_BACKENDS(FUNCTION, MESSAGE) \
-        {                                       \
-            if (TestB2) {                       \
-                using V = M2Vector;             \
-                FUNCTION<V>("BE2 " MESSAGE);    \
-            }                                   \
-            if (TestB4) {                       \
-                using V = M4Vector;             \
-                FUNCTION<V>("BE4 " MESSAGE);    \
-            }                                   \
-            if (TestB6) {                       \
-                using V = M6Vector;             \
-                FUNCTION<V>("BE6 " MESSAGE);    \
-            }                                   \
-        }
-    #define RUN_BIG_POLYS(FUNCTION, MESSAGE)     \
-        {                                        \
-            if (TestB2) {                        \
-                using V = M2Poly;                \
-                FUNCTION<V>("BE2Poly " MESSAGE); \
-            }                                    \
-            if (TestB4) {                        \
-                using V = M4Poly;                \
-                FUNCTION<V>("BE4Poly " MESSAGE); \
-            }                                    \
-            if (TestB6) {                        \
-                using V = M6Poly;                \
-                FUNCTION<V>("BE6Poly " MESSAGE); \
-            }                                    \
-        }
-
-    #define RUN_BIG_DCRTPOLYS(FUNCTION, MESSAGE)     \
-        {                                            \
-            if (TestB2) {                            \
-                using V = M2DCRTPoly;                \
-                FUNCTION<V>("BE2DCRTPoly " MESSAGE); \
-            }                                        \
-            if (TestB4) {                            \
-                using V = M4DCRTPoly;                \
-                FUNCTION<V>("BE4DCRTPoly " MESSAGE); \
-            }                                        \
-            if (TestB6) {                            \
-                using V = M6DCRTPoly;                \
-                FUNCTION<V>("BE6DCRTPoly " MESSAGE); \
-            }                                        \
-        }
-#else
-    #define RUN_BIG_BACKENDS_INT(FUNCTION, MESSAGE) \
-        {                                           \
-            if (TestB2) {                           \
-                using T = M2Integer;                \
-                FUNCTION<T>("BE2 " MESSAGE);        \
-            }                                       \
-            if (TestB4) {                           \
-                using T = M4Integer;                \
-                FUNCTION<T>("BE4 " MESSAGE);        \
-            }                                       \
-        }
-    #define RUN_BIG_BACKENDS(FUNCTION, MESSAGE) \
-        {                                       \
-            if (TestB2) {                       \
-                using V = M2Vector;             \
-                FUNCTION<V>("BE2 " MESSAGE);    \
-            }                                   \
-            if (TestB4) {                       \
-                using V = M4Vector;             \
-                FUNCTION<V>("BE4 " MESSAGE);    \
-            }                                   \
-        }
-    #define RUN_BIG_POLYS(FUNCTION, MESSAGE)     \
-        {                                        \
-            if (TestB2) {                        \
-                using V = M2Poly;                \
-                FUNCTION<V>("BE2Poly " MESSAGE); \
-            }                                    \
-            if (TestB4) {                        \
-                using V = M4Poly;                \
-                FUNCTION<V>("BE4Poly " MESSAGE); \
-            }                                    \
-        }
-
-    #define RUN_BIG_DCRTPOLYS(FUNCTION, MESSAGE)     \
-        {                                            \
-            if (TestB2) {                            \
-                using V = M2DCRTPoly;                \
-                FUNCTION<V>("BE2DCRTPoly " MESSAGE); \
-            }                                        \
-            if (TestB4) {                            \
-                using V = M4DCRTPoly;                \
-                FUNCTION<V>("BE4DCRTPoly " MESSAGE); \
-            }                                        \
-        }
-#endif
-
-#define RUN_ALL_POLYS(FUNCTION, MESSAGE)    \
-    {                                       \
-        RUN_BIG_POLYS(FUNCTION, MESSAGE)    \
-        if (TestNative) {                   \
-            using V = NativePoly;           \
-            FUNCTION<V>("Native " MESSAGE); \
-        }                                   \
-    }
 
 #define RUN_NATIVE_BACKENDS_INT(FUNCTION, MESSAGE) \
-    {                                              \
-        if (TestNative) {                          \
-            {                                      \
-                using T = NativeInteger;           \
-                FUNCTION<T>("Native " MESSAGE);    \
-            }                                      \
-        }                                          \
+    if (TestNative)                                \
+        FUNCTION<NativeInteger>("NativeInteger " MESSAGE);
+#define RUN_NATIVE_BACKENDS(FUNCTION, MESSAGE) \
+    if (TestNative)                            \
+        FUNCTION<NativeVector>("NativeVector " MESSAGE);
+#define RUN_NATIVE_POLYS(FUNCTION, MESSAGE) \
+    if (TestNative)                         \
+        FUNCTION<NativePoly>("NativePoly " MESSAGE);
+
+#ifdef WITH_BE2
+    #define RUN_BIG_BACKENDS_INT2(FUNCTION, MESSAGE) \
+        if (TestB2)                                  \
+            FUNCTION<M2Integer>("BE2Integer " MESSAGE);
+    #define RUN_BIG_BACKENDS2(FUNCTION, MESSAGE) \
+        if (TestB2)                              \
+            FUNCTION<M2Vector>("BE2Vector " MESSAGE);
+    #define RUN_BIG_POLYS2(FUNCTION, MESSAGE) \
+        if (TestB2)                           \
+            FUNCTION<M2Poly>("BE2Poly " MESSAGE);
+    #define RUN_BIG_DCRTPOLYS2(FUNCTION, MESSAGE) \
+        if (TestB2)                               \
+            FUNCTION<M2DCRTPoly>("BE2DCRTPoly " MESSAGE);
+#else
+    #define RUN_BIG_BACKENDS_INT2(FUNCTION, MESSAGE)
+    #define RUN_BIG_BACKENDS2(FUNCTION, MESSAGE)
+    #define RUN_BIG_POLYS2(FUNCTION, MESSAGE)
+    #define RUN_BIG_DCRTPOLYS2(FUNCTION, MESSAGE)
+#endif
+
+#ifdef WITH_BE4
+    #define RUN_BIG_BACKENDS_INT4(FUNCTION, MESSAGE) \
+        if (TestB4)                                  \
+            FUNCTION<M4Integer>("BE4Integer " MESSAGE);
+    #define RUN_BIG_BACKENDS4(FUNCTION, MESSAGE) \
+        if (TestB4)                              \
+            FUNCTION<M4Vector>("BE4Vector " MESSAGE);
+    #define RUN_BIG_POLYS4(FUNCTION, MESSAGE) \
+        if (TestB4)                           \
+            FUNCTION<M4Poly>("BE4Poly " MESSAGE);
+    #define RUN_BIG_DCRTPOLYS4(FUNCTION, MESSAGE) \
+        if (TestB4)                               \
+            FUNCTION<M4DCRTPoly>("BE4DCRTPoly " MESSAGE);
+#else
+    #define RUN_BIG_BACKENDS_INT4(FUNCTION, MESSAGE)
+    #define RUN_BIG_BACKENDS4(FUNCTION, MESSAGE)
+    #define RUN_BIG_POLYS4(FUNCTION, MESSAGE)
+    #define RUN_BIG_DCRTPOLYS4(FUNCTION, MESSAGE)
+#endif
+
+#ifdef WITH_NTL
+    #define RUN_BIG_BACKENDS_INT6(FUNCTION, MESSAGE) \
+        if (TestB6)                                  \
+            FUNCTION<M6Integer>("BE6Integer " MESSAGE);
+    #define RUN_BIG_BACKENDS6(FUNCTION, MESSAGE) \
+        if (TestB6)                              \
+            FUNCTION<M6Vector>("BE6Vector " MESSAGE);
+    #define RUN_BIG_POLYS6(FUNCTION, MESSAGE) \
+        if (TestB6)                           \
+            FUNCTION<M6Poly>("BE6Poly " MESSAGE);
+    #define RUN_BIG_DCRTPOLYS6(FUNCTION, MESSAGE) \
+        if (TestB6)                               \
+            FUNCTION<M6DCRTPoly>("BE6DCRTPoly " MESSAGE);
+#else
+    #define RUN_BIG_BACKENDS_INT6(FUNCTION, MESSAGE)
+    #define RUN_BIG_BACKENDS6(FUNCTION, MESSAGE)
+    #define RUN_BIG_POLYS6(FUNCTION, MESSAGE)
+    #define RUN_BIG_DCRTPOLYS6(FUNCTION, MESSAGE)
+#endif
+
+#define RUN_BIG_BACKENDS_INT(FUNCTION, MESSAGE)  \
+    {                                            \
+        RUN_BIG_BACKENDS_INT2(FUNCTION, MESSAGE) \
+        RUN_BIG_BACKENDS_INT4(FUNCTION, MESSAGE) \
+        RUN_BIG_BACKENDS_INT6(FUNCTION, MESSAGE) \
+    }
+#define RUN_BIG_BACKENDS(FUNCTION, MESSAGE)  \
+    {                                        \
+        RUN_BIG_BACKENDS2(FUNCTION, MESSAGE) \
+        RUN_BIG_BACKENDS4(FUNCTION, MESSAGE) \
+        RUN_BIG_BACKENDS6(FUNCTION, MESSAGE) \
+    }
+#define RUN_BIG_POLYS(FUNCTION, MESSAGE)  \
+    {                                     \
+        RUN_BIG_POLYS2(FUNCTION, MESSAGE) \
+        RUN_BIG_POLYS4(FUNCTION, MESSAGE) \
+        RUN_BIG_POLYS6(FUNCTION, MESSAGE) \
+    }
+#define RUN_BIG_DCRTPOLYS(FUNCTION, MESSAGE)  \
+    {                                         \
+        RUN_BIG_DCRTPOLYS2(FUNCTION, MESSAGE) \
+        RUN_BIG_DCRTPOLYS4(FUNCTION, MESSAGE) \
+        RUN_BIG_DCRTPOLYS6(FUNCTION, MESSAGE) \
     }
 
-#define RUN_NATIVE_BACKENDS(FUNCTION, MESSAGE)  \
-    {                                           \
-        if (TestNative) {                       \
-            {                                   \
-                using V = NativeVector;         \
-                FUNCTION<V>("Native " MESSAGE); \
-            }                                   \
-        }                                       \
+#define RUN_ALL_BACKENDS_INT(FUNCTION, MESSAGE)    \
+    {                                              \
+        RUN_BIG_BACKENDS_INT(FUNCTION, MESSAGE)    \
+        RUN_NATIVE_BACKENDS_INT(FUNCTION, MESSAGE) \
     }
 
 #define RUN_ALL_BACKENDS(FUNCTION, MESSAGE)    \
@@ -192,9 +155,10 @@ extern bool TestNative;
         RUN_NATIVE_BACKENDS(FUNCTION, MESSAGE) \
     }
 
-#define RUN_ALL_BACKENDS_INT(FUNCTION, MESSAGE)    \
-    {                                              \
-        RUN_BIG_BACKENDS_INT(FUNCTION, MESSAGE)    \
-        RUN_NATIVE_BACKENDS_INT(FUNCTION, MESSAGE) \
+#define RUN_ALL_POLYS(FUNCTION, MESSAGE)    \
+    {                                       \
+        RUN_BIG_POLYS(FUNCTION, MESSAGE)    \
+        RUN_NATIVE_POLYS(FUNCTION, MESSAGE) \
     }
+
 #endif /* TESTDEFS_H_ */

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,43 +35,39 @@
 
 #define _USE_MATH_DEFINES
 
-#include <time.h>
-#include <chrono>
-#include <cmath>
-#include <sstream>
-
 #include "config_core.h"
+
+#include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 #include "math/nbtheory.h"
 
 #include "utils/debug.h"
+
+// #include <time.h>
+// #include <chrono>
+#include <cmath>
+// #include <sstream>
+#include <vector>
 
 namespace lbcrypto {
 
 #ifdef WITH_NTL
 // native NTL version
 NTL::myZZ RNG(const NTL::myZZ& modulus) {
-    OPENFHE_DEBUG_FLAG(false);
-    OPENFHE_DEBUG("in NTL RNG");
     return RandomBnd(modulus);
 }
 
 // define an NTL native implementation
 NTL::myZZ GreatestCommonDivisor(const NTL::myZZ& a, const NTL::myZZ& b) {
-    OPENFHE_DEBUG_FLAG(false);
-    OPENFHE_DEBUG("NTL::GCD a " << a << " b " << b);
     return GCD(a, b);
 }
 
 // NTL native version
 bool MillerRabinPrimalityTest(const NTL::myZZ& p, const usint niter) {
-    OPENFHE_DEBUG_FLAG(false);
-    OPENFHE_DEBUG("in NTL MRPT");
     if (p < NTL::myZZ(2) || ((p != NTL::myZZ(2)) && (p.Mod(NTL::myZZ(2)) == NTL::myZZ(0))))
         return false;
     if (p == NTL::myZZ(2) || p == NTL::myZZ(3) || p == NTL::myZZ(5))
         return true;
-
     return static_cast<bool>(ProbPrime(p, niter));  // TODO: check to see if niter >maxint
 }
 #endif
@@ -113,98 +109,71 @@ uint64_t GetTotient(const uint64_t n) {
 }
 
 std::vector<int> GetCyclotomicPolynomialRecursive(usint m) {
-    std::vector<int> result;
-    if (m == 1) {
-        result = {-1, 1};
-        return result;
-    }
-    if (m == 2) {
-        result = {1, 1};
-        return result;
-    }
     auto IsPrime = [](usint val) {
-        bool flag = true;
-        for (usint i = 2; i < val; i++) {
-            if (val % i == 0) {
-                flag = false;
-                return flag;
-            }
+        if (val % 2 == 0)
+            return false;
+        for (usint i = 3; i < val; i += 2) {
+            if (val % i == 0)
+                return false;
         }
-        return flag;
+        return true;
     };
-    if (IsPrime(m)) {
-        result = std::vector<int>(m, 1);
-        return result;
-    }
 
     auto GetDivisibleNumbers = [](usint val) {
         std::vector<usint> div;
         for (usint i = 1; i < val; i++) {
-            if (val % i == 0) {
+            if (val % i == 0)
                 div.push_back(i);
-            }
         }
         return div;
     };
 
     auto PolyMult = [](const std::vector<int>& a, const std::vector<int>& b) {
-        usint degreeA = a.size() - 1;
-        usint degreeB = b.size() - 1;
-
-        usint degreeResultant = degreeA + degreeB;
-
-        std::vector<int> product(degreeResultant + 1, 0);
-
-        for (usint i = 0; i < a.size(); i++) {
-            for (usint j = 0; j < b.size(); j++) {
-                const auto& valResult = product.at(i + j);
-                const auto& valMult   = a.at(i) * b.at(j);
-                product.at(i + j)     = valMult + valResult;
-            }
+        usint degreeA(a.size());
+        usint degreeB(b.size());
+        usint degreeResultant(degreeA + degreeB - 1);
+        std::vector<int> product(degreeResultant, 0);
+        for (usint i = 0; i < degreeA; ++i) {
+            for (usint j = 0; j < degreeB; ++j)
+                product[i + j] += a[i] * b[j];
         }
-
         return product;
     };
 
     auto PolyQuotient = [](const std::vector<int>& dividend, const std::vector<int>& divisor) {
-        usint divisorLength  = divisor.size();
-        usint dividendLength = dividend.size();
-
-        usint runs = dividendLength - divisorLength + 1;  // no. of iterations
+        usint divisorLength(divisor.size());
+        usint dividendLength(dividend.size());
+        usint runs(dividendLength - divisorLength + 1);
         std::vector<int> quotient(runs + 1);
-
-        auto mat = [](const int x, const int y, const int z) {
-            int ret = z - (x * y);
-            return ret;
-        };
-
         std::vector<int> runningDividend(dividend);
-
-        usint divisorPtr;
-        for (usint i = 0; i < runs; i++) {
+        for (usint i = 0; i < runs; ++i) {
             // get the highest degree coeff
-            int divConst = (runningDividend.at(dividendLength - 1));
-            divisorPtr   = divisorLength - 1;
-            for (usint j = 0; j < dividendLength - i - 1; j++) {
-                if (divisorPtr > j) {
-                    runningDividend.at(dividendLength - 1 - j) =
-                        mat(divisor.at(divisorPtr - 1 - j), divConst, runningDividend.at(dividendLength - 2 - j));
-                }
-                else {
-                    runningDividend.at(dividendLength - 1 - j) = runningDividend.at(dividendLength - 2 - j);
-                }
+            int divConst     = runningDividend[dividendLength - 1];
+            usint divisorPtr = divisorLength - 1;
+            for (usint j = 0; j < dividendLength - i - 1; ++j) {
+                auto& rdtmp1 = runningDividend[dividendLength - 1 - j];
+                rdtmp1       = runningDividend[dividendLength - 2 - j];
+                if (divisorPtr > j)
+                    rdtmp1 -= (divisor[divisorPtr - 1 - j] * divConst);
             }
-            quotient.at(i + 1) = runningDividend.at(dividendLength - 1);
+            quotient[i + 1] = runningDividend[dividendLength - 1];
         }
         // under the assumption that both dividend and divisor are monic
-        quotient.at(0) = 1;
+        quotient[0] = 1;
         quotient.pop_back();
-
         return quotient;
     };
+
+    if (m == 1)
+        return std::vector<int>{-1, 1};
+    if (m == 2)
+        return std::vector<int>{1, 1};
+    if (IsPrime(m))
+        return std::vector<int>(m, 1);
+
     auto divisibleNumbers = GetDivisibleNumbers(m);
 
-    std::vector<int> product(1, 1);
+    std::vector<int> product{1};
 
     for (usint i = 0; i < divisibleNumbers.size(); i++) {
         auto P  = GetCyclotomicPolynomialRecursive(divisibleNumbers[i]);
@@ -213,12 +182,9 @@ std::vector<int> GetCyclotomicPolynomialRecursive(usint m) {
 
     // make big poly = x^m - 1
     std::vector<int> bigPoly(m + 1, 0);
-    bigPoly.at(0) = -1;
-    bigPoly.at(m) = 1;
-
-    result = PolyQuotient(bigPoly, product);
-
-    return result;
+    bigPoly[0] = -1;
+    bigPoly[m] = 1;
+    return PolyQuotient(bigPoly, product);
 }
 
 uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {

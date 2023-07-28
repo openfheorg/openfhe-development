@@ -119,6 +119,8 @@ public:
 
     usint FindAutomorphismIndex(usint index, usint m) const override;
 
+    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const override;
+
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

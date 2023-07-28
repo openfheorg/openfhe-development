@@ -38,4 +38,5 @@
 namespace lbcrypto {
 
 ParallelControls OpenFHEParallelControls;
+
 }

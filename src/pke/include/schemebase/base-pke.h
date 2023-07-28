@@ -71,7 +71,7 @@ public:
    * @param &privateKey private key used for decryption.
    * @return function ran correctly.
    */
-    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse);
+    virtual KeyPair<Element> KeyGenInternal(CryptoContext<Element> cc, bool makeSparse);
 
     //  virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc,
     //                                    bool makeSparse,
@@ -136,8 +136,7 @@ public:
                                                                    const std::shared_ptr<ParmType> params) const;
 
     virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey,
-                                                                   const std::shared_ptr<ParmType> params,
-                                                                   const DggType& dgg) const;
+                                                                   const std::shared_ptr<ParmType> params) const;
 
     virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };

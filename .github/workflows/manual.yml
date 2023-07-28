@@ -3,7 +3,7 @@ name: Manual
 on:
   workflow_dispatch:
     inputs:
-      # Selelects the compiler to use, this will be used in the COMPILERS_MAP as the key to 
+      # Selelects the compiler to use, this will be used in the COMPILERS_MAP as the key to
       # retrieve the corresponding cmake compiler options to pass to the action
       compiler:
         type: choice
@@ -71,8 +71,8 @@ env:
     {
       "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
       "CLANG-10"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10",
-      "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",      
-      "CLANG-11"  : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
+      "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
+      "CLANG-11"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11",
     }
 
 jobs:
@@ -274,5 +274,3 @@ jobs:
         with_tcm: true
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
-
-    

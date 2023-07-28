@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,13 +33,18 @@
   Header for the standard values for Lattice Parms, as determined by homomorphicencryption.org
  */
 
-#ifndef SRC_CORE_LIB_LATTICE_STDLATTICEPARMS_H_
-#define SRC_CORE_LIB_LATTICE_STDLATTICEPARMS_H_
+#ifndef LBCRYPTO_INC_LATTICE_STDLATTICEPARMS_H
+#define LBCRYPTO_INC_LATTICE_STDLATTICEPARMS_H
 
+//  #include "math/math-hal.h"
+
+#include "utils/inttypes.h"
+
+#include <iostream>
 #include <map>
-#include <vector>
+#include <string>
 #include <utility>
-#include "math/hal.h"
+#include <vector>
 
 namespace lbcrypto {
 
@@ -70,6 +75,7 @@ enum SecurityLevel {
     HEStd_NotSet,
 };
 
+SecurityLevel convertToSecurityLevel(const std::string& str);
 SecurityLevel convertToSecurityLevel(uint32_t num);
 inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     switch (sl) {
@@ -95,7 +101,7 @@ inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
             s << "HEStd_NotSet";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
@@ -181,4 +187,4 @@ public:
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_LATTICE_STDLATTICEPARMS_H_ */
+#endif

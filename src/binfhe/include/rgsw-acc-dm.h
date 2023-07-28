@@ -42,39 +42,53 @@ namespace lbcrypto {
  * @brief Ring GSW accumulator schemes described in
  * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
  */
-class RingGSWAccumulatorDM : public RingGSWAccumulator {
+class RingGSWAccumulatorDM final : public RingGSWAccumulator {
 public:
     RingGSWAccumulatorDM() = default;
 
-    virtual ~RingGSWAccumulatorDM() {}
-
     /**
-   * Internal RingGSW encryption used in generating the refreshing key
+   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2020/086
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param skFFT secret key polynomial in the EVALUATION representation
-   * @param m plaintext (corresponds to a lookup entry for the LWE scheme secret
-   * key)
-   * @return a shared pointer to the resulting ciphertext
+   * @param skNTT secret key polynomial in the EVALUATION representation
+   * @param LWEsk the secret key
+   * @return a shared pointer to the resulting keys
    */
-    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            ConstLWEPrivateKey LWEsk) const override;
+    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                            ConstLWEPrivateKey& LWEsk) const override;
 
     /**
    * Main accumulator function used in bootstrapping - AP variant
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param &input input ciphertext
+   * @param ek the accumulator key
    * @param acc previous value of the accumulator
+   * @param a value to update the accumulator with
    */
-    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
 private:
-    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            const LWEPlaintext& m) const;
+    /**
+   * DM Key generation for internal Ring GSW as described in https://eprint.iacr.org/2014/816
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param skNTT secret key polynomial in the EVALUATION representation
+   * @param m a plaintext
+   * @return a shared pointer to the resulting keys
+   */
+    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                            LWEPlaintext m) const;
 
-    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
+    /**
+   * DM Accumulation as described in https://eprint.iacr.org/2020/086
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param ek evaluation key for Ring GSW
+   * @param acc previous value of the accumulator
+   * @return
+   */
+    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
                     RLWECiphertext& acc) const;
 };
 

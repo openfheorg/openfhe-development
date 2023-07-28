@@ -33,7 +33,7 @@
 #define _LWE_CIPHERTEXT_H_
 
 #include "lwe-ciphertext-fwd.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <string>
@@ -49,29 +49,21 @@ class LWECiphertextImpl : public Serializable {
 public:
     LWECiphertextImpl() = default;
 
-    explicit LWECiphertextImpl(const NativeVector&& a, const NativeInteger& b) : m_a(std::move(a)), m_b(b) {}
+    LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
 
-    explicit LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
+    LWECiphertextImpl(NativeVector&& a, NativeInteger b) noexcept : m_a(std::move(a)), m_b(b) {}
 
-    LWECiphertextImpl(NativeVector&& a, NativeInteger b) : m_a(std::move(a)), m_b(b) {}
+    LWECiphertextImpl(const LWECiphertextImpl& rhs) : m_a(rhs.m_a), m_b(rhs.m_b) {}
 
-    explicit LWECiphertextImpl(const LWECiphertextImpl& rhs) {
-        m_a = rhs.m_a;
-        m_b = rhs.m_b;
-    }
+    LWECiphertextImpl(LWECiphertextImpl&& rhs) noexcept : m_a(std::move(rhs.m_a)), m_b(std::move(rhs.m_b)) {}
 
-    explicit LWECiphertextImpl(const LWECiphertextImpl&& rhs) {
-        m_a = std::move(rhs.m_a);
-        m_b = std::move(rhs.m_b);
-    }
-
-    const LWECiphertextImpl& operator=(const LWECiphertextImpl& rhs) {
+    LWECiphertextImpl& operator=(const LWECiphertextImpl& rhs) {
         m_a = rhs.m_a;
         m_b = rhs.m_b;
         return *this;
     }
 
-    const LWECiphertextImpl& operator=(const LWECiphertextImpl&& rhs) {
+    LWECiphertextImpl& operator=(LWECiphertextImpl&& rhs) noexcept {
         m_a = std::move(rhs.m_a);
         m_b = std::move(rhs.m_b);
         return *this;
@@ -109,6 +101,10 @@ public:
         return m_a.GetLength();
     }
 
+    const NativeInteger& GetptModulus() const {
+        return m_p;
+    }
+
     void SetA(const NativeVector& a) {
         m_a = a;
     }
@@ -121,6 +117,10 @@ public:
         m_a.ModEq(mod);
         m_a.SetModulus(mod);
         m_b.ModEq(mod);
+    }
+
+    void SetptModulus(const NativeInteger& pmod) {
+        m_p = pmod;
     }
 
     bool operator==(const LWECiphertextImpl& other) const {
@@ -148,7 +148,7 @@ public:
         ar(::cereal::make_nvp("b", m_b));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "LWECiphertext";
     }
     static uint32_t SerializedVersion() {
@@ -156,8 +156,9 @@ public:
     }
 
 private:
-    NativeVector m_a;
-    NativeInteger m_b = 0;
+    NativeVector m_a{};
+    NativeInteger m_b{};
+    NativeInteger m_p = 4;  // pt modulus
 };
 
 }  // namespace lbcrypto

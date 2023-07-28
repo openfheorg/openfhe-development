@@ -1,0 +1,18 @@
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,multiHopModSize,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,numParties
+INTERACTIVE_MP_BOOT,1,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
+INTERACTIVE_MP_BOOT,2,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
+INTERACTIVE_MP_BOOT,3,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
+INTERACTIVE_MP_BOOT,4,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
+INTERACTIVE_MP_BOOT,5,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
+INTERACTIVE_MP_BOOT,6,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
+INTERACTIVE_MP_BOOT,7,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
+INTERACTIVE_MP_BOOT,8,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,multiHopModSize,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,numParties
+INTERACTIVE_MP_BOOT_CHEBYSHEV,1,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,2,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,3,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,4,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,5,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,6,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,7,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,8,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,

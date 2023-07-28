@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,16 +34,19 @@
   all other distribution generators
  */
 
-#ifndef LBCRYPTO_MATH_DISTRIBUTIONGENERATOR_H_
-#define LBCRYPTO_MATH_DISTRIBUTIONGENERATOR_H_
+#ifndef LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
+#define LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
+
+// #include "math/math-hal.h"
+
+#include "utils/parallel.h"
+#include "utils/prng/blake2engine.h"
 
 #include <chrono>
 #include <memory>
-#include <mutex>
+// #include <mutex>
 #include <random>
 #include <thread>
-#include "math/hal.h"
-#include "utils/prng/blake2engine.h"
 
 // #define FIXED_SEED // if defined, then uses a fixed seed number for
 // reproducible results during debug. Use only one OMP thread to ensure
@@ -70,6 +73,7 @@ public:
    * @brief  Returns a reference to the PRNG engine
    */
 
+    // TODO: there may be an issue here
     static void InitPRNG() {
         int threads = OpenFHEParallelControls.GetNumThreads();
         if (threads == 0) {
@@ -95,7 +99,6 @@ public:
                 std::array<uint32_t, 16> seed{};
                 seed[0] = 1;
                 m_prng  = std::make_shared<PRNG>(seed);
-
 #else
                 // A 512-bit seed is generated for each thread (this roughly corresponds
                 // to 256 bits of security). The seed is the sum of a random sample
@@ -127,7 +130,7 @@ public:
                 // heap variable; we are going to use the least 32 bits of its memory
                 // location as the counter for BLAKE2 This will increase the entropy of
                 // the BLAKE2 sample
-                void* mem = malloc(1);
+                void* mem        = malloc(1);
                 uint32_t counter = reinterpret_cast<long long>(mem);  // NOLINT
                 free(mem);
 
@@ -185,21 +188,6 @@ private:
 #endif
 };
 
-/**
- * @brief Abstract class describing generator requirements.
- *
- * The Distribution Generator defines the methods that must be implemented by a
- * real generator. It also holds the single PRNG, which should be called by all
- * child class when generating a random number is required.
- *
- */
-template <typename VecType>
-class DistributionGenerator {
-public:
-    DistributionGenerator() {}
-    virtual ~DistributionGenerator() {}
-};
-
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_DISTRIBUTIONGENERATOR_H_
+#endif  // LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_

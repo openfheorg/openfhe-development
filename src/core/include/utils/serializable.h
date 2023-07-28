@@ -85,8 +85,7 @@ namespace lbcrypto {
  */
 class Serializable {
 public:
-    virtual ~Serializable() {}
-
+    virtual ~Serializable()                          = default;
     virtual std::string SerializedObjectName() const = 0;
 };
 

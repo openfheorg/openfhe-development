@@ -32,35 +32,29 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
-#include <iosfwd>
+// #include "math/hal/basicint.h"
+#include "math/math-hal.h"
+#include "lattice/constants-lattice.h"
 
-// TODO: Review whether we need to include hal.h.
-#include "math/hal.h"
+#include <iosfwd>
+#include <string>
+
+namespace lbcrypto {
 
 /**
  * @brief Lists all features supported by public key encryption schemes
  */
 enum PKESchemeFeature {
-    PKE         = 0x01,
-    KEYSWITCH   = 0x02,
-    PRE         = 0x04,
-    LEVELEDSHE  = 0x08,
-    ADVANCEDSHE = 0x10,
-    MULTIPARTY  = 0x20,
-    FHE         = 0x40,
+    PKE          = 0x01,
+    KEYSWITCH    = 0x02,
+    PRE          = 0x04,
+    LEVELEDSHE   = 0x08,
+    ADVANCEDSHE  = 0x10,
+    MULTIPARTY   = 0x20,
+    FHE          = 0x40,
+    SCHEMESWITCH = 0x80,
 };
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
-
-/**
- * @brief Lists all modes for RLWE schemes, such as BGV and BFV
- */
-enum SecretKeyDist {
-    GAUSSIAN        = 0,
-    UNIFORM_TERNARY = 1,
-    SPARSE_TERNARY  = 2,
-};
-SecretKeyDist convertToSecretKeyDist(uint32_t num);
-std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 enum ScalingTechnique {
     FIXEDMANUAL = 0,
@@ -70,6 +64,7 @@ enum ScalingTechnique {
     NORESCALE,
     INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
 };
+ScalingTechnique convertToScalingTechnique(const std::string& str);
 ScalingTechnique convertToScalingTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
@@ -80,6 +75,7 @@ enum ProxyReEncryptionMode {
     NOISE_FLOODING_HRA,
     DIVIDE_AND_ROUND_HRA,
 };
+ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str);
 ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
@@ -88,6 +84,7 @@ enum MultipartyMode {
     FIXED_NOISE_MULTIPARTY,
     NOISE_FLOODING_MULTIPARTY,
 };
+MultipartyMode convertToMultipartyMode(const std::string& str);
 MultipartyMode convertToMultipartyMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, MultipartyMode t);
 
@@ -95,6 +92,7 @@ enum ExecutionMode {
     EXEC_EVALUATION = 0,
     EXEC_NOISE_ESTIMATION,
 };
+ExecutionMode convertToExecutionMode(const std::string& str);
 ExecutionMode convertToExecutionMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ExecutionMode t);
 
@@ -102,6 +100,7 @@ enum DecryptionNoiseMode {
     FIXED_NOISE_DECRYPT = 0,
     NOISE_FLOODING_DECRYPT,
 };
+DecryptionNoiseMode convertToDecryptionNoiseMode(const std::string& str);
 DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
 
@@ -110,6 +109,7 @@ enum KeySwitchTechnique {
     BV,
     HYBRID,
 };
+KeySwitchTechnique convertToKeySwitchTechnique(const std::string& str);
 KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
@@ -117,6 +117,7 @@ enum EncryptionTechnique {
     STANDARD = 0,
     EXTENDED,
 };
+EncryptionTechnique convertToEncryptionTechnique(const std::string& str);
 EncryptionTechnique convertToEncryptionTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
@@ -126,6 +127,7 @@ enum MultiplicationTechnique {
     HPSPOVERQ,
     HPSPOVERQLEVELED,
 };
+MultiplicationTechnique convertToMultiplicationTechnique(const std::string& str);
 MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
@@ -152,21 +154,34 @@ enum {
     BASE_NUM_LEVELS_TO_DROP = 1,
 };
 
-namespace NOISE_FLOODING {
-// noise flooding distribution parameter for distributed decryption in threshold FHE
-const double MP_SD = 1048576;
-// noise flooding distribution parameter for fixed 20 bits noise multihop PRE
-const double PRE_SD = 1048576;
-// statistical security parameter for noise flooding in PRE
-const double STAT_SECURITY = 30;
-// number of additional moduli in NOISE_FLOODING_MULTIPARTY mode
-const size_t NUM_MODULI_MULTIPARTY = 2;
+enum NOISE_FLOODING {
+    // noise flooding distribution parameter for distributed decryption in threshold FHE
+    MP_SD = 1048576,
+    // noise flooding distribution parameter for fixed 20 bits noise multihop PRE
+    PRE_SD = 1048576,
+    // number of additional moduli in NOISE_FLOODING_MULTIPARTY mode
+    NUM_MODULI_MULTIPARTY = 2,
 // modulus size for additional moduli in NOISE_FLOODING_MULTIPARTY mode
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-const size_t MULTIPARTY_MOD_SIZE = 60;
+    MULTIPARTY_MOD_SIZE = 60,
 #else
-const size_t MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE;
+    MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE,
 #endif
 };  // namespace NOISE_FLOODING
+
+// Defining the level to which the input ciphertext is brought to before
+// interactive multi-party bootstrapping
+enum COMPRESSION_LEVEL {
+    // we don't support 0 or 1 compression levels
+    // do not change values here
+
+    COMPACT = 2,  // more efficient with stronger security assumption
+    SLACK   = 3   // less efficient with weaker security assumption
+};
+COMPRESSION_LEVEL convertToCompressionLevel(const std::string& str);
+COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num);
+std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL t);
+
+}  // namespace lbcrypto
 
 #endif  // _CONSTANTS_H_

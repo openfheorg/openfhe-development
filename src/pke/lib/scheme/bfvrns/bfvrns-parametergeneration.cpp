@@ -133,7 +133,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     };
 
     // initial values
-    uint32_t n = (nCustom > 0) ? nCustom : 512;
+    uint32_t n = (nCustom != 0) ? nCustom : 512;
 
     double logq = 0.;
 
@@ -285,7 +285,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         OPENFHE_THROW(config_error, errMsg);
     }
 
-    if ((n > nCustom) && (nCustom > 0))
+    if ((n > nCustom) && (nCustom != 0))
         OPENFHE_THROW(config_error, "Ring dimension " + std::to_string(nCustom) +
                                         " specified by the user does not meet the "
                                         "security requirement. Please increase it to " +

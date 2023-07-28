@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -41,30 +41,30 @@
  *    - Generator algorithm
  */
 
-#ifndef LBCRYPTO_MATH_NBTHEORY_H
-#define LBCRYPTO_MATH_NBTHEORY_H
+#ifndef LBCRYPTO_INC_MATH_NBTHEORY_H
+#define LBCRYPTO_INC_MATH_NBTHEORY_H
+
+#include "math/hal/basicint.h"
+
+#include "utils/inttypes.h"
+#include "utils/exception.h"
 
 #include <memory>
 #include <random>
 #include <set>
-#include <string>
+// #include <string>
 #include <vector>
-#include "utils/inttypes.h"
-#include "utils/exception.h"
-
-namespace {  // to define local (or C-style static) functions here
 
 #if defined(HAVE_INT128)
-inline int clz_u128(unsigned __int128 u) {
-    uint64_t hi   = u >> 64;
-    uint64_t lo   = u;
-    int retval[3] = {__builtin_clzll(hi), __builtin_clzll(lo) + 64, 128};
+namespace {  // to define local (or C-style static) functions here
 
-    int idx = !hi + ((!lo) & (!hi));
-    return retval[idx];
+inline int clz_u128(uint128_t u) {
+    uint64_t hi(u >> 64), lo(u);
+    return hi ? __builtin_clzll(hi) : lo ? __builtin_clzll(lo) + 64 : 128;
 }
-#endif
+
 };  // namespace
+#endif
 
 /**
  * @namespace lbcrypto
@@ -134,7 +134,6 @@ static int shift_trick[] = {0, 7, 6, 5, 4, 3, 2, 1};
 /* Function to reverse bits of num */
 inline usint ReverseBits(usint num, usint msb) {
     usint msbb = (msb >> 3) + (msb & 0x7 ? 1 : 0);
-
     switch (msbb) {
         case 1:
             return (reverse_byte((num)&0xff) >> shift_trick[msb & 0x7]);
@@ -146,7 +145,6 @@ inline usint ReverseBits(usint num, usint msb) {
             return (reverse_byte((num)&0xff) << 16 | reverse_byte((num >> 8) & 0xff) << 8 |
                     reverse_byte((num >> 16) & 0xff)) >>
                    shift_trick[msb & 0x7];
-
         case 4:
             return (reverse_byte((num)&0xff) << 24 | reverse_byte((num >> 8) & 0xff) << 16 |
                     reverse_byte((num >> 16) & 0xff) << 8 | reverse_byte((num >> 24) & 0xff)) >>
@@ -165,48 +163,34 @@ inline usint ReverseBits(usint num, usint msb) {
  *
  * @return the index of the MSB bit location.
  */
-template <typename IntType>
-inline usint GetMSB(IntType x) {
-    OPENFHE_THROW(math_error,
-                  "Unsupported integer type (GetMSB() supports 64- and 128-bit "
-                  "integers only)");
-}
-
-template <>
-inline usint GetMSB(uint64_t x) {
-    if (x == 0)
-        return 0;
-
-        // hardware instructions for finding MSB are used are used;
+template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+inline constexpr usint GetMSB(T x) {
+    if constexpr (sizeof(T) <= 8) {
+        if (x == 0)
+            return 0;
 #if defined(_MSC_VER)
-    // a wrapper for VC++
-    unsigned long msb;  // NOLINT
-    _BitScanReverse64(&msb, x);
-    return msb + 1;
+        unsigned long msb;  // NOLINT
+        _BitScanReverse64(&msb, uint64_t(x));
+        return msb + 1;
 #else
-    // a wrapper for GCC
-    return 64 - (sizeof(unsigned long) == 8 ? __builtin_clzl(x) : __builtin_clzll(x));  // NOLINT
+        // a wrapper for GCC
+        return 64 -
+               (sizeof(unsigned long) == 8 ? __builtin_clzl(uint64_t(x)) : __builtin_clzll(uint64_t(x)));  // NOLINT
 #endif
-}
-
-template <>
-inline usint GetMSB(uint32_t x) {
-    return GetMSB((uint64_t)x);
-}
-
+    }
 #if defined(HAVE_INT128)
-template <>
-inline usint GetMSB(unsigned __int128 x) {
-    if (x == 0)
-        return 0;
-
+    else if constexpr (sizeof(T) == 16) {
     #if defined(_MSC_VER)
-    static_assert(false, "MSVC doesn't support 128-bit integers");
-    #else
-    return 128 - clz_u128(x);
+        static_assert(false, "MSVC doesn't support 128-bit integers");
     #endif
-}
+        return 128 - clz_u128(uint128_t(x));
+    }
 #endif
+    else {
+        OPENFHE_THROW(math_error, "Unsupported int type (GetMSB() supports 32-, 64- and 128-bit integers only)");
+        return 0;
+    }
+}
 
 /**
  * Get MSB of an unsigned 64 bit integer.
@@ -215,7 +199,7 @@ inline usint GetMSB(unsigned __int128 x) {
  *
  * @return the index of the MSB bit location.
  */
-inline usint GetMSB64(uint64_t x) {
+inline constexpr usint GetMSB64(uint64_t x) {
     return GetMSB(x);
 }
 
@@ -223,7 +207,7 @@ template <typename IntType>
 std::shared_ptr<std::vector<int64_t>> GetDigits(const IntType& u, uint64_t base, uint32_t k) {
     auto u_vec = std::make_shared<std::vector<int64_t>>(k);
 
-    size_t baseDigits = (uint32_t)(std::round(log2(base)));
+    size_t baseDigits = (uint32_t)(std::round(log2(base)));  // ?
 
     // if (!(base & (base - 1)))
     IntType uu = u;
@@ -334,7 +318,7 @@ usint ModInverse(usint a, usint b);
  * @return Next power of 2 that is greater or equal to n.
  */
 template <typename IntType>
-IntType NextPowerOfTwo(const IntType& n);
+IntType NextPowerOfTwo(IntType n);
 
 /**
  * Returns the totient value phi of a number n.

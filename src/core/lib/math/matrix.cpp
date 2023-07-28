@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,67 +30,85 @@
 //==================================================================================
 
 /*
-  This code provide a templated matrix implementation
+  matrix class implementations and type specific implementations
  */
 
-#ifndef _SRC_LIB_CORE_MATH_MATRIX_CPP
-#define _SRC_LIB_CORE_MATH_MATRIX_CPP
+#ifndef LBCRYPTO_LIB_MATH_MATRIX_CPP
+#define LBCRYPTO_LIB_MATH_MATRIX_CPP
 
-#include "math/matrix.h"
+#include "math/math-hal.h"
+#include "math/matrix-impl.h"
+
+#include "utils/exception.h"
+#include "utils/parallel.h"
+
+// this is the implementation of matrixes of things that are in core
+// and that need template specializations
 
 namespace lbcrypto {
 
-template <class Element>
-Matrix<Element>::Matrix(alloc_func allocZero, size_t rows, size_t cols, alloc_func allocGen)
-    : data(), rows(rows), cols(cols), allocZero(allocZero) {
-    data.resize(rows);
-    for (auto row = data.begin(); row != data.end(); ++row) {
-        for (size_t col = 0; col < cols; ++col) {
-            row->push_back(allocGen());
+#define MODEQ_FOR_TYPE(T)                             \
+    template <>                                       \
+    Matrix<T>& Matrix<T>::ModEq(const T& element) {   \
+        for (size_t row = 0; row < rows; ++row) {     \
+            for (size_t col = 0; col < cols; ++col) { \
+                data[row][col].ModEq(element);        \
+            }                                         \
+        }                                             \
+        return *this;                                 \
+    }
+
+MODEQ_FOR_TYPE(NativeInteger)
+MODEQ_FOR_TYPE(BigInteger)
+
+#define MODSUBEQ_FOR_TYPE(T)                                               \
+    template <>                                                            \
+    Matrix<T>& Matrix<T>::ModSubEq(Matrix<T> const& b, const T& element) { \
+        for (size_t row = 0; row < rows; ++row) {                          \
+            for (size_t col = 0; col < cols; ++col) {                      \
+                data[row][col].ModSubEq(b.data[row][col], element);        \
+            }                                                              \
+        }                                                                  \
+        return *this;                                                      \
+    }
+
+MODSUBEQ_FOR_TYPE(NativeInteger)
+MODSUBEQ_FOR_TYPE(BigInteger)
+
+// YSP removed the Matrix class because it is not defined for all possible data
+// types needs to be checked to make sure input matrix is used in the right
+// places the assumption is that covariance matrix does not have large
+// coefficients because it is formed by discrete gaussians e and s; this implies
+// int32_t can be used This algorithm can be further improved - see the
+// Darmstadt paper section 4.4
+Matrix<double> Cholesky(const Matrix<int32_t>& input) {
+    //  http://eprint.iacr.org/2013/297.pdf
+    if (input.GetRows() != input.GetCols()) {
+        OPENFHE_THROW(math_error, "not square");
+    }
+    size_t rows = input.GetRows();
+    Matrix<double> result([]() { return 0; }, rows, rows);
+
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < rows; ++j) {
+            result(i, j) = input(i, j);
         }
     }
-}
 
-template <class Element>
-Matrix<Element>& Matrix<Element>::operator=(const Matrix<Element>& other) {
-    rows = other.rows;
-    cols = other.cols;
-    deepCopyData(other.data);
-    return *this;
-}
-
-template <class Element>
-Matrix<Element>& Matrix<Element>::Fill(const Element& val) {
-    for (size_t row = 0; row < rows; ++row) {
-        for (size_t col = 0; col < cols; ++col) {
-            data[row][col] = val;
+    for (size_t k = 0; k < rows; ++k) {
+        result(k, k) = sqrt(result(k, k));
+        // result(k, k) = sqrt(input(k, k));
+        for (size_t i = k + 1; i < rows; ++i) {
+            // result(i, k) = input(i, k) / result(k, k);
+            result(i, k) = result(i, k) / result(k, k);
+            //  zero upper-right triangle
+            result(k, i) = 0;
         }
-    }
-    return *this;
-}
-
-template <class Element>
-Matrix<Element> Matrix<Element>::Mult(Matrix<Element> const& other) const {
-    // NUM_THREADS = omp_get_max_threads();
-
-    if (cols != other.rows) {
-        OPENFHE_THROW(math_error, "incompatible matrix multiplication");
-    }
-    Matrix<Element> result(allocZero, rows, other.cols);
-    if (rows == 1) {
-#pragma omp parallel for
-        for (size_t col = 0; col < result.cols; ++col) {
-            for (size_t i = 0; i < cols; ++i) {
-                result.data[0][col] += data[0][i] * other.data[i][col];
-            }
-        }
-    }
-    else {
-#pragma omp parallel for
-        for (size_t row = 0; row < result.rows; ++row) {
-            for (size_t i = 0; i < cols; ++i) {
-                for (size_t col = 0; col < result.cols; ++col) {
-                    result.data[row][col] += data[row][i] * other.data[i][col];
+        for (size_t j = k + 1; j < rows; ++j) {
+            for (size_t i = j; i < rows; ++i) {
+                if (result(i, k) != 0 && result(j, k) != 0) {
+                    result(i, j) = result(i, j) - result(i, k) * result(j, k);
+                    // result(i, j) = input(i, j) - result(i, k) * result(j, k);
                 }
             }
         }
@@ -98,240 +116,82 @@ Matrix<Element> Matrix<Element>::Mult(Matrix<Element> const& other) const {
     return result;
 }
 
-template <class Element>
-Matrix<Element>& Matrix<Element>::operator+=(Matrix<Element> const& other) {
-    if (rows != other.rows || cols != other.cols) {
-        OPENFHE_THROW(math_error, "Addition operands have incompatible dimensions");
+void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
+    //  http://eprint.iacr.org/2013/297.pdf
+    if (input.GetRows() != input.GetCols()) {
+        OPENFHE_THROW(math_error, "not square");
     }
-#pragma omp parallel for
-    for (size_t j = 0; j < cols; ++j) {
-        for (size_t i = 0; i < rows; ++i) {
-            data[i][j] += other.data[i][j];
+    size_t rows = input.GetRows();
+    //  Matrix<LargeFloat> result([]() { return make_unique<LargeFloat>(); },
+    // rows, rows);
+
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < rows; ++j) {
+            result(i, j) = input(i, j);
         }
     }
 
-    return *this;
-}
+    for (size_t k = 0; k < rows; ++k) {
+        result(k, k) = sqrt(input(k, k));
 
-template <class Element>
-Matrix<Element>& Matrix<Element>::operator-=(Matrix<Element> const& other) {
-    if (rows != other.rows || cols != other.cols) {
-        OPENFHE_THROW(math_error, "Subtraction operands have incompatible dimensions");
-    }
-#pragma omp parallel for
-    for (size_t j = 0; j < cols; ++j) {
-        for (size_t i = 0; i < rows; ++i) {
-            data[i][j] -= other.data[i][j];
+        for (size_t i = k + 1; i < rows; ++i) {
+            // result(i, k) = input(i, k) / result(k, k);
+            result(i, k) = result(i, k) / result(k, k);
+            //  zero upper-right triangle
+            result(k, i) = 0;
         }
-    }
-
-    return *this;
-}
-
-template <class Element>
-Matrix<Element> Matrix<Element>::Transpose() const {
-    Matrix<Element> result(allocZero, cols, rows);
-    for (size_t row = 0; row < rows; ++row) {
-        for (size_t col = 0; col < cols; ++col) {
-            result(col, row) = (*this)(row, col);
-        }
-    }
-    return result;
-}
-
-// YSP The signature of this method needs to be changed in the future
-// Laplace's formula is used to find the determinant
-// Complexity is O(d!), where d is the dimension
-// The determinant of a matrix is expressed in terms of its minors
-// recursive implementation
-// There are O(d^3) decomposition algorithms that can be implemented to support
-// larger dimensions. Examples include the LU decomposition, the QR
-// decomposition or the Cholesky decomposition(for positive definite matrices).
-template <class Element>
-void Matrix<Element>::Determinant(Element* determinant) const {
-    if (rows != cols)
-        OPENFHE_THROW(math_error, "Supported only for square matrix");
-    // auto determinant = *allocZero();
-    if (rows < 1)
-        OPENFHE_THROW(math_error, "Dimension should be at least one");
-
-    if (rows == 1) {
-        *determinant = data[0][0];
-    }
-    else if (rows == 2) {
-        *determinant = data[0][0] * (data[1][1]) - data[1][0] * (data[0][1]);
-    }
-    else {
-        size_t j1, j2;
-        size_t n = rows;
-
-        Matrix<Element> result(allocZero, rows - 1, cols - 1);
-
-        // for each column in sub-matrix
-        for (j1 = 0; j1 < n; j1++) {
-            // build sub-matrix with minor elements excluded
-            for (size_t i = 1; i < n; i++) {
-                j2 = 0;  // start at first sum-matrix column position
-                // loop to copy source matrix less one column
-                for (size_t j = 0; j < n; j++) {
-                    if (j == j1)
-                        continue;  // don't copy the minor column element
-
-                    // copy source element into new sub-matrix i-1 because new sub-matrix
-                    // is one row (and column) smaller with excluded minors
-                    result.data[i - 1][j2] = data[i][j];
-                    j2++;  // move to next sub-matrix column position
+        for (size_t j = k + 1; j < rows; ++j) {
+            for (size_t i = j; i < rows; ++i) {
+                if (result(i, k) != 0 && result(j, k) != 0) {
+                    result(i, j) = result(i, j) - result(i, k) * result(j, k);
+                    // result(i, j) = input(i, j) - result(i, k) * result(j, k);
                 }
             }
-
-            auto tempDeterminant(allocZero());
-            result.Determinant(&tempDeterminant);
-
-            if (j1 % 2 == 0)
-                *determinant = *determinant + (data[0][j1]) * tempDeterminant;
-            else
-                *determinant = *determinant - (data[0][j1]) * tempDeterminant;
-
-            // if (j1 % 2 == 0)
-            //  determinant = determinant + (*data[0][j1]) *
-            // result.Determinant(); else   determinant = determinant -
-            // (*data[0][j1]) * result.Determinant();
         }
     }
-    // return determinant;
-    return;
 }
 
-// The cofactor matrix is the matrix of determinants of the minors A_{ij}
-// multiplied by -1^{i+j} The determinant subroutine is used
-template <class Element>
-Matrix<Element> Matrix<Element>::CofactorMatrix() const {
-    if (rows != cols)
-        OPENFHE_THROW(not_available_error, "Supported only for square matrix");
-
-    size_t ii, jj, iNew, jNew;
-
-    size_t n = rows;
-
-    Matrix<Element> result(allocZero, rows, cols);
-
-    for (size_t j = 0; j < n; j++) {
-        for (size_t i = 0; i < n; i++) {
-            Matrix<Element> c(allocZero, rows - 1, cols - 1);
-
-            /* Form the adjoint a_ij */
-            iNew = 0;
-            for (ii = 0; ii < n; ii++) {
-                if (ii == i)
-                    continue;
-                jNew = 0;
-                for (jj = 0; jj < n; jj++) {
-                    if (jj == j)
-                        continue;
-                    c.data[iNew][jNew] = data[ii][jj];
-                    jNew++;
-                }
-                iNew++;
+//  Convert from Z_q to [-q/2, q/2]
+Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger& modulus) {
+    size_t rows = input.GetRows();
+    size_t cols = input.GetCols();
+    BigInteger negativeThreshold(modulus / BigInteger(2));
+    Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            if (input(i, j) > negativeThreshold) {
+                result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
             }
-
-            /* Calculate the determinant */
-            Element determinant(allocZero());
-            c.Determinant(&determinant);
-            Element negDeterminant = -determinant;
-
-            /* Fill in the elements of the cofactor */
-            if ((i + j) % 2 == 0)
-                result.data[i][j] = determinant;
-            else
-                result.data[i][j] = negDeterminant;
-        }
-    }
-
-    return result;
-}
-
-//  add rows to bottom of the matrix
-template <class Element>
-Matrix<Element>& Matrix<Element>::VStack(Matrix<Element> const& other) {
-    if (cols != other.cols) {
-        OPENFHE_THROW(math_error, "VStack rows not equal size");
-    }
-    for (size_t row = 0; row < other.rows; ++row) {
-        data_row_t rowElems;
-        for (auto elem = other.data[row].begin(); elem != other.data[row].end(); ++elem) {
-            rowElems.push_back(*elem);
-        }
-        data.push_back(std::move(rowElems));
-    }
-    rows += other.rows;
-    return *this;
-}
-
-//  add cols to right of the matrix
-template <class Element>
-inline Matrix<Element>& Matrix<Element>::HStack(Matrix<Element> const& other) {
-    if (rows != other.rows) {
-        OPENFHE_THROW(math_error, "HStack cols not equal size");
-    }
-    for (size_t row = 0; row < rows; ++row) {
-        data_row_t rowElems;
-        for (auto& elem : other.data[row]) {
-            rowElems.push_back(elem);
-        }
-        MoveAppend(data[row], rowElems);
-    }
-    cols += other.cols;
-    return *this;
-}
-
-// template<class Element>
-// void Matrix<Element>::deepCopyData(data_t const& src) {
-//    data.clear();
-//    data.resize(src.size());
-//    for (size_t row = 0; row < src.size(); ++row) {
-//        for (auto elem = src[row].begin(); elem != src[row].end(); ++elem) {
-//            data[row].push_back(*elem);
-//        }
-//    }
-//}
-
-/*
- * Multiply the matrix by a vector of 1's, which is the same as adding all the
- * elements in the row together.
- * Return a vector that is a rows x 1 matrix.
- */
-template <class Element>
-Matrix<Element> Matrix<Element>::MultByUnityVector() const {
-    Matrix<Element> result(allocZero, rows, 1);
-
-#pragma omp parallel for
-    for (size_t row = 0; row < result.rows; ++row) {
-        for (size_t col = 0; col < cols; ++col) {
-            result.data[row][0] += data[row][col];
-        }
-    }
-
-    return result;
-}
-
-/*
- * Multiply the matrix by a vector of random 1's and 0's, which is the same as
- * adding select elements in each row together. Return a vector that is a rows x
- * 1 matrix.
- */
-template <class Element>
-Matrix<Element> Matrix<Element>::MultByRandomVector(std::vector<int> ranvec) const {
-    Matrix<Element> result(allocZero, rows, 1);
-
-#pragma omp parallel for
-    for (size_t row = 0; row < result.rows; ++row) {
-        for (size_t col = 0; col < cols; ++col) {
-            if (ranvec[col] == 1)
-                result.data[row][0] += data[row][col];
+            else {
+                result(i, j) = input(i, j).ConvertToInt();
+            }
         }
     }
     return result;
 }
+
+Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger& modulus) {
+    size_t rows = input.GetRows();
+    size_t cols = input.GetCols();
+    BigInteger negativeThreshold(modulus / BigInteger(2));
+    Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            const BigInteger& elem = input(i, j).at(0);
+            if (elem > negativeThreshold) {
+                result(i, j) = -1 * (modulus - elem).ConvertToInt();
+            }
+            else {
+                result(i, j) = elem.ConvertToInt();
+            }
+        }
+    }
+    return result;
+}
+
+template class Matrix<double>;
+template class Matrix<int>;
+template class Matrix<int64_t>;
 
 }  // namespace lbcrypto
 

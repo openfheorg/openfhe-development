@@ -45,6 +45,8 @@
 
 #include "blake2.h"
 
+#include "utils/exception.h"
+
 namespace lbcrypto {
 
 // the buffer stores 1024 samples of 32-bit integers

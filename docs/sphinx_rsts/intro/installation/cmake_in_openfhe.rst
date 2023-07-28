@@ -94,7 +94,6 @@ The table below shows the current list of options, definition for the option, an
   WITH_BE4           Include Backend 4 in build by setting WITH_BE4 to ON                                                                                                                  ON
   WITH_NTL           Include Backend 6 and NTL in build by setting WITH_NTL to ON                                                                                                          OFF
   WITH_TCM           Activate tcmalloc by setting WITH_TCM to ON                                                                                                                           OFF
-  WITH_INTEL_HEXL    Use Intel HEXL library                                                                                                                                                OFF
   WITH_OPENMP        Use OpenMP to enable <omp.h>                                                                                                                                          ON
   WITH_NATIVEOPT     Use machine-specific optimizations (major speedup for clang)                                                                                                          OFF
   NATIVE_SIZE        Set default word size for native integer arithmetic to 64 or 128 bits                                                                                                 64
@@ -160,18 +159,6 @@ To remove tcmalloc, run
 ::
 
     make tcm_clean
-
-Turn on Intel HEXL
-*********************************************
-If you wish to use the Intel HEXL library, you can add ``-WITH_INTEL_HEXL=ON`` to the cmake command. The complete command is
-
-::
-
-    cmake -WITH_INTEL_HEXL=ON ..
-
-Please also make sure `make` for OpenFHE is run using `sudo`, i.e., `sudo make`.
-
-Intel HEXL library improves OpenFHE performance on Intel processors supporting AVX-512 extensions.
 
 Location of Build Products
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

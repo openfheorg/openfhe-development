@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -44,62 +44,78 @@
     note = {\url{https://eprint.iacr.org/2014/816}},
  */
 
+#include "lattice/lat-hal.h"
 #include "rgsw-acc.h"
-
-#include <string>
+#include <memory>
+#include <vector>
 
 namespace lbcrypto {
 
-// SignedDigitDecompose is a bottleneck operation
-// There are two approaches to do it.
-// The current approach appears to give the best performance
-// results. The two variants are labeled A and B.
-void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
+void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const std::vector<NativePoly>& input,
                                               std::vector<NativePoly>& output) const {
-    uint32_t N                           = params->GetN();
-    uint32_t digitsG                     = params->GetDigitsG();
-    NativeInteger Q                      = params->GetQ();
-    NativeInteger QHalf                  = Q >> 1;
-    NativeInteger::SignedNativeInt Q_int = Q.ConvertToInt();
+    auto QHalf{params->GetQ().ConvertToInt<BasicInteger>() >> 1};
+    auto Q_int{params->GetQ().ConvertToInt<NativeInteger::SignedNativeInt>()};
+    auto gBits{static_cast<NativeInteger::SignedNativeInt>(__builtin_ctz(params->GetBaseG()))};
+    auto gBitsMaxBits{static_cast<NativeInteger::SignedNativeInt>(NativeInteger::MaxBits() - gBits)};
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
+    uint32_t N{params->GetN()};
 
-    NativeInteger::SignedNativeInt baseG = NativeInteger(params->GetBaseG()).ConvertToInt();
+    for (uint32_t k{0}; k < N; ++k) {
+        auto t0{input[0][k].ConvertToInt<BasicInteger>()};
+        auto d0{static_cast<NativeInteger::SignedNativeInt>(t0 < QHalf ? t0 : t0 - Q_int)};
+        auto t1{input[1][k].ConvertToInt<BasicInteger>()};
+        auto d1{static_cast<NativeInteger::SignedNativeInt>(t1 < QHalf ? t1 : t1 - Q_int)};
 
-    NativeInteger::SignedNativeInt gBits = (NativeInteger::SignedNativeInt)std::log2(baseG);
+        auto r0{(d0 << gBitsMaxBits) >> gBitsMaxBits};
+        d0 = (d0 - r0) >> gBits;
 
-    // VARIANT A
-    NativeInteger::SignedNativeInt gBitsMaxBits = NativeInteger::MaxBits() - gBits;
+        auto r1{(d1 << gBitsMaxBits) >> gBitsMaxBits};
+        d1 = (d1 - r1) >> gBits;
 
-    // VARIANT B
-    // NativeInteger::SignedNativeInt gminus1 = (1 << gBits) - 1;
-    // NativeInteger::SignedNativeInt baseGdiv2 =
-    // (baseG >> 1)-1;
+        for (uint32_t d{0}; d < digitsG2; d += 2) {
+            r0 = (d0 << gBitsMaxBits) >> gBitsMaxBits;
+            d0 = (d0 - r0) >> gBits;
+            if (r0 < 0)
+                r0 += Q_int;
+            output[d + 0][k] += r0;
 
-    // Signed digit decomposition
-    for (size_t j = 0; j < 2; ++j) {
-        for (size_t k = 0; k < N; ++k) {
-            const NativeInteger& t           = input[j][k];
-            NativeInteger::SignedNativeInt d = (t < QHalf) ? t.ConvertToInt() : (t.ConvertToInt() - Q_int);
-
-            for (size_t l = 0; l < digitsG; ++l) {
-                // remainder is signed
-                // VARIANT A: This approach gives a slightly better performance
-                NativeInteger::SignedNativeInt r = d << gBitsMaxBits;
-                r >>= gBitsMaxBits;
-
-                // VARIANT B
-                // NativeInteger::SignedNativeInt r = d & gminus1;
-                // if (r > baseGdiv2) r -= baseG;
-
-                d -= r;
-                d >>= gBits;
-
-                if (r < 0)
-                    r += Q_int;
-
-                output[j + 2 * l][k] += r;
-            }
+            r1 = (d1 << gBitsMaxBits) >> gBitsMaxBits;
+            d1 = (d1 - r1) >> gBits;
+            if (r1 < 0)
+                r1 += Q_int;
+            output[d + 1][k] += r1;
         }
     }
 }
+
+// Decompose a ring element, not ciphertext
+void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                              const NativePoly& input, std::vector<NativePoly>& output) const {
+    auto QHalf{params->GetQ().ConvertToInt<BasicInteger>() >> 1};
+    auto Q_int{params->GetQ().ConvertToInt<NativeInteger::SignedNativeInt>()};
+    auto gBits{static_cast<NativeInteger::SignedNativeInt>(__builtin_ctz(params->GetBaseG()))};
+    auto gBitsMaxBits{static_cast<NativeInteger::SignedNativeInt>(NativeInteger::MaxBits() - gBits)};
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG{params->GetDigitsG() - 1};
+    uint32_t N{params->GetN()};
+
+    for (uint32_t k{0}; k < N; ++k) {
+        auto t0{input[k].ConvertToInt<BasicInteger>()};
+        auto d0{static_cast<NativeInteger::SignedNativeInt>(t0 < QHalf ? t0 : t0 - Q_int)};
+
+        auto r0{(d0 << gBitsMaxBits) >> gBitsMaxBits};
+        d0 = (d0 - r0) >> gBits;
+
+        for (uint32_t d{0}; d < digitsG; ++d) {
+            r0 = (d0 << gBitsMaxBits) >> gBitsMaxBits;
+            d0 = (d0 - r0) >> gBits;
+            if (r0 < 0)
+                r0 += Q_int;
+            output[d][k] += r0;
+        }
+    }
+}
+
 };  // namespace lbcrypto

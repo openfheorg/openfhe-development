@@ -35,8 +35,73 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 namespace lbcrypto {
+
+namespace {  // this namespace should stay unnamed
+
+/*  Populate statically the parameter m for the Paterson-Stockmeyer algorithm up
+    to the degree value of upperBoundDegree.*/
+enum { UPPER_BOUND_PS = 2204 };
+std::vector<uint32_t> PopulateParameterPS(const uint32_t upperBoundDegree) {
+    std::vector<uint32_t> mlist(upperBoundDegree);
+
+    std::fill(mlist.begin(), mlist.begin() + 2, 1);            // n in [1,2], m = 1
+    std::fill(mlist.begin() + 2, mlist.begin() + 11, 2);       // n in [3,11], m = 2
+    std::fill(mlist.begin() + 11, mlist.begin() + 13, 3);      // n in [12,13], m = 3
+    std::fill(mlist.begin() + 13, mlist.begin() + 17, 2);      // n in [14,17], m = 2
+    std::fill(mlist.begin() + 17, mlist.begin() + 55, 3);      // n in [18,55], m = 3
+    std::fill(mlist.begin() + 55, mlist.begin() + 59, 4);      // n in [56,59], m = 4
+    std::fill(mlist.begin() + 59, mlist.begin() + 76, 3);      // n in [60,76], m = 3
+    std::fill(mlist.begin() + 76, mlist.begin() + 239, 4);     // n in [77,239], m = 4
+    std::fill(mlist.begin() + 239, mlist.begin() + 247, 5);    // n in [240,247], m = 5
+    std::fill(mlist.begin() + 247, mlist.begin() + 284, 4);    // n in [248,284], m = 4
+    std::fill(mlist.begin() + 284, mlist.begin() + 991, 5);    // n in [285,991], m = 5
+    std::fill(mlist.begin() + 991, mlist.begin() + 1007, 6);   // n in [992,1007], m = 6
+    std::fill(mlist.begin() + 1007, mlist.begin() + 1083, 5);  // n in [1008,1083], m = 5
+    std::fill(mlist.begin() + 1083, mlist.begin() + 2015, 6);  // n in [1084,2015], m = 6
+    std::fill(mlist.begin() + 2015, mlist.begin() + 2031, 7);  // n in [2016,2031], m = 7
+    std::fill(mlist.begin() + 2031, mlist.end(), 6);           // n in [2032,2204], m = 6
+
+    return mlist;
+}
+
+// clang-format off
+// Populate the conversion table Degree-to-Multiplicative Depth
+enum {
+    LOWER_BOUND_DEGREE = 5,
+    UPPER_BOUND_DEGREE = 2031,
+};
+std::vector<uint32_t> GenerateDepthByDegreeTable() {
+    std::vector<uint32_t> depthTable(UPPER_BOUND_DEGREE+1);
+
+    std::fill(depthTable.begin(),        depthTable.begin() + 5,     3);  // degree in [0,4], depth = 3 - the Paterson-Stockmeyer algorithm is not used when degree < 5
+    std::fill(depthTable.begin() + 5,    depthTable.begin() + 6,     4);  // degree in [5],         depth = 4
+    std::fill(depthTable.begin() + 6,    depthTable.begin() + 14,    5);  // degree in [6,13],      depth = 5
+    std::fill(depthTable.begin() + 14,   depthTable.begin() + 28,    6);  // degree in [14,27],     depth = 6
+    std::fill(depthTable.begin() + 28,   depthTable.begin() + 60,    7);  // degree in [28,59],     depth = 7
+    std::fill(depthTable.begin() + 60,   depthTable.begin() + 120,   8);  // degree in [60,119],    depth = 8
+    std::fill(depthTable.begin() + 120,  depthTable.begin() + 248,   9);  // degree in [120,247],   depth = 9
+    std::fill(depthTable.begin() + 248,  depthTable.begin() + 496,  10);  // degree in [248,495],   depth = 10
+    std::fill(depthTable.begin() + 496,  depthTable.begin() + 1008, 11);  // degree in [496,1007],  depth = 11
+    std::fill(depthTable.begin() + 1008, depthTable.end(),          12);  // degree in [1008,2031], depth = 12
+
+    return depthTable;
+}
+// clang-format on
+
+uint32_t GetDepthByDegree(size_t degree) {
+    static const std::vector<uint32_t> depthTable = GenerateDepthByDegreeTable();
+    if (degree >= LOWER_BOUND_DEGREE && degree <= UPPER_BOUND_DEGREE)
+        return depthTable[degree];
+
+    std::string errMsg("Polynomial degree is supported from 5 to 2031 inclusive. Its current value is ");
+    errMsg += std::to_string(degree);
+    OPENFHE_THROW(math_error, errMsg);
+}
+
+}  // namespace
 
 const std::complex<double> I(0.0, 1.0);
 double PREC = std::pow(2, -20);
@@ -233,31 +298,58 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
     return std::make_shared<longDiv>(q, r);
 }
 
-/* Compute positive integers k,m such that n < k(2^m-1) and k close to sqrt(n/2) */
+/*	Compute positive integers k,m such that n < k(2^m-1), k is close to sqrt(n/2)
+	and the depth = ceil(log2(k))+m is minimized. Moreover, for that depth the
+	number of homomorphic multiplications = k+2m+2^(m-1)-4 is minimized.
+	Since finding these parameters involve testing many possible values, we
+	hardcode them for commonly used degrees, and provide a heuristic which
+	minimizes the number of homomorphic multiplications for the rest of the
+	degrees.*/
 std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
     if (n == 0) {
         OPENFHE_THROW(math_error, "ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
     }
 
-    std::vector<uint32_t> klist;
-    std::vector<uint32_t> mlist;
+    // index n-1 in the vector corresponds to degree n
+    if (n <= UPPER_BOUND_PS) {  // hard-coded values
+        static const std::vector<uint32_t> mlist = PopulateParameterPS(UPPER_BOUND_PS);
+        uint32_t m                               = mlist[n - 1];
+        uint32_t k                               = std::floor(n / ((1 << m) - 1)) + 1;
 
-    double sqn2 = sqrt(n / 2);
+        return std::vector<uint32_t>{k, m};
+    }
+    else {  // heuristic for larger degrees
+        std::vector<uint32_t> klist;
+        std::vector<uint32_t> mlist;
+        std::vector<uint32_t> multlist;
 
-    for (uint32_t k = 1; k <= n; k++) {
-        for (uint32_t m = 1; m <= ceil(log2(n / k) + 1) + 1; m++) {
-            if (int32_t(n - k * ((1 << m) - 1)) < 0) {
-                if ((static_cast<double>(k - sqn2) >= -2) && ((static_cast<double>(k - sqn2) <= 2))) {
-                    klist.push_back(k);
-                    mlist.push_back(m);
+        for (uint32_t k = 1; k <= n; k++) {
+            for (uint32_t m = 1; m <= std::ceil(log2(n / k) + 1) + 1; m++) {
+                if (int32_t(n) - int32_t(k * ((1 << m) - 1)) < 0) {
+                    if (std::abs(std::floor(log2(k)) - std::floor(log2(sqrt(n / 2)))) <= 1) {
+                        klist.push_back(k);
+                        mlist.push_back(m);
+                        multlist.push_back(k + 2 * m + (1 << (m - 1)) - 4);
+                    }
                 }
             }
         }
+        uint32_t minIndex = std::min_element(multlist.begin(), multlist.end()) - multlist.begin();
+
+        return std::vector<uint32_t>{klist[minIndex], mlist[minIndex]};
+    }
+}
+
+uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized) {
+    size_t vecSize = vec.size();
+    if (!vecSize) {
+        OPENFHE_THROW(math_error, "Cannot perform operation on empty vector. vec.size() == 0");
     }
 
-    uint32_t minIndex = std::min_element(mlist.begin(), mlist.end()) - mlist.begin();
+    size_t degree      = vecSize - 1;
+    uint32_t multDepth = GetDepthByDegree(degree);
 
-    return std::vector<uint32_t>{{klist[minIndex], mlist[minIndex]}};
+    return (isNormalized) ? (multDepth - 1) : multDepth;
 }
 
 std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
@@ -766,6 +858,40 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well
     return {int32_t(levelBudget),     layersCollapse, remCollapse, int32_t(numRotations), b, g,
             int32_t(numRotationsRem), bRem,           gRem};
+}
+
+uint32_t getRatioBSGSLT(uint32_t slots) {
+    return ceil(sqrt(slots));
+}
+
+std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
+    uint32_t slots;
+    // Set slots depending on packing mode (fully-packed or sparsely-packed)
+    if ((blockDimension == 0) || (blockDimension == m / 4))
+        slots = m / 4;
+    else
+        slots = blockDimension;
+
+    // Computing the baby-step g and the giant-step h
+    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
+    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+
+    // Computing all indices for baby-step giant-step procedure
+    std::vector<int32_t> indexList;
+    indexList.reserve(bStep + gStep - 2);
+    for (uint32_t i = 0; i < bStep; i++)
+        indexList.emplace_back(i + 1);
+    for (uint32_t i = 2; i < gStep; i++)
+        indexList.emplace_back(bStep * i);
+
+    // Remove possible duplicates
+    sort(indexList.begin(), indexList.end());
+    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
+
+    // Remove automorphisms corresponding to 0
+    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+
+    return indexList;
 }
 
 }  // namespace lbcrypto

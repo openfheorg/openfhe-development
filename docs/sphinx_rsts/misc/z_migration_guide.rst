@@ -7,7 +7,7 @@ Before making any changes to `simple-integers.cpp`:
 
 - Install OpenFHE (see instructions `here <https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html>`_)
 
-- Change the ``CMakeLists.txt`` for your project: replace all instances of **Palisade** with **OpenFHE** and all instances of **PALISADE** with **OPENFHE**
+- Change the ``CMakeLists.txt`` for your project: replace all instances of **Palisade** and **PALISADE** with **OpenFHE**
 
 Code changes (in `src/pke/examples/simple-integers.cpp`):
 

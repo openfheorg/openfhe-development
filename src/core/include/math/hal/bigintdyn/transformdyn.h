@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,18 +33,21 @@
   This file contains the linear transform interface functionality for the dynamic math backend
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
-#define LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#include <map>
-#include <vector>
-#include <unordered_map>
-#include <mutex>
-#include <utility>
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
+        #define LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
 
-#include "math/hal/transform.h"
-#include "math/hal/bigintdyn/mubintvecdyn.h"
-#include "math/hal/bigintdyn/ubintdyn.h"
+        #include <map>
+        #include <vector>
+        #include <unordered_map>
+        #include <mutex>
+        #include <utility>
+
+        #include "math/hal/transform.h"
+        #include "math/hal/bigintdyn/mubintvecdyn.h"
+        #include "math/hal/bigintdyn/ubintdyn.h"
 
 /**
  * @namespace bigintdyn
@@ -231,7 +234,7 @@ public:
  * @brief Golden Chinese Remainder Transform FFT implementation.
  */
 template <typename VecType>
-class ChineseRemainderTransformFTTDyn : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
+class ChineseRemainderTransformFTTDyn final : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
     using IntType = typename VecType::Integer;
 
 public:
@@ -465,7 +468,7 @@ private:
  * @brief Chinese Remainder Transform for arbitrary cyclotomics.
  */
 template <typename VecType>
-class ChineseRemainderTransformArbDyn : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
+class ChineseRemainderTransformArbDyn final : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
     using IntType = typename VecType::Integer;
 
 public:
@@ -607,6 +610,6 @@ private:
 
 }  // namespace bigintdyn
 
-#include "math/hal/bigintdyn/transformdyn-impl.h"
-
+        #include "math/hal/bigintdyn/transformdyn-impl.h"
+    #endif
 #endif

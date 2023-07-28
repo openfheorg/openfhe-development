@@ -44,17 +44,7 @@ using namespace lbcrypto;
 
 template <typename V>
 inline V makeVector(usint ringdim, const typename V::Integer& mod) {
-    DiscreteUniformGeneratorImpl<V> dug;
-    dug.SetModulus(mod);
-
-    return dug.GenerateVector(ringdim);
-}
-
-inline NativeVector makeNativeVector(usint ringdim, const NativeInteger& mod) {
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(mod);
-
-    return dug.GenerateVector(ringdim);
+    return DiscreteUniformGeneratorImpl<V>().GenerateVector(ringdim, mod);
 }
 
 #endif

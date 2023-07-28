@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,16 +33,22 @@
   Represents and defines power-of-2 fields
  */
 
-#ifndef __FIELD2N_H__
-#define __FIELD2N_H__
+#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_H
+#define LBCRYPTO_INC_LATTICE_FIELD2N_H
 
+#include "lattice/lat-hal.h"
+
+// #include "math/dftransform.h"
+#include "math/matrix.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
+
+#include <complex>
 #include <limits>
 #include <string>
 #include <vector>
-
-#include "math/dftransform.h"
-#include "lattice/lat-hal.h"
-#include "math/matrix.h"
 
 namespace lbcrypto {
 /**
@@ -50,11 +56,15 @@ namespace lbcrypto {
  * @brief A class to represent field elements with power-of-2 dimension.
  */
 class Field2n : public std::vector<std::complex<double>>, public Serializable {
+private:
+    // Format of the field element
+    Format format{Format::COEFFICIENT};
+
 public:
     /**
    * @brief Default Constructor
    */
-    Field2n() : format(Format::COEFFICIENT) {}
+    Field2n() noexcept = default;
 
     explicit Field2n(Format f) : format(f) {}
 
@@ -66,10 +76,9 @@ public:
    * @param initializeElementToZero flag for initializing values to zero.  It is
    * set to false by default.
    */
-    Field2n(int size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
-        : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()) {
-        this->format = f;
-    }
+    Field2n(usint size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
+        : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()),
+          format(f) {}
 
     /**
    * @brief Constructor from ring element
@@ -215,10 +224,9 @@ public:
    * @param &format the enum value corresponding to coefficient or evaluation
    * representation
    */
-    inline void SetFormat(Format format) {
-        if (this->format != format) {
+    inline void SetFormat(Format f) {
+        if (format != f)
             SwitchFormat();
-        }
     }
 
     /**
@@ -227,7 +235,7 @@ public:
    * @return the size of the element
    */
     size_t Size() const {
-        return this->size();
+        return this->std::vector<std::complex<double>>::size();
     }
 
     /**
@@ -236,8 +244,8 @@ public:
    * @param idx index of the element
    * @return element at the index
    */
-    inline std::complex<double>& operator[](std::size_t idx) {
-        return (this->at(idx));
+    inline std::complex<double>& operator[](size_t idx) {
+        return this->std::vector<std::complex<double>>::operator[](idx);
     }
 
     /**
@@ -246,8 +254,8 @@ public:
    * @param idx index of the element
    * @return element at the index
    */
-    inline const std::complex<double>& operator[](std::size_t idx) const {
-        return (this->at(idx));
+    inline const std::complex<double>& operator[](size_t idx) const {
+        return this->std::vector<std::complex<double>>::operator[](idx);
     }
 
     /**
@@ -256,7 +264,7 @@ public:
    * @param &element  right hand side element for operation
    * @return result of the operation
    */
-    const Field2n& operator+=(const Field2n& element) {
+    Field2n& operator+=(const Field2n& element) {
         return *this = this->Plus(element);
     }
 
@@ -266,7 +274,7 @@ public:
    * @param &element  right hand side element for operation
    * @return result of the operation
    */
-    const Field2n& operator-=(const Field2n& element) {
+    Field2n& operator-=(const Field2n& element) {
         return *this = this->Minus(element);
     }
 
@@ -275,8 +283,7 @@ public:
    * @return negation of the field element.
    */
     Field2n operator-() const {
-        Field2n all0(size(), this->GetFormat(), true);
-        return all0 - *this;
+        return Field2n(size(), this->GetFormat(), true) - *this;
     }
 
     /**
@@ -339,16 +346,12 @@ public:
         ar(::cereal::make_nvp("f", format));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "Field2n";
     }
     static uint32_t SerializedVersion() {
         return 1;
     }
-
-private:
-    // Format of the field element
-    Format format;
 };
 
 /**
@@ -360,13 +363,12 @@ private:
  */
 inline std::ostream& operator<<(std::ostream& os, const Field2n& m) {
     os << "[ ";
-    for (size_t row = 0; row < m.size(); ++row) {
+    for (size_t row = 0; row < m.size(); ++row)
         os << m.at(row) << " ";
-    }
     os << " ]\n";
     return os;
 }
 
 }  // namespace lbcrypto
 
-#endif  // __FIELD2N_H__
+#endif

@@ -33,16 +33,19 @@
   This file contains the vector manipulation functionality
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
-#define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+#include "config_core.h"
+#ifdef WITH_BE2
 
-#include <iostream>
-#include <string>
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+        #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
 
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+        #include <iostream>
+        #include <string>
 
-#include "math/hal/bigintfxd/ubintfxd.h"
+        #include "utils/inttypes.h"
+        #include "utils/serializable.h"
+
+        #include "math/hal/bigintfxd/ubintfxd.h"
 
 /**
  * @namespace bigintfxd
@@ -60,10 +63,12 @@ using BigVector = BigVectorFixedT<BigInteger>;
  * @brief The class for representing vectors of big binary integers.
  */
 template <class IntegerType>
-class BigVectorFixedT : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>, IntegerType>,
-                        public lbcrypto::Serializable {
+class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>, IntegerType>,
+                              public lbcrypto::Serializable {
 public:
-    // CONSTRUCTORS
+    ~BigVectorFixedT() {
+        delete[] m_data;
+    }
 
     /**
    * Basic constructor.
@@ -84,6 +89,11 @@ public:
    * @param modulus is the modulus of the ring.
    */
     explicit BigVectorFixedT(usint length, const IntegerType& modulus = 0);
+
+    BigVectorFixedT(usint length, const IntegerType& modulus, const IntegerType& value)
+        : m_data(new IntegerType[length]()), m_length{length}, m_modulus{modulus} {
+        std::fill(m_data, m_data + m_length, value);
+    }
 
     /**
    * Basic constructor for copying a vector
@@ -123,19 +133,12 @@ public:
     BigVectorFixedT(usint length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs);
 
     /**
-   * Destructor.
-   */
-    virtual ~BigVectorFixedT();
-
-    // ASSIGNMENT OPERATORS
-
-    /**
    * Assignment operator to assign value from rhs
    *
    * @param &rhs is the big binary vector to be assigned from.
    * @return Assigned BigVectorFixedT.
    */
-    const BigVectorFixedT& operator=(const BigVectorFixedT& rhs);
+    BigVectorFixedT& operator=(const BigVectorFixedT& rhs);
 
     /**
    * Move assignment operator
@@ -143,7 +146,7 @@ public:
    * @param &&rhs is the big binary vector to be moved.
    * @return moved BigVectorFixedT object
    */
-    const BigVectorFixedT& operator=(BigVectorFixedT&& rhs);
+    BigVectorFixedT& operator=(BigVectorFixedT&& rhs);
 
     /**
    * Initializer list for BigVectorFixedT.
@@ -152,7 +155,7 @@ public:
    * the BBV.
    * @return BigVectorFixedT object
    */
-    const BigVectorFixedT& operator=(std::initializer_list<std::string> rhs);
+    BigVectorFixedT& operator=(std::initializer_list<std::string> rhs);
 
     /**
    * Initializer list for BigVectorFixedT.
@@ -160,7 +163,7 @@ public:
    * @param &&rhs is the list of integers to be assigned to the BBV.
    * @return BigVectorFixedT object
    */
-    const BigVectorFixedT& operator=(std::initializer_list<uint64_t> rhs);
+    BigVectorFixedT& operator=(std::initializer_list<uint64_t> rhs);
 
     /**
    * Assignment operator to assign value val to first entry, 0 for the rest of
@@ -169,7 +172,7 @@ public:
    * @param val is the value to be assigned at the first entry.
    * @return Assigned BigVectorFixedT.
    */
-    const BigVectorFixedT& operator=(uint64_t val) {
+    BigVectorFixedT& operator=(uint64_t val) {
         this->m_data[0] = val;
         if (this->m_modulus != 0) {
             this->m_data[0] %= this->m_modulus;
@@ -264,7 +267,7 @@ public:
    * @param &modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
-    const BigVectorFixedT& ModEq(const IntegerType& modulus);
+    BigVectorFixedT& ModEq(const IntegerType& modulus);
 
     /**
    * Scalar-to-vector modulus addition operation.
@@ -280,7 +283,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
-    const BigVectorFixedT& ModAddEq(const IntegerType& b);
+    BigVectorFixedT& ModAddEq(const IntegerType& b);
 
     /**
    * Scalar modulus addition at a particular index.
@@ -298,7 +301,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    const BigVectorFixedT& ModAddAtIndexEq(usint i, const IntegerType& b);
+    BigVectorFixedT& ModAddAtIndexEq(usint i, const IntegerType& b);
 
     /**
    * Vector component wise modulus addition.
@@ -314,7 +317,8 @@ public:
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
-    const BigVectorFixedT& ModAddEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModAddEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModAddNoCheckEq(const BigVectorFixedT& b);
 
     /**
    * Scalar-from-vector modulus subtraction operation.
@@ -330,7 +334,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
-    const BigVectorFixedT& ModSubEq(const IntegerType& b);
+    BigVectorFixedT& ModSubEq(const IntegerType& b);
 
     /**
    * Vector component wise modulus subtraction.
@@ -346,7 +350,7 @@ public:
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
-    const BigVectorFixedT& ModSubEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModSubEq(const BigVectorFixedT& b);
 
     /**
    * Scalar-to-vector modulus multiplication operation.
@@ -364,7 +368,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
-    const BigVectorFixedT& ModMulEq(const IntegerType& b);
+    BigVectorFixedT& ModMulEq(const IntegerType& b);
 
     /**
    * Vector component wise modulus multiplication.
@@ -382,7 +386,8 @@ public:
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
-    const BigVectorFixedT& ModMulEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModMulEq(const BigVectorFixedT& b);
+    BigVectorFixedT& ModMulNoCheckEq(const BigVectorFixedT& b);
 
     /**
    * Scalar modulus exponentiation operation.
@@ -398,7 +403,7 @@ public:
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
-    const BigVectorFixedT& ModExpEq(const IntegerType& b);
+    BigVectorFixedT& ModExpEq(const IntegerType& b);
 
     /**
    * Modulus inverse operation.
@@ -412,7 +417,7 @@ public:
    *
    * @return is the result of the component wise modulus inverse operation.
    */
-    const BigVectorFixedT& ModInverseEq();
+    BigVectorFixedT& ModInverseEq();
 
     /**
    * Modulus 2 operation, also a least significant bit.
@@ -428,7 +433,7 @@ public:
    * @return is the result of the component wise modulus 2 operation, also a
    * least significant bit.
    */
-    const BigVectorFixedT& ModByTwoEq();
+    BigVectorFixedT& ModByTwoEq();
 
     /**
    * Vector multiplication without applying the modulus operation.
@@ -445,7 +450,7 @@ public:
    * @param &b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
-    const BigVectorFixedT& MultWithOutModEq(const BigVectorFixedT& b);
+    BigVectorFixedT& MultWithOutModEq(const BigVectorFixedT& b);
 
     /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -465,7 +470,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-    const BigVectorFixedT& MultiplyAndRoundEq(const IntegerType& p, const IntegerType& q);
+    BigVectorFixedT& MultiplyAndRoundEq(const IntegerType& p, const IntegerType& q);
 
     /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -483,7 +488,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-    const BigVectorFixedT& DivideAndRoundEq(const IntegerType& q);
+    BigVectorFixedT& DivideAndRoundEq(const IntegerType& q);
 
     // OTHER FUNCTIONS
 
@@ -592,14 +597,13 @@ private:
     IntegerType m_modulus = 0;
 
     // function to check if the index is a valid index.
-    bool IndexCheck(size_t length) const {
-        if (length > this->m_length) {
-            return false;
-        }
-        return true;
+    bool IndexCheck(usint length) const {
+        return length < m_length;
     }
 };
 
 }  // namespace bigintfxd
 
-#endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+    #endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+
+#endif

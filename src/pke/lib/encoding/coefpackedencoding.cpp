@@ -41,34 +41,30 @@ namespace lbcrypto {
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, int64_t ub,
                              const std::vector<int64_t>& value, SCHEME schemeID) {
+    if (ub > INT32_MAX || lb < INT32_MIN)
+        OPENFHE_THROW(config_error, "Cannot encode a coefficient larger than 32 bits");
+
     poly.SetValuesToZero();
-
     for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
-        if (value[i] > INT32_MAX || value[i] < INT32_MIN) {
-            OPENFHE_THROW(config_error, "Cannot encode a coefficient larger than 32 bits");
-        }
-
         if (value[i] <= lb || value[i] > ub)
             OPENFHE_THROW(config_error, "Cannot encode integer " + std::to_string(value[i]) + " at position " +
                                             std::to_string(i) + " because it is out of range of plaintext modulus " +
                                             std::to_string(mod));
 
-        typename P::Integer entry = value[i];
+        typename P::Integer entry{value[i]};
 
         if (value[i] < 0) {
             if (schemeID == SCHEME::BFVRNS_SCHEME) {
                 // TODO: Investigate why this doesn't work with q instead of t.
-                uint64_t adjustedVal = mod - ((uint64_t)llabs(value[i]));
-                entry                = typename P::Integer(adjustedVal);
+                uint64_t adjustedVal{mod - static_cast<uint64_t>(llabs(value[i]))};
+                entry = typename P::Integer(adjustedVal);
             }
             else {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
-                const typename P::Integer& q = poly.GetModulus();
-                entry                        = q - typename P::Integer(llabs(value[i]));
+                entry = poly.GetModulus() - typename P::Integer(static_cast<uint64_t>(llabs(value[i])));
             }
         }
-
         poly[i] = entry;
     }
 }

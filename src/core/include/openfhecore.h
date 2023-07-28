@@ -36,16 +36,15 @@
 #ifndef SRC_CORE_INCLUDE_OPENFHECORE_H_
 #define SRC_CORE_INCLUDE_OPENFHECORE_H_
 
-#include "version.h"
-
-#include "math/hal.h"
-
-#include "math/nbtheory.h"
-
-#include "math/distrgen.h"
-
 #include "lattice/lat-hal.h"
 #include "lattice/stdlatticeparms.h"
+
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+
 #include "utils/debug.h"
+
+#include "version.h"
 
 #endif /* SRC_CORE_INCLUDE_OPENFHECORE_H_ */

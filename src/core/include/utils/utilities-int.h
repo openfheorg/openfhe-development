@@ -32,7 +32,8 @@
 #ifndef __UTILITIES_INT_H__
 #define __UTILITIES_INT_H__
 
-#include "math/hal.h"
+#include "math/math-hal.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 

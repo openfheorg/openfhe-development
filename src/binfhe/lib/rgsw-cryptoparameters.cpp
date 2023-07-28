@@ -35,70 +35,91 @@ namespace lbcrypto {
 
 void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseR^i (only for AP bootstrapping)
-    if (m_method == AP) {
-        uint32_t digitCountR =
-            (uint32_t)std::ceil(log(static_cast<double>(m_q.ConvertToInt())) / log(static_cast<double>(m_baseR)));
-        // Populate digits
-        NativeInteger value = 1;
-        for (size_t i = 0; i < digitCountR; ++i) {
-            m_digitsR.push_back(value);
-            value *= m_baseR;
-        }
+    if (m_method == BINFHE_METHOD::AP) {
+        auto&& logq = log(m_q.ConvertToDouble());
+        auto digitCountR{static_cast<size_t>(std::ceil(logq / log(static_cast<double>(m_baseR))))};
+        m_digitsR.clear();
+        m_digitsR.reserve(digitCountR);
+        BasicInteger value{1};
+        for (size_t i = 0; i < digitCountR; ++i, value *= m_baseR)
+            m_digitsR.emplace_back(value);
     }
 
     // Computes baseG^i
     if (signEval) {
-        uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
+        constexpr uint32_t baseGlist[]  = {1 << 14, 1 << 18, 1 << 27};
+        constexpr double logbaseGlist[] = {noexcept(log(1 << 14)), noexcept(log(1 << 18)), noexcept(log(1 << 27))};
+        constexpr NativeInteger nativebaseGlist[] = {1 << 14, 1 << 18, 1 << 27};
+        auto logQ{log(m_Q.ConvertToDouble())};
         for (size_t j = 0; j < 3; ++j) {
-            NativeInteger vTemp = NativeInteger(1);
-            auto tempdigits = (uint32_t)std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(baseGlist[j])));
+            NativeInteger vTemp{1};
+            auto tempdigits{static_cast<size_t>(std::ceil(logQ / logbaseGlist[j]))};
             std::vector<NativeInteger> tempvec(tempdigits);
             for (size_t i = 0; i < tempdigits; ++i) {
                 tempvec[i] = vTemp;
-                vTemp      = vTemp.ModMul(NativeInteger(baseGlist[j]), m_Q);
+                vTemp      = vTemp.ModMulFast(nativebaseGlist[j], m_Q);
             }
-            m_Gpower_map[baseGlist[j]] = tempvec;
             if (m_baseG == baseGlist[j])
                 m_Gpower = tempvec;
+            m_Gpower_map[baseGlist[j]] = std::move(tempvec);
         }
     }
     else {
-        NativeInteger vTemp = NativeInteger(1);
-        for (size_t i = 0; i < m_digitsG; ++i) {
+        m_Gpower.reserve(m_digitsG);
+        NativeInteger vTemp{1};
+        for (uint32_t i = 0; i < m_digitsG; ++i) {
             m_Gpower.push_back(vTemp);
-            vTemp = vTemp.ModMul(NativeInteger(m_baseG), m_Q);
+            vTemp = vTemp.ModMulFast(NativeInteger(m_baseG), m_Q);
         }
     }
 
     // Sets the gate constants for supported binary operations
     m_gateConst = {
-        NativeInteger(5) * (m_q >> 3),  // OR
-        NativeInteger(7) * (m_q >> 3),  // AND
-        NativeInteger(1) * (m_q >> 3),  // NOR
-        NativeInteger(3) * (m_q >> 3),  // NAND
-        NativeInteger(5) * (m_q >> 3),  // XOR_FAST
-        NativeInteger(1) * (m_q >> 3)   // XNOR_FAST
+        NativeInteger(5) * (m_q >> 3),   // OR
+        NativeInteger(7) * (m_q >> 3),   // AND
+        NativeInteger(1) * (m_q >> 3),   // NOR
+        NativeInteger(3) * (m_q >> 3),   // NAND
+        NativeInteger(5) * (m_q >> 3),   // XOR_FAST
+        NativeInteger(1) * (m_q >> 3),   // XNOR_FAST
+        NativeInteger(7) * (m_q >> 3),   // MAJORITY
+        NativeInteger(11) * (m_q / 12),  // AND3
+        NativeInteger(7) * (m_q / 12),   // OR3
+        NativeInteger(15) * (m_q >> 4),  // AND4
+        NativeInteger(9) * (m_q >> 4)    // OR4
     };
 
     // Computes polynomials X^m - 1 that are needed in the accumulator for the
     // CGGI bootstrapping
-    if (m_method == GINX) {
-        // loop for positive values of m
-        for (size_t i = 0; i < m_N; ++i) {
-            NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
-            aPoly[i].ModAddEq(NativeInteger(1), m_Q);  // X^m
-            aPoly[0].ModSubEq(NativeInteger(1), m_Q);  // -1
+    if (m_method == BINFHE_METHOD::GINX) {
+        constexpr NativeInteger one{1};
+        m_monomials.reserve(2 * m_N);
+        for (uint32_t i = 0; i < m_N; ++i) {
+            NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
+            aPoly[0].ModSubFastEq(one, m_Q);  // -1
+            aPoly[i].ModAddFastEq(one, m_Q);  // X^m
             aPoly.SetFormat(Format::EVALUATION);
-            m_monomials.push_back(aPoly);
+            m_monomials.push_back(std::move(aPoly));
         }
-
-        // loop for negative values of m
-        for (size_t i = 0; i < m_N; ++i) {
-            NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
-            aPoly[i].ModSubEq(NativeInteger(1), m_Q);  // -X^m
-            aPoly[0].ModSubEq(NativeInteger(1), m_Q);  // -1
+        for (uint32_t i = 0; i < m_N; ++i) {
+            NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
+            aPoly[0].ModSubFastEq(one, m_Q);  // -1
+            aPoly[i].ModSubFastEq(one, m_Q);  // -X^m
             aPoly.SetFormat(Format::EVALUATION);
-            m_monomials.push_back(aPoly);
+            m_monomials.push_back(std::move(aPoly));
+        }
+    }
+
+    if (m_method == LMKCDEY) {
+        constexpr uint32_t gen{5};
+        m_logGen.clear();
+        uint32_t M{2 * m_N};
+        m_logGen.resize(M);
+        uint32_t gPow{1};
+        m_logGen[M - gPow] = M;  // for -1
+        for (uint32_t i = 1; i < m_N / 2; ++i) {
+            gPow               = (gPow * gen) % M;
+            m_logGen[gPow]     = i;
+            m_logGen[M - gPow] = -i;
         }
     }
 }
