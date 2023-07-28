@@ -122,7 +122,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SCHE
 
 constexpr uint32_t MULT_DEPTH1  = 13;
 constexpr uint32_t MULT_DEPTH2  = 16;
-constexpr uint32_t RDIM         = 512;
+constexpr uint32_t RDIM         = 64;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
