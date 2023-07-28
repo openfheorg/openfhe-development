@@ -49,7 +49,7 @@ class LWECiphertextImpl : public Serializable {
 public:
     LWECiphertextImpl() = default;
 
-    explicit LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
+    LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
 
     LWECiphertextImpl(NativeVector&& a, NativeInteger b) noexcept : m_a(std::move(a)), m_b(b) {}
 

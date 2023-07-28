@@ -88,7 +88,7 @@ private:
    * @param acc previous value of the accumulator
    * @return
    */
-    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWEvalKey& ek,
+    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
                     RLWECiphertext& acc) const;
 };
 
