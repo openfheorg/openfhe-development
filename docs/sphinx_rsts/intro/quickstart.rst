@@ -34,6 +34,10 @@ At a high level:
       `Bootstrapping in FHEW-like
       Cryptosystems <https://eprint.iacr.org/2020/086.pdf>`__
 
+-  `boolean-lmkcdey.cpp: LMKCDEY Bootstrapping <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean-lmkcdey.cpp>`__:
+
+   -  bootstrapping as described in `Efficient FHEW Bootstrapping with Small Evaluation Keys, and
+      Applications to Threshold Homomorphic Encryption <https://eprint.iacr.org/2022/198.pdf>`__
 
 -  `boolean-serial-binary.cpp: Boolean Serialization <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean-serial-binary.cpp>`_:
 
