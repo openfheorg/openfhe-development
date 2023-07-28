@@ -42,13 +42,7 @@ int main() {
 
     auto cc = BinFHEContext();
 
-    // STD128 is the security level of 128 bits of security based on LWE Estimator
-    // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
-    // MEDIUM corresponds to the level of more than 100 bits for both quantum and
-    // classical computer attacks. The second argument is the bootstrapping method
-    // (AP or GINX). The default method is GINX. Here we explicitly set AP. GINX
-    // typically provides better performance: the bootstrapping key is much
-    // smaller in GINX (by 20x) while the runtime is roughly the same.
+    // We use the STD128 setting optimized for the LMKCDEY mode.
     cc.GenerateBinFHEContext(STD128_LMKCDEY, LMKCDEY);
 
     // Sample Program: Step 2: Key Generation
