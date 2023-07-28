@@ -15,7 +15,6 @@ Lattice HAL Introduction
 
   graph BT
       a[DCRTPolyInterface] --> |Inherited by|b[DCRTPoly - HAL Default];
-      b[DCRTPoly-HAL Default] --> |Inherited by|c[HexlDCRTPoly];
 
 This hardware abstraction layer allows OpenFHE to use a variety of hardware-integrated backends while still allowing for high performance. As of March 31st 2022, we have the:
 

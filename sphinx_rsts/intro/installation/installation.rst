@@ -92,7 +92,8 @@ OpenFHE CI continually tests our builds on the following operating systems:
 OpenFHE users have reported successful operation on the following systems:
 
 * FreeBSD
-* Ubuntu [16.04]
+* Ubuntu [16.04] [22.04] [23.04]
+* macOS [Monterey] [Ventura]
 * Arch Linux
 
 Please let us know the results if you have run OpenFHE any additional systems not listed above.

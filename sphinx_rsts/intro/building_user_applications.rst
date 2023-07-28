@@ -37,6 +37,9 @@ The high-level instructions for building projects that use OpenFHE are as follow
 
     cmake ..
 
+If OpenFHE is installed in a different location than the default one or you have different versions of OpenFHE installed, then you should specify the path to the desired location by running cmake with an option::
+
+    cmake .. -DCMAKE_PREFIX_PATH=/openfhe/location/path
 
 8. Run "make" to build the executable.
 

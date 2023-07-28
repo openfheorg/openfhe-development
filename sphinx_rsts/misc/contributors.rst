@@ -55,11 +55,15 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Alex Malozemoff (Galois)
 
+* Sukanya Mandal
+
 * Daniele Micciancio (University of California San Diego, Duality Technologies)
 
 * Rener Oliveira (BOCOM BBM Bank)
 
 * Antonis Papadimitriou (Duality Technologies)
+
+* Carlo Pascoe (Duality Technologies)
 
 * Nishanth Pasham (New Jersey Institute of Technology)
 
