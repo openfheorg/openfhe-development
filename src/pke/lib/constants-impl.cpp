@@ -169,8 +169,12 @@ std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
             s << "INDCPA";
             break;
         case FIXED_NOISE_HRA:
-            SecretKeyDist convertToSecretKeyDist(uint32_t num);
-
+            s << "FIXED_NOISE_HRA";
+            break;
+        case NOISE_FLOODING_HRA:
+            s << "NOISE_FLOODING_HRA";
+            break;
+        case DIVIDE_AND_ROUND_HRA:
             s << "DIVIDE_AND_ROUND_HRA";
             break;
         default:
