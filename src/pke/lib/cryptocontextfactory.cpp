@@ -72,6 +72,18 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr
         cc = std::make_shared<CryptoContextImpl<Element>>(params, scheme, schemeId);
         AddContext(cc);
     }
+}
+
+template <typename Element>
+CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
+                                                                 std::shared_ptr<SchemeBase<Element>> scheme,
+                                                                 SCHEME schemeId) {
+    CryptoContext<Element> cc = FindContext(params, scheme);
+    // if the context is not found we should create one
+    if (nullptr == cc) {
+        cc = std::make_shared<CryptoContextImpl<Element>>(params, scheme, schemeId);
+        AddContext(cc);
+    }
 
     return cc;
 }
