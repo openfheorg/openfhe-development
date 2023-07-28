@@ -574,18 +574,6 @@ typename PolyImpl<VecType>::PolyNative PolyImpl<VecType>::DecryptionCRTInterpola
     return tmp;
 }
 
-template <typename VecType>
-typename PolyImpl<VecType>::PolyNative PolyImpl<VecType>::ToNativePoly() const {
-    usint vlen{m_params->GetRingDimension()};
-    auto c{m_params->GetCyclotomicOrder()};
-    NativeInteger m{std::numeric_limits<BasicInteger>::max()};
-    auto params{std::make_shared<ILParamsImpl<NativeInteger>>(c, m, 1)};
-    typename PolyImpl<VecType>::PolyNative tmp(params, m_format, true);
-    for (usint i = 0; i < vlen; ++i)
-        tmp[i] = NativeInteger((*m_values)[i]);
-    return tmp;
-}
-
 template <>
 inline PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
     return *this;
