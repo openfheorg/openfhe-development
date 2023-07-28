@@ -65,13 +65,13 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
    1. FHE for Boolean circuits and larger plaintext spaces (FHEW/TFHE):
        1. [Simple Code Example with Symmetric Encryption](src/binfhe/examples/boolean.cpp)
        2. [Simple Code Example with PKE](src/binfhe/examples/pke/boolean-pke.cpp)
-       2. [Evaluation of Multi-Input Gates](src/binfhe/examples/pke/boolean-multi-input.cpp)
+       2. [Evaluation of Multi-Input Gates](src/binfhe/examples/boolean-multi-input.cpp)
        2. [Code with JSON serialization](src/binfhe/examples/boolean-serial-json.cpp)
        3. [Code with Binary Serialization](src/binfhe/examples/boolean-serial-binary.cpp)
        4. [Large-Precision Comparison](src/binfhe/examples/eval-sign.cpp)
        4. [Small-Precison Arbitrary Function Evaluation](src/binfhe/examples/eval-function.cpp)
    1. Scheme Switching:
-       1. [Examples with scheme switching between CKKS and FHEW/TFHE](src/pke/scheme-switching.cpp)
+       1. [Examples with scheme switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
        1. [Simple Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)
