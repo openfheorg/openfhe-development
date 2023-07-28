@@ -71,7 +71,7 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        4. [Large-Precision Comparison](src/binfhe/examples/eval-sign.cpp)
        4. [Small-Precison Arbitrary Function Evaluation](src/binfhe/examples/eval-function.cpp)
    1. Scheme Switching:
-       1. [Examples with scheme switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
+       1. [Examples with Scheme Switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
        1. [Simple Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)

@@ -15,6 +15,10 @@ OpenFHE also includes the following multiparty extensions of FHE:
   - Threshold FHE for BGV, BFV, and CKKS schemes
   - Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
+OpenFHE also supports switching between CKKS and FHEW/TFHE to evaluate non-smooth functions, e.g., comparison, using FHEW/TFHE functional bootstrapping.
+
+OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above.
+
 A major focus is on the usability of the schemes. For instance, all HE schemes with packing use the same common API, and are implemented using runtime polymorphism.
 
 OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance.
