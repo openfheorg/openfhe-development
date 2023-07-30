@@ -12,6 +12,7 @@ _build/
 api/
 doxyoutput/
 
+third-party/
 
 .ipynb_checkpoints
 
