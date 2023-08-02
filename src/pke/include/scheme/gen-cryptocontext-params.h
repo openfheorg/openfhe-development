@@ -33,8 +33,8 @@
   Scheme parameter default class
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_BASE_H_
-#define _CRYPTOCONTEXTPARAMS_BASE_H_
+#ifndef __GEN_CRYPTOCONTEXT_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_PARAMS_H__
 
 // Had to include cryptocontext.h as the includes below give a compiler error.
 // Those headers probably depend on some order/sequence.
@@ -426,4 +426,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXTPARAMS_BASE_H_
+#endif  // __GEN_CRYPTOCONTEXT_PARAMS_H__

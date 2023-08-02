@@ -33,8 +33,8 @@
   Definitions for scheme parameter default class
  */
 
-#include "scheme/cryptocontextparams-base.h"
-#include "scheme/cryptocontextparams-defaults.h"
+#include "scheme/gen-cryptocontext-params.h"
+#include "scheme/gen-cryptocontext-params-defaults.h"
 #include "utils/exception.h"
 
 #include <string>

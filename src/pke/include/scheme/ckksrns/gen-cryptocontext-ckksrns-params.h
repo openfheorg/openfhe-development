@@ -36,7 +36,7 @@
 #ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
 #define __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
 
-#include "scheme/cryptocontextparams-base.h"
+#include "scheme/gen-cryptocontext-params.h"
 
 #include <string>
 #include <vector>
