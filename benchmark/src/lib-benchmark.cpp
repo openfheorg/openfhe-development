@@ -38,7 +38,7 @@
 #define _USE_MATH_DEFINES
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
 #include "benchmark/benchmark.h"

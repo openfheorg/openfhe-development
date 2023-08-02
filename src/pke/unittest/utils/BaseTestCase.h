@@ -34,7 +34,7 @@
 #include "config_core.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "scheme/cryptocontextparams-base.h"
 
 #include "utils/exception.h"

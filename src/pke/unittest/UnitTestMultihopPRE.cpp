@@ -33,7 +33,7 @@
   unit tests for Proxy Re-Encryption. Demo software for multiparty proxy reencryption operations for various schemes
  */
 
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
 #include "include/gtest/gtest.h"

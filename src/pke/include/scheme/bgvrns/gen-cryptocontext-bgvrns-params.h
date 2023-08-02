@@ -33,8 +33,8 @@
   Parameter class to generate BGVRNS crypto context
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_BGVRNS_H_
-#define _CRYPTOCONTEXTPARAMS_BGVRNS_H_
+#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__
 
 #include "scheme/cryptocontextparams-base.h"
 
@@ -63,4 +63,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXTPARAMS_BGVRNS_H_
+#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__

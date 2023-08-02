@@ -33,11 +33,11 @@
   API to generate BGV crypto context
  */
 
-#ifndef _CRYPTOCONTEXT_BGVRNS_H_
-#define _CRYPTOCONTEXT_BGVRNS_H_
+#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_H__
+#define __GEN_CRYPTOCONTEXT_BGVRNS_H__
 
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
-#include "scheme/bgvrns/cryptocontextparams-bgvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns-params.h"
 #include "scheme/bgvrns/bgvrns-scheme.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "cryptocontext-fwd.h"
@@ -64,4 +64,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXT_BGVRNS_H_
+#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_H__
