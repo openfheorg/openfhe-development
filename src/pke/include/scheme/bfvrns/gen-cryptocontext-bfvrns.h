@@ -30,37 +30,38 @@
 //==================================================================================
 
 /*
-  Parameter class to generate BFVRNS crypto context
+ * API to generate BFVRNS crypto context
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_BFVRNS_H_
-#define _CRYPTOCONTEXTPARAMS_BFVRNS_H_
+#ifndef __GEN_CRYPTOCONTEXT_BFVRNS_H__
+#define __GEN_CRYPTOCONTEXT_BFVRNS_H__
 
-#include "scheme/cryptocontextparams-base.h"
-
-#include <string>
-#include <vector>
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns-params.h"
+#include "scheme/bfvrns/bfvrns-scheme.h"
+#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+#include "cryptocontext-fwd.h"
+#include "lattice/lat-hal.h"
 
 namespace lbcrypto {
 
-class CryptoContextBFVRNS;
+template <typename Element>
+class CryptoContextFactory;
 
-// every CCParams class should include the following forward declaration as there is
-// no general CCParams class template. This way we may create scheme specific classes
-// derived from Params or have them completely independent.
-template <typename T>
-class CCParams;
-//====================================================================================================================
-template <>
-class CCParams<CryptoContextBFVRNS> : public Params {
+class CryptoContextBFVRNS {
+    using Element = DCRTPoly;
+
 public:
-    CCParams() : Params(BFVRNS_SCHEME) {}
-    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj)      = default;
+    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
+    using Factory                   = CryptoContextFactory<Element>;
+    using PublicKeyEncryptionScheme = SchemeBFVRNS;
+    using CryptoParams              = CryptoParametersBFVRNS;
+
+    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBFVRNS>& parameters) {
+        return genCryptoContextBFVRNSInternal<CryptoContextBFVRNS, Element>(parameters);
+    }
 };
-//====================================================================================================================
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXTPARAMS_BFVRNS_H_
+#endif  // __GEN_CRYPTOCONTEXT_BFVRNS_H__
