@@ -32,7 +32,7 @@
 #define __BASETESTCASE_H__
 
 #include "config_core.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "scheme/cryptocontextparams-base.h"

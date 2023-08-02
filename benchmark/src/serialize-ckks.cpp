@@ -47,7 +47,7 @@
 #include "cryptocontext-ser.h"
 #include "ciphertext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
 using namespace lbcrypto;

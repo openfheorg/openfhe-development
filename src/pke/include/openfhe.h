@@ -70,7 +70,7 @@
 #include "scheme/ckksrns/ckksrns-scheme.h"
 
 #include "gen-cryptocontext.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 

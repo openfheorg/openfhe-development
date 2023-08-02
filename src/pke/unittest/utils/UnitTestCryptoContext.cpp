@@ -30,7 +30,7 @@
 //==================================================================================
 
 #include "UnitTestCryptoContext.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
