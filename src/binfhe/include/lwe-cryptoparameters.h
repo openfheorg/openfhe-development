@@ -68,6 +68,8 @@ public:
                              const NativeInteger& q_KS, double std, uint32_t baseKS,
                              SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
+        if(m_q == NativeInteger(0))
+            OPENFHE_THROW(config_error, "ERROR: m_q (modulus for additive LWE) can not be zero");
         if (m_Q.GetMSB() > MAX_MODULUS_SIZE)
             OPENFHE_THROW(config_error, "ERROR: Q.GetMSB() > MAX_MODULUS_SIZE");
         m_dgg.SetStd(std);
