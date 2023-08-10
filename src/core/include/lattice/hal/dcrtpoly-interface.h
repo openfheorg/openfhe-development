@@ -1098,19 +1098,20 @@ public:
                                             const std::vector<double>& qInv, Format resultFormat) = 0;
 
     struct CRTBasisExtensionPrecomputations {
-        const std::shared_ptr<Params>& paramsQlPl;
-        const std::shared_ptr<Params>& paramsPl;
-        const std::shared_ptr<Params>& paramsQl;
-        const std::vector<NativeInteger>& mPlQHatInvModq;
-        const std::vector<NativeInteger>& mPlQHatInvModqPrecon;
-        const std::vector<std::vector<NativeInteger>>& qInvModp;
-        const std::vector<DoubleNativeInt> modpBarrettMu;
-        const std::vector<NativeInteger>& PlHatInvModp;
-        const std::vector<NativeInteger>& PlHatInvModpPrecon;
-        const std::vector<std::vector<NativeInteger>>& PlHatModq;
-        const std::vector<std::vector<NativeInteger>>& alphaPlModq;
-        const std::vector<DoubleNativeInt>& modqBarrettMu;
-        const std::vector<double>& pInv;
+        // TODO (dsuponit) and (pascoec): make the data members private to enforce their constantness and add getters.
+        std::shared_ptr<Params> paramsQlPl;
+        std::shared_ptr<Params> paramsPl;
+        std::shared_ptr<Params> paramsQl;
+        std::vector<NativeInteger> mPlQHatInvModq;
+        std::vector<NativeInteger> mPlQHatInvModqPrecon;
+        std::vector<std::vector<NativeInteger>> qInvModp;
+        std::vector<DoubleNativeInt> modpBarrettMu;
+        std::vector<NativeInteger> PlHatInvModp;
+        std::vector<NativeInteger> PlHatInvModpPrecon;
+        std::vector<std::vector<NativeInteger>> PlHatModq;
+        std::vector<std::vector<NativeInteger>> alphaPlModq;
+        std::vector<DoubleNativeInt> modqBarrettMu;
+        std::vector<double> pInv;
 
         // clang-format off
         CRTBasisExtensionPrecomputations(
