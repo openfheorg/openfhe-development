@@ -34,6 +34,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <cstdint>
 
 namespace lbcrypto {
 
