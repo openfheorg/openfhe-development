@@ -1,4 +1,4 @@
-Threshold FHE is supported in the schemes - BGV, BFV and CKKS. To use the threshold functionality in OpenFHE, the MULTIPARTY feature needs to be enabled for the cryptocontext with the line `cc->Enable(MULTIPARTY)`, where `cc` is the cryptocontext object.
+Threshold FHE is supported in the schemes BGV, BFV in IND-CPA and IND-CPA^D mode and supported in CKKS only in the IND-CPA mode. To use the threshold functionality in OpenFHE, the MULTIPARTY feature needs to be enabled for the cryptocontext with the line `cc->Enable(MULTIPARTY)`, where `cc` is the cryptocontext object.
 
 The MULTIPARTY feature has been implemented in two modes for BGV/BFV. The modes are implemented as an enum -
 # **MultipartyMode multipartyMode**
@@ -12,24 +12,23 @@ CCParams<CryptoContextBGVRNS> parameters;
 parameters.SetMultipartyMode(NOISE_FLOODING_MULTIPARTY);
 ```
 
-The modes are implemented to provide security against the type of attacks in [Li and Micciancio](https://link.springer.com/chapter/10.1007/978-3-030-77870-5_23). More on the attack and the solution with noise flooding for CKKS decryption in provided in [CKKS_NOISE_FLOODING.MD](/pke/examples/CKKS_NOISE_FLOODING.md) file. The same kind of attacks also apply in the threshold scenario for all three schemes since the approximate decryption shares from each party is shared before they can be aggregated to decrypt the final result. The decryption share for party $i$ is $\mathsf{d_i} = (b + as_i + e, -a)$. Similar to the CKKS decryption attack, the noise in the decryption share $d_i$ leaks information about the secret $s_i$.
+The modes are implemented to provide security against the type of attacks in [Li and Micciancio](https://link.springer.com/chapter/10.1007/978-3-030-77870-5_23). More on the attack and the solution with noise flooding for CKKS decryption in provided in [CKKS_NOISE_FLOODING.MD](/pke/examples/CKKS_NOISE_FLOODING.md) file. The same kind of attacks also apply in the threshold scenario for all three schemes since the approximate decryption shares from each party is shared before they can be aggregated to decrypt the final result. The decryption share for party $i$ is $\mathsf{d_i} = (b + as_i + e_i, -a)$. Similar to the CKKS decryption attack, the noise in the decryption share $d_i$ leaks information about the secret $s_i$.
 
 The FIXED_NOISE_MODE for all schemes are implemented to add a fixed 20 bits noise to the decryption to increase the attack complexity.
 
-The NOISE_FLOODING_MODE provides provable security against such attacks. The technique to choose the modulus to accomodate the extra noise from noise flooding is implemented in BGV and BFV differently as follows:
-[ref to PR comments?]
+The NOISE_FLOODING_MODE provides provable security against such attacks in the IND-CPA^D model. The technique to choose the modulus to accomodate the extra noise from noise flooding is implemented in BGV and BFV differently as follows:
 
 BFV:
-In this case, additional two towers of moduli are added to the CRT moduli to accomodate the error, which increases the size of the modulus by $128$ bits. This is automatically done by OpenFHE during parameter generation if the NOISE_FLOODING_MULTIPARTY mode is set in the parameters.
+In this case, additional two towers of moduli are added to the CRT moduli to accomodate the error, which increases the size of the modulus by $128$ bits. This is automatically done by OpenFHE during parameter generation if the NOISE_FLOODING_MULTIPARTY mode is set in the parameters as above.
 
 The protocol for BFV threshold noise flooding is as follows:
-Let our current RNS basis for decryption be $Q=q_0 * q_1 * ... * q_k$. Add two more 60-bit primes $p_0$ and $p_1$. The extended basis is $QP = q_0 * p_1 * p_2 * ...q_1 * q_k$.
+Let our current RNS basis for decryption be $Q=q_0 * q_1 * ... * q_k$. Add two more 60-bit primes $p_0$ and $p_1$. The extended basis is $QP = q_0 * p_1 * p_2 * q_1 * ... * q_k$.
 
-For an input ciphertext $c mod QP$, the decryption shares by each party i are created as follows:
+For an input ciphertext $c mod QP$, the decryption shares by each party $i$ are created as follows:
 
 1. We first generate a random uniform ring element $b$ w.r.t. to mod $Qprime = QP/q_0$. Then we do exact RNS basis extension from $Qprime$ to $QP$.
 
-2. Then we do flooding $c * s_i + b mod QP$.
+2. Then we do flooding with $b$ as $c * s_i + b mod QP$.
 
 BGV: For BGV threshold noise flooding, the protocol is exactly the same as BFV, except we use $b' = tb$ for flooding instead of $b$ for plaintext modulus $t$.
 
