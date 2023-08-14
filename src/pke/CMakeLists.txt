@@ -19,7 +19,7 @@ add_library (pkeobj OBJECT ${PKE_SRC_FILES})
 set_property(TARGET pkeobj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if( BUILD_SHARED )
-	add_dependencies(pkeobj OPENFHEcore)
+	add_dependencies(pkeobj OPENFHEcore OPENFHEbinfhe)
 	add_library (OPENFHEpke SHARED $<TARGET_OBJECTS:pkeobj>)
 	set_property(TARGET OPENFHEpke PROPERTY VERSION ${PKE_VERSION})
 	set_property(TARGET OPENFHEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
@@ -30,7 +30,7 @@ if( BUILD_SHARED )
 endif()
 
 if( BUILD_STATIC )
-	add_dependencies(pkeobj OPENFHEcore_static)
+	add_dependencies(pkeobj OPENFHEcore_static OPENFHEbinfhe_static)
 	add_library (OPENFHEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
 	set_property(TARGET OPENFHEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 	install(TARGETS OPENFHEpke_static
