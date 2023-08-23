@@ -1,4 +1,13 @@
-07/28/2024: OpenFHE 1.1.0 (development) is released
+08/23/2023: OpenFHE 1.1.1 (development) is released
+
+* Fixes the CMake files (binfhe module is now a dependency for the pke module) [#525, #538]
+* Fixes a bug in EvalChebyshevFunction (#530)
+* Adds documentation for threshold FHE (#457)
+* Includes several other bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/pulls?q=is%3Apr+milestone%3A%22Release+1.1.1%22
+
+07/28/2023: OpenFHE 1.1.0 (development) is released
 
 * Adds scheme switching between CKKS and FHEW/TFHE
 * Adds comparison and (arg)min evaluation in CKKS via scheme switching to FHEW/FHEW
