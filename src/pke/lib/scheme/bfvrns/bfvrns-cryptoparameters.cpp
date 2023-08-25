@@ -37,7 +37,6 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "cryptocontext.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "globals.h"
 
 namespace lbcrypto {
 
@@ -46,10 +45,6 @@ namespace lbcrypto {
 void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                  EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                  uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
-    // Don't run the function if it is not required
-    if (!PrecomputeCRTTablesAfterDeserializaton())
-        return;
-
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ = GetElementParams()->GetParams().size();

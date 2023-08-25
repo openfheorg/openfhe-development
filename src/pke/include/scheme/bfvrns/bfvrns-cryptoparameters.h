@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_BFVRNS_CRYPTOPARAMETERS_H
 
 #include "schemerns/rns-cryptoparameters.h"
+#include "globals.h"
 
 #include <memory>
 #include <string>
@@ -66,12 +67,14 @@ public:
                            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                            MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET,
-                           MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY, ExecutionMode executionMode = EXEC_EVALUATION,
-                           DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                           uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
+                           MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
+                           ExecutionMode executionMode             = EXEC_EVALUATION,
+                           DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                           PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
+                           uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
-                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity, 
+                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                               numAdversarialQueries, thresholdNumOfParties) {}
 
     virtual ~CryptoParametersBFVRNS() {}
@@ -101,8 +104,10 @@ public:
 
         ar(cereal::base_class<CryptoParametersRNS>(this));
 
-        PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
-                            m_extraBits);
+        if (PrecomputeCRTTablesAfterDeserializaton()) {
+            PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
+                                m_extraBits);
+        }
     }
 
     std::string SerializedObjectName() const override {
