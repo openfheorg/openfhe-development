@@ -10,18 +10,8 @@
 
 cmake_minimum_required (VERSION 3.5.1)
 
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif()
-
-### To use gcc/g++ on a Macintosh, you must set the Compilers
-### here, not inside the project
-##if(APPLE)
-##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-10")
-##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-10")
-##endif()
-### TODO: for now, we use CLang for Mac
+include(OpenFHEMacros.cmake)
+enable_cmake_cache()
 
 project (OpenFHE C CXX)
 
@@ -30,25 +20,21 @@ set(OPENFHE_VERSION_MINOR 1)
 set(OPENFHE_VERSION_PATCH 1)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
-set(CMAKE_CXX_STANDARD 17)
-set(CXX_STANDARD_REQUIRED ON)
+set_cpp_standard(17)
+set_min_and_target_gcc_versions(9 11.1)
+set_min_and_target_clang_versions(10 14)
 
+### To use gcc/g++ on a Macintosh, you must set the Compilers
+### here, not inside the project
+##if(APPLE)
+##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-10")
+##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-10")
+##endif()
+### TODO: for now, we use CLang for Mac
 #--------------------------------------------------------------------
 # Build options
 #--------------------------------------------------------------------
-if(CMAKE_BUILD_TYPE)
-    set(RELEASE_TYPES Debug Release RelWithDebInfo MinSizeRel)
-    list(FIND RELEASE_TYPES ${CMAKE_BUILD_TYPE} INDEX_FOUND)
-    if(${INDEX_FOUND} EQUAL -1)
-        message(FATAL_ERROR "CMAKE_BUILD_TYPE must be one of Debug, Release, RelWithDebInfo, or MinSizeRel" )
-    endif()
-else()
-    # if no build type is chosen, default to Release mode
-    set(CMAKE_BUILD_TYPE Release CACHE STRING
-        "Choose the type of build, options are: None, Debug, Release, RelWithDebInfo, or MinSizeRel." FORCE )
-endif()
-
-message(STATUS "Building in ${CMAKE_BUILD_TYPE} mode" )
+check_build_type()
 
 if ( EMSCRIPTEN )
     set(BUILD_SHARED OFF)
@@ -88,6 +74,10 @@ if( NOT CKKS_M_FACTOR )
     set( CKKS_M_FACTOR 1 )
 endif()
 
+if (NOT(BUILD_SHARED OR BUILD_STATIC)) # unlikely happens
+    message(SEND_ERROR "Either BUILD_SHARED or BUILD_STATIC neeed to be turned on.")
+endif()
+
 ### Print options
 message( STATUS "BUILD_UNITTESTS:  ${BUILD_UNITTESTS}")
 message( STATUS "BUILD_EXAMPLES:   ${BUILD_EXAMPLES}")
@@ -111,19 +101,7 @@ message( STATUS "USE_MACPORTS:     ${USE_MACPORTS}")
 #--------------------------------------------------------------------
 # Compiler logic
 #--------------------------------------------------------------------
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    # require at least gcc 9.0
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-        message(WARNING "GCC version should be at least 9.0.")
-    endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    # require at least clang 10
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10)
-        message(WARNING "Clang version should be at least 10.0.")
-    endif()
-else()
-    message(WARNING "You are using ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}, which is unsupported.")
-endif()
+check_installed_compiler_version()
 
 # use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -202,8 +180,6 @@ set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 #--------------------------------------------------------------------
 # Installation logic
 #--------------------------------------------------------------------
-
-
 ### set up for install
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH "Installation directory for headers")
@@ -245,7 +221,6 @@ add_custom_command(
         USES_TERMINAL
 )
 
-
 #--------------------------------------------------------------------
 # Machine-specific checks
 #--------------------------------------------------------------------
@@ -268,10 +243,6 @@ endif()
 include(CheckTypeSize)
 check_type_size("__int128" INT128)
 check_type_size("uint64_t" INT64)
-
-if (NOT(BUILD_SHARED OR BUILD_STATIC))
-    message(SEND_ERROR "Either BUILD_SHARED or BUILD_STATIC neeed to be turned on.")
-endif()
 
 if( "${NATIVE_SIZE}" EQUAL 128 )
     if ( EMSCRIPTEN )
@@ -318,12 +289,12 @@ message (STATUS "MATHBACKEND is set to " ${MATHBACKEND})
 
 if( "${NATIVEINT}" EQUAL 128 )
     if( "${MATHBACKEND}" EQUAL 6 )
-        set (WITH_NTL OFF)
         set (MATHBACKEND 4)
         message (STATUS "MATHBACKEND 6 is not compatible with 128-bit native backend. Setting MATHBACKEND to 4.")
-    elseif( WITH_NTL )
+    endif()
+    if( WITH_NTL )
         set (WITH_NTL OFF)
-        message (STATUS "MATHBACKEND 6 is not compatible with 128-bit native backend. Setting WITH_NTL to OFF.")
+        message (STATUS "NTL is not supported for 128-bit native backend. Setting WITH_NTL to OFF.")
     endif()
 endif()
 
@@ -360,9 +331,6 @@ endif()
 ### build configure_core.h to make options available
 configure_file(./configure/config_core.in src/core/config_core.h)
 install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/openfhe/core)
-
-find_program(TAR "gtar")
-find_program(TAR "tar")
 
 if(WITH_TCM OR WITH_NTL)
     ### tcmalloc, NTL and GMP require autoconf/automake/libtool to be installed.
@@ -405,7 +373,7 @@ if (WITH_OPENMP)
                 set(OpenMP_CXX_LIB_NAMES "omp")
                 set(OpenMP_omp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
             endif()
-        else (USE_MACPORTS)
+        else ()
             # Homebrew-based installation
             # Check for Apple M1 Processor
             if (${ARCHITECTURE} MATCHES "arm64")
@@ -428,12 +396,12 @@ if (WITH_OPENMP)
                 set(OpenMP_CXX_LIB_NAMES "libomp")
                 set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
             endif()
-        endif (USE_MACPORTS)
+        endif ()
 
         include_directories("${OPENMP_INCLUDES}")
         link_directories("${OPENMP_LIBRARIES}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        # set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
         message( STATUS "OPENMP_LIBRARIES: " ${OPENMP_LIBRARIES})
         message( STATUS "OPENMP_INCLUDES: " ${OPENMP_INCLUDES})
@@ -441,7 +409,7 @@ if (WITH_OPENMP)
         message( STATUS "OpenMP_CXX_LIB_NAMES: " ${OpenMP_CXX_LIB_NAMES})
     endif()
 
-    find_package (OpenMP)
+    find_package (OpenMP REQUIRED)
     # OpenMP_CXX_FOUND was added in cmake 3.9.x so we are also checking the OpenMP_FOUND flag
     if (OpenMP_CXX_FOUND OR OpenMP_FOUND)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -533,47 +501,48 @@ include (ExternalProject)
 
 # third party directories
 set( THIRDPARTYDIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party )
-include_directories( ${THIRDPARTYDIR}/include )
 
 ### Handle third-party CEREAL
-include_directories( ${THIRDPARTYDIR}/cereal/include )
 install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
+include_directories( ${THIRDPARTYDIR}/cereal/include )
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest )
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest/include )
+include_directories( ${THIRDPARTYDIR}/google-benchmark/include )
+include_directories( ${THIRDPARTYDIR}/google-test/googletest/include )
+include_directories( ${THIRDPARTYDIR}/google-test/googletest ) # for *.cc
+
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/core/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/binfhe/include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/pke/include )
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/src/core )
 
 ### Handle third-party gperftools for optional tcmalloc
-
-add_custom_target(
-    tcm
-    COMMAND ./autogen.sh
-    COMMAND ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/third-party --enable-minimal
-    COMMAND make
-    COMMAND make install
-    WORKING_DIRECTORY ${THIRDPARTYDIR}/gperftools
-)
-
-add_custom_target(
-    tcm_clean
-    COMMAND rm -rf include/gperftools include/google lib/libtcmalloc_minimal* lib/pkgconfig/libtcmalloc* lib/pkgconfig/libprofiler.pc share/doc/gperftools
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party
-)
-
-if(BUILD_STATIC)
-add_library(tcmalloc_static STATIC IMPORTED GLOBAL)
-set_target_properties(tcmalloc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib/libtcmalloc_minimal${CMAKE_STATIC_LIBRARY_SUFFIX})
-endif()
-
-if(BUILD_SHARED)
-add_library(tcmalloc SHARED IMPORTED GLOBAL)
-set_target_properties(tcmalloc PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib/libtcmalloc_minimal${CMAKE_SHARED_LIBRARY_SUFFIX})
-endif()
-
 if(WITH_TCM)
+    add_custom_target(
+        tcm
+        COMMAND ./autogen.sh
+        COMMAND ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/third-party --enable-minimal
+        COMMAND make
+        COMMAND make install
+        WORKING_DIRECTORY ${THIRDPARTYDIR}/gperftools
+    )
+
+    add_custom_target(
+        tcm_clean
+        COMMAND rm -rf include/gperftools include/google lib/libtcmalloc_minimal* lib/pkgconfig/libtcmalloc* lib/pkgconfig/libprofiler.pc share/doc/gperftools
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party
+    )
+
+    if(BUILD_STATIC)
+        add_library(tcmalloc_static STATIC IMPORTED GLOBAL)
+        set_target_properties(tcmalloc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib/libtcmalloc_minimal${CMAKE_STATIC_LIBRARY_SUFFIX})
+    endif()
+
+    if(BUILD_SHARED)
+        add_library(tcmalloc SHARED IMPORTED GLOBAL)
+        set_target_properties(tcmalloc PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib/libtcmalloc_minimal${CMAKE_SHARED_LIBRARY_SUFFIX})
+    endif()
+
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib DESTINATION .
         FILES_MATCHING PATTERN "libtcmalloc_minimal.*")
     list(APPEND THIRDPARTYLIBS "tcmalloc")

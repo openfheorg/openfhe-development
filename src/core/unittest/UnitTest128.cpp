@@ -33,7 +33,7 @@
   This file contains google test code that exercises the big int vector library of the OpenFHE lattice encryption library.
  */
 
-#include "include/gtest/gtest.h"
+#include "gtest/gtest.h"
 #include <iostream>
 #include <fstream>
 

@@ -35,7 +35,7 @@
  */
 #include "openfhe.h"
 #include "UnitTestUtils.h"
-#include "include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 

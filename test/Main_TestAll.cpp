@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-#include "include/gtest/gtest.h"
+#include "gtest/gtest.h"
 #include "src/gtest-all.cc"
 
 #include "lattice/lat-hal.h"

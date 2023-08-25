@@ -34,7 +34,7 @@
 #include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
 
-#include "include/gtest/gtest.h"
+#include "gtest/gtest.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
