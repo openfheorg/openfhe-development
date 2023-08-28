@@ -1056,4 +1056,5 @@ void Comparison(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t rin
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
 }
