@@ -61,10 +61,9 @@ public:
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
 
-    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
-                                                                BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-                                                                bool dynamic, uint32_t numSlotsCKKS,
-                                                                uint32_t logQswitch) override;
+    std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
+        const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk, uint32_t dim1,
@@ -100,7 +99,7 @@ public:
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
                                                                    uint32_t numCtxts) override;
 
-    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
+    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const std::shared_ptr<BinFHEContext>& ccLWE,
                              uint32_t numSlotsCKKS, uint32_t logQ) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
@@ -112,11 +111,9 @@ public:
                                         uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                         double pmax) const override;
 
-    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                                                                     SecurityLevel sl, BINFHE_PARAMSET slBin,
-                                                                     bool arbFunc, uint32_t logQ, bool dynamic,
-                                                                     uint32_t numSlotsCKKS,
-                                                                     uint32_t logQswitch) override;
+    std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
+        const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
         const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
@@ -218,7 +215,8 @@ private:
     // Precomputed matrix for CKKS to FHEW switching
     std::vector<ConstPlaintext> m_U0Pre;
     // the LWE cryptocontext to generate when scheme switching from CKKS
-    BinFHEContext m_ccLWE;
+    // BinFHEContext m_ccLWE;
+    std::shared_ptr<BinFHEContext> m_ccLWE;
     // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
     CryptoContext<DCRTPoly> m_ccKS;
     // the associated ciphertext modulus Q for the LWE cryptocontext

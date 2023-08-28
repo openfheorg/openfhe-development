@@ -143,10 +143,9 @@ public:
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    */
-    virtual std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc,
-                                                                        SecurityLevel sl, BINFHE_PARAMSET slBin,
-                                                                        bool arbFunc, uint32_t logQ, bool dynamic,
-                                                                        uint32_t numSlotsCKKS, uint32_t logQswitch) {
+    virtual std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
+        const CryptoContextImpl<Element>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWSetup is not supported for this scheme");
     }
 
@@ -198,8 +197,9 @@ public:
    * @param numSlotsCKKS number of FHEW ciphertexts that becomes the number of slots in CKKS encryption
    * @param logQ the logarithm of a ciphertext modulus in FHEW
    */
-    virtual void EvalFHEWtoCKKSSetup(const CryptoContextImpl<Element>& ccCKKS, const BinFHEContext& ccLWE,
-                                     uint32_t numSlotsCKKS, uint32_t logQ) {
+    virtual void EvalFHEWtoCKKSSetup(const CryptoContextImpl<Element>& ccCKKS,
+                                     const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS,
+                                     uint32_t logQ) {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSSetup is not supported for this scheme");
     }
 
@@ -267,11 +267,9 @@ public:
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    virtual std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS,
-                                                                             SecurityLevel sl, BINFHE_PARAMSET slBin,
-                                                                             bool arbFunc, uint32_t logQ, bool dynamic,
-                                                                             uint32_t numSlotsCKKS,
-                                                                             uint32_t logQswitch) {
+    virtual std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
+        const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingSetup is not supported for this scheme");
     }
 

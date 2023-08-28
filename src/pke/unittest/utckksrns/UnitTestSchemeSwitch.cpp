@@ -301,7 +301,7 @@ protected:
             auto paramsQ                                  = elementParams.GetParams();
             auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
             auto modulus_LWE                              = 1 << testData.logQ;
-            auto pLWE                                     = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());
+            auto pLWE                                     = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
 
             double scFactor = cryptoParams->GetScalingFactorReal(0);
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -327,7 +327,7 @@ protected:
 
             LWEPlaintext result;
             for (uint32_t i = 0; i < ciphertextAfter.size(); ++i) {
-                ccLWE.Decrypt(privateKeyFHEW, ciphertextAfter[i], &result, pLWE);
+                ccLWE->Decrypt(privateKeyFHEW, ciphertextAfter[i], &result, pLWE);
                 EXPECT_EQ(result, inputInt[i]) << failed;
             }
         }
@@ -357,24 +357,24 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto ccLWE = BinFHEContext();
-            ccLWE.BinFHEContext::GenerateBinFHEContext(TOY, false, testData.logQ, 0, GINX, false);
+            auto ccLWE = std::make_shared<BinFHEContext>();
+            ccLWE->BinFHEContext::GenerateBinFHEContext(TOY, false, testData.logQ, 0, GINX, false);
             LWEPrivateKey lwesk;
-            lwesk = ccLWE.KeyGen();
+            lwesk = ccLWE->KeyGen();
 
             auto modulus_LWE        = 1 << testData.logQ;
-            uint32_t pLWE           = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());  // larger precision
+            uint32_t pLWE           = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());  // larger precision
             std::vector<int32_t> x1 = {0, 0, 1, 1, 0, 0, 1, 1};
             std::vector<int32_t> x2 = {0, -1, 2, -3, 4, -8, 16, -32};
             std::vector<LWECiphertext> ctxtsLWE1(testData.slots);
             for (uint32_t i = 0; i < testData.slots; i++) {
                 ctxtsLWE1[i] =
-                    ccLWE.Encrypt(lwesk, x1[i], FRESH, 4,
-                                  modulus_LWE);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
+                    ccLWE->Encrypt(lwesk, x1[i], FRESH, 4,
+                                   modulus_LWE);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
             }
             std::vector<LWECiphertext> ctxtsLWE2(testData.slots);
             for (uint32_t i = 0; i < testData.slots; i++) {
-                ctxtsLWE2[i] = ccLWE.Encrypt(
+                ctxtsLWE2[i] = ccLWE->Encrypt(
                     lwesk, x2[i], FRESH, pLWE,
                     modulus_LWE);  // encrypted under larger plaintext modulus and large ciphertext modulus
             }
@@ -430,7 +430,7 @@ protected:
             auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
-            ccLWE.BTKeyGen(privateKeyFHEW);
+            ccLWE->BTKeyGen(privateKeyFHEW);
 
             cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, true, false, testData.dim1[0],
                                           testData.dim1[1]);
@@ -447,7 +447,7 @@ protected:
             auto cDiff = cc->EvalSub(c1, c2);
 
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());
+            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
             uint32_t init_level     = 0;
@@ -511,7 +511,7 @@ protected:
             double scaleSign = 128.0;
 
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());
+            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
@@ -614,7 +614,7 @@ protected:
             double scaleSign = 128.0;
 
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE.GetBeta().ConvertToInt());
+            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
