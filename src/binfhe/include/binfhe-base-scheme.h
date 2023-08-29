@@ -76,6 +76,24 @@ public:
             OPENFHE_THROW(config_error, "method is invalid");
     }
 
+    NativePoly Generateacrs(const std::shared_ptr<RingGSWCryptoParams> params);
+    NativePoly RGSWKeyGen(const std::shared_ptr<BinFHECryptoParams> params) const;
+    // RingGSWCiphertext
+    RingGSWEvalKey RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, NativePoly acrs,
+                               const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag = false) const;
+
+    // RingGSWCiphertext
+    RingGSWEvalKey RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b);
+    LWEPlaintext RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey ct,
+                             const NativePoly& skNTT) const;
+    uint32_t get_num_of_parties() {
+        return m_num_of_parties;
+    }
+
+    void set_num_of_parties(uint32_t num_of_parties) {
+        m_num_of_parties = num_of_parties;
+    }
+
     /**
    * Generates a refresh key
    *
@@ -87,6 +105,19 @@ public:
    */
     RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
                         KEYGEN_MODE keygenMode) const;
+
+    RingGSWBTKey KeyGenTest(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                            NativePoly skNPoly, NativePoly acrs, LWESwitchingKey kskey,
+                            KEYGEN_MODE keygenMode = SYM_ENCRYPT) const;
+
+    RingGSWBTKey MultiPartyKeyGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                                  const NativePoly zN, const LWEPublicKey publicKey, LWESwitchingKey prevkskey,
+                                  bool leadFlag = true) const;
+    RingGSWBTKey MultipartyBTKeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                                    RingGSWACCKey prevbtkey, NativePoly zkey,
+                                    std::vector<std::vector<NativePoly>> acrsauto, std::vector<RingGSWEvalKey> rgswenc0,
+                                    LWESwitchingKey prevkskey = NULL, uint32_t num_of_parties = 1,
+                                    bool leadFlag = false) const;
 
     /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)
@@ -234,6 +265,9 @@ private:
 protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};
     std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};
+
+    // num of parties for threshold fhew/tfhe
+    uint32_t m_num_of_parties = 1;
 
     /**
    * Checks type of input function

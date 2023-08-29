@@ -89,6 +89,10 @@ public:
         return !(*this == other);
     }
 
+    LWEPrivateKeyImpl operator+=(const LWEPrivateKeyImpl& other) const {
+        return LWEPrivateKeyImpl(m_s + other.m_s);
+    }
+
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("s", m_s));

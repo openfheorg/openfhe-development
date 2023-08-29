@@ -112,7 +112,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 #endif
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method, uint32_t num_of_parties) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     constexpr double STD_DEV = 3.19;
     // clang-format off
@@ -199,6 +199,35 @@ LWEPrivateKey BinFHEContext::KeyGen() const {
     return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
+LWEKeyPair BinFHEContext::MultipartyKeyGen(const std::vector<LWEPrivateKey>& privateKeyVec) {
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->MultipartyKeyGen(privateKeyVec, LWEParams);
+}
+
+void BinFHEContext::MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly zN, const LWEPublicKey publicKey,
+                                     LWESwitchingKey prevkskey, bool leadFlag) {
+    auto& LWEParams  = m_params->GetLWEParams();
+    auto& RGSWParams = m_params->GetRingGSWParams();
+
+    auto temp = RGSWParams->GetBaseG();
+
+    // if (m_BTKey_map.size() != 0) {
+    //    m_BTKey = m_BTKey_map[temp];
+    // }
+    // else {
+    m_BTKey           = m_binfhescheme->MultiPartyKeyGen(LWEParams, LWEsk, zN, publicKey, prevkskey, leadFlag);
+    m_BTKey_map[temp] = m_BTKey;
+    // }
+}
+LWEPublicKey BinFHEContext::MultipartyPubKeyGen(const LWEPrivateKey skN, const LWEPublicKey publicKey) {
+    // auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->MultipartyPubKeyGen(skN, publicKey);
+}
+
+NativePoly BinFHEContext::RGSWKeygen() {
+    return m_binfhescheme->RGSWKeyGen(m_params);
+}
+
 LWEPrivateKey BinFHEContext::KeyGenN() const {
     auto& LWEParams = m_params->GetLWEParams();
     if (LWEParams->GetKeyDist() == GAUSSIAN)
@@ -269,9 +298,48 @@ void BinFHEContext::Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEP
     auto&& LWEParams = m_params->GetLWEParams();
     m_LWEscheme->Decrypt(LWEParams, sk, ct, result, p);
 }
+LWECiphertext BinFHEContext::MultipartyDecryptLead(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
+                                                   const LWEPlaintextModulus& p) const {
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->MultipartyDecryptLead(LWEParams, sk, ct, p);
+}
+LWECiphertext BinFHEContext::MultipartyDecryptMain(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
+                                                   const LWEPlaintextModulus& p) const {
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->MultipartyDecryptMain(LWEParams, sk, ct, p);
+}
+void BinFHEContext::MultipartyDecryptFusion(const std::vector<LWECiphertext>& partialCiphertextVec,
+                                            LWEPlaintext* plaintext, const LWEPlaintextModulus& p) const {
+    m_LWEscheme->MultipartyDecryptFusion(partialCiphertextVec, plaintext);
+}
 
 LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const {
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
+}
+
+NativePoly BinFHEContext::Generateacrs() {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    return m_binfhescheme->Generateacrs(RGSWParams);
+}
+
+NativePoly BinFHEContext::RGSWKeyGen() const {
+    return m_binfhescheme->RGSWKeyGen(m_params);
+}
+// RingGSWCiphertext
+RingGSWEvalKey BinFHEContext::RGSWEncrypt(NativePoly acrs, const NativePoly& skNTT, const LWEPlaintext& m,
+                                          bool leadFlag) const {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    return m_binfhescheme->RGSWEncrypt(RGSWParams, acrs, skNTT, m, leadFlag);
+}
+
+// RingGSWCiphertext
+RingGSWEvalKey BinFHEContext::RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b) {
+    return m_binfhescheme->RGSWEvalAdd(a, b);
+}
+
+LWEPlaintext BinFHEContext::RGSWDecrypt(RingGSWEvalKey ct, const NativePoly& skNTT) const {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    return m_binfhescheme->RGSWDecrypt(RGSWParams, ct, skNTT);
 }
 
 void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
@@ -296,6 +364,33 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
         m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
         m_BTKey_map[temp] = m_BTKey;
     }
+}
+
+void BinFHEContext::BTKeyGenTest(ConstLWEPrivateKey sk, NativePoly skNPoly, NativePoly acrs, LWESwitchingKey kskey,
+                                 KEYGEN_MODE keygenMode) {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+
+    auto temp = RGSWParams->GetBaseG();
+
+    m_BTKey           = m_binfhescheme->KeyGenTest(m_params, sk, skNPoly, acrs, kskey, keygenMode);
+    m_BTKey_map[temp] = m_BTKey;
+}
+
+void BinFHEContext::MultipartyBTKeyGen(ConstLWEPrivateKey sk, RingGSWACCKey prevbtkey, NativePoly zkey,
+                                       std::vector<std::vector<NativePoly>> acrsauto,
+                                       std::vector<RingGSWEvalKey> rgswenc0, LWESwitchingKey prevkskey, bool leadFlag) {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    auto temp        = RGSWParams->GetBaseG();
+
+    // if (m_BTKey_map.size() != 0) {
+    //    m_BTKey = m_BTKey_map[temp];
+    // }
+    // else {
+    m_BTKey           = m_binfhescheme->MultipartyBTKeyGen(m_params, sk, prevbtkey, zkey, acrsauto, rgswenc0, prevkskey,
+                                                           m_binfhescheme->get_num_of_parties(), leadFlag);
+    m_BTKey_map[temp] = m_BTKey;
+    // }
+    return;
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const {

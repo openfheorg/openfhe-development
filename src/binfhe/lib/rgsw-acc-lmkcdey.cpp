@@ -36,6 +36,80 @@
 namespace lbcrypto {
 
 // Key generation as described in https://eprint.iacr.org/2022/198
+RingGSWACCKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
+                                                             const NativePoly& skNTT, ConstLWEPrivateKey LWEsk,
+                                                             RingGSWACCKey prevbtkey,
+                                                             std::vector<std::vector<NativePoly>> acrsauto,
+                                                             std::vector<RingGSWEvalKey> rgswenc0,
+                                                             bool leadFlag) const {
+    auto sv              = LWEsk->GetElement();
+    int32_t mod          = sv.GetModulus().ConvertToInt();
+    int32_t modHalf      = mod >> 1;
+    uint32_t N           = params->GetN();
+    uint32_t n           = sv.GetLength();
+    uint32_t numAutoKeys = params->GetNumAutoKeys();
+
+    // dim2, 0: for RGSW(X^si), 1: for automorphism keys
+    // only w automorphism keys required
+    // allocates (n - w) more memory for pointer (not critical for performance)
+    RingGSWACCKey ek = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
+
+#pragma omp parallel for
+    for (size_t i = 0; i < n; ++i) {
+        int32_t s = (int32_t)sv[i].ConvertToInt();
+        if (s > modHalf) {
+            s -= mod;
+        }
+        // compute plaintext-ciphertext multiplication here
+        // (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s);
+        //***********************
+        // int64_t sm     = (((s % mod) + mod) % mod) * (2 * N / mod);
+        int32_t sm     = (s % mod) * (2 * N / mod);
+        (*ek)[0][0][i] = RGSWBTEvalMult(params, (*prevbtkey)[0][0][i], sm);
+        // *((*ek)[0][0][i]) += *(rgswenc0[i]);
+    }
+    NativeInteger gen = NativeInteger(5);
+
+    auto mkauto =
+        MultiPartyKeyGenAuto(params, (*prevbtkey)[0][1][0], skNTT, 2 * N - gen.ConvertToInt(), acrsauto[0], true);
+    // todosara (*ek)[0][1][0] = (*prevbtkey)[0][1][0] + (*mkauto);
+    (*ek)[0][1][0] = mkauto;
+    // m_window: window size, consider parameterization in the future
+#pragma omp parallel for
+    for (size_t i = 1; i < numAutoKeys + 1; i++) {
+        (*ek)[0][1][i] = MultiPartyKeyGenAuto(params, (*prevbtkey)[0][1][i], skNTT, gen.ModExp(i, 2 * N).ConvertToInt(),
+                                              acrsauto[i]);
+    }
+    std::cout << "after auto keygen" << std::endl;
+    return ek;
+}
+
+// Generation of an autormorphism key
+RingGSWEvalKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAuto(const std::shared_ptr<RingGSWCryptoParams> params,
+                                                               const RingGSWEvalKey prevautokey,
+                                                               const NativePoly& skNTT, const LWEPlaintext& k,
+                                                               std::vector<NativePoly> acrsauto, bool leadFlag) const {
+    // NativeInteger Q  = params->GetQ();
+    uint32_t digitsG = params->GetDigitsG();
+    auto polyParams  = params->GetPolyParams();
+    auto Gpow        = params->GetGPower();
+    auto result      = std::make_shared<RingGSWEvalKeyImpl>(digitsG, 2);
+
+    auto skAuto = skNTT.AutomorphismTransform(k);
+
+    for (uint32_t i = 0; i < digitsG; ++i) {
+        acrsauto[i].SetFormat(Format::EVALUATION);
+        (*result)[i][0] = acrsauto[i];
+        (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, EVALUATION);
+        (*result)[i][1] -= skAuto * Gpow[i];
+        (*result)[i][1] += (*result)[i][0] * skNTT;
+        if (!leadFlag)
+            (*result)[i][1] += (*prevautokey)[i][1];
+    }
+    return result;
+}
+
+// Key generation as described in https://eprint.iacr.org/2022/198
 RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                    const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
     auto sv{LWEsk->GetElement()};

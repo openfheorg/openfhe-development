@@ -82,6 +82,33 @@ public:
         return *this;
     }
 
+    RingGSWEvalKeyImpl& operator+=(RingGSWEvalKeyImpl const& b) {
+#if 0
+        std::cout << "ek size " << this->m_elements.size() << std::endl;
+        std::cout << "ek 2 dim size " << this->m_elements[0].size() << std::endl;
+
+        std::cout << "rgswenc0 size " << b.m_elements.size() << std::endl;
+        std::cout << "rgswenc0 2 dim size " << b.m_elements[0].size() << std::endl;
+#endif
+        for (size_t i = 0; i < this->m_elements.size(); ++i) {
+            // column size is assume to be the same
+            for (size_t j = 0; j < this->m_elements[0].size(); ++j) {
+                this->m_elements[i][1] = this->m_elements[i][1] + b.m_elements[i][1];
+            }
+        }
+        return *this;
+    }
+
+    RingGSWEvalKeyImpl& operator+(RingGSWEvalKeyImpl b) {
+        for (size_t i = 0; i < this->m_elements.size(); ++i) {
+            // column size is assume to be the same
+            for (size_t j = 0; j < this->m_elements[0].size(); ++j) {
+                this->m_elements[i][1] = this->m_elements[i][1] + b.m_elements[i][1];
+            }
+        }
+        return *this;
+    }
+
     const std::vector<std::vector<NativePoly>>& GetElements() const {
         return m_elements;
     }

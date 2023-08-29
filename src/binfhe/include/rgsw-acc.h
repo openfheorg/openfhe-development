@@ -62,6 +62,17 @@ public:
         OPENFHE_THROW(not_implemented_error, "KeyGenACC operation not supported");
     }
 
+    virtual RingGSWACCKey KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                                        ConstLWEPrivateKey LWEsk, NativePoly acrs) const {
+        OPENFHE_THROW(not_implemented_error, "KeyGenACC operation not supported");
+    }
+    virtual RingGSWACCKey MultiPartyKeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
+                                              const NativePoly& skNTT, ConstLWEPrivateKey LWEsk,
+                                              RingGSWACCKey prevbtkey, std::vector<std::vector<NativePoly>> acrsauto,
+                                              std::vector<RingGSWEvalKey> rgswenc0, bool leadFlag) const {
+        OPENFHE_THROW(not_implemented_error, "KeyGenACC operation not supported");
+    }
+
     /**
    * Main accumulator function used in bootstrapping
    *
@@ -97,6 +108,8 @@ public:
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& input,
                               std::vector<NativePoly>& output) const;
+    RingGSWEvalKey RGSWBTEvalMult(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey prevbtkey,
+                                  int32_t si) const;
 };
 }  // namespace lbcrypto
 

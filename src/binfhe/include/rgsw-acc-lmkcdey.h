@@ -35,7 +35,7 @@
 #include "rgsw-acc.h"
 
 #include <memory>
-
+#include <vector>
 namespace lbcrypto {
 
 /**
@@ -57,6 +57,10 @@ public:
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
 
+    RingGSWACCKey MultiPartyKeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                                      ConstLWEPrivateKey LWEsk, RingGSWACCKey prevbtkey,
+                                      std::vector<std::vector<NativePoly>> acrsauto,
+                                      std::vector<RingGSWEvalKey> rgswenc0, bool leadFlag) const override;
     /**
    * Main accumulator function used in bootstrapping - LMKCDEY variant
    *
@@ -90,6 +94,11 @@ private:
    */
     RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                               LWEPlaintext k) const;
+
+    RingGSWEvalKey MultiPartyKeyGenAuto(const std::shared_ptr<RingGSWCryptoParams> params,
+                                        const RingGSWEvalKey prevautokey, const NativePoly& skNTT,
+                                        const LWEPlaintext& k, std::vector<NativePoly> acrsauto,
+                                        bool leadFlag = false) const;
 
     /**
    * LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198

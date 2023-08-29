@@ -67,6 +67,193 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
     return ek;
 }
 
+RingGSWBTKey BinFHEScheme::KeyGenTest(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                                      NativePoly skNPoly, NativePoly acrs, LWESwitchingKey kskey,
+                                      KEYGEN_MODE keygenMode) const {
+    const auto& LWEParams = params->GetLWEParams();
+
+    LWEPrivateKey skN;
+    RingGSWBTKey ek;
+    if (keygenMode == SYM_ENCRYPT) {
+        skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+    }
+    else if (keygenMode == PUB_ENCRYPT) {
+        ConstLWEKeyPair kpN = LWEscheme->KeyGenPair(LWEParams);
+        skN                 = kpN->secretKey;
+        ek.Pkey             = kpN->publicKey;
+    }
+    else {
+        OPENFHE_THROW(config_error, "Invalid KeyGen mode");
+    }
+
+    ek.KSkey = kskey;  // LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
+
+    auto& RGSWParams = params->GetRingGSWParams();
+    auto polyParams  = RGSWParams->GetPolyParams();
+    // NativePoly skNPoly = NativePoly(polyParams);
+    // skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
+    // skNPoly.SetFormat(Format::EVALUATION);
+
+    ek.BSkey = ACCscheme->KeyGenAccTest(RGSWParams, skNPoly, LWEsk, acrs);
+
+    return ek;
+}
+RingGSWBTKey BinFHEScheme::MultiPartyKeyGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                                            const NativePoly zN, const LWEPublicKey publicKey,
+                                            LWESwitchingKey prevkskey, bool leadFlag) const {
+    RingGSWBTKey ek;
+    LWEPublicKey pkN;
+
+    const LWEPrivateKey LWEskN = std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(zN.GetValues()));
+
+    if (leadFlag) {
+        pkN      = LWEscheme->PubKeyGen(params, LWEskN);
+        ek.KSkey = LWEscheme->KeySwitchGen(params, LWEsk, LWEskN);
+    }
+    else {
+        std::cout << "multikeygen" << std::endl;
+        pkN      = LWEscheme->MultipartyPubKeyGen(LWEskN, publicKey);
+        ek.KSkey = LWEscheme->MultiPartyKeySwitchGen(params, LWEsk, LWEskN, prevkskey);
+    }
+
+    ek.Pkey = pkN;
+
+    return ek;
+}
+
+// wrapper for KeyGen methods
+RingGSWBTKey BinFHEScheme::MultipartyBTKeyGen(const std::shared_ptr<BinFHECryptoParams> params,
+                                              ConstLWEPrivateKey LWEsk, RingGSWACCKey prevbtkey, NativePoly zkey,
+                                              std::vector<std::vector<NativePoly>> acrsauto,
+                                              std::vector<RingGSWEvalKey> rgswenc0, LWESwitchingKey prevkskey,
+                                              uint32_t num_of_parties, bool leadFlag) const {
+    // const auto& LWEParams = params->GetLWEParams();
+
+    // const LWEPrivateKey skN = std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(zkey.GetValues()));
+    RingGSWBTKey ek;
+    auto sv = LWEsk->GetElement();
+#if 0
+    if (leadFlag) {
+        ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
+    }
+    else {
+        ek.KSkey = LWEscheme->MultiPartyKeySwitchGen(LWEParams, LWEsk, skN, prevkskey);
+    }
+#endif
+
+    ek.KSkey         = prevkskey;
+    auto& RGSWParams = params->GetRingGSWParams();
+    auto polyParams  = RGSWParams->GetPolyParams();
+    // NativePoly skNPoly = NativePoly(polyParams);
+    // skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
+    // skNPoly.SetFormat(Format::EVALUATION);
+
+    ek.BSkey = ACCscheme->MultiPartyKeyGenAcc(RGSWParams, zkey, LWEsk, prevbtkey, acrsauto, rgswenc0, leadFlag);
+    // std::cout << "refresh key in MultipartyBTKeyGen: " << (*(*ek.BSkey)[0][0][0])[0][0] << std::endl;
+    return ek;
+}
+
+// RingGSWCiphertext
+
+RingGSWEvalKey BinFHEScheme::RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b) {
+    // todo sara
+    (*a) += (*b);
+    return a;
+}
+
+// wrapper for KeyGen methods
+NativePoly BinFHEScheme::RGSWKeyGen(const std::shared_ptr<BinFHECryptoParams> params) const {
+    auto size         = params->GetLWEParams()->GetN();
+    auto modulus      = params->GetLWEParams()->GetQ();
+    LWEPrivateKey skN = LWEscheme->KeyGen(size, modulus);
+
+    // convert generated secret key to native poly
+    auto& RGSWParams   = params->GetRingGSWParams();
+    auto polyParams    = RGSWParams->GetPolyParams();
+    NativePoly skNPoly = NativePoly(polyParams);
+    skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
+    // skNPoly.SetFormat(Format::EVALUATION);
+
+    return skNPoly;
+}
+
+NativePoly BinFHEScheme::Generateacrs(const std::shared_ptr<RingGSWCryptoParams> params) {
+    NativeInteger Q = params->GetQ();
+    auto polyParams = params->GetPolyParams();
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    dug.SetModulus(Q);
+    return NativePoly(dug, polyParams, Format::COEFFICIENT);
+}
+// Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
+// skNTT corresponds to the secret key z
+// RingGSWCiphertext
+RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, NativePoly acrs,
+                                         const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag) const {
+    NativeInteger Q = params->GetQ();
+    uint64_t q      = params->Getq().ConvertToInt();
+    // uint32_t N        = params->GetN();
+    uint32_t digitsG  = params->GetDigitsG();
+    uint32_t digitsG2 = digitsG << 1;
+    auto polyParams   = params->GetPolyParams();
+    auto Gpow         = params->GetGPower();
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
+
+    // Reduce mod q (dealing with negative number as well)
+    int64_t mm = ((m % q) + q) % q;
+
+    // tempA is introduced to minimize the number of NTTs
+    std::vector<NativePoly> tempA(digitsG2);
+
+    for (size_t i = 0; i < digitsG2; ++i) {
+        // populate result[i][0] with uniform random a
+        (*result)[i][0] = acrs;
+        tempA[i]        = (*result)[i][0];
+        // populate result[i][1] with error e
+        // (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
+        (*result)[i][1] = NativePoly(polyParams, Format::COEFFICIENT, true);
+    }
+
+    NativeInteger mmn = NativeInteger(mm);
+    // std::vector<NativeInteger> mv(mm);
+    for (size_t i = 0; i < digitsG; ++i) {
+        if (leadFlag) {
+            // compute mG
+            auto mG = mmn.ModMulEq(Gpow[i], Q);
+            // Add G Multiple
+            (*result)[2 * i][0][0].ModAddEq(mG, Q);  // (Gpow[i], Q);
+            // [a,as+e] + m*G
+            (*result)[2 * i + 1][1][0].ModAddEq(mG, Q);  // Gpow[i], Q);
+        }
+    }
+
+    // 3*digitsG2 NTTs are called
+    result->SetFormat(Format::EVALUATION);
+    for (size_t i = 0; i < digitsG2; ++i) {
+        tempA[i].SetFormat(Format::EVALUATION);
+        (*result)[i][1] += tempA[i] * skNTT;
+    }
+
+    return result;
+}
+
+// RGSW decryption
+LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey ct,
+                                       const NativePoly& skNTT) const {
+    // std::vector<NativePoly> dec;
+    NativePoly dec0;
+// uint32_t digitsG  = params->GetDigitsG();
+#if 0
+    for (size_t i = 0; i < digitsG; ++i) {
+        std::cout << "i: " << i << std::endl;
+        dec[i] = (*ct)[2 * i + 1][1];  // - (*ct)[2 * i + 1][0]*skNTT;
+    }
+#endif
+    dec0 = (*ct)[1][1] - (*ct)[1][0] * skNTT;
+    // round dec[0][0]
+    return dec0[0].ConvertToInt();
+}
+
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext& ct1,

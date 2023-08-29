@@ -127,7 +127,7 @@ public:
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
    * @return create the cryptocontext
    */
-    void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
+    void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX, uint32_t num_of_parties = 1);
 
     /**
    * Creates a crypto context using custom parameters.
@@ -180,6 +180,14 @@ public:
    * @return a shared pointer to the secret key
    */
     LWEPrivateKey KeyGen() const;
+
+    LWEKeyPair MultipartyKeyGen(const std::vector<LWEPrivateKey>& privateKeyVec);
+
+    LWEPublicKey MultipartyPubKeyGen(const LWEPrivateKey skN, const LWEPublicKey publicKey);
+
+    void MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly zN, const LWEPublicKey publicKey,
+                          LWESwitchingKey prevkskey, bool leadFlag = true);
+    NativePoly RGSWKeygen();
 
     /**
    * Generates a public key, secret key pair for the main LWE scheme
@@ -247,6 +255,12 @@ public:
    */
     void Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
 
+    LWECiphertext MultipartyDecryptLead(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
+                                        const LWEPlaintextModulus& p = 4) const;
+    LWECiphertext MultipartyDecryptMain(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
+                                        const LWEPlaintextModulus& p = 4) const;
+    void MultipartyDecryptFusion(const std::vector<LWECiphertext>& partialCiphertextVec, LWEPlaintext* plaintext,
+                                 const LWEPlaintextModulus& p = 4) const;
     /**
    * Generates a switching key to go from a secret key with (Q,N) to a secret
    * key with (q,n)
@@ -257,6 +271,15 @@ public:
    */
     LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const;
 
+    NativePoly Generateacrs();
+    NativePoly RGSWKeyGen() const;
+    // RingGSWCiphertext
+    RingGSWEvalKey RGSWEncrypt(NativePoly acrs, const NativePoly& skNTT, const LWEPlaintext& m,
+                               bool leadFlag = false) const;
+    // RingGSWCiphertext
+    RingGSWEvalKey RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b);
+    LWEPlaintext RGSWDecrypt(RingGSWEvalKey ct, const NativePoly& skNTT) const;
+
     /**
    * Generates boostrapping keys
    *
@@ -265,6 +288,12 @@ public:
    */
     void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT);
 
+    void BTKeyGenTest(ConstLWEPrivateKey sk, NativePoly skNPoly, NativePoly acrs, LWESwitchingKey kskey,
+                      KEYGEN_MODE keygenMode = SYM_ENCRYPT);
+    void MultipartyBTKeyGen(ConstLWEPrivateKey sk, RingGSWACCKey prevbtkey, NativePoly zkey,
+                            std::vector<std::vector<NativePoly>> acrsauto, std::vector<RingGSWEvalKey> rgswenc0,
+                            LWESwitchingKey prevkskey = NULL, bool leadFlag = false);
+    void MultipartyAutoKeygen();
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)
    *
