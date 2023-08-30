@@ -64,8 +64,8 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAcc(const std::shared_p
         // (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s);
         //***********************
         // int64_t sm     = (((s % mod) + mod) % mod) * (2 * N / mod);
-        int32_t sm     = (s % mod) * (2 * N / mod);
-        (*ek)[0][0][i] = RGSWBTEvalMult(params, (*prevbtkey)[0][0][i], sm);
+        // int32_t sm     = (s % mod) * (2 * N / mod);
+        (*ek)[0][0][i] = RGSWBTEvalMult(params, (*prevbtkey)[0][0][i], s);
         // *((*ek)[0][0][i]) += *(rgswenc0[i]);
     }
     NativeInteger gen = NativeInteger(5);
@@ -138,6 +138,41 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numAutoKeys))
     for (uint32_t i = 1; i <= numAutoKeys; ++i)
         (*ek)[0][1][i] = KeyGenAuto(params, skNTT, gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>());
+    return ek;
+}
+
+// Key generation as described in https://eprint.iacr.org/2022/198
+RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams> params,
+                                                       const NativePoly& skNTT, ConstLWEPrivateKey LWEsk,
+                                                       NativePoly acrs) const {
+    auto sv{LWEsk->GetElement()};
+    auto mod{sv.GetModulus().ConvertToInt<int32_t>()};
+    auto modHalf{mod >> 1};
+    uint32_t N{params->GetN()};
+    size_t n{sv.GetLength()};
+    uint32_t numAutoKeys{params->GetNumAutoKeys()};
+
+    // dim2, 0: for RGSW(X^si), 1: for automorphism keys
+    // only w automorphism keys required
+    // allocates (n - w) more memory for pointer (not critical for performance)
+    RingGSWACCKey ek = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
+
+#pragma omp parallel for
+    for (size_t i = 0; i < n; ++i) {
+        auto s{sv[i].ConvertToInt<int32_t>()};
+        (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s);
+    }
+
+    NativeInteger gen = NativeInteger(5);
+
+    (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2 * N - gen.ConvertToInt());
+
+    // m_window: window size, consider parameterization in the future
+#pragma omp parallel for
+    for (size_t i = 1; i <= numAutoKeys; i++) {
+        (*ek)[0][1][i] = KeyGenAuto(params, skNTT, gen.ModExp(i, 2 * N).ConvertToInt());
+    }
+
     return ek;
 }
 
@@ -297,6 +332,66 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingG
         result[i][1] += result[i][0] * skNTT;
     }
     return std::make_shared<RingGSWEvalKeyImpl>(result);
+}
+
+RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEYTest(const std::shared_ptr<RingGSWCryptoParams> params,
+                                                            const NativePoly& skNTT, const LWEPlaintext& m,
+                                                            NativePoly acrs) const {
+    NativeInteger Q   = params->GetQ();
+    uint64_t q        = params->Getq().ConvertToInt();
+    uint32_t N        = params->GetN();
+    uint32_t digitsG  = params->GetDigitsG();
+    uint32_t digitsG2 = digitsG << 1;
+    auto polyParams   = params->GetPolyParams();
+    auto Gpow         = params->GetGPower();
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    dug.SetModulus(Q);
+
+    // Reduce mod q (dealing with negative number as well)
+    int64_t mm       = (((m % q) + q) % q) * (2 * N / q);
+    bool isReducedMM = false;
+    if (mm >= N) {
+        mm -= N;
+        isReducedMM = true;
+    }
+
+    // tempA is introduced to minimize the number of NTTs
+    std::vector<NativePoly> tempA(digitsG2);
+
+    for (size_t i = 0; i < digitsG2; ++i) {
+        // populate result[i][0] with uniform random a
+        // (*result)[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
+        (*result)[i][0] = acrs;
+        tempA[i]        = (*result)[i][0];
+        // populate result[i][1] with error e
+        (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
+    }
+
+    for (size_t i = 0; i < digitsG; ++i) {
+        if (!isReducedMM) {
+            // Add G Multiple
+            (*result)[2 * i][0][mm].ModAddEq(Gpow[i], Q);
+            // [a,as+e] + X^m*G
+            (*result)[2 * i + 1][1][mm].ModAddEq(Gpow[i], Q);
+        }
+        else {
+            // Subtract G Multiple
+            (*result)[2 * i][0][mm].ModSubEq(Gpow[i], Q);
+            // [a,as+e] - X^m*G
+            (*result)[2 * i + 1][1][mm].ModSubEq(Gpow[i], Q);
+        }
+    }
+
+    // 3*digitsG2 NTTs are called
+    result->SetFormat(Format::EVALUATION);
+    for (size_t i = 0; i < digitsG2; ++i) {
+        tempA[i].SetFormat(Format::EVALUATION);
+        (*result)[i][1] += tempA[i] * skNTT;
+    }
+
+    return result;
 }
 
 // LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198

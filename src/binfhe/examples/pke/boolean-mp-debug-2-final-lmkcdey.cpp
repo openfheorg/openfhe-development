@@ -47,7 +47,7 @@ int main() {
     // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
     // MEDIUM corresponds to the level of more than 100 bits for both quantum and
     // classical computer attacks.
-    cc.GenerateBinFHEContext(TOY, AP, num_of_parties);  // number of parties is 2
+    cc.GenerateBinFHEContext(TOY, LMKCDEY, num_of_parties);  // number of parties is 2
 
     // Generate the secret keys s1, z1
     auto sk1 = cc.KeyGen();
@@ -126,19 +126,13 @@ int main() {
     // create btkey with RSGW encryption of 1 for every element of the secret
     uint32_t n = sk1->GetElement().GetLength();
 
-    uint32_t baseR                            = cc.GetParams()->GetRingGSWParams()->GetBaseR();
-    const std::vector<NativeInteger>& digitsR = cc.GetParams()->GetRingGSWParams()->GetDigitsR();
-    RingGSWACCKey rgswe1                      = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
-
-    (*rgsw1).SetFormat(COEFFICIENT);
-    for (size_t i = 0; i < n; i++) {
-        for (size_t j = 1; j < baseR; ++j) {
-            for (size_t k = 0; k < digitsR.size(); ++k) {
-                (*rgswe1)[i][j][k] = rgsw1;
-            }
+    // for lmkcdey - 2nd index 0 for btkey, 2nd index 1 for auto key
+    RingGSWACCKey rgswe1 = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
+    for (size_t j = 0; j < 2; j++) {
+        for (size_t i = 0; i < n; i++) {
+            (*rgswe1)[0][j][i] = rgsw1;
         }
     }
-    (*rgsw1).SetFormat(EVALUATION);
 
     // distributed generation of RGSW_{z_*}(0) will be done while computing the bootstrapping key
     // Sample Program: Step 2: Key Generation
@@ -202,10 +196,10 @@ int main() {
     // (*(*cc.GetRefreshKey())[0][1][0])[0][0].SetFormat(EVALUATION);
 
     cc.MultipartyBTKeyGen(sk2, cc.GetRefreshKey(), z2, acrsauto, rgswenc0[1], kskey);
-    (*(*cc.GetRefreshKey())[0][1][0])[0][0].SetFormat(COEFFICIENT);
-    std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen: " << (*(*cc.GetRefreshKey())[0][1][0])[0][0]
+    (*(*cc.GetRefreshKey())[0][0][0])[0][0].SetFormat(COEFFICIENT);
+    std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen: " << (*(*cc.GetRefreshKey())[0][0][0])[0][0]
               << std::endl;
-    (*(*cc.GetRefreshKey())[0][1][0])[0][0].SetFormat(EVALUATION);
+    (*(*cc.GetRefreshKey())[0][0][0])[0][0].SetFormat(EVALUATION);
 
     auto mprefkey = cc.GetRefreshKey();
 
@@ -239,8 +233,9 @@ int main() {
     auto sk12v         = sk1->GetElement() + sk2->GetElement();
     LWEPrivateKey sk12 = std::make_shared<LWEPrivateKeyImpl>(sk12v);
     cc.BTKeyGenTest(sk12, z1 + z2, acrs, kskey);
-    (*(*cc.GetRefreshKey())[0][1][0])[0][0].SetFormat(COEFFICIENT);
-    std::cout << "refresh key sk1 + sk2 BTKeyGenTest 1st : " << (*(*cc.GetRefreshKey())[0][1][0])[0][0] << std::endl;
+    (*(*cc.GetRefreshKey())[0][0][0])[0][0].SetFormat(COEFFICIENT);
+    std::cout << "refresh key sk1 + sk2 BTKeyGenTest 1st : " << (*(*cc.GetRefreshKey())[0][0][0])[0][0] << std::endl;
+    (*(*cc.GetRefreshKey())[0][0][0])[0][0].SetFormat(EVALUATION);
 
     auto srefkey = cc.GetRefreshKey();
     auto ctAND2  = cc.EvalBinGate(AND, ct1, ct2);
@@ -260,32 +255,29 @@ int main() {
     std::cout << "Result of encrypted computation of (1 AND 0) single = " << result1c << std::endl;
 
     // verify refreshkeys from mpkeygen and singlekeygen functions
-
     auto digitsG2 = digitsG * 2;
-    for (size_t i = 0; i < n; i++) {
-        for (size_t j = 1; j < baseR; ++j) {
-            for (size_t k = 0; k < digitsR.size(); ++k) {
-                for (uint32_t l = 0; i < digitsG2; i++) {
-                    for (uint32_t m = 0; j < 2; j++) {
-                        (*(*srefkey)[i][j][k])[l][m].SetFormat(COEFFICIENT);
-                        (*(*mprefkey)[i][j][k])[l][m].SetFormat(COEFFICIENT);
-                        if ((*(*srefkey)[i][j][k])[l][m] != (*(*mprefkey)[i][j][k])[l][m]) {
-                            std::cout << "indexes of [n baseR digitR digitsG2 rgswcol]: " << i << " " << j << " " << k
-                                      << " " << l << " " << m << std::endl;
 
-                            std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen not matching: "
-                                      << (*(*srefkey)[i][j][k])[l][m] << std::endl;
-                            std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen not matching: "
-                                      << (*(*mprefkey)[i][j][k])[l][m] << std::endl;
-                        }
-                        (*(*srefkey)[i][j][k])[l][m].SetFormat(EVALUATION);
-                        (*(*mprefkey)[i][j][k])[l][m].SetFormat(EVALUATION);
+    for (size_t i = 0; i < 2; i++) {
+        for (size_t j = 1; j < n; ++j) {
+            for (uint32_t l = 0; i < digitsG2; i++) {
+                for (uint32_t m = 0; j < 2; j++) {
+                    (*(*srefkey)[0][i][j])[l][m].SetFormat(COEFFICIENT);
+                    (*(*mprefkey)[0][i][j])[l][m].SetFormat(COEFFICIENT);
+                    if ((*(*srefkey)[0][i][j])[l][m] != (*(*mprefkey)[0][i][j])[l][m]) {
+                        std::cout << "indexes of [n baseR digitR digitsG2 rgswcol]: " << i << " " << j << " " << l
+                                  << " " << m << std::endl;
+
+                        std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen not matching: "
+                                  << (*(*srefkey)[0][i][j])[l][m] << std::endl;
+                        std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen not matching: "
+                                  << (*(*mprefkey)[0][i][j])[l][m] << std::endl;
                     }
+                    (*(*srefkey)[0][i][j])[l][m].SetFormat(EVALUATION);
+                    (*(*mprefkey)[0][i][j])[l][m].SetFormat(EVALUATION);
                 }
             }
         }
     }
-
     // LWEPlaintext pt1;
     // cc.Decrypt(sk1, ct1AND1, &pt1);
     // std::cout << "Result of encrypted computation of (1 AND 0) sk1 = " << pt1 << std::endl;
