@@ -56,8 +56,8 @@ public:
    */
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
-    RingGSWACCKey KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                                ConstLWEPrivateKey LWEsk, NativePoly acrs) const override;
+    RingGSWACCKey KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                ConstLWEPrivateKey& LWEsk, NativePoly acrs) const override;
 
     RingGSWACCKey MultiPartyKeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
                                       ConstLWEPrivateKey LWEsk, RingGSWACCKey prevbtkey,
@@ -85,8 +85,8 @@ private:
    */
     RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                  LWEPlaintext m) const;
-    RingGSWEvalKey KeyGenLMKCDEYTest(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                                     const LWEPlaintext& m, NativePoly acrs) const;
+    RingGSWEvalKey KeyGenLMKCDEYTest(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                     const LWEPlaintext m, NativePoly acrs) const;
     /**
    * Automorphism keys generation for internal Ring GSW as described in https://eprint.iacr.org/2022/198
    *

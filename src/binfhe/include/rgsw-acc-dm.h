@@ -58,8 +58,8 @@ public:
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
 
-    RingGSWACCKey KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                                ConstLWEPrivateKey LWEsk, NativePoly acrs) const override;
+    RingGSWACCKey KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                ConstLWEPrivateKey& LWEsk, NativePoly acrs) const override;
 
     RingGSWACCKey MultiPartyKeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
                                       ConstLWEPrivateKey LWEsk, RingGSWACCKey prevbtkey,
@@ -88,8 +88,8 @@ private:
     RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             LWEPlaintext m) const;
 
-    RingGSWEvalKey KeyGenDMTest(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                                const LWEPlaintext& m, NativePoly acrs) const;
+    RingGSWEvalKey KeyGenDMTest(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                const LWEPlaintext m, NativePoly acrs) const;
     /**
    * DM Accumulation as described in https://eprint.iacr.org/2020/086
    *

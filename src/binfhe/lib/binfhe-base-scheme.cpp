@@ -237,7 +237,7 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
     return result;
 }
 
-// RGSW decryption
+// RGSW decryption (without rounding) for debugging since noise is now commented out
 LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey ct,
                                        const NativePoly& skNTT) const {
     // std::vector<NativePoly> dec;

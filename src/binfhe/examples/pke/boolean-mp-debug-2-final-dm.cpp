@@ -241,6 +241,7 @@ int main() {
     cc.BTKeyGenTest(sk12, z1 + z2, acrs, kskey);
     (*(*cc.GetRefreshKey())[0][1][0])[0][0].SetFormat(COEFFICIENT);
     std::cout << "refresh key sk1 + sk2 BTKeyGenTest 1st : " << (*(*cc.GetRefreshKey())[0][1][0])[0][0] << std::endl;
+    (*(*cc.GetRefreshKey())[0][1][0])[0][0].SetFormat(EVALUATION);
 
     auto srefkey = cc.GetRefreshKey();
     auto ctAND2  = cc.EvalBinGate(AND, ct1, ct2);

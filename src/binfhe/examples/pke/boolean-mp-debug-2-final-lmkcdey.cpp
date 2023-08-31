@@ -49,8 +49,19 @@ int main() {
     // classical computer attacks.
     cc.GenerateBinFHEContext(TOY, LMKCDEY, num_of_parties);  // number of parties is 2
 
+    auto nlwe   = cc.GetParams()->GetLWEParams()->Getn();
+    auto qkslwe = cc.GetParams()->GetLWEParams()->GetqKS();
     // Generate the secret keys s1, z1
-    auto sk1 = cc.KeyGen();
+    // auto sk1 = cc.KeyGen();
+    // DiscreteGaussianGeneratorImpl<NativeVector> dgg;
+    // NativeVector sk1v = dgg.GenerateVector(nlwe, qkslwe);
+    NativeVector sk1v(nlwe, qkslwe);
+    for (size_t i = 0; i < nlwe; ++i) {
+        sk1v[i] = 0;
+    }
+
+    LWEPrivateKey sk1 = std::make_shared<LWEPrivateKeyImpl>(sk1v);
+
     // generate RGSW secret key z_1
     auto z1 = cc.RGSWKeygen();
 
@@ -61,8 +72,13 @@ int main() {
     auto ct11 = cc.Encrypt(pk1, 1);
     auto ct10 = cc.Encrypt(pk1, 0);
 
-    auto sk2 = cc.KeyGen();
-    auto z2  = cc.RGSWKeygen();
+    // auto sk2 = cc.KeyGen();
+    NativeVector sk2v(nlwe, qkslwe);
+    for (size_t i = 0; i < nlwe; ++i) {
+        sk2v[i] = 0;
+    }
+    LWEPrivateKey sk2 = std::make_shared<LWEPrivateKeyImpl>(sk2v);
+    auto z2           = cc.RGSWKeygen();
 
     // generate public key, key switching key for the secrets
     cc.MultiPartyKeyGen(sk2, z2, pk1, ksk1, false);
