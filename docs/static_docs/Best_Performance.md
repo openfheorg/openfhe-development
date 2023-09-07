@@ -18,15 +18,15 @@ For STD128* modes of the schemes in the `binfhe` module when OpenMP parallelizat
 cmake -DNATIVE_SIZE=32 -DWITH_NATIVEOPT=ON -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12 -DWITH_OPENMP=OFF ..
 ```
 
-If OMP parallelization is used, then the last command-line argument can be removed. Not that the use of 32-bit word size is recommended because all STD128* configurations in OpenFHE use moduli not higher than 28 bits.
-
 This configuration was used to generate the runtimes for the table in [Demystifying Bootstrapping in Fully Homomorphic Encryption](https://eprint.iacr.org/2023/149)
+
+If OMP parallelization is used, then the last command-line argument can be removed. Not that the use of 32-bit word size is recommended because all STD128* configurations in OpenFHE use moduli not higher than 28 bits.
 
 A later version of the clang compiler can also be used.
 
 ## Configuration specific to BGV-like schemes, such as BGV, BFV, and CKKS
 
-Typically the default configuration is only to a small degree less performant than the optimal one (in contrast to DM-like schemes). Turning on `WITH_NATIVEOPT` may sometimes lead to an increase in runtime (especially in clang).
+Typically the default configuration for the schemes in the `pke` module is only to a small degree less performant than the optimal one (in contrast to DM-like schemes). Turning on `WITH_NATIVEOPT` may sometimes lead to a decrease in runtime (especially in clang).
 
 # Accelerating OpenFHE using Specialized Hardware Backends #
 
