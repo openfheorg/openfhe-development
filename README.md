@@ -15,7 +15,8 @@ OpenFHE also includes the following multiparty extensions of FHE:
 
 OpenFHE also supports switching between CKKS and FHEW/TFHE to evaluate non-smooth functions, e.g., comparison, using FHEW/TFHE functional bootstrapping.
 
-OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above.
+OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above. To achieve best runtime results, we recommend following the
+guidelines outlined in [building OpenFHE for best performance](https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Best_Performance.md).
 
 ## Links and Resources
 
