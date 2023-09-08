@@ -42,7 +42,7 @@ From a bird's eye view, the built-in OpenFHE loop parallelization is applied at 
 
 When developing C++ applications based on OpenFHE, it is advised to use OpenMP parallelization at the application level, e.g., when independent operations on multiple ciphertexts are performed, application-level OpenMP loop parallelization can be turned on. The scaling of performance with the number of cores in this setup can approach the "ideal" linear scaling if the dimension of the loop is comparable to the number of cores. Note that turning on OpenMP parallelization at the application level typically turns off the lower-level OpenMP loop parallelization (i.e., we do not use nested loop parallelization in OpenMP), so application-level loop parallelization should be used only when you know that the application loop dimension is higher than what is expected for built-in OpenFHE OpenMP loop parallization.
 
-Within OpenFHE, the use of hyperhtreading can lead to decreased performance so the OMP_NUM_THREADS environment variable should not be set higher than the number of physical cores.
+Within OpenFHE, the use of hyperthreading can lead to decreased performance so the `OMP_NUM_THREADS` environment variable should not be set higher than the number of physical cores.
 
 If an alternative parallelization mechanism is used, e.g., pthreads, C++11 threads, or multiprocessing, OpenMP should be turned off by setting the `WITH_OPENMP` CMake flag to OFF.
 
