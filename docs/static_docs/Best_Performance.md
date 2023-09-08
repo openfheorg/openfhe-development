@@ -3,10 +3,11 @@
 The default build configuration of OpenFHE focuses on portability and ease of installation.
 As a result, the runtime performace for the default configuration is often significantly worse than for the optimal configuration.
 
-There are two important CMake flags that affect the runtime performance:
+There are three important CMake flags that affect the runtime performance:
 * `WITH_NATIVEOPT` allows the user to turn on/off machine-specific optimizations. By default, it is set to OFF for maximum portability of generated binaries.
 * `NATIVE_SIZE` specifies the word size used internally for "small" integers. By default, it is set to 64. However, when used moduli are 28 bits or below,
 it is more efficient to set it to 32.
+* `WITH_OPENMP` allows the user to turn on multithreading using OpenMP. By defualt, it is on, and all threads are available for OpenMP multithreading.
 
 The compiler used is also important. We recommend using more recent compiler versions to achieve the best runtime performance.
 
@@ -20,13 +21,28 @@ cmake -DNATIVE_SIZE=32 -DWITH_NATIVEOPT=ON -DCMAKE_C_COMPILER=clang-12 -DCMAKE_C
 
 This configuration was used to generate the runtimes for the table in [Demystifying Bootstrapping in Fully Homomorphic Encryption](https://eprint.iacr.org/2023/149).
 
-If OpenMP parallelization is desired, the last command-line argument should be removed. Note that the use of a 32-bit word size is recommended for 'binfhe' because all STD128* configurations in OpenFHE use moduli no higher than 28 bits.
+If OpenMP parallelization is desired, the last command-line argument should be removed. If the number of OpenMP threads is set to 1 (single-threaded execution), then the runtime will be roughly the same as for the mode when OpenMP is off.
+
+Note that the use of a 32-bit word size is recommended for 'binfhe' because all STD128* configurations in OpenFHE use moduli no higher than 28 bits.
 
 A later version of the clang compiler can also be used.
 
 ## Configuration specific to BGV-like schemes, such as BGV, BFV, and CKKS
 
 Typically, the default configuration for schemes in the `pke` module is only to a small degree less performant than the optimal one (in contrast to DM-like schemes). Turning on `WITH_NATIVEOPT` may sometimes lead to a decrease in runtime (especially when using clang).
+
+# Multithreading Configuration using OpenMP
+
+OpenFHE uses loop parallelization via OpenMP to speed up some lower-level (mostly polynomial) operations. The loop parallelization gives the biggest improvement in the `pke` module and only provides modest speed-up in the `binfhe` module.
+
+At a high level, the built-in OpenFHE-level loop parallelization is done at the following levels:
+* For many Double-CRT operations (used for BGV, BFV, and CKKS implemented using RNS in OpenFHE), loop parallelization over the number of RNS limbs is automatically applied. The biggest benefit is seen when the multiplicative depth is not small (in deeper computations). For BGV and CKKS, the number of RNS limbs is roughly the same as the multiplicative depth set by the user (it is 1 or 2 larger). In BFV, it gets more complicated, the number of RNS limbs is still proportional to the multiplicative depth.
+* A higher-level loop parallelization is employed for CKKS bootstrapping and scheme switching between CKKS and FHEW/TFHE.
+* Loop parallelization is also used for all schemes during key generation (but this does not have effect on the online operations).
+
+When developing C++ applications using OpenFHE, it is advised to use OpenMP parallelization at the application level, e.g., when independent operations on multiple ciphertexts are performed, OpenMP loop parallelization can be turned on. The scaling of performance with the number of cores in this setup can approach the `ideal` linear scaling if the dimension of the loop is comparable to the number of cores. Note that turning on OpenMP paralellization at the application level typically turns off the lower-level OpenMP loop parallelization, i.e., we do not use nested loop parallelization in OpenMP. So application-level loop parallelization should be used only when you know that the application loop dimension is higher than what is expected for built-in OpenFHE OpenMP loop parallization.
+
+If an alternative parallelization mechanism is used, e.g., pthreads, C++11 threads, or multiprocessing, OpenMP should be turned off using the `WITH_OPENMP` CMake flag.
 
 # Accelerating OpenFHE using Specialized Hardware Backends #
 
