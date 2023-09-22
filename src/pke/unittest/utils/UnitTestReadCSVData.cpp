@@ -30,7 +30,7 @@
 //==================================================================================
 #include "UnitTestReadCSVData.h"
 
-#include "scheme/cryptocontextparams-base.h"
+#include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
 
 #include <fstream>

@@ -39,15 +39,8 @@
 
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns-internal.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/ckksrns/cryptocontextparams-ckksrns.h"
-
-#include "scheme/ckksrns/ckksrns-scheme.h"
-#include "cryptocontextfactory.h"
-#include "schemebase/base-scheme.h"
 #include "math/dftransform.h"
 
 namespace lbcrypto {

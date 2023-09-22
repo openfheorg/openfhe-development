@@ -33,8 +33,8 @@
   Collection of parameter default values for different schemes
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_DEFAULTS_H_
-#define _CRYPTOCONTEXTPARAMS_DEFAULTS_H_
+#ifndef __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
+#define __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
 
 #include "lattice/stdlatticeparms.h"  // SecurityLevel
 #include "scheme/scheme-id.h"         // SCHEME
@@ -161,4 +161,4 @@ constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXTPARAMS_DEFAULTS_H_
+#endif  // __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__

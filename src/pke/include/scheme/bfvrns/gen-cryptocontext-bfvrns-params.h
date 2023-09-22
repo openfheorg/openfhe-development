@@ -30,38 +30,37 @@
 //==================================================================================
 
 /*
-  API to generate BGV crypto context
+  Parameter class to generate BFVRNS crypto context
  */
 
-#ifndef _CRYPTOCONTEXT_BGVRNS_H_
-#define _CRYPTOCONTEXT_BGVRNS_H_
+#ifndef __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
 
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
-#include "scheme/bgvrns/cryptocontextparams-bgvrns.h"
-#include "scheme/bgvrns/bgvrns-scheme.h"
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "cryptocontext-fwd.h"
-#include "lattice/lat-hal.h"
+#include "scheme/gen-cryptocontext-params.h"
+
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 
-template <typename Element>
-class CryptoContextFactory;
+class CryptoContextBFVRNS;
 
-class CryptoContextBGVRNS {
-    using Element = DCRTPoly;
-
+// every CCParams class should include the following forward declaration as there is
+// no general CCParams class template. This way we may create scheme specific classes
+// derived from Params or have them completely independent.
+template <typename T>
+class CCParams;
+//====================================================================================================================
+template <>
+class CCParams<CryptoContextBFVRNS> : public Params {
 public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
-    using PublicKeyEncryptionScheme = SchemeBGVRNS;
-    using CryptoParams              = CryptoParametersBGVRNS;
-
-    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBGVRNS>& parameters) {
-        return genCryptoContextBGVRNSInternal<CryptoContextBGVRNS, Element>(parameters);
-    }
+    CCParams() : Params(BFVRNS_SCHEME) {}
+    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
+    CCParams(const CCParams& obj) = default;
+    CCParams(CCParams&& obj)      = default;
 };
+//====================================================================================================================
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXT_BGVRNS_H_
+#endif  // __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__

@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
 #include <algorithm>

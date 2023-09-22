@@ -33,13 +33,10 @@
   Unit tests for the CKKS scheme
  */
 
-#include "openfhe.h"
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/demangle.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
 
 #include <iostream>
 #include <vector>

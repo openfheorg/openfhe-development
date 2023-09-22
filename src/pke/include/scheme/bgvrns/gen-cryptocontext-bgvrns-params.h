@@ -30,20 +30,20 @@
 //==================================================================================
 
 /*
-  Parameter class to generate CKKSRNS crypto context
+  Parameter class to generate BGVRNS crypto context
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_CKKSRNS_H_
-#define _CRYPTOCONTEXTPARAMS_CKKSRNS_H_
+#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__
 
-#include "scheme/cryptocontextparams-base.h"
+#include "scheme/gen-cryptocontext-params.h"
 
 #include <string>
 #include <vector>
 
 namespace lbcrypto {
 
-class CryptoContextCKKSRNS;
+class CryptoContextBGVRNS;
 
 // every CCParams class should include the following forward declaration as there is
 // no general CCParams class template. This way we may create scheme specific classes
@@ -52,9 +52,9 @@ template <typename T>
 class CCParams;
 //====================================================================================================================
 template <>
-class CCParams<CryptoContextCKKSRNS> : public Params {
+class CCParams<CryptoContextBGVRNS> : public Params {
 public:
-    CCParams() : Params(CKKSRNS_SCHEME) {}
+    CCParams() : Params(BGVRNS_SCHEME) {}
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
@@ -63,4 +63,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXTPARAMS_CKKSRNS_H_
+#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__

@@ -33,12 +33,12 @@
   API to generate CKKSRNS crypto context
  */
 
-#ifndef _CRYPTOCONTEXT_CKKSRNS_H_
-#define _CRYPTOCONTEXT_CKKSRNS_H_
+#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_H__
+#define __GEN_CRYPTOCONTEXT_CKKSRNS_H__
 
 #include "lattice/lat-hal.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns-internal.h"
-#include "scheme/ckksrns/cryptocontextparams-ckksrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns-params.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-scheme.h"
 #include "cryptocontextfactory.h"
@@ -61,4 +61,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXT_CKKSRNS_H_
+#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_H__
