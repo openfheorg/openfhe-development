@@ -116,19 +116,20 @@ inline bool IsNotEqualOne(double val) {
     return false;
 }
 
-/*Return the degree of the polynomial described by coefficients,
-which is the index of the last non-zero element in the coefficients - 1.
-Don't throw an error if all the coefficients are zero, but return 0. */
 uint32_t Degree(const std::vector<double>& coefficients) {
-    uint32_t deg = 1;
-    for (int i = coefficients.size() - 1; i > 0; i--) {
-        if (coefficients[i] == 0) {
-            deg += 1;
-        }
-        else
+    const size_t coefficientsSize = coefficients.size();
+    if (!coefficientsSize) {
+        OPENFHE_THROW(math_error, "The coefficients vector can not be empty");
+    }
+
+    ssize_t indx = coefficientsSize;
+    while( --indx >= 0 ) {
+        if (coefficients[indx])
             break;
     }
-    return coefficients.size() - deg;
+
+    // we get indx equal to "-1" if all coefficients are zeroes
+    return static_cast<uint32_t>(( indx < 0 ) ? 0 : indx);
 }
 
 /* f and g are vectors of coefficients of the two polynomials. We assume their dominant

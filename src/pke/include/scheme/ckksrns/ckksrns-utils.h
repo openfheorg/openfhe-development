@@ -53,9 +53,9 @@ struct longDiv {
 };
 
 /**
- * Gets the degree of a polynomial specified by its coefficients.
- *
- * @param &coefficients vector of coefficients of a polynomial.
+ * @brief Gets the degree of a polynomial specified by its coefficients, which is the index of
+ * the last non-zero element in the coefficients. If all the coefficients are zero, it returns 0.
+ * @param coefficients vector of coefficients of a polynomial (can not be empty)
  * @return the integer degree of the polynomial.
  */
 uint32_t Degree(const std::vector<double>& coefficients);
