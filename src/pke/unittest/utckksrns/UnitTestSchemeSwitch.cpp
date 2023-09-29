@@ -505,7 +505,7 @@ protected:
             auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
-            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, testData.oneHot, false,
+            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, true, testData.oneHot, false,
                                           testData.dim1[0], testData.dim1[1]);
 
             double scaleSign = 128.0;
@@ -608,7 +608,7 @@ protected:
             auto privateKeyFHEW = FHEWparams.second;
 
             bool alt = true;
-            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, testData.oneHot, alt,
+            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, true, testData.oneHot, alt,
                                           testData.dim1[0], testData.dim1[1]);
 
             double scaleSign = 128.0;

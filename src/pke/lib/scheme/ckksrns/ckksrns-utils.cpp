@@ -913,10 +913,8 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
     std::vector<int32_t> indexList;
     indexList.reserve(bStep + gStep +
                       cols);  // There will be a lot of intersection between the rotations, provide an upper bound
-    std::cout << "estimate for rotations count: " << bStep + gStep + cols << std::endl;
 
     while (slots >= 1) {
-        std::cout << "slots = " << slots << ", bStep = " << bStep << ", gStep = " << gStep << std::endl;
         // Computing all indices for baby-step giant-step procedure
         for (uint32_t i = 0; i < bStep; i++)
             indexList.emplace_back(i + 1);
@@ -938,7 +936,6 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
         bStep = getRatioBSGSLT(slots);
         gStep = ceil(static_cast<double>(slots) / bStep);
     }
-    std::cout << "current size of indexList: " << indexList.size() << std::endl;
 
     // Remove possible duplicates
     sort(indexList.begin(), indexList.end());
@@ -946,8 +943,6 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
     // Remove automorphisms corresponding to 0
     indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
-
-    std::cout << "actual rotations count: " << indexList.size() << std::endl;
 
     return indexList;
 }

@@ -43,7 +43,7 @@
 
 #include "math/dftransform.h"
 
-#include <malloc.h>
+// #include <malloc.h>
 
 namespace lbcrypto {
 
@@ -1331,7 +1331,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     // Step 1. Homomorphic decoding
     auto ctxtDecoded = EvalSlotsToCoeffsSwitch(*ccCKKS, ciphertext);
     ctxtDecoded      = ccCKKS->Compress(ctxtDecoded);
-    std::cout << "--Time for Homomorphic Decoding: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "--Time for Homomorphic Decoding: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     TIC(t);
     // Step 2. Modulus switch to Q', such that CKKS is secure for (Q',n)
@@ -1373,7 +1373,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
         }
     }
 
-    std::cout << "--Time for LWE extraction: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "--Time for LWE extraction: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     return LWEciphertexts;
 }
@@ -1581,7 +1581,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
         if (BminusAdotS->GetNoiseScaleDeg() == 2)
             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
     }
-    std::cout << "--Time for Homomorphic Decryption: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "--Time for Homomorphic Decryption: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     TIC(t);
     // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
@@ -1687,7 +1687,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
         ccCKKS->ModReduceInPlace(BminusAdotSres);
     }
 
-    std::cout << "--Time for Modular Reduction: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "--Time for Modular Reduction: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     return BminusAdotSres;
 }
@@ -1875,8 +1875,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
         ccCKKS->EvalSumKeyGen(privateKey);
     }
 
-    std::cout << "indexRotationS2C: " << indexRotationS2C << std::endl;
-    std::cout << "number of automorphisms: " << indexRotationS2C.size() << std::endl;
+    // std::cout << "indexRotationS2C: " << indexRotationS2C << std::endl;
+    // std::cout << "number of automorphisms: " << indexRotationS2C.size() << std::endl;
 
     /* FHEW computations */
     // Generate the bootstrapping keys (refresh and switching keys)
@@ -1944,7 +1944,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
 
     TIC(t);
     auto LWECiphertexts = EvalCKKStoFHEW(cDiff, numCtxts);
-    std::cout << "-Time for EvalCKKStoFHEW: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "-Time for EvalCKKStoFHEW: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     TIC(t);
     std::vector<LWECiphertext> cSigns(LWECiphertexts.size());
@@ -1952,11 +1952,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
     for (uint32_t i = 0; i < LWECiphertexts.size(); i++) {
         cSigns[i] = m_ccLWE->EvalSign(LWECiphertexts[i], true);
     }
-    std::cout << "-Time for " << LWECiphertexts.size() << " EvalSigns: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "-Time for " << LWECiphertexts.size() << " EvalSigns: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     TIC(t);
     auto res = EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0);
-    std::cout << "-Time for EvalFHEWtoCKKS: " << TOC(t) / 1000.0 << " s" << std::endl;
+    // std::cout << "-Time for EvalFHEWtoCKKS: " << TOC(t) / 1000.0 << " s" << std::endl;
 
     return res;
     // return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0);
@@ -1999,7 +1999,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
     Ciphertext<DCRTPoly> newCiphertext = ciphertext->Clone();
 
     for (uint32_t M = 1; M < numValues; M <<= 1) {
-        std::cout << "M = " << M << std::endl;
+        // std::cout << "M = " << M << std::endl;
 
         TIC(t);
         // Compute CKKS ciphertext encoding difference of the first numValues
@@ -2007,7 +2007,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 
         // Transform the ciphertext from CKKS to FHEW
         auto cTemp = cc->EvalCKKStoFHEW(cDiff, numValues / (2 * M));
-        std::cout << "-Time for EvalCKKStoFHEW: " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "-Time for EvalCKKStoFHEW: " << TOC(t) / 1000.0 << " s" << std::endl;
 
         TIC(t);
         // Evaluate the sign
@@ -2017,13 +2017,13 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
         for (uint32_t j = 0; j < numValues / (2 * M); j++) {
             LWESign[j] = m_ccLWE->EvalSign(cTemp[j], true);
         }
-        std::cout << "-Time for " << numValues / (2 * M) << " EvalSigns: " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "-Time for " << numValues / (2 * M) << " EvalSigns: " << TOC(t) / 1000.0 << " s" << std::endl;
 
         TIC(t);
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
         auto cSelect = cc->EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
-        std::cout << "-Time for EvalFHEWtoCKKS: " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "-Time for EvalFHEWtoCKKS: " << TOC(t) / 1000.0 << " s" << std::endl;
 
         TIC(t);
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
@@ -2049,7 +2049,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
             cc->ModReduceInPlace(cInd);
         }
 
-        std::cout << "--Time for Postprocessing: " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "--Time for Postprocessing: " << TOC(t) / 1000.0 << " s" << std::endl;
     }
     // After computing the minimum and argument
     if (!oneHot) {
@@ -2098,7 +2098,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
     Ciphertext<DCRTPoly> newCiphertext = ciphertext->Clone();
 
     for (uint32_t M = 1; M < numValues; M <<= 1) {
-        std::cout << "M = " << M << std::endl;
+        // std::cout << "M = " << M << std::endl;
 
         TIC(t);
         // Compute CKKS ciphertext encoding difference of the first numValues
@@ -2107,7 +2107,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
         // Transform the ciphertext from CKKS to FHEW
         auto cTemp = cc->EvalCKKStoFHEW(cDiff, numValues / (2 * M));
 
-        std::cout << "-Time for EvalCKKStoFHEW: " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "-Time for EvalCKKStoFHEW: " << TOC(t) / 1000.0 << " s" << std::endl;
 
         TIC(t);
         // Evaluate the sign
@@ -2124,14 +2124,13 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
             }
         }
 
-        std::cout << "-Time for " << numValues / (2 * M) << " EvalSigns and negations: " << TOC(t) / 1000.0 << " s"
-                  << std::endl;
+        // std::cout << "-Time for " << numValues / (2 * M) << " EvalSigns and negations: " << TOC(t) / 1000.0 << " s" << std::endl;
 
         TIC(t);
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
         auto cExpandSelect = cc->EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1);
-        std::cout << "-Time for EvalFHEWtoCKKS of size " << numValues << ": " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "-Time for EvalFHEWtoCKKS of size " << numValues << ": " << TOC(t) / 1000.0 << " s" << std::endl;
 
         TIC(t);
         // Update the ciphertext of values and the indicator
@@ -2147,7 +2146,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
             cc->ModReduceInPlace(cInd);
         }
 
-        std::cout << "--Time for Postprocessing: " << TOC(t) / 1000.0 << " s" << std::endl;
+        // std::cout << "--Time for Postprocessing: " << TOC(t) / 1000.0 << " s" << std::endl;
     }
     // After computing the minimum and argument
     if (!oneHot) {
