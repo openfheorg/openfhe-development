@@ -3376,11 +3376,12 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
+   * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
-                              uint32_t dim1 = 0, uint32_t L = 0);
+                              uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0);
 
     /**
    * Performs the scheme switching on a vector of FHEW ciphertexts
@@ -3391,11 +3392,12 @@ public:
    * @param p plaintext modulus to use to decide postscaling, by default p = 4
    * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
    * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
+   * @param dim1 baby-step for the linear transform, necessary only for argmin
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
    */
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
-                                       double pmax = 2.0) const;
+                                       double pmax = 2.0, uint32_t dim1 = 0) const;
 
     /**
    * Sets all parameters for switching from CKKS to FHEW and back
@@ -3422,7 +3424,8 @@ public:
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param numValues parameter of argmin computation, set to zero if not needed
+   * @param numValues number of values to switch
+   * @param argmin flag that indicates whether argmin is being computed
    * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
    * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
    * @param dim1CF baby-step for the linear transform in CKKS to FHEW
@@ -3431,8 +3434,8 @@ public:
    * @param LFC level on which to do the linear transform in FHEW to CKKS
    */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0,
-                                   bool oneHot = true, bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
-                                   uint32_t LCF = 1, uint32_t LFC = 0);
+                                   bool argmin = false, bool oneHot = true, bool alt = false, uint32_t dim1CF = 0,
+                                   uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup

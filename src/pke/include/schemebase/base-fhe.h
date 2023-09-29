@@ -210,12 +210,14 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
+   * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
                                                                                     ConstLWEPrivateKey& lwesk,
-                                                                                    uint32_t numSlots,
+                                                                                    uint32_t numSlots = 0,
+                                                                                    uint32_t numCtxts = 0,
                                                                                     uint32_t dim1 = 0, uint32_t L = 0) {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSKeyGen is not supported for this scheme");
     }
@@ -245,11 +247,12 @@ public:
    * @param p plaintext modulus to use to decide postscaling, by default p = 4
    * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
    * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
+   * @param dim1 baby-step for the linear transform, necessary only for argmin
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
    */
     virtual Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
-                                               double pmax) const {
+                                               double pmax, uint32_t dim1) const {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKS is not implemented for this scheme");
     }
 
@@ -280,7 +283,8 @@ public:
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param numValues parameter of argmin computation, set to zero if not needed
+   * @param numValues number of values to switch
+   * @param argmin flag that indicates whether argmin is being computed
    * @param oneHot flag that indicates if the argmin encoding should be one hot
    * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
    * @param dim1CF baby-step for the linear transform in CKKS to FHEW
@@ -289,8 +293,8 @@ public:
    * @param LFC level on which to do the linear transform in FHEW to CKKS
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
-        uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool argmin, bool oneHot,
+        bool alt, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingKeyGen is not supported for this scheme");
     }
 

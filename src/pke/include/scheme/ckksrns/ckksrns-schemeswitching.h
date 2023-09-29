@@ -86,7 +86,8 @@ public:
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                         const std::vector<std::vector<std::complex<double>>>& A,
-                                                        ConstCiphertext<DCRTPoly> ct, uint32_t dim1, uint32_t L) const;
+                                                        ConstCiphertext<DCRTPoly> ct, bool wide, uint32_t dim1,
+                                                        uint32_t L) const;
 
     Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                  ConstCiphertext<DCRTPoly> ciphertext) const;
@@ -104,20 +105,20 @@ public:
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk,
-                                                                             uint32_t numSlots, uint32_t dim1,
-                                                                             uint32_t L) override;
+                                                                             uint32_t numSlots, uint32_t numCtxts,
+                                                                             uint32_t dim1, uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                        uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
-                                        double pmax) const override;
+                                        uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
+                                        uint32_t dim1) const override;
 
     std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
         const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
         bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
-        uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
+        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool argmin, bool oneHot,
+        bool alt, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
 
     void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
                                      double scaleSign, bool unit) override;

@@ -65,7 +65,7 @@ void mem_usage(double& vm_usage, double& resident_set) {
     resident_set         = rss * page_size_kb;
 }
 
-int main() {
+void MemoryTest() {
     using namespace std;
     uint32_t multDepth          = 15;
     uint32_t scaleFactorBits    = 50;
@@ -114,5 +114,81 @@ int main() {
     mem_usage(vm, rss);
     cout << "After clearing 1000 plaintexts: "
          << "Virtual Memory: " << (vm / (1 << 20)) << "GB; Resident set size: " << (rss / (1 << 20)) << "GB." << endl;
+}
+
+void EncodeTime() {
+    TimeVar t;
+
+    using namespace std;
+    uint32_t multDepth          = 39;
+    uint32_t scaleFactorBits    = 50;
+    uint32_t batchSize          = 2048;
+    SecurityLevel securityLevel = HEStd_128_classic;
+
+    CCParams<CryptoContextCKKSRNS> parameters;
+
+    parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetScalingModSize(scaleFactorBits);
+    parameters.SetScalingTechnique(FIXEDAUTO);
+    parameters.SetSecurityLevel(securityLevel);
+    parameters.SetBatchSize(batchSize);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+
+    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << std::endl << std::endl;
+
+    cc->Enable(PKE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(LEVELEDSHE);
+
+    auto keys = cc->KeyGen();
+    cc->EvalMultKeyGen(keys.secretKey);
+
+    vector<double> x = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};
+
+    auto ptxt_sparse = cc->MakeCKKSPackedPlaintext(x);
+    auto ctxt_sparse = cc->Encrypt(keys.publicKey, ptxt_sparse);
+
+    auto ptxt_full = cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, cc->GetRingDimension() / 2);
+    auto ctxt_full = cc->Encrypt(keys.publicKey, ptxt_full);
+
+    size_t n = 1305;
+
+    TIC(t);
+    for (size_t i = 0; i < n; ++i) {
+        auto ptxt = cc->MakeCKKSPackedPlaintext(x);
+    }
+
+    std::cout << "Time to encode " << n << " plaintexts sparsely packed for 2048 slots: " << TOC(t) << " seconds"
+              << std::endl;
+
+    TIC(t);
+    for (size_t i = 0; i < n; ++i) {
+        auto mult = cc->EvalMult(ptxt_sparse, ctxt_sparse);
+    }
+
+    std::cout << "Time to multiply " << n << " plaintexts/ciphertexts sparsely packed for 2048 slots: " << TOC(t)
+              << " seconds" << std::endl;
+
+    TIC(t);
+    for (size_t i = 0; i < n; ++i) {
+        auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, cc->GetRingDimension() / 2);
+    }
+
+    std::cout << "Time to encode " << n << " plaintexts fully packed: " << TOC(t) << " seconds" << std::endl;
+
+    TIC(t);
+    for (size_t i = 0; i < n; ++i) {
+        auto mult = cc->EvalMult(ptxt_full, ctxt_full);
+    }
+
+    std::cout << "Time to multiply " << n << " plaintexts/ciphertexts fully packed: " << TOC(t) << " seconds"
+              << std::endl;
+}
+
+int main() {
+    // MemoryTest();
+    EncodeTime();
+
     return 0;
 }

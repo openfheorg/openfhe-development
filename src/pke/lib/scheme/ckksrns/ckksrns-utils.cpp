@@ -857,8 +857,14 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
             int32_t(numRotationsRem), bRem,           gRem};
 }
 
-uint32_t getRatioBSGSLT(uint32_t slots) {
-    return ceil(sqrt(slots));
+uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
+    // return ceil(sqrt(slots));
+    if (slots <= 1) {
+        return 1;
+    }
+    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots)))-1)));
+    return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
+    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots)))+1)));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
@@ -887,6 +893,61 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
 
     // Remove automorphisms corresponding to 0
     indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+
+    return indexList;
+}
+
+std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols) {
+    uint32_t slots;
+    // Set slots depending on packing mode (fully-packed or sparsely-packed)
+    if ((blockDimension == 0) || (blockDimension == m / 4))
+        slots = m / 4;
+    else
+        slots = blockDimension;
+
+    // Computing the baby-step g and the giant-step h
+    uint32_t bStep = getRatioBSGSLT(slots);
+    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+    uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+
+    std::vector<int32_t> indexList;
+    indexList.reserve(bStep + gStep +
+                      cols);  // There will be a lot of intersection between the rotations, provide an upper bound
+    std::cout << "estimate for rotations count: " << bStep + gStep + cols << std::endl;
+
+    while (slots >= 1) {
+        std::cout << "slots = " << slots << ", bStep = " << bStep << ", gStep = " << gStep << std::endl;
+        // Computing all indices for baby-step giant-step procedure
+        for (uint32_t i = 0; i < bStep; i++)
+            indexList.emplace_back(i + 1);
+        for (uint32_t i = 2; i < gStep; i++)
+            indexList.emplace_back(bStep * i);
+
+        // If the linear transform is wide instead of tall, we need extra rotations
+        if (slots < cols) {
+            logl = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+            for (size_t j = 1; j <= logl; ++j) {
+                indexList.emplace_back(slots * (1 << (j - 1)));
+            }
+        }
+
+        // Go deeper into the binary tree
+        slots /= 2;
+
+        // Computing the baby-step g and the giant-step h
+        bStep = getRatioBSGSLT(slots);
+        gStep = ceil(static_cast<double>(slots) / bStep);
+    }
+    std::cout << "current size of indexList: " << indexList.size() << std::endl;
+
+    // Remove possible duplicates
+    sort(indexList.begin(), indexList.end());
+    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
+
+    // Remove automorphisms corresponding to 0
+    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+
+    std::cout << "actual rotations count: " << indexList.size() << std::endl;
 
     return indexList;
 }

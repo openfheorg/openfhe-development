@@ -562,40 +562,21 @@ void CryptoContextImpl<Element>::EvalFHEWtoCKKSSetup(const std::shared_ptr<BinFH
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
-                                                      uint32_t numSlots, uint32_t dim1, uint32_t L) {
+                                                      uint32_t numSlots, uint32_t numCtxts, uint32_t dim1, uint32_t L) {
     VerifyCKKSScheme(__func__);
+    ValidateKey(keyPair.secretKey);
+    auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
 
-    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
-    }
-    auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
-
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKS(
     std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, uint32_t numCtxts, uint32_t numSlots, uint32_t p,
-    double pmin, double pmax) const {
+    double pmin, double pmax, uint32_t dim1) const {
     VerifyCKKSScheme(__func__);
-    return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
+    return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
+>>>>>>> 24b998b (improved linear transform)
 }
 
 template <typename Element>
@@ -608,34 +589,15 @@ std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> CryptoContext
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
-                                                           uint32_t numValues, bool oneHot, bool alt, uint32_t dim1CF,
-                                                           uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
+                                                           uint32_t numValues, bool argmin, bool oneHot, bool alt,
+                                                           uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF,
+                                                           uint32_t LFC) {
     VerifyCKKSScheme(__func__);
+    ValidateKey(keyPair.secretKey);
+    auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, argmin, oneHot, alt, dim1CF,
+                                                           dim1FC, LCF, LFC);
 
-    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
-    }
-    auto evalKeys =
-        GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC, LCF, LFC);
-
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>

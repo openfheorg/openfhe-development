@@ -380,7 +380,7 @@ protected:
             }
 
             cc->EvalFHEWtoCKKSSetup(ccLWE, testData.slots, testData.logQ);
-            cc->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, testData.numValues, testData.dim1[1]);
+            cc->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, testData.numValues, testData.numValues, testData.dim1[1]);
 
             auto cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE1, testData.numValues, testData.slots);
 

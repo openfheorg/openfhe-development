@@ -1441,10 +1441,11 @@ public:
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
                                                                             ConstLWEPrivateKey& lwesk,
-                                                                            uint32_t numSlots = 0, uint32_t dim1 = 0,
+                                                                            uint32_t numSlots = 0,
+                                                                            uint32_t numCtxts = 0, uint32_t dim1 = 0,
                                                                             uint32_t L = 0) {
         VerifySchemeSwitchEnabled(__func__);
-        return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
+        return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
     }
 
     void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0,
@@ -1456,9 +1457,9 @@ public:
 
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
-                                       double pmax = 2.0) const {
+                                       double pmax = 2.0, uint32_t dim1 = 0) const {
         VerifySchemeSwitchEnabled(__func__);
-        return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
+        return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
     }
 
     std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
@@ -1471,11 +1472,12 @@ public:
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0, bool oneHot = true,
-        bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0) {
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0, bool argmin = false,
+        bool oneHot = true, bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1,
+        uint32_t LFC = 0) {
         VerifySchemeSwitchEnabled(__func__);
-        return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC, LCF,
-                                                         LFC);
+        return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, argmin, oneHot, alt, dim1CF, dim1FC,
+                                                         LCF, LFC);
     }
 
     Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
