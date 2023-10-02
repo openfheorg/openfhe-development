@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,20 +28,19 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "utils/demangle.h"
-#include <memory>
+#ifndef __GET_CALL_STACK_H__
+#define __GET_CALL_STACK_H__
 
 #if defined(__clang__) || defined(__GNUG__)
-    #include <cxxabi.h>
+#include <string>
+#include <vector>
 
-std::string demangle(const char* const name) {
-    int status = -1;
-    std::unique_ptr<char> result{abi::__cxa_demangle(name, NULL, NULL, &status)};
-
-    return (status == 0) ? result.get() : (std::string("Can not demangle symbol: ") + name);
-}
-#else
-std::string demangle(const char* const name) {
-    return name;
-}
+/**
+ * @brief get_call_stack() is a function to get the call stack
+ * @return a vector with call stack (demangled function names)
+ */
+std::vector<std::string> get_call_stack();
 #endif
+
+#endif // __GET_CALL_STACK_H__
+
