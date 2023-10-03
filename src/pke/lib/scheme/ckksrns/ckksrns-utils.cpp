@@ -122,14 +122,14 @@ uint32_t Degree(const std::vector<double>& coefficients) {
         OPENFHE_THROW(math_error, "The coefficients vector can not be empty");
     }
 
-    ssize_t indx = coefficientsSize;
-    while( --indx >= 0 ) {
+    int32_t indx = coefficientsSize;
+    while (--indx >= 0) {
         if (coefficients[indx])
             break;
     }
 
-    // we get indx equal to "-1" if all coefficients are zeroes
-    return static_cast<uint32_t>(( indx < 0 ) ? 0 : indx);
+    // indx becomes negative (-1) only when all coefficients are zeroes. in this case we return 0
+    return static_cast<uint32_t>((indx < 0) ? 0 : indx);
 }
 
 /* f and g are vectors of coefficients of the two polynomials. We assume their dominant
