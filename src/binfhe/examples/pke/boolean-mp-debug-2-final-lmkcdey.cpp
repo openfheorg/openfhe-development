@@ -139,6 +139,10 @@ int main() {
 
     std::cout << "rgsw decrypt z1 + z2: " << cc.RGSWDecrypt(rgsw1, z1 + z2) << std::endl;
 
+    auto rgsw1_1_1 = cc.RGSWEncrypt(acrs, z1, 1, true);
+
+    std::cout << "rgsw decrypt z1: " << cc.RGSWDecrypt(rgsw1_1_1, z1) << std::endl;
+
     // create btkey with RSGW encryption of 1 for every element of the secret
     uint32_t n = sk1->GetElement().GetLength();
 
@@ -197,6 +201,8 @@ int main() {
             acrsauto[i][j] = cc.Generateacrs();
         }
     }
+
+    return 0;
 
     std::cout << "********************************" << std::endl;
     std::cout << "sk1[0]: " << sk1->GetElement()[0] << std::endl;

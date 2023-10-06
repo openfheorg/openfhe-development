@@ -207,8 +207,11 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
 
     for (size_t i = 0; i < digitsG2; ++i) {
         // populate result[i][0] with uniform random a
-        (*result)[i][0] = acrs;
-        tempA[i]        = (*result)[i][0];
+        if (leadFlag)
+            (*result)[i][0] = acrs;
+        else
+            (*result)[i][0] = NativePoly(polyParams, Format::COEFFICIENT, true);
+        tempA[i] = acrs;
         // populate result[i][1] with error e
         // (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         (*result)[i][1] = NativePoly(polyParams, Format::COEFFICIENT, true);
