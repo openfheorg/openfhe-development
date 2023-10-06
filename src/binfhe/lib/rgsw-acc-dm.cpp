@@ -106,8 +106,9 @@ RingGSWACCKey RingGSWAccumulatorDM::MultiPartyKeyGenAcc(const std::shared_ptr<Ri
                 //    KeyGenDM(params, skNTT, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>());
                 // int32_t smj = s * j * (int32_t)digitsR[k].ConvertToInt();
                 // std::cout << "si passed to evalrgswmult " << smj << std::endl;
-                (*ek)[i][j][k] = RGSWBTEvalMult(params, (*prevbtkey)[i][j][k],
-                                                (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>());
+                (*ek)[i][j][k] =
+                    RGSWBTEvalMultAdd(params, (*prevbtkey)[i][j][k], rgswenc0[i],
+                                      (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>());
                 // *((*ek)[i][j][k]) += *(rgswenc0[i]);
             }
         }
@@ -157,7 +158,7 @@ RingGSWACCKey RingGSWAccumulatorDM::MultiPartyKeyGenAcc(const std::shared_ptr<Ri
 
                 int32_t smj = s * j * (int32_t)digitsR[k].ConvertToInt();
                 // std::cout << "si passed to evalrgswmult " << smj << std::endl;
-                (*ek)[i][j][k] = RGSWBTEvalMult(params, (*prevbtkey)[i][j][k], smj);
+                (*ek)[i][j][k] = RGSWBTEvalMultAdd(params, (*prevbtkey)[i][j][k], smj);
                 // *((*ek)[i][j][k]) += *(rgswenc0[i]);
             }
         }

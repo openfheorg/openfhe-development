@@ -67,7 +67,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAcc(const std::shared_p
         //***********************
         // int64_t sm     = (((s % mod) + mod) % mod) * (2 * N / mod);
         // int32_t sm     = (s % mod) * (2 * N / mod);
-        (*ek)[0][0][i] = RGSWBTEvalMult(params, (*prevbtkey)[0][0][i], s);
+        (*ek)[0][0][i] = RGSWBTEvalMultAdd(params, (*prevbtkey)[0][0][i], s);
         // *((*ek)[0][0][i]) += *(rgswenc0[i]);
     }
     NativeInteger gen = NativeInteger(5);
@@ -109,7 +109,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAcc(const std::shared_p
     for (size_t i = 0; i < n; ++i) {
         auto s{sv[i].ConvertToInt<int32_t>()};
         // (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s);
-        (*ek)[0][0][i] = RGSWBTEvalMult(params, (*prevbtkey)[0][0][i], s > modHalf ? s - mod : s);
+        (*ek)[0][0][i] = RGSWBTEvalMultAdd(params, (*prevbtkey)[0][0][i], rgswenc0[i], s > modHalf ? s - mod : s);
         // *((*ek)[0][0][i]) += *(rgswenc0[i]);
     }
 

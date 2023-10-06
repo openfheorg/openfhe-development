@@ -130,7 +130,8 @@ int main() {
     const std::vector<NativeInteger>& digitsR = cc.GetParams()->GetRingGSWParams()->GetDigitsR();
     RingGSWACCKey rgswe1                      = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
 
-    (*rgsw1).SetFormat(COEFFICIENT);
+    // (*rgsw1).SetFormat(COEFFICIENT);
+    (*rgsw1).SetFormat(EVALUATION);
     for (size_t i = 0; i < n; i++) {
         for (size_t j = 1; j < baseR; ++j) {
             for (size_t k = 0; k < digitsR.size(); ++k) {
@@ -138,7 +139,6 @@ int main() {
             }
         }
     }
-    (*rgsw1).SetFormat(EVALUATION);
 
     // distributed generation of RGSW_{z_*}(0) will be done while computing the bootstrapping key
     // Sample Program: Step 2: Key Generation
