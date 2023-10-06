@@ -193,7 +193,7 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
     NativeInteger Q = params->GetQ();
     uint64_t q      = params->Getq().ConvertToInt();
     // uint32_t N        = params->GetN();
-    uint32_t digitsG  = params->GetDigitsG();
+    uint32_t digitsG  = params->GetDigitsG() - 1;
     uint32_t digitsG2 = digitsG << 1;
     auto polyParams   = params->GetPolyParams();
     auto Gpow         = params->GetGPower();
@@ -222,7 +222,7 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
     for (size_t i = 0; i < digitsG; ++i) {
         if (leadFlag) {
             // compute mG
-            auto mG = mmn.ModMulEq(Gpow[i], Q);
+            auto mG = mmn.ModMulEq(Gpow[i + 1], Q);
             // Add G Multiple
             (*result)[2 * i][0][0].ModAddEq(mG, Q);  // (Gpow[i], Q);
             // [a,as+e] + m*G
@@ -247,7 +247,7 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
     NativePoly dec0;
     auto Gpow         = params->GetGPower();
     uint32_t digitsG  = params->GetDigitsG();
-    uint32_t digitsG2 = digitsG << 1;
+    uint32_t digitsG2 = (digitsG - 1) << 1;
     NativeInteger Q   = params->GetQ();
 
     // Take from the next to last encryption of the message
