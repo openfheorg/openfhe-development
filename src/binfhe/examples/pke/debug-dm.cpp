@@ -178,6 +178,11 @@ int main() {
     }
 
     std::cout << "rgsw decrypt 0 z1 + z2: " << cc.RGSWDecrypt(rgswenc0[0][0], z1 + z2) << std::endl;
+
+    auto result1 = cc.RGSWEvalMultAdd(rgsw1, rgswenc0[0][0], 3);
+
+    std::cout << "rgsw decrypt mult: " << cc.RGSWDecrypt(result1, z1 + z2) << std::endl;
+
     // generate acrs for rgsw encryptions of 0 for automorphism keygen
     uint32_t digitsG  = cc.GetParams()->GetRingGSWParams()->GetDigitsG();
     uint32_t m_window = 10;  // need to be sure this is the same value in rgsw-acc-lmkcdey.h

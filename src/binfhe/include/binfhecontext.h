@@ -280,6 +280,9 @@ public:
     RingGSWEvalKey RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b);
     LWEPlaintext RGSWDecrypt(RingGSWEvalKey ct, const NativePoly& skNTT) const;
 
+    // RingGSWCiphertext
+    RingGSWEvalKey RGSWEvalMultAdd(RingGSWEvalKey a, RingGSWEvalKey b, int32_t si);
+
     /**
    * Generates boostrapping keys
    *

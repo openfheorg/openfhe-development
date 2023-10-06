@@ -161,6 +161,12 @@ RingGSWEvalKey BinFHEScheme::RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b) {
     return a;
 }
 
+RingGSWEvalKey BinFHEScheme::RGSWEvalMultAdd(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey a,
+                                             RingGSWEvalKey b, int32_t si) {
+    // todo sara
+    return ACCscheme->RGSWBTEvalMultAdd(params, a, b, si);
+}
+
 // wrapper for KeyGen methods
 NativePoly BinFHEScheme::RGSWKeyGen(const std::shared_ptr<BinFHECryptoParams> params) const {
     auto size         = params->GetLWEParams()->GetN();
@@ -253,6 +259,7 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
     // Take from the next to last encryption of the message
     dec0 = (*ct)[digitsG2 - 3][1] - (*ct)[digitsG2 - 3][0] * skNTT;
     dec0.SetFormat(COEFFICIENT);
+    std::cout << dec0 << std::endl;
     auto r = dec0[0];
 
     // rounding
