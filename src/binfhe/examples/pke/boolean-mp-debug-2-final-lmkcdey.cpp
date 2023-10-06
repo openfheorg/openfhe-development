@@ -51,6 +51,7 @@ int main() {
 
     auto nlwe   = cc.GetParams()->GetLWEParams()->Getn();
     auto qkslwe = cc.GetParams()->GetLWEParams()->GetqKS();
+    std::cout << "Q = " << cc.GetParams()->GetLWEParams()->GetQ() << std::endl;
     // Generate the secret keys s1, z1
     // auto sk1 = cc.KeyGen();
     // DiscreteGaussianGeneratorImpl<NativeVector> dgg;

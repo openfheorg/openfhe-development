@@ -213,8 +213,8 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
             (*result)[i][0] = NativePoly(polyParams, Format::COEFFICIENT, true);
         tempA[i] = acrs;
         // populate result[i][1] with error e
-        // (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
-        (*result)[i][1] = NativePoly(polyParams, Format::COEFFICIENT, true);
+        (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
+        // (*result)[i][1] = NativePoly(polyParams, Format::COEFFICIENT, true);
     }
 
     NativeInteger mmn = NativeInteger(mm);
@@ -245,16 +245,22 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
                                        const NativePoly& skNTT) const {
     // std::vector<NativePoly> dec;
     NativePoly dec0;
-// uint32_t digitsG  = params->GetDigitsG();
-#if 0
-    for (size_t i = 0; i < digitsG; ++i) {
-        std::cout << "i: " << i << std::endl;
-        dec[i] = (*ct)[2 * i + 1][1];  // - (*ct)[2 * i + 1][0]*skNTT;
-    }
-#endif
-    dec0 = (*ct)[1][1] - (*ct)[1][0] * skNTT;
-    // round dec[0][0]
-    return dec0[0].ConvertToInt();
+    auto Gpow         = params->GetGPower();
+    uint32_t digitsG  = params->GetDigitsG();
+    uint32_t digitsG2 = digitsG << 1;
+    NativeInteger Q   = params->GetQ();
+
+    // Take from the next to last encryption of the message
+    dec0 = (*ct)[digitsG2 - 3][1] - (*ct)[digitsG2 - 3][0] * skNTT;
+    dec0.SetFormat(COEFFICIENT);
+    auto r = dec0[0];
+
+    // rounding
+    auto gP = Gpow[digitsG - 2];
+    r.ModAddFastEq((gP / 2), Q);
+    auto result = (r / gP).ConvertToInt();
+
+    return result;
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
