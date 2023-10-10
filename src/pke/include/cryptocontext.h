@@ -1694,8 +1694,7 @@ public:
    * @param key secret key
    */
     void EvalMultKeyGen(const PrivateKey<Element> key) {
-        if (key == nullptr || Mismatched(key->GetCryptoContext()))
-            OPENFHE_THROW(config_error, "Key passed to EvalMultKeyGen were not generated with this crypto context");
+        ValidateKey(key);
 
         EvalKey<Element> k = GetScheme()->EvalMultKeyGen(key);
 
@@ -1712,8 +1711,7 @@ public:
    * @param key secret key
    */
     void EvalMultKeysGen(const PrivateKey<Element> key) {
-        if (key == nullptr || Mismatched(key->GetCryptoContext()))
-            OPENFHE_THROW(config_error, "Key passed to EvalMultsKeyGen were not generated with this crypto context");
+        ValidateKey(key);
 
         const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
 
@@ -3253,10 +3251,7 @@ public:
    * @param slots number of slots to support permutations on
    */
     void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
-        if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
-            OPENFHE_THROW(config_error, "Private key passed to " + std::string(__func__) +
-                                            " was not generated with this cryptocontext");
-        }
+        ValidateKey(privateKey);
 
         auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
 
