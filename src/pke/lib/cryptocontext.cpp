@@ -81,55 +81,42 @@ void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Ele
 /////////////////////////////////////////
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                               const PublicKey<Element> publicKey) {
+void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey) {
     if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalSumKeyGen were not generated "
                       "with this crypto context");
     }
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalSumKeyGen does not match private key");
-    }
-
-    auto evalKeys = GetScheme()->EvalSumKeyGen(privateKey, publicKey);
+    auto evalKeys = GetScheme()->EvalSumKeyGen(privateKey);
 
     GetAllEvalSumKeys()[privateKey->GetKeyTag()] = evalKeys;
 }
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) {
+    const PrivateKey<Element> privateKey, usint rowSize, usint subringDim) {
     if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalSumKeyGen were not generated "
                       "with this crypto context");
     }
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalSumKeyGen does not match private key");
-    }
-
-    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
+    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim);
 
     return evalKeys;
 }
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
+    const PrivateKey<Element> privateKey) {
     if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalSumKeyGen were not generated "
                       "with this crypto context");
     }
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalSumKeyGen does not match private key");
-    }
-
-    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, publicKey);
+    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey);
 
     return evalKeys;
 }

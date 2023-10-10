@@ -1183,15 +1183,14 @@ public:
     // Advanced SHE EVAL SUM
     /////////////////////////////////////
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                                                             const PublicKey<Element> publicKey) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
+        const PrivateKey<Element> privateKey) const;
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                                 const PublicKey<Element> publicKey,
                                                                                  usint rowSize, usint subringDim) const;
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
+        const PrivateKey<Element> privateKey) const;
 
     virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, usint batchSize,
                                         const std::map<usint, EvalKey<Element>>& evalKeyMap) const {

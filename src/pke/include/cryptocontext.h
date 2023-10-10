@@ -2695,9 +2695,8 @@ public:
    * EvalSumKeyGen Generates the key map to be used by EvalSum
    *
    * @param privateKey private key.
-   * @param publicKey public key (used in NTRU schemes).
    */
-    void EvalSumKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr);
+    void EvalSumKeyGen(const PrivateKey<Element> privateKey);
 
     /**
    * Generate the automorphism keys for EvalSumRows; works
@@ -2710,7 +2709,6 @@ public:
    * @return returns the evaluation keys
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                         const PublicKey<Element> publicKey = nullptr,
                                                                          usint rowSize = 0, usint subringDim = 0);
     /**
    * Generates the automorphism keys for EvalSumCols; works
@@ -2720,8 +2718,7 @@ public:
    * @param publicKey public key.
    * @return returns the evaluation keys
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
-                                                                         const PublicKey<Element> publicKey = nullptr);
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
 
     /**
    * Function for evaluating a sum of all components in a vector.
