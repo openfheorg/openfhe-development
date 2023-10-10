@@ -831,13 +831,9 @@ public:
             smap = &GetAllEvalAutomorphismKeys();
         }
         else {
-            auto k = GetAllEvalAutomorphismKeys().find(id);
-
-            if (k == GetAllEvalAutomorphismKeys().end())
-                return false;  // no such id
-
-            smap           = &omap;
-            omap[k->first] = k->second;
+            const auto keys = GetEvalAutomorphismKeyMapPtr(id);
+            omap[id]        = keys;
+            smap            = &omap;
         }
         Serial::Serialize(*smap, ser, sertype);
         return true;
@@ -886,7 +882,7 @@ public:
         // so all we need to do is put the keys into the maps for their context
 
         for (auto k : evalSumKeyMap) {
-            GetAllEvalAutomorphismKeys()[k.first] = k.second;
+            InsertEvalAutomorphismKey(k.second, k.first);
         }
 
         return true;
@@ -915,7 +911,8 @@ public:
    * the existing map if there
    * @param mapToInsert
    */
-    static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
+    static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+                                          const std::string& keyTag = "");
 
     //------------------------------------------------------------------------------
     // TURN FEATURES ON
@@ -1054,6 +1051,7 @@ public:
     /**
    * Get automorphism keys for a specific secret key tag
    */
+    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& id);
     static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& id);
 
     /**
@@ -3265,23 +3263,7 @@ public:
 
         auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
 
-        auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
-        if (ekv == GetAllEvalAutomorphismKeys().end()) {
-            GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
-        }
-        else {
-            auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
-            auto iterRowKeys = evalKeys->begin();
-            while (iterRowKeys != evalKeys->end()) {
-                auto idx = iterRowKeys->first;
-                // Search current rotation key map and add key
-                // only if it doesn't exist
-                if (currRotMap.find(idx) == currRotMap.end()) {
-                    currRotMap.insert(*iterRowKeys);
-                }
-                iterRowKeys++;
-            }
-        }
+        InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
     }
     /**
    * Computes the plaintexts for encoding and decoding for both linear and FFT-like methods. Supported in CKKS only.

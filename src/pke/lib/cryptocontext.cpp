@@ -212,27 +212,12 @@ void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> pri
 
     auto evalKeys = GetScheme()->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
 template <typename Element>
-std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
+std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
+    const std::string& keyID) {
     auto ekv = s_evalAutomorphismKeyMap.find(keyID);
     if (ekv == s_evalAutomorphismKeyMap.end()) {
         std::string errMsg(
@@ -240,7 +225,12 @@ std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphi
             "].");
         OPENFHE_THROW(not_available_error, errMsg);
     }
-    return *ekv->second;
+    return ekv->second;
+}
+
+template <typename Element>
+std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
+    return *GetEvalAutomorphismKeyMapPtr(keyID);
 }
 
 template <typename Element>
@@ -278,18 +268,18 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
 
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
-    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
     auto mapToInsertIt = mapToInsert->begin();
     // check if the map is empty
     if (mapToInsertIt == mapToInsert->end()) {
         OPENFHE_THROW(openfhe_error, "mapToInsert is empty");
     }
 
-    std::string keyTag(mapToInsertIt->second->GetKeyTag());
-    auto keyMapIt = s_evalAutomorphismKeyMap.find(keyTag);
+    const std::string id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
+    auto keyMapIt        = s_evalAutomorphismKeyMap.find(id);
     if (keyMapIt == s_evalAutomorphismKeyMap.end()) {
-        // there is no keys for the given keyTag, so we insert full mapToInsert
-        s_evalAutomorphismKeyMap[keyTag] = mapToInsert;
+        // there is no keys for the given id, so we insert full mapToInsert
+        s_evalAutomorphismKeyMap[id] = mapToInsert;
     }
     else {
         // get all inidices from the existing automorphism key map
@@ -546,23 +536,7 @@ void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& ke
     }
     auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
@@ -592,23 +566,7 @@ void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& ke
     }
     auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
@@ -636,23 +594,7 @@ void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element
     auto evalKeys =
         GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC, LCF, LFC);
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
