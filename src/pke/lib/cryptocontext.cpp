@@ -51,11 +51,6 @@ template <typename Element>
 std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& CryptoContextImpl<Element>::evalSumKeyMap() {
     return s_evalSumKeyMap;
 }
-template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
-CryptoContextImpl<Element>::evalAutomorphismKeyMap() {
-    return s_evalAutomorphismKeyMap;
-}
 
 template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
@@ -234,23 +229,23 @@ void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> pri
             iterRowKeys++;
         }
     }
-
-    //  evalAutomorphismKeyMap()[privateKey->GetKeyTag()] = evalKeys;
 }
 
 template <typename Element>
 std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
-    auto ekv = evalAutomorphismKeyMap().find(keyID);
-    if (ekv == evalAutomorphismKeyMap().end())
-        OPENFHE_THROW(not_available_error,
-                      "You need to use EvalAutomorphismKeyGen so that you have "
-                      "EvalAutomorphismKeys available for this ID");
+    auto ekv = s_evalAutomorphismKeyMap.find(keyID);
+    if (ekv == s_evalAutomorphismKeyMap.end()) {
+        std::string errMsg(
+            std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
+            "].");
+        OPENFHE_THROW(not_available_error, errMsg);
+    }
     return *ekv->second;
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
-    evalAutomorphismKeyMap().clear();
+    s_evalAutomorphismKeyMap.clear();
 }
 
 /**
@@ -259,9 +254,9 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id) {
-    auto kd = evalAutomorphismKeyMap().find(id);
-    if (kd != evalAutomorphismKeyMap().end())
-        evalAutomorphismKeyMap().erase(kd);
+    auto kd = s_evalAutomorphismKeyMap.find(id);
+    if (kd != s_evalAutomorphismKeyMap.end())
+        s_evalAutomorphismKeyMap.erase(kd);
 }
 
 /**
@@ -271,9 +266,9 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<Element> cc) {
-    for (auto it = evalAutomorphismKeyMap().begin(); it != evalAutomorphismKeyMap().end();) {
+    for (auto it = s_evalAutomorphismKeyMap.begin(); it != s_evalAutomorphismKeyMap.end();) {
         if (it->second->begin()->second->GetCryptoContext() == cc) {
-            it = evalAutomorphismKeyMap().erase(it);
+            it = s_evalAutomorphismKeyMap.erase(it);
         }
         else {
             ++it;
@@ -284,9 +279,43 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
     const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
-    // find the tag
-    auto onekey                                           = mapToInsert->begin();
-    evalAutomorphismKeyMap()[onekey->second->GetKeyTag()] = mapToInsert;
+    auto mapToInsertIt = mapToInsert->begin();
+    // check if the map is empty
+    if (mapToInsertIt == mapToInsert->end()) {
+        OPENFHE_THROW(openfhe_error, "mapToInsert is empty");
+    }
+
+    std::string keyTag(mapToInsertIt->second->GetKeyTag());
+    auto keyMapIt = s_evalAutomorphismKeyMap.find(keyTag);
+    if (keyMapIt == s_evalAutomorphismKeyMap.end()) {
+        // there is no keys for the given keyTag, so we insert full mapToInsert
+        s_evalAutomorphismKeyMap[keyTag] = mapToInsert;
+    }
+    else {
+        // get all inidices from the existing automorphism key map
+        auto& keyMap = *(keyMapIt->second);
+        std::vector<usint> existingIndices(keyMap.size());
+        for (const auto& [key, _] : keyMap) {
+            existingIndices.push_back(key);
+        }
+
+        // get all inidices from mapToInsert
+        std::vector<usint> newIndices(mapToInsert->size());
+        for (const auto& [key, _] : *mapToInsert) {
+            newIndices.push_back(key);
+        }
+
+        // find all indices in mapToInsert that are not in the exising map and
+        // insert those new indices and their corresponding keys in to the existing map
+        std::sort(existingIndices.begin(), existingIndices.end());
+        std::sort(newIndices.begin(), newIndices.end());
+        std::vector<usint> indicesToInsert;
+        std::set_difference(newIndices.begin(), newIndices.end(), existingIndices.begin(), existingIndices.end(),
+                            std::inserter(indicesToInsert, indicesToInsert.begin()));
+        for (usint indx : indicesToInsert) {
+            keyMap[indx] = (*mapToInsert)[indx];
+        }
+    }
 }
 
 template <typename Element>

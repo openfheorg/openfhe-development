@@ -279,7 +279,6 @@ protected:
 
     static std::map<std::string, std::vector<EvalKey<Element>>>& evalMultKeyMap();
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalSumKeyMap();
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalAutomorphismKeyMap();
 
     SCHEME m_schemeId = SCHEME::INVALID_SCHEME;
 
@@ -1049,7 +1048,7 @@ public:
    * Get a map of automorphism keys for all secret keys
    */
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys() {
-        return evalAutomorphismKeyMap();
+        return s_evalAutomorphismKeyMap;
     }
 
     /**
