@@ -266,23 +266,18 @@ class CryptoContextImpl : public Serializable {
 private:
     // cached evalmult keys, by secret key UID
     static inline std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap{};
-    // cached evalsum keys, by secret key UID
-    static inline std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap{};
     // cached evalautomorphism keys, by secret key UID
     static inline std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap{};
 
 protected:
     // crypto parameters used for this context
-    std::shared_ptr<CryptoParametersBase<Element>> params;
+    std::shared_ptr<CryptoParametersBase<Element>> params{nullptr};
     // algorithm used; accesses all crypto methods
-    std::shared_ptr<SchemeBase<Element>> scheme;
+    std::shared_ptr<SchemeBase<Element>> scheme{nullptr};
 
-    static std::map<std::string, std::vector<EvalKey<Element>>>& evalMultKeyMap();
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalSumKeyMap();
+    SCHEME m_schemeId{SCHEME::INVALID_SCHEME};
 
-    SCHEME m_schemeId = SCHEME::INVALID_SCHEME;
-
-    uint32_t m_keyGenLevel;
+    uint32_t m_keyGenLevel{0};
 
     /**
    * TypeCheck makes sure that an operation between two ciphertexts is permitted
@@ -658,7 +653,7 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        std::map<std::string, std::vector<EvalKey<Element>>> evalMultKeyMap;
+        // std::map<std::string, std::vector<EvalKey<Element>>> keyMap;
 
         Serial::Deserialize(GetAllEvalMultKeys(), ser, sertype);
 
@@ -721,23 +716,7 @@ public:
    */
     template <typename ST>
     static bool SerializeEvalSumKey(std::ostream& ser, const ST& sertype, std::string id = "") {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>* smap;
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
-
-        if (id.length() == 0) {
-            smap = &GetAllEvalSumKeys();
-        }
-        else {
-            auto k = GetAllEvalSumKeys().find(id);
-
-            if (k == GetAllEvalSumKeys().end())
-                return false;  // no such id
-
-            smap           = &omap;
-            omap[k->first] = k->second;
-        }
-        Serial::Serialize(*smap, ser, sertype);
-        return true;
+        return SerializeEvalAutomorphismKey(ser, sertype, id);
     }
 
     /**
@@ -750,19 +729,7 @@ public:
    */
     template <typename ST>
     static bool SerializeEvalSumKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
-        for (const auto& k : GetAllEvalSumKeys()) {
-            if (k.second->begin()->second->GetCryptoContext() == cc) {
-                omap[k.first] = k.second;
-            }
-        }
-
-        if (omap.size() == 0)
-            return false;
-
-        Serial::Serialize(omap, ser, sertype);
-
-        return true;
+        return SerializeEvalAutomorphismKey(ser, sertype, cc);
     }
 
     /**
@@ -776,18 +743,7 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalSumKey(std::istream& ser, const ST& sertype) {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> evalSumKeyMap;
-
-        Serial::Deserialize(evalSumKeyMap, ser, sertype);
-
-        // The deserialize call created any contexts that needed to be created....
-        // so all we need to do is put the keys into the maps for their context
-
-        for (auto k : evalSumKeyMap) {
-            GetAllEvalSumKeys()[k.first] = k.second;
-        }
-
-        return true;
+        return DeserializeEvalAutomorphismKey(ser, sertype);
     }
 
     /**
@@ -812,7 +768,8 @@ public:
    * existing map if there
    * @param evalKeyMap key map
    */
-    static void InsertEvalSumKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
+    static void InsertEvalSumKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+                                 const std::string& keyTag = "");
 
     /**
    * SerializeEvalAutomorphismKey for a single EvalAuto key or all of the
@@ -874,14 +831,14 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalAutomorphismKey(std::istream& ser, const ST& sertype) {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> evalSumKeyMap;
+        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> keyMap;
 
-        Serial::Deserialize(evalSumKeyMap, ser, sertype);
+        Serial::Deserialize(keyMap, ser, sertype);
 
         // The deserialize call created any contexts that needed to be created....
         // so all we need to do is put the keys into the maps for their context
 
-        for (auto k : evalSumKeyMap) {
+        for (auto k : keyMap) {
             InsertEvalAutomorphismKey(k.second, k.first);
         }
 
@@ -1025,7 +982,7 @@ public:
    * Get a map of relinearization keys for all secret keys
    */
     static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys() {
-        return evalMultKeyMap();
+        return s_evalMultKeyMap;
     }
 
     /**
