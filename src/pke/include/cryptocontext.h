@@ -371,41 +371,6 @@ protected:
         }
     }
 
-    void CompareKeyTag(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey,
-                       CALLER_INFO_ARGS_HDR) const {
-        if (privateKey == nullptr) {
-            std::string errorMsg(std::string("PrivateKey is nullptr") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-        else if (publicKey == nullptr) {
-            std::string errorMsg(std::string("PublicKey is nullptr") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-
-        if (privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-            std::string errorMsg(std::string("Public key does not match private key") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-    }
-
-    void CompareKeyTag(const ConstCiphertext<Element> ciphertext1, const ConstCiphertext<Element> ciphertext2,
-                       CALLER_INFO_ARGS_HDR) const {
-        if (ciphertext1 == nullptr) {
-            std::string errorMsg(std::string("Ciphertext1 is nullptr") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-        else if (ciphertext2 == nullptr) {
-            std::string errorMsg(std::string("Ciphertext2 is nullptr") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-
-        if (ciphertext1->GetKeyTag() != ciphertext2->GetKeyTag()) {
-            std::string errorMsg(std::string("Ciphertexts were not generated with the same crypto context") +
-                                 CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-    }
-
     PrivateKey<Element> privateKey;
 
 public:
@@ -1987,20 +1952,6 @@ public:
     }
 
     /**
-   * NOT USED BY ANY CRYPTO SCHEME: Generate automophism keys for a public and private key
-   */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<usint>& indexList) const {
-        ValidateKey(publicKey);
-        ValidateKey(privateKey);
-        if (!indexList.size())
-            OPENFHE_THROW(config_error, "Input index vector is empty");
-
-        return GetScheme()->EvalAutomorphismKeyGen(publicKey, privateKey, indexList);
-    }
-
-    /**
    * Function for evaluating automorphism of ciphertext at index i
    *
    * @param ciphertext the input ciphertext.
@@ -2204,10 +2155,8 @@ public:
    *
    * @param privateKey private key.
    * @param indexList list of indices.
-   * @param publicKey public key (used in NTRU schemes). Not used anymore.
    */
-    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                           const PublicKey<Element> publicKey = nullptr);
+    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList);
 
     /**
    * EvalRotateKeyGen generates evaluation keys for a list of rotation indices.
@@ -2217,9 +2166,8 @@ public:
    * @param indexList list of indices.
    * @param publicKey public key (used in NTRU schemes).
    */
-    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                          const PublicKey<Element> publicKey = nullptr) {
-        EvalAtIndexKeyGen(privateKey, indexList, publicKey);
+    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) {
+        EvalAtIndexKeyGen(privateKey, indexList);
     };
 
     /**

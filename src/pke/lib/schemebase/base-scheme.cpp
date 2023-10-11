@@ -90,13 +90,12 @@ std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const Private
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAtIndexKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<int32_t>& indexList) const {
+    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
-    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
+    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -423,22 +422,6 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAuto
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
-    for (auto& key : *evalKeyMap)
-        key.second->SetKeyTag(privateKey->GetKeyTag());
-    return evalKeyMap;
-}
-
-template <typename Element>
-std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<usint>& indexList) const {
-    VerifyLeveledSHEEnabled(__func__);
-    if (!publicKey)
-        OPENFHE_THROW(config_error, "Input public key is nullptr");
-    if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
-
-    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(publicKey, privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;

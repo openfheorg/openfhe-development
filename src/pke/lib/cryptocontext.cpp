@@ -147,16 +147,10 @@ void CryptoContextImpl<Element>::InsertEvalSumKey(const std::shared_ptr<std::map
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> privateKey,
-                                                   const std::vector<int32_t>& indexList,
-                                                   const PublicKey<Element> publicKey) {
+                                                   const std::vector<int32_t>& indexList) {
     ValidateKey(privateKey);
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalAtIndexKeyGen does not match private key");
-    }
-
-    auto evalKeys = GetScheme()->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
-
+    auto evalKeys = GetScheme()->EvalAtIndexKeyGen(privateKey, indexList);
     InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 

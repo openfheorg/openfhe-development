@@ -1193,7 +1193,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     indexRotationS2C.erase(unique(indexRotationS2C.begin(), indexRotationS2C.end()), indexRotationS2C.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     const DCRTPoly& s                       = privateKey->GetPrivateElement();
     usint N                                 = s.GetRingDimension();
@@ -1386,7 +1386,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
                               indexRotationHomDec.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationHomDec);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationHomDec);
 
     // Compute multiplication key
     ccCKKS->EvalMultKeyGen(privateKey);
@@ -1718,7 +1718,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     indexRotationS2C.erase(unique(indexRotationS2C.begin(), indexRotationS2C.end()), indexRotationS2C.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     // Compute conjugation key
     const DCRTPoly& s                       = privateKey->GetPrivateElement();
@@ -1869,7 +1869,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
         cSelect            = cc->EvalAdd(
-            cSelect, cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
+                       cSelect, cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
 
         auto cExpandSelect = cSelect;
         if (M > 1) {

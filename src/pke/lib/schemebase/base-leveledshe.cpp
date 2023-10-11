@@ -514,8 +514,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAtIndexKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<int32_t>& indexList) const {
+    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     const auto cc = privateKey->GetCryptoContext();
 
     usint M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
