@@ -72,7 +72,7 @@ With NTL:
 
     export PATH=$PATH:lib:{PATH_TO_NTL_BINARIES}
 
-Alternatively, add the path(s) to ORIGINAL_PATH variable in c:\msys64\etc\profile to make this change permanent.
+Alternatively, add the path(s) to ``ORIGINAL_PATH`` variable in ``c:/msys64/etc/profile`` to make this change permanent.
 
 Testing and cleaning the build
 -------------------------------
