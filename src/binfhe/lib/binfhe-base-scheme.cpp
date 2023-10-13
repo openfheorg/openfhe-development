@@ -228,7 +228,7 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
     for (size_t i = 0; i < digitsG; ++i) {
         if (leadFlag) {
             // compute mG
-            auto mG = mmn.ModMulEq(Gpow[i + 1], Q);
+            auto mG = mmn.ModMul(Gpow[i + 1], Q);
             // Add G Multiple
             (*result)[2 * i][0][0].ModAddEq(mG, Q);  // (Gpow[i], Q);
             // [a,as+e] + m*G
@@ -259,7 +259,6 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
     // Take from the next to last encryption of the message
     dec0 = (*ct)[digitsG2 - 3][1] - (*ct)[digitsG2 - 3][0] * skNTT;
     dec0.SetFormat(COEFFICIENT);
-    std::cout << dec0 << std::endl;
     auto r = dec0[0];
 
     // rounding

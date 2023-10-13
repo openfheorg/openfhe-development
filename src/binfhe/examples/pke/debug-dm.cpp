@@ -179,7 +179,7 @@ int main() {
 
     std::cout << "rgsw decrypt 0 z1 + z2: " << cc.RGSWDecrypt(rgswenc0[0][0], z1 + z2) << std::endl;
 
-    auto result1 = cc.RGSWEvalMultAdd(rgsw1, rgswenc0[0][0], 3);
+    auto result1 = cc.RGSWEvalMultAdd(rgsw1, rgswenc0[0][0], 1);
 
     std::cout << "rgsw decrypt mult: " << cc.RGSWDecrypt(result1, z1 + z2) << std::endl;
 
@@ -276,8 +276,8 @@ int main() {
                         (*(*srefkey)[i][j][k])[l][m].SetFormat(COEFFICIENT);
                         (*(*mprefkey)[i][j][k])[l][m].SetFormat(COEFFICIENT);
                         if ((*(*srefkey)[i][j][k])[l][m] != (*(*mprefkey)[i][j][k])[l][m]) {
-                            std::cout << "indexes of [n baseR digitR digitsG2 rgswcol]: " << i << " " << j << " " << k
-                                      << " " << l << " " << m << std::endl;
+                            //                            std::cout << "indexes of [n baseR digitR digitsG2 rgswcol]: " << i << " " << j << " " << k
+                            //                                      << " " << l << " " << m << std::endl;
 
                             //                            std::cout << "refresh key sk1+sk2 with MultipartyBTKeyGen not matching: "
                             //                                      << (*(*srefkey)[i][j][k])[l][m] << std::endl;
