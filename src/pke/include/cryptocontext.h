@@ -1950,6 +1950,13 @@ public:
 
         return GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
     }
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
+        const std::vector<usint>& indexList) const {
+        std::string errMsg(
+            "This API is deprecated. use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<usint>& indexList)");
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     /**
    * Function for evaluating automorphism of ciphertext at index i
@@ -2157,6 +2164,12 @@ public:
    * @param indexList list of indices.
    */
     void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList);
+    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                           const PublicKey<Element> publicKey) {
+        std::string errMsg(
+            "This API is deprecated. use EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList)");
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     /**
    * EvalRotateKeyGen generates evaluation keys for a list of rotation indices.
@@ -2169,6 +2182,12 @@ public:
     void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) {
         EvalAtIndexKeyGen(privateKey, indexList);
     };
+    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                          const PublicKey<Element> publicKey) {
+        std::string errMsg(
+            "This API is deprecated. use EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList)");
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     /**
    * Rotates a ciphertext by an index (positive index is a left shift, negative index is a right shift).
@@ -2600,6 +2619,10 @@ public:
    * @param privateKey private key.
    */
     void EvalSumKeyGen(const PrivateKey<Element> privateKey);
+    void EvalSumKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
+        std::string errMsg("This API is deprecated. use EvalSumKeyGen(const PrivateKey<Element> privateKey)");
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     /**
    * Generate the automorphism keys for EvalSumRows; works
@@ -2613,6 +2636,13 @@ public:
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                          usint rowSize = 0, usint subringDim = 0);
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
+                                                                         const PublicKey<Element> publicKey,
+                                                                         usint rowSize = 0, usint subringDim = 0) {
+        std::string errMsg(
+            "This API is deprecated. use EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, usint rowSize = 0, usint subringDim = 0)");
+        OPENFHE_THROW(config_error, errMsg);
+    }
     /**
    * Generates the automorphism keys for EvalSumCols; works
    * only for packed encoding
@@ -2622,6 +2652,11 @@ public:
    * @return returns the evaluation keys
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
+                                                                         const PublicKey<Element> publicKey) {
+        std::string errMsg("This API is deprecated. use EvalSumColsKeyGen(const PrivateKey<Element> privateKey)");
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     /**
    * Function for evaluating a sum of all components in a vector.
