@@ -283,6 +283,14 @@ public:
     // RingGSWCiphertext
     RingGSWEvalKey RGSWEvalMultAdd(RingGSWEvalKey a, RingGSWEvalKey b, int32_t si);
 
+    RingGSWEvalKey KeyGenAuto(const NativePoly& skNTT, LWEPlaintext k) const;
+
+    RingGSWEvalKey MultiPartyKeyGenAuto(const RingGSWEvalKey prevautokey, const NativePoly& skNTT,
+                                        const LWEPlaintext& k, std::vector<NativePoly> acrsauto,
+                                        bool leadFlag = false) const;
+
+    void Automorphism(const NativeInteger& a, ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const;
+
     /**
    * Generates boostrapping keys
    *

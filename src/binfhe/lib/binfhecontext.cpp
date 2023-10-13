@@ -118,7 +118,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     // clang-format off
     const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
         //               numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| numAutoKeys| keyDist
-        { TOY,               { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23,     9,  UNIFORM_TERNARY} },
+        { TOY,               { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  3,  23,     9,  UNIFORM_TERNARY} },
         { MEDIUM,            { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,    10,  UNIFORM_TERNARY} },
         { STD128_LMKCDEY,    { 28,     2048,         446, 1024, 1 << 13, STD_DEV, 1 << 5,    1 << 10,  32,    10,  GAUSSIAN       } },
         { STD128_AP,         { 27,     2048,         503, 1024, 1 << 14, STD_DEV, 1 << 5,    1 <<  9,  32,    10,  UNIFORM_TERNARY} },
@@ -344,6 +344,20 @@ RingGSWEvalKey BinFHEContext::RGSWEvalMultAdd(RingGSWEvalKey a, RingGSWEvalKey b
 LWEPlaintext BinFHEContext::RGSWDecrypt(RingGSWEvalKey ct, const NativePoly& skNTT) const {
     auto& RGSWParams = m_params->GetRingGSWParams();
     return m_binfhescheme->RGSWDecrypt(RGSWParams, ct, skNTT);
+}
+
+RingGSWEvalKey BinFHEContext::KeyGenAuto(const NativePoly& skNTT, LWEPlaintext k) const {
+    return m_binfhescheme->KeyGenAuto(m_params, skNTT, k);
+}
+
+RingGSWEvalKey BinFHEContext::MultiPartyKeyGenAuto(const RingGSWEvalKey prevautokey, const NativePoly& skNTT,
+                                                   const LWEPlaintext& k, std::vector<NativePoly> acrsauto,
+                                                   bool leadFlag) const {
+    return m_binfhescheme->MultiPartyKeyGenAuto(m_params, prevautokey, skNTT, k, acrsauto, leadFlag);
+}
+
+void BinFHEContext::Automorphism(const NativeInteger& a, ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const {
+    m_binfhescheme->Automorphism(m_params, a, ak, acc);
 }
 
 void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {

@@ -134,10 +134,10 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAuto(const std::shared
                                                                const NativePoly& skNTT, const LWEPlaintext& k,
                                                                std::vector<NativePoly> acrsauto, bool leadFlag) const {
     // NativeInteger Q  = params->GetQ();
-    uint32_t digitsG = params->GetDigitsG();
-    auto polyParams  = params->GetPolyParams();
-    auto Gpow        = params->GetGPower();
-    auto result      = std::make_shared<RingGSWEvalKeyImpl>(digitsG, 2);
+    uint32_t digitsG{params->GetDigitsG() - 1};
+    auto polyParams = params->GetPolyParams();
+    auto Gpow       = params->GetGPower();
+    auto result     = std::make_shared<RingGSWEvalKeyImpl>(digitsG, 2);
 
     auto skAuto = skNTT.AutomorphismTransform(k);
 
@@ -145,7 +145,7 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAuto(const std::shared
         acrsauto[i].SetFormat(Format::EVALUATION);
         (*result)[i][0] = acrsauto[i];
         (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, EVALUATION);
-        (*result)[i][1] -= skAuto * Gpow[i];
+        (*result)[i][1] -= skAuto * Gpow[i + 1];
         (*result)[i][1] += (*result)[i][0] * skNTT;
         if (!leadFlag)
             (*result)[i][1] += (*prevautokey)[i][1];

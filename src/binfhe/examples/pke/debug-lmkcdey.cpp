@@ -75,7 +75,8 @@ int main() {
     auto ctN  = cc.Encrypt(pk, 1, LARGE_DIM);
     auto ct0N = cc.Encrypt(pk, 1, LARGE_DIM);
     auto ct1  = cc.Encrypt(pk, 1);
-    auto ct2  = cc.Encrypt(pk, 0);
+    auto ct2  = cc.Encrypt(pk, 1);
+    auto ct3  = cc.Encrypt(pk, 1);
 
     //**********************************
     LWEPlaintext result4;
@@ -205,6 +206,29 @@ int main() {
     std::cout << "sk1[0]: " << sk1->GetElement()[0] << std::endl;
     std::cout << "sk2[0]: " << sk2->GetElement()[0] << std::endl;
 
+    // testing automorphism
+
+    auto aacrs    = cc.Generateacrs();
+    auto argsw1_1 = cc.RGSWEncrypt(aacrs, z1, 1, true);
+    auto argsw1_2 = cc.RGSWEncrypt(aacrs, z2, 1);
+    auto argsw1   = cc.RGSWEvalAdd(argsw1_1, argsw1_2);
+
+    // auto autoKey = cc.KeyGenAuto(z1 + z2, 9);
+
+    auto autoKey1 = cc.MultiPartyKeyGenAuto(nullptr, z1, 11, acrsauto[0], true);
+    auto autoKey2 = cc.MultiPartyKeyGenAuto(autoKey1, z2, 11, acrsauto[0], false);
+
+    auto rlwe = argsw1->GetElements();
+
+    for (uint32_t i = 0; i < rlwe.size(); i++) {
+        auto temp = std::make_shared<RLWECiphertextImpl>(rlwe[i]);
+        cc.Automorphism(11, autoKey2, temp);
+        rlwe[i] = temp->GetElements();
+    }
+    argsw1->SetElements(rlwe);
+
+    std::cout << "automorphism rgsw decrypt z1 + z2: " << cc.RGSWDecrypt(argsw1, z1 + z2) << std::endl;
+
     (*rgsw1)[0][0].SetFormat(COEFFICIENT);
 
     // auto poly1 = (*rgsw1)[0][0];
@@ -259,7 +283,7 @@ int main() {
     (*(*cc.GetRefreshKey())[0][0][0])[0][0].SetFormat(COEFFICIENT);
     auto poly2 = (*(*cc.GetRefreshKey())[0][0][0])[0][0];
     // std::cout << "refresh key sk1 + sk2 BTKeyGenTest 1st : " << (*(*cc.GetRefreshKey())[0][0][0])[0][0] << std::endl;
-    printf("refresh key sk1 + sk2 BTKeyGenTest 1st match result : : %d\n", poly1 == poly2);
+    // printf("refresh key sk1 + sk2 BTKeyGenTest 1st match result : : %d\n", poly1 == poly2);
     // std::cout << "refresh key sk1 + sk2 BTKeyGenTest 1st match result : " << (poly1 == poly2) << std::endl;
     (*(*cc.GetRefreshKey())[0][0][0])[0][0].SetFormat(EVALUATION);
 
@@ -289,10 +313,10 @@ int main() {
                 for (uint32_t m = 0; j < 2; j++) {
                     (*(*srefkey)[0][i][j])[l][m].SetFormat(COEFFICIENT);
                     (*(*mprefkey)[0][i][j])[l][m].SetFormat(COEFFICIENT);
-                    if ((*(*srefkey)[0][i][j])[l][m] != (*(*mprefkey)[0][i][j])[l][m]) {
-                        std::cout << "indexes of [n baseR digitR digitsG2 rgswcol]: " << i << " " << j << " " << l
-                                  << " " << m << std::endl;
-                    }
+                    //                    if ((*(*srefkey)[0][i][j])[l][m] != (*(*mprefkey)[0][i][j])[l][m]) {
+                    //                        std::cout << "indexes of [n baseR digitR digitsG2 rgswcol]: " << i << " " << j << " " << l
+                    //                                  << " " << m << std::endl;
+                    //                    }
                     (*(*srefkey)[0][i][j])[l][m].SetFormat(EVALUATION);
                     (*(*mprefkey)[0][i][j])[l][m].SetFormat(EVALUATION);
                 }

@@ -122,6 +122,17 @@ public:
                                     LWESwitchingKey prevkskey = NULL, uint32_t num_of_parties = 1,
                                     bool leadFlag = false) const;
 
+    RingGSWEvalKey KeyGenAuto(const std::shared_ptr<BinFHECryptoParams> params, const NativePoly& skNTT,
+                              LWEPlaintext k) const;
+
+    RingGSWEvalKey MultiPartyKeyGenAuto(const std::shared_ptr<BinFHECryptoParams> params,
+                                        const RingGSWEvalKey prevautokey, const NativePoly& skNTT,
+                                        const LWEPlaintext& k, std::vector<NativePoly> acrsauto,
+                                        bool leadFlag = false) const;
+
+    void Automorphism(const std::shared_ptr<BinFHECryptoParams> params, const NativeInteger& a, ConstRingGSWEvalKey& ak,
+                      RLWECiphertext& acc) const;
+
     /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)
    *

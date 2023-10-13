@@ -153,6 +153,29 @@ RingGSWBTKey BinFHEScheme::MultipartyBTKeyGen(const std::shared_ptr<BinFHECrypto
     return ek;
 }
 
+RingGSWEvalKey BinFHEScheme::KeyGenAuto(const std::shared_ptr<BinFHECryptoParams> params, const NativePoly& skNTT,
+                                        LWEPlaintext k) const {
+    auto& RGSWParams = params->GetRingGSWParams();
+    auto scheme      = std::dynamic_pointer_cast<RingGSWAccumulatorLMKCDEY>(ACCscheme);
+    return scheme->KeyGenAuto(RGSWParams, skNTT, k);
+}
+
+RingGSWEvalKey BinFHEScheme::MultiPartyKeyGenAuto(const std::shared_ptr<BinFHECryptoParams> params,
+                                                  const RingGSWEvalKey prevautokey, const NativePoly& skNTT,
+                                                  const LWEPlaintext& k, std::vector<NativePoly> acrsauto,
+                                                  bool leadFlag) const {
+    auto& RGSWParams = params->GetRingGSWParams();
+    auto scheme      = std::dynamic_pointer_cast<RingGSWAccumulatorLMKCDEY>(ACCscheme);
+    return scheme->MultiPartyKeyGenAuto(RGSWParams, prevautokey, skNTT, k, acrsauto, leadFlag);
+}
+
+void BinFHEScheme::Automorphism(const std::shared_ptr<BinFHECryptoParams> params, const NativeInteger& a,
+                                ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const {
+    auto& RGSWParams = params->GetRingGSWParams();
+    auto scheme      = std::dynamic_pointer_cast<RingGSWAccumulatorLMKCDEY>(ACCscheme);
+    scheme->Automorphism(RGSWParams, a, ak, acc);
+}
+
 // RingGSWCiphertext
 
 RingGSWEvalKey BinFHEScheme::RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b) {
@@ -263,6 +286,7 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
 
     // rounding
     auto gP = Gpow[digitsG - 2];
+    std::cerr << "gP = " << gP << std::endl;
     r.ModAddFastEq((gP / 2), Q);
     auto result = (r / gP).ConvertToInt();
 

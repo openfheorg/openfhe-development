@@ -95,6 +95,7 @@ private:
    * @param k a plaintext
    * @return a shared pointer to the resulting keys
    */
+public:
     RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                               LWEPlaintext k) const;
 
@@ -103,6 +104,7 @@ private:
                                         const LWEPlaintext& k, std::vector<NativePoly> acrsauto,
                                         bool leadFlag = false) const;
 
+private:
     /**
    * LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198
    *
@@ -114,6 +116,7 @@ private:
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
                          RLWECiphertext& acc) const;
 
+public:
     /**
    * LMKCDEY Accumulation automorphism evaluation as described in https://eprint.iacr.org/2022/198
    *
