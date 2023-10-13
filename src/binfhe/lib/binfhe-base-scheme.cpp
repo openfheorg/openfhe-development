@@ -286,7 +286,6 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
 
     // rounding
     auto gP = Gpow[digitsG - 2];
-    std::cerr << "gP = " << gP << std::endl;
     r.ModAddFastEq((gP / 2), Q);
     auto result = (r / gP).ConvertToInt();
 

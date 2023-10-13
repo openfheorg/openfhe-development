@@ -116,7 +116,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAcc(const std::shared_p
     NativeInteger gen = NativeInteger(5);
 
     auto mkauto =
-        MultiPartyKeyGenAuto(params, (*prevbtkey)[0][1][0], skNTT, 2 * N - gen.ConvertToInt(), acrsauto[0], true);
+        MultiPartyKeyGenAuto(params, (*prevbtkey)[0][1][0], skNTT, 2 * N - gen.ConvertToInt(), acrsauto[0], leadFlag);
     // todosara (*ek)[0][1][0] = (*prevbtkey)[0][1][0] + (*mkauto);
     (*ek)[0][1][0] = mkauto;
 
@@ -124,7 +124,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::MultiPartyKeyGenAcc(const std::shared_p
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numAutoKeys))
     for (uint32_t i = 1; i <= numAutoKeys; ++i)
         (*ek)[0][1][i] = MultiPartyKeyGenAuto(params, (*prevbtkey)[0][1][i], skNTT, gen.ModExp(i, 2 * N).ConvertToInt(),
-                                              acrsauto[i]);
+                                              acrsauto[i], leadFlag);
     return ek;
 }
 

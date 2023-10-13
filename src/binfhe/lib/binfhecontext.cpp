@@ -118,7 +118,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     // clang-format off
     const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
         //               numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| numAutoKeys| keyDist
-        { TOY,               { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  3,  23,     9,  UNIFORM_TERNARY} },
+        { TOY,               { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23,     9,  UNIFORM_TERNARY} },
         { MEDIUM,            { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,    10,  UNIFORM_TERNARY} },
         { STD128_LMKCDEY,    { 28,     2048,         446, 1024, 1 << 13, STD_DEV, 1 << 5,    1 << 10,  32,    10,  GAUSSIAN       } },
         { STD128_AP,         { 27,     2048,         503, 1024, 1 << 14, STD_DEV, 1 << 5,    1 <<  9,  32,    10,  UNIFORM_TERNARY} },
