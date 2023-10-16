@@ -54,7 +54,7 @@ Note that cmake will check for any system dependencies that are needed for the b
     make install
 
 You need to run MinGW64 as an administrator unless you are specifying some other install location. You can change the install location by running
-``cmake -DCMAKE_INSTALL_PREFIX=/your/path .."``
+``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``
 
 To run MinGW64 as an administrator, open Task Manager, go to File -> Run New Task, select the location of the executable for MinGW64, and check the box "Create this task with administrative privileges".
 
