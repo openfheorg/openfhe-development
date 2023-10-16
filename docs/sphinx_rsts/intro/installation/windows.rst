@@ -54,7 +54,7 @@ Note that cmake will check for any system dependencies that are needed for the b
     make install
 
 You need to run MinGW64 as an administrator unless you are specifying some other install location. You can change the install location by running
-``cmake -DCMAKE_INSTALL_PREFIX=/your/path .."``
+``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``
 
 To run MinGW64 as an administrator, open Task Manager, go to File -> Run New Task, select the location of the executable for MinGW64, and check the box "Create this task with administrative privileges".
 
@@ -72,7 +72,7 @@ With NTL:
 
     export PATH=$PATH:lib:{PATH_TO_NTL_BINARIES}
 
-Alternatively, add the path(s) to ORIGINAL_PATH variable in c:\msys64\etc\profile to make this change permanent.
+Alternatively, add the path(s) to ``ORIGINAL_PATH`` variable in ``c:/msys64/etc/profile`` to make this change permanent.
 
 Testing and cleaning the build
 -------------------------------
