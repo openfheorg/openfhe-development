@@ -147,7 +147,6 @@ std::vector<queue<std::shared_ptr<longDivMod>>> cs;
 std::shared_ptr<longDivMod> LongDivisionPolyMod(const std::vector<int64_t>& f, const std::vector<int64_t>& g,
                                                 int64_t q = PTXT_MOD);
 
-uint32_t Degree(const std::vector<int64_t>& coefficients, uint32_t limit = 0);
 uint32_t FindFirstNonZero(const std::vector<int64_t>& coefficients);
 uint32_t CountNonZero(const std::vector<int64_t>& coefficients);
 std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index);
