@@ -805,6 +805,22 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    auto elemParams         = *((*digits)[0].GetParams());
+
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        auto paramsQlP = (*digits)[0].GetParams();
+
+        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+            auto paramsP = cryptoParams->GetParamsP();
+            size_t sizeP = paramsP->GetParams().size();
+            for (uint32_t i = 0; i < sizeP; i++) {
+                elemParams.PopLastParam();
+            }
+        }
+    }
+
+    std::shared_ptr<std::vector<DCRTPoly>> ba =
+        algo->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
 
     /* In the HPSOVERQLEVELED mode, we do modulus switching to a smaller modulus before we start key switching.
     The modulus switching was already done when computing the ciphertext digits using EvalFastRotationPrecompute.
