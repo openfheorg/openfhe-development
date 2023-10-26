@@ -777,6 +777,7 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     c1.SetFormat(COEFFICIENT);
     c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                           cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+    c1.SetFormat(EVALUATION);
 
     return algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
 }
@@ -803,9 +804,23 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     auto algo                       = cc->GetScheme();
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
-    std::shared_ptr<std::vector<DCRTPoly>> ba = algo->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    auto elemParams         = *((*digits)[0].GetParams());
+
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        auto paramsQlP = (*digits)[0].GetParams();
+
+        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+            auto paramsP = cryptoParams->GetParamsP();
+            size_t sizeP = paramsP->GetParams().size();
+            for (uint32_t i = 0; i < sizeP; i++) {
+                elemParams.PopLastParam();
+            }
+        }
+    }
+
+    std::shared_ptr<std::vector<DCRTPoly>> ba =
+        algo->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
 
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
