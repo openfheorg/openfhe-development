@@ -807,15 +807,12 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
     auto elemParams         = *((*digits)[0].GetParams());
 
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        auto paramsQlP = (*digits)[0].GetParams();
-
-        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-            auto paramsP = cryptoParams->GetParamsP();
-            size_t sizeP = paramsP->GetParams().size();
-            for (uint32_t i = 0; i < sizeP; i++) {
-                elemParams.PopLastParam();
-            }
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED ||
+        cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+        auto paramsP = cryptoParams->GetParamsP();
+        size_t sizeP = paramsP->GetParams().size();
+        for (uint32_t i = 0; i < sizeP; i++) {
+            elemParams.PopLastParam();
         }
     }
 
