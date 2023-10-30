@@ -222,7 +222,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     cryptoParamsCKKSRNS->SetElementParams(paramsDCRT);
 
     const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
-    if (encodingParams->GetBatchSize() > n / 2)
+    // CZR we need to check if it CI-CKKS (REAL-CKKS) or Ordinary-CKKS (COMPLEX-CKKS)
+    // if (encodingParams->GetBatchSize() > n / 2)
+    if (encodingParams->GetBatchSize() > n)
         OPENFHE_THROW(config_error, "The batch size cannot be larger than ring dimension / 2.");
 
     if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
