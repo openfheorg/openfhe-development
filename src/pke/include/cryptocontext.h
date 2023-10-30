@@ -151,7 +151,9 @@ class CryptoContextImpl : public Serializable {
             // Check if plaintext has got enough slots for data (value)
             usint ringDim    = elemParamsPtr->GetRingDimension();
             size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
+            // CZR - need to switch for CI-CKKS vs Ordinary-CKKS
+            // if (valueSize > ringDim / 2) {
+            if (valueSize > ringDim) {
                 OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) +
                                                 "] of the vector with values should not be greater than ringDim/2 [" +
                                                 std::to_string(ringDim / 2) + "] if the scheme is CKKS");
