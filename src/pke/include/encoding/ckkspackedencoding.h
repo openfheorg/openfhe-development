@@ -94,7 +94,9 @@ public:
         if (this->slots < coeffs.size()) {
             OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
         }
-        else if (this->slots > (GetElementRingDimension() / 2)) {
+        // CZR - need to switch for CI-CKKS or ordinary-CKKS
+        // else if (this->slots > (GetElementRingDimension() / 2)) {
+        else if (this->slots > (GetElementRingDimension())) {
             OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
         }
 

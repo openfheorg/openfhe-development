@@ -247,6 +247,7 @@ bool CKKSPackedEncoding::Encode() {
     if (this->isEncoded)
         return true;
     usint ringDim                             = GetElementRingDimension();
+    // [TODO] CZR - need to check why this returns slots = ringDim
     usint slots                               = this->GetSlots();
     std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
     if (slots < inverse.size()) {
@@ -262,7 +263,19 @@ bool CKKSPackedEncoding::Encode() {
     inverse.resize(slots);
 
     if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
+        // Need to switch for CI-CKKS
+        //DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
+        std::cout << "IFFT input: \n";
+        for (auto it : inverse) {
+            std::cout << it << " ";
+        }
+        std::cout << "\n";
+        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 4);
+        std::cout << "IFFT output: \n";
+        for (auto it : inverse) {
+            std::cout << it << " ";
+        }
+        std::cout << "\n";
         double powP = scalingFactor;
 
         // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
