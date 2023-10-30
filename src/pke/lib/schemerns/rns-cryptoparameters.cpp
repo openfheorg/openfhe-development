@@ -67,8 +67,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
     }
 
     // Pre-compute CRT::FFT values for Q
-    DiscreteFourierTransform::Initialize(n * 2, n / 2);
-    ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n, moduliQ);
+    // CZR - check if CI-CKKS or Ordinary-CKKS
+    // DiscreteFourierTransform::Initialize(n * 2, n / 2);
+    // ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n, moduliQ);
+    DiscreteFourierTransform::Initialize(4 * n , n);
+    ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 4 * n, moduliQ);
     if (m_ksTechnique == HYBRID) {
         // Compute ceil(sizeQ/m_numPartQ), the # of towers per digit
         uint32_t a = ceil(static_cast<double>(sizeQ) / numPartQ);
