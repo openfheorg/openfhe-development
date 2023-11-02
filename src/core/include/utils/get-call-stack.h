@@ -31,9 +31,11 @@
 #ifndef __GET_CALL_STACK_H__
 #define __GET_CALL_STACK_H__
 
-#if defined(__clang__) || defined(__GNUG__)
+#if defined(__linux__) || defined(__GNUG__)
+    // clang-format off
 #include <string>
 #include <vector>
+// clang-format on
 
 /**
  * @brief get_call_stack() is a function to get the call stack
@@ -42,5 +44,4 @@
 std::vector<std::string> get_call_stack();
 #endif
 
-#endif // __GET_CALL_STACK_H__
-
+#endif  // __GET_CALL_STACK_H__

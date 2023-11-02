@@ -117,9 +117,6 @@ class FHECKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
 public:
-    // key tuple is dim1, levelBudgetEnc, levelBudgetDec
-    std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
-
     virtual ~FHECKKSRNS() {}
 
     //------------------------------------------------------------------------------
@@ -265,6 +262,9 @@ private:
     static const uint32_t R_SPARSE =
         3;  // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     uint32_t m_correctionFactor = 0;  // correction factor, which we scale the message by to improve precision
+
+    // key tuple is dim1, levelBudgetEnc, levelBudgetDec
+    std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
 
     // Chebyshev series coefficients for the SPARSE case
     static const inline std::vector<double> g_coefficientsSparse{
