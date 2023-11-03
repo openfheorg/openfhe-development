@@ -206,8 +206,39 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
 }
 
 template <typename Element>
+std::vector<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
+    auto keyMapIt = s_evalAutomorphismKeyMap.find(keyTag);
+    if (keyMapIt == s_evalAutomorphismKeyMap.end())
+        // there is no keys for the given id, return empty vector
+        return std::vector<uint32_t>();
+
+    // get all inidices from the existing automorphism key map
+    auto& keyMap = *(keyMapIt->second);
+    std::vector<uint32_t> indices(keyMap.size());
+    for (const auto& [key, _] : keyMap) {
+        indices.push_back(key);
+    }
+
+    return indices;
+}
+
+template <typename Element>
+std::vector<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(std::vector<uint32_t> oldValues,
+                                                                  std::vector<uint32_t> newValues) {
+    // sort both vectors
+    std::sort(oldValues.begin(), oldValues.end());
+    std::sort(newValues.begin(), newValues.end());
+
+    std::vector<uint32_t> uniqueValues;
+    std::set_difference(newValues.begin(), newValues.end(), oldValues.begin(), oldValues.end(),
+                        std::inserter(uniqueValues, uniqueValues.begin()));
+
+    return uniqueValues;
+}
+
+template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
-    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
+    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
     auto mapToInsertIt = mapToInsert->begin();
     // check if the map is empty
     if (mapToInsertIt == mapToInsert->end()) {
@@ -215,33 +246,24 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
     }
 
     const std::string id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
-    auto keyMapIt        = s_evalAutomorphismKeyMap.find(id);
-    if (keyMapIt == s_evalAutomorphismKeyMap.end()) {
+    std::vector<uint32_t> existingIndices{GetExistingEvalAutomorphismKeyIndices(id)};
+    if (existingIndices.empty()) {
         // there is no keys for the given id, so we insert full mapToInsert
         s_evalAutomorphismKeyMap[id] = mapToInsert;
     }
     else {
-        // get all inidices from the existing automorphism key map
-        auto& keyMap = *(keyMapIt->second);
-        std::vector<usint> existingIndices(keyMap.size());
-        for (const auto& [key, _] : keyMap) {
-            existingIndices.push_back(key);
-        }
-
-        // get all inidices from mapToInsert
-        std::vector<usint> newIndices(mapToInsert->size());
+        // get all indices from mapToInsert
+        std::vector<uint32_t> newIndices(mapToInsert->size());
         for (const auto& [key, _] : *mapToInsert) {
             newIndices.push_back(key);
         }
 
         // find all indices in mapToInsert that are not in the exising map and
-        // insert those new indices and their corresponding keys in to the existing map
-        std::sort(existingIndices.begin(), existingIndices.end());
-        std::sort(newIndices.begin(), newIndices.end());
-        std::vector<usint> indicesToInsert;
-        std::set_difference(newIndices.begin(), newIndices.end(), existingIndices.begin(), existingIndices.end(),
-                            std::inserter(indicesToInsert, indicesToInsert.begin()));
-        for (usint indx : indicesToInsert) {
+        // insert those new indices and their corresponding keys to the existing map
+        std::vector<uint32_t> indicesToInsert{GetUniqueValues(existingIndices, newIndices)};
+        auto keyMapIt = s_evalAutomorphismKeyMap.find(id);
+        auto& keyMap  = *(keyMapIt->second);
+        for (uint32_t indx : indicesToInsert) {
             keyMap[indx] = (*mapToInsert)[indx];
         }
     }
