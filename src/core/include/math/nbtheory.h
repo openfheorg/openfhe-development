@@ -280,6 +280,17 @@ template <typename IntType>
 IntType FirstPrime(uint64_t nBits, uint64_t m);
 
 /**
+ * Gets the max prime number for the given number of bits and the cyclotomic order.
+ *
+ * @param nBits the number of bits needs to be in the returned prime
+ * @param m cyclotomic order
+ *
+ * @return the first prime modulus
+ */
+template <typename IntType>
+IntType GetMaxPrime(uint64_t nBits, uint64_t m);
+
+/**
  * Finds the next prime that satisfies q = 1 mod m
  *
  * @param &q is the prime number to start from (the number itself is not

@@ -359,6 +359,18 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
 }
 
 template <typename IntType>
+IntType GetMaxPrime(uint64_t nBits, uint64_t m) {
+    IntType q   = FirstPrime<IntType>(nBits, m);
+    IntType ret = PreviousPrime<IntType>(q, m);
+    if (ret.GetMSB() != nBits) {
+        std::string errMsg{"Can not find a prime for an integer with " + std::to_string(nBits) + " bits"};
+        errMsg += " and cyclotomic order of " + std::to_string(m) + ". Please adjust parameters";
+        OPENFHE_THROW(lbcrypto::not_available_error, errMsg);
+    }
+    return ret;
+}
+
+template <typename IntType>
 IntType NextPrime(const IntType& q, uint64_t m) {
     IntType M(m), qNew(q + M);
     while (!MillerRabinPrimalityTest(qNew)) {
