@@ -303,6 +303,8 @@ bool CKKSPackedEncoding::Encode() {
         double approxFactor = pow(2, logApprox);
 
         std::vector<int64_t> temp(2 * slots);
+        // TODO - CZR - for Real-CKKS, we can speed this up by ignoring the complex part
+        // temp can be of size 1*slots rather than 2 * slots
         for (size_t i = 0; i < slots; ++i) {
             // Scale down by approxFactor in case the value exceeds a 64-bit integer.
             double dre = inverse[i].real() / approxFactor;
@@ -375,6 +377,13 @@ bool CKKSPackedEncoding::Encode() {
         const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
         const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
+        temp.resize(ringDim); // ignore the imaginary part
+        std::cout << "scaled encoded message: (real,imag)" << std::endl;
+        for (auto it : temp) {
+            std::cout << it << ", ";
+        }
+        std::cout << "\n";
+
         for (size_t i = 0; i < nativeParams.size(); i++) {
             NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
             FitToNativeVector(temp, Max64BitValue(), &nativeVec);
@@ -382,6 +391,7 @@ bool CKKSPackedEncoding::Encode() {
             element.SetValues(nativeVec, Format::COEFFICIENT);  // output was in coefficient format
             this->encodedVectorDCRT.SetElementAtIndex(i, element);
         }
+        std::cout << "encodedVectorDCRT: \n" << encodedVectorDCRT << "\n";
 
         usint numTowers = nativeParams.size();
         std::vector<DCRTPoly::Integer> moduli(numTowers);
@@ -423,7 +433,9 @@ bool CKKSPackedEncoding::Encode() {
             encodedVectorDCRT = encodedVectorDCRT.Times(crtApprox);
         }
 
-        this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
+        // [TODO] CZR - disabled to check encode/decode functionality
+        // must be reenabled later
+        // this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
 
         scalingFactor = pow(scalingFactor, noiseScaleDeg);
     }
@@ -440,7 +452,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
                                 ExecutionMode executionMode) {
     double p       = encodingParams->GetPlaintextModulus();
     double powP    = 0.0;
-    uint32_t Nh    = GetElementRingDimension() / 2;
+    // TODO CZR - must switch for CKKS Real or Complex
+    // uint32_t Nh    = GetElementRingDimension() / 2;
+    uint32_t Nh    = GetElementRingDimension();
     uint32_t slots = this->GetSlots();
     uint32_t gap   = Nh / slots;
     value.clear();
@@ -459,14 +473,15 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             std::complex<double> cur;
 
             if (GetElement<NativePoly>()[idx] > qHalf)
-                cur.real(-((q - GetElement<NativePoly>()[idx])).ConvertToDouble());
+                cur.real(-((q - GetElement<NativePoly>()[idx])).ConvertToDouble() * powP);
             else
-                cur.real((GetElement<NativePoly>()[idx]).ConvertToDouble());
+                cur.real((GetElement<NativePoly>()[idx]).ConvertToDouble() * powP);
 
-            if (GetElement<NativePoly>()[idx + Nh] > qHalf)
-                cur.imag(-((q - GetElement<NativePoly>()[idx + Nh])).ConvertToDouble());
-            else
-                cur.imag((GetElement<NativePoly>()[idx + Nh]).ConvertToDouble());
+            // if (GetElement<NativePoly>()[idx + Nh] > qHalf)
+            //     cur.imag(-((q - GetElement<NativePoly>()[idx + Nh])).ConvertToDouble());
+            // else
+            //     cur.imag((GetElement<NativePoly>()[idx + Nh]).ConvertToDouble());
+            cur.imag(0.0);
 
             curValues[i] = cur;
         }
@@ -488,18 +503,20 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             std::complex<double> cur;
 
             if (GetElement<Poly>()[idx] > qHalf)
-                cur.real(-((q - GetElement<Poly>()[idx])).ConvertToDouble() * scalingFactorPre);
+                cur.real(-((q - GetElement<Poly>()[idx])).ConvertToDouble() * scalingFactorPre * powP);
             else
-                cur.real((GetElement<Poly>()[idx]).ConvertToDouble() * scalingFactorPre);
+                cur.real((GetElement<Poly>()[idx]).ConvertToDouble() * scalingFactorPre * powP);
 
-            if (GetElement<Poly>()[idx + Nh] > qHalf)
-                cur.imag(-((q - GetElement<Poly>()[idx + Nh])).ConvertToDouble() * scalingFactorPre);
-            else
-                cur.imag((GetElement<Poly>()[idx + Nh]).ConvertToDouble() * scalingFactorPre);
-
+            // if (GetElement<Poly>()[idx + Nh] > qHalf)
+            //     cur.imag(-((q - GetElement<Poly>()[idx + Nh])).ConvertToDouble() * scalingFactorPre);
+            // else
+            //     cur.imag((GetElement<Poly>()[idx + Nh]).ConvertToDouble() * scalingFactorPre);
+            cur.imag(0.0);
             curValues[i] = cur;
         }
     }
+
+    // TODO - CZR - must adapt the documentation below to account for Real CKKS
 
     // the code below adds a Gaussian noise to the decrypted result
     // to prevent key recovery attacks.
@@ -514,23 +531,25 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
     // number further by M^2 (as desired for a given application). By default we
     // we set M to 1.
 
-    // compute m(1/X) corresponding to Conj(z), where z is the decoded vector
-    auto conjugate = Conjugate(curValues);
+    // TODO CZR - the logic below was disabled for Real CKKS
+
+    // // compute m(1/X) corresponding to Conj(z), where z is the decoded vector
+    // auto conjugate = Conjugate(curValues);
 
     // Estimate standard deviation from 1/2 (m(X) - m(1/x)),
     // which corresponds to Im(z)
-    double stddev = StdDev(curValues, conjugate);
+    // double stddev = StdDev(curValues, conjugate);
 
-    double logstd = std::log2(stddev);
+    // double logstd = std::log2(stddev);
 
     if (executionMode == EXEC_NOISE_ESTIMATION) {
-        m_logError = logstd;
+        // m_logError = logstd;
     }
     else {
         // if stddev < sqrt{N}/8 (minimum approximation error that can be achieved)
-        if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
-            stddev = 0.125 * std::sqrt(GetElementRingDimension());
-        }
+        // if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
+        //     stddev = 0.125 * std::sqrt(GetElementRingDimension());
+        // }
 
         // if stddev < sqrt{N}/4 (minimum approximation error that can be achieved)
         // if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
@@ -544,54 +563,80 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // }
 
         //   If less than 5 bits of precision is observed
-        if (logstd > p - 5.0)
-            OPENFHE_THROW(math_error,
-                          "The decryption failed because the approximation error is "
-                          "too high. Check the parameters. ");
+        // if (logstd > p - 5.0)
+        //     OPENFHE_THROW(math_error,
+        //                   "The decryption failed because the approximation error is "
+        //                   "too high. Check the parameters. ");
 
         // real values
-        std::vector<std::complex<double>> realValues(slots);
+        // std::vector<std::complex<double>> realValues(slots);
 
         // CKKS_M_FACTOR is a compile-level parameter
         // set to 1 by default
-        stddev = sqrt(CKKS_M_FACTOR + 1) * stddev;
+        // stddev = sqrt(CKKS_M_FACTOR + 1) * stddev;
 
-        double scale = 0.5 * powP;
+        // double scale = 0.5 * powP;
 
         // TODO temporary removed errors
-        std::normal_distribution<> d(0, stddev);
-        PRNG& g = PseudoRandomNumberGenerator::GetPRNG();
+        // std::normal_distribution<> d(0, stddev);
+        // PRNG& g = PseudoRandomNumberGenerator::GetPRNG();
         // Alternative way to do Gaussian sampling
         // DiscreteGaussianGenerator dgg;
 
         // TODO we can sample Nh integers instead of 2*Nh
         // We would add sampling only for even indices of i.
         // This change should be done together with the one below.
-        for (size_t i = 0; i < slots; ++i) {
-            double real = scale * (curValues[i].real() + conjugate[i].real());
-            // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-            real += powP * d(g);
-            double imag = scale * (curValues[i].imag() + conjugate[i].imag());
-            // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-            imag += powP * d(g);
-            realValues[i].real(real);
-            realValues[i].imag(imag);
-        }
+        // for (size_t i = 0; i < slots; ++i) {
+        //     double real = scale * (curValues[i].real() + conjugate[i].real());
+        //     // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
+        //     // real += powP * d(g);
+        //     double imag = scale * (curValues[i].imag() + conjugate[i].imag());
+        //     // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
+        //     // imag += powP * d(g);
+        //     realValues[i].real(real);
+        //     realValues[i].imag(imag);
+        // }
 
         // TODO we can half the dimension for the FFT by decoding in
         // Z[X + 1/X]/(X^n + 1). This would change the complexity from n*logn to
         // roughly (n/2)*log(n/2). This change should be done together with the one
         // above.
-        DiscreteFourierTransform::FFTSpecial(realValues, GetElementRingDimension() * 2);
+        
+        // TODO - CZR - need to switch for Real or CKKS
+        // DiscreteFourierTransform::FFTSpecial(curValues, GetElementRingDimension() * 2);
+
+        // TODO - CZR - this will only be used in Real CKKS
+        // map from [X]/(X^N + 1) to [X + X^-1]/(X^N + 1)
+        for (size_t i = 1; i < slots; ++i) {
+            std::complex<double> cur;
+            cur = curValues[i];
+            cur = cur - std::complex<double>(0.0, real(curValues[slots-i]));
+			curValues[i] = cur;
+	    }
+
+        std::cout << "FFT input: \n";
+        for (auto it : curValues) {
+            std::cout << it << " ";
+        }
+        std::cout << "\n";
+        DiscreteFourierTransform::FFTSpecial(curValues, GetElementRingDimension() * 4);
+        std::cout << "FFT output: \n";
+        for (auto it : curValues) {
+            std::cout << it << " ";
+        }
+        std::cout << "\n";
+        
 
         // clears all imaginary values for security reasons
-        for (size_t i = 0; i < realValues.size(); ++i)
-            realValues[i].imag(0.0);
+        for (size_t i = 0; i < curValues.size(); ++i)
+            curValues[i].imag(0.0);
 
         // sets an estimate of the approximation error
-        m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
+        // TODO - CZR check this
+        // m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
+        m_logError = 0;
 
-        value = realValues;
+        value = curValues;
     }
 
     return true;
