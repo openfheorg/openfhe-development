@@ -241,7 +241,7 @@ int main() {
         cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
 
     reconstructedInput->SetLength(batchSize);
-    std::cout << "dec(enc(x)): " << reconstructedInput << std::endl;
+    std::cout << "dec(enc(x)): " << reconstructedInput->GetRealPackedValue() << std::endl;
 
     return 0;
 
