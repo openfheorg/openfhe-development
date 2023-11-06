@@ -61,9 +61,9 @@ namespace lbcrypto {
  */
 template <typename IntType>
 static IntType RNG(const IntType& modulus) {
-    static constexpr uint32_t chunk_min{0};
-    static constexpr uint32_t chunk_max{std::numeric_limits<uint32_t>::max()};
-    static constexpr uint32_t chunk_width{std::numeric_limits<uint32_t>::digits};
+    constexpr uint32_t chunk_min{0};
+    constexpr uint32_t chunk_max{std::numeric_limits<uint32_t>::max()};
+    constexpr uint32_t chunk_width{std::numeric_limits<uint32_t>::digits};
     static std::uniform_int_distribution<uint32_t> distribution(chunk_min, chunk_max);
 
     uint32_t chunksPerValue{(modulus.GetMSB() - 1) / chunk_width};
