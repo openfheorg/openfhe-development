@@ -66,9 +66,10 @@ public:
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
-        if (this->slots > (GetElementRingDimension() / 2)) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
-        }
+        // TODO CZR - switch for Real or Complex
+        // if (this->slots > (GetElementRingDimension() / 2)) {
+        //     OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        // }
     }
 
     /*

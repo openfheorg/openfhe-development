@@ -61,7 +61,7 @@ int main() {
    * For performance reasons, it's generally preferable to perform operations
    * in the shorted multiplicative depth possible.
    */
-    uint32_t multDepth = 0;
+    uint32_t multDepth = 1;
 
     /* A2) Bit-length of scaling factor.
    * CKKS works for real numbers, but these numbers are encoded as integers.
@@ -85,6 +85,7 @@ int main() {
    * support results that match the desired accuracy.
    */
     uint32_t scaleModSize = 55;
+    uint32_t firstModSize = 55;
 
     /* A3) Number of plaintext slots used in the ciphertext.
    * CKKS packs multiple plaintext values in each ciphertext.
@@ -117,9 +118,11 @@ int main() {
    */
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingModSize(scaleModSize);
     parameters.SetBatchSize(batchSize);
     parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetScalingTechnique(ScalingTechnique::FIXEDMANUAL);
     parameters.SetRingDim(16);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -171,34 +174,94 @@ int main() {
 
     // Step 3: Encoding and encryption of inputs
 
+    // debugging logic
+    {
+        std::cout << "parameters: \n" << parameters << "\n";
+        std::cout << "cc->GetCryptoParameters(): \n" << *cc->GetCryptoParameters() << "\n";
+        std::cout << "cc->GetElementParams(): \n" << *cc->GetElementParams() << "\n";
+        std::cout << "cc->GetEncodingParams(): \n" << *cc->GetEncodingParams() << "\n";
+
+        auto print_moduli_chain = [](const lbcrypto::DCRTPoly& poly){
+            int num_primes = poly.GetNumOfElements();
+            double total_bit_len = 0.0;
+            for (int i = 0; i < num_primes; i++) {
+                auto qi = poly.GetParams()->GetParams()[i]->GetModulus();
+                std::cout << "q_" << i << ": " 
+                            << qi
+                            << ",  log q_" << i <<": " << log(qi.ConvertToDouble()) / log(2)
+                            << std::endl;
+                total_bit_len += log(qi.ConvertToDouble()) / log(2);
+            }   
+            std::cout << "Total bit length: " << total_bit_len << std::endl;
+        };
+
+        const std::vector<lbcrypto::DCRTPoly>& ckks_pk = keys.publicKey->GetPublicElements();
+        std::cout << "Moduli chain of pk: " << std::endl;
+        print_moduli_chain(ckks_pk[0]);
+
+    }
+
     // Inputs 
     std::vector<double> x1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0};
-    std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00};
+    // std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00};
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
-    Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
+    std::cout << "ptxt1 DCRTPoly: " << ptxt1->GetElement<DCRTPoly>() << "\n";
+    // std::cout << "ptxt1 NativePoly: " << ptxt1->GetElement<NativePoly>() << "\n";
+    // std::cout << "ptxt1 Poly: " << ptxt1->GetElement<Poly>() << "\n";
+
+    // Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
 
     std::cout << "Input x1: " << ptxt1 << std::endl;
-    std::cout << "Input x2: " << ptxt2 << std::endl;
+    // std::cout << "Input x2: " << ptxt2 << std::endl;
+
+    // TODO need to call decode here to check for result.
+    auto dcrtPoly = ptxt1->GetElement<DCRTPoly>();
+    auto poly = dcrtPoly.CRTInterpolate();
+    std::cout << "ptxt1 as poly: " << poly << "\n";
+    Plaintext decrypted = cc->GetPlaintextForDecrypt(ptxt1->GetEncodingType(),
+                                      ptxt1->GetElement<DCRTPoly>().GetParams(), ptxt1->GetEncodingParams());
+    auto reconstructedInput = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+    reconstructedInput->SetNoiseScaleDeg(decrypted->GetNoiseScaleDeg());
+    reconstructedInput->SetLevel(decrypted->GetLevel());
+    reconstructedInput->SetScalingFactor(decrypted->GetScalingFactor());
+    reconstructedInput->SetSlots(decrypted->GetSlots());
+    reconstructedInput->GetElement<Poly>() = poly;
+    
+    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+      cc->GetCryptoParameters());
+
+    std::cout << "reconstructedInput DCRTPoly: " << reconstructedInput->GetElement<DCRTPoly>() << "\n";
+    // std::cout << "reconstructedInput NativePoly: " << reconstructedInput->GetElement<NativePoly>() << "\n";
+    // std::cout << "reconstructedInput Poly: " << reconstructedInput->GetElement<Poly>() << "\n";
+    
+
+    reconstructedInput->Decode(decrypted->GetNoiseScaleDeg(), decrypted->GetScalingFactor(),
+        cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
+
+    reconstructedInput->SetLength(batchSize);
+    std::cout << "dec(enc(x)): " << reconstructedInput << std::endl;
+
+    return 0;
 
     // Encrypt the encoded vectors
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    auto c2 = cc->Encrypt(keys.publicKey, ptxt2);
+    // auto c2 = cc->Encrypt(keys.publicKey, ptxt2);
 
     // Step 4: Evaluation
 
     // Homomorphic addition
-    auto cAdd = cc->EvalAdd(c1, c2);
+    // auto cAdd = cc->EvalAdd(c1, c2);
 
     // Homomorphic subtraction
-    auto cSub = cc->EvalSub(c1, c2);
+    // auto cSub = cc->EvalSub(c1, c2);
 
     // Homomorphic scalar multiplication
-    auto cScalar = cc->EvalMult(c1, 4.0);
+    // auto cScalar = cc->EvalMult(c1, 4.0);
 
     // Homomorphic multiplication
-    auto cMul = cc->EvalMult(c1, c2);
+    // auto cMul = cc->EvalMult(c1, c2);
 
     // Homomorphic rotations
     auto cRot1 = cc->EvalRotate(c1, 1);
@@ -219,25 +282,25 @@ int main() {
     std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
 
     // Decrypt the result of addition
-    cc->Decrypt(keys.secretKey, cAdd, &result);
-    result->SetLength(batchSize);
-    std::cout << "x1 + x2 = " << result;
-    std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
+    // cc->Decrypt(keys.secretKey, cAdd, &result);
+    // result->SetLength(batchSize);
+    // std::cout << "x1 + x2 = " << result;
+    // std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
 
-    // Decrypt the result of subtraction
-    cc->Decrypt(keys.secretKey, cSub, &result);
-    result->SetLength(batchSize);
-    std::cout << "x1 - x2 = " << result << std::endl;
+    // // Decrypt the result of subtraction
+    // cc->Decrypt(keys.secretKey, cSub, &result);
+    // result->SetLength(batchSize);
+    // std::cout << "x1 - x2 = " << result << std::endl;
 
-    // Decrypt the result of scalar multiplication
-    cc->Decrypt(keys.secretKey, cScalar, &result);
-    result->SetLength(batchSize);
-    std::cout << "4 * x1 = " << result << std::endl;
+    // // Decrypt the result of scalar multiplication
+    // cc->Decrypt(keys.secretKey, cScalar, &result);
+    // result->SetLength(batchSize);
+    // std::cout << "4 * x1 = " << result << std::endl;
 
-    // Decrypt the result of multiplication
-    cc->Decrypt(keys.secretKey, cMul, &result);
-    result->SetLength(batchSize);
-    std::cout << "x1 * x2 = " << result << std::endl;
+    // // Decrypt the result of multiplication
+    // cc->Decrypt(keys.secretKey, cMul, &result);
+    // result->SetLength(batchSize);
+    // std::cout << "x1 * x2 = " << result << std::endl;
 
     // Decrypt the result of rotations
 
