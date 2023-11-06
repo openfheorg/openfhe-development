@@ -51,10 +51,72 @@
  */
 namespace lbcrypto {
 
+class SchemeSwitchParams {
+public:
+    SchemeSwitchParams() {}
+
+    SchemeSwitchParams(const SchemeSwitchParams& rhs) {}
+
+    SchemeSwitchParams(SchemeSwitchParams&& rhs) {
+        m_modulus_LWE          = rhs.m_modulus_LWE;
+        m_modulus_CKKS_initial = rhs.m_modulus_CKKS_initial;
+        m_modulus_CKKS_from    = std::move(rhs.m_modulus_CKKS_from);
+        m_numSlotsCKKS         = std::move(rhs.m_numSlotsCKKS);
+        m_numCtxts             = std::move(rhs.m_numCtxts);
+        m_dim1FC               = std::move(rhs.m_dim1FC);
+        m_dim1FC               = std::move(rhs.m_dim1FC);
+        m_LCF                  = std::move(rhs.m_LCF);
+        m_LFC                  = std::move(rhs.m_LFC);
+        m_argmin               = std::move(rhs.m_argmin);
+        m_oneHot               = std::move(rhs.m_oneHot);
+        m_alt                  = std::move(rhs.m_alt);
+        m_ccLWE                = std::move(rhs.m_ccLWE);
+        m_ccKS                 = std::move(rhs.m_ccKS);
+        m_CKKStoFHEWswk        = std::move(rhs.m_CKKStoFHEWswk);
+        m_FHEWtoCKKSswk        = std::move(rhs.m_FHEWtoCKKSswk);
+        m_ctxtKS               = std::move(rhs.m_ctxtKS);
+    }
+
+    virtual ~SchemeSwitchParams() {}
+    // the associated ciphertext modulus Q for the LWE cryptocontext
+    NativeInteger m_modulus_LWE;
+    // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
+    NativeInteger m_modulus_CKKS_initial;
+    // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
+    NativeInteger m_modulus_CKKS_from;
+    // number of slots encoded in the CKKS ciphertext
+    uint32_t m_numSlotsCKKS;
+    // number of ciphertexts to switch, different logic for argmin
+    uint32_t m_numCtxts;
+    // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
+    uint32_t m_dim1CF;
+    uint32_t m_dim1FC;
+    // starting levels for linear transforms
+    uint32_t m_LCF;
+    uint32_t m_LFC;
+    // flags indicating type of argmin computation
+    bool m_argmin;
+    bool m_oneHot;
+    bool m_alt;
+    // the LWE cryptocontext to generate when scheme switching from CKKS
+    std::shared_ptr<BinFHEContext> m_ccLWE;
+    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
+    CryptoContext<DCRTPoly> m_ccKS;
+    // switching key from CKKS to FHEW
+    EvalKey<DCRTPoly> m_CKKStoFHEWswk;
+    // switching key from FHEW to CKKS
+    Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
+    // a ciphertext under the intermediate cryptocontext
+    Ciphertext<DCRTPoly> m_ctxtKS;
+};
+
 class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
 public:
+    // meta-parameters for scheme switching
+    std::shared_ptr<SchemeSwitchParams> m_schemeSwitchParams;
+
     virtual ~SWITCHCKKSRNS() {}
 
     //------------------------------------------------------------------------------
@@ -154,11 +216,13 @@ public:
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("prmss", m_schemeSwitchParams));
     }
 
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("prmss", m_schemeSwitchParams));
     }
 
     std::string SerializedObjectName() const {
@@ -214,41 +278,6 @@ private:
 
     // Precomputed matrix for CKKS to FHEW switching
     std::vector<ConstPlaintext> m_U0Pre;
-    // the LWE cryptocontext to generate when scheme switching from CKKS
-    // BinFHEContext m_ccLWE;
-    std::shared_ptr<BinFHEContext> m_ccLWE;
-    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
-    CryptoContext<DCRTPoly> m_ccKS;
-    // the associated ciphertext modulus Q for the LWE cryptocontext
-    NativeInteger m_modulus_LWE;
-    // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
-    NativeInteger m_modulus_CKKS_initial;
-    // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
-    NativeInteger m_modulus_CKKS_from;
-    // switching key from CKKS to FHEW
-    EvalKey<DCRTPoly> m_CKKStoFHEWswk;
-    // switching key from FHEW to CKKS
-    Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
-    // a ciphertext under the intermediate cryptocontext
-    Ciphertext<DCRTPoly> m_ctxtKS;
-    // number of slots encoded in the CKKS ciphertext
-    uint32_t m_numSlotsCKKS;
-    // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
-    uint32_t m_dim1CF;
-    uint32_t m_dim1FC;
-    // starting levels for linear transforms
-    uint32_t m_LCF;
-    uint32_t m_LFC;
-    // number of ciphertexts to switch, different logic for argmin
-    uint32_t m_numCtxts;
-    // target FHEW plaintext modulus
-    uint64_t m_plaintextFHEW;
-    // scaling factor of CKKS "outer" ciphertext
-    double m_scFactorOuter;
-    // flags indicating type of argmin computation
-    bool m_argmin;
-    bool m_oneHot;
-    bool m_alt;
 
 #define Pi 3.14159265358979323846
 
