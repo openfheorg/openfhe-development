@@ -1591,12 +1591,13 @@ std::pair<BinFHEContext, LWEPrivateKey> SWITCHCKKSRNS::EvalSchemeSwitchingSetup(
     bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
     auto FHEWcc = EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
+    // TODO (dsuponit): the code commented below is executed in EvalCKKStoFHEWSetup() using the same cryptocontext ccCKKS
+    // const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
 
-    // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
+    // // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
+    // ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    // auto paramsQ                                  = elementParams.GetParams();
+    // m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
 
     return FHEWcc;
 }

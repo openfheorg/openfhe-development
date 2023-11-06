@@ -239,12 +239,12 @@ std::vector<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(std::vector<ui
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
     const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
-    auto mapToInsertIt = mapToInsert->begin();
     // check if the map is empty
-    if (mapToInsertIt == mapToInsert->end()) {
-        OPENFHE_THROW(openfhe_error, "mapToInsert is empty");
+    if (mapToInsert->empty()) {
+        return;
     }
 
+    auto mapToInsertIt   = mapToInsert->begin();
     const std::string id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
     std::vector<uint32_t> existingIndices{GetExistingEvalAutomorphismKeyIndices(id)};
     if (existingIndices.empty()) {

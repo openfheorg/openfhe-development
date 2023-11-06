@@ -263,21 +263,6 @@ class CryptoContextImpl : public Serializable {
                                                value2);
     }
 
-    /**
-     * @brief GetExistingEvalAutomorphismKeyIndices gets indices for all existing automorphism keys
-     * @param keyTag map search id for the automorphism keys
-     * @return vector with all indices in the map. if nothing is found for the given keyTag, then the vector is empty
-     **/
-    static std::vector<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
-
-    /**
-     * @brief GetUniqueValues compares 2 vectors to generate a vector with unique values from the 2nd vector
-     * @param oldValues vector of integers to compare against (passed by value)
-     * @param newValues vector of integers to find unique values from  (passed by value)
-     * @return vector with unique values from newValues
-     **/
-    static std::vector<uint32_t> GetUniqueValues(std::vector<uint32_t> oldValues, std::vector<uint32_t> newValues);
-
     // cached evalmult keys, by secret key UID
     static inline std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap{};
     // cached evalautomorphism keys, by secret key UID
@@ -1963,7 +1948,9 @@ public:
         if (!indexList.size())
             OPENFHE_THROW(config_error, "Input index vector is empty");
 
-        return GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
+        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
+        InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
+        return evalKeys;
     }
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
@@ -3472,6 +3459,21 @@ public:
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, bool oneHot = true,
                                                                uint32_t pLWE = 0, double scaleSign = 1.0);
+
+    /**
+     * @brief GetExistingEvalAutomorphismKeyIndices gets indices for all existing automorphism keys
+     * @param keyTag map search id for the automorphism keys
+     * @return vector with all indices in the map. if nothing is found for the given keyTag, then the vector is empty
+     **/
+    static std::vector<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
+
+    /**
+     * @brief GetUniqueValues compares 2 vectors to generate a vector with unique values from the 2nd vector
+     * @param oldValues vector of integers to compare against (passed by value)
+     * @param newValues vector of integers to find unique values from  (passed by value)
+     * @return vector with unique values from newValues
+     **/
+    static std::vector<uint32_t> GetUniqueValues(std::vector<uint32_t> oldValues, std::vector<uint32_t> newValues);
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
