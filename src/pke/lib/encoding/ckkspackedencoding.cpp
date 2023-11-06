@@ -606,7 +606,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // DiscreteFourierTransform::FFTSpecial(curValues, GetElementRingDimension() * 2);
 
         // TODO - CZR - this will only be used in Real CKKS
-        // map from [X]/(X^N + 1) to [X + X^-1]/(X^N + 1)
+        // populating the imaginary part according to the map Z[X]/(X^N + 1) -> Z[X + X^-1]/(X^N + 1)
         for (size_t i = 1; i < slots; ++i) {
             std::complex<double> cur;
             cur = curValues[i];
