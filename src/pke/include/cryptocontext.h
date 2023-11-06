@@ -617,8 +617,6 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        // std::map<std::string, std::vector<EvalKey<Element>>> keyMap;
-
         Serial::Deserialize(GetAllEvalMultKeys(), ser, sertype);
 
         // The deserialize call created any contexts that needed to be created....
@@ -1952,9 +1950,12 @@ public:
         InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
         return evalKeys;
     }
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<usint>& indexList) const {
+
+    [[deprecated(
+        "Use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] std::
+        shared_ptr<std::map<usint, EvalKey<Element>>>
+        EvalAutomorphismKeyGen(const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
+                               const std::vector<usint>& indexList) const {
         std::string errMsg(
             "This API is deprecated. use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<usint>& indexList)");
         OPENFHE_THROW(config_error, errMsg);
@@ -2166,8 +2167,11 @@ public:
    * @param indexList list of indices.
    */
     void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList);
-    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                           const PublicKey<Element> publicKey) {
+
+    [[deprecated(
+        "Use EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] void
+    EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                      const PublicKey<Element> publicKey) {
         std::string errMsg(
             "This API is deprecated. use EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList)");
         OPENFHE_THROW(config_error, errMsg);
@@ -2184,8 +2188,11 @@ public:
     void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) {
         EvalAtIndexKeyGen(privateKey, indexList);
     };
-    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                          const PublicKey<Element> publicKey) {
+
+    [[deprecated(
+        "Use EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] void
+    EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                     const PublicKey<Element> publicKey) {
         std::string errMsg(
             "This API is deprecated. use EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList)");
         OPENFHE_THROW(config_error, errMsg);
@@ -2621,7 +2628,9 @@ public:
    * @param privateKey private key.
    */
     void EvalSumKeyGen(const PrivateKey<Element> privateKey);
-    void EvalSumKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
+
+    [[deprecated("Use EvalSumKeyGen(const PrivateKey<Element> privateKey) instead.")]] void EvalSumKeyGen(
+        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
         std::string errMsg("This API is deprecated. use EvalSumKeyGen(const PrivateKey<Element> privateKey)");
         OPENFHE_THROW(config_error, errMsg);
     }
@@ -2638,9 +2647,12 @@ public:
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                          usint rowSize = 0, usint subringDim = 0);
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                         const PublicKey<Element> publicKey,
-                                                                         usint rowSize = 0, usint subringDim = 0) {
+
+    [[deprecated(
+        "Use EvalSumRowKeyGen(const PrivateKey<Element> privateKey, usint rowSize = 0, usint subringDim = 0) instead.")]] std::
+        shared_ptr<std::map<usint, EvalKey<Element>>>
+        EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize = 0,
+                          usint subringDim = 0) {
         std::string errMsg(
             "This API is deprecated. use EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, usint rowSize = 0, usint subringDim = 0)");
         OPENFHE_THROW(config_error, errMsg);
@@ -2654,8 +2666,10 @@ public:
    * @return returns the evaluation keys
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
-                                                                         const PublicKey<Element> publicKey) {
+
+    [[deprecated("Use EvalSumColsKeyGen(const PrivateKey<Element> privateKey) instead.")]] std::shared_ptr<
+        std::map<usint, EvalKey<Element>>>
+    EvalSumColsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
         std::string errMsg("This API is deprecated. use EvalSumColsKeyGen(const PrivateKey<Element> privateKey)");
         OPENFHE_THROW(config_error, errMsg);
     }
