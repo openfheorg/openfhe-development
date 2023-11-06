@@ -140,12 +140,14 @@ public:
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
    * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    */
     virtual std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
         const CryptoContextImpl<Element>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1, uint32_t L) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWSetup is not supported for this scheme");
     }
 
@@ -155,12 +157,9 @@ public:
    * conjugation keys, switching key from CKKS to FHEW
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
-                                                                                    ConstLWEPrivateKey& lwesk,
-                                                                                    uint32_t dim1, uint32_t L) {
+                                                                                    ConstLWEPrivateKey& lwesk) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWKeyGen is not supported for this scheme");
     }
 
@@ -265,14 +264,23 @@ public:
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
+   * @param numValues number of values to switch
+   * @param argmin flag that indicates whether argmin is being computed
+   * @param oneHot flag that indicates if the argmin encoding should be one hot
+   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
    * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
+   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
+   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
+   * @param LCF level on which to do the linear transform in CKKS to FHEW
+   * @param LFC level on which to do the linear transform in FHEW to CKKS
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     virtual std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
         const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot, bool alt,
+        uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingSetup is not supported for this scheme");
     }
 
@@ -283,18 +291,9 @@ public:
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param numValues number of values to switch
-   * @param argmin flag that indicates whether argmin is being computed
-   * @param oneHot flag that indicates if the argmin encoding should be one hot
-   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
-   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
-   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
-   * @param LCF level on which to do the linear transform in CKKS to FHEW
-   * @param LFC level on which to do the linear transform in FHEW to CKKS
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool argmin, bool oneHot,
-        bool alt, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingKeyGen is not supported for this scheme");
     }
 

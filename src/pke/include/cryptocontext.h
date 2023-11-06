@@ -3320,25 +3320,24 @@ public:
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
    * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
         SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 25,
-        bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27);
+        bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27, uint32_t dim1 = 0, uint32_t L = 1);
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
-   * for the linear transform in the homomorphic decoding, conjugation keys, switching key from CKKS to FHEW
+   * Generates all keys for scheme switching: the rotation keys for the linear transform in the homomorphic decoding,
+   * conjugation keys, switching key from CKKS to FHEW
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1 = 0,
-                              uint32_t L = 1);
+    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalCKKStoFHEWSetup
@@ -3408,34 +3407,33 @@ public:
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
+   * @param numValues number of values to switch
+   * @param argmin flag that indicates whether argmin is being computed
+   * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
+   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
    * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
+   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
+   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
+   * @param LCF level on which to do the linear transform in CKKS to FHEW
+   * @param LFC level on which to do the linear transform in FHEW to CKKS
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
         SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 25,
-        bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27);
+        bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t numValues = 0, bool argmin = false,
+        bool oneHot = true, bool alt = false, uint32_t logQswitch = 27, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
+        uint32_t LCF = 1, uint32_t LFC = 0);
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
-   * in the linear transform for the homomorphic encoding and partial decryption, the switching key from
-   * FHEW to CKKS
+   * Generates all keys for scheme switching: the rotation keys for the linear transform for the homomorphic encoding
+   * and partial decryption, the switching key from FHEW to CKKS
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param numValues number of values to switch
-   * @param argmin flag that indicates whether argmin is being computed
-   * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
-   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
-   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
-   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
-   * @param LCF level on which to do the linear transform in CKKS to FHEW
-   * @param LFC level on which to do the linear transform in FHEW to CKKS
    */
-    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0,
-                                   bool argmin = false, bool oneHot = true, bool alt = false, uint32_t dim1CF = 0,
-                                   uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0);
+    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup

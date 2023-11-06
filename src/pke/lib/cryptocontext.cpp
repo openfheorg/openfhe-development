@@ -501,14 +501,14 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Eleme
 template <typename Element>
 std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> CryptoContextImpl<Element>::EvalCKKStoFHEWSetup(
     SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
-    uint32_t logQswitch) {
+    uint32_t logQswitch, uint32_t dim1, uint32_t L) {
     VerifyCKKSScheme(__func__);
-    return GetScheme()->EvalCKKStoFHEWSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
+    return GetScheme()->EvalCKKStoFHEWSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch, dim1,
+                                            L);
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
-                                                      uint32_t dim1, uint32_t L) {
+void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
     VerifyCKKSScheme(__func__);
     if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
@@ -517,25 +517,8 @@ void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& ke
     if (!lwesk) {
         OPENFHE_THROW(config_error, "FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
     }
-    auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
-
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk);
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
@@ -576,28 +559,24 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKS(
     double pmin, double pmax, uint32_t dim1) const {
     VerifyCKKSScheme(__func__);
     return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
->>>>>>> 24b998b (improved linear transform)
 }
 
 template <typename Element>
 std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> CryptoContextImpl<Element>::EvalSchemeSwitchingSetup(
     SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
-    uint32_t logQswitch) {
+    uint32_t numValues, bool argmin, bool oneHot, bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
+    uint32_t LCF, uint32_t LFC) {
     VerifyCKKSScheme(__func__);
-    return GetScheme()->EvalSchemeSwitchingSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
+    return GetScheme()->EvalSchemeSwitchingSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, numValues,
+                                                 argmin, oneHot, alt, logQswitch, dim1CF, dim1FC, LCF, LFC);
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
-                                                           uint32_t numValues, bool argmin, bool oneHot, bool alt,
-                                                           uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF,
-                                                           uint32_t LFC) {
+void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
     VerifyCKKSScheme(__func__);
     ValidateKey(keyPair.secretKey);
-    auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, argmin, oneHot, alt, dim1CF,
-                                                           dim1FC, LCF, LFC);
-
-InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
+    auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>

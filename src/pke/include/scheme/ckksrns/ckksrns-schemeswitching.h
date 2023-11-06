@@ -63,11 +63,10 @@ public:
 
     std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
         const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) override;
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             ConstLWEPrivateKey& lwesk, uint32_t dim1,
-                                                                             uint32_t L) override;
+                                                                             ConstLWEPrivateKey& lwesk) override;
 
     void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) override;
 
@@ -114,11 +113,11 @@ public:
 
     std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
         const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) override;
+        bool dynamic, uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot, bool alt,
+        uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
 
-    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool argmin, bool oneHot,
-        bool alt, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
+    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
+                                                                                  ConstLWEPrivateKey& lwesk) override;
 
     void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
                                      double scaleSign, bool unit) override;
@@ -240,11 +239,16 @@ private:
     // starting levels for linear transforms
     uint32_t m_LCF;
     uint32_t m_LFC;
-
+    // number of ciphertexts to switch, different logic for argmin
+    uint32_t m_numCtxts;
     // target FHEW plaintext modulus
     uint64_t m_plaintextFHEW;
     // scaling factor of CKKS "outer" ciphertext
     double m_scFactorOuter;
+    // flags indicating type of argmin computation
+    bool m_argmin;
+    bool m_oneHot;
+    bool m_alt;
 
 #define Pi 3.14159265358979323846
 

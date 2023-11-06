@@ -537,8 +537,6 @@ void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, Nat
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for the same ring dimension.");
     }
 
-    auto Q = ctxt->GetElements()[0].GetModulus();
-
     const std::vector<DCRTPoly> cv = ctxt->GetElements();
 
     if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1) {
@@ -818,41 +816,6 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
 
     return result;
 }
-
-// std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
-//     const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale) {
-//     if ((A.size() / A[0].size()) * A[0].size() != A.size()) {
-//         OPENFHE_THROW(math_error, "The matrix passed to EvalLTPrecompute is not in proper rectangular shape");
-//     }
-//     uint32_t n     = A[0].size();
-//     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
-//     uint32_t gStep = ceil(static_cast<double>(n) / bStep);
-
-//     auto num_slices = A.size() / A[0].size();
-//     std::vector<std::vector<std::vector<std::complex<double>>>> A_slices(num_slices);
-//     for (size_t i = 0; i < num_slices; i++) {
-//         A_slices[i] = std::vector<std::vector<std::complex<double>>>(A.begin() + i * A[0].size(),
-//                                                                      A.begin() + (i + 1) * A[0].size());
-//     }
-//     std::vector<std::vector<std::complex<double>>> diags(n);
-// #pragma omp parallel for
-//     for (uint32_t j = 0; j < gStep; j++) {
-//         for (uint32_t i = 0; i < bStep; i++) {
-//             if (bStep * j + i < n) {
-//                 std::vector<std::complex<double>> diag(0);
-//                 for (uint32_t k = 0; k < num_slices; k++) {
-//                     auto tmp = ExtractShiftedDiagonal(A_slices[k], bStep * j + i);
-//                     diag.insert(diag.end(), tmp.begin(), tmp.end());
-//                 }
-//                 std::transform(diag.begin(), diag.end(), diag.begin(),
-//                                [&](const std::complex<double>& elem) { return elem * scale; });
-//                 diags[bStep * j + i] = diag;
-//             }
-//         }
-//     }
-
-//     return diags;
-// }
 
 std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
     const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale) {
@@ -1145,7 +1108,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalPartialHomDecryption(const CryptoContext
 //------------------------------------------------------------------------------
 std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> SWITCHCKKSRNS::EvalCKKStoFHEWSetup(
     const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-    bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
+    bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1, uint32_t L) {
     uint32_t M = cc.GetCyclotomicOrder();
     if (numSlotsCKKS == 0 || numSlotsCKKS == M / 4)  // fully-packed
         m_numSlotsCKKS = M / 4;
@@ -1155,7 +1118,7 @@ std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> SWITCHCKKSRNS
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
     auto paramsQ                                  = elementParams.GetParams();
-    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
+    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus();
     // Modulus to switch to in order to have secure RLWE samples with ring dimension n.
     // We can select any Qswitch less than 27 bits corresponding to 128 bits of security for lattice parameter n=1024 < 1305
     // according to https://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
@@ -1183,16 +1146,12 @@ std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> SWITCHCKKSRNS
     // Enable the features that you wish to use
     m_ccKS->Enable(PKE);
     m_ccKS->Enable(KEYSWITCH);
-    m_ccKS->Enable(LEVELEDSHE);
-    m_ccKS->Enable(ADVANCEDSHE);
-    m_ccKS->Enable(SCHEMESWITCH);
-    m_ccKS->Enable(FHE);
 
     // Get the ciphertext modulus
     const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_ccKS->GetCryptoParameters());
     ILDCRTParams<DCRTPoly::Integer> elementParams2 = *(cryptoParams2->GetElementParams());
     auto paramsQ2                                  = elementParams2.GetParams();
-    m_modulus_CKKS_from                            = paramsQ2[0]->GetModulus().ConvertToInt();
+    m_modulus_CKKS_from                            = paramsQ2[0]->GetModulus();
 
     m_ccLWE = std::make_shared<BinFHEContext>();
     if (slBin != TOY && slBin != STD128)
@@ -1209,11 +1168,17 @@ std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> SWITCHCKKSRNS
     FHEWcc.first  = m_ccLWE;
     FHEWcc.second = lwesk;
 
+    // The baby-step and number of levels for the linear transformation associated to the homomorphic decoding
+    if (dim1 == 0)
+        dim1 = getRatioBSGSLT(numSlotsCKKS);
+    m_dim1CF = dim1;
+    m_LCF    = L;
+
     return FHEWcc;
 }
 
 std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHEWKeyGen(
-    const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1, uint32_t L) {
+    const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) {
     auto privateKey = keyPair.secretKey;
     auto publicKey  = keyPair.publicKey;
 
@@ -1242,11 +1207,6 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     // Compute automorphism keys
     uint32_t M     = ccCKKS->GetCyclotomicOrder();
     uint32_t slots = m_numSlotsCKKS;
-    // Computing the baby-step
-    if (dim1 == 0)
-        dim1 = getRatioBSGSLT(slots);
-    m_dim1CF = dim1;
-    m_LCF    = L;
 
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTRotationIndicesSwitch(m_dim1CF, M, slots);
@@ -1549,22 +1509,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
         b[i] = std::complex<double>(LWECiphertexts[i]->GetB().ConvertToDouble(), 0);
     }
 
-    // malloc_info(0, stderr);
-    // // std::cout << "-----BEFORE AdotS-----" << std::endl;
-
     // Step 2. Perform the homomorphic linear transformation of A*skLWE
     if (dim1 == 0) {
         dim1 = m_dim1FC;
     }
     Ciphertext<DCRTPoly> AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1, prescale, 0);
-
-    // malloc_info(0, stderr);
-    // // std::cout << "-----AFTER AdotS-----" << std::endl;
-
-    // malloc_trim(0);
-
-    // malloc_info(0, stderr);
-    // // std::cout << "-----AFTER TRIM-----" << std::endl;
 
     // Step 3. Get the ciphertext of B - A*s
     for (uint32_t i = 0; i < numValues; i++) {
@@ -1694,21 +1643,42 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 
 std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> SWITCHCKKSRNS::EvalSchemeSwitchingSetup(
     const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-    bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
+    bool dynamic, uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot, bool alt, uint32_t logQswitch,
+    uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
+    // // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
+    // ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    // auto paramsQ                                  = elementParams.GetParams();
+    // m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
 
-    // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
+    // CKKS to FHEW
+    auto FHEWcc = EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch, dim1CF, LCF);
 
-    // auto FHEWcc = EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
-    return EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
+    // FHEW to CKKS
+    // Set parameters for linear transform for FHEW to CKKS
+    if (!argmin || (argmin && alt)) {
+        m_numCtxts = (numValues == 0) ? m_numSlotsCKKS : numValues;
+    }
+    else {  // argmin not in the alternative mode
+        m_numCtxts = (numValues == 0) ? m_numSlotsCKKS / 2 : numValues / 2;
+    }
+
+    if (dim1FC == 0)
+        dim1FC = getRatioBSGSLT(
+            m_numCtxts);  // There are multiple dim1's required in argmin, but they are specified individually in EvalSchemeSwitchingKeyGen
+    m_dim1FC = dim1FC;
+    m_LFC    = LFC;
+
+    // Save the rest of meta parameters to be used in EvalSchemeSwitchingKeyGen
+    m_argmin = argmin;
+    m_oneHot = oneHot;
+    m_alt    = alt;
+
+    return FHEWcc;
 }
 
 std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwitchingKeyGen(
-    const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool argmin, bool oneHot, bool alt,
-    uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
+    const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) {
     auto privateKey = keyPair.secretKey;
     auto publicKey  = keyPair.publicKey;
 
@@ -1761,12 +1731,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     m_FHEWtoCKKSswk = ccCKKS->Encrypt(publicKey, skLWEPlainswk);
 
     // Compute automorphism keys
-    /* CKKS to FHEW */
-    if (dim1CF == 0)
-        dim1CF = getRatioBSGSLT(slots);
-    m_dim1CF = dim1CF;
-    m_LCF    = LCF;
 
+    /* CKKS to FHEW */
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTRotationIndicesSwitch(m_dim1CF, M, slots);
     indexRotationS2C.emplace_back(static_cast<int32_t>(slots));
@@ -1785,50 +1751,37 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     std::vector<int32_t> indexRotationHomDec;
     std::vector<int32_t> indexRotationArgmin;
 
-    if (!argmin || (argmin && alt)) {
-        uint32_t numCtxts = (numValues == 0) ? m_numSlotsCKKS : numValues;
-        if (dim1FC == 0)
-            dim1FC = getRatioBSGSLT(numCtxts);  // This picks the ratio for baby-step giant-step
-        m_dim1FC = dim1FC;
-        m_LFC    = LFC;
-
+    if (!m_argmin || (m_argmin && m_alt)) {
         // Compute indices for rotations for homomorphic decryption
-        indexRotationHomDec = FindLTRotationIndicesSwitch(m_dim1FC, M, numCtxts);
+        indexRotationHomDec = FindLTRotationIndicesSwitch(m_dim1FC, M, m_numCtxts);
 
         // If the linear transform is wide instead of tall, we need extra rotations
-        if (numCtxts < n_po2) {
-            uint32_t logl = lbcrypto::GetMSB(n_po2 / numCtxts) - 1;  // These are powers of two, so log(l) is integer
+        if (m_numCtxts < n_po2) {
+            uint32_t logl = lbcrypto::GetMSB(n_po2 / m_numCtxts) - 1;  // These are powers of two, so log(l) is integer
             indexRotationHomDec.reserve(indexRotationHomDec.size() + logl);
             for (size_t j = 1; j <= logl; ++j) {
-                indexRotationHomDec.emplace_back(numCtxts * (1 << (j - 1)));
+                indexRotationHomDec.emplace_back(m_numCtxts * (1 << (j - 1)));
             }
         }
-
-        if (argmin) {
+        if (m_argmin) {
             // Rotations for postprocessing after a level of the binary tree
-            indexRotationArgmin.reserve(GetMSB(numValues) - 2);
-            for (uint32_t i = 1; i < numValues; i <<= 1) {
-                indexRotationArgmin.emplace_back(static_cast<int32_t>(numValues / (2 * i)));
+            indexRotationArgmin.reserve(GetMSB(m_numCtxts) - 2);
+            for (uint32_t i = 1; i < m_numCtxts; i <<= 1) {
+                indexRotationArgmin.emplace_back(static_cast<int32_t>(m_numCtxts / (2 * i)));
             }
         }
     }
     else {  // argmin not in the alternative mode
-        uint32_t numCtxts = (numValues == 0) ? m_numSlotsCKKS : numValues / 2;
-        if (dim1FC == 0)
-            dim1FC = getRatioBSGSLT(numCtxts);  // This picks the ratio for baby-step giant-step
-        m_dim1FC = dim1FC;  // There are multiple dim1's required in argmin, but there are specified individually
-        m_LFC    = LFC;
-
         // Compute indices for rotations for all homomorphic decryptions for the levels of the tree
-        indexRotationHomDec = FindLTRotationIndicesSwitchArgmin(M, numCtxts, n_po2);
+        indexRotationHomDec = FindLTRotationIndicesSwitchArgmin(M, m_numCtxts, n_po2);
 
         // Rotations for postprocessing after a level of the binary tree
-        indexRotationArgmin.reserve(GetMSB(numValues) - 2 + 2 * (GetMSB(numValues) - 2));
-        for (uint32_t i = 1; i < numValues; i <<= 1) {
-            indexRotationArgmin.emplace_back(static_cast<int32_t>(numValues / (2 * i)));
-            indexRotationArgmin.emplace_back(-static_cast<int32_t>(numValues / (2 * i)));
+        indexRotationArgmin.reserve(GetMSB(m_numCtxts) - 1 + 2 * (GetMSB(m_numCtxts) - 1));
+        for (uint32_t i = 1; i < 2 * m_numCtxts; i <<= 1) {
+            indexRotationArgmin.emplace_back(static_cast<int32_t>(m_numCtxts / (2 * i)));
+            indexRotationArgmin.emplace_back(-static_cast<int32_t>(m_numCtxts / (2 * i)));
             if (i > 1) {
-                for (uint32_t j = numValues / i; j < numValues; j <<= 1)
+                for (uint32_t j = 2 * m_numCtxts / i; j < 2 * m_numCtxts; j <<= 1)
                     indexRotationArgmin.emplace_back(-static_cast<int32_t>(j));
             }
         }
@@ -1871,7 +1824,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     ccCKKS->EvalMultKeyGen(privateKey);
 
     // Compute automorphism keys if we don't want one hot encoding for argmin
-    if (argmin && (oneHot == false)) {
+    if (m_argmin && (m_oneHot == false)) {
         ccCKKS->EvalSumKeyGen(privateKey);
     }
 

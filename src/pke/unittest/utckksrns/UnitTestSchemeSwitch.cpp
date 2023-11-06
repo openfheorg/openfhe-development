@@ -291,10 +291,11 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams = cc->EvalCKKStoFHEWSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto FHEWparams = cc->EvalCKKStoFHEWSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots,
+                                                      27, testData.dim1[0]);
             auto ccLWE      = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
-            cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW, testData.dim1[0]);
+            cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW);
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
             ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
@@ -425,15 +426,15 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams =
-                cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto FHEWparams     = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false,
+                                                               testData.slots, testData.numValues, false, testData.oneHot,
+                                                               false, 27, testData.dim1[0], testData.dim1[1]);
             auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
             ccLWE->BTKeyGen(privateKeyFHEW);
 
-            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, true, false, testData.dim1[0],
-                                          testData.dim1[1]);
+            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
             std::vector<double> x1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
             std::vector<double> x2(testData.slots, 5.25);
@@ -500,13 +501,13 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams =
-                cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto FHEWparams     = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false,
+                                                               testData.slots, testData.numValues, true, testData.oneHot,
+                                                               false, 27, testData.dim1[0], testData.dim1[1]);
             auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
-            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, true, testData.oneHot, false,
-                                          testData.dim1[0], testData.dim1[1]);
+            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
             double scaleSign = 128.0;
 
@@ -601,15 +602,15 @@ protected:
             cc->Enable(SCHEMESWITCH);
 
             auto keyPair = cc->KeyGen();
+            bool alt     = true;
 
-            auto FHEWparams =
-                cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto FHEWparams     = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false,
+                                                               testData.slots, testData.numValues, true, testData.oneHot,
+                                                               alt, 27, testData.dim1[0], testData.dim1[1]);
             auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
-            bool alt = true;
-            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, true, testData.oneHot, alt,
-                                          testData.dim1[0], testData.dim1[1]);
+            cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
             double scaleSign = 128.0;
 

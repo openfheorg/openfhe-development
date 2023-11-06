@@ -434,12 +434,12 @@ void FloorViaSchemeSwitching() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     bool arbFunc    = false;
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, slots);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     // Generate bootstrapping key for EvalFloor
     ccLWE->BTKeyGen(privateKeyFHEW);
@@ -549,12 +549,12 @@ void FuncViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, slots);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     // Generate the bootstrapping keys for EvalFunc in FHEW
     ccLWE->BTKeyGen(privateKeyFHEW);
@@ -699,13 +699,13 @@ void ComparisonViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
     ccLWE->BTKeyGen(privateKeyFHEW);
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, slots);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -921,11 +921,12 @@ void ArgminViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, true, oneHot);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -1053,11 +1054,12 @@ void ArgminViaSchemeSwitchingAlt() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, true, oneHot, alt);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -1186,12 +1188,13 @@ void ArgminViaSchemeSwitchingUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, true, oneHot);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -1324,12 +1327,13 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, true, oneHot, alt);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -1455,13 +1459,13 @@ void PolyViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS and back
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, slots);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
