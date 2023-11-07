@@ -62,7 +62,7 @@ namespace lbcrypto {
  * to be represented as multiple smaller-modulus polynomials. The double-CRT
  * representations are discussed theoretically here:
  *   - Gentry C., Halevi S., Smart N.P. (2012) Homomorphic Evaluation of the AES
- * Circuit. In: Safavi-Naini R., Canetti R. (eds) Advances in Cryptology –
+ * Circuit. In: Safavi-Naini R., Canetti R. (eds) Advances in Cryptology -
  * CRYPTO 2012. Lecture Notes in Computer Science, vol 7417. Springer, Berlin,
  * Heidelberg
  */
@@ -85,7 +85,7 @@ public:
         m_params.push_back(std::make_shared<ILNativeParams>(corder, (q = PreviousPrime(q, corder))));
 
         IntType compositeModulus(1);
-        while ((compositeModulus *= IntType(q.ConvertToInt<BasicInteger>())) < modulus)
+        while ((compositeModulus *= IntType(q.template ConvertToInt<BasicInteger>())) < modulus)
             m_params.push_back(std::make_shared<ILNativeParams>(corder, (q = PreviousPrime(q, corder))));
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
@@ -108,10 +108,10 @@ public:
         m_params.reserve(depth);
         m_params.push_back(std::make_shared<ILNativeParams>(corder, (q = PreviousPrime(q, corder))));
 
-        IntType compositeModulus(q.ConvertToInt<BasicInteger>());
+        IntType compositeModulus(q.template ConvertToInt<BasicInteger>());
         for (uint32_t _ = 1; _ < depth; ++_) {
             m_params.push_back(std::make_shared<ILNativeParams>(corder, (q = PreviousPrime(q, corder))));
-            compositeModulus *= IntType(q.ConvertToInt<BasicInteger>());
+            compositeModulus *= IntType(q.template ConvertToInt<BasicInteger>());
         }
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
@@ -139,7 +139,7 @@ public:
         IntType compositeModulus(1);
         for (size_t i = 0; i < limbs; ++i) {
             m_params.push_back(std::make_shared<ILNativeParams>(corder, moduli[i], rootsOfUnity[i]));
-            compositeModulus *= IntType(moduli[i].ConvertToInt<BasicInteger>());
+            compositeModulus *= IntType(moduli[i].template ConvertToInt<BasicInteger>());
         }
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
@@ -157,7 +157,7 @@ public:
         for (size_t i = 0; i < limbs; ++i) {
             m_params.push_back(
                 std::make_shared<ILNativeParams>(corder, moduli[i], rootsOfUnity[i], moduliBig[i], rootsOfUnityBig[i]));
-            compositeModulus *= IntType(moduli[i].ConvertToInt<BasicInteger>());
+            compositeModulus *= IntType(moduli[i].template ConvertToInt<BasicInteger>());
         }
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
@@ -178,7 +178,7 @@ public:
         IntType compositeModulus(1);
         for (size_t i = 0; i < limbs; ++i) {
             m_params.push_back(std::make_shared<ILNativeParams>(corder, moduli[i]));
-            compositeModulus *= IntType(moduli[i].ConvertToInt<BasicInteger>());
+            compositeModulus *= IntType(moduli[i].template ConvertToInt<BasicInteger>());
         }
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
@@ -283,7 +283,7 @@ public:
    */
 
     void PopLastParam() {
-        ElemParams<IntType>::m_ciphertextModulus /= IntType(m_params.back()->GetModulus().ConvertToInt<BasicInteger>());
+        ElemParams<IntType>::m_ciphertextModulus /= IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.pop_back();
     }
 
@@ -292,7 +292,7 @@ public:
    *
    */
     void PopFirstParam() {
-        ElemParams<IntType>::m_ciphertextModulus /= IntType(m_params[0]->GetModulus().ConvertToInt<BasicInteger>());
+        ElemParams<IntType>::m_ciphertextModulus /= IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.erase(m_params.begin());
     }
 
@@ -329,7 +329,7 @@ public:
     void RecalculateModulus() {
         ElemParams<IntType>::m_ciphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
-            ElemParams<IntType>::m_ciphertextModulus *= IntType(m_params[i]->GetModulus().ConvertToInt<BasicInteger>());
+            ElemParams<IntType>::m_ciphertextModulus *= IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
     }
 
     /**
@@ -340,7 +340,7 @@ public:
         ElemParams<IntType>::m_bigCiphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
             ElemParams<IntType>::m_bigCiphertextModulus *=
-                IntType(m_params[i]->GetBigModulus().ConvertToInt<BasicInteger>());
+                IntType(m_params[i]->GetBigModulus().template ConvertToInt<BasicInteger>());
     }
 
     template <class Archive>
