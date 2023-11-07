@@ -148,8 +148,13 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         for (uint32_t i = 0; i < sizeQ; i++) {
             BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
             uint64_t val[2];
+#ifdef __s390__
+            val[1] = (mu % TwoPower64).ConvertToInt();
+            val[0] = mu.RShift(64).ConvertToInt();
+#else
             val[0] = (mu % TwoPower64).ConvertToInt();
             val[1] = mu.RShift(64).ConvertToInt();
+#endif
             memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
         }
     }

@@ -276,8 +276,13 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 for (uint32_t i = 0; i < moduli.size(); i++) {
                     BigInteger mu = BarrettBase128Bit / BigInteger(moduli[i]);
                     uint64_t val[2];
+#ifdef __s390__
+                    val[1] = (mu % TwoPower64).ConvertToInt();
+                    val[0] = mu.RShift(64).ConvertToInt();
+#else
                     val[0] = (mu % TwoPower64).ConvertToInt();
                     val[1] = mu.RShift(64).ConvertToInt();
+#endif
 
                     memcpy(&m_modComplPartqBarrettMu[l][j][i], val, sizeof(DoubleNativeInt));
                 }
@@ -385,8 +390,13 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_multipartyModq0BarrettMu.resize(1);
         BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[0]);
         uint64_t val[2];
+#ifdef __s390__
+        val[1] = (mu % TwoPower64).ConvertToInt();
+        val[0] = mu.RShift(64).ConvertToInt();
+#else
         val[0] = (mu % TwoPower64).ConvertToInt();
         val[1] = mu.RShift(64).ConvertToInt();
+#endif
         memcpy(&m_multipartyModq0BarrettMu[0], val, sizeof(DoubleNativeInt));
 
         // Stores \frac{1/q_i}

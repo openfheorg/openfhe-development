@@ -254,8 +254,13 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
     for (uint32_t j = 0; j < moduliP.size(); j++) {
         BigInteger mu = BarrettBase128Bit / BigInteger(moduliP[j]);
         uint64_t val[2];
+#ifdef __s390__
+        val[1] = (mu % TwoPower64).ConvertToInt();
+        val[0] = mu.RShift(64).ConvertToInt();
+#else
         val[0] = (mu % TwoPower64).ConvertToInt();
         val[1] = mu.RShift(64).ConvertToInt();
+#endif
 
         memcpy(&rnsExtTables.modpBarrettMu[j], val, sizeof(DoubleNativeInt));
     }
