@@ -1945,6 +1945,11 @@ private:
         wres   = wa * wb;
         res.hi = (uint64_t)(wres >> 64);
         res.lo = (uint64_t)wres;
+#elif __s390__
+        U128BITS wres(0), wa(a), wb(b);
+        wres   = wa * wb;
+        res.hi = (uint64_t)(wres >> 64);
+        res.lo = (uint64_t)wres;
 #elif defined(__EMSCRIPTEN__)  // web assembly
         U64BITS a1 = a >> 32;
         U64BITS a2 = (uint32_t)a;
