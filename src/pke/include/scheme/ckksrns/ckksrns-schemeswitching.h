@@ -51,72 +51,10 @@
  */
 namespace lbcrypto {
 
-class SchemeSwitchParams {
-public:
-    SchemeSwitchParams() {}
-
-    SchemeSwitchParams(const SchemeSwitchParams& rhs) {}
-
-    SchemeSwitchParams(SchemeSwitchParams&& rhs) {
-        m_modulus_LWE          = rhs.m_modulus_LWE;
-        m_modulus_CKKS_initial = rhs.m_modulus_CKKS_initial;
-        m_modulus_CKKS_from    = std::move(rhs.m_modulus_CKKS_from);
-        m_numSlotsCKKS         = std::move(rhs.m_numSlotsCKKS);
-        m_numCtxts             = std::move(rhs.m_numCtxts);
-        m_dim1FC               = std::move(rhs.m_dim1FC);
-        m_dim1FC               = std::move(rhs.m_dim1FC);
-        m_LCF                  = std::move(rhs.m_LCF);
-        m_LFC                  = std::move(rhs.m_LFC);
-        m_argmin               = std::move(rhs.m_argmin);
-        m_oneHot               = std::move(rhs.m_oneHot);
-        m_alt                  = std::move(rhs.m_alt);
-        m_ccLWE                = std::move(rhs.m_ccLWE);
-        m_ccKS                 = std::move(rhs.m_ccKS);
-        m_CKKStoFHEWswk        = std::move(rhs.m_CKKStoFHEWswk);
-        m_FHEWtoCKKSswk        = std::move(rhs.m_FHEWtoCKKSswk);
-        m_ctxtKS               = std::move(rhs.m_ctxtKS);
-    }
-
-    virtual ~SchemeSwitchParams() {}
-    // the associated ciphertext modulus Q for the LWE cryptocontext
-    NativeInteger m_modulus_LWE;
-    // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
-    NativeInteger m_modulus_CKKS_initial;
-    // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
-    NativeInteger m_modulus_CKKS_from;
-    // number of slots encoded in the CKKS ciphertext
-    uint32_t m_numSlotsCKKS;
-    // number of ciphertexts to switch, different logic for argmin
-    uint32_t m_numCtxts;
-    // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
-    uint32_t m_dim1CF;
-    uint32_t m_dim1FC;
-    // starting levels for linear transforms
-    uint32_t m_LCF;
-    uint32_t m_LFC;
-    // flags indicating type of argmin computation
-    bool m_argmin;
-    bool m_oneHot;
-    bool m_alt;
-    // the LWE cryptocontext to generate when scheme switching from CKKS
-    std::shared_ptr<BinFHEContext> m_ccLWE;
-    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
-    CryptoContext<DCRTPoly> m_ccKS;
-    // switching key from CKKS to FHEW
-    EvalKey<DCRTPoly> m_CKKStoFHEWswk;
-    // switching key from FHEW to CKKS
-    Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
-    // a ciphertext under the intermediate cryptocontext
-    Ciphertext<DCRTPoly> m_ctxtKS;
-};
-
 class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
 public:
-    // meta-parameters for scheme switching
-    std::shared_ptr<SchemeSwitchParams> m_schemeSwitchParams;
-
     virtual ~SWITCHCKKSRNS() {}
 
     //------------------------------------------------------------------------------
@@ -191,22 +129,22 @@ public:
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                             uint32_t numSlots, uint32_t pLWE,
                                                              double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                 PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                             uint32_t numSlots, uint32_t pLWE,
                                                              double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                 PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
     //------------------------------------------------------------------------------
@@ -215,14 +153,46 @@ public:
 
     template <class Archive>
     void save(Archive& ar) const {
-        ar(cereal::base_class<FHERNS>(this));
-        ar(cereal::make_nvp("prmss", m_schemeSwitchParams));
+        // ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("QLWE", m_modulus_LWE));
+        ar(cereal::make_nvp("QCKKS1", m_modulus_CKKS_initial));
+        ar(cereal::make_nvp("QCKKS2", m_modulus_CKKS_from));
+        ar(cereal::make_nvp("slots", m_numSlotsCKKS));
+        ar(cereal::make_nvp("ctxts", m_numCtxts));
+        ar(cereal::make_nvp("bCF", m_dim1CF));
+        ar(cereal::make_nvp("bFC", m_dim1FC));
+        ar(cereal::make_nvp("lCF", m_LCF));
+        ar(cereal::make_nvp("lFC", m_LFC));
+        ar(cereal::make_nvp("argmin", m_argmin));
+        ar(cereal::make_nvp("oneHot", m_oneHot));
+        ar(cereal::make_nvp("alt", m_alt));
+        ar(cereal::make_nvp("ccF", m_ccLWE));
+        ar(cereal::make_nvp("ccKS", m_ccKS));
+        ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
+        ar(cereal::make_nvp("swlFC", m_FHEWtoCKKSswk));
+        ar(cereal::make_nvp("ctKS", m_ctxtKS));
     }
 
     template <class Archive>
     void load(Archive& ar) {
-        ar(cereal::base_class<FHERNS>(this));
-        ar(cereal::make_nvp("prmss", m_schemeSwitchParams));
+        // ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("QLWE", m_modulus_LWE));
+        ar(cereal::make_nvp("QCKKS1", m_modulus_CKKS_initial));
+        ar(cereal::make_nvp("QCKKS2", m_modulus_CKKS_from));
+        ar(cereal::make_nvp("slots", m_numSlotsCKKS));
+        ar(cereal::make_nvp("ctxts", m_numCtxts));
+        ar(cereal::make_nvp("bCF", m_dim1CF));
+        ar(cereal::make_nvp("bFC", m_dim1FC));
+        ar(cereal::make_nvp("lCF", m_LCF));
+        ar(cereal::make_nvp("lFC", m_LFC));
+        ar(cereal::make_nvp("argmin", m_argmin));
+        ar(cereal::make_nvp("oneHot", m_oneHot));
+        ar(cereal::make_nvp("alt", m_alt));
+        ar(cereal::make_nvp("ccF", m_ccLWE));
+        ar(cereal::make_nvp("ccKS", m_ccKS));
+        ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
+        ar(cereal::make_nvp("swlFC", m_FHEWtoCKKSswk));
+        ar(cereal::make_nvp("ctKS", m_ctxtKS));
     }
 
     std::string SerializedObjectName() const {
@@ -276,6 +246,36 @@ private:
     // Private members
     //------------------------------------------------------------------------------
 
+    // the associated ciphertext modulus Q for the LWE cryptocontext
+    NativeInteger m_modulus_LWE;
+    // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
+    NativeInteger m_modulus_CKKS_initial;
+    // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
+    NativeInteger m_modulus_CKKS_from;
+    // number of slots encoded in the CKKS ciphertext
+    uint32_t m_numSlotsCKKS;
+    // number of ciphertexts to switch, different logic for argmin
+    uint32_t m_numCtxts;
+    // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
+    uint32_t m_dim1CF;
+    uint32_t m_dim1FC;
+    // starting levels for linear transforms
+    uint32_t m_LCF;
+    uint32_t m_LFC;
+    // flags indicating type of argmin computation
+    bool m_argmin;
+    bool m_oneHot;
+    bool m_alt;
+    // the LWE cryptocontext to generate when scheme switching from CKKS
+    std::shared_ptr<BinFHEContext> m_ccLWE;
+    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
+    CryptoContext<DCRTPoly> m_ccKS;
+    // switching key from CKKS to FHEW
+    EvalKey<DCRTPoly> m_CKKStoFHEWswk;
+    // switching key from FHEW to CKKS
+    Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
+    // a ciphertext under the intermediate cryptocontext
+    Ciphertext<DCRTPoly> m_ctxtKS;
     // Precomputed matrix for CKKS to FHEW switching
     std::vector<ConstPlaintext> m_U0Pre;
 

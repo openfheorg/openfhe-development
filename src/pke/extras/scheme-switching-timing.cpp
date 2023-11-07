@@ -563,7 +563,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
 
     // Step 4: Argmin evaluation
     TIC(t);
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
     timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
@@ -585,7 +585,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
     std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin / 60000 << " min" << std::endl;
 
     // TIC(t);
-    // result      = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    // result      = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
     // timeEvalMax = TOC(t);
 
     // Plaintext ptxtMax;
@@ -718,7 +718,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
 
     // Step 4: Argmin evaluation
     TIC(t);
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
     timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
@@ -740,7 +740,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin / 60000 << " min" << std::endl;
 
     // TIC(t);
-    // result      = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    // result      = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
     // timeEvalMax = TOC(t);
 
     // Plaintext ptxtMax;
@@ -872,7 +872,7 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
 
     // Step 4: Argmin evaluation
     TIC(t);
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
     timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
@@ -894,7 +894,7 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
     std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin / 60000 << " min" << std::endl;
 
     // TIC(t);
-    // result      = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    // result      = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
     // timeEvalMax = TOC(t);
 
     // Plaintext ptxtMax;
@@ -1026,7 +1026,7 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
 
     // Step 4: Argmin evaluation
     TIC(t);
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
     timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
@@ -1048,7 +1048,7 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
     std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin / 60000 << " min" << std::endl;
 
     // TIC(t);
-    // result      = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    // result      = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
     // timeEvalMax = TOC(t);
 
     // Plaintext ptxtMax;

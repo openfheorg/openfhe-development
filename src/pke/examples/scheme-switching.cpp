@@ -970,7 +970,7 @@ void ArgminViaSchemeSwitching() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -986,7 +986,7 @@ void ArgminViaSchemeSwitching() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1104,7 +1104,7 @@ void ArgminViaSchemeSwitchingAlt() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1120,7 +1120,7 @@ void ArgminViaSchemeSwitchingAlt() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1241,7 +1241,7 @@ void ArgminViaSchemeSwitchingUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1257,7 +1257,7 @@ void ArgminViaSchemeSwitchingUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1380,7 +1380,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1396,7 +1396,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);

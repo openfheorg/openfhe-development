@@ -528,8 +528,7 @@ protected:
             Plaintext p1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, testData.slots);
             auto c1      = cc->Encrypt(keyPair.publicKey, p1);
 
-            auto result =
-                cc->EvalMinSchemeSwitching(c1, keyPair.publicKey, testData.numValues, testData.slots, testData.oneHot);
+            auto result = cc->EvalMinSchemeSwitching(c1, keyPair.publicKey, testData.numValues, testData.slots);
 
             Plaintext ptxtMin;
             cc->Decrypt(keyPair.secretKey, result[0], &ptxtMin);
@@ -556,7 +555,7 @@ protected:
             auto xargmax = std::max_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
 
             result =
-                cc->EvalMaxSchemeSwitching(c1, keyPair.publicKey, testData.numValues, testData.slots, testData.oneHot);
+                cc->EvalMaxSchemeSwitching(c1, keyPair.publicKey, testData.numValues, testData.slots);
 
             Plaintext ptxtMax;
             cc->Decrypt(keyPair.secretKey, result[0], &ptxtMax);
@@ -631,8 +630,7 @@ protected:
             Plaintext p1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, testData.slots);
             auto c1      = cc->Encrypt(keyPair.publicKey, p1);
 
-            auto result = cc->EvalMinSchemeSwitchingAlt(c1, keyPair.publicKey, testData.numValues, testData.slots,
-                                                        testData.oneHot);
+            auto result = cc->EvalMinSchemeSwitchingAlt(c1, keyPair.publicKey, testData.numValues, testData.slots);
 
             Plaintext ptxtMin;
             cc->Decrypt(keyPair.secretKey, result[0], &ptxtMin);
@@ -657,8 +655,7 @@ protected:
             /* auto xmax    = *std::max_element(x1.begin(), x1.begin() + testData.numValues);
             auto xargmax = std::max_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
 
-            result = cc->EvalMaxSchemeSwitchingAlt(c1, keyPair.publicKey, testData.numValues, testData.slots,
-                                                   testData.oneHot);
+            result = cc->EvalMaxSchemeSwitchingAlt(c1, keyPair.publicKey, testData.numValues, testData.slots);
 
             Plaintext ptxtMax;
             cc->Decrypt(keyPair.secretKey, result[0], &ptxtMax);

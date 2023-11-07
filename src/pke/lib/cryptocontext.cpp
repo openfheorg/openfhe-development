@@ -606,64 +606,40 @@ template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                                                     PublicKey<Element> publicKey,
                                                                                     uint32_t numValues,
-                                                                                    uint32_t numSlots, bool oneHot,
-                                                                                    uint32_t pLWE, double scaleSign) {
+                                                                                    uint32_t numSlots, uint32_t pLWE,
+                                                                                    double scaleSign) {
     VerifyCKKSScheme(__func__);
-
-    if (!ciphertext)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitching was not "
-                      "generated with this crypto context");
-    return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
+    ValidateCiphertext(ciphertext);
+    return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitchingAlt(
     ConstCiphertext<Element> ciphertext, PublicKey<Element> publicKey, uint32_t numValues, uint32_t numSlots,
-    bool oneHot, uint32_t pLWE, double scaleSign) {
+    uint32_t pLWE, double scaleSign) {
     VerifyCKKSScheme(__func__);
-
-    if (ciphertext == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
-                      "generated with this crypto context");
-    return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
+    ValidateCiphertext(ciphertext);
+    return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                                                     PublicKey<Element> publicKey,
                                                                                     uint32_t numValues,
-                                                                                    uint32_t numSlots, bool oneHot,
-                                                                                    uint32_t pLWE, double scaleSign) {
+                                                                                    uint32_t numSlots, uint32_t pLWE,
+                                                                                    double scaleSign) {
     VerifyCKKSScheme(__func__);
-
-    if (ciphertext == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitching was not "
-                      "generated with this crypto context");
-    return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
+    ValidateCiphertext(ciphertext);
+    return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitchingAlt(
     ConstCiphertext<Element> ciphertext, PublicKey<Element> publicKey, uint32_t numValues, uint32_t numSlots,
-    bool oneHot, uint32_t pLWE, double scaleSign) {
+    uint32_t pLWE, double scaleSign) {
     VerifyCKKSScheme(__func__);
-
-    if (ciphertext == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
-                      "generated with this crypto context");
-    return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
+    ValidateCiphertext(ciphertext);
+    return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
 }
 
 }  // namespace lbcrypto

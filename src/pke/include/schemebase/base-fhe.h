@@ -326,7 +326,6 @@ public:
    * @param publicKey public key of the CKKS cryptocontext
    * @param numValues number of values to extract from the CKKS ciphertext. We always assume for the moment numValues is a power of two
    * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param oneHot whether the argmin result is given as a one hot/elementary vector or as the index
    * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
@@ -337,7 +336,7 @@ public:
    */
     virtual std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                                     PublicKey<Element> publicKey, uint32_t numValues,
-                                                                    uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                    uint32_t numSlots, uint32_t pLWE,
                                                                     double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMinSchemeSwitching is not supported for this scheme");
     }
@@ -347,7 +346,7 @@ public:
     */
     virtual std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                        PublicKey<Element> publicKey, uint32_t numValues,
-                                                                       uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                       uint32_t numSlots, uint32_t pLWE,
                                                                        double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMinSchemeSwitchingAlt is not supported for this scheme");
     }
@@ -360,7 +359,6 @@ public:
    * @param publicKey public key of the CKKS cryptocontext
    * @param numValues number of values to extract from the CKKS ciphertext. We always assume for the moment numValues is a power of two
    * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param oneHot whether the argmax result is given as a one hot/elementary vector or as the index
    * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
@@ -371,7 +369,7 @@ public:
    */
     virtual std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                                     PublicKey<Element> publicKey, uint32_t numValues,
-                                                                    uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                    uint32_t numSlots, uint32_t pLWE,
                                                                     double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitching is not supported for this scheme");
     }
@@ -381,7 +379,7 @@ public:
     */
     virtual std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                        PublicKey<Element> publicKey, uint32_t numValues,
-                                                                       uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                       uint32_t numSlots, uint32_t pLWE,
                                                                        double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
