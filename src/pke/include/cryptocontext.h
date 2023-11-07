@@ -566,12 +566,12 @@ public:
         std::map<std::string, std::vector<EvalKey<Element>>> omap;
 
         if (id.length() == 0) {
-            smap = &GetAllEvalMultKeys();
+            smap = &s_evalMultKeyMap;
         }
         else {
-            const auto k = GetAllEvalMultKeys().find(id);
+            const auto k = s_evalMultKeyMap.find(id);
 
-            if (k == GetAllEvalMultKeys().end())
+            if (k == s_evalMultKeyMap.end())
                 return false;  // no such id
 
             smap           = &omap;
@@ -593,7 +593,7 @@ public:
     template <typename ST>
     static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
         std::map<std::string, std::vector<EvalKey<Element>>> omap;
-        for (const auto& k : GetAllEvalMultKeys()) {
+        for (const auto& k : s_evalMultKeyMap) {
             if (k.second[0]->GetCryptoContext() == cc) {
                 omap[k.first] = k.second;
             }
@@ -617,13 +617,13 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        Serial::Deserialize(GetAllEvalMultKeys(), ser, sertype);
+        Serial::Deserialize(s_evalMultKeyMap, ser, sertype);
 
         // The deserialize call created any contexts that needed to be created....
         // so all we need to do is put the keys into the maps for their context
 
-        for (auto k : GetAllEvalMultKeys()) {
-            GetAllEvalMultKeys()[k.first] = k.second;
+        for (auto k : s_evalMultKeyMap) {
+            s_evalMultKeyMap[k.first] = k.second;
         }
 
         return true;
@@ -633,7 +633,7 @@ public:
    * ClearEvalMultKeys - flush EvalMultKey cache
    */
     static void ClearEvalMultKeys() {
-        GetAllEvalMultKeys().clear();
+        s_evalMultKeyMap.clear();
     }
 
     /**
@@ -641,9 +641,9 @@ public:
    * @param id the correponding key id
    */
     static void ClearEvalMultKeys(const std::string& id) {
-        auto kd = GetAllEvalMultKeys().find(id);
-        if (kd != GetAllEvalMultKeys().end())
-            GetAllEvalMultKeys().erase(kd);
+        auto kd = s_evalMultKeyMap.find(id);
+        if (kd != s_evalMultKeyMap.end())
+            s_evalMultKeyMap.erase(kd);
     }
 
     /**
@@ -651,9 +651,9 @@ public:
    * @param cc crypto context
    */
     static void ClearEvalMultKeys(const CryptoContext<Element> cc) {
-        for (auto it = GetAllEvalMultKeys().begin(); it != GetAllEvalMultKeys().end();) {
+        for (auto it = s_evalMultKeyMap.begin(); it != s_evalMultKeyMap.end();) {
             if (it->second[0]->GetCryptoContext() == cc) {
-                it = GetAllEvalMultKeys().erase(it);
+                it = s_evalMultKeyMap.erase(it);
             }
             else {
                 ++it;
@@ -952,8 +952,8 @@ public:
    * Get relinearization keys for a specific secret key tag
    */
     static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(const std::string& keyID) {
-        auto ekv = GetAllEvalMultKeys().find(keyID);
-        if (ekv == GetAllEvalMultKeys().end()) {
+        auto ekv = s_evalMultKeyMap.find(keyID);
+        if (ekv == s_evalMultKeyMap.end()) {
             OPENFHE_THROW(not_available_error,
                           "You need to use EvalMultKeyGen so that you have an "
                           "EvalMultKey available for this ID");
@@ -1616,9 +1616,11 @@ public:
     void EvalMultKeyGen(const PrivateKey<Element> key) {
         ValidateKey(key);
 
-        EvalKey<Element> k = GetScheme()->EvalMultKeyGen(key);
-
-        GetAllEvalMultKeys()[k->GetKeyTag()] = {k};
+        if (s_evalMultKeyMap.find(key->GetKeyTag()) == s_evalMultKeyMap.end()) {
+            // the key is not found in the map, so the key has to be generated
+            EvalKey<Element> k               = GetScheme()->EvalMultKeyGen(key);
+            s_evalMultKeyMap[k->GetKeyTag()] = {k};
+        }
     }
 
     /**
@@ -1633,9 +1635,11 @@ public:
     void EvalMultKeysGen(const PrivateKey<Element> key) {
         ValidateKey(key);
 
-        const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
-
-        GetAllEvalMultKeys()[evalKeys[0]->GetKeyTag()] = evalKeys;
+        if (s_evalMultKeyMap.find(key->GetKeyTag()) == s_evalMultKeyMap.end()) {
+            // the key is not found in the map, so the key has to be generated
+            const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
+            s_evalMultKeyMap[key->GetKeyTag()]            = evalKeys;
+        }
     }
 
     /**
