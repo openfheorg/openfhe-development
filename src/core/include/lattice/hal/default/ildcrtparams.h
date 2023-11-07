@@ -36,8 +36,8 @@
 #ifndef LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
 #define LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
 
-#include "lattice/elemparams.h"
-#include "lattice/ilparams.h"
+#include "lattice/hal/elemparams.h"
+#include "lattice/hal/default/ilparams.h"
 
 #include "math/hal/basicint.h"
 #include "math/math-hal.h"

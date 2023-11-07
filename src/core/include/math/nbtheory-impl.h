@@ -231,7 +231,7 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
 }
 
 template <typename IntType>
-std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType> moduli) {
+std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType>& moduli) {
     std::vector<IntType> rootsOfUnity(moduli.size());
     for (size_t i = 0; i < moduli.size(); ++i)
         rootsOfUnity[i] = RootOfUnity(m, moduli[i]);

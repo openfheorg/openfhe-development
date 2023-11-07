@@ -36,9 +36,9 @@
 #ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_DCRTPOLY_H
 #define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_DCRTPOLY_H
 
+#include "lattice/hal/default/ildcrtparams.h"
 #include "lattice/hal/default/poly.h"
 #include "lattice/hal/dcrtpoly-interface.h"
-#include "lattice/ildcrtparams.h"
 
 #include "math/math-hal.h"
 #include "math/distrgen.h"
@@ -403,7 +403,7 @@ public:
     }
 
 protected:
-    std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>(0, 1)};
+    std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>()};
     Format m_format{Format::EVALUATION};
     std::vector<PolyType> m_vectors;
 };

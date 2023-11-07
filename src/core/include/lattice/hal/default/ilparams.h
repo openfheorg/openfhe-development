@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_INC_LATTICE_ILPARAMS_H
 #define LBCRYPTO_INC_LATTICE_ILPARAMS_H
 
-#include "lattice/elemparams.h"
+#include "lattice/hal/elemparams.h"
 
 #include "math/math-hal.h"
 #include "math/nbtheory.h"

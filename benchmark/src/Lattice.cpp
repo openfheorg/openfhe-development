@@ -40,8 +40,6 @@
 #include "benchmark/benchmark.h"
 
 #include "lattice/elemparamfactory.h"
-#include "lattice/ildcrtparams.h"
-#include "lattice/ilparams.h"
 #include "lattice/lat-hal.h"
 
 #include "utils/inttypes.h"

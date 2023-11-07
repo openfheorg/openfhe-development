@@ -94,7 +94,7 @@ IntType RootOfUnity(usint m, const IntType& modulo);
  * @returns a vector of roots of unity corresponding to each modulus.
  */
 template <typename IntType>
-std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType> moduli);
+std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType>& moduli);
 
 /**
  * Method to reverse bits of num and return an unsigned int, for all bits up to

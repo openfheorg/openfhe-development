@@ -38,8 +38,7 @@
 
 // useful for testing
 
-// #include "lattice/lat-hal.h"
-#include "lattice/ildcrtparams.h"
+#include "lattice/lat-hal.h"
 
 // #include "math/math-hal.h"
 #include "math/distrgen.h"

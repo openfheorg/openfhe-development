@@ -51,7 +51,7 @@ template class TernaryUniformGeneratorImpl<NativeVector>;
 template class DiscreteUniformGeneratorImpl<NativeVector>;
 
 template NativeInteger RootOfUnity<NativeInteger>(usint m, const NativeInteger& modulo);
-template std::vector<NativeInteger> RootsOfUnity(usint m, const std::vector<NativeInteger> moduli);
+template std::vector<NativeInteger> RootsOfUnity(usint m, const std::vector<NativeInteger>& moduli);
 template NativeInteger GreatestCommonDivisor(const NativeInteger& a, const NativeInteger& b);
 template bool MillerRabinPrimalityTest(const NativeInteger& p, const usint niter);
 template const NativeInteger PollardRhoFactorization(const NativeInteger& n);

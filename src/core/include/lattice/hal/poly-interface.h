@@ -37,7 +37,7 @@
 #define LBCRYPTO_INC_LATTICE_HAL_POLYINTERFACE_H
 
 #include "lattice/ilelement.h"
-#include "lattice/ilparams.h"
+#include "lattice/hal/default/ilparams.h"
 
 #include "math/math-hal.h"
 #include "math/distrgen.h"
