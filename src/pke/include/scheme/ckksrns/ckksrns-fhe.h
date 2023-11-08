@@ -111,6 +111,24 @@ public:
 
     // coefficients corresponding to conj(U0^T); used in encoding
     std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
+
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::make_nvp("dim1_Enc", m_dim1));
+        ar(cereal::make_nvp("dim1_Dec", m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP]));
+        ar(cereal::make_nvp("slots", m_slots));
+        ar(cereal::make_nvp("lEnc", m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
+        ar(cereal::make_nvp("lEnc", m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
+    }
+
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::make_nvp("dim1_Enc", m_dim1));
+        ar(cereal::make_nvp("dim1_Dec", m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP]));
+        ar(cereal::make_nvp("slots", m_slots));
+        ar(cereal::make_nvp("lEnc", m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
+        ar(cereal::make_nvp("lEnc", m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
+    }
 };
 
 class FHECKKSRNS : public FHERNS {
@@ -124,10 +142,13 @@ public:
     //------------------------------------------------------------------------------
 
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-                            std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor) override;
+                            std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor,
+                            bool precompute) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
                                                                             uint32_t slots) override;
+
+    void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots) override;
 
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
@@ -189,11 +210,15 @@ public:
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("paramMap", m_bootPrecomMap));
+        ar(cereal::make_nvp("corFactor", m_correctionFactor));
     }
 
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("paramMap", m_bootPrecomMap));
+        ar(cereal::make_nvp("corFactor", m_correctionFactor));
     }
 
     // To be deprecated; left for backwards compatibility

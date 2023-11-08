@@ -1340,9 +1340,9 @@ public:
 
     void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, const std::vector<uint32_t>& levelBudget = {5, 4},
                             const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
-                            uint32_t correctionFactor = 0) {
+                            uint32_t correctionFactor = 0, bool precompute = true) {
         VerifyFHEEnabled(__func__);
-        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor);
+        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute);
         return;
     }
 
@@ -1350,6 +1350,12 @@ public:
                                                                            uint32_t slots) {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalBootstrapKeyGen(privateKey, slots);
+    }
+
+    void EvalBootstrapPrecompute(const CryptoContextImpl<Element>& cc, uint32_t slots = 0) {
+        VerifyFHEEnabled(__func__);
+        m_FHE->EvalBootstrapPrecompute(cc, slots);
+        return;
     }
 
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
