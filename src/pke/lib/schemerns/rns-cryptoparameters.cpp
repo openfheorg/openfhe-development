@@ -136,6 +136,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // Select number of primes in auxiliary CRT basis
         sizeP              = ceil(static_cast<double>(maxBits) / auxBits);
         uint64_t primeStep = FindAuxPrimeStep();
+        // TODO - CZR - if CKKS Real enable the line below, else remove
+        primeStep = primeStep*2; // only for Real CKKS.
 
         // Choose special primes in auxiliary basis and compute their roots
         // moduliP holds special primes p1, p2, ..., pk
@@ -158,7 +160,9 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                         foundInQ = true;
                 pPrev = moduliP[i];
             } while (foundInQ);
-            rootsP[i] = RootOfUnity<NativeInteger>(2 * n, moduliP[i]);
+            // TODO - CZR - must switch based on CKKS variant
+            // rootsP[i] = RootOfUnity<NativeInteger>(2 * n, moduliP[i]);
+            rootsP[i] = RootOfUnity<NativeInteger>(4 * n, moduliP[i]);
             modulusP *= moduliP[i];
             pPrev = moduliP[i];
         }
@@ -181,7 +185,9 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQP, rootsQP);
 
         // Pre-compute CRT::FFT values for P
-        ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n, moduliP);
+        // TODO - CZR - must switch based on CKKS variant
+        // ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n, moduliP);
+        ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 4 * n, moduliP);
 
         // Pre-compute values [P]_{q_i}
         m_PModq.resize(sizeQ);

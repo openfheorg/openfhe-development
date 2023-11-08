@@ -74,7 +74,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
     uint32_t auxBits       = AUXMODSIZE;
-    uint32_t n             = cyclOrder / 2;
+    // TODO - CZR - Need to switch based on CKKS variant
+    //uint32_t n             = cyclOrder / 2;
+    uint32_t n             = cyclOrder / 4;
     uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
     // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
     if (ksTech == HYBRID) {
@@ -217,7 +219,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
     }
 
-    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
+    // TODO - CZR - must switch based on CKKS variant
+    // auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
+    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder/2, moduliQ, rootsQ);
 
     cryptoParamsCKKSRNS->SetElementParams(paramsDCRT);
 
@@ -233,7 +237,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     // if no batch size was specified, we set batchSize = n/2 by default (for full
     // packing)
     if (encodingParams->GetBatchSize() == 0) {
-        uint32_t batchSize = n / 2;
+        // TODO - CZR - must switch based on CKKS variant
+        // uint32_t batchSize = n / 2;
+        uint32_t batchSize = n;
         EncodingParams encodingParamsNew(
             std::make_shared<EncodingParamsImpl>(encodingParams->GetPlaintextModulus(), batchSize));
         cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);
