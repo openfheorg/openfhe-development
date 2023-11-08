@@ -125,9 +125,18 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
+    // TODO - CZR - need to switch based on CKKS variant
+    // scheme->ParamsGenCKKSRNS(
+    //     params,
+    //     2 * parameters.GetRingDim(),
+    //     parameters.GetMultiplicativeDepth() + 1,
+    //     scalingModSize,
+    //     firstModSize,
+    //     numLargeDigits,
+    //     parameters.GetInteractiveBootCompressionLevel());
     scheme->ParamsGenCKKSRNS(
         params,
-        2 * parameters.GetRingDim(),
+        4 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
         scalingModSize,
         firstModSize,
