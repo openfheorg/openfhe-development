@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H
 #define LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H
 
-#include "lattice/ildcrtparams.h"
+#include "lattice/hal/default/ildcrtparams.h"
 #include "lattice/ilelement.h"
 
 #include "math/math-hal.h"

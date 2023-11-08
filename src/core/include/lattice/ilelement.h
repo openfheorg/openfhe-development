@@ -36,7 +36,6 @@
 #ifndef LBCRYPTO_INC_LATTICE_ILELEMENT_H
 #define LBCRYPTO_INC_LATTICE_ILELEMENT_H
 
-// #include "math/math-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 

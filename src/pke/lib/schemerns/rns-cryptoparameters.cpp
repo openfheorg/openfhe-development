@@ -118,8 +118,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 moduli[i] = params[i]->GetModulus();
                 roots[i]  = params[i]->GetRootOfUnity();
             }
-            m_paramsPartQ[j] = std::make_shared<ILDCRTParams<BigInteger>>(
-                ILDCRTParams<BigInteger>(params[0]->GetCyclotomicOrder(), moduli, roots, {}, {}, BigInteger(0)));
+            m_paramsPartQ[j] =
+                std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
         }
 
         uint32_t sizeP;
@@ -266,8 +266,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                         roots[k]  = rootsP[k - ((l + 1) - sizePartQj)];
                     }
                 }
-                m_paramsComplPartQ[l][j] =
-                    std::make_shared<ParmType>(DCRTPoly::Params(cyclOrder, moduli, roots, {}, {}, 0));
+                m_paramsComplPartQ[l][j] = std::make_shared<ParmType>(cyclOrder, moduli, roots);
 
                 // Pre-compute Barrett mu for 128-bit by 64-bit reduction
                 const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128

@@ -38,7 +38,6 @@
 
 #include "lattice/lat-hal.h"
 
-// #include "math/dftransform.h"
 #include "math/matrix.h"
 
 #include "utils/exception.h"

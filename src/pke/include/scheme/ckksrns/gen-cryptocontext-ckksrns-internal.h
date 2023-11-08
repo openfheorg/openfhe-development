@@ -59,10 +59,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     }
 #endif
     using ParmType                   = typename Element::Params;
-    using IntType                    = typename Element::Integer;
-    constexpr float assuranceMeasure = 36;
+    constexpr float assuranceMeasure = 36.0f;
 
-    auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
+    auto ep = std::make_shared<ParmType>();
 
     usint scalingModSize    = parameters.GetScalingModSize();
     usint firstModSize      = parameters.GetFirstModSize();

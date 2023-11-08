@@ -37,8 +37,8 @@
 #define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_H
 
 #include "lattice/hal/poly-interface.h"
-#include "lattice/ildcrtparams.h"
-#include "lattice/ilparams.h"
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/hal/default/ilparams.h"
 
 #include "math/distrgen.h"
 #include "math/math-hal.h"
@@ -48,6 +48,7 @@
 #include "utils/inttypes.h"
 
 #include <functional>
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -84,7 +85,11 @@ public:
             PolyImpl::SetValuesToZero();
     }
     PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>>& params, Format format = Format::EVALUATION,
-             bool initializeElementToZero = false);
+             bool initializeElementToZero = false)
+        : m_format(format), m_params(std::make_shared<Params>(params->GetCyclotomicOrder(), params->GetModulus(), 1)) {
+        if (initializeElementToZero)
+            this->SetValuesToZero();
+    }
 
     PolyImpl(bool initializeElementToMax, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION)
         : m_format{format}, m_params{params} {
@@ -355,18 +360,6 @@ protected:
     std::unique_ptr<VecType> m_values{nullptr};
     void ArbitrarySwitchFormat();
 };
-
-// TODO: fix issue with pke build system so this can be moved back to implementation file
-template <>
-inline PolyImpl<BigVector>::PolyImpl(const std::shared_ptr<ILDCRTParams<BigInteger>>& params, Format format,
-                                     bool initializeElementToZero)
-    : m_format(format), m_params(nullptr), m_values(nullptr) {
-    const auto c = params->GetCyclotomicOrder();
-    const auto m = params->GetModulus();
-    m_params     = std::make_shared<ILParams>(c, m, 1);
-    if (initializeElementToZero)
-        this->SetValuesToZero();
-}
 
 }  // namespace lbcrypto
 

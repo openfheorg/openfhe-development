@@ -52,7 +52,7 @@ template class TernaryUniformGeneratorImpl<M4Vector>;
 template class DiscreteUniformGeneratorImpl<M4Vector>;
 
 template M4Integer RootOfUnity<M4Integer>(usint m, const M4Integer& modulo);
-template std::vector<M4Integer> RootsOfUnity(usint m, const std::vector<M4Integer> moduli);
+template std::vector<M4Integer> RootsOfUnity(usint m, const std::vector<M4Integer>& moduli);
 template M4Integer GreatestCommonDivisor(const M4Integer& a, const M4Integer& b);
 template bool MillerRabinPrimalityTest(const M4Integer& p, const usint niter);
 template const M4Integer PollardRhoFactorization(const M4Integer& n);

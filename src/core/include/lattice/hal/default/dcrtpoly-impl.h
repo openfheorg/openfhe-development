@@ -238,7 +238,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::CloneTowers(uint32_t startTower, ui
     }
 
     const auto co = m_params->GetCyclotomicOrder();
-    auto params   = std::make_shared<Params>(Params(co, m, r, {}, {}, 0));
+    auto params   = std::make_shared<Params>(co, m, r);
     auto res      = DCRTPolyImpl(params, Format::EVALUATION, false);
 
     for (uint32_t i = startTower; i <= endTower; i++) {
