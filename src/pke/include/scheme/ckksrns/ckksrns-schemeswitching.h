@@ -148,8 +148,18 @@ public:
                                                                 uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
-    std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override;
-    void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override;
+    std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
+        return m_ccLWE;
+    }
+    void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override {
+        m_ccLWE = ccLWE;
+    }
+    uint32_t GetNumCtxtsToSwitch() {
+        return m_numCtxts;
+    }
+    NativeInteger GetModulusLWEToSwitch() {
+        return m_modulus_LWE;
+    }
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -254,7 +264,7 @@ private:
     NativeInteger m_modulus_CKKS_from;
     // number of slots encoded in the CKKS ciphertext
     uint32_t m_numSlotsCKKS;
-    // number of ciphertexts to switch, different logic for argmin
+    // number of ciphertexts to switch, different logic for argmin (i.e., it starts from number of ciphertexts / 2)
     uint32_t m_numCtxts;
     // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
     uint32_t m_dim1CF;

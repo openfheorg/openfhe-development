@@ -101,9 +101,11 @@ void demarcate(const std::string& msg) {
  * @param oneHot - flag to indicate one hot encoding of the result
  * @return Tuple<cryptoContext, keyPair>
  */
-std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, std::shared_ptr<lbcrypto::BinFHEContext>, int>
-serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, uint32_t scaleModSize,
-                    uint32_t firstModSize, uint32_t logQ_LWE, bool oneHot) {
+std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize,
+                                                                                uint32_t multDepth,
+                                                                                uint32_t scaleModSize,
+                                                                                uint32_t firstModSize,
+                                                                                uint32_t logQ_LWE, bool oneHot) {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
     bool arbFunc          = false;
@@ -136,8 +138,6 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
     auto privateKeyFHEW = objSchemeSwitch->EvalSchemeSwitchingSetup(
         *serverCC, sl, slBin, arbFunc, logQ_LWE, false, batchSize, batchSize, true, oneHot, false, 27, 0, 0, 1, 0);
     auto serverBinCC = objSchemeSwitch->GetBinCCForSchemeSwitch();
-
-    std::cout << "serverCC: " << serverCC << std::endl;
 
     auto evalKeys = objSchemeSwitch->EvalSchemeSwitchingKeyGen(serverKP, privateKeyFHEW);
 
@@ -178,7 +178,6 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
     auto serverC = serverCC->Encrypt(serverKP.publicKey, serverP);
 
     std::cout << "Ciphertext have been generated from Plaintext" << std::endl;
-    std::cout << "serverC cc: " << serverC->GetCryptoContext() << std::endl;
 
     /*
    * Part 2:
@@ -195,14 +194,6 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
    */
 
     demarcate("Part 2: Data Serialization (server)");
-
-    if (!Serial::SerializeToFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::BINARY)) {
-        std::cerr << "Error writing serialization of the scheme switching parameters to "
-                     "paramss.txt"
-                  << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The parameters for scheme switching have been serialized." << std::endl;
 
     if (!Serial::SerializeToFile(DATAFOLDER + ccLocation, serverCC, SerType::BINARY)) {
         std::cerr << "Error writing serialization of the crypto context to "
@@ -245,6 +236,14 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
         std::cerr << "Error serializing Rotation keys" << std::endl;
         std::exit(1);
     }
+
+    if (!Serial::SerializeToFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::BINARY)) {
+        std::cerr << "Error writing serialization of the scheme switching parameters to "
+                     "paramss.txt"
+                  << std::endl;
+        std::exit(1);
+    }
+    std::cout << "The parameters for scheme switching have been serialized." << std::endl;
 
     if (!Serial::SerializeToFile(DATAFOLDER + cipherLocation, serverC, SerType::BINARY)) {
         std::cerr << " Error writing ciphertext" << std::endl;
@@ -290,40 +289,16 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
         std::cout << "The BT map element for baseG = " << index << " has been serialized." << std::endl;
     }
 
-    // // Andreea: Sanity check that it works when we don't serialize
-    // // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
-    // double scaleSign = 512.0;
-    // auto modulus_LWE = 1 << 25;  // Andreea: to add the modulus from the server
-    // auto beta        = serverBinCC->GetBeta().ConvertToInt();
-    // auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    // objSchemeSwitch->EvalCompareSwitchPrecompute(*serverCC, pLWE, 0, scaleSign, false);
-
-    // std::cout << "Done with server precomputations" << '\n' << std::endl;
-
-    // auto clientCiphertextArgmin = objSchemeSwitch->EvalMinSchemeSwitching(
-    //     serverC, serverKP.publicKey, 4, 4, 0, 1);  // Andreea: to add the parameters from the server
-
-    return std::make_tuple(serverCC, serverKP, serverBinCC, vec.size());
+    return std::make_tuple(serverCC, serverKP, vec.size());
 }
 
 /**
  * clientProcess
  *  - deserialize data from a file which simulates receiving data from a server
  * after making a request
- *  - we then process the data by doing operations (multiplication, addition,
- * rotation, etc)
- *  - !! We also create an object and encrypt it in this function before sending
- * it off to the server to be decrypted
+ *  - we then process the data
  */
 void clientProcess() {
-    auto objSchemeSwitch = std::make_shared<SWITCHCKKSRNS>();
-    if (!Serial::DeserializeFromFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::BINARY)) {
-        std::cerr << "Cannot read serialized data from: " << DATAFOLDER << "/paramss.txt" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Client scheme switching parameters deserialized" << std::endl;
-
     CryptoContext<DCRTPoly> clientCC;
     clientCC->ClearEvalMultKeys();
     clientCC->ClearEvalAutomorphismKeys();
@@ -342,6 +317,13 @@ void clientProcess() {
         std::exit(1);
     }
     std::cout << "Client KP deserialized" << std::endl;
+
+    auto objSchemeSwitch = std::make_shared<SWITCHCKKSRNS>();
+    if (!Serial::DeserializeFromFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::BINARY)) {
+        std::cerr << "Cannot read serialized data from: " << DATAFOLDER << "/paramss.txt" << std::endl;
+        std::exit(1);
+    }
+    std::cout << "Client scheme switching parameters deserialized" << std::endl;
 
     std::ifstream multKeyIStream(DATAFOLDER + multKeyLocation, std::ios::in | std::ios::binary);
     if (!multKeyIStream.is_open()) {
@@ -371,7 +353,7 @@ void clientProcess() {
     }
     std::cout << "The cryptocontext has been deserialized." << std::endl;
 
-    // deserializing the refreshing and switching keys (forbootstrapping)
+    // deserializing the refreshing and switching keys (for bootstrapping)
 
     RingGSWACCKey refreshKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + btRkLocation, refreshKey, SerType::BINARY) == false) {
@@ -421,27 +403,27 @@ void clientProcess() {
     }
     std::cout << "Deserialized ciphertext" << '\n' << std::endl;
 
-    std::cout << "clientCC: " << clientCC << std::endl;
-    std::cout << "clientC cc: " << clientC->GetCryptoContext() << std::endl;
-
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
-    auto modulus_LWE = 1 << 25;  // Andreea: to add the modulus from the server
+    auto modulus_LWE = objSchemeSwitch->GetModulusLWEToSwitch().ConvertToInt();
     auto beta        = clientBinCC->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
     objSchemeSwitch->EvalCompareSwitchPrecompute(*clientCC, pLWE, 0, scaleSign, false);
 
-    std::cout << "Done with server precomputations" << '\n' << std::endl;
+    std::cout << "Done with precomputations" << '\n' << std::endl;
 
+    // Compute on the ciphertext
     auto clientCiphertextArgmin = objSchemeSwitch->EvalMinSchemeSwitching(
-        clientC, clientPublicKey, 4, 4, 0, 1);  // Andreea: to add the parameters from the server
+        clientC, clientPublicKey, clientC->GetSlots(), 2 * objSchemeSwitch->GetNumCtxtsToSwitch(), 0, 1);
+
+    std::cout << "Done with argmin computation" << '\n' << std::endl;
 
     // Now, we want to simulate a client who is encrypting data for the server to
     // decrypt. E.g weights of a machine learning algorithm
     demarcate("Part 3.5: Client Serialization of data that has been operated on");
 
-    Serial::SerializeToFile(DATAFOLDER + cipherArgminLocation, clientCiphertextArgmin, SerType::BINARY);
+    Serial::SerializeToFile(DATAFOLDER + cipherArgminLocation, clientCiphertextArgmin[1], SerType::BINARY);
 
     std::cout << "Serialized ciphertext from client" << '\n' << std::endl;
 }
@@ -466,7 +448,6 @@ Plaintext serverVerification(CryptoContext<DCRTPoly>& cc, KeyPair<DCRTPoly>& kp,
     demarcate("Part 5: Correctness verification");
 
     Plaintext serverPlaintextFromClient_Argmin;
-
     cc->Decrypt(kp.secretKey, serverCiphertextFromClient_Argmin, &serverPlaintextFromClient_Argmin);
 
     serverPlaintextFromClient_Argmin->SetLength(vectorSize);
@@ -487,10 +468,9 @@ int main() {
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
 
-    const int cryptoContextIdx    = 0;
-    const int keyPairIdx          = 1;
-    const int binCryptoContextIdx = 2;
-    const int vectorSizeIdx       = 3;
+    const int cryptoContextIdx = 0;
+    const int keyPairIdx       = 1;
+    const int vectorSizeIdx    = 2;
 
     demarcate(
         "Part 1: Cryptocontext generation, key generation, data encryption "
@@ -500,7 +480,6 @@ int main() {
         serverSetupAndWrite(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
     auto cc        = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);
     auto kp        = std::get<keyPairIdx>(tupleCryptoContext_KeyPair);
-    auto bincc     = std::get<binCryptoContextIdx>(tupleCryptoContext_KeyPair);
     int vectorSize = std::get<vectorSizeIdx>(tupleCryptoContext_KeyPair);
 
     demarcate("Part 3: Client deserialize all data");

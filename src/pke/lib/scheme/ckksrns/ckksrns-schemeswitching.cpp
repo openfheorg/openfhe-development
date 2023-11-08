@@ -1976,10 +1976,6 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
         TIC(t);
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
-        std::cout << "cc from ciphertext: " << cc << std::endl;
-        std::cout << "cc from m_FHEWtoCKKSswk: " << m_FHEWtoCKKSswk->GetCryptoContext() << std::endl;
-        std::cout << "cc from cSelect: " << cSelect->GetCryptoContext() << std::endl;
-
         cc->EvalAddInPlace(cSelect,
                            cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
 
@@ -2280,13 +2276,6 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
     std::vector<Ciphertext<DCRTPoly>> cRes{newCiphertext, cInd};
 
     return cRes;
-}
-
-std::shared_ptr<lbcrypto::BinFHEContext> SWITCHCKKSRNS::GetBinCCForSchemeSwitch() {
-    return m_ccLWE;
-}
-void SWITCHCKKSRNS::SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
-    m_ccLWE = ccLWE;
 }
 
 }  // namespace lbcrypto
