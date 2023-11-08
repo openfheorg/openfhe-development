@@ -112,9 +112,8 @@ void SwitchCKKSToFHEW(uint32_t depth, uint32_t slots, uint32_t numValues) {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(HEStd_128_classic, STD128, false, logQ_ccLWE, false, slots);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(HEStd_128_classic, STD128, false, logQ_ccLWE, false, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
     timeSetup           = TOC(t);
     std::cout << "Time to compute the CKKS to FHEW switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
@@ -363,12 +362,12 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, false, logQ_ccLWE, false, slots, slots);
-    timeSetup       = TOC(t);
+    auto privateKeyFHEW =
+        cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, false, logQ_ccLWE, false, slots, slots);
+    timeSetup = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -506,13 +505,12 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, arbFunc, logQ_ccLWE, false, slots,
-                                                   numValues, true, oneHot);
-    timeSetup       = TOC(t);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, arbFunc, logQ_ccLWE, false, slots,
+                                                       numValues, true, oneHot);
+    timeSetup           = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -660,13 +658,12 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, arbFunc, logQ_ccLWE, false, slots,
-                                                   numValues, true, oneHot, alt);
-    timeSetup       = TOC(t);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, arbFunc, logQ_ccLWE, false, slots,
+                                                       numValues, true, oneHot, alt);
+    timeSetup           = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -815,13 +812,12 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams =
+    auto privateKeyFHEW =
         cc->EvalSchemeSwitchingSetup(HEStd_NotSet, STD128, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
     timeSetup = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -969,13 +965,12 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, STD128, arbFunc, logQ_ccLWE, false, slots, numValues,
-                                                   true, oneHot, true);
-    timeSetup       = TOC(t);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, STD128, arbFunc, logQ_ccLWE, false, slots,
+                                                       numValues, true, oneHot, true);
+    timeSetup           = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -1122,12 +1117,11 @@ void Comparison(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t rin
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, STD128, false, logQ_ccLWE, false, slots, slots);
-    timeSetup       = TOC(t);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, STD128, false, logQ_ccLWE, false, slots, slots);
+    timeSetup           = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);

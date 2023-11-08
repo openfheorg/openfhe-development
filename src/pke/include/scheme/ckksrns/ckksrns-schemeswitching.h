@@ -61,9 +61,9 @@ public:
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
 
-    std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
-        const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
+    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                      bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
+                                      uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk) override;
@@ -111,10 +111,11 @@ public:
                                         uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
                                         uint32_t dim1) const override;
 
-    std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
-        const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot, bool alt,
-        uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
+    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
+                                           BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
+                                           uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot,
+                                           bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
+                                           uint32_t LCF, uint32_t LFC) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                                   ConstLWEPrivateKey& lwesk) override;
@@ -147,6 +148,9 @@ public:
                                                                 uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
+    std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override;
+    void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override;
+
     //------------------------------------------------------------------------------
     // SERIALIZATION
     //------------------------------------------------------------------------------
@@ -166,8 +170,6 @@ public:
         ar(cereal::make_nvp("argmin", m_argmin));
         ar(cereal::make_nvp("oneHot", m_oneHot));
         ar(cereal::make_nvp("alt", m_alt));
-        ar(cereal::make_nvp("ccF", m_ccLWE));
-        ar(cereal::make_nvp("ccKS", m_ccKS));
         ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
         ar(cereal::make_nvp("swlFC", m_FHEWtoCKKSswk));
         ar(cereal::make_nvp("ctKS", m_ctxtKS));
@@ -188,8 +190,6 @@ public:
         ar(cereal::make_nvp("argmin", m_argmin));
         ar(cereal::make_nvp("oneHot", m_oneHot));
         ar(cereal::make_nvp("alt", m_alt));
-        ar(cereal::make_nvp("ccF", m_ccLWE));
-        ar(cereal::make_nvp("ccKS", m_ccKS));
         ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
         ar(cereal::make_nvp("swlFC", m_FHEWtoCKKSswk));
         ar(cereal::make_nvp("ctKS", m_ctxtKS));

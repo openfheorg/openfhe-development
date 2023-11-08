@@ -133,10 +133,11 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
 
     auto objSchemeSwitch = std::make_shared<SWITCHCKKSRNS>();
 
-    auto FHEWparams = objSchemeSwitch->EvalSchemeSwitchingSetup(
+    auto privateKeyFHEW = objSchemeSwitch->EvalSchemeSwitchingSetup(
         *serverCC, sl, slBin, arbFunc, logQ_LWE, false, batchSize, batchSize, true, oneHot, false, 27, 0, 0, 1, 0);
-    auto serverBinCC    = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto serverBinCC = objSchemeSwitch->GetBinCCForSchemeSwitch();
+
+    std::cout << "serverCC: " << serverCC << std::endl;
 
     auto evalKeys = objSchemeSwitch->EvalSchemeSwitchingKeyGen(serverKP, privateKeyFHEW);
 
@@ -177,6 +178,7 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
     auto serverC = serverCC->Encrypt(serverKP.publicKey, serverP);
 
     std::cout << "Ciphertext have been generated from Plaintext" << std::endl;
+    std::cout << "serverC cc: " << serverC->GetCryptoContext() << std::endl;
 
     /*
    * Part 2:
@@ -194,7 +196,15 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
 
     demarcate("Part 2: Data Serialization (server)");
 
-    if (!Serial::SerializeToFile(DATAFOLDER + ccLocation, serverCC, SerType::JSON)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::BINARY)) {
+        std::cerr << "Error writing serialization of the scheme switching parameters to "
+                     "paramss.txt"
+                  << std::endl;
+        std::exit(1);
+    }
+    std::cout << "The parameters for scheme switching have been serialized." << std::endl;
+
+    if (!Serial::SerializeToFile(DATAFOLDER + ccLocation, serverCC, SerType::BINARY)) {
         std::cerr << "Error writing serialization of the crypto context to "
                      "cryptocontext.txt"
                   << std::endl;
@@ -203,7 +213,7 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
 
     std::cout << "Cryptocontext serialized" << std::endl;
 
-    if (!Serial::SerializeToFile(DATAFOLDER + pubKeyLocation, serverKP.publicKey, SerType::JSON)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + pubKeyLocation, serverKP.publicKey, SerType::BINARY)) {
         std::cerr << "Exception writing public key to pubkey.txt" << std::endl;
         std::exit(1);
     }
@@ -211,7 +221,7 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
 
     std::ofstream multKeyFile(DATAFOLDER + multKeyLocation, std::ios::out | std::ios::binary);
     if (multKeyFile.is_open()) {
-        if (!serverCC->SerializeEvalMultKey(multKeyFile, SerType::JSON)) {
+        if (!serverCC->SerializeEvalMultKey(multKeyFile, SerType::BINARY)) {
             std::cerr << "Error writing eval mult keys" << std::endl;
             std::exit(1);
         }
@@ -225,7 +235,7 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
 
     std::ofstream rotationKeyFile(DATAFOLDER + rotKeyLocation, std::ios::out | std::ios::binary);
     if (rotationKeyFile.is_open()) {
-        if (!serverCC->SerializeEvalAutomorphismKey(rotationKeyFile, SerType::JSON)) {
+        if (!serverCC->SerializeEvalAutomorphismKey(rotationKeyFile, SerType::BINARY)) {
             std::cerr << "Error writing rotation keys" << std::endl;
             std::exit(1);
         }
@@ -236,34 +246,26 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
         std::exit(1);
     }
 
-    if (!Serial::SerializeToFile(DATAFOLDER + cipherLocation, serverC, SerType::JSON)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + cipherLocation, serverC, SerType::BINARY)) {
         std::cerr << " Error writing ciphertext" << std::endl;
         std::exit(1);
     }
 
-    if (!Serial::SerializeToFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::JSON)) {
-        std::cerr << "Error writing serialization of the scheme switching parameters to "
-                     "paramss.txt"
-                  << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The parameters for scheme switching have been serialized." << std::endl;
-
-    if (!Serial::SerializeToFile(DATAFOLDER + binccLocation, serverBinCC, SerType::JSON)) {
-        std::cerr << "Error serializing the cryptocontext" << std::endl;
+    if (!Serial::SerializeToFile(DATAFOLDER + binccLocation, serverBinCC, SerType::BINARY)) {
+        std::cerr << "Error serializing the binfhe cryptocontext" << std::endl;
         std::exit(1);
     }
     std::cout << "The binfhe cryptocontext has been serialized." << std::endl;
 
     // Serializing refreshing and key switching keys (needed for bootstrapping)
 
-    if (!Serial::SerializeToFile(DATAFOLDER + btRkLocation, (*serverBinCC).GetRefreshKey(), SerType::JSON)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + btRkLocation, (*serverBinCC).GetRefreshKey(), SerType::BINARY)) {
         std::cerr << "Error serializing the refreshing key" << std::endl;
         std::exit(1);
     }
     std::cout << "The refreshing key has been serialized." << std::endl;
 
-    if (!Serial::SerializeToFile(DATAFOLDER + btSwkLocation, (*serverBinCC).GetSwitchKey(), SerType::JSON)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + btSwkLocation, (*serverBinCC).GetSwitchKey(), SerType::BINARY)) {
         std::cerr << "Error serializing the switching key" << std::endl;
         std::exit(1);
     }
@@ -274,13 +276,13 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
         auto index  = it->first;
         auto thekey = it->second;
         if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey,
-                                     SerType::JSON)) {
+                                     SerType::BINARY)) {
             std::cerr << "Error serializing the refreshing key" << std::endl;
             std::exit(1);
         }
 
         if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey,
-                                     SerType::JSON)) {
+                                     SerType::BINARY)) {
             std::cerr << "Error serializing the switching key" << std::endl;
             std::exit(1);
         }
@@ -315,55 +317,55 @@ serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize, uint32_t multDepth, ui
  * it off to the server to be decrypted
  */
 void clientProcess() {
+    auto objSchemeSwitch = std::make_shared<SWITCHCKKSRNS>();
+    if (!Serial::DeserializeFromFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::BINARY)) {
+        std::cerr << "Cannot read serialized data from: " << DATAFOLDER << "/paramss.txt" << std::endl;
+        std::exit(1);
+    }
+    std::cout << "Client scheme switching parameters deserialized" << std::endl;
+
     CryptoContext<DCRTPoly> clientCC;
     clientCC->ClearEvalMultKeys();
     clientCC->ClearEvalAutomorphismKeys();
     lbcrypto::CryptoContextFactory<lbcrypto::DCRTPoly>::ReleaseAllContexts();
-    if (!Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::JSON)) {
+    if (!Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::BINARY)) {
         std::cerr << "I cannot read serialized data from: " << DATAFOLDER << "/cryptocontext.txt" << std::endl;
         std::exit(1);
     }
-    std::cout << "Client CC deserialized";
+    std::cout << "Client CC deserialized" << std::endl;
 
     KeyPair<DCRTPoly> clientKP;  // We do NOT have a secret key. The client
     // should not have access to this
     PublicKey<DCRTPoly> clientPublicKey;
-    if (!Serial::DeserializeFromFile(DATAFOLDER + pubKeyLocation, clientPublicKey, SerType::JSON)) {
+    if (!Serial::DeserializeFromFile(DATAFOLDER + pubKeyLocation, clientPublicKey, SerType::BINARY)) {
         std::cerr << "I cannot read serialized data from: " << DATAFOLDER << "/cryptocontext.txt" << std::endl;
         std::exit(1);
     }
-    std::cout << "Client KP deserialized" << '\n' << std::endl;
+    std::cout << "Client KP deserialized" << std::endl;
 
     std::ifstream multKeyIStream(DATAFOLDER + multKeyLocation, std::ios::in | std::ios::binary);
     if (!multKeyIStream.is_open()) {
         std::cerr << "Cannot read serialization from " << DATAFOLDER + multKeyLocation << std::endl;
         std::exit(1);
     }
-    if (!clientCC->DeserializeEvalMultKey(multKeyIStream, SerType::JSON)) {
+    if (!clientCC->DeserializeEvalMultKey(multKeyIStream, SerType::BINARY)) {
         std::cerr << "Could not deserialize eval mult key file" << std::endl;
         std::exit(1);
     }
 
-    std::cout << "Deserialized eval mult keys" << '\n' << std::endl;
+    std::cout << "Deserialized eval mult keys" << std::endl;
     std::ifstream rotKeyIStream(DATAFOLDER + rotKeyLocation, std::ios::in | std::ios::binary);
     if (!rotKeyIStream.is_open()) {
         std::cerr << "Cannot read serialization from " << DATAFOLDER + multKeyLocation << std::endl;
         std::exit(1);
     }
-    if (!clientCC->DeserializeEvalAutomorphismKey(rotKeyIStream, SerType::JSON)) {
+    if (!clientCC->DeserializeEvalAutomorphismKey(rotKeyIStream, SerType::BINARY)) {
         std::cerr << "Could not deserialize eval rot key file" << std::endl;
         std::exit(1);
     }
 
-    auto objSchemeSwitch = std::make_shared<SWITCHCKKSRNS>();
-    if (!Serial::DeserializeFromFile(DATAFOLDER + paramssLocation, objSchemeSwitch, SerType::JSON)) {
-        std::cerr << "Cannot read serialized data from: " << DATAFOLDER << "/paramss.txt" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Client scheme switching parameters deserialized";
-
     std::shared_ptr<lbcrypto::BinFHEContext> clientBinCC;
-    if (Serial::DeserializeFromFile(DATAFOLDER + binccLocation, clientBinCC, SerType::JSON) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + binccLocation, clientBinCC, SerType::BINARY) == false) {
         std::cerr << "Could not deserialize the cryptocontext" << std::endl;
         std::exit(1);
     }
@@ -372,14 +374,14 @@ void clientProcess() {
     // deserializing the refreshing and switching keys (forbootstrapping)
 
     RingGSWACCKey refreshKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + btRkLocation, refreshKey, SerType::JSON) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + btRkLocation, refreshKey, SerType::BINARY) == false) {
         std::cerr << "Could not deserialize the refresh key" << std::endl;
         std::exit(1);
     }
     std::cout << "The refresh key has been deserialized." << std::endl;
 
     LWESwitchingKey ksKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + btSwkLocation, ksKey, SerType::JSON) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + btSwkLocation, ksKey, SerType::BINARY) == false) {
         std::cerr << "Could not deserialize the switching key" << std::endl;
         std::exit(1);
     }
@@ -389,14 +391,14 @@ void clientProcess() {
 
     for (size_t i = 0; i < baseGlist.size(); i++) {
         if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey,
-                                        SerType::JSON) == false) {
+                                        SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the refresh key" << std::endl;
             std::exit(1);
         }
 
         LWESwitchingKey ksKey;
         if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey,
-                                        SerType::JSON) == false) {
+                                        SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the switching key" << std::endl;
             std::exit(1);
         }
@@ -409,12 +411,18 @@ void clientProcess() {
     // Loading the keys in the cryptocontext
     (*clientBinCC).BTKeyLoad({refreshKey, ksKey});
 
+    // Set the internal binfhe cryptocontext
+    objSchemeSwitch->SetBinCCForSchemeSwitch(clientBinCC);
+
     Ciphertext<DCRTPoly> clientC;
-    if (!Serial::DeserializeFromFile(DATAFOLDER + cipherLocation, clientC, SerType::JSON)) {
+    if (!Serial::DeserializeFromFile(DATAFOLDER + cipherLocation, clientC, SerType::BINARY)) {
         std::cerr << "Cannot read serialization from " << DATAFOLDER + cipherLocation << std::endl;
         std::exit(1);
     }
     std::cout << "Deserialized ciphertext" << '\n' << std::endl;
+
+    std::cout << "clientCC: " << clientCC << std::endl;
+    std::cout << "clientC cc: " << clientC->GetCryptoContext() << std::endl;
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
@@ -433,7 +441,7 @@ void clientProcess() {
     // decrypt. E.g weights of a machine learning algorithm
     demarcate("Part 3.5: Client Serialization of data that has been operated on");
 
-    Serial::SerializeToFile(DATAFOLDER + cipherArgminLocation, clientCiphertextArgmin, SerType::JSON);
+    Serial::SerializeToFile(DATAFOLDER + cipherArgminLocation, clientCiphertextArgmin, SerType::BINARY);
 
     std::cout << "Serialized ciphertext from client" << '\n' << std::endl;
 }
@@ -452,7 +460,7 @@ void clientProcess() {
 Plaintext serverVerification(CryptoContext<DCRTPoly>& cc, KeyPair<DCRTPoly>& kp, int vectorSize) {
     Ciphertext<DCRTPoly> serverCiphertextFromClient_Argmin;
 
-    Serial::DeserializeFromFile(DATAFOLDER + cipherArgminLocation, serverCiphertextFromClient_Argmin, SerType::JSON);
+    Serial::DeserializeFromFile(DATAFOLDER + cipherArgminLocation, serverCiphertextFromClient_Argmin, SerType::BINARY);
     std::cout << "Deserialized all data from client on server" << '\n' << std::endl;
 
     demarcate("Part 5: Correctness verification");

@@ -499,9 +499,9 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Eleme
 //------------------------------------------------------------------------------
 
 template <typename Element>
-std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> CryptoContextImpl<Element>::EvalCKKStoFHEWSetup(
-    SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
-    uint32_t logQswitch, uint32_t dim1, uint32_t L) {
+LWEPrivateKey CryptoContextImpl<Element>::EvalCKKStoFHEWSetup(SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc,
+                                                              uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
+                                                              uint32_t logQswitch, uint32_t dim1, uint32_t L) {
     VerifyCKKSScheme(__func__);
     return GetScheme()->EvalCKKStoFHEWSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch, dim1,
                                             L);
@@ -562,10 +562,12 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKS(
 }
 
 template <typename Element>
-std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> CryptoContextImpl<Element>::EvalSchemeSwitchingSetup(
-    SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
-    uint32_t numValues, bool argmin, bool oneHot, bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
-    uint32_t LCF, uint32_t LFC) {
+LWEPrivateKey CryptoContextImpl<Element>::EvalSchemeSwitchingSetup(SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                                                   bool arbFunc, uint32_t logQ, bool dynamic,
+                                                                   uint32_t numSlotsCKKS, uint32_t numValues,
+                                                                   bool argmin, bool oneHot, bool alt,
+                                                                   uint32_t logQswitch, uint32_t dim1CF,
+                                                                   uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
     VerifyCKKSScheme(__func__);
     return GetScheme()->EvalSchemeSwitchingSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, numValues,
                                                  argmin, oneHot, alt, logQswitch, dim1CF, dim1FC, LCF, LFC);
@@ -640,6 +642,15 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitch
     VerifyCKKSScheme(__func__);
     ValidateCiphertext(ciphertext);
     return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
+}
+
+template <typename Element>
+std::shared_ptr<lbcrypto::BinFHEContext> CryptoContextImpl<Element>::GetBinCCForSchemeSwitch() {
+    return GetScheme()->GetBinCCForSchemeSwitch();
+}
+template <typename Element>
+void CryptoContextImpl<Element>::SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
+    GetScheme()->SetBinCCForSchemeSwitch(ccLWE);
 }
 
 }  // namespace lbcrypto

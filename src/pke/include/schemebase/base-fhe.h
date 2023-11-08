@@ -142,12 +142,11 @@ public:
    * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
-   * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
-   * from the secret key is created, then we can only return the secret key)
+   * @return the FHEW secret key
    */
-    virtual std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
-        const CryptoContextImpl<Element>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1, uint32_t L) {
+    virtual LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc, SecurityLevel sl,
+                                              BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
+                                              uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1, uint32_t L) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWSetup is not supported for this scheme");
     }
 
@@ -273,14 +272,14 @@ public:
    * @param dim1FC baby-step for the linear transform in FHEW to CKKS
    * @param LCF level on which to do the linear transform in CKKS to FHEW
    * @param LFC level on which to do the linear transform in FHEW to CKKS
-   * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
-   * from the secret key is created, then we can only return the secret key)
+   * @return the FHEW secret key
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    virtual std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
-        const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-        bool dynamic, uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot, bool alt,
-        uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
+    virtual LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl,
+                                                   BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
+                                                   uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot,
+                                                   bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
+                                                   uint32_t LCF, uint32_t LFC) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingSetup is not supported for this scheme");
     }
 
@@ -384,6 +383,16 @@ public:
         OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
 
+    /**
+     * Getter and setter for the binFHE cryptocontext used in scheme switching
+    */
+    virtual std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() {
+        OPENFHE_THROW(not_implemented_error, "GetBinCCForSchemeSwitch is not supported for this scheme");
+    }
+    virtual void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
+        OPENFHE_THROW(not_implemented_error, "SetBinCCForSchemeSwitch is not supported for this scheme");
+    }
+    
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

@@ -1406,10 +1406,10 @@ public:
 
     // SCHEMESWITCHING methods
 
-    std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalCKKStoFHEWSetup(
-        const CryptoContextImpl<Element>& cc, SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128,
-        bool arbFunc = false, uint32_t logQ = 29, bool dynamic = false, uint32_t numSlotsCKKS = 0,
-        uint32_t logQswitch = 27, uint32_t dim1 = 0, uint32_t L = 1) {
+    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc, SecurityLevel sl = HEStd_128_classic,
+                                      BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 29,
+                                      bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27,
+                                      uint32_t dim1 = 0, uint32_t L = 1) {
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch,
                                                    dim1, L);
@@ -1462,11 +1462,12 @@ public:
         return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
     }
 
-    std::pair<std::shared_ptr<lbcrypto::BinFHEContext>, LWEPrivateKey> EvalSchemeSwitchingSetup(
-        const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128,
-        bool arbFunc = false, uint32_t logQ = 29, bool dynamic = false, uint32_t numSlotsCKKS = 0,
-        uint32_t numValues = 0, bool argmin = false, bool oneHot = true, bool alt = false, uint32_t logQswitch = 27,
-        uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0) {
+    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl = HEStd_128_classic,
+                                           BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 29,
+                                           bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t numValues = 0,
+                                           bool argmin = false, bool oneHot = true, bool alt = false,
+                                           uint32_t logQswitch = 27, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
+                                           uint32_t LCF = 1, uint32_t LFC = 0) {
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, numValues,
                                                         argmin, oneHot, alt, logQswitch, dim1CF, dim1FC, LCF, LFC);
@@ -1517,6 +1518,15 @@ public:
                                                                double scaleSign = 1.0) {
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
+    }
+
+    std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->GetBinCCForSchemeSwitch();
+    }
+    void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
+        VerifySchemeSwitchEnabled(__func__);
+        m_SchemeSwitch->SetBinCCForSchemeSwitch(ccLWE);
     }
 
     template <class Archive>

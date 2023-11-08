@@ -112,9 +112,8 @@ void SwitchCKKSToFHEW() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(sl, slBin, false, logQ_ccLWE, false, slots);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(sl, slBin, false, logQ_ccLWE, false, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
     cc->EvalCKKStoFHEWKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
@@ -292,6 +291,7 @@ void SwitchFHEWtoCKKS() {
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS
     cc->EvalFHEWtoCKKSSetup(ccLWE, slots, logQ_ccLWE);
+    cc->SetBinCCForSchemeSwitch(ccLWE);
 
     cc->EvalFHEWtoCKKSKeyGen(keys, lwesk);
 
@@ -433,11 +433,9 @@ void FloorViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    bool arbFunc    = false;
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    bool arbFunc        = false;
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -549,10 +547,8 @@ void FuncViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -699,12 +695,10 @@ void ComparisonViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
     ccLWE->BTKeyGen(privateKeyFHEW);
-
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
@@ -921,10 +915,9 @@ void ArgminViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams =
+    auto privateKeyFHEW =
         cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1054,10 +1047,9 @@ void ArgminViaSchemeSwitchingAlt() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams =
+    auto privateKeyFHEW =
         cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1188,11 +1180,9 @@ void ArgminViaSchemeSwitchingUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams =
+    auto privateKeyFHEW =
         cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1327,11 +1317,9 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams =
+    auto privateKeyFHEW =
         cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1459,10 +1447,8 @@ void PolyViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS and back
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
