@@ -118,7 +118,7 @@ public:
         ar(cereal::make_nvp("dim1_Dec", m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP]));
         ar(cereal::make_nvp("slots", m_slots));
         ar(cereal::make_nvp("lEnc", m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
-        ar(cereal::make_nvp("lEnc", m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
+        ar(cereal::make_nvp("lDec", m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
     }
 
     template <class Archive>
@@ -127,7 +127,7 @@ public:
         ar(cereal::make_nvp("dim1_Dec", m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP]));
         ar(cereal::make_nvp("slots", m_slots));
         ar(cereal::make_nvp("lEnc", m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
-        ar(cereal::make_nvp("lEnc", m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
+        ar(cereal::make_nvp("lDec", m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET]));
     }
 };
 
