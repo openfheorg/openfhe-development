@@ -300,6 +300,83 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
+    
+    
+    // TODO - CZR - must optimize this NTT
+
+    auto ringDim = rootOfUnityTable.GetLength()/2;
+    auto modulus{element->GetModulus()};
+    std::cout << "calling NTT for modulus: " << element->GetModulus() << "\n";
+    std::cout << "roots of unity bitReversed: \n";
+    
+    for (uint32_t i = 0 ; i < rootOfUnityTable.GetLength(); i++)
+        std::cout << rootOfUnityTable[i] << ", ";
+    std::cout << "\n";
+    auto omega4N = rootOfUnityTable[ringDim];//4N-th primitive root of unity
+
+    // twisting out of place
+    VecType elementCopy = (*element);
+    // (*element)[0] = (*element)[0];
+    for (uint32_t i = 1; i < element->GetLength() ; i++) {
+        auto ai = (*element)[i];
+        auto aNmi = (*element)[ringDim-i];
+        auto omega4NToi = omega4N.ModExp(i, modulus);
+        auto omega4NToimN = omega4N.ModExp(3*ringDim+i, modulus);
+        //(*element)[i] = ai*omega4NToi + aNmi*omega4NToimN;
+        auto t1 = ai.ModMul(omega4NToi, modulus);
+        auto t2 = aNmi.ModMul(omega4NToimN, modulus);
+        elementCopy[i] = t1.ModAdd(t2, modulus);
+    }
+    // twisting done
+    std::cout << "Twisted coefficients: \n";
+    for (uint32_t i = 0 ; i < elementCopy.GetLength(); i++)
+        std::cout << elementCopy[i] << ", ";
+    std::cout << "\n";
+
+    // FFT datapath (modulo X^N-1)
+    auto omegaN = omega4N.ModExp(4, modulus);
+    
+    // TODO - use faster copy
+    usint msb  = lbcrypto::GetMSB(ringDim - 1);
+    usint iinv;
+    for (uint32_t i = 0; i < elementCopy.GetLength() ; i++) {
+        iinv         = lbcrypto::ReverseBits(i, msb);
+        (*element)[iinv] = elementCopy[i];
+    }
+
+    for(uint32_t s = 1; s <= uint32_t(std::log2(ringDim)); s++) {
+        uint32_t m = (1 << s);
+        auto wm = omegaN.ModExp(ringDim/m, modulus);
+        for(uint32_t k = 0; k < ringDim; k = k + m) {
+            IntType w(1);
+            for(uint32_t j = 0; j <= (m/2) - 1; j++) {
+                auto t = w.ModMul((*element)[k + j + m/2], modulus);
+                auto u = (*element)[k + j];
+                (*element)[k + j] = u.ModAdd(t, modulus);
+                (*element)[k + j + m/2] = u.ModSub(t, modulus);
+                w = w.ModMul(wm, modulus);
+            };
+        }
+    }
+
+    std::cout << "NTT in normal order: \n";
+    for (uint32_t i = 0 ; i < element->GetLength(); i++)
+        std::cout << (*element)[i] << ", ";
+    std::cout << "\n";
+
+    // TODO:: need to rev-bit order of element
+    VecType elementCopy2 = (*element);
+    for (uint32_t i = 0; i < elementCopy2.GetLength() ; i++) {
+        iinv         = lbcrypto::ReverseBits(i, msb);
+        (*element)[iinv] = elementCopy2[i];
+    }
+
+    std::cout << "NTT in bitRev order: \n";
+    for (uint32_t i = 0 ; i < element->GetLength(); i++)
+        std::cout << (*element)[i] << ", ";
+    std::cout << "\n";
+
+/*
     auto modulus{element->GetModulus()};
     uint32_t n(element->GetLength() >> 1), t{n}, logt{lbcrypto::GetMSB(t)};
     for (uint32_t m{1}; m < n; m <<= 1, t >>= 1, --logt) {
@@ -351,6 +428,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         (*element)[i + t] = loVal - omegaFactor;
 #endif
     }
+
+*/
 }
 
 template <typename VecType>
@@ -591,7 +670,11 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPla
     IntType modulus = element->GetModulus();
 
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
-    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+    // TODO - CZR - must switch based on CKKS variant
+    // if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+    //     PreCompute(rootOfUnity, CycloOrder, modulus);
+    // }
+    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != 2*CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
 
