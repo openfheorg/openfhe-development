@@ -384,6 +384,16 @@ public:
                                                                        double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
+
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
+
+    template <class Archive>
+    void save(Archive& ar) const {}
+
+    template <class Archive>
+    void load(Archive& ar) {}
 };
 
 }  // namespace lbcrypto

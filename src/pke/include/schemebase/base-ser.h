@@ -42,9 +42,11 @@
 extern template class lbcrypto::CryptoParametersBase<lbcrypto::DCRTPoly>;
 extern template class lbcrypto::CryptoParametersRLWE<lbcrypto::DCRTPoly>;
 extern template class lbcrypto::SchemeBase<lbcrypto::DCRTPoly>;
+extern template class lbcrypto::FHEBase<lbcrypto::DCRTPoly>;
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersBase<lbcrypto::DCRTPoly>);
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersRLWE<lbcrypto::DCRTPoly>);
 CEREAL_REGISTER_TYPE(lbcrypto::SchemeBase<lbcrypto::DCRTPoly>);
+CEREAL_REGISTER_TYPE(lbcrypto::FHEBase<lbcrypto::DCRTPoly>);
 
 #endif
