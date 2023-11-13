@@ -264,18 +264,19 @@ bool CKKSPackedEncoding::Encode() {
 
     if (this->typeFlag == IsDCRTPoly) {
         // Need to switch for CI-CKKS
+        // TODO - CZR - clean up
         //DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
-        std::cout << "IFFT input: \n";
-        for (auto it : inverse) {
-            std::cout << it << " ";
-        }
-        std::cout << "\n";
+        // std::cout << "IFFT input: \n";
+        // for (auto it : inverse) {
+        //     std::cout << it << " ";
+        // }
+        // std::cout << "\n";
         DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 4);
-        std::cout << "IFFT output: \n";
-        for (auto it : inverse) {
-            std::cout << it << " ";
-        }
-        std::cout << "\n";
+        // std::cout << "IFFT output: \n";
+        // for (auto it : inverse) {
+        //     std::cout << it << " ";
+        // }
+        // std::cout << "\n";
         double powP = scalingFactor;
 
         // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
@@ -378,11 +379,12 @@ bool CKKSPackedEncoding::Encode() {
         const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
         temp.resize(ringDim); // ignore the imaginary part
-        std::cout << "scaled encoded message: (real,imag)" << std::endl;
-        for (auto it : temp) {
-            std::cout << it << ", ";
-        }
-        std::cout << "\n";
+        // CZR - cleanup
+        // std::cout << "scaled encoded message: (real,imag)" << std::endl;
+        // for (auto it : temp) {
+        //     std::cout << it << ", ";
+        // }
+        // std::cout << "\n";
 
         for (size_t i = 0; i < nativeParams.size(); i++) {
             NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
@@ -391,7 +393,7 @@ bool CKKSPackedEncoding::Encode() {
             element.SetValues(nativeVec, Format::COEFFICIENT);  // output was in coefficient format
             this->encodedVectorDCRT.SetElementAtIndex(i, element);
         }
-        std::cout << "encodedVectorDCRT: \n" << encodedVectorDCRT << "\n";
+        // std::cout << "encodedVectorDCRT: \n" << encodedVectorDCRT << "\n";
 
         usint numTowers = nativeParams.size();
         std::vector<DCRTPoly::Integer> moduli(numTowers);
@@ -613,18 +615,18 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             cur = cur - std::complex<double>(0.0, real(curValues[slots-i]));
 			curValues[i] = cur;
 	    }
-
-        std::cout << "FFT input: \n";
-        for (auto it : curValues) {
-            std::cout << it << " ";
-        }
-        std::cout << "\n";
+        // TODO - cleanup
+        // std::cout << "FFT input: \n";
+        // for (auto it : curValues) {
+        //     std::cout << it << " ";
+        // }
+        // std::cout << "\n";
         DiscreteFourierTransform::FFTSpecial(curValues, GetElementRingDimension() * 4);
-        std::cout << "FFT output: \n";
-        for (auto it : curValues) {
-            std::cout << it << " ";
-        }
-        std::cout << "\n";
+        // std::cout << "FFT output: \n";
+        // for (auto it : curValues) {
+        //     std::cout << it << " ";
+        // }
+        // std::cout << "\n";
         
 
         // clears all imaginary values for security reasons

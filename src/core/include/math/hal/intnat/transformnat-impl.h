@@ -306,12 +306,12 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
 
     auto ringDim = rootOfUnityTable.GetLength()/2;
     auto modulus{element->GetModulus()};
-    std::cout << "calling NTT for modulus: " << element->GetModulus() << "\n";
-    std::cout << "roots of unity bitReversed: \n";
+    // std::cout << "calling NTT for modulus: " << element->GetModulus() << "\n";
+    // std::cout << "roots of unity bitReversed: \n";
     
-    for (uint32_t i = 0 ; i < rootOfUnityTable.GetLength(); i++)
-        std::cout << rootOfUnityTable[i] << ", ";
-    std::cout << "\n";
+    // for (uint32_t i = 0 ; i < rootOfUnityTable.GetLength(); i++)
+    //     std::cout << rootOfUnityTable[i] << ", ";
+    // std::cout << "\n";
     auto omega4N = rootOfUnityTable[ringDim];//4N-th primitive root of unity
 
     // twisting out of place
@@ -328,10 +328,10 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         elementCopy[i] = t1.ModAdd(t2, modulus);
     }
     // twisting done
-    std::cout << "Twisted coefficients: \n";
-    for (uint32_t i = 0 ; i < elementCopy.GetLength(); i++)
-        std::cout << elementCopy[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "Twisted coefficients: \n";
+    // for (uint32_t i = 0 ; i < elementCopy.GetLength(); i++)
+    //     std::cout << elementCopy[i] << ", ";
+    // std::cout << "\n";
 
     // FFT datapath (modulo X^N-1)
     auto omegaN = omega4N.ModExp(4, modulus);
@@ -359,10 +359,10 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         }
     }
 
-    std::cout << "NTT in normal order: \n";
-    for (uint32_t i = 0 ; i < element->GetLength(); i++)
-        std::cout << (*element)[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "NTT in normal order: \n";
+    // for (uint32_t i = 0 ; i < element->GetLength(); i++)
+    //     std::cout << (*element)[i] << ", ";
+    // std::cout << "\n";
 
     // TODO:: need to rev-bit order of element
     VecType elementCopy2 = (*element);
@@ -371,10 +371,10 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         (*element)[iinv] = elementCopy2[i];
     }
 
-    std::cout << "NTT in bitRev order: \n";
-    for (uint32_t i = 0 ; i < element->GetLength(); i++)
-        std::cout << (*element)[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "NTT in bitRev order: \n";
+    // for (uint32_t i = 0 ; i < element->GetLength(); i++)
+    //     std::cout << (*element)[i] << ", ";
+    // std::cout << "\n";
 
 /*
     auto modulus{element->GetModulus()};
@@ -572,12 +572,12 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
     auto modulus{element->GetModulus()};
-    std::cout << "calling INTT for modulus: " << element->GetModulus() << "\n";
-    std::cout << "Inv roots of unity bitReversed: \n";
+    // std::cout << "calling INTT for modulus: " << element->GetModulus() << "\n";
+    // std::cout << "Inv roots of unity bitReversed: \n";
     
-    for (usint i = 0 ; i < rootOfUnityInverseTable.GetLength(); i++)
-        std::cout << rootOfUnityInverseTable[i] << ", ";
-    std::cout << "\n";
+    // for (usint i = 0 ; i < rootOfUnityInverseTable.GetLength(); i++)
+    //     std::cout << rootOfUnityInverseTable[i] << ", ";
+    // std::cout << "\n";
 
     auto ringDim = rootOfUnityInverseTable.GetLength()/2;
     auto omegaInv4N = rootOfUnityInverseTable[ringDim];//inverse 4N-th primitive root of unity
@@ -613,10 +613,10 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     for (usint i = 0; i< element->GetLength(); i++)
 		(*element)[i] = (*element)[i].ModMul( cycloOrderInv, modulus );
 
-    std::cout << "INTT in bitRev order: \n";
-    for (usint i = 0 ; i < element->GetLength(); i++)
-        std::cout << (*element)[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "INTT in bitRev order: \n";
+    // for (usint i = 0 ; i < element->GetLength(); i++)
+    //     std::cout << (*element)[i] << ", ";
+    // std::cout << "\n";
 
     // return to normal order
     VecType elementCopy2 = (*element);
@@ -624,10 +624,10 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         iinv         = lbcrypto::ReverseBits(i, msb);
         (*element)[iinv] = elementCopy2[i];
     }
-    std::cout << "INTT in normal order: \n";
-    for (usint i = 0 ; i < element->GetLength(); i++)
-        std::cout << (*element)[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "INTT in normal order: \n";
+    // for (usint i = 0 ; i < element->GetLength(); i++)
+    //     std::cout << (*element)[i] << ", ";
+    // std::cout << "\n";
 
     // std::cout << "NTT in bitRev order: \n";
     // for (usint i = 0 ; i < element->GetLength(); i++)
@@ -651,19 +651,19 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         elementCopy3[i] = elementCopy3[i].ModMul(twoInv, modulus);
     }
     // untwisting done
-    std::cout << "UnTwisted coefficients: \n";
-    for (usint i = 0 ; i < elementCopy3.GetLength(); i++)
-        std::cout << elementCopy3[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "UnTwisted coefficients: \n";
+    // for (usint i = 0 ; i < elementCopy3.GetLength(); i++)
+    //     std::cout << elementCopy3[i] << ", ";
+    // std::cout << "\n";
 
     for (usint i = 0 ; i < elementCopy3.GetLength(); i++)
         (*element)[i] = elementCopy3[i];
     std::cout << "\n";
 
-    std::cout << "UnTwisted coefficients again: \n";
-    for (usint i = 0 ; i < element->GetLength(); i++)
-        std::cout << (*element)[i] << ", ";
-    std::cout << "\n";
+    // std::cout << "UnTwisted coefficients again: \n";
+    // for (usint i = 0 ; i < element->GetLength(); i++)
+    //     std::cout << (*element)[i] << ", ";
+    // std::cout << "\n";
 
 /*
     uint32_t n(element->GetLength());

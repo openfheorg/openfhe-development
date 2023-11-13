@@ -212,29 +212,29 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Pa
         
         // ===================================================================
         // TODO CZR - remove this logic, just for debugging
-        std::cerr << "\n\n\n[FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL]\n"
-                    ": sk key is fixed for debugging, remove this logic\n"
-                    "[FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL]"
-                    "\n\n\n";
-        iltvs[0] = static_cast<NativeInteger::Integer>(0);
-        iltvs[1] = static_cast<NativeInteger::Integer>(1);
-        for ( usint j = 2; j < rdim; j++ ) {
-            iltvs[j] = static_cast<NativeInteger::Integer>(0);
-        }
+        // std::cerr << "\n\n\n[FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL]\n"
+        //             ": sk key is fixed for debugging, remove this logic\n"
+        //             "[FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL]"
+        //             "\n\n\n";
+        // iltvs[0] = static_cast<NativeInteger::Integer>(0);
+        // iltvs[1] = static_cast<NativeInteger::Integer>(1);
+        // for ( usint j = 2; j < rdim; j++ ) {
+        //     iltvs[j] = static_cast<NativeInteger::Integer>(0);
+        // }
         // ===================================================================
         
 
         ilvector.SetValues(std::move(iltvs), Format::COEFFICIENT);
-        std::cout << "sk: " << ilvector << "\n";
+        // std::cout << "sk: " << ilvector << "\n";
         ilvector.SetFormat(m_format);
 
-        // TODO CZR - remove this
-        // TODO INTT - debugging purposes only 
-        ilvector.SetFormat(Format::COEFFICIENT);
-        std::cout << "sk again: " << ilvector << "\n";
-        std::cout << "[FATAL][FATAL] system shutdown\n";
-        exit(-1);
-        ilvector.SetFormat(m_format);
+        // // TODO CZR - remove this
+        // // TODO INTT - debugging purposes only 
+        // ilvector.SetFormat(Format::COEFFICIENT);
+        // std::cout << "sk again: " << ilvector << "\n";
+        // std::cout << "[FATAL][FATAL] system shutdown\n";
+        // exit(-1);
+        // ilvector.SetFormat(m_format);
 
 
         m_vectors.push_back(std::move(ilvector));
