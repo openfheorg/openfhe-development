@@ -297,6 +297,10 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     // TestType,           Descr, Scheme,         RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, LvlBudget, Dim1,       Slots
     { BOOTSTRAP_SERIALIZE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_SERIALIZE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 4, 4 },   RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 4, 4 },   RDIM/2 },
     // ==========================================
 };
 // clang-format on
@@ -646,7 +650,7 @@ protected:
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots / 2);
 
-            // the number of vector elements should not be greater than the number of slots!!!
+            //====================================================================================================
             std::vector<std::complex<double>> input(
                 Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
@@ -663,7 +667,6 @@ protected:
                           failmsg + " Bootstrapping for fully packed ciphertexts fails");
 
             //====================================================================================================
-            // make input2 = input/2
             std::vector<std::complex<double>> input2(
                 Fill({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
             size_t encodedLength2 = input2.size();
@@ -677,7 +680,7 @@ protected:
             plaintext2->SetLength(encodedLength2);
             checkEquality(result->GetCKKSPackedValue(), plaintext2->GetCKKSPackedValue(), eps,
                           failmsg + " Bootstrapping for fully packed ciphertexts fails");
-
+            //====================================================================================================
             EXPECT_TRUE(1 == 1) << failmsg;
         }
         catch (std::exception& e) {
