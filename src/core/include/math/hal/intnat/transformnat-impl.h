@@ -572,6 +572,100 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
     auto modulus{element->GetModulus()};
+    std::cout << "calling INTT for modulus: " << element->GetModulus() << "\n";
+    std::cout << "Inv roots of unity bitReversed: \n";
+    
+    for (usint i = 0 ; i < rootOfUnityInverseTable.GetLength(); i++)
+        std::cout << rootOfUnityInverseTable[i] << ", ";
+    std::cout << "\n";
+
+    auto ringDim = rootOfUnityInverseTable.GetLength()/2;
+    auto omegaInv4N = rootOfUnityInverseTable[ringDim];//inverse 4N-th primitive root of unity
+    auto omegaInvN = omegaInv4N.ModExp(4, modulus);
+    usint iinv;
+    usint msb  = lbcrypto::GetMSB(ringDim - 1);
+
+    // must do bit reverse here
+    // TODO:: need to rev-bit order of element
+    VecType elementCopy1 = (*element);
+    for (usint i = 0; i < elementCopy1.GetLength() ; i++) {
+        iinv         = lbcrypto::ReverseBits(i, msb);
+        (*element)[iinv] = elementCopy1[i];
+    }
+
+    usint d = 0, j = 0, i = 0, idx = 0;
+	for(d = ringDim/2; d >= 1; d = d/2)
+	{ // d descends over 2-powers.
+		for(j = 0 ; j < d ; j++)
+		{
+			idx = (1*j*ringDim)/(2*d);
+			idx = idx % ringDim;
+			auto root = omegaInvN.ModExp(idx, modulus);
+			for(i = j; i < ringDim; i = i + 2*d)
+			{
+				auto temp = (*element)[i];
+				auto temp_res = temp.ModSub((*element)[i+d], modulus);
+				(*element)[i] = temp.ModAdd((*element)[i+d], modulus);
+				(*element)[i + d] = temp_res.ModMul(root, modulus);
+			}
+		}
+	}
+    for (usint i = 0; i< element->GetLength(); i++)
+		(*element)[i] = (*element)[i].ModMul( cycloOrderInv, modulus );
+
+    std::cout << "INTT in bitRev order: \n";
+    for (usint i = 0 ; i < element->GetLength(); i++)
+        std::cout << (*element)[i] << ", ";
+    std::cout << "\n";
+
+    // return to normal order
+    VecType elementCopy2 = (*element);
+    for (usint i = 0; i < elementCopy2.GetLength() ; i++) {
+        iinv         = lbcrypto::ReverseBits(i, msb);
+        (*element)[iinv] = elementCopy2[i];
+    }
+    std::cout << "INTT in normal order: \n";
+    for (usint i = 0 ; i < element->GetLength(); i++)
+        std::cout << (*element)[i] << ", ";
+    std::cout << "\n";
+
+    // std::cout << "NTT in bitRev order: \n";
+    // for (usint i = 0 ; i < element->GetLength(); i++)
+    //     std::cout << (*element)[i] << ", ";
+    // std::cout << "\n";
+
+    // untwist
+    VecType elementCopy3 = (*element);
+    IntType two(2);
+    auto twoInv = two.ModInverse(modulus);
+    // (*element)[0] = (*element)[0];
+    for (usint i = 1; i < element->GetLength() ; i++) {
+        auto ai = (*element)[i];
+        auto aNmi = (*element)[ringDim-i];
+        auto omegaInv4NToi = omegaInv4N.ModExp(i, modulus);
+        auto omegaInv4NToimN = omegaInv4N.ModExp(4*ringDim-i, modulus);
+        //(*element)[i] = ai*omega4NToi + aNmi*omega4NToimN;
+        auto t1 = ai.ModMul(omegaInv4NToi, modulus);
+        auto t2 = aNmi.ModMul(omegaInv4NToimN, modulus);
+        elementCopy3[i] = t1.ModAdd(t2, modulus);
+        elementCopy3[i] = elementCopy3[i].ModMul(twoInv, modulus);
+    }
+    // untwisting done
+    std::cout << "UnTwisted coefficients: \n";
+    for (usint i = 0 ; i < elementCopy3.GetLength(); i++)
+        std::cout << elementCopy3[i] << ", ";
+    std::cout << "\n";
+
+    for (usint i = 0 ; i < elementCopy3.GetLength(); i++)
+        (*element)[i] = elementCopy3[i];
+    std::cout << "\n";
+
+    std::cout << "UnTwisted coefficients again: \n";
+    for (usint i = 0 ; i < element->GetLength(); i++)
+        std::cout << (*element)[i] << ", ";
+    std::cout << "\n";
+
+/*
     uint32_t n(element->GetLength());
     for (uint32_t i{0}; i < n; i += 2) {
         auto omega{rootOfUnityInverseTable[(i + n) >> 1]};
@@ -628,6 +722,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             }
         }
     }
+    */
 }
 
 template <typename VecType>
@@ -734,7 +829,12 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverseInP
     IntType modulus = element->GetModulus();
 
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
-    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+    // TODO - CZR disabled so that PSIs are not recomputed - must fix
+    // if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+    //     PreCompute(rootOfUnity, CycloOrder, modulus);
+    // }
+
+    if (mapSearch == m_rootOfUnityReverseTableByModulus.end()) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
 

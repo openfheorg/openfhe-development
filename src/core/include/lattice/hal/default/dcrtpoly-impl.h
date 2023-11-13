@@ -227,6 +227,16 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Pa
         ilvector.SetValues(std::move(iltvs), Format::COEFFICIENT);
         std::cout << "sk: " << ilvector << "\n";
         ilvector.SetFormat(m_format);
+
+        // TODO CZR - remove this
+        // TODO INTT - debugging purposes only 
+        ilvector.SetFormat(Format::COEFFICIENT);
+        std::cout << "sk again: " << ilvector << "\n";
+        std::cout << "[FATAL][FATAL] system shutdown\n";
+        exit(-1);
+        ilvector.SetFormat(m_format);
+
+
         m_vectors.push_back(std::move(ilvector));
     }
 }

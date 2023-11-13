@@ -126,6 +126,10 @@ int main() {
     parameters.SetRingDim(16);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    std::cout << "parameters: \n" << parameters << "\n";
+    std::cout << "cc->GetCryptoParameters(): \n" << *cc->GetCryptoParameters() << "\n";
+    std::cout << "cc->GetElementParams(): \n" << *cc->GetElementParams() << "\n";
+    std::cout << "cc->GetEncodingParams(): \n" << *cc->GetEncodingParams() << "\n";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
