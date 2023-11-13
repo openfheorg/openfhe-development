@@ -69,27 +69,27 @@ DiscreteFourierTransform::PrecomputedValues::PrecomputedValues(uint32_t m, uint3
 
     m_ksiPows[m_M] = m_ksiPows[0];
 
-    // CZR debugging
-    std::cout << "CKKS codec dft material\n";
-    std::cout << "m: " << m_M << "\n";
-    std::cout << "nH: " << m_Nh << "\n";
-    std::cout << "rot group vals: \n";
+    // TODO CZR cleanup 
+    // std::cout << "CKKS codec dft material\n";
+    // std::cout << "m: " << m_M << "\n";
+    // std::cout << "nH: " << m_Nh << "\n";
+    // std::cout << "rot group vals: \n";
 
-    for (auto it : m_rotGroup) {
-        std::cout << it << ", ";
-    }
-    std::cout << "\n";
+    // for (auto it : m_rotGroup) {
+    //     std::cout << it << ", ";
+    // }
+    // std::cout << "\n";
 
-    std::cout << "ksiPows: \n";
-    for (auto it : m_ksiPows) {
-        std::cout << std::fixed << std::setprecision(16);
-        if (it.imag() >= 0) {
-            std::cout << "(" << it.real() << "+" << it.imag() << "i" <<") ";
-        } else {
-            std::cout << "(" << it.real() << it.imag() << "i" <<") ";
-        }
-    }
-    std::cout << "\n";
+    // std::cout << "ksiPows: \n";
+    // for (auto it : m_ksiPows) {
+    //     std::cout << std::fixed << std::setprecision(16);
+    //     if (it.imag() >= 0) {
+    //         std::cout << "(" << it.real() << "+" << it.imag() << "i" <<") ";
+    //     } else {
+    //         std::cout << "(" << it.real() << it.imag() << "i" <<") ";
+    //     }
+    // }
+    // std::cout << "\n";
 }
 
 void DiscreteFourierTransform::Reset() {

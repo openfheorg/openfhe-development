@@ -192,7 +192,7 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
     }
 
     IntType gen    = FindGenerator(modulo);
-    std::cout << "generator for q: " << modulo << " is: " << gen << std::endl;
+    // std::cout << "generator for q: " << modulo << " is: " << gen << std::endl;
     IntType result = gen.ModExp((modulo - IntType(1)).DividedBy(M), modulo);
     if (result == IntType(1))
         result = RootOfUnity(m, modulo);
@@ -231,10 +231,10 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
 
     // TODO - CZR - just for debugging
     // ==================================================
-    std::cout << "\n\n[FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL]\n"
-    "must remove the debugging logic below\n\n";
-    if (modulo == 36028797018963841ULL && m == 64)
-        minRU = 19718796994502225ULL;
+    // std::cout << "\n\n[FATAL][FATAL][FATAL][FATAL][FATAL][FATAL][FATAL]\n"
+    // "must remove the debugging logic below\n\n";
+    // if (modulo == 36028797018963841ULL && m == 64)
+    //     minRU = 19718796994502225ULL;
     // ==================================================
 
     return minRU;

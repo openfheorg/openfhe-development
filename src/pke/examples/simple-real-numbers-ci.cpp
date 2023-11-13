@@ -126,10 +126,6 @@ int main() {
     parameters.SetRingDim(16);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-    std::cout << "parameters: \n" << parameters << "\n";
-    std::cout << "cc->GetCryptoParameters(): \n" << *cc->GetCryptoParameters() << "\n";
-    std::cout << "cc->GetElementParams(): \n" << *cc->GetElementParams() << "\n";
-    std::cout << "cc->GetEncodingParams(): \n" << *cc->GetEncodingParams() << "\n";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -207,19 +203,20 @@ int main() {
 
     // Inputs 
     std::vector<double> x1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0};
-    // std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00};
+    std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00};
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
-    std::cout << "ptxt1 DCRTPoly: " << ptxt1->GetElement<DCRTPoly>() << "\n";
+    // std::cout << "ptxt1 DCRTPoly: " << ptxt1->GetElement<DCRTPoly>() << "\n";
     // std::cout << "ptxt1 NativePoly: " << ptxt1->GetElement<NativePoly>() << "\n";
     // std::cout << "ptxt1 Poly: " << ptxt1->GetElement<Poly>() << "\n";
 
-    // Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
+    Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
 
     std::cout << "Input x1: " << ptxt1 << std::endl;
-    // std::cout << "Input x2: " << ptxt2 << std::endl;
+    std::cout << "Input x2: " << ptxt2 << std::endl;
 
+/*
     // TODO need to call decode here to check for result.
     auto dcrtPoly = ptxt1->GetElement<DCRTPoly>();
     auto poly = dcrtPoly.CRTInterpolate();
@@ -248,15 +245,16 @@ int main() {
     std::cout << "dec(enc(x)): " << reconstructedInput->GetRealPackedValue() << std::endl;
 
     return 0;
+    */
 
     // Encrypt the encoded vectors
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    // auto c2 = cc->Encrypt(keys.publicKey, ptxt2);
+    auto c2 = cc->Encrypt(keys.publicKey, ptxt2);
 
     // Step 4: Evaluation
 
     // Homomorphic addition
-    // auto cAdd = cc->EvalAdd(c1, c2);
+    auto cAdd = cc->EvalAdd(c1, c2);
 
     // Homomorphic subtraction
     // auto cSub = cc->EvalSub(c1, c2);
@@ -268,8 +266,8 @@ int main() {
     // auto cMul = cc->EvalMult(c1, c2);
 
     // Homomorphic rotations
-    auto cRot1 = cc->EvalRotate(c1, 1);
-    auto cRot2 = cc->EvalRotate(c1, -2);
+    // auto cRot1 = cc->EvalRotate(c1, 1);
+    // auto cRot2 = cc->EvalRotate(c1, -2);
 
     // Step 5: Decryption and output
     Plaintext result;
@@ -286,10 +284,10 @@ int main() {
     std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
 
     // Decrypt the result of addition
-    // cc->Decrypt(keys.secretKey, cAdd, &result);
-    // result->SetLength(batchSize);
-    // std::cout << "x1 + x2 = " << result;
-    // std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
+    cc->Decrypt(keys.secretKey, cAdd, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 + x2 = " << result;
+    std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
 
     // // Decrypt the result of subtraction
     // cc->Decrypt(keys.secretKey, cSub, &result);
@@ -308,14 +306,14 @@ int main() {
 
     // Decrypt the result of rotations
 
-    cc->Decrypt(keys.secretKey, cRot1, &result);
-    result->SetLength(batchSize);
-    std::cout << std::endl << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
-    std::cout << "x1 rotate by 1 = " << result << std::endl;
+    // cc->Decrypt(keys.secretKey, cRot1, &result);
+    // result->SetLength(batchSize);
+    // std::cout << std::endl << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
+    // std::cout << "x1 rotate by 1 = " << result << std::endl;
 
-    cc->Decrypt(keys.secretKey, cRot2, &result);
-    result->SetLength(batchSize);
-    std::cout << "x1 rotate by -2 = " << result << std::endl;
+    // cc->Decrypt(keys.secretKey, cRot2, &result);
+    // result->SetLength(batchSize);
+    // std::cout << "x1 rotate by -2 = " << result << std::endl;
 
     return 0;
 }
