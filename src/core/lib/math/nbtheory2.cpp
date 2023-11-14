@@ -272,12 +272,12 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
 }
 
 void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {
-    uint32_t m    = n << 1;  // cyclOrder
+    uint32_t m    = n << 2;  // cyclOrder
     uint32_t logm = std::round(log2(m));
     uint32_t logn = std::round(log2(n));
     for (uint32_t j = 0; j < n; j++) {
-        uint32_t jTmp    = ((j << 1) + 1);
-        usint idx        = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
+        uint32_t jTmp    = ((j << 2) + 1);
+        usint idx        = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 2;
         usint jrev       = ReverseBits(j, logn);
         usint idxrev     = ReverseBits(idx, logn);
         (*precomp)[jrev] = idxrev;

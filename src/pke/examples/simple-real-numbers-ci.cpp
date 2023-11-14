@@ -202,7 +202,7 @@ int main() {
     }
 
     // Inputs 
-    std::vector<double> x1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0};
+    std::vector<double> x1 = {0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0};
     std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00};
     std::vector<double> x3 = {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.00, 4.00, 4.00, 4.00, 4.00, 4.00};
 
@@ -275,7 +275,7 @@ int main() {
 
     // Homomorphic rotations
     auto cRot1 = cc->EvalRotate(c1, 1);
-    auto cRot2 = cc->EvalRotate(c2, -2);
+    auto cRot2 = cc->EvalRotate(c1, -2);
 
     // Step 5: Decryption and output
     Plaintext result;
