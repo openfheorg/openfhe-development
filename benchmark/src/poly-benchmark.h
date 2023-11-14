@@ -102,25 +102,27 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_Add(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p;
-    size_t i = 0;
+    size_t i{0}, j{0};
     while (state.KeepRunning()) {
-        p = (*polys)[i].Plus((*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+        i = j;
+        p = (*polys)[i] + (*polys)[(j = (i + 1) & POLY_NUM_M1)];
     }
 }
 
 [[maybe_unused]] static void DCRT_Add(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p;
-    size_t i = 0;
+    size_t i{0}, j{0};
     while (state.KeepRunning()) {
-        p = (*polys)[i].Plus((*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+        i = j;
+        p = (*polys)[i] + (*polys)[(j = (i + 1) & POLY_NUM_M1)];
     }
 }
 
 [[maybe_unused]] static void Native_AddEq(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p{(*polys)[0]};
-    size_t i = 0;
+    size_t i{0};
     while (state.KeepRunning()) {
         p += (*polys)[(i = (i + 1) & POLY_NUM_M1)];
     }
@@ -129,7 +131,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_AddEq(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p{(*polys)[0]};
-    size_t i = 0;
+    size_t i{0};
     while (state.KeepRunning()) {
         p += (*polys)[(i = (i + 1) & POLY_NUM_M1)];
     }
@@ -140,25 +142,27 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_Sub(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p;
-    size_t i = 0;
+    size_t i{0}, j{0};
     while (state.KeepRunning()) {
-        p = (*polys)[i].Minus((*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+        i = j;
+        p = (*polys)[i] - (*polys)[(j = (i + 1) & POLY_NUM_M1)];
     }
 }
 
 [[maybe_unused]] static void DCRT_Sub(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p;
-    size_t i = 0;
+    size_t i{0}, j{0};
     while (state.KeepRunning()) {
-        p = (*polys)[i].Minus((*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+        i = j;
+        p = (*polys)[i] - (*polys)[(j = (i + 1) & POLY_NUM_M1)];
     }
 }
 
 [[maybe_unused]] static void Native_SubEq(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p{(*polys)[0]};
-    size_t i = 0;
+    size_t i{0};
     while (state.KeepRunning()) {
         p -= (*polys)[(i = (i + 1) & POLY_NUM_M1)];
     }
@@ -167,7 +171,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_SubEq(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p{(*polys)[0]};
-    size_t i = 0;
+    size_t i{0};
     while (state.KeepRunning()) {
         p -= (*polys)[(i = (i + 1) & POLY_NUM_M1)];
     }
@@ -178,25 +182,27 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_Mul(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p;
-    size_t i = 0;
+    size_t i{0}, j{0};
     while (state.KeepRunning()) {
-        p = (*polys)[i].Times((*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+        i = j;
+        p = (*polys)[i] * (*polys)[(j = (i + 1) & POLY_NUM_M1)];
     }
 }
 
 [[maybe_unused]] static void DCRT_Mul(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p;
-    size_t i = 0;
+    size_t i{0}, j{0};
     while (state.KeepRunning()) {
-        p = (*polys)[i].Times((*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+        i = j;
+        p = (*polys)[i] * (*polys)[(j = (i + 1) & POLY_NUM_M1)];
     }
 }
 
 [[maybe_unused]] static void Native_MulEq(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p{(*polys)[0]};
-    size_t i = 0;
+    size_t i{0};
     while (state.KeepRunning()) {
         p *= (*polys)[(i = (i + 1) & POLY_NUM_M1)];
     }
@@ -205,7 +211,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_MulEq(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p{(*polys)[0]};
-    size_t i = 0;
+    size_t i{0};
     while (state.KeepRunning()) {
         p *= (*polys)[(i = (i + 1) & POLY_NUM_M1)];
     }
@@ -216,7 +222,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_ntt(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     NativePoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p.SwitchFormat();
@@ -226,7 +232,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_ntt(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     DCRTPoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p.SwitchFormat();
@@ -236,7 +242,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_intt(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p.SwitchFormat();
@@ -246,7 +252,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_intt(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p.SwitchFormat();
@@ -256,7 +262,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_ntt_intt(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     NativePoly* p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = &(*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p->SwitchFormat();
@@ -267,7 +273,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_ntt_intt(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     DCRTPoly* p;
-    size_t i = 0;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = &(*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p->SwitchFormat();
@@ -278,7 +284,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_intt_ntt(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly* p;
-    size_t i = 0;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = &(*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p->SwitchFormat();
@@ -289,7 +295,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_intt_ntt(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly* p;
-    size_t i = 0;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = &(*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p->SwitchFormat();
@@ -302,7 +308,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_CRTInterpolate(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     NativePoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)].CRTInterpolate();
     }
@@ -311,7 +317,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_CRTInterpolate(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     DCRTPoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)].CRTInterpolate();
     }
@@ -322,7 +328,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_DecryptionCRTInterpolate(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     NativePoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     PlaintextModulus ptm(1);
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)].DecryptionCRTInterpolate(ptm);
@@ -332,7 +338,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_DecryptionCRTInterpolate(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     DCRTPoly p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     PlaintextModulus ptm(1);
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)].DecryptionCRTInterpolate(ptm);
@@ -344,7 +350,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void Native_BaseDecompose(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     std::vector<NativePoly> p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)].BaseDecompose(2, true);
     }
@@ -353,7 +359,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 [[maybe_unused]] static void DCRT_BaseDecompose(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     std::vector<DCRTPoly> p;
-    size_t i = POLY_NUM_M1;
+    size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)].BaseDecompose(2, true);
     }
