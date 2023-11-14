@@ -243,12 +243,13 @@ uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g) {
 }
 
 uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
+    uint32_t localM = 2*m;
     if (i == 0) {
         return 1;
     }
 
     // conjugation automorphism
-    if (i == int32_t(m - 1)) {
+    if (i == int32_t(localM - 1)) {
         return uint32_t(i);
     }
     else {
@@ -256,7 +257,7 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
         int32_t g0;
 
         if (i < 0) {
-            g0 = NativeInteger(5).ModInverse(m).ConvertToInt();
+            g0 = NativeInteger(5).ModInverse(localM).ConvertToInt();
         }
         else {
             g0 = 5;
@@ -265,7 +266,7 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
 
         int32_t g = g0;
         for (size_t j = 1; j < i_unsigned; j++) {
-            g = (g * g0) % m;
+            g = (g * g0) % localM;
         }
         return uint32_t(g);
     }
