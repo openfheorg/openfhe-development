@@ -61,7 +61,7 @@ int main() {
    * For performance reasons, it's generally preferable to perform operations
    * in the shorted multiplicative depth possible.
    */
-    uint32_t multDepth = 1;
+    uint32_t multDepth = 3;
 
     /* A2) Bit-length of scaling factor.
    * CKKS works for real numbers, but these numbers are encoded as integers.
@@ -85,7 +85,7 @@ int main() {
    * support results that match the desired accuracy.
    */
     uint32_t scaleModSize = 55;
-    uint32_t firstModSize = 55;
+    uint32_t firstModSize = 60;
 
     /* A3) Number of plaintext slots used in the ciphertext.
    * CKKS packs multiple plaintext values in each ciphertext.
@@ -150,7 +150,7 @@ int main() {
    * it becomes valid under original key s. To do so, we need to create what we
    * call a relinearization key with the following line.
    */
-    // cc->EvalMultKeyGen(keys.secretKey);
+    cc->EvalMultKeyGen(keys.secretKey);
 
     /* B3) Generate the rotation keys
    * CKKS supports rotating the contents of a packed ciphertext, but to do so,
@@ -170,7 +170,7 @@ int main() {
    * in the output of this demo, since CKKS is approximate, zeros are not exact
    * - they're just very small numbers.
    */
-    cc->EvalRotateKeyGen(keys.secretKey, {1});
+    cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
     // Step 3: Encoding and encryption of inputs
 
@@ -204,6 +204,7 @@ int main() {
     // Inputs 
     std::vector<double> x1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0};
     std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00};
+    std::vector<double> x3 = {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.00, 4.00, 4.00, 4.00, 4.00, 4.00};
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
@@ -212,9 +213,11 @@ int main() {
     // std::cout << "ptxt1 Poly: " << ptxt1->GetElement<Poly>() << "\n";
 
     Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
+    Plaintext ptxt3 = cc->MakeCKKSPackedPlaintext(x3);
 
     std::cout << "Input x1: " << ptxt1 << std::endl;
     std::cout << "Input x2: " << ptxt2 << std::endl;
+    std::cout << "Input x3: " << ptxt3 << std::endl;
 
 /*
     // TODO need to call decode here to check for result.
@@ -255,19 +258,24 @@ int main() {
 
     // Homomorphic addition
     auto cAdd = cc->EvalAdd(c1, c2);
-
+    
     // Homomorphic subtraction
-    // auto cSub = cc->EvalSub(c1, c2);
+    auto cSub = cc->EvalSub(c1, c2);
 
     // Homomorphic scalar multiplication
-    // auto cScalar = cc->EvalMult(c1, 4.0);
+    auto cScalar = cc->EvalMult(c1, 4.0);
+    cScalar = cc->Rescale(cScalar);
+
+    auto cPtxtMulCtxt = cc->EvalMult(c2, ptxt3);
+    cPtxtMulCtxt = cc->Rescale(cPtxtMulCtxt);
 
     // Homomorphic multiplication
-    // auto cMul = cc->EvalMult(c1, c2);
+    auto cMul = cc->EvalMult(c1, c2);
+    cMul = cc->Rescale(cMul);
 
     // Homomorphic rotations
-    // auto cRot1 = cc->EvalRotate(c1, 1);
-    // auto cRot2 = cc->EvalRotate(c1, -2);
+    auto cRot1 = cc->EvalRotate(c1, 1);
+    auto cRot2 = cc->EvalRotate(c2, -2);
 
     // Step 5: Decryption and output
     Plaintext result;
@@ -289,31 +297,35 @@ int main() {
     std::cout << "x1 + x2 = " << result;
     std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
 
-    // // Decrypt the result of subtraction
-    // cc->Decrypt(keys.secretKey, cSub, &result);
-    // result->SetLength(batchSize);
-    // std::cout << "x1 - x2 = " << result << std::endl;
+    // Decrypt the result of subtraction
+    cc->Decrypt(keys.secretKey, cSub, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 - x2 = " << result << std::endl;
 
-    // // Decrypt the result of scalar multiplication
-    // cc->Decrypt(keys.secretKey, cScalar, &result);
-    // result->SetLength(batchSize);
-    // std::cout << "4 * x1 = " << result << std::endl;
+    // Decrypt the result of scalar multiplication
+    cc->Decrypt(keys.secretKey, cScalar, &result);
+    result->SetLength(batchSize);
+    std::cout << "4 * x1 = " << result << std::endl;
 
-    // // Decrypt the result of multiplication
-    // cc->Decrypt(keys.secretKey, cMul, &result);
-    // result->SetLength(batchSize);
-    // std::cout << "x1 * x2 = " << result << std::endl;
+    cc->Decrypt(keys.secretKey, cPtxtMulCtxt, &result);
+    result->SetLength(batchSize);
+    std::cout << "ptxt(4) * x2 = " << result << std::endl;
+
+    // Decrypt the result of multiplication
+    cc->Decrypt(keys.secretKey, cMul, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 * x2 = " << result << std::endl;
 
     // Decrypt the result of rotations
 
-    // cc->Decrypt(keys.secretKey, cRot1, &result);
-    // result->SetLength(batchSize);
-    // std::cout << std::endl << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
-    // std::cout << "x1 rotate by 1 = " << result << std::endl;
+    cc->Decrypt(keys.secretKey, cRot1, &result);
+    result->SetLength(batchSize);
+    std::cout << std::endl << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
+    std::cout << "x1 rotate by 1 = " << result << std::endl;
 
-    // cc->Decrypt(keys.secretKey, cRot2, &result);
-    // result->SetLength(batchSize);
-    // std::cout << "x1 rotate by -2 = " << result << std::endl;
+    cc->Decrypt(keys.secretKey, cRot2, &result);
+    result->SetLength(batchSize);
+    std::cout << "x2 rotate by -2 = " << result << std::endl;
 
     return 0;
 }

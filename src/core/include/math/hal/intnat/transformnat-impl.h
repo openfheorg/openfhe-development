@@ -658,7 +658,6 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
 
     for (usint i = 0 ; i < elementCopy3.GetLength(); i++)
         (*element)[i] = elementCopy3[i];
-    std::cout << "\n";
 
     // std::cout << "UnTwisted coefficients again: \n";
     // for (usint i = 0 ; i < element->GetLength(); i++)
