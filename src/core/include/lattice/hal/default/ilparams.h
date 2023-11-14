@@ -38,6 +38,7 @@
 
 #include "lattice/hal/elemparams.h"
 
+#include "math/hal/basicint.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
 
@@ -74,7 +75,10 @@ public:
    * operations.
    * @return
    */
-    ILParamsImpl(uint32_t order, const IntType& modulus)
+    explicit ILParamsImpl(uint32_t order, uint32_t bits = MAX_MODULUS_SIZE)
+        : ILParamsImpl<IntType>(order, GetMaxPrime<IntType>(bits, order)) {}
+
+    explicit ILParamsImpl(uint32_t order, const IntType& modulus)
         : ElemParams<IntType>(order, modulus, RootOfUnity<IntType>(order, modulus)) {}
 
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity)
@@ -143,6 +147,7 @@ public:
     std::string SerializedObjectName() const override {
         return "ILParms";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

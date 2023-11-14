@@ -1248,7 +1248,7 @@ void GetInternalRepresentation(const std::string& msg) {
 
 // TODO: clean this up
 #ifdef WITH_BE4
-    #if NATIVEINT >= 64
+    #if (NATIVEINT >= 64 && defined(HAVE_INT128))
     correct = "2 68719476736";
     #endif
 #endif

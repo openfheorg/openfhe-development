@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,21 +30,24 @@
 //==================================================================================
 
 /*
-  This is some helper code for benchmarking vector operations
+ * This code benchmarks polynomial operations for ring dimension of 8k.
  */
 
-#ifndef _VECHELPER_H_
-#define _VECHELPER_H_
+#include "math/hal/basicint.h"
+#include "poly-benchmark.h"
+#include <iostream>
 
-#define _USE_MATH_DEFINES
-#include "math/discreteuniformgenerator.h"
+constexpr uint32_t RING_DIM_LOG = 13;
+constexpr uint32_t DCRTBITS     = MAX_MODULUS_SIZE;
 
-#include <utility>
-using namespace lbcrypto;
+class Setup {
+public:
+    Setup() {
+        std::cerr << "Generating polynomials for the benchmark..." << std::endl;
+        GeneratePolys((1 << (RING_DIM_LOG + 1)), DCRTBITS, NativepolysEval, NativepolysCoef);
+        GenerateDCRTPolys((1 << (RING_DIM_LOG + 1)), DCRTBITS, DCRTpolysEval, DCRTpolysCoef);
+        std::cerr << "Polynomials for the benchmark are generated" << std::endl;
+    }
+} TestParameters;
 
-template <typename V>
-inline V makeVector(usint ringdim, const typename V::Integer& mod) {
-    return DiscreteUniformGeneratorImpl<V>().GenerateVector(ringdim, mod);
-}
-
-#endif
+BENCHMARK_MAIN();

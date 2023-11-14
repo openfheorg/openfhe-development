@@ -50,11 +50,7 @@
         using uint128_t       = unsigned __int128;
         using int128_t        = __int128;
     #else
-        #if defined EMSCRIPTEN
-            #define MAX_MODULUS_SIZE 57
-        #else
-            #define MAX_MODULUS_SIZE 58
-        #endif
+        #define MAX_MODULUS_SIZE 57
         using BasicInteger    = uint64_t;
         using DoubleNativeInt = uint64_t;
         using uint128_t       = uint64_t;
