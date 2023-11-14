@@ -167,7 +167,7 @@ public:
 
     template <class Archive>
     void save(Archive& ar) const {
-        // ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::base_class<FHERNS>(this));
         ar(cereal::make_nvp("QLWE", m_modulus_LWE));
         ar(cereal::make_nvp("QCKKS1", m_modulus_CKKS_initial));
         ar(cereal::make_nvp("QCKKS2", m_modulus_CKKS_from));
@@ -187,7 +187,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar) {
-        // ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::base_class<FHERNS>(this));
         ar(cereal::make_nvp("QLWE", m_modulus_LWE));
         ar(cereal::make_nvp("QCKKS1", m_modulus_CKKS_initial));
         ar(cereal::make_nvp("QCKKS2", m_modulus_CKKS_from));

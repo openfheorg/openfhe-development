@@ -125,7 +125,6 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWriteS
     serverCC->Enable(LEVELEDSHE);
     serverCC->Enable(ADVANCEDSHE);
     serverCC->Enable(SCHEMESWITCH);
-    serverCC->Enable(FHE);
 
     std::cout << "Cryptocontext generated" << std::endl;
 
@@ -302,6 +301,7 @@ void clientProcessSSObj() {
     clientCC->ClearEvalMultKeys();
     clientCC->ClearEvalAutomorphismKeys();
     lbcrypto::CryptoContextFactory<lbcrypto::DCRTPoly>::ReleaseAllContexts();
+
     if (!Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::JSON)) {
         std::cerr << "I cannot read serialized data from: " << DATAFOLDER << "/cryptocontext.txt" << std::endl;
         std::exit(1);
@@ -492,7 +492,6 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
     serverCC->Enable(LEVELEDSHE);
     serverCC->Enable(ADVANCEDSHE);
     serverCC->Enable(SCHEMESWITCH);
-    serverCC->Enable(FHE);
 
     std::cout << "Cryptocontext generated" << std::endl;
 
@@ -546,7 +545,6 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
                   << std::endl;
         std::exit(1);
     }
-
     std::cout << "Cryptocontext serialized" << std::endl;
 
     if (!Serial::SerializeToFile(DATAFOLDER + pubKeyLocation, serverKP.publicKey, SerType::JSON)) {
@@ -638,19 +636,19 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
 void clientProcess() {
     CryptoContext<DCRTPoly> clientCC;
     clientCC->ClearEvalMultKeys();
+    clientCC->ClearEvalSumKeys();
     clientCC->ClearEvalAutomorphismKeys();
     lbcrypto::CryptoContextFactory<lbcrypto::DCRTPoly>::ReleaseAllContexts();
+
     if (!Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::JSON)) {
-        std::cerr << "I cannot read serialized data from: " << DATAFOLDER << "/cryptocontext.txt" << std::endl;
+        std::cerr << "I cannot read serialized data from: " << DATAFOLDER + ccLocation << std::endl;
         std::exit(1);
     }
     std::cout << "Client CC deserialized" << std::endl;
 
-    KeyPair<DCRTPoly> clientKP;  // We do NOT have a secret key. The client
-    // should not have access to this
     PublicKey<DCRTPoly> clientPublicKey;
     if (!Serial::DeserializeFromFile(DATAFOLDER + pubKeyLocation, clientPublicKey, SerType::JSON)) {
-        std::cerr << "I cannot read serialized data from: " << DATAFOLDER << "/cryptocontext.txt" << std::endl;
+        std::cerr << "I cannot read serialized data from: " << DATAFOLDER + pubKeyLocation << std::endl;
         std::exit(1);
     }
     std::cout << "Client KP deserialized" << std::endl;
@@ -664,8 +662,8 @@ void clientProcess() {
         std::cerr << "Could not deserialize eval mult key file" << std::endl;
         std::exit(1);
     }
-
     std::cout << "Deserialized eval mult keys" << std::endl;
+
     std::ifstream rotKeyIStream(DATAFOLDER + rotKeyLocation, std::ios::in | std::ios::binary);
     if (!rotKeyIStream.is_open()) {
         std::cerr << "Cannot read serialization from " << DATAFOLDER + multKeyLocation << std::endl;
@@ -675,10 +673,11 @@ void clientProcess() {
         std::cerr << "Could not deserialize eval rot key file" << std::endl;
         std::exit(1);
     }
+    std::cout << "Deserialized rotation keys" << std::endl;
 
     std::shared_ptr<lbcrypto::BinFHEContext> clientBinCC;
     if (Serial::DeserializeFromFile(DATAFOLDER + binccLocation, clientBinCC, SerType::JSON) == false) {
-        std::cerr << "Could not deserialize the cryptocontext" << std::endl;
+        std::cerr << "Could not deserialize the binfhe cryptocontext" << std::endl;
         std::exit(1);
     }
     std::cout << "The cryptocontext has been deserialized." << std::endl;
@@ -763,7 +762,7 @@ int main() {
               << "an error writing serializations." << std::endl;
 
     // Set main params
-    uint32_t ringDim      = 128;
+    uint32_t ringDim      = 64;
     uint32_t batchSize    = 4;
     uint32_t multDepth    = 13 + static_cast<int>(std::log2(batchSize));
     uint32_t logQ_ccLWE   = 25;
@@ -779,19 +778,25 @@ int main() {
         "Part 1: Cryptocontext generation, key generation, data encryption "
         "(server)");
 
-    auto tupleCryptoContext_KeyPair =
-        serverSetupAndWriteSSObj(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
-    // // Andreea: the serialization of the scheme switching parameters should be done throught the cryptocontext but currently this is not working
+    // // Andreea: the serialization of the scheme switching parameters is done from the scheme-switching object and it is working
     // auto tupleCryptoContext_KeyPair =
-    //     serverSetupAndWrite(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
+    //     serverSetupAndWriteSSObj(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
+
+    // Andreea: the serialization of the scheme switching parameters should be done throught the cryptocontext but currently this is not working
+    auto tupleCryptoContext_KeyPair =
+        serverSetupAndWrite(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
+
     auto cc        = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);
     auto kp        = std::get<keyPairIdx>(tupleCryptoContext_KeyPair);
     int vectorSize = std::get<vectorSizeIdx>(tupleCryptoContext_KeyPair);
 
     demarcate("Part 3: Client deserialize all data");
-    clientProcessSSObj();
-    // // Andreea: the serialization of the scheme switching parameters should be done throught the cryptocontext but currently this is not working
-    // clientProcess();
+
+    // // Andreea: the serialization of the scheme switching parameters is done from the scheme-switching object and it is working
+    // clientProcessSSObj();
+
+    // Andreea: the serialization of the scheme switching parameters should be done throught the cryptocontext but currently this is not working
+    clientProcess();
 
     demarcate("Part 4: Server deserialization of data from client. ");
 
