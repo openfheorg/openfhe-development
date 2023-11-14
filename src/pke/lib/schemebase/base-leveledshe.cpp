@@ -518,7 +518,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
     const std::vector<int32_t>& indexList) const {
     const auto cc = privateKey->GetCryptoContext();
 
-    usint M = 2*privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
+    usint M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++) {
@@ -533,7 +533,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAtIndex(ConstCiphertext<Element
                                                          const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
     const auto cc = ciphertext->GetCryptoContext();
 
-    usint M = 2*ciphertext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
+    usint M = ciphertext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
     uint32_t autoIndex = FindAutomorphismIndex(index, M);
 
