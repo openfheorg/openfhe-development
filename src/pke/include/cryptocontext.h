@@ -3197,7 +3197,8 @@ public:
    * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
    * decoding and stores the necessary parameters
    * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
-   * 3. EvalBootstrap: refreshes the given ciphertext
+   * 3. EvalBootstrapPrecompute: computes and stores the plaintexts for encoding and decoding if not already done in EvalBootstrapSetup
+   * 4. EvalBootstrap: refreshes the given ciphertext
    */
 
     /**
@@ -3208,11 +3209,12 @@ public:
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
-   * @param correctionFactor - value to internally rescale message by to improve precision of bootstrapping. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64.
+   * @param correctionFactor - value to internally rescale message by to improve precision of bootstrapping. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64
+   * @param precompute - flag specifying whether to precompute the plaintexts for encoding and decoding.
    */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
-                            uint32_t slots = 0, uint32_t correctionFactor = 0) {
-        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor);
+                            uint32_t slots = 0, uint32_t correctionFactor = 0, bool precompute = true) {
+        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute);
     }
     /**
    * Generates all automorphism keys for EvalBootstrap. Supported in CKKS only.
@@ -3246,6 +3248,14 @@ public:
                 iterRowKeys++;
             }
         }
+    }
+    /**
+   * Computes the plaintexts for encoding and decoding for both linear and FFT-like methods. Supported in CKKS only.
+   *
+   * @param slots - number of slots to be bootstrapped
+   */
+    void EvalBootstrapPrecompute(uint32_t slots = 0) {
+        GetScheme()->EvalBootstrapPrecompute(*this, slots);
     }
     /**
    * Defines the bootstrapping evaluation of ciphertext using either the

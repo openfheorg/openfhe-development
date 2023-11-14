@@ -38,6 +38,8 @@
 #include "UnitTestCryptoContext.h"
 #include "utils/demangle.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
+#include "cryptocontext-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 
 #include <iostream>
 #include <vector>
@@ -55,6 +57,7 @@ enum TEST_CASE_TYPE {
     BOOTSTRAP_KEY_SWITCH,
     BOOTSTRAP_ITERATIVE,
     BOOTSTRAP_NUM_TOWERS,
+    BOOTSTRAP_SERIALIZE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -77,6 +80,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_NUM_TOWERS:
             typeName = "BOOTSTRAP_NUM_TOWERS";
+            break;
+        case BOOTSTRAP_SERIALIZE:
+            typeName = "BOOTSTRAP_SERIALIZE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -287,6 +293,14 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_NUM_TOWERS, "15", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
     { BOOTSTRAP_NUM_TOWERS, "16", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
 #endif
+    // ==========================================
+    // TestType,           Descr, Scheme,         RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, LvlBudget, Dim1,       Slots
+    { BOOTSTRAP_SERIALIZE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 4, 4 },   RDIM/2 },
+    { BOOTSTRAP_SERIALIZE, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 2, 2 },  { 4, 4 },   RDIM/2 },
     // ==========================================
 };
 // clang-format on
@@ -604,6 +618,87 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_Bootstrap_Serialize(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                      const std::string& failmsg = std::string()) {
+        try {
+            CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+
+            CryptoContext<Element> ccInit(UnitTestGenerateContext(testData.params));
+            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, false);
+            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots / 2, 0, false);
+
+            std::stringstream s;
+            Serial::Serialize(ccInit, s, SerType::BINARY);
+
+            CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+
+            CryptoContext<Element> cc;
+            Serial::Deserialize(cc, s, SerType::BINARY);
+
+            cc->EvalBootstrapPrecompute(testData.slots);
+            cc->EvalBootstrapPrecompute(testData.slots / 2);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots / 2);
+
+            //====================================================================================================
+            std::vector<std::complex<double>> input(
+                Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
+            size_t encodedLength = input.size();
+
+            Plaintext plaintext1  = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
+            auto ciphertext1      = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1After = cc->EvalBootstrap(ciphertext1);
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, ciphertext1After, &result);
+            result->SetLength(encodedLength);
+            plaintext1->SetLength(encodedLength);
+            checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+
+            //====================================================================================================
+            std::vector<std::complex<double>> input2(
+                Fill({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
+            size_t encodedLength2 = input2.size();
+
+            Plaintext plaintext2  = cc->MakeCKKSPackedPlaintext(input2, 1, MULT_DEPTH - 1, nullptr, testData.slots / 2);
+            auto ciphertext2      = cc->Encrypt(keyPair.publicKey, plaintext2);
+            auto ciphertext2After = cc->EvalBootstrap(ciphertext2);
+
+            cc->Decrypt(keyPair.secretKey, ciphertext2After, &result);
+            result->SetLength(encodedLength2);
+            plaintext2->SetLength(encodedLength2);
+            checkEquality(result->GetCKKSPackedValue(), plaintext2->GetCKKSPackedValue(), eps,
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+            //====================================================================================================
+            EXPECT_TRUE(1 == 1) << failmsg;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 
 //===========================================================================================================
@@ -625,6 +720,9 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_NUM_TOWERS:
             UnitTest_Bootstrap_NumTowers(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_SERIALIZE:
+            UnitTest_Bootstrap_Serialize(test, test.buildTestName());
             break;
         default:
             break;
