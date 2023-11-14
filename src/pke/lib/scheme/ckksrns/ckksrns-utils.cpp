@@ -858,13 +858,11 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
 }
 
 uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
-    // return ceil(sqrt(slots));
     if (slots <= 1) {
         return 1;
     }
-    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots)))-1)));
-    return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
-    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots)))+1)));
+    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
+    return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))) + 1)));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
