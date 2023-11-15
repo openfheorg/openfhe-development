@@ -633,13 +633,14 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
  * after making a request
  *  - we then process the data
  */
-void clientProcess() {
-    CryptoContext<DCRTPoly> clientCC;
-    clientCC->ClearEvalMultKeys();
-    clientCC->ClearEvalSumKeys();
-    clientCC->ClearEvalAutomorphismKeys();
-    lbcrypto::CryptoContextFactory<lbcrypto::DCRTPoly>::ReleaseAllContexts();
 
+void clientProcess() {
+    CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+    CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+    CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+
+    CryptoContext<DCRTPoly> clientCC;
     if (!Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::JSON)) {
         std::cerr << "I cannot read serialized data from: " << DATAFOLDER + ccLocation << std::endl;
         std::exit(1);
