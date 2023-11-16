@@ -77,7 +77,8 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
     // the additive homomorphic operation for XOR/NXOR is different from the other gates we compute
     // 2*(ct1 + ct2) mod 4 for XOR, 0 -> 0, 2 -> 1
-    if ((gate == XOR) || (gate == XNOR)) {
+    // XOR_FAST and XNOR_FAST are included for backwards compatibility; they map to XOR and XNOR
+    if ((gate == XOR) || (gate == XNOR) || (gate == XOR_FAST) || (gate == XNOR_FAST)) {
         LWEscheme->EvalAddEq(ctprep, ct2);
         LWEscheme->EvalAddEq(ctprep, ctprep);
     }
