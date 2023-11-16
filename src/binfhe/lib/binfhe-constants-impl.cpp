@@ -163,12 +163,6 @@ std::ostream& operator<<(std::ostream& s, BINGATE f) {
         case NAND:
             s << "NAND";
             break;
-        case XOR_FAST:
-            s << "XOR_FAST";
-            break;
-        case XNOR_FAST:
-            s << "XNOR_FAST";
-            break;
         case XOR:
             s << "XOR";
             break;

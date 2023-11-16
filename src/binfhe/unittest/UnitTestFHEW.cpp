@@ -49,8 +49,6 @@ enum TEST_CASE_TYPE {
     FHEW_NOR,
     FHEW_XOR,
     FHEW_XNOR,
-    FHEW_XOR_FAST,
-    FHEW_XNOR_FAST,
     FHEW_SIGNED_MODE,
     FHEW_KEY_SWITCH,
     FHEW_MOD_SWITCH,
@@ -83,12 +81,6 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FHEW_XNOR:
             typeName = "FHEW_XNOR";
-            break;
-        case FHEW_XOR_FAST:
-            typeName = "FHEW_XOR_FAST";
-            break;
-        case FHEW_XNOR_FAST:
-            typeName = "FHEW_XNOR_FAST";
             break;
         case FHEW_SIGNED_MODE:
             typeName = "FHEW_SIGNED_MODE";
@@ -194,14 +186,6 @@ static std::vector<TEST_CASE_UTGENERAL_FHEW> testCasesUTGENERAL_FHEW = {
     { FHEW_XNOR,  "01",  TOY,      GINX,    2,              4,        XNOR,  {1, 0, 0, 1} },
     { FHEW_XNOR,  "02",  TOY,      AP,      2,              4,        XNOR,  {1, 0, 0, 1} },
     { FHEW_XNOR,  "03",  TOY,      LMKCDEY, 2,              4,        XNOR,  {1, 0, 0, 1} },
-    // ==========================================
-    { FHEW_XOR_FAST,  "01", TOY,      GINX,    2,           4,        XOR_FAST,  {0, 1, 1, 0} },
-    { FHEW_XOR_FAST,  "02", TOY,      AP,      2,           4,        XOR_FAST,  {0, 1, 1, 0} },
-    { FHEW_XOR_FAST,  "03", TOY,      LMKCDEY, 2,           4,        XOR_FAST,  {0, 1, 1, 0} },
-    // ==========================================
-    { FHEW_XNOR_FAST, "01", TOY,      GINX,    2,           4,        XNOR_FAST, {1, 0, 0, 1} },
-    { FHEW_XNOR_FAST, "02", TOY,      AP,      2,           4,        XNOR_FAST, {1, 0, 0, 1} },
-    { FHEW_XNOR_FAST, "03", TOY,      LMKCDEY, 2,           4,        XNOR_FAST, {1, 0, 0, 1} },
     // ==========================================
     { FHEW_AND3, "01", TOY,      GINX,         3,           6,        AND3,      {0} },
     { FHEW_AND3, "02", TOY,      AP,           3,           6,        AND3,      {0} },
@@ -567,8 +551,6 @@ TEST_P(UTGENERAL_FHEW, BINFHE) {
         case FHEW_NOR:
         case FHEW_XOR:
         case FHEW_XNOR:
-        case FHEW_XOR_FAST:
-        case FHEW_XNOR_FAST:
         case FHEW_SIGNED_MODE:
             UnitTest_FHEW(test, test.buildTestName());
             break;
