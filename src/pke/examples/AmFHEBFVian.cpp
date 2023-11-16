@@ -44,25 +44,31 @@ std::vector<std::vector<int64_t>> m_UT;
 std::vector<ConstPlaintext> m_UTPre;
 uint32_t m_dim1BF;
 uint32_t m_LBF;
-int64_t PTXT_MOD      = 65537;
-uint64_t cntInnerPoly = 0;
-double timeMultConst = 0;
-double timeAddConst = 0;
-double timeRotations = 0;
-double timeMultPtxt = 0;
-double timePolyClear = 0;
-double timeMultCtxt = 0;
-double timeAddCtxt = 0;
-uint64_t cntMultConst = 0;
-uint64_t cntAddConst = 0;
-uint64_t cntRotations = 0;
-uint64_t cntMultPtxt = 0;
-uint64_t cntMultCtxt = 0;
-uint64_t cntAddCtxt = 0;
+int64_t PTXT_MOD         = 65537;
+uint64_t cntInnerPoly    = 0;
+double timeMultConst     = 0;
+double timeAddConst      = 0;
+double timeRotations     = 0;
+double timeMultPtxt      = 0;
+double timePolyClear     = 0;
+double timePolyRest      = 0;
+double timeMultCtxt      = 0;
+double timeAddCtxt       = 0;
+double timeClone         = 0;
+double timeRotationPrec  = 0;
+uint64_t cntMultConst    = 0;
+uint64_t cntAddConst     = 0;
+uint64_t cntRotations    = 0;
+uint64_t cntMultPtxt     = 0;
+uint64_t cntMultCtxt     = 0;
+uint64_t cntAddCtxt      = 0;
+uint64_t cntClone        = 0;
+uint64_t cntRotationPrec = 0;
 
 // FUNCTIONS
 void NANDthroughBFV();
 void LUTthroughBFV();
+void testDoubleHoisting();
 
 Ciphertext<DCRTPoly> EvalFHEWtoBFV(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<LWECiphertext>& lweCtxt,
                                    const std::vector<Ciphertext<DCRTPoly>>& keyCtxt);
@@ -87,6 +93,18 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
                                               const std::vector<std::vector<int64_t>>& A, uint32_t dim1);
 Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
                                        uint32_t dim1BF, bool precompute = false);
+
+Plaintext MakePackedPlaintextExt(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<DCRTPoly::Params> params,
+                                 const std::vector<int64_t>& value, size_t noiseScaleDeg = 1, uint32_t level = 0,
+                                 usint slots = 0);
+Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext);
+void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2);
+Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2);
+Ciphertext<DCRTPoly> KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst);
+void KeySwitchExt(Plaintext plaintext, const std::shared_ptr<lbcrypto::CryptoParametersBFVRNS> cryptoParams,
+                  bool addFirst);
+Ciphertext<DCRTPoly> KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext);
+DCRTPoly KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ciphertext);
 
 void Int64ToDCRTPoly(DCRTPoly& out, const int64_t constant);
 uint64_t ModDownConst(const int64_t constant, const NativeInteger t);
@@ -165,9 +183,13 @@ NativePoly DecryptWithoutDecoding(ConstCiphertext<DCRTPoly> ctxt, const PrivateK
 std::vector<int64_t> EvalPolyCleartextMod(std::vector<int64_t> input, std::vector<int64_t> coeff, const int64_t t,
                                           bool symmetric = false);
 
+uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                          uint32_t dcrtBits, bool keySwitch = false);
+
 int main() {
-    NANDthroughBFV();
-    LUTthroughBFV();
+    // NANDthroughBFV();
+    // LUTthroughBFV();
+    testDoubleHoisting();
 
     return 0;
 }
@@ -175,26 +197,32 @@ int main() {
 void NANDthroughBFV() {
     std::cout << "\n*****AMORTIZED NAND*****\n" << std::endl;
 
-    TimeVar t, tOnline;
-    TIC(t);
+    TimeVar tVar, tOnline;
+    TIC(tVar);
 
     // Step 0. Meta-parameter
     bool opt = true;  // false;
 
-    cntInnerPoly = 0;
-    timeMultConst = 0;
-    timeAddConst = 0;
-    timeRotations = 0;
-    timeMultPtxt = 0;
-    timeMultCtxt = 0;
-    timePolyClear = 0;
-    timeAddCtxt = 0;
-    cntMultConst = 0;
-    cntAddConst = 0;
-    cntRotations = 0;
-    cntMultPtxt = 0;
-    cntMultCtxt = 0;
-    cntAddCtxt = 0;
+    cntInnerPoly     = 0;
+    timeMultConst    = 0;
+    timeAddConst     = 0;
+    timeRotations    = 0;
+    timeMultPtxt     = 0;
+    timeMultCtxt     = 0;
+    timePolyClear    = 0;
+    timePolyRest     = 0;
+    timePolyRest     = 0;
+    timeAddCtxt      = 0;
+    timeClone        = 0;
+    timeRotationPrec = 0;
+    cntMultConst     = 0;
+    cntAddConst      = 0;
+    cntRotations     = 0;
+    cntMultPtxt      = 0;
+    cntMultCtxt      = 0;
+    cntAddCtxt       = 0;
+    cntClone         = 0;
+    cntRotationPrec  = 0;
 
     // Step 1. FHEW cryptocontext generation
     auto ccLWE            = BinFHEContext();
@@ -225,7 +253,7 @@ void NANDthroughBFV() {
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(32768);
+    parameters.SetRingDim(1024);
     CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
 
     uint32_t ringDim   = ccBFV->GetRingDimension();
@@ -282,11 +310,11 @@ void NANDthroughBFV() {
 
     std::cout << "modulus_BFV_from: " << modulus_BFV_from << ", modulus_BFV_to: " << modulus_BFV_to << std::endl;
 
-    double timeCC = TOC(t);
+    double timeCC = TOC(tVar);
     std::cout << "---Time to generate cryptocontexts: " << timeCC << " ms\n" << std::endl;
 
     // Step 4. Key generation for switching and precomputations
-    TIC(t);
+    TIC(tVar);
     auto keyStruct = EvalAmortizedFHEWBootKeyGen(
         *ccBFV, keys, lwesk, keys_KS.secretKey, 0,
         0);  // Automorphism keys for homomorphic decoding, FHEW to BFV key and BFV to FHEW key
@@ -300,12 +328,12 @@ void NANDthroughBFV() {
     // malloc_trim(0);
 
     // std::cout << "\nDecoding matrix = " << m_UT << std::endl;
-    double timePrecomp = TOC(t);
+    double timePrecomp = TOC(tVar);
     std::cout << "---Time for key generation and precomputations: " << timePrecomp / 1000.0 << " s\n" << std::endl;
 
     // Step 5. Inputs and encryption
     TIC(tOnline);
-    TIC(t);
+    TIC(tVar);
     std::vector<int32_t> x1 = {1, 1, 1, 1, 1, 1, 1, 1};
     if (x1.size() < numValues) {
         vector<int32_t> zeros(numValues - x1.size(), 0);
@@ -339,11 +367,11 @@ void NANDthroughBFV() {
     }
     std::cout << LWEptxt << std::endl;
 
-    double timeEnc = TOC(t);
+    double timeEnc = TOC(tVar);
     std::cout << "---Time for encryption: " << timeEnc << " ms\n" << std::endl;
 
     // Step 5. Start evaluating NAND: add the LWE ciphertexts (+ range alignment depending on opt)
-    TIC(t);
+    TIC(tVar);
     auto preBootCtxt = EvalNANDAmortized(ctxtsLWE1, ctxtsLWE2, q, opt);
 
     // std::cout << "Positive sum of LWE messages" << std::endl;
@@ -359,12 +387,12 @@ void NANDthroughBFV() {
 
     // malloc_trim(0);
 
-    // Plaintext ptxt;
-    // ccBFV->Decrypt(keys.secretKey, BminusAdotS, &ptxt);
-    // ptxt->SetLength(numValues);
-    // std::cout << "B - A*s: " << ptxt << std::endl;
+    Plaintext ptxt;
+    ccBFV->Decrypt(keys.secretKey, BminusAdotS, &ptxt);
+    ptxt->SetLength(numValues);
+    std::cout << "B - A*s: " << ptxt << std::endl;
 
-    double timeFHEWtoBFV = TOC(t);
+    double timeFHEWtoBFV = TOC(tVar);
     std::cout << "---Time FHEWtoBFV: " << timeFHEWtoBFV / 1000.0 << " s\n" << std::endl;
 
     // // Test the matrix-vector multiplication
@@ -398,7 +426,7 @@ void NANDthroughBFV() {
     // std::cout << "Cleartext B - A*s % q: " << res << std::endl;
 
     // Step 7. Polynomial evaluation for division, rounding and modding down
-    TIC(t);
+    TIC(tVar);
     std::vector<int64_t> coeff;
     if (opt) {
         coeff =
@@ -418,59 +446,60 @@ void NANDthroughBFV() {
 
     // malloc_trim(0);
 
-    // Plaintext ptxt_res;
-    // ccBFV->Decrypt(keys.secretKey, ctxt_poly, &ptxt_res);
-    // ptxt_res->SetLength(numValues);
-    // std::cout << "\nEvaluated polynomial: " << ptxt_res << std::endl;
+    Plaintext ptxt_res;
+    ccBFV->Decrypt(keys.secretKey, ctxt_poly, &ptxt_res);
+    ptxt_res->SetLength(numValues);
+    std::cout << "\nEvaluated polynomial: " << ptxt_res << std::endl;
 
     std::cout << "Number of recursions in EvalPolyPS: " << cntInnerPoly << std::endl;
 
-    double timePS = TOC(t);
+    double timePS = TOC(tVar);
     std::cout << "---Time to evaluate the polynomial of degree " << coeff.size() - 1 << " for opt = " << opt << ": "
               << timePS / 1000.0 << " s\n"
               << std::endl;
     timePolyClear += timePS;
 
-    // std::vector<int64_t> decoded_int(numValues);
-    // for(size_t i = 0; i < numValues; ++i) {
-    //     decoded_int[i] = ModDownConst(ptxt->GetPackedValue()[i], q.ConvertToInt());
-    // }
-    // auto clear_res = EvalPolyCleartextMod(decoded_int, coeff, q.ConvertToInt(), opt);
-    // std::cout << "Cleartext evaluated polynomial: " << clear_res << std::endl;
+    std::vector<int64_t> decoded_int(numValues);
+    for (size_t i = 0; i < numValues; ++i) {
+        decoded_int[i] = ModDownConst(ptxt->GetPackedValue()[i], q.ConvertToInt());
+    }
+    auto clear_res = EvalPolyCleartextMod(decoded_int, coeff, q.ConvertToInt(), opt);
+    std::cout << "Cleartext evaluated polynomial: " << clear_res << std::endl;
 
     // Step 7. Decoding
-    TIC(t);
+    TIC(tVar);
     auto decoded = EvalSlotsToCoeffs(*ccBFV, ctxt_poly, 0, false);
 
     // malloc_trim(0);
 
-    // Plaintext ptxt_dec;
-    // ccBFV->Decrypt(keys.secretKey, decoded, &ptxt_dec);
-    // ptxt_dec->SetLength(numValues);
-    // std::cout << "Decoded: " << ptxt_dec << std::endl;
+    Plaintext ptxt_dec;
+    ccBFV->Decrypt(keys.secretKey, decoded, &ptxt_dec);
+    ptxt_dec->SetLength(numValues);
+    std::cout << "Decoded: " << ptxt_dec << std::endl;
 
-    double timeDecode = TOC(t);
+    double timeDecode = TOC(tVar);
     std::cout << "---Time for slots to coeff: " << timeDecode / 1000.0 << " s\n" << std::endl;
 
-    // std::vector<int64_t> prod(m_UT.size(), 0);
-    // for (size_t i = 0; i < m_UT.size(); ++i) {
-    // for (size_t j = 0; j < m_UT[0].size(); ++j) {
-    //  prod[i] += m_UT[i][j] * ptxt_res->GetPackedValue()[j];
-    // }
-    // prod[i] = ModDownHalfConst(prod[i], q);
-    // }
-    // std::cout << "Cleartext prod: " << prod << std::endl;
+    std::vector<int64_t> prod(m_UT.size(), 0);
+    for (size_t i = 0; i < m_UT.size(); ++i) {
+        for (size_t j = 0; j < m_UT[0].size(); ++j) {
+            prod[i] += m_UT[i][j] * ptxt_res->GetPackedValue()[j];
+        }
+        prod[i] = ModDownHalfConst(prod[i], q);
+    }
+    std::cout << "Cleartext prod: " << prod << std::endl;
 
-    // auto element = DecryptWithoutDecoding(decoded, keys.secretKey);
-    // auto element_vec = element.GetValues();
-    // std::vector<int64_t> signed_vec(element_vec.GetLength());
-    // for (size_t i = 0; i < element_vec.GetLength(); ++i) {
-    //  signed_vec[i] = ModDownHalfConst(element_vec[i].ConvertToInt(), q);
-    // }
-    // std::cout << "Decrypt without decoding the decoded result (should be the same as evaluated poly) = \n" << signed_vec << std::endl;
+    auto element     = DecryptWithoutDecoding(decoded, keys.secretKey);
+    auto element_vec = element.GetValues();
+    std::vector<int64_t> signed_vec(element_vec.GetLength());
+    for (size_t i = 0; i < element_vec.GetLength(); ++i) {
+        signed_vec[i] = ModDownHalfConst(element_vec[i].ConvertToInt(), q);
+    }
+    std::cout << "Decrypt without decoding the decoded result (should be the same as evaluated poly) = \n"
+              << signed_vec << std::endl;
 
     // Step 8. Translating back to FHEW
-    TIC(t);
+    TIC(tVar);
     auto ctxtsFHEW = EvalBFVtoFHEW(*ccBFV, *ccBFV_KS, decoded, ctxtKS, BFVtoFHEWSwk, modulus_BFV_to, QFHEW, n);
 
     // malloc_trim(0);
@@ -481,7 +510,7 @@ void NANDthroughBFV() {
         ccLWE.Decrypt(lwesk, ctxtsFHEW[i], &ptxtsFHEW[i], p);
     }
     std::cout << ptxtsFHEW << std::endl;
-    double timeBFVtoFHEW = TOC(t);
+    double timeBFVtoFHEW = TOC(tVar);
     std::cout << "---Time BFVtoFHEW: " << timeBFVtoFHEW << " ms\n" << std::endl;
 
     double timeOnline = TOC(tOnline);
@@ -489,36 +518,50 @@ void NANDthroughBFV() {
               << " slots: " << timeOnline / ringDim << " ms \n"
               << std::endl;
 
-    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntRotations << " rotations: " << timeRotations / 1000.0 << "s" << std::endl;
-    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for cleartext poly operations and ciphertext creations: " << timePolyClear / 1000.0 << " s" << std::endl << std::endl;
-
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
+              << "s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+              << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+              << std::endl;
 }
 
 void LUTthroughBFV() {
     std::cout << "\n*****AMORTIZED LUT*****\n" << std::endl;
 
-    TimeVar t, tOnline;
-    TIC(t);
+    TimeVar tVar, tOnline;
+    TIC(tVar);
 
-    cntInnerPoly = 0;
-    timeMultConst = 0;
-    timeAddConst = 0;
-    timeRotations = 0;
-    timeMultPtxt = 0;
-    timeMultCtxt = 0;
-    timePolyClear = 0;
-    timeAddCtxt = 0;
-    cntMultConst = 0;
-    cntAddConst = 0;
-    cntRotations = 0;
-    cntMultPtxt = 0;
-    cntMultCtxt = 0;
-    cntAddCtxt = 0;
+    cntInnerPoly     = 0;
+    timeMultConst    = 0;
+    timeAddConst     = 0;
+    timeRotations    = 0;
+    timeMultPtxt     = 0;
+    timeMultCtxt     = 0;
+    timePolyClear    = 0;
+    timePolyRest     = 0;
+    timeAddCtxt      = 0;
+    timeClone        = 0;
+    timeRotationPrec = 0;
+    cntMultConst     = 0;
+    cntAddConst      = 0;
+    cntRotations     = 0;
+    cntMultPtxt      = 0;
+    cntMultCtxt      = 0;
+    cntAddCtxt       = 0;
+    cntClone         = 0;
+    cntRotationPrec  = 0;
 
     // Step 1. FHEW cryptocontext generation
     auto ccLWE            = BinFHEContext();
@@ -549,7 +592,7 @@ void LUTthroughBFV() {
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(32768);
+    parameters.SetRingDim(128);
     CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
 
     uint32_t ringDim   = ccBFV->GetRingDimension();
@@ -606,11 +649,11 @@ void LUTthroughBFV() {
 
     std::cout << "modulus_BFV_from: " << modulus_BFV_from << ", modulus_BFV_to: " << modulus_BFV_to << std::endl;
 
-    double timeCC = TOC(t);
+    double timeCC = TOC(tVar);
     std::cout << "---Time to generate cryptocontexts: " << timeCC << " ms\n" << std::endl;
 
     // Step 4. Key generation for switching and precomputations
-    TIC(t);
+    TIC(tVar);
     auto keyStruct = EvalAmortizedFHEWBootKeyGen(
         *ccBFV, keys, lwesk, keys_KS.secretKey, 0,
         0);  // Automorphism keys for homomorphic decoding, FHEW to BFV key and BFV to FHEW key
@@ -618,12 +661,12 @@ void LUTthroughBFV() {
     auto BFVtoFHEWSwk    = keyStruct->BFVtoFHEWSwk;
 
     EvalSlotsToCoeffsPrecompute(*ccBFV, 1, 0, false);
-    double timePrecomp = TOC(t);
+    double timePrecomp = TOC(tVar);
     std::cout << "---Time for key generation and precomputation: " << timePrecomp / 1000.0 << " s\n" << std::endl;
 
     // Step 5. Inputs and encryption
     TIC(tOnline);
-    TIC(t);
+    TIC(tVar);
     vector<int32_t> x1 = {-4, 0, 1, 4, 9, 16, 121, 144};
     if (x1.size() < numValues) {
         vector<int32_t> zeros(numValues - x1.size(), 0);
@@ -647,11 +690,11 @@ void LUTthroughBFV() {
     // LUT to evaluate
     std::vector<int64_t> coeff(DRaMLUT_coeff_sqrt_9);
 
-    double timeEnc = TOC(t);
+    double timeEnc = TOC(tVar);
     std::cout << "---Time for encryption: " << timeEnc << " ms\n" << std::endl;
 
     // Step 6. Conversion from LWE to RLWE
-    TIC(t);
+    TIC(tVar);
     Ciphertext<DCRTPoly> BminusAdotS = EvalFHEWtoBFV(*ccBFV, ctxtsLWE1, ctxt_vec_LWE_sk);
 
     Plaintext ptxt;
@@ -659,8 +702,27 @@ void LUTthroughBFV() {
     ptxt->SetLength(numValues);
     std::cout << "B - A*s: " << ptxt << std::endl;
 
-    double timeFHEWtoBFV = TOC(t);
+    double timeFHEWtoBFV = TOC(tVar);
     std::cout << "---Time FHEWtoBFV: " << timeFHEWtoBFV / 1000.0 << " s\n" << std::endl;
+
+    std::cout << "---Online time so far: " << TOC(tOnline) / 1000.0 << " s\n" << std::endl;
+
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
+              << "s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+              << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+              << std::endl;
 
     // // Test the matrix-vector multiplication
     // std::vector<int64_t> LWE_sk(n);
@@ -693,7 +755,7 @@ void LUTthroughBFV() {
     // std::cout << "Cleartext B - A*s % q: " << res << std::endl;
 
     // Step 7. Polynomial evaluation for rounding and modding down
-    TIC(t);
+    TIC(tVar);
     auto ctxt_poly = EvalPolyPSBFV(BminusAdotS, coeff, false);
 
     // Plaintext ptxt_res;
@@ -703,11 +765,31 @@ void LUTthroughBFV() {
 
     std::cout << "Number of recursions in EvalPolyPS: " << cntInnerPoly << std::endl;
 
-    double timePS = TOC(t);
+    double timePS = TOC(tVar);
     std::cout << "---Time to evaluate the polynomial of degree " << coeff.size() - 1 << ": " << timePS / 1000.0
               << " s\n"
               << std::endl;
     timePolyClear += timePS;
+
+    std::cout << "---Online time so far: " << TOC(tOnline) / 1000.0 << " s\n" << std::endl;
+
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
+              << "s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+              << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+              << std::endl;
 
     // std::vector<int64_t> decoded_int(ringDim);
     // for(size_t i = 0; i < ringDim; ++i) {
@@ -717,7 +799,7 @@ void LUTthroughBFV() {
     // std::cout << "Cleartext evaluated polynomial: " << clear_res << std::endl;
 
     // Step 7. Decoding
-    TIC(t);
+    TIC(tVar);
     auto decoded = EvalSlotsToCoeffs(*ccBFV, ctxt_poly, 0, false);
 
     // Plaintext ptxt_dec;
@@ -725,8 +807,28 @@ void LUTthroughBFV() {
     // ptxt_dec->SetLength(numValues);
     // std::cout << "Decoded: " << ptxt_dec << std::endl;
 
-    double timeDecode = TOC(t);
+    double timeDecode = TOC(tVar);
     std::cout << "---Time for slots to coeff: " << timeDecode / 1000.0 << " s\n" << std::endl;
+
+    std::cout << "---Online time so far: " << TOC(tOnline) / 1000.0 << " s\n" << std::endl;
+
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
+              << "s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+              << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+              << std::endl;
 
     // std::vector<int64_t> prod(m_UT.size(), 0);
     // for (size_t i = 0; i < m_UT.size(); ++i) {
@@ -746,7 +848,7 @@ void LUTthroughBFV() {
     // std::cout << "Decrypt without decoding the decoded result (should be the same as evaluated poly) = \n" << signed_vec << std::endl;
 
     // Step 8. Translating back to FHEW
-    TIC(t);
+    TIC(tVar);
     auto ctxtsFHEW = EvalBFVtoFHEW(*ccBFV, *ccBFV_KS, decoded, ctxtKS, BFVtoFHEWSwk, modulus_BFV_to, QFHEW, n);
     std::cout << "\nDecrypting switched ciphertexts" << std::endl;
     vector<LWEPlaintext> ptxtsFHEW(numValues);
@@ -754,7 +856,7 @@ void LUTthroughBFV() {
         ccLWE.Decrypt(lwesk, ctxtsFHEW[i], &ptxtsFHEW[i], p);
     }
     std::cout << ptxtsFHEW << std::endl;
-    double timeBFVtoFHEW = TOC(t);
+    double timeBFVtoFHEW = TOC(tVar);
     std::cout << "---Time BFVtoFHEW: " << timeBFVtoFHEW << " ms" << std::endl;
 
     double timeOnline = TOC(tOnline);
@@ -762,14 +864,418 @@ void LUTthroughBFV() {
               << " slots: " << timeOnline / ringDim << " ms \n"
               << std::endl;
 
-    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntRotations << " rotations: " << timeRotations / 1000.0 << "s" << std::endl;
-    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for cleartext poly operations and ciphertext creations: " << timePolyClear / 1000.0 << " s" << std::endl << std::endl;
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
+              << "s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+              << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+              << std::endl;
+}
 
+void testDoubleHoisting() {
+    // Step 1. FHEW cryptocontext generation
+    auto ccLWE            = BinFHEContext();
+    const uint32_t n      = 1024;
+    const uint32_t NN     = 1024;  // RSGW ring dim. Not used
+    const uint32_t p      = 3;
+    const NativeInteger q = 65537;
+    const NativeInteger Q = 18014398509404161;
+
+    ccLWE.BinFHEContext::GenerateBinFHEContext(n, NN, q, Q, 3.19, 32, 32, 32, UNIFORM_TERNARY, GINX, 10);
+    auto params = ccLWE.GetParams();
+
+    // Print the FHEW Params
+    std::cout << "FHEW params:\np = " << p << ", n = " << n << ", q = " << q << std::endl << std::endl;
+
+    // LWE private key
+    LWEPrivateKey lwesk;
+    lwesk = ccLWE.KeyGen();
+
+    // Step 2. Main BFV cryptocontext generation
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(
+        q.ConvertToInt());  // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
+    parameters.SetMultiplicativeDepth(5);
+    parameters.SetMaxRelinSkDeg(3);
+    parameters.SetFirstModSize(60);
+    parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(16);
+    CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
+
+    uint32_t ringDim = ccBFV->GetRingDimension();
+
+    ccBFV->Enable(PKE);
+    ccBFV->Enable(KEYSWITCH);
+    ccBFV->Enable(LEVELEDSHE);
+    ccBFV->Enable(ADVANCEDSHE);
+
+    // BFV private and public keys
+    auto keys = ccBFV->KeyGen();
+
+    // Print the BFV params
+    std::cout << "BFV params:\nt = " << ccBFV->GetCryptoParameters()->GetPlaintextModulus() << ", N = " << ringDim
+              << ", log2 q = " << log2(ccBFV->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << std::endl
+              << std::endl;
+
+    // Step 3. Intermediate BFV cruptocontext generation
+    CCParams<CryptoContextBFVRNS> parameters_KS;
+    parameters_KS.SetPlaintextModulus(
+        q.ConvertToInt());  // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
+    parameters_KS.SetMultiplicativeDepth(0);
+    parameters_KS.SetMaxRelinSkDeg(3);
+    parameters_KS.SetRingDim(ringDim);
+    parameters_KS.SetFirstModSize(27);
+    parameters_KS.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
+    parameters_KS.SetSecurityLevel(HEStd_NotSet);
+    parameters_KS.SetMultiplicationTechnique(HPSPOVERQ);  // Don't need HPSPOVERQLEVELED here
+    CryptoContext<DCRTPoly> ccBFV_KS = GenCryptoContext(parameters_KS);
+
+    ccBFV_KS->Enable(PKE);
+    ccBFV_KS->Enable(KEYSWITCH);
+    ccBFV_KS->Enable(LEVELEDSHE);
+    ccBFV_KS->Enable(ADVANCEDSHE);
+
+    auto keys_KS = ccBFV_KS->KeyGen();
+
+    // Ciphertext with intermediate cryptocontext used to switch the ciphertext from the large cryptocontext
+    Plaintext ptxtZeroKS = ccBFV_KS->MakePackedPlaintext(std::vector<int64_t>{0});
+    auto ctxtKS          = ccBFV_KS->Encrypt(keys_KS.publicKey, ptxtZeroKS);
+    ctxtKS               = ccBFV_KS->Compress(ctxtKS, 1);
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ccBFV->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    auto paramsQ                                  = elementParams.GetParams();
+    auto modulus_BFV_from                         = paramsQ[0]->GetModulus();
+
+    const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ccBFV_KS->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams2 = *(cryptoParams2->GetElementParams());
+    auto paramsQ2                                  = elementParams2.GetParams();
+    auto modulus_BFV_to                            = paramsQ2[0]->GetModulus();
+
+    std::cout << "modulus_BFV_from: " << modulus_BFV_from << ", modulus_BFV_to: " << modulus_BFV_to << std::endl;
+
+    // Step 4. Key generation for switching and precomputations
+    auto keyStruct = EvalAmortizedFHEWBootKeyGen(
+        *ccBFV, keys, lwesk, keys_KS.secretKey, 0,
+        0);  // Automorphism keys for homomorphic decoding, FHEW to BFV key and BFV to FHEW key
+    auto ctxt_vec_LWE_sk = keyStruct->FHEWtoBFVKey;
+    auto BFVtoFHEWSwk    = keyStruct->BFVtoFHEWSwk;
+
+    EvalSlotsToCoeffsPrecompute(*ccBFV, 1, 0, false);
+
+    // std::cout << "\nDecoding matrix = " << m_UT << std::endl;
+
+    ////////// TEST KEY SWITCHING //////////
+    std::vector<int64_t> a = {0, 1, 2, 3, 4, 5, 6, 7};
+    Plaintext plaintext_a  = ccBFV->MakePackedPlaintext(a);
+    // Test for KeySwitchExt + KeySwitchDown
+    auto ciphertext = ccBFV->Encrypt(keys.publicKey, plaintext_a);
+    ciphertext      = ccBFV->EvalMult(ciphertext, ciphertext);
+    ciphertext      = ccBFV->EvalMult(ciphertext, ciphertext);
+
+    Ciphertext<DCRTPoly> ciphertext2 = KeySwitchExt(ciphertext, true);
+    ciphertext2                      = KeySwitchDown(ciphertext2);
+
+    Plaintext result;
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "KeySwitchExt + KeySwitchDown: " << result << std::endl;
+
+    // Test for EvalFastRotationExt
+    auto digits = ccBFV->EvalFastRotationPrecompute(ciphertext);
+    ciphertext2 = ccBFV->EvalFastRotationExt(ciphertext, 1, digits, true);
+    ciphertext2 = KeySwitchDown(ciphertext2);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalFastRotationExt: " << result << std::endl;
+
+    // Test for KeySwitchExt + KeySwitchDown w/o first element
+    auto firstCurrent = ciphertext->GetElements()[0];
+    ciphertext2       = KeySwitchExt(ciphertext, false);
+    ciphertext2       = KeySwitchDown(ciphertext2);
+    auto elements     = ciphertext2->GetElements();
+    elements[0] += firstCurrent;
+    ciphertext2->SetElements(elements);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "KeySwitchExt + KeySwitchDown w/o first element: " << result << std::endl;
+
+    // Test for EvalFastRotationExt w/o first element
+    firstCurrent = ciphertext->GetElements()[0];
+    // Find the automorphism index that corresponds to rotation index index.
+    usint autoIndex = FindAutomorphismIndex2n(1, 2 * ringDim);
+    std::vector<usint> map(ringDim);
+    PrecomputeAutoMap(ringDim, autoIndex, &map);
+    firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
+    digits       = ccBFV->EvalFastRotationPrecompute(ciphertext);
+    ciphertext2  = ccBFV->EvalFastRotationExt(ciphertext, 1, digits, false);
+    ciphertext2  = KeySwitchDown(ciphertext2);
+    elements     = ciphertext2->GetElements();
+    elements[0] += firstCurrent;
+    ciphertext2->SetElements(elements);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalFastRotationExt w/o first element: " << result << std::endl;
+
+    // Test for EvalMultExt
+    // Preparations for extended plaintext
+    const auto cryptoParamsCtxt = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParamsCtxt = *(cryptoParamsCtxt->GetElementParams());
+    // auto elementParamsCtxt         = *((*digits)[0].GetParams()); // Use this instead of elementParams?
+
+    auto paramsQCtxt = elementParamsCtxt.GetParams();
+    usint sizeQ      = paramsQCtxt.size();
+    auto paramsPCtxt = cryptoParamsCtxt->GetParamsP()->GetParams();
+    usint sizeP      = paramsPCtxt.size();
+
+    std::vector<NativeInteger> moduli(sizeQ + sizeP);
+    std::vector<NativeInteger> roots(sizeQ + sizeP);
+    for (size_t i = 0; i < sizeQ; i++) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    }
+    for (size_t i = 0; i < sizeP; i++) {
+        moduli[sizeQ + i] = paramsPCtxt[i]->GetModulus();
+        roots[sizeQ + i]  = paramsPCtxt[i]->GetRootOfUnity();
+    }
+
+    auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(2 * ringDim, moduli, roots);
+    auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
+
+    Plaintext ptxt = ccBFV->MakePackedPlaintextAux(std::vector<int64_t>(a.size(), 1), 1, 0, elementParamsPtr2);
+    ciphertext2    = EvalMultExt(KeySwitchExt(ciphertext, true), ptxt);
+    ciphertext2    = KeySwitchDown(ciphertext2);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalMultExt: " << result << std::endl;
+
+    // Test for EvalMultExt and EvalAddExt
+    ciphertext2 = EvalMultExt(KeySwitchExt(ciphertext, true), ptxt);
+    EvalAddExtInPlace(ciphertext2, EvalMultExt(ccBFV->EvalFastRotationExt(ciphertext, 1, digits, true), ptxt));
+    ciphertext2 = KeySwitchDown(ciphertext2);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalAddExt and EvalMultExt: " << result << std::endl;
+
+    // Test for KeySwitchExt combined with EvalMultExt and EvalAddExt w/o first element
+    ciphertext2  = EvalMultExt(KeySwitchExt(ciphertext, true), ptxt);
+    firstCurrent = ciphertext->GetElements()[0];
+    EvalAddExtInPlace(ciphertext2, KeySwitchExt(ciphertext, false));
+    ciphertext2 = KeySwitchDown(ciphertext2);
+    elements    = ciphertext2->GetElements();
+    elements[0] += firstCurrent;
+    ciphertext2->SetElements(elements);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalAddExt with KeySwitchExt w/o first element: " << result << std::endl;
+
+    // Test for EvalFastRotationExt and EvalAddExt combined with EvalMultExt and EvalAddExt w/o first element
+    ciphertext2  = EvalMultExt(KeySwitchExt(ciphertext, true), ptxt);
+    firstCurrent = ciphertext->GetElements()[0];
+    EvalAddExtInPlace(ciphertext2, ccBFV->EvalFastRotationExt(ciphertext, 1, digits, false));
+    PrecomputeAutoMap(ringDim, autoIndex, &map);
+    firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
+    ciphertext2  = KeySwitchDown(ciphertext2);
+    elements     = ciphertext2->GetElements();
+    elements[0] += firstCurrent;
+    ciphertext2->SetElements(elements);
+
+    ccBFV->Decrypt(keys.secretKey, ciphertext2, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalAddExt with EvalFastRotationExt w/o first element: " << result << std::endl;
+
+    // Test for EvalMultExt, EvalFastRotationExt and EvalAddExt combined with EvalMultExt and EvalAddExt w/o first element
+    ciphertext2    = EvalMultExt(KeySwitchExt(ciphertext, true), ptxt);
+    DCRTPoly first = KeySwitchDownFirstElement(ciphertext2);
+    elements       = ciphertext2->GetElements();
+    elements[0].SetValuesToZero();
+    ciphertext2->SetElements(elements);
+    Ciphertext<DCRTPoly> resultCtxt = ciphertext2;
+
+    ciphertext2  = EvalMultExt(KeySwitchExt(ciphertext, true), ptxt);
+    ciphertext2  = KeySwitchDown(ciphertext2);
+    firstCurrent = ciphertext2->GetElements()[0];
+    PrecomputeAutoMap(ringDim, autoIndex, &map);
+    firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
+    first += firstCurrent;
+
+    auto digits2 = ccBFV->EvalFastRotationPrecompute(ciphertext2);
+    EvalAddExtInPlace(resultCtxt, ccBFV->EvalFastRotationExt(ciphertext2, 1, digits2, false));
+
+    resultCtxt = KeySwitchDown(resultCtxt);
+    elements   = resultCtxt->GetElements();
+    elements[0] += first;
+    resultCtxt->SetElements(elements);
+
+    ccBFV->Decrypt(keys.secretKey, resultCtxt, &result);
+    result->SetLength(a.size());
+    std::cout << "EvalAddExt with EvalMultExt with EvalFastRotationExt w/o first element: " << result << std::endl;
+
+    std::cout << "\n\n";
+
+    // Step 5. Inputs and encryption
+    std::vector<int64_t> x(ringDim, 0);
+    Plaintext ptxt_input = ccBFV->MakePackedPlaintext(x);
+    std::cout << ptxt_input << std::endl;
+    Ciphertext<DCRTPoly> ctxt_input = ccBFV->Encrypt(keys.publicKey, ptxt_input);
+
+    ctxt_input = ccBFV->EvalMult(ctxt_input, ctxt_input);
+    ctxt_input = ccBFV->EvalMult(ctxt_input, ctxt_input);
+    ctxt_input = ccBFV->EvalMult(ctxt_input, ctxt_input);
+
+    // Test matrix multiplication with double hoisting
+    uint32_t bStep = getRatioBSGSPow2(ringDim / 2);
+    uint32_t gStep = ceil(static_cast<double>(ringDim / 2) / bStep);
+
+    std::vector<Ciphertext<DCRTPoly>> fastRotation(2 * gStep - 2);
+
+    // Swap ciphertext halves
+    Ciphertext<DCRTPoly> ctxt_swapped = ccBFV->EvalAtIndex(ctxt_input, ringDim / 2);
+
+    // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
+    digits  = ccBFV->EvalFastRotationPrecompute(ctxt_input);
+    digits2 = ccBFV->EvalFastRotationPrecompute(ctxt_swapped);
+
+    // Hoisted automorphisms
+#pragma omp parallel for
+    for (size_t j = 1; j < gStep; j++) {
+        fastRotation[j - 1]             = ccBFV->EvalFastRotationExt(ctxt_input, j * bStep, digits, true);
+        fastRotation[j - 1 + gStep - 1] = ccBFV->EvalFastRotationExt(ctxt_swapped, j * bStep, digits2, true);
+    }
+    // Preparations for extended plaintext
+    const auto cryptoParams3 =
+        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(fastRotation[0]->GetCryptoParameters());
+    // const auto cryptoParams3 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ctxt_input->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams3 = *(cryptoParams3->GetElementParams());
+
+    auto paramsQ3 = elementParams3.GetParams();
+    usint sizeQ3  = paramsQ3.size();
+    auto paramsP3 = cryptoParams3->GetParamsP()->GetParams();
+    usint sizeP3  = paramsP3.size();
+
+    std::vector<NativeInteger> moduli3(sizeQ3 + sizeP3);
+    std::vector<NativeInteger> roots3(sizeQ3 + sizeP3);
+
+    for (size_t i = 0; i < sizeQ3; i++) {
+        moduli3[i] = paramsQ3[i]->GetModulus();
+        roots3[i]  = paramsQ3[i]->GetRootOfUnity();
+    }
+    for (size_t i = 0; i < sizeP3; i++) {
+        moduli3[sizeQ + i] = paramsP3[i]->GetModulus();
+        roots3[sizeQ + i]  = paramsP3[i]->GetRootOfUnity();
+    }
+
+    auto elementParamsPtr3  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(2 * ringDim, moduli3, roots3);
+    auto elementParamsPtr32 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr3);
+
+    Ciphertext<DCRTPoly> resultM;
+    DCRTPoly firstM;
+
+    for (size_t i = 0; i < bStep; ++i) {
+        Ciphertext<DCRTPoly> inner;
+        std::cout << "i = " << i << std::endl;
+        for (size_t j = 0; j < gStep; ++j) {
+            std::cout << "j = " << j << std::endl;
+            auto diag        = ExtractShiftedDiagonalN(m_UT, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
+            Plaintext A_ptxt = ccBFV->MakePackedPlaintextAux(diag, 1, 0, elementParamsPtr32);
+            if (j == 0) {
+                inner = EvalMultExt(KeySwitchExt(ctxt_input, true), A_ptxt);
+                // inner = EvalMultExt(cc.EvalFastRotationExt(ctxt_input, 0, digits, true), A_ptxt); // Andreea: hack
+            }
+            else {
+                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j - 1], A_ptxt));
+            }
+        }
+        for (size_t j = gStep; j < 2 * gStep; ++j) {
+            std::cout << "j = " << j << std::endl;
+            auto diag        = ExtractShiftedDiagonalN(m_UT, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
+            Plaintext A_ptxt = ccBFV->MakePackedPlaintextAux(diag, 1, 0, elementParamsPtr32);
+            if (j == gStep) {
+                EvalAddExtInPlace(inner, EvalMultExt(KeySwitchExt(ctxt_swapped, true), A_ptxt));
+                // EvalAddExtInPlace(inner, EvalMultExt(ccBFV->EvalFastRotationExt(ctxt_swapped, 0, digits2, true), A_ptxt)); // Andreea: hack
+            }
+            else {
+                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j - 2], A_ptxt));
+            }
+        }
+
+        std::cout << "inner.GetNumElements: " << inner->GetElements()[0].GetNumOfElements() << std::endl;
+        std::cout << "After j loops" << std::endl;
+
+        if (i == 0) {
+            firstM = KeySwitchDownFirstElement(inner);
+            std::cout << "first" << std::endl;
+            auto elements = inner->GetElements();
+            elements[0].SetValuesToZero();
+            inner->SetElements(elements);
+            resultM = inner;
+        }
+        else {
+            std::cout << "inner before KeySwitchDown.GetNumElements: " << inner->GetElements()[0].GetNumOfElements()
+                      << std::endl;
+            inner = KeySwitchDown(inner);
+            // Find the automorphism index that corresponds to the rotation index.
+            usint autoIndex = FindAutomorphismIndex2n(i, 2 * ringDim);
+            std::vector<usint> map(ringDim);
+            PrecomputeAutoMap(ringDim, autoIndex, &map);
+            DCRTPoly firstCurrent = inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
+            firstM += firstCurrent;
+
+            auto innerDigits = ccBFV->EvalFastRotationPrecompute(inner);
+            EvalAddExtInPlace(resultM, ccBFV->EvalFastRotationExt(inner, i, innerDigits, false));
+            cntRotations++;
+        }
+    }
+
+    std::cout << "After all loops" << std::endl;
+
+    resultM        = KeySwitchDown(resultM);
+    auto elementsM = resultM->GetElements();
+    elementsM[0] += firstM;
+    resultM->SetElements(elementsM);
+
+    ccBFV->Decrypt(keys.secretKey, resultM, &result);
+    result->SetLength(a.size());
+    std::cout << "Matrix-vector multiplication: " << result << std::endl;
+
+    // exit(1);
+
+    // Step 7. Decoding
+    auto decoded = EvalSlotsToCoeffs(*ccBFV, ctxt_input, 0, false);
+
+    Plaintext ptxt_dec;
+    ccBFV->Decrypt(keys.secretKey, decoded, &ptxt_dec);
+    ptxt_dec->SetLength(ringDim);
+    std::cout << "Decoded: " << ptxt_dec << std::endl;
+
+    std::vector<int64_t> prod(m_UT.size(), 0);
+    for (size_t i = 0; i < m_UT.size(); ++i) {
+        for (size_t j = 0; j < m_UT[0].size(); ++j) {
+            prod[i] += m_UT[i][j] * ptxt_input->GetPackedValue()[j];
+        }
+        prod[i] = ModDownHalfConst(prod[i], q);
+    }
+    std::cout << "Cleartext prod: " << prod << std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -810,6 +1316,8 @@ Ciphertext<DCRTPoly> EvalLinearWSumBFV(const std::vector<Ciphertext<DCRTPoly>>& 
     std::vector<Ciphertext<DCRTPoly>> cts(size);
     std::vector<int64_t> constantsNZ(size);
 
+    TimeVar tVar;
+    TIC(tVar);
     uint32_t pos = 0;
     for (uint32_t i = 0; i < size; i++) {
         if (constants[i] != 0) {
@@ -818,6 +1326,8 @@ Ciphertext<DCRTPoly> EvalLinearWSumBFV(const std::vector<Ciphertext<DCRTPoly>>& 
             pos += 1;
         }
     }
+    timeClone += TOC(tVar);
+    cntClone += pos;
 
     return EvalLinearWSumMutableBFV(cts, constantsNZ);
 }
@@ -825,7 +1335,6 @@ Ciphertext<DCRTPoly> EvalLinearWSumBFV(const std::vector<Ciphertext<DCRTPoly>>& 
 Ciphertext<DCRTPoly> EvalLinearWSumMutableBFV(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                               const std::vector<int64_t>& constants) {
     TimeVar tVar;
-    TIC(tVar);                                                
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertexts[0]->GetCryptoParameters());
 
     auto cc   = ciphertexts[0]->GetCryptoContext();
@@ -865,13 +1374,21 @@ void Int64ToDCRTPoly(DCRTPoly& out, const int64_t constant) {
 }
 
 Ciphertext<DCRTPoly> EvalMultConstBFV(ConstCiphertext<DCRTPoly> ciphertext, const int64_t constant) {
+    TimeVar tVar;
+    TIC(tVar);
     Ciphertext<DCRTPoly> ciphertext_res = ciphertext->Clone();
+    timeClone += TOC(tVar);
+    cntClone++;
     EvalMultCoreInPlaceBFV(ciphertext_res, constant);
     return ciphertext_res;
 }
 
 Ciphertext<DCRTPoly> EvalAddConstBFV(ConstCiphertext<DCRTPoly> ciphertext, const int64_t constant) {
+    TimeVar tVar;
+    TIC(tVar);
     Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    timeClone += TOC(tVar);
+    cntClone++;
     EvalAddInPlaceConstBFV(result, constant);
     return result;
 }
@@ -900,21 +1417,27 @@ int64_t ModDownHalfConst(const int64_t constant, const NativeInteger t) {
 }
 
 void EvalMultCoreInPlaceBFV(Ciphertext<DCRTPoly>& ciphertext, const int64_t constant) {
-
     TimeVar tVar;
     TIC(tVar);
     const shared_ptr<ILDCRTParams<BigInteger>> params = ciphertext->GetElements()[0].GetParams();
 
     // Ensure the constant is in the required range
     const NativeInteger t = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-    auto mod_constant     = ModDownConst(constant, t);
+    // auto mod_constant     = ModDownConst(constant, t);
 
-    DCRTPoly constDCRTPoly(params, Format::COEFFICIENT, true);
-    Int64ToDCRTPoly(constDCRTPoly, mod_constant);
+    // DCRTPoly constDCRTPoly(params, Format::COEFFICIENT, true);
+    // Int64ToDCRTPoly(constDCRTPoly, mod_constant);
+
+    // std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    // for (usint i = 0; i < cv.size(); ++i) {
+    //     cv[i] *= constDCRTPoly;
+    // }
+
+    NativeInteger mod_constant = ModDownConst(constant, t);
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     for (usint i = 0; i < cv.size(); ++i) {
-        cv[i] *= constDCRTPoly;
+        cv[i] *= mod_constant;
     }
 
     timeMultConst += TOC(tVar);
@@ -924,7 +1447,6 @@ void EvalMultCoreInPlaceBFV(Ciphertext<DCRTPoly>& ciphertext, const int64_t cons
 }
 
 void EvalAddInPlaceConstBFV(Ciphertext<DCRTPoly>& ciphertext, const int64_t constant) {
-
     TimeVar tVar;
     TIC(tVar);
     const shared_ptr<ILDCRTParams<BigInteger>> params = ciphertext->GetElements()[0].GetParams();
@@ -949,8 +1471,12 @@ void EvalAddInPlaceConstBFV(Ciphertext<DCRTPoly>& ciphertext, const int64_t cons
     tmp.TimesQovert(cryptoParams->GetElementParams(), tInvModq, t, NegQModt, NegQModtPrecon);
     tmp.SetFormat(Format::EVALUATION);
     constDCRTPoly = std::move(tmp);
-
     cv[0] += constDCRTPoly;
+
+    // NativeInteger mod_constant = ModDownConst(constant, t);
+    // auto temp = mod_constant.ModMulFastConstEq(NegQModt, t, NegQModtPrecon);
+    // temp *= tInvModq[0];
+    // cv[0] += temp;
 
     timeAddConst += TOC(tVar);
     cntAddConst++;
@@ -1026,7 +1552,7 @@ std::vector<int32_t> FindLTNRotationIndices(uint32_t dim1, uint32_t N) {
 }
 
 uint32_t getRatioBSGSPow2(uint32_t slots) {
-    return (1 << lbcrypto::GetMSB(static_cast<uint32_t>(sqrt(slots))));
+    return (1 << lbcrypto::GetMSB(static_cast<uint32_t>(sqrt(slots)) - 1));
 }
 
 // Method to arrange diagonals of a matrix NxN such that it is compatible with BFV rotations, N is a power of 2
@@ -1157,8 +1683,8 @@ uint32_t CountNonZero(const std::vector<int64_t>& coefficients) {
 Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vector<int64_t>& coefficients,
                                         uint32_t k, uint32_t m, std::vector<Ciphertext<DCRTPoly>>& powers,
                                         std::vector<Ciphertext<DCRTPoly>>& powers2) {
-    TimeVar tVar, tVar2;
-    // TIC(t);
+    TimeVar tVar, tVar2, tVar3;
+    TIC(tVar3);
 
     cntInnerPoly++;
 
@@ -1200,39 +1726,58 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
     if (dc >= 1) {
         if (dc == 1) {
             if (divcs->q[1] != 1) {
+                timePolyRest += TOC(tVar3);
                 TIC(tVar);
                 cu = EvalMultConstBFV(powers.front(), divcs->q[1]);
                 timePolyClear -= TOC(tVar);
+                TIC(tVar3);
             }
             else {
-                cu = powers.front()->Clone();
+                timePolyRest += TOC(tVar3);
+                TIC(tVar);
+                cu         = powers.front()->Clone();
+                auto tempT = TOC(tVar);
+                timeClone += tempT;
+                cntClone++;
+                timePolyClear -= tempT;
+                TIC(tVar3);
             }
         }
         else {
+            timePolyRest += TOC(tVar3);
+            TIC(tVar);
             std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
             std::vector<int64_t> weights(dc);
-
             for (size_t i = 0; i < dc; i++) {
                 ctxs[i]    = powers[i];
                 weights[i] = divcs->q[i + 1];
             }
+            auto tempT = TOC(tVar);
+            timeClone += tempT;
+            cntClone += 2 * dc;
+            timePolyClear -= tempT;
             TIC(tVar);
             cu = EvalLinearWSumMutableBFV(ctxs, weights);
             timePolyClear -= TOC(tVar);
+            TIC(tVar3);
         }
 
+        timePolyRest += TOC(tVar3);
         // adds the free term (at x^0)
         TIC(tVar);
         EvalAddInPlaceConstBFV(cu, divcs->q.front());
         timePolyClear -= TOC(tVar);
         flag_c = true;
+        TIC(tVar3);
     }
 
     // Evaluate q and s2 at u. If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
     Ciphertext<DCRTPoly> qu;
 
     if (Degree(divqr->q) > k) {
+        timePolyRest += TOC(tVar3);
         qu = InnerEvalPolyPSBFV(x, divqr->q, k, m - 1, powers, powers2);
+        TIC(tVar3);
     }
     else {
         // dq = k from construction
@@ -1240,6 +1785,8 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
         auto qcopy = divqr->q;
         qcopy.resize(k);
         if (Degree(qcopy) > 0) {
+            timePolyRest += TOC(tVar3);
+            TIC(tVar);
             std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
             std::vector<int64_t> weights(Degree(qcopy));
 
@@ -1247,8 +1794,12 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
                 ctxs[i]    = powers[i];
                 weights[i] = divqr->q[i + 1];
             }
-
+            auto tempT = TOC(tVar);
+            timeClone += tempT;
+            cntClone += 2 * Degree(qcopy);
+            timePolyClear -= tempT;
             TIC(tVar);
+
             qu = EvalLinearWSumMutableBFV(ctxs, weights);
             // the highest order term will always be 1 because q is monic
             TIC(tVar2);
@@ -1256,32 +1807,55 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
             timeAddCtxt += TOC(tVar2);
             cntAddCtxt++;
             timePolyClear -= TOC(tVar);
+            TIC(tVar3);
         }
         else {
-            qu = powers[k - 1]->Clone();
+            timePolyRest += TOC(tVar3);
+            TIC(tVar);
+            qu         = powers[k - 1]->Clone();
+            auto tempT = TOC(tVar);
+            timeClone += tempT;
+            cntClone++;
+            timePolyClear -= tempT;
+            TIC(tVar3);
         }
+        timePolyRest += TOC(tVar3);
         // adds the free term (at x^0)
         TIC(tVar);
         EvalAddInPlaceConstBFV(qu, divqr->q.front());
         timePolyClear -= TOC(tVar);
+        TIC(tVar3);
     }
 
     uint64_t ds = Degree(s2);
     Ciphertext<DCRTPoly> su;
+    timePolyRest += TOC(tVar3);
+    TIC(tVar3);
 
     if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
-        su = qu->Clone();
+        timePolyRest += TOC(tVar3);
+        TIC(tVar);
+        su         = qu->Clone();
+        auto tempT = TOC(tVar);
+        timeClone += tempT;
+        cntClone++;
+        timePolyClear -= tempT;
+        TIC(tVar3);
     }
     else {
         if (ds > k) {
+            timePolyRest += TOC(tVar3);
             su = InnerEvalPolyPSBFV(x, s2, k, m - 1, powers, powers2);
+            TIC(tVar3);
         }
         else {
             // ds = k from construction
             // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
             auto scopy = s2;
             scopy.resize(k);
+            timePolyRest += TOC(tVar3);
             if (Degree(scopy) > 0) {
+                TIC(tVar);
                 std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
                 std::vector<int64_t> weights(Degree(scopy));
 
@@ -1289,6 +1863,9 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
                     ctxs[i]    = powers[i];
                     weights[i] = s2[i + 1];
                 }
+                auto tempT = TOC(tVar);
+                timeClone += tempT;
+                cntClone += 2 * Degree(scopy);
                 TIC(tVar);
                 su = EvalLinearWSumMutableBFV(ctxs, weights);
                 // the highest order term will always be 1 because q is monic
@@ -1299,7 +1876,12 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
                 timePolyClear -= TOC(tVar);
             }
             else {
-                su = powers[k - 1]->Clone();
+                TIC(tVar);
+                su         = powers[k - 1]->Clone();
+                auto tempT = TOC(tVar);
+                timeClone += tempT;
+                cntClone++;
+                timePolyClear -= tempT;
             }
             // adds the free term (at x^0)
             TIC(tVar);
@@ -1322,39 +1904,49 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
     timePolyClear -= TOC(tVar);
 
     TIC(tVar);
-    result = cc->EvalMult(result, qu);
-    timeMultCtxt+= TOC(tVar);
+    result     = cc->EvalMult(result, qu);
+    auto tempT = TOC(tVar);
+    timeMultCtxt += tempT;
     cntMultCtxt++;
-    timePolyClear -= TOC(tVar);
+    timePolyClear -= tempT;
 
     TIC(tVar);
     cc->EvalAddInPlace(result, su);
-    timeAddCtxt+= TOC(tVar);
+    tempT = TOC(tVar);
+    timeAddCtxt += tempT;
     cntAddCtxt++;
-    timePolyClear -= TOC(tVar);
+    timePolyClear -= tempT;
 
     // std::cout << "---Out of inner poly---" << std::endl;
-    // double timeInner = TOC(t);
-    // std::cout << "-----Time to compute inner poly: " << timeInner / 1000.0 << " s" << std::endl;
 
     return result;
 }
 
 Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vector<int64_t>& coefficients,
                                    bool symmetric) {
-    TimeVar tIn, tVar, tVar2;
+    TimeVar tIn, tVar, tVar2, tVar3;
 
+    TIC(tVar);
     auto xClone = x->Clone();
-    auto cc     = x->GetCryptoContext();
+    auto tempT  = TOC(tVar);
+    timeClone += tempT;
+    cntClone++;
+    timePolyClear -= tempT;
+
+    TIC(tVar3);
+    auto cc = x->GetCryptoContext();
+    timePolyRest += TOC(tVar3);
 
     if (symmetric) {
         TIC(tVar);
-        xClone = cc->EvalSquare(xClone);
-        timeMultCtxt += TOC(tVar);
+        xClone     = cc->EvalSquare(xClone);
+        auto tempT = TOC(tVar);
+        timeMultCtxt += tempT;
         cntMultConst++;
-        timePolyClear -= TOC(tVar);
+        timePolyClear -= tempT;
     }
 
+    TIC(tVar3);
     uint32_t n = Degree(coefficients);
 
     std::vector<int64_t> f2 = coefficients;
@@ -1368,6 +1960,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     uint32_t m                 = degs[1];
 
     std::cerr << "\nDegree: n = " << n << ", k = " << k << ", m = " << m << endl;
+
+    TOC(tVar3);
 
     TIC(tIn);
     // set the indices for the powers of x that need to be computed to 1
@@ -1397,7 +1991,10 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     }
 
     std::vector<Ciphertext<DCRTPoly>> powers(k);
+    TIC(tVar);
     powers[0] = xClone;
+    timeClone += TOC(tVar);
+    cntClone++;
 
     // computes all powers up to k for x
     for (size_t i = 2; i <= k; i++) {
@@ -1405,9 +2002,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
             // if i is a power of two
             TIC(tVar);
             powers[i - 1] = cc->EvalSquare(powers[i / 2 - 1]);
-            double temp = TOC(tVar); std::cout << "temp = " << temp << std::endl;
-            timeMultCtxt+= TOC(tVar); std::cout << "TOC(tVar) = " << TOC(tVar) << std::endl;
-            cntMultCtxt++;            
+            timeMultCtxt += TOC(tVar);
+            cntMultCtxt++;
         }
         else {
             if (indices[i - 1] == 1) {
@@ -1415,8 +2011,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
                 int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
                 int64_t rem      = i % powerOf2;
                 TIC(tVar);
-                powers[i - 1]    = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
-                timeMultCtxt+= TOC(tVar);
+                powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
+                timeMultCtxt += TOC(tVar);
                 cntMultCtxt++;
             }
         }
@@ -1425,26 +2021,34 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     std::vector<Ciphertext<DCRTPoly>> powers2(m);
 
     // computes powers of form k*2^i for x
+    TIC(tVar);
     powers2.front() = powers.back()->Clone();
+    timeClone += TOC(tVar);
+    cntClone++;
     for (uint32_t i = 1; i < m; i++) {
         TIC(tVar);
         powers2[i] = cc->EvalSquare(powers2[i - 1]);
-        timeMultCtxt+= TOC(tVar);
+        timeMultCtxt += TOC(tVar);
         cntMultCtxt++;
     }
 
     // computes the product of the powers in power2, that yield x^{k(2*m - 1)}
+    TIC(tVar);
     auto power2km1 = powers2.front()->Clone();
+    timeClone += TOC(tVar);
+    cntClone++;
     for (uint32_t i = 1; i < m; i++) {
         TIC(tVar);
         power2km1 = cc->EvalMult(power2km1, powers2[i]);
-        timeMultCtxt+= TOC(tVar);
+        timeMultCtxt += TOC(tVar);
         cntMultCtxt++;
     }
 
     double timePowers = TOC(tIn);
     std::cout << "-----Time to compute the powers for poly eval: " << timePowers / 1000.0 << " s" << std::endl;
     timePolyClear -= timePowers;
+
+    TIC(tVar3);
 
     // Compute k*2^{m-1}-k because we use it a lot
     uint32_t k2m2k = k * (1 << (m - 1)) - k;
@@ -1486,15 +2090,25 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     if (dc >= 1) {
         if (dc == 1) {
             if (divcs->q[1] != 1) {
+                timePolyRest += TOC(tVar3);
                 TIC(tVar);
                 cu = EvalMultConstBFV(powers.front(), static_cast<int64_t>(divcs->q[1]));
                 timePolyClear -= TOC(tVar);
+                TIC(tVar3);
             }
             else {
+                timePolyRest += TOC(tVar3);
+                TIC(tVar);
                 cu = powers.front()->Clone();
+                timeClone += TOC(tVar);
+                cntClone++;
+                timePolyClear -= TOC(tVar);
+                TIC(tVar3);
             }
         }
         else {
+            timePolyRest += TOC(tVar3);
+            TIC(tVar);
             std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
             std::vector<int64_t> weights(dc);
 
@@ -1502,30 +2116,40 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
                 ctxs[i]    = powers[i];
                 weights[i] = divcs->q[i + 1];
             }
+            timeClone += TOC(tVar);
+            cntClone += dc;
+            timePolyClear -= TOC(tVar);
             TIC(tVar);
             cu = EvalLinearWSumMutableBFV(ctxs, weights);
             timePolyClear -= TOC(tVar);
+            TIC(tVar3);
         }
 
+        timePolyRest += TOC(tVar3);
         // adds the free term (at x^0)
         TIC(tVar);
         EvalAddInPlaceConstBFV(cu, static_cast<int64_t>(divcs->q.front()));
         timePolyClear -= TOC(tVar);
         flag_c = true;
+        TIC(tVar3);
     }
 
     // Evaluate q and s2 at u. If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
     Ciphertext<DCRTPoly> qu;
 
     if (Degree(divqr->q) > k) {
+        timePolyRest += TOC(tVar3);
         qu = InnerEvalPolyPSBFV(x, divqr->q, k, m - 1, powers, powers2);
+        TIC(tVar3);
     }
     else {
         // dq = k from construction
         // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
         auto qcopy = divqr->q;
         qcopy.resize(k);
+        timePolyRest += TOC(tVar3);
         if (Degree(qcopy) > 0) {
+            TIC(tVar);
             std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
             std::vector<int64_t> weights(Degree(qcopy));
 
@@ -1533,18 +2157,27 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
                 ctxs[i]    = powers[i];
                 weights[i] = divqr->q[i + 1];
             }
+            auto tempT = TOC(tVar);
+            timeClone += tempT;
+            cntClone += 2 * Degree(qcopy);
+            timePolyClear -= tempT;
 
             TIC(tVar);
             qu = EvalLinearWSumMutableBFV(ctxs, weights);
             // the highest order term will always be 1 because q is monic
             TIC(tVar2);
             cc->EvalAddInPlace(qu, powers[k - 1]);
-            timeAddCtxt+= TOC(tVar2);
+            timeAddCtxt += TOC(tVar2);
             cntAddCtxt++;
             timePolyClear -= TOC(tVar);
         }
         else {
-            qu = powers[k - 1]->Clone();
+            TIC(tVar);
+            qu         = powers[k - 1]->Clone();
+            auto tempT = TOC(tVar);
+            timeClone += tempT;
+            cntClone++;
+            timePolyClear -= tempT;
         }
         // adds the free term (at x^0)
         TIC(tVar);
@@ -1552,11 +2185,18 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
         timePolyClear -= TOC(tVar);
     }
 
+    TIC(tVar3);
     uint32_t ds = Degree(s2);
     Ciphertext<DCRTPoly> su;
+    timePolyRest += TOC(tVar3);
 
     if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
-        su = qu->Clone();
+        TIC(tVar);
+        su         = qu->Clone();
+        auto tempT = TOC(tVar);
+        timeClone += tempT;
+        cntClone++;
+        timePolyClear -= tempT;
     }
     else {
         if (ds > k) {
@@ -1568,6 +2208,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
             auto scopy = s2;
             scopy.resize(k);
             if (Degree(scopy) > 0) {
+                TIC(tVar);
                 std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
                 std::vector<int64_t> weights(Degree(scopy));
 
@@ -1575,18 +2216,27 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
                     ctxs[i]    = powers[i];
                     weights[i] = s2[i + 1];
                 }
+                auto tempT = TOC(tVar);
+                timeClone += tempT;
+                cntClone += 2 * Degree(scopy);
+                timePolyClear -= tempT;
 
                 TIC(tVar);
                 su = EvalLinearWSumMutableBFV(ctxs, weights);
                 // the highest order term will always be 1 because q is monic
                 TIC(tVar2);
                 cc->EvalAddInPlace(su, powers[k - 1]);
-                timeAddCtxt+= TOC(tVar2);
+                timeAddCtxt += TOC(tVar2);
                 cntAddCtxt++;
                 timePolyClear -= TOC(tVar);
             }
             else {
-                su = powers[k - 1]->Clone();
+                TIC(tVar);
+                su         = powers[k - 1]->Clone();
+                auto tempT = TOC(tVar);
+                timeClone += tempT;
+                cntClone++;
+                timePolyClear -= tempT;
             }
             // adds the free term (at x^0)
             TIC(tVar);
@@ -1600,7 +2250,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     TIC(tVar);
     if (flag_c) {
         result = cc->EvalAdd(powers2[m - 1], cu);
-        timeAddCtxt+= TOC(tVar);
+        timeAddCtxt += TOC(tVar);
         cntAddCtxt++;
     }
     else {
@@ -1610,16 +2260,18 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
 
     TIC(tVar);
     result = cc->EvalMult(result, qu);
-    timeMultCtxt+= TOC(tVar);
+    tempT  = TOC(tVar);
+    timeMultCtxt += tempT;
     cntMultCtxt++;
-    timePolyClear -= TOC(tVar);
+    timePolyClear -= tempT;
 
     TIC(tVar);
     cc->EvalAddInPlace(result, su);
     cc->EvalSubInPlace(result, power2km1);
-    timeAddCtxt+= TOC(tVar);
-    cntAddCtxt+=2;
-    timePolyClear -= TOC(tVar);
+    tempT = TOC(tVar);
+    timeAddCtxt += tempT;
+    cntAddCtxt += 2;
+    timePolyClear -= tempT;
 
     return result;
 }
@@ -1825,7 +2477,7 @@ Ciphertext<DCRTPoly> EvalFHEWtoBFV(const CryptoContextImpl<DCRTPoly>& cc, const 
     TIC(tVar);
     auto BminusAdotS = cc.EvalAdd(cc.EvalNegate(AdotS), BPlain);
     timeAddCtxt += TOC(tVar);
-    cntAddCtxt+=2;
+    cntAddCtxt += 2;
 
     return BminusAdotS;
 }
@@ -1860,7 +2512,6 @@ Ciphertext<DCRTPoly> EvalPartialHomDecryptionOrig(const CryptoContextImpl<DCRTPo
 
 Ciphertext<DCRTPoly> EvalMatMultCol(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<Plaintext>& A,
                                     const std::vector<Ciphertext<DCRTPoly>>& ct) {
-
     TimeVar tVar;
     Ciphertext<DCRTPoly> res;
     uint32_t n = ct.size();
@@ -1873,8 +2524,8 @@ Ciphertext<DCRTPoly> EvalMatMultCol(const CryptoContextImpl<DCRTPoly>& cc, const
             if (i == 0) {  // first layer, need to compute the multiplications
                 TIC(tVar);
                 layer[j] = cc.EvalAdd(cc.EvalMult(A[j * 2], ct[j * 2]), cc.EvalMult(A[j * 2 + 1], ct[j * 2 + 1]));
-                timeMultPtxt+= TOC(tVar);
-                cntMultPtxt+=2;
+                timeMultPtxt += TOC(tVar);
+                cntMultPtxt += 2;
             }
             else {
                 TIC(tVar);
@@ -1904,7 +2555,7 @@ Ciphertext<DCRTPoly> EvalMatMultColWithoutPrecompute(const CryptoContextImpl<DCR
                                                      const std::vector<std::vector<int64_t>>& A,
                                                      const std::vector<Ciphertext<DCRTPoly>>& ct) {
     TimeVar tVar;
-    
+
     uint32_t rows = A.size();
 
     Ciphertext<DCRTPoly> res;
@@ -1924,8 +2575,8 @@ Ciphertext<DCRTPoly> EvalMatMultColWithoutPrecompute(const CryptoContextImpl<DCR
                 TIC(tVar);
                 layer[j] = cc.EvalAdd(cc.EvalMult(cc.MakePackedPlaintext(temp_vec1), ct[j * 2]),
                                       cc.EvalMult(cc.MakePackedPlaintext(temp_vec2), ct[j * 2 + 1]));
-                timeMultPtxt+= TOC(tVar);
-                cntMultPtxt+=2;
+                timeMultPtxt += TOC(tVar);
+                cntMultPtxt += 2;
             }
             else {
                 TIC(tVar);
@@ -1977,12 +2628,12 @@ Ciphertext<DCRTPoly> EvalLTNWithPrecompute(const CryptoContextImpl<DCRTPoly>& cc
 #pragma omp parallel for
     for (size_t j = 1; j < gStep; j++) {
         TIC(tVar);
-        fastRotation[j - 1]             = cc.EvalFastRotation(ctxt, j * bStep, M, digits);
+        fastRotation[j - 1] = cc.EvalFastRotation(ctxt, j * bStep, M, digits);
         timeRotations += TOC(tVar);
         TIC(tVar);
         fastRotation[j - 1 + gStep - 1] = cc.EvalFastRotation(ctxt_swapped, j * bStep, M, digits2);
         timeRotations += TOC(tVar);
-        cntRotations+=2;
+        cntRotations += 2;
     }
 
     Ciphertext<DCRTPoly> result;
@@ -1993,13 +2644,13 @@ Ciphertext<DCRTPoly> EvalLTNWithPrecompute(const CryptoContextImpl<DCRTPoly>& cc
             if (j == 0) {
                 TIC(tVar);
                 inner = cc.EvalMult(ctxt, A[i]);
-                timeMultPtxt+= TOC(tVar);
+                timeMultPtxt += TOC(tVar);
                 cntMultPtxt++;
             }
             else {
                 TIC(tVar);
                 cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j - 1], A[bStep * j + i]));
-                timeMultPtxt+= TOC(tVar);
+                timeMultPtxt += TOC(tVar);
                 cntMultPtxt++;
             }
         }
@@ -2007,13 +2658,13 @@ Ciphertext<DCRTPoly> EvalLTNWithPrecompute(const CryptoContextImpl<DCRTPoly>& cc
             if (j == gStep) {
                 TIC(tVar);
                 cc.EvalAddInPlace(inner, cc.EvalMult(ctxt_swapped, A[bStep * j + i]));
-                timeMultPtxt+= TOC(tVar);
+                timeMultPtxt += TOC(tVar);
                 cntMultPtxt++;
             }
             else {
                 TIC(tVar);
                 cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j - 2], A[bStep * j + i]));
-                timeMultPtxt+= TOC(tVar);
+                timeMultPtxt += TOC(tVar);
                 cntMultPtxt++;
             }
         }
@@ -2033,7 +2684,7 @@ Ciphertext<DCRTPoly> EvalLTNWithPrecompute(const CryptoContextImpl<DCRTPoly>& cc
     return result;
 }
 
-// Encrypted matrix-vector multiplication of size N implemented as two sized N/2 matrix-vector multiplications
+/*// Encrypted matrix-vector multiplication of size N implemented as two sized N/2 matrix-vector multiplications, single-hoisted computation
 Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
                                               std::vector<std::vector<int64_t>>& A, uint32_t dim1) {
     if (A[0].size() != A.size()) {
@@ -2058,11 +2709,14 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
               << ctxt->GetNoiseScaleDeg() << ", " << ctxt->GetLevel() << ", " << ctxt->GetElements().size() << ", "
               << ctxt->GetElements()[0].GetNumOfElements() << std::endl;
 
+    TimeVar tVar;
+    TIC(tVar);
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
     auto digits  = cc.EvalFastRotationPrecompute(ctxt);
     auto digits2 = cc.EvalFastRotationPrecompute(ctxt_swapped);
+    timeRotationPrec += TOC(tVar);
+    cntRotationPrec += 2;
 
-    TimeVar tVar;
     // Hoisted automorphisms
 #pragma omp parallel for
     for (size_t j = 1; j < gStep; j++) {
@@ -2080,17 +2734,15 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
     for (size_t i = 0; i < bStep; ++i) {
         Ciphertext<DCRTPoly> inner;
         for (size_t j = 0; j < gStep; ++j) {
+            auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
+            Plaintext A_ptxt = cc.MakePackedPlaintext(diag, ctxt->GetNoiseScaleDeg(), 0);
             if (j == 0) {
-                auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), 0);
-                Plaintext A_ptxt = cc.MakePackedPlaintext(diag, ctxt->GetNoiseScaleDeg(), 0);
                 TIC(tVar);
                 inner = cc.EvalMult(ctxt, A_ptxt);
                 timeMultPtxt+= TOC(tVar);
                 cntMultPtxt++;
             }
             else {
-                auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
-                Plaintext A_ptxt = cc.MakePackedPlaintext(diag, ctxt->GetNoiseScaleDeg(), 0);
                 TIC(tVar);
                 cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j - 1], A_ptxt));
                 timeMultPtxt+= TOC(tVar);
@@ -2098,17 +2750,15 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
             }
         }
         for (size_t j = gStep; j < 2 * gStep; ++j) {
+            auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
+            Plaintext A_ptxt = cc.MakePackedPlaintext(diag, ctxt->GetNoiseScaleDeg(), 0);
             if (j == gStep) {
-                auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
-                Plaintext A_ptxt = cc.MakePackedPlaintext(diag, ctxt->GetNoiseScaleDeg(), 0);
                 TIC(tVar);
                 cc.EvalAddInPlace(inner, cc.EvalMult(ctxt_swapped, A_ptxt));
                 timeMultPtxt+= TOC(tVar);
                 cntMultPtxt++;
             }
             else {
-                auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
-                Plaintext A_ptxt = cc.MakePackedPlaintext(diag, ctxt->GetNoiseScaleDeg(), 0);
                 TIC(tVar);
                 cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j - 2], A_ptxt));
                 timeMultPtxt+= TOC(tVar);
@@ -2120,7 +2770,10 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
             result = inner;
         }
         else {
+            TIC(tVar);
             auto innerDigits = cc.EvalFastRotationPrecompute(inner);
+            timeRotationPrec += TOC(tVar);
+            cntRotationPrec++;
             TIC(tVar);
             cc.EvalAddInPlace(result, cc.EvalFastRotation(inner, i, M, innerDigits));
             timeRotations += TOC(tVar);
@@ -2130,13 +2783,331 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
 
     return result;
 }
+*/
+
+// Encrypted matrix-vector multiplication of size N implemented as two sized N/2 matrix-vector multiplications, double-hoisted computation
+Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
+                                              std::vector<std::vector<int64_t>>& A, uint32_t dim1) {
+    if (A[0].size() != A.size()) {
+        OPENFHE_THROW(math_error, "The matrix passed to EvalLTNWithoutPrecompute is not square");
+    }
+
+    // uint32_t size = A.size();
+    uint32_t N = cc.GetRingDimension();  // When this method is used for homomorphic decoding in BFV, N = size
+    uint32_t M = cc.GetCyclotomicOrder();
+
+    uint32_t bStep = (dim1 == 0) ? getRatioBSGSPow2(N / 2) : dim1;
+    uint32_t gStep = ceil(static_cast<double>(N / 2) / bStep);
+
+    // std::cout << "bStep = " << bStep << ", gStep = " << gStep << ", N = " << N << std::endl;
+
+    std::vector<Ciphertext<DCRTPoly>> fastRotation(2 * gStep - 2);
+
+    // Swap ciphertext halves
+    Ciphertext<DCRTPoly> ctxt_swapped = cc.EvalAtIndex(ctxt, N / 2);
+
+    std::cout << "-----ctxt depth, level, GetElements().size(), and GetElements()[0].GetNumOfElements(): "
+              << ctxt->GetNoiseScaleDeg() << ", " << ctxt->GetLevel() << ", " << ctxt->GetElements().size() << ", "
+              << ctxt->GetElements()[0].GetNumOfElements() << std::endl;
+
+    TimeVar tVar;
+    TIC(tVar);
+    // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
+    auto digits  = cc.EvalFastRotationPrecompute(ctxt);
+    auto digits2 = cc.EvalFastRotationPrecompute(ctxt_swapped);
+    timeRotationPrec += TOC(tVar);
+    cntRotationPrec += 2;
+
+    // Hoisted automorphisms
+#pragma omp parallel for
+    for (size_t j = 1; j < gStep; j++) {
+        TIC(tVar);
+        fastRotation[j - 1] = cc.EvalFastRotationExt(ctxt, j * bStep, digits, true);
+        timeRotations += TOC(tVar);
+        TIC(tVar);
+        fastRotation[j - 1 + gStep - 1] = cc.EvalFastRotationExt(ctxt_swapped, j * bStep, digits2, true);
+        timeRotations += TOC(tVar);
+        cntRotations += 2;
+    }
+
+    // std::cout << "Finished first ext rotations" << std::endl;
+
+    // Preparations for extended plaintext
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(fastRotation[0]->GetCryptoParameters());
+    // const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ctxt->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    // auto elementParams         = *((*digits)[0].GetParams()); // Use this instead of elementParams?
+
+    auto paramsQ = elementParams.GetParams();
+    usint sizeQ  = paramsQ.size();
+    auto paramsP = cryptoParams->GetParamsP()->GetParams();
+    usint sizeP  = paramsP.size();
+
+    std::cout << "sizeQ + sizeP: " << sizeQ + sizeP << std::endl;
+
+    std::vector<NativeInteger> moduli(sizeQ + sizeP);
+    std::vector<NativeInteger> roots(sizeQ + sizeP);
+
+    for (size_t i = 0; i < sizeQ; i++) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    }
+
+    for (size_t i = 0; i < sizeP; i++) {
+        moduli[sizeQ + i] = paramsP[i]->GetModulus();
+        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    }
+
+    auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
+
+    Ciphertext<DCRTPoly> result;
+    DCRTPoly first;
+
+    for (size_t i = 0; i < bStep; ++i) {
+        Ciphertext<DCRTPoly> inner;
+        // std::cout << "i = " << i << std::endl;
+        for (size_t j = 0; j < gStep; ++j) {
+            // std::cout << "j = " << j << std::endl;
+            auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
+            Plaintext A_ptxt = cc.MakePackedPlaintextAux(diag, 1, 0, elementParamsPtr2);
+            if (j == 0) {
+                TIC(tVar);
+                inner = EvalMultExt(KeySwitchExt(ctxt, true), A_ptxt);
+                timeMultPtxt += TOC(tVar);
+                cntMultPtxt++;
+            }
+            else {
+                TIC(tVar);
+                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j - 1], A_ptxt));
+                timeMultPtxt += TOC(tVar);
+                cntMultPtxt++;
+            }
+        }
+        for (size_t j = gStep; j < 2 * gStep; ++j) {
+            // std::cout << "j = " << j << std::endl;
+            auto diag        = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
+            Plaintext A_ptxt = cc.MakePackedPlaintextAux(diag, 1, 0, elementParamsPtr2);
+            if (j == gStep) {
+                TIC(tVar);
+                EvalAddExtInPlace(inner, EvalMultExt(KeySwitchExt(ctxt_swapped, true), A_ptxt));
+                timeMultPtxt += TOC(tVar);
+                cntMultPtxt++;
+            }
+            else {
+                TIC(tVar);
+                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j - 2], A_ptxt));
+                timeMultPtxt += TOC(tVar);
+                cntMultPtxt++;
+            }
+        }
+
+        // std::cout << "inner.GetNumElements: " << inner->GetElements()[0].GetNumOfElements() << std::endl;
+        // std::cout << "After j loops" << std::endl;
+
+        if (i == 0) {
+            first = KeySwitchDownFirstElement(inner);
+            // std::cout << "first" << std::endl;
+            auto elements = inner->GetElements();
+            elements[0].SetValuesToZero();
+            inner->SetElements(elements);
+            result = inner;
+        }
+        else {
+            // std::cout << "inner before KeySwitchDown.GetNumElements: " << inner->GetElements()[0].GetNumOfElements() << std::endl;
+            inner = KeySwitchDown(inner);
+            // Find the automorphism index that corresponds to the rotation index.
+            usint autoIndex = FindAutomorphismIndex2n(i, M);
+            std::vector<usint> map(N);
+            PrecomputeAutoMap(N, autoIndex, &map);
+            DCRTPoly firstCurrent = inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
+            first += firstCurrent;
+
+            TIC(tVar);
+            auto innerDigits = cc.EvalFastRotationPrecompute(inner);
+            // std::cout << "result.GetNumElements: " << result->GetElements()[0].GetNumOfElements() << std::endl;
+            // std::cout << "inner.GetNumElements: " << inner->GetElements()[0].GetNumOfElements() << std::endl;
+            // std::cout << "innerDigits.GetNumElements: " << ((*innerDigits)[0].GetParams())->GetParams().size() << std::endl;
+            // std::cout << "cc.EvalFastRotationExt(inner, i, innerDigits, false).GetNumElements: " << cc.EvalFastRotationExt(inner, i, innerDigits, false)->GetElements()[0].GetNumOfElements() << std::endl;
+            timeRotationPrec += TOC(tVar);
+            cntRotationPrec++;
+            TIC(tVar);
+            // cc.EvalAddInPlace(result, cc.EvalFastRotation(inner, i, M, innerDigits));
+            EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, i, innerDigits, false));
+            timeRotations += TOC(tVar);
+            cntRotations++;
+        }
+    }
+
+    result        = KeySwitchDown(result);
+    auto elements = result->GetElements();
+    elements[0] += first;
+    result->SetElements(elements);
+
+    return result;
+}
+
+Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) {
+    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    std::vector<DCRTPoly>& cv   = result->GetElements();
+
+    auto plaintextExt = plaintext;
+
+    DCRTPoly& pt = plaintextExt->GetElement<DCRTPoly>();
+    pt.SetFormat(Format::EVALUATION);
+
+    // Andreea: need to encode the plaintext with the right number of moduli
+    for (auto& c : cv) {
+        // std::cout << "EvalMultExt: c.GetNumOfElements() = " << c.GetNumOfElements() << std::endl;
+        // std::cout << "EvalMultExt: pt.GetNumOfElements() = " << pt.GetNumOfElements() << std::endl;
+        c *= pt;
+    }
+
+    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintextExt->GetNoiseScaleDeg());
+    result->SetScalingFactor(result->GetScalingFactor() * plaintextExt->GetScalingFactor());
+    return result;
+}
+
+void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
+    std::vector<DCRTPoly>& cv1       = ciphertext1->GetElements();
+    const std::vector<DCRTPoly>& cv2 = ciphertext2->GetElements();
+
+    // const auto cryptoParams1 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext1->GetCryptoParameters());
+    // const auto paramsQl1  = cv1[0].GetParams();
+    // const auto paramsP1   = cryptoParams1->GetParamsP();
+    // const auto paramsQlP1 = cv1[0].GetExtendedCRTBasis(paramsP1);
+
+    // size_t sizeQl1 = paramsQl1->GetParams().size();
+    // usint sizeCv1  = cv1.size();
+    // std::cout << "EvalAddExtInPlace ct1: sizeQl = " << sizeQl1 << ", sizeCv = " << sizeCv1 << ", sizeP = " << paramsP1->GetParams().size() << ", sizeQlP = " << paramsQlP1->GetParams().size() << std::endl;
+
+    // const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext2->GetCryptoParameters());
+    // const auto paramsQl2  = cv2[0].GetParams();
+    // const auto paramsP2   = cryptoParams2->GetParamsP();
+    // const auto paramsQlP2 = cv2[0].GetExtendedCRTBasis(paramsP2);
+
+    // size_t sizeQl2 = paramsQl2->GetParams().size();
+    // usint sizeCv2  = cv2.size();
+    // std::cout << "EvalAddExtInPlace ct2: sizeQl = " << sizeQl2 << ", sizeCv = " << sizeCv2 << ", sizeP = " << paramsP2->GetParams().size() << ", sizeQlP = " << paramsQlP2->GetParams().size() << std::endl;
+
+    for (size_t i = 0; i < cv1.size(); ++i) {
+        cv1[i] += cv2[i];
+    }
+}
+
+Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
+    Ciphertext<DCRTPoly> result = ciphertext1->Clone();
+    EvalAddExtInPlace(result, ciphertext2);
+    return result;
+}
+
+Ciphertext<DCRTPoly> KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+
+    const auto paramsQl  = cv[0].GetParams();
+    const auto paramsP   = cryptoParams->GetParamsP();
+    const auto paramsQlP = cv[0].GetExtendedCRTBasis(paramsP);
+
+    size_t sizeQl = paramsQl->GetParams().size();
+    usint sizeCv  = cv.size();
+    // std::cout << "KeySwitchExt ct: sizeQl = " << sizeQl << ", sizeCv = " << sizeCv << ", sizeP = " << paramsP->GetParams().size() << ", sizeQlP = " << paramsQlP->GetParams().size() << std::endl;
+    std::vector<DCRTPoly> resultElements(sizeCv);
+    for (usint k = 0; k < sizeCv; k++) {
+        resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+        if ((addFirst) || (k > 0)) {
+            auto cMult = cv[k].TimesNoCheck(cryptoParams->GetPModq());
+            for (usint i = 0; i < sizeQl; i++) {
+                resultElements[k].SetElementAtIndex(i, cMult.GetElementAtIndex(i));
+            }
+        }
+    }
+
+    Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
+    result->SetElements(resultElements);
+
+    return result;
+}
+
+Ciphertext<DCRTPoly> KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+
+    const auto paramsP   = cryptoParams->GetParamsP();
+    const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
+
+    // Andreea: should paramsQl be given as a parameter instead?
+    usint sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
+    std::vector<NativeInteger> moduliQ(sizeQl);
+    std::vector<NativeInteger> rootsQ(sizeQl);
+    for (size_t i = 0; i < sizeQl; i++) {
+        moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
+        rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
+    }
+    auto paramsQl = std::make_shared<typename DCRTPoly::Params>(2 * paramsQlP->GetRingDimension(), moduliQ, rootsQ);
+
+    auto cTilda = ciphertext->GetElements();
+
+    PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
+
+    DCRTPoly ct0 = cTilda[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                           cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                           cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                           cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                           cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+
+    DCRTPoly ct1 = cTilda[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                           cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                           cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                           cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                           cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+
+    Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
+    result->SetElements({ct0, ct1});
+    return result;
+}
+
+DCRTPoly KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ciphertext) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+
+    const std::vector<DCRTPoly>& cTilda = ciphertext->GetElements();
+
+    const auto paramsP   = cryptoParams->GetParamsP();
+    const auto paramsQlP = cTilda[0].GetParams();
+
+    // Andreea: should paramsQl be given as a parameter instead?
+    usint sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
+    std::cout << "paramsQlP->GetParams().size() = " << paramsQlP->GetParams().size()
+              << ", paramsP->GetParams().size() = " << paramsP->GetParams().size() << ", sizeQl = " << sizeQl
+              << std::endl;
+    std::vector<NativeInteger> moduliQ(sizeQl);
+    std::vector<NativeInteger> rootsQ(sizeQl);
+    for (size_t i = 0; i < sizeQl; i++) {
+        moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
+        rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
+    }
+    auto paramsQl = std::make_shared<typename DCRTPoly::Params>(2 * paramsQlP->GetRingDimension(), moduliQ, rootsQ);
+
+    PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
+
+    DCRTPoly cv0 = cTilda[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                           cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                           cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                           cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                           cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+
+    return cv0;
+}
 
 Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
                                        uint32_t dim1, bool precompute) {
+    TimeVar tVar;
+    TIC(tVar);
     auto ctxtToDecode = ctxt->Clone();
+    timeClone += TOC(tVar);
+    cntClone++;
 
-    auto dim1BF = (dim1 == 0) ? getRatioBSGSPow2(cc.GetRingDimension() / 2) :
-                                dim1;  // Change the baby-step giant-step generation if desired.
+    auto dim1BF = (dim1 == 0) ? getRatioBSGSPow2(cc.GetRingDimension() / 2) : dim1;
 
     // Currently, this is only implemented for all slots (= ring dimension)
     Ciphertext<DCRTPoly> ctxtDecoded;
@@ -2444,3 +3415,94 @@ std::vector<int64_t> EvalPolyCleartextMod(std::vector<int64_t> input, std::vecto
 
     return output;
 }
+
+uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                          uint32_t dcrtBits, bool keySwitch) {
+    const auto cryptoParamsBFVrns    = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
+    double sigma                     = cryptoParamsBFVrns->GetDistributionParameter();
+    double alpha                     = cryptoParamsBFVrns->GetAssuranceMeasure();
+    double p                         = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
+    uint32_t n                       = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
+    uint32_t relinWindow             = cryptoParamsBFVrns->GetDigitSize();
+    KeySwitchTechnique scalTechnique = cryptoParamsBFVrns->GetKeySwitchTechnique();
+    EncryptionTechnique encTech      = cryptoParamsBFVrns->GetEncryptionTechnique();
+
+    uint32_t k                = cryptoParamsBFVrns->GetNumPerPartQ();
+    uint32_t numPartQ         = cryptoParamsBFVrns->GetNumPartQ();
+    uint32_t thresholdParties = cryptoParamsBFVrns->GetThresholdNumOfParties();
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    const double Bkey = (cryptoParamsBFVrns->GetSecretKeyDist() == GAUSSIAN) ?
+                            sqrt(thresholdParties) * sigma * sqrt(alpha) :
+                            thresholdParties;
+
+    double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
+
+    // Bound of the Gaussian error polynomial
+    double Berr = sigma * sqrt(alpha);
+
+    // expansion factor delta
+    auto delta = [](uint32_t n) -> double {
+        return (2. * sqrt(n));
+    };
+
+    // norm of fresh ciphertext polynomial (for EXTENDED the noise is reduced to modulus switching noise)
+    auto Vnorm = [&](uint32_t n) -> double {
+        if (encTech == EXTENDED)
+            return (1. + delta(n) * Bkey) / 2.;
+        else
+            return Berr * (1. + 2. * delta(n) * Bkey);
+    };
+
+    auto noiseKS = [&](uint32_t n, double logqPrev, double w) -> double {
+        if (scalTechnique == HYBRID)
+            return k * (numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0) / 2;
+        else
+            return delta(n) * (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
+    };
+
+    // function used in the EvalMult constraint
+    auto C1 = [&](uint32_t n) -> double {
+        return delta(n) * delta(n) * p * Bkey;
+    };
+
+    // function used in the EvalMult constraint
+    auto C2 = [&](uint32_t n, double logqPrev) -> double {
+        return delta(n) * delta(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w);
+    };
+
+    // main correctness constraint
+    auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
+        if (multiplicativeDepth > 0) {
+            return log(4 * p) + (multiplicativeDepth - 1) * log(C1(n)) +
+                   log(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
+        }
+        return log(p * (4 * (Vnorm(n))));
+    };
+
+    // initial values
+    double logqPrev = 6. * log(10);
+    double logq     = logqBFV(n, logqPrev);
+
+    while (fabs(logq - logqPrev) > log(1.001)) {
+        logqPrev = logq;
+        logq     = logqBFV(n, logqPrev);
+    }
+
+    // get an estimate of the error q / (4t)
+    double loge = logq / log(2) - 2 - log2(p);
+
+    double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(delta(n));
+
+    // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
+    // adjusted empirical parameter to 16 from 4 for threshold scenarios to work correctly, this might need to
+    // be further refined
+    int32_t levels = std::floor((loge - 2 * multiplicativeDepth - 16 - logExtra) / dcrtBits);
+    size_t sizeQ   = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
+
+    if (levels < 0)
+        levels = 0;
+    else if (levels > static_cast<int32_t>(sizeQ) - 1)
+        levels = sizeQ - 1;
+
+    return levels;
+};

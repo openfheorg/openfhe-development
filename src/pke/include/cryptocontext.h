@@ -263,6 +263,69 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
+    * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
+    * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
+    * @param value is the value to encode
+    * @param depth is the multiplicative depth to encode the plaintext at
+    * @param level is the level to encode the plaintext at
+    * @param params are the parameters used to construct the plaintext
+    * @return plaintext
+    */
+    Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
+                            uint32_t level, const std::shared_ptr<ParmType> params) const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        if (level > 0) {
+            if (getSchemeId() == SCHEME::BFVRNS_SCHEME) {
+                std::string errorMsg("The level value should be zero for BFVRNS_SCHEME. Currently: level is [" +
+                                     std::to_string(level) + "]");
+                OPENFHE_THROW(config_error, errorMsg);
+            }
+            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
+            // readily available. so, what we get is numModuli and use it for calculations
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            uint32_t multiplicativeDepth =
+                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
+                OPENFHE_THROW(config_error, errorMsg);
+            }
+        }
+
+        Plaintext p;
+        auto elementParams = (params == nullptr) ? this->GetElementParams() : params;
+        if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+                                                       cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+            NativeInteger scf;
+            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+                scf = cryptoParams->GetScalingFactorIntBig(level);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
+                                                      getSchemeId(), 1, level, scf);
+                p->SetNoiseScaleDeg(2);
+            }
+            else {
+                scf = cryptoParams->GetScalingFactorInt(level);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
+                                                      getSchemeId(), depth, level, scf);
+            }
+        }
+        else {
+            p = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
+                                                getSchemeId());
+        }
+
+        return p;
+    }
+
+    /**
     * MakePlaintext static that takes a cc and calls the Plaintext Factory
     * @param encoding
     * @param cc
@@ -1019,6 +1082,22 @@ public:
     }
 
     /**
+   * MakePackedPlaintext constructs a PackedEncoding in this context
+   * @param value vector of signed integers mod t
+   * @param noiseScaleDeg is degree of the scaling factor to encode the plaintext at
+   * @param level is the level to encode the plaintext at
+   * @params params are parameters to be used for the ciphertext
+   * @return plaintext
+   */
+    Plaintext MakePackedPlaintextAux(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1, uint32_t level = 0,
+                                     const std::shared_ptr<ParmType> params = nullptr) const {
+        if (!value.size())
+            OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
+
+        return MakePlaintext(PACKED_ENCODING, value, noiseScaleDeg, level, params);
+    }
+
+    /**
    * COMPLEX ARITHMETIC IS NOT AVAILABLE,
    * AND THIS METHOD BE DEPRECATED. USE THE REAL-NUMBER METHOD INSTEAD.
    * MakeCKKSPackedPlaintext constructs a CKKSPackedEncoding in this context
@@ -1026,7 +1105,7 @@ public:
    * @param value - input vector of complex number
    * @param scaleDeg - degree of scaling factor used to encode the vector
    * @param level - level at each the vector will get encrypted
-   * @param params - parameters to be usef for the ciphertext
+   * @param params - parameters to be used for the ciphertext
    * @return plaintext
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t scaleDeg = 1,

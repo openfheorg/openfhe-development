@@ -114,6 +114,10 @@ public:
     Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly> ciphertext, const usint index, const usint m,
                                           const std::shared_ptr<std::vector<DCRTPoly>> digits) const override;
 
+    Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly> ciphertext, usint index,
+                                             const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
+                                             const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const override;
+
     std::shared_ptr<std::vector<DCRTPoly>> EvalFastRotationPrecompute(
         ConstCiphertext<DCRTPoly> ciphertext) const override;
 

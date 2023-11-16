@@ -774,6 +774,7 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
     // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
     uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+
     c1.SetFormat(COEFFICIENT);
     c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                           cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
@@ -807,12 +808,13 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
     auto elemParams         = *((*digits)[0].GetParams());
 
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED ||
-        cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-        auto paramsP = cryptoParams->GetParamsP();
-        size_t sizeP = paramsP->GetParams().size();
-        for (uint32_t i = 0; i < sizeP; i++) {
-            elemParams.PopLastParam();
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+            auto paramsP = cryptoParams->GetParamsP();
+            size_t sizeP = paramsP->GetParams().size();
+            for (uint32_t i = 0; i < sizeP; i++) {
+                elemParams.PopLastParam();
+            }
         }
     }
 
@@ -854,6 +856,98 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     PrecomputeAutoMap(N, autoIndex, &vec);
 
     (*ba)[0] += cv[0];
+
+    (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
+    (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
+
+    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+
+    result->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+
+    return result;
+}
+
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotationExt(ConstCiphertext<DCRTPoly> ciphertext, usint index,
+                                                           const std::shared_ptr<std::vector<DCRTPoly>> digits,
+                                                           bool addFirst,
+                                                           const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const {
+    if (index == 0) {
+        return ciphertext->Clone();
+    }
+
+    const auto cc = ciphertext->GetCryptoContext();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    usint N                 = cryptoParams->GetElementParams()->GetRingDimension();
+    usint M                 = cryptoParams->GetElementParams()->GetCyclotomicOrder();
+
+    usint autoIndex = FindAutomorphismIndex(index, M);
+
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
+    // verify if the key autoIndex exists in the evalKeyMap
+    auto evalKeyIterator = evalKeyMap.find(autoIndex);
+    if (evalKeyIterator == evalKeyMap.end()) {
+        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+    }
+    auto evalKey = evalKeyIterator->second;
+
+    auto algo                       = cc->GetScheme();
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+
+    auto elemParams = *((*digits)[0].GetParams());
+
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+            auto paramsP = cryptoParams->GetParamsP();
+            size_t sizeP = paramsP->GetParams().size();
+            for (uint32_t i = 0; i < sizeP; i++) {
+                elemParams.PopLastParam();
+            }
+        }
+    }
+
+    std::shared_ptr<std::vector<DCRTPoly>> ba =
+        algo->EvalFastKeySwitchCoreExt(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
+
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        size_t sizeQ = cv[0].GetNumOfElements();
+        // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
+        uint32_t l = elemParams.GetParams().size() - 1;
+
+        /*// Old version
+        size_t levels2   = ciphertext->GetNoiseScaleDeg() - 1;
+        size_t sizeQ2    = cv[0].GetNumOfElements();
+        double dcrtBits2 = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
+        // how many levels to drop
+        uint32_t levelsDropped2 = FindLevelsToDrop(levels2, cryptoParams, dcrtBits2, true);
+        // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+        uint32_t l2 = levelsDropped2 > 0 ? sizeQ2 - 1 - levelsDropped2 : sizeQ2 - 1;
+        std::cout << "l2 = " << l2 << std::endl;
+        */
+
+        (*ba)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+                                     cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+        (*ba)[1].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+                                     cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+    }
+
+    if (addFirst) {
+        const auto paramsQlP = (*ba)[0].GetParams();
+        const auto paramsQl  = cv[0].GetParams();  // Andreea: Or use elemParams?
+        size_t sizeQl        = paramsQl->GetParams().size();
+        // size_t sizeQl = elemParams.GetParams().size();
+        DCRTPoly psiC0 = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+        auto cMult     = ciphertext->GetElements()[0].TimesNoCheck(cryptoParams->GetPModq());
+        for (usint i = 0; i < sizeQl; i++) {
+            psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
+        }
+        (*ba)[0] += psiC0;
+    }
+
+    // (*ba)[0] += cv[0];
+
+    std::vector<usint> vec(N);
+    PrecomputeAutoMap(N, autoIndex, &vec);
 
     (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
     (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
