@@ -550,21 +550,6 @@ public:
         const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const;
 
     /**
-   * Virtual function to generate all isomorphism keys for a given private key
-   *
-   * @param publicKey encryption key for the new ciphertext.
-   * @param origPrivateKey original private key used for decryption.
-   * @param indexList list of automorphism indices to be computed
-   * @return returns the evaluation keys
-   */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<usint>& indexList) const {
-        std::string errMsg = "EvalAutomorphismKeyGen is not implemented for this scheme.";
-        OPENFHE_THROW(not_implemented_error, errMsg);
-    }
-
-    /**
    * Virtual function for evaluating automorphism of ciphertext at index i
    *
    * @param ciphertext the input ciphertext.
@@ -612,14 +597,12 @@ public:
    * Generates evaluation keys for a list of indices
    * Currently works only for power-of-two and cyclic-group cyclotomics
    *
-   * @param publicKey encryption key for the new ciphertext.
    * @param origPrivateKey original private key used for decryption.
    * @param indexList list of indices to be computed
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<int32_t>& indexList) const;
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     /**
    * Moves i-th slot to slot 0

@@ -165,13 +165,10 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
+    const PrivateKey<Element> privateKey) const {
     if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
-    /*
-   * we don't validate publicKey as it is needed by NTRU-based scheme only
-   * NTRU-based scheme only and it is checked for null later.
-   */
+
     const auto cryptoParams   = privateKey->GetCryptoParameters();
     const auto encodingParams = cryptoParams->GetEncodingParams();
     const auto elementParams  = cryptoParams->GetElementParams();
@@ -202,7 +199,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) const {
+    const PrivateKey<Element> privateKey, usint rowSize, usint subringDim) const {
     auto cc = privateKey->GetCryptoContext();
 
     if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
@@ -228,7 +225,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
+    const PrivateKey<Element> privateKey) const {
     auto cc = privateKey->GetCryptoContext();
 
     if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)

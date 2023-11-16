@@ -44,20 +44,6 @@
 namespace lbcrypto {
 
 template <typename Element>
-std::map<std::string, std::vector<EvalKey<Element>>>& CryptoContextImpl<Element>::evalMultKeyMap() {
-    return s_evalMultKeyMap;
-}
-template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& CryptoContextImpl<Element>::evalSumKeyMap() {
-    return s_evalSumKeyMap;
-}
-template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
-CryptoContextImpl<Element>::evalAutomorphismKeyMap() {
-    return s_evalAutomorphismKeyMap;
-}
-
-template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = dynamic_cast<SchemeRNS*>(&(*scheme));
@@ -86,78 +72,49 @@ void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Ele
 /////////////////////////////////////////
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                               const PublicKey<Element> publicKey) {
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalSumKeyGen were not generated "
-                      "with this crypto context");
-    }
+void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey) {
+    ValidateKey(privateKey);
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalSumKeyGen does not match private key");
-    }
-
-    auto evalKeys = GetScheme()->EvalSumKeyGen(privateKey, publicKey);
-
-    GetAllEvalSumKeys()[privateKey->GetKeyTag()] = evalKeys;
+    auto evalKeys = GetScheme()->EvalSumKeyGen(privateKey);
+    InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) {
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalSumKeyGen were not generated "
-                      "with this crypto context");
-    }
+    const PrivateKey<Element> privateKey, usint rowSize, usint subringDim) {
+    ValidateKey(privateKey);
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalSumKeyGen does not match private key");
-    }
+    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim);
+    InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
-
-    return evalKeys;
+    return evalKeys;  // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
 }
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalSumKeyGen were not generated "
-                      "with this crypto context");
-    }
+    const PrivateKey<Element> privateKey) {
+    ValidateKey(privateKey);
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalSumKeyGen does not match private key");
-    }
+    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey);
+    InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, publicKey);
-
-    return evalKeys;
+    return evalKeys;  // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
 }
 
 template <typename Element>
 const std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
-    auto ekv = GetAllEvalSumKeys().find(keyID);
-    if (ekv == GetAllEvalSumKeys().end())
-        OPENFHE_THROW(not_available_error,
-                      "You need to use EvalSumKeyGen so that you have EvalSumKeys "
-                      "available for this ID");
-    return *ekv->second;
+    return GetEvalAutomorphismKeyMap(keyID);
 }
 
 template <typename Element>
 std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
 CryptoContextImpl<Element>::GetAllEvalSumKeys() {
-    return evalSumKeyMap();
+    return GetAllEvalAutomorphismKeys();
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys() {
-    GetAllEvalSumKeys().clear();
+    ClearEvalAutomorphismKeys();
 }
 
 /**
@@ -166,9 +123,7 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys() {
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& id) {
-    auto kd = GetAllEvalSumKeys().find(id);
-    if (kd != GetAllEvalSumKeys().end())
-        GetAllEvalSumKeys().erase(kd);
+    ClearEvalAutomorphismKeys(id);
 }
 
 /**
@@ -177,24 +132,13 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& id) {
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys(const CryptoContext<Element> cc) {
-    for (auto it = GetAllEvalSumKeys().begin(); it != GetAllEvalSumKeys().end();) {
-        if (it->second->begin()->second->GetCryptoContext() == cc) {
-            it = GetAllEvalSumKeys().erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
+    ClearEvalAutomorphismKeys(cc);
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::InsertEvalSumKey(
-    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
-    // find the tag
-    if (!mapToInsert->empty()) {
-        auto onekey                                      = mapToInsert->begin();
-        GetAllEvalSumKeys()[onekey->second->GetKeyTag()] = mapToInsert;
-    }
+void CryptoContextImpl<Element>::InsertEvalSumKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert,
+                                                  const std::string& keyTag) {
+    InsertEvalAutomorphismKey(mapToInsert, keyTag);
 }
 
 /////////////////////////////////////////
@@ -203,54 +147,34 @@ void CryptoContextImpl<Element>::InsertEvalSumKey(
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> privateKey,
-                                                   const std::vector<int32_t>& indexList,
-                                                   const PublicKey<Element> publicKey) {
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalAtIndexKeyGen were not generated "
-                      "with this crypto context");
-    }
+                                                   const std::vector<int32_t>& indexList) {
+    ValidateKey(privateKey);
 
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW(config_error, "Public key passed to EvalAtIndexKeyGen does not match private key");
-    }
+    auto evalKeys = GetScheme()->EvalAtIndexKeyGen(privateKey, indexList);
+    InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
+}
 
-    auto evalKeys = GetScheme()->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
-
-    auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
+template <typename Element>
+std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
+    const std::string& keyID) {
+    auto ekv = s_evalAutomorphismKeyMap.find(keyID);
+    if (ekv == s_evalAutomorphismKeyMap.end()) {
+        std::string errMsg(
+            std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
+            "].");
+        OPENFHE_THROW(not_available_error, errMsg);
     }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
-
-    //  evalAutomorphismKeyMap()[privateKey->GetKeyTag()] = evalKeys;
+    return ekv->second;
 }
 
 template <typename Element>
 std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
-    auto ekv = evalAutomorphismKeyMap().find(keyID);
-    if (ekv == evalAutomorphismKeyMap().end())
-        OPENFHE_THROW(not_available_error,
-                      "You need to use EvalAutomorphismKeyGen so that you have "
-                      "EvalAutomorphismKeys available for this ID");
-    return *ekv->second;
+    return *GetEvalAutomorphismKeyMapPtr(keyID);
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
-    evalAutomorphismKeyMap().clear();
+    s_evalAutomorphismKeyMap.clear();
 }
 
 /**
@@ -259,9 +183,9 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id) {
-    auto kd = evalAutomorphismKeyMap().find(id);
-    if (kd != evalAutomorphismKeyMap().end())
-        evalAutomorphismKeyMap().erase(kd);
+    auto kd = s_evalAutomorphismKeyMap.find(id);
+    if (kd != s_evalAutomorphismKeyMap.end())
+        s_evalAutomorphismKeyMap.erase(kd);
 }
 
 /**
@@ -271,9 +195,9 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<Element> cc) {
-    for (auto it = evalAutomorphismKeyMap().begin(); it != evalAutomorphismKeyMap().end();) {
+    for (auto it = s_evalAutomorphismKeyMap.begin(); it != s_evalAutomorphismKeyMap.end();) {
         if (it->second->begin()->second->GetCryptoContext() == cc) {
-            it = evalAutomorphismKeyMap().erase(it);
+            it = s_evalAutomorphismKeyMap.erase(it);
         }
         else {
             ++it;
@@ -282,21 +206,74 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
 }
 
 template <typename Element>
+std::vector<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
+    auto keyMapIt = s_evalAutomorphismKeyMap.find(keyTag);
+    if (keyMapIt == s_evalAutomorphismKeyMap.end())
+        // there is no keys for the given id, return empty vector
+        return std::vector<uint32_t>();
+
+    // get all inidices from the existing automorphism key map
+    auto& keyMap = *(keyMapIt->second);
+    std::vector<uint32_t> indices(keyMap.size());
+    for (const auto& [key, _] : keyMap) {
+        indices.push_back(key);
+    }
+
+    return indices;
+}
+
+template <typename Element>
+std::vector<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(std::vector<uint32_t> oldValues,
+                                                                  std::vector<uint32_t> newValues) {
+    // sort both vectors
+    std::sort(oldValues.begin(), oldValues.end());
+    std::sort(newValues.begin(), newValues.end());
+
+    std::vector<uint32_t> uniqueValues;
+    std::set_difference(newValues.begin(), newValues.end(), oldValues.begin(), oldValues.end(),
+                        std::inserter(uniqueValues, uniqueValues.begin()));
+
+    return uniqueValues;
+}
+
+template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
-    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
-    // find the tag
-    auto onekey                                           = mapToInsert->begin();
-    evalAutomorphismKeyMap()[onekey->second->GetKeyTag()] = mapToInsert;
+    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
+    // check if the map is empty
+    if (mapToInsert->empty()) {
+        return;
+    }
+
+    auto mapToInsertIt   = mapToInsert->begin();
+    const std::string id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
+    std::vector<uint32_t> existingIndices{GetExistingEvalAutomorphismKeyIndices(id)};
+    if (existingIndices.empty()) {
+        // there is no keys for the given id, so we insert full mapToInsert
+        s_evalAutomorphismKeyMap[id] = mapToInsert;
+    }
+    else {
+        // get all indices from mapToInsert
+        std::vector<uint32_t> newIndices(mapToInsert->size());
+        for (const auto& [key, _] : *mapToInsert) {
+            newIndices.push_back(key);
+        }
+
+        // find all indices in mapToInsert that are not in the exising map and
+        // insert those new indices and their corresponding keys to the existing map
+        std::vector<uint32_t> indicesToInsert{GetUniqueValues(existingIndices, newIndices)};
+        auto keyMapIt = s_evalAutomorphismKeyMap.find(id);
+        auto& keyMap  = *(keyMapIt->second);
+        for (uint32_t indx : indicesToInsert) {
+            keyMap[indx] = (*mapToInsert)[indx];
+        }
+    }
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element> ciphertext, usint batchSize) const {
-    if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to EvalSum was not generated with this "
-                      "crypto context");
+    ValidateCiphertext(ciphertext);
 
-    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalSumKeyMap(ciphertext->GetKeyTag());
+    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
     auto rv          = GetScheme()->EvalSum(ciphertext, batchSize, evalSumKeys);
     return rv;
 }
@@ -305,10 +282,7 @@ template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
                                                             const std::map<usint, EvalKey<Element>>& evalSumKeys,
                                                             usint subringDim) const {
-    if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to EvalSum was not generated with this "
-                      "crypto context");
+    ValidateCiphertext(ciphertext);
 
     auto rv = GetScheme()->EvalSumRows(ciphertext, rowSize, evalSumKeys, subringDim);
     return rv;
@@ -318,23 +292,16 @@ template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
     ConstCiphertext<Element> ciphertext, usint rowSize,
     const std::map<usint, EvalKey<Element>>& evalSumKeysRight) const {
-    if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to EvalSum was not generated with this "
-                      "crypto context");
+    ValidateCiphertext(ciphertext);
 
-    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalSumKeyMap(ciphertext->GetKeyTag());
-
-    auto rv = GetScheme()->EvalSumCols(ciphertext, rowSize, evalSumKeys, evalSumKeysRight);
+    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
+    auto rv          = GetScheme()->EvalSumCols(ciphertext, rowSize, evalSumKeys, evalSumKeysRight);
     return rv;
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Element> ciphertext, int32_t index) const {
-    if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to EvalAtIndex was not generated with "
-                      "this crypto context");
+    ValidateCiphertext(ciphertext);
 
     // If the index is zero, no rotation is needed, copy the ciphertext and return
     // This is done after the keyMap so that it is protected if there's not a
@@ -353,27 +320,23 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Elem
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalMerge(
     const std::vector<Ciphertext<Element>>& ciphertextVector) const {
-    if (ciphertextVector[0] == nullptr || Mismatched(ciphertextVector[0]->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to EvalMerge was not generated with "
-                      "this crypto context");
+    ValidateCiphertext(ciphertextVector[0]);
 
     auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertextVector[0]->GetKeyTag());
-
-    auto rv = GetScheme()->EvalMerge(ciphertextVector, evalAutomorphismKeys);
-
+    auto rv                   = GetScheme()->EvalMerge(ciphertextVector, evalAutomorphismKeys);
     return rv;
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext<Element> ct1,
                                                                  ConstCiphertext<Element> ct2, usint batchSize) const {
-    if (ct1 == nullptr || ct2 == nullptr || ct1->GetKeyTag() != ct2->GetKeyTag() || Mismatched(ct1->GetCryptoContext()))
+    ValidateCiphertext(ct1);
+    if (ct2 == nullptr || ct1->GetKeyTag() != ct2->GetKeyTag())
         OPENFHE_THROW(config_error,
                       "Information passed to EvalInnerProduct was not generated "
                       "with this crypto context");
 
-    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalSumKeyMap(ct1->GetKeyTag());
+    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
     auto ek          = GetEvalMultKeyVector(ct1->GetKeyTag());
 
     auto rv = GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys, ek[0]);
@@ -383,12 +346,13 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext<Element> ct1, ConstPlaintext ct2,
                                                                  usint batchSize) const {
-    if (ct1 == nullptr || ct2 == nullptr || Mismatched(ct1->GetCryptoContext()))
+    ValidateCiphertext(ct1);
+    if (ct2 == nullptr)
         OPENFHE_THROW(config_error,
                       "Information passed to EvalInnerProduct was not generated "
                       "with this crypto context");
 
-    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalSumKeyMap(ct1->GetKeyTag());
+    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
 
     auto rv = GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys);
     return rv;
@@ -412,10 +376,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
         OPENFHE_THROW(config_error, "ciphertext passed to Decrypt is empty");
     if (plaintext == nullptr)
         OPENFHE_THROW(config_error, "plaintext passed to Decrypt is empty");
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to Decrypt was not generated with "
-                      "this crypto context");
+    ValidateKey(privateKey);
 
     // determine which type of plaintext that you need to decrypt into
     // Plaintext decrypted =
@@ -508,32 +469,13 @@ std::pair<BinFHEContext, LWEPrivateKey> CryptoContextImpl<Element>::EvalCKKStoFH
 template <typename Element>
 void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                       uint32_t dim1, uint32_t L) {
-    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "CKKS private key passed to EvalCKKStoFHEWKeyGen was not generated with this crypto context");
-    }
+    ValidateKey(keyPair.secretKey);
     if (!lwesk) {
         OPENFHE_THROW(config_error, "FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
     }
-    auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
@@ -557,29 +499,10 @@ void CryptoContextImpl<Element>::EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE,
 template <typename Element>
 void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                       uint32_t numSlots, uint32_t dim1, uint32_t L) {
-    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
-    }
-    auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
+    ValidateKey(keyPair.secretKey);
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
@@ -600,30 +523,11 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                            uint32_t numValues, bool oneHot, bool alt, uint32_t dim1CF,
                                                            uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
-    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
-    }
+    ValidateKey(keyPair.secretKey);
+
     auto evalKeys =
         GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC, LCF, LFC);
-
-    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
+    InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
 }
 
 template <typename Element>
@@ -637,12 +541,9 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalCompareSchemeSwitching(Const
                                                                            ConstCiphertext<Element> ciphertext2,
                                                                            uint32_t numCtxts, uint32_t numSlots,
                                                                            uint32_t pLWE, double scaleSign, bool unit) {
-    if (ciphertext1 == nullptr || ciphertext2 == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalCompareSchemeSwitching are empty");
-    if (Mismatched(ciphertext1->GetCryptoContext()) || Mismatched(ciphertext2->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "A ciphertext passed to EvalCompareSchemeSwitching was not "
-                      "generated with this crypto context");
+    ValidateCiphertext(ciphertext1);
+    ValidateCiphertext(ciphertext2);
+
     return GetScheme()->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign, unit);
 }
 
@@ -652,12 +553,8 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitch
                                                                                     uint32_t numValues,
                                                                                     uint32_t numSlots, bool oneHot,
                                                                                     uint32_t pLWE, double scaleSign) {
-    if (!ciphertext)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitching was not "
-                      "generated with this crypto context");
+    ValidateCiphertext(ciphertext);
+
     return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
 }
 
@@ -665,12 +562,8 @@ template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitchingAlt(
     ConstCiphertext<Element> ciphertext, PublicKey<Element> publicKey, uint32_t numValues, uint32_t numSlots,
     bool oneHot, uint32_t pLWE, double scaleSign) {
-    if (ciphertext == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
-                      "generated with this crypto context");
+    ValidateCiphertext(ciphertext);
+
     return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
 }
 
@@ -680,12 +573,8 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitch
                                                                                     uint32_t numValues,
                                                                                     uint32_t numSlots, bool oneHot,
                                                                                     uint32_t pLWE, double scaleSign) {
-    if (ciphertext == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitching was not "
-                      "generated with this crypto context");
+    ValidateCiphertext(ciphertext);
+
     return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
 }
 
@@ -693,12 +582,8 @@ template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitchingAlt(
     ConstCiphertext<Element> ciphertext, PublicKey<Element> publicKey, uint32_t numValues, uint32_t numSlots,
     bool oneHot, uint32_t pLWE, double scaleSign) {
-    if (ciphertext == nullptr)
-        OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
-    if (Mismatched(ciphertext->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
-                      "generated with this crypto context");
+    ValidateCiphertext(ciphertext);
+
     return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE, scaleSign);
 }
 
@@ -728,10 +613,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
         OPENFHE_THROW(config_error, "ciphertext passed to Decrypt is empty");
     if (plaintext == nullptr)
         OPENFHE_THROW(config_error, "plaintext passed to Decrypt is empty");
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
-        OPENFHE_THROW(config_error,
-                      "Information passed to Decrypt was not generated with "
-                      "this crypto context");
+    ValidateKey(privateKey);
 
     // determine which type of plaintext that you need to decrypt into
     // Plaintext decrypted =
@@ -784,10 +666,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
         return result;
 
     for (size_t i = 0; i < last_ciphertext; i++) {
-        if (partialCiphertextVec[i] == nullptr || Mismatched(partialCiphertextVec[i]->GetCryptoContext()))
-            OPENFHE_THROW(config_error,
-                          "A ciphertext passed to MultipartyDecryptFusion was not "
-                          "generated with this crypto context");
+        ValidateCiphertext(partialCiphertextVec[i]);
         if (partialCiphertextVec[i]->GetEncodingType() != partialCiphertextVec[0]->GetEncodingType())
             OPENFHE_THROW(type_error,
                           "Ciphertexts passed to MultipartyDecryptFusion have "

@@ -873,10 +873,6 @@ public:
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const;
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<usint>& indexList) const;
-
     virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
                                                  const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                                  CALLER_INFO_ARGS_HDR) const {
@@ -950,8 +946,7 @@ public:
     }
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<int32_t>& indexList) const;
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, usint i,
                                             const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
@@ -1183,15 +1178,14 @@ public:
     // Advanced SHE EVAL SUM
     /////////////////////////////////////
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                                                             const PublicKey<Element> publicKey) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
+        const PrivateKey<Element> privateKey) const;
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                                 const PublicKey<Element> publicKey,
                                                                                  usint rowSize, usint subringDim) const;
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
+        const PrivateKey<Element> privateKey) const;
 
     virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, usint batchSize,
                                         const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
