@@ -74,19 +74,9 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     if (ct1 == ct2)
         OPENFHE_THROW(config_error, "Input ciphertexts should be independant");
 
-    // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT gates
-    if ((gate == XOR) || (gate == XNOR)) {
-        const auto& ctAND1 = EvalBinGate(params, AND, EK, ct1, EvalNOT(params, ct2));
-        const auto& ctAND2 = EvalBinGate(params, AND, EK, EvalNOT(params, ct1), ct2);
-        const auto& ctOR   = EvalBinGate(params, OR, EK, ctAND1, ctAND2);
-
-        // NOT is free so there is not cost to do it an extra time for XNOR
-        return (gate == XOR) ? ctOR : EvalNOT(params, ctOR);
-    }
-
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
     // the additive homomorphic operation for XOR/NXOR is different from the other gates we compute
-    // 2*(ct1 + ct2) mod 4 for XOR, me map 1,2 -> 1 and 3,0 -> 0
+    // 2*(ct1 + ct2) mod 4 for XOR, 0 -> 0, 2 -> 1
     if ((gate == XOR) || (gate == XNOR)) {
         LWEscheme->EvalAddEq(ctprep, ct2);
         LWEscheme->EvalAddEq(ctprep, ctprep);
