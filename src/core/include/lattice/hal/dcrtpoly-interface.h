@@ -137,9 +137,7 @@ public:
                                                                                  Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
-            DerivedType ilvec(dgg, params, Format::COEFFICIENT);
-            ilvec.SetFormat(resultFormat);
-            return ilvec;
+            return DerivedType(dgg, params, resultFormat);
         };
     }
 

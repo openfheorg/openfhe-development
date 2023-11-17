@@ -108,9 +108,7 @@ public:
         const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
-            DerivedType ilvec(dgg, params, Format::COEFFICIENT);
-            ilvec.SetFormat(resultFormat);
-            return ilvec;
+            return DerivedType(dgg, params, resultFormat);
         };
     }
 
@@ -125,7 +123,6 @@ public:
                                                                             Format format) {
         return [=]() {
             DugType dug;
-            dug.SetModulus(params->GetModulus());
             return DerivedType(dug, params, format);
         };
     }

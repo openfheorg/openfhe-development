@@ -134,10 +134,8 @@ void test_NTT(const usint level, const usint nloop) {
     ILParams params1(m, q1, rootOfUnity1);
     auto x1p = std::make_shared<ILParams>(params1);
 
-    Poly::DugType dug1;
-    dug1.SetModulus(q1);  // random # generator to use
-
     // two vectors
+    Poly::DugType dug1;
     Poly x1a(dug1, x1p, Format::COEFFICIENT);
     Poly x1b(dug1, x1p, Format::COEFFICIENT);
 
@@ -166,8 +164,6 @@ void test_NTT(const usint level, const usint nloop) {
     auto x2p = std::make_shared<ILParams>(params2);
 
     Poly::DugType dug2;
-    dug2.SetModulus(q1);  // random # generator to use
-
     Poly x2a(dug2, x2p, Format::COEFFICIENT);
     Poly x2b(dug2, x2p, Format::COEFFICIENT);
 
@@ -196,10 +192,8 @@ void test_NTT(const usint level, const usint nloop) {
     ILParams params3(m, q3, rootOfUnity3);
     auto x3p = std::make_shared<ILParams>(params3);
 
-    Poly::DugType dug3;
-    dug3.SetModulus(q1);  // random # generator to use
-
     // two vectors
+    Poly::DugType dug3;
     Poly x3a(dug3, x3p, Format::COEFFICIENT);
     Poly x3b(dug3, x3p, Format::COEFFICIENT);
 

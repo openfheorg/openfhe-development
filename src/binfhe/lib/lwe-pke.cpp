@@ -83,8 +83,7 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
     size_t dim            = params->GetN();
     NativeInteger modulus = params->GetQ();
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulus);
+    DiscreteUniformGeneratorImpl<NativeVector> dug(modulus);
     std::vector<NativeVector> A(dim);
 
     // generate random matrix A of dimension N x N
@@ -133,8 +132,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     // #endif
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(mod);
-    NativeVector a = dug.GenerateVector(n);
+    NativeVector a = dug.GenerateVector(n, mod);
 
     NativeInteger mu = mod.ComputeMu();
 
@@ -321,19 +319,18 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
     //        }
     //    }
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(qKS);
+    DiscreteUniformGeneratorImpl<NativeVector> dug(qKS);
 
     NativeInteger mu(qKS.ComputeMu());
 
     std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
     std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
 
-// TODO (cpascoe/dsuponit): this pragma needs to be revised as it may have to be removed completely
-// #if !defined(__MINGW32__) && !defined(__MINGW64__)
-// #pragma omp parallel for num_threads(N)
-// #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N))
-// #endif
+    // TODO (cpascoe/dsuponit): this pragma needs to be revised as it may have to be removed completely
+    // #if !defined(__MINGW32__) && !defined(__MINGW64__)
+    // #pragma omp parallel for num_threads(N)
+    // #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N))
+    // #endif
     for (size_t i = 0; i < N; ++i) {
         std::vector<std::vector<NativeVector>> vector1A;
         vector1A.reserve(baseKS);

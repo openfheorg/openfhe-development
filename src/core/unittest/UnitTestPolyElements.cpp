@@ -327,7 +327,6 @@ void rn_generators(const std::string& msg) {
     typename Element::DggType dgg(stdDev);
     typename Element::BugType bug;
     typename Element::DugType dug;
-    dug.SetModulus(primeModulus);
 
     auto ilparams = std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
 
@@ -592,8 +591,7 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
 
     auto ilparams = std::make_shared<ParmType>(order, primeModulus, primitiveRootOfUnity);
 
-    typename Element::DugType distrUniGen = typename Element::DugType();
-    distrUniGen.SetModulus(primeModulus);
+    typename Element::DugType distrUniGen;
 
     Element ilv1(distrUniGen, ilparams);
     VecType bbv1(ilv1.GetValues());
