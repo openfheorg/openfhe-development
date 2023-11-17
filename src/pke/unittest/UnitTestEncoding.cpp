@@ -34,16 +34,14 @@
 */
 
 #define PROFILE
-#include <iostream>
-#include "gtest/gtest.h"
 
 #include "encoding/encodings.h"
+#include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/math-hal.h"
-
-#include "lattice/elemparamfactory.h"
-#include "utils/inttypes.h"
 #include "utils/utilities.h"
+
+#include <iostream>
 
 using namespace lbcrypto;
 
@@ -59,9 +57,9 @@ protected:
 
 TEST_F(UTGENERAL_ENCODING, coef_packed_encoding) {
     std::vector<int64_t> value = {32, 17, 8, -12, -32, 22, -101, 6};
-    usint m                    = 16;
+    uint32_t m                 = 16;
 
-    std::shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(m);
+    auto lp = std::make_shared<ILParamsImpl<BigInteger>>(m);
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(256));
 
     CoefPackedEncoding se(lp, ep, value);
@@ -72,7 +70,7 @@ TEST_F(UTGENERAL_ENCODING, coef_packed_encoding) {
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding) {
-    usint m            = 22;
+    uint32_t m         = 22;
     PlaintextModulus p = 89;
     BigInteger modulusQ("955263939794561");
     BigInteger squareRootOfRoot("941018665059848");
@@ -95,7 +93,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding) {
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
-    usint m            = 22;
+    uint32_t m         = 22;
     PlaintextModulus p = 89;
     BigInteger modulusQ("955263939794561");
     BigInteger squareRootOfRoot("941018665059848");
@@ -118,17 +116,17 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
-    usint init_size   = 3;
-    usint dcrtBits    = 24;
-    usint dcrtBitsBig = 58;
+    uint32_t init_size   = 3;
+    uint32_t dcrtBits    = 24;
+    uint32_t dcrtBitsBig = 58;
 
-    usint m = 1811;
+    uint32_t m = 1811;
 
     PlaintextModulus p = 2 * m + 1;
     BigInteger modulusP(p);
 
-    usint mArb = 2 * m;
-    usint mNTT = pow(2, ceil(log2(2 * m - 1)));
+    uint32_t mArb = 2 * m;
+    uint32_t mNTT = pow(2, ceil(log2(2 * m - 1)));
 
     // populate the towers for the small modulus
 
@@ -139,7 +137,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     init_moduli[0]       = q;
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (uint32_t i = 1; i < init_size; i++) {
         q                    = lbcrypto::NextPrime(q, mArb);
         init_moduli[i]       = q;
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
@@ -154,7 +152,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     init_moduli_NTT[0]       = q;
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (uint32_t i = 1; i < init_size; i++) {
         q                        = lbcrypto::NextPrime(q, mNTT);
         init_moduli_NTT[i]       = q;
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
@@ -183,17 +181,17 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative) {
-    usint init_size   = 3;
-    usint dcrtBits    = 24;
-    usint dcrtBitsBig = 58;
+    uint32_t init_size   = 3;
+    uint32_t dcrtBits    = 24;
+    uint32_t dcrtBitsBig = 58;
 
-    usint m = 1811;
+    uint32_t m = 1811;
 
     PlaintextModulus p = 2 * m + 1;
     BigInteger modulusP(p);
 
-    usint mArb = 2 * m;
-    usint mNTT = pow(2, ceil(log2(2 * m - 1)));
+    uint32_t mArb = 2 * m;
+    uint32_t mNTT = pow(2, ceil(log2(2 * m - 1)));
 
     // populate the towers for the small modulus
     std::vector<NativeInteger> init_moduli(init_size);
@@ -203,7 +201,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     init_moduli[0]       = q;
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (uint32_t i = 1; i < init_size; i++) {
         q                    = lbcrypto::NextPrime(q, mArb);
         init_moduli[i]       = q;
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
@@ -218,7 +216,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     init_moduli_NTT[0]       = q;
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (uint32_t i = 1; i < init_size; i++) {
         q                        = lbcrypto::NextPrime(q, mNTT);
         init_moduli_NTT[i]       = q;
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
@@ -248,9 +246,9 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
 
 TEST_F(UTGENERAL_ENCODING, string_encoding) {
     std::string value = "Hello, world!";
-    usint m           = 64;
+    uint32_t m        = 64;
 
-    std::shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(m);
+    auto lp = std::make_shared<ILParamsImpl<BigInteger>>(m);
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(256));
 
     StringEncoding se(lp, ep, value);
@@ -259,7 +257,7 @@ TEST_F(UTGENERAL_ENCODING, string_encoding) {
     EXPECT_EQ(se.GetStringValue(), value) << "string encode/decode";
 
     // truncate!
-    std::shared_ptr<ILParams> lp2 = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(4);
+    auto lp2 = std::make_shared<ILParamsImpl<BigInteger>>(4);
     StringEncoding se2(lp2, ep, value);
     se2.Encode();
     se2.Decode();

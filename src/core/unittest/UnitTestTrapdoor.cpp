@@ -589,7 +589,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
     usint m = 16;
     usint n = m / 2;
 
-    size_t dcrtBits = 60;
+    size_t dcrtBits = 57;
     size_t size     = 3;
 
     std::vector<NativeInteger> moduli(size);

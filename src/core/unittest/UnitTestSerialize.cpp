@@ -33,20 +33,16 @@
   This code exercises serialization in CORE for the OpenFHE lattice encryption library
  */
 
-#include <iostream>
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
-#include "lattice/elemparamfactory.h"
 #include "math/distrgen.h"
 #include "math/matrix.h"
 #include "math/nbtheory.h"
-#include "utils/inttypes.h"
-#include "utils/parmfactory.h"
-#include "utils/utilities.h"
-
 #include "testdefs.h"
 #include "utils/serial.h"
+#include "utils/utilities.h"
+
+#include <iostream>
 
 using namespace lbcrypto;
 
@@ -145,7 +141,7 @@ void vector_of_bigint(const std::string& msg) {
 
 template <typename Element>
 void ilparams_test(const std::string& msg) {
-    auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
+    auto p = std::make_shared<typename Element::Params>(1024);
 
     auto sfunc = [&msg](decltype(p) val) {
         std::stringstream s;
@@ -170,7 +166,7 @@ TEST(UTSer, ilparams_test) {
 
 template <typename Element>
 void ildcrtparams_test(const std::string& msg) {
-    auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
+    auto p = std::make_shared<ILDCRTParams<typename Element::Integer>>(1024, 5, 30);
 
     auto sfunc = [&msg](decltype(p) val) {
         std::stringstream s;
@@ -195,7 +191,7 @@ TEST(UTSer, ildcrtparams_test) {
 
 template <typename Element>
 void ilvector_test(const std::string& msg) {
-    auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
+    auto p = std::make_shared<typename Element::Params>(1024);
     typename Element::DugType dug;
     Element vec(dug, p);
 
@@ -222,7 +218,7 @@ TEST(UTSer, ilvector_test) {
 
 template <typename Element>
 void ildcrtpoly_test(const std::string& msg) {
-    auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
+    auto p = std::make_shared<ILDCRTParams<typename Element::Integer>>(1024, 5, 30);
     typename Element::DugType dug;
     Element vec(dug, p);
 
