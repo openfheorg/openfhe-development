@@ -203,6 +203,91 @@ int main() {
     return 0;
 }
 
+void testMultLeveled() {
+    const NativeInteger q = 65537;
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(
+        q.ConvertToInt());  // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
+    parameters.SetMultiplicativeDepth(18);
+    parameters.SetMaxRelinSkDeg(3);
+    parameters.SetFirstModSize(60);
+    parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1024);
+    CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
+
+    uint32_t ringDim   = ccBFV->GetRingDimension();
+    uint32_t numValues = 8;
+
+    ccBFV->Enable(PKE);
+    ccBFV->Enable(KEYSWITCH);
+    ccBFV->Enable(LEVELEDSHE);
+    ccBFV->Enable(ADVANCEDSHE);
+
+    // BFV private and public keys
+    auto keys = ccBFV->KeyGen();
+    ccBFV->EvalMultKeyGen(keys.secretKey);
+
+    // Print the BFV params
+    std::cout << "BFV params:\nt = " << ccBFV->GetCryptoParameters()->GetPlaintextModulus() << ", N = " << ringDim
+              << ", log2 q = " << log2(ccBFV->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << std::endl
+              << std::endl;
+
+    std::vector<int64_t> x(numValues, 2);
+    Plaintext ptxt_input = ccBFV->MakePackedPlaintext(x);
+    std::cout << ptxt_input << std::endl;
+    Ciphertext<DCRTPoly> ctxt_input = ccBFV->Encrypt(keys.publicKey, ptxt_input);
+
+    auto ctxt = ctxt_input = ccBFV->EvalMult(ctxt_input, ctxt_input);
+    ctxt                   = ccBFV->EvalMult(ctxt, ctxt);
+    ctxt                   = ccBFV->EvalMult(ctxt, ctxt);
+
+    // Encode plaintext at minimum number of levels
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ctxt->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+
+    // auto elementParams         = *((*digits)[0].GetParams());
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        DCRTPoly c1     = ctxt->GetElements()[1];
+        size_t levels   = ctxt->GetNoiseScaleDeg() - 1;
+        double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
+        // how many levels to drop
+        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
+        std::cout << "levelsDropped: " << levelsDropped << std::endl;
+
+        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+            for (uint32_t i = 0; i < levelsDropped; i++) {
+                elementParams.PopLastParam();
+            }
+        }
+
+        // auto paramsP = cryptoParams->GetParamsP();
+        // if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+        //     for (uint32_t i = 0; i < paramsP->GetParams().size(); i++) {
+        //         elementParams.PopLastParam();
+        //     }
+        // }
+    }
+
+    auto elementParamsPtr = std::make_shared<DCRTPoly::Params>(elementParams);
+    std::cout << "elementParams size: " << elementParams.GetParams().size() << std::endl;
+
+    Plaintext ptxt = ccBFV->MakePackedPlaintextAux(std::vector<int64_t>(numValues, 1), 1, 0, elementParamsPtr);
+    Plaintext result_ptxt;
+
+    // auto result = ccBFV->EvalMult(ctxt, ptxt);
+    // ccBFV->Decrypt(keys.secretKey, result, &result_ptxt);
+    // result_ptxt->SetLength(numValues);
+    // std::cout << "EvalMult: " << result_ptxt << std::endl;
+
+    auto result2 = EvalMultLeveled(ctxt, ptxt);
+    ccBFV->Decrypt(keys.secretKey, result2, &result_ptxt);
+    result_ptxt->SetLength(numValues);
+    std::cout << "EvalMult: " << result_ptxt << std::endl;
+}
+
 void NANDthroughBFV() {
     std::cout << "\n*****AMORTIZED NAND*****\n" << std::endl;
 
@@ -552,6 +637,12 @@ void NANDthroughBFV() {
     std::cout << "-Time for " << cntPackedPtxt
               << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
+              << " s" << std::endl
+              << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
+              << " s" << std::endl
+              << std::endl;
 }
 
 void LUTthroughBFV() {
@@ -621,7 +712,7 @@ void LUTthroughBFV() {
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(128);
+    parameters.SetRingDim(32768);
     CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
 
     uint32_t ringDim   = ccBFV->GetRingDimension();
@@ -786,6 +877,9 @@ void LUTthroughBFV() {
     std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
     std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
               << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
+              << " s" << std::endl
+              << std::endl;
 
     // // Test the matrix-vector multiplication
     // std::vector<int64_t> LWE_sk(n);
@@ -861,6 +955,9 @@ void LUTthroughBFV() {
     std::cout << "-Time for " << cntPackedPtxt
               << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
+              << " s" << std::endl
+              << std::endl;
 
     // std::vector<int64_t> decoded_int(ringDim);
     // for(size_t i = 0; i < ringDim; ++i) {
@@ -926,6 +1023,9 @@ void LUTthroughBFV() {
     std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
     std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000.0 << " s" << std::endl;
     std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+              << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
+              << " s" << std::endl
               << std::endl;
 
     // std::vector<int64_t> prod(m_UT.size(), 0);
@@ -2567,7 +2667,8 @@ std::shared_ptr<schemeSwitchKeys> EvalAmortizedFHEWBootKeyGen(CryptoContextImpl<
     if (dim1 == 0)
         dim1 = getRatioBSGSPow2(N / 2);
     m_dim1BF = dim1;
-    m_LBF    = L;
+
+    m_LBF = L;
 
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTNRotationIndices(m_dim1BF, N);
@@ -2966,6 +3067,9 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
     TIC(tVar);
     std::vector<Ciphertext<DCRTPoly>> fastRotation(2 * gStep - 2);
 
+    // ctxt = cc.Compress(ctxt, 1);
+    // ctxt_swapped = cc.Compress(ctxt_swapped, 1);
+
     TimeVar tVar;
     TIC(tVar);
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
@@ -3088,8 +3192,9 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
 }
 
 // Encrypted matrix-vector multiplication of size N implemented as two sized N/2 matrix-vector multiplications, double-hoisted computation
-Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
-                                              std::vector<std::vector<int64_t>>& A, uint32_t dim1) {
+Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextImpl<DCRTPoly>& cc,
+                                                           ConstCiphertext<DCRTPoly> ctxt,
+                                                           std::vector<std::vector<int64_t>>& A, uint32_t dim1) {
     if (A[0].size() != A.size()) {
         OPENFHE_THROW(math_error, "The matrix passed to EvalLTNWithoutPrecompute is not square");
     }
@@ -3258,10 +3363,7 @@ Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlai
     DCRTPoly& pt = plaintextExt->GetElement<DCRTPoly>();
     pt.SetFormat(Format::EVALUATION);
 
-    // Andreea: need to encode the plaintext with the right number of moduli
     for (auto& c : cv) {
-        // std::cout << "EvalMultExt: c.GetNumOfElements() = " << c.GetNumOfElements() << std::endl;
-        // std::cout << "EvalMultExt: pt.GetNumOfElements() = " << pt.GetNumOfElements() << std::endl;
         c *= pt;
     }
 
@@ -3273,24 +3375,6 @@ Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlai
 void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
     std::vector<DCRTPoly>& cv1       = ciphertext1->GetElements();
     const std::vector<DCRTPoly>& cv2 = ciphertext2->GetElements();
-
-    // const auto cryptoParams1 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext1->GetCryptoParameters());
-    // const auto paramsQl1  = cv1[0].GetParams();
-    // const auto paramsP1   = cryptoParams1->GetParamsP();
-    // const auto paramsQlP1 = cv1[0].GetExtendedCRTBasis(paramsP1);
-
-    // size_t sizeQl1 = paramsQl1->GetParams().size();
-    // usint sizeCv1  = cv1.size();
-    // std::cout << "EvalAddExtInPlace ct1: sizeQl = " << sizeQl1 << ", sizeCv = " << sizeCv1 << ", sizeP = " << paramsP1->GetParams().size() << ", sizeQlP = " << paramsQlP1->GetParams().size() << std::endl;
-
-    // const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext2->GetCryptoParameters());
-    // const auto paramsQl2  = cv2[0].GetParams();
-    // const auto paramsP2   = cryptoParams2->GetParamsP();
-    // const auto paramsQlP2 = cv2[0].GetExtendedCRTBasis(paramsP2);
-
-    // size_t sizeQl2 = paramsQl2->GetParams().size();
-    // usint sizeCv2  = cv2.size();
-    // std::cout << "EvalAddExtInPlace ct2: sizeQl = " << sizeQl2 << ", sizeCv = " << sizeCv2 << ", sizeP = " << paramsP2->GetParams().size() << ", sizeQlP = " << paramsQlP2->GetParams().size() << std::endl;
 
     for (size_t i = 0; i < cv1.size(); ++i) {
         cv1[i] += cv2[i];
