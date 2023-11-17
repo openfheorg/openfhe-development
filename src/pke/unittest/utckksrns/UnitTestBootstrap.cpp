@@ -631,25 +631,45 @@ protected:
             ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, false);
             ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots / 2, 0, false);
 
-            std::stringstream s;
-            Serial::Serialize(ccInit, s, SerType::BINARY);
+            auto keyPairInit = ccInit->KeyGen();
+            ccInit->EvalMultKeyGen(keyPairInit.secretKey);
+            ccInit->EvalBootstrapKeyGen(keyPairInit.secretKey, testData.slots);
+            ccInit->EvalBootstrapKeyGen(keyPairInit.secretKey, testData.slots / 2);
+            //==============================================================
+            // Serialize all necessary objects
+            std::stringstream cc_stream;
+            Serial::Serialize(ccInit, cc_stream, SerType::BINARY);
 
+            std::stringstream secretKey_stream;
+            Serial::Serialize(keyPairInit.secretKey, secretKey_stream, SerType::BINARY);
+
+            std::stringstream publicKey_stream;
+            Serial::Serialize(keyPairInit.publicKey, publicKey_stream, SerType::BINARY);
+
+            std::stringstream automorphismKey_stream;
+            CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey(automorphismKey_stream, SerType::BINARY);
+
+            std::stringstream evalMultKey_stream;
+            CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(evalMultKey_stream, SerType::BINARY);
+            //====================================================================================================
+            // Removed the serialized objects from the memory
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-
+            //====================================================================================================
+            // Deserialize all necessary objects
             CryptoContext<Element> cc;
-            Serial::Deserialize(cc, s, SerType::BINARY);
+            Serial::Deserialize(cc, cc_stream, SerType::BINARY);
+
+            KeyPair<Element> keyPair;
+            Serial::Deserialize(keyPair.secretKey, secretKey_stream, SerType::BINARY);
+            Serial::Deserialize(keyPair.publicKey, publicKey_stream, SerType::BINARY);
+            CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey(automorphismKey_stream, SerType::BINARY);
+            CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey(evalMultKey_stream, SerType::BINARY);
 
             cc->EvalBootstrapPrecompute(testData.slots);
             cc->EvalBootstrapPrecompute(testData.slots / 2);
-
-            auto keyPair = cc->KeyGen();
-            cc->EvalMultKeyGen(keyPair.secretKey);
-            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
-            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots / 2);
-
             //====================================================================================================
             std::vector<std::complex<double>> input(
                 Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
