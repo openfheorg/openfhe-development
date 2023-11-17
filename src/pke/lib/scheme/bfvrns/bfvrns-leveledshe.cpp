@@ -775,6 +775,8 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
     uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
 
+    std::cout << "Precompute: l = " << l << std::endl;
+
     c1.SetFormat(COEFFICIENT);
     c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                           cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
@@ -843,7 +845,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         size_t sizeQ = cv[0].GetNumOfElements();
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
-        uint32_t l = elemParams.GetParams().size() - 1;
+        int32_t l = elemParams.GetParams().size() - 1;
+        std::cout << "FastRotation: l = " << l << std::endl;
 
         (*ba)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
                                      cryptoParams->GetQlHatModqPrecon(l), sizeQ);
@@ -913,17 +916,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotationExt(ConstCiphertext<DCRTP
         size_t sizeQ = cv[0].GetNumOfElements();
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
         uint32_t l = elemParams.GetParams().size() - 1;
-
-        /*// Old version
-        size_t levels2   = ciphertext->GetNoiseScaleDeg() - 1;
-        size_t sizeQ2    = cv[0].GetNumOfElements();
-        double dcrtBits2 = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
-        // how many levels to drop
-        uint32_t levelsDropped2 = FindLevelsToDrop(levels2, cryptoParams, dcrtBits2, true);
-        // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
-        uint32_t l2 = levelsDropped2 > 0 ? sizeQ2 - 1 - levelsDropped2 : sizeQ2 - 1;
-        std::cout << "l2 = " << l2 << std::endl;
-        */
 
         (*ba)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
                                      cryptoParams->GetQlHatModqPrecon(l), sizeQ);
