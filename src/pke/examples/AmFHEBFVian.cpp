@@ -203,91 +203,6 @@ int main() {
     return 0;
 }
 
-void testMultLeveled() {
-    const NativeInteger q = 65537;
-    CCParams<CryptoContextBFVRNS> parameters;
-    parameters.SetPlaintextModulus(
-        q.ConvertToInt());  // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
-    parameters.SetMultiplicativeDepth(18);
-    parameters.SetMaxRelinSkDeg(3);
-    parameters.SetFirstModSize(60);
-    parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
-    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1024);
-    CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
-
-    uint32_t ringDim   = ccBFV->GetRingDimension();
-    uint32_t numValues = 8;
-
-    ccBFV->Enable(PKE);
-    ccBFV->Enable(KEYSWITCH);
-    ccBFV->Enable(LEVELEDSHE);
-    ccBFV->Enable(ADVANCEDSHE);
-
-    // BFV private and public keys
-    auto keys = ccBFV->KeyGen();
-    ccBFV->EvalMultKeyGen(keys.secretKey);
-
-    // Print the BFV params
-    std::cout << "BFV params:\nt = " << ccBFV->GetCryptoParameters()->GetPlaintextModulus() << ", N = " << ringDim
-              << ", log2 q = " << log2(ccBFV->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-              << std::endl
-              << std::endl;
-
-    std::vector<int64_t> x(numValues, 2);
-    Plaintext ptxt_input = ccBFV->MakePackedPlaintext(x);
-    std::cout << ptxt_input << std::endl;
-    Ciphertext<DCRTPoly> ctxt_input = ccBFV->Encrypt(keys.publicKey, ptxt_input);
-
-    auto ctxt = ctxt_input = ccBFV->EvalMult(ctxt_input, ctxt_input);
-    ctxt                   = ccBFV->EvalMult(ctxt, ctxt);
-    ctxt                   = ccBFV->EvalMult(ctxt, ctxt);
-
-    // Encode plaintext at minimum number of levels
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ctxt->GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-
-    // auto elementParams         = *((*digits)[0].GetParams());
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        DCRTPoly c1     = ctxt->GetElements()[1];
-        size_t levels   = ctxt->GetNoiseScaleDeg() - 1;
-        double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
-        // how many levels to drop
-        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
-        std::cout << "levelsDropped: " << levelsDropped << std::endl;
-
-        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-            for (uint32_t i = 0; i < levelsDropped; i++) {
-                elementParams.PopLastParam();
-            }
-        }
-
-        // auto paramsP = cryptoParams->GetParamsP();
-        // if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-        //     for (uint32_t i = 0; i < paramsP->GetParams().size(); i++) {
-        //         elementParams.PopLastParam();
-        //     }
-        // }
-    }
-
-    auto elementParamsPtr = std::make_shared<DCRTPoly::Params>(elementParams);
-    std::cout << "elementParams size: " << elementParams.GetParams().size() << std::endl;
-
-    Plaintext ptxt = ccBFV->MakePackedPlaintextAux(std::vector<int64_t>(numValues, 1), 1, 0, elementParamsPtr);
-    Plaintext result_ptxt;
-
-    // auto result = ccBFV->EvalMult(ctxt, ptxt);
-    // ccBFV->Decrypt(keys.secretKey, result, &result_ptxt);
-    // result_ptxt->SetLength(numValues);
-    // std::cout << "EvalMult: " << result_ptxt << std::endl;
-
-    auto result2 = EvalMultLeveled(ctxt, ptxt);
-    ccBFV->Decrypt(keys.secretKey, result2, &result_ptxt);
-    result_ptxt->SetLength(numValues);
-    std::cout << "EvalMult: " << result_ptxt << std::endl;
-}
-
 void NANDthroughBFV() {
     std::cout << "\n*****AMORTIZED NAND*****\n" << std::endl;
 
@@ -498,10 +413,10 @@ void NANDthroughBFV() {
 
     // malloc_trim(0);
 
-    Plaintext ptxt;
-    ccBFV->Decrypt(keys.secretKey, BminusAdotS, &ptxt);
-    ptxt->SetLength(numValues);
-    std::cout << "B - A*s: " << ptxt << std::endl;
+    // Plaintext ptxt;
+    // ccBFV->Decrypt(keys.secretKey, BminusAdotS, &ptxt);
+    // ptxt->SetLength(numValues);
+    // std::cout << "B - A*s: " << ptxt << std::endl;
 
     double timeFHEWtoBFV = TOC_NS(tVar);
     std::cout << "---Time FHEWtoBFV: " << timeFHEWtoBFV / 1000000000.0 << " s\n" << std::endl;
@@ -637,11 +552,21 @@ void NANDthroughBFV() {
     std::cout << "-Time for " << cntPackedPtxt
               << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
-    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
-              << " s" << std::endl
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000000000.0 << " s"
               << std::endl;
-    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
-              << " s" << std::endl
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt
+              << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt
+              << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
 }
 
@@ -859,26 +784,26 @@ void LUTthroughBFV() {
               << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
 
-    std::cout << "---Online time so far: " << TOC(tOnline) / 1000.0 << " s\n" << std::endl;
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n" << std::endl;
 
-    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
-    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
-              << "s" << std::endl;
-    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000000000.0
               << " s" << std::endl;
-    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000000000.0 << " s"
               << std::endl;
-    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
-              << " s" << std::endl
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000000000.0 << "s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt
+              << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt
+              << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
 
     // // Test the matrix-vector multiplication
@@ -955,8 +880,21 @@ void LUTthroughBFV() {
     std::cout << "-Time for " << cntPackedPtxt
               << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
-    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
-              << " s" << std::endl
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt
+              << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt
+              << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
 
     // std::vector<int64_t> decoded_int(ringDim);
@@ -1005,27 +943,27 @@ void LUTthroughBFV() {
               << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
 
-    std::cout << "---Online time so far: " << TOC(tOnline) / 1000.0 << " s\n" << std::endl;
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n" << std::endl;
 
-    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000.0 << "s" << std::endl;
-    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000.0
-              << "s" << std::endl;
-    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000.0 << " s"
-              << std::endl;
-    std::cout << "-Time for " << cntAddCtxt << " ciphertext additions not counted before: " << timeAddCtxt / 1000.0
+    std::cout << "-Time for " << cntMultConst << " multiplications by a constant: " << timeMultConst / 1000000000.0
               << " s" << std::endl;
-    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000.0 << " s" << std::endl;
-    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000.0 << " s" << std::endl
+    std::cout << "-Time for " << cntAddConst << " additions by a constant: " << timeAddConst / 1000000000.0 << " s"
               << std::endl;
-    std::cout << "-Time for " << cntPackedPtxt << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000.0
-              << " s" << std::endl
+    std::cout << "-Time for " << cntRotations << " fast rotations: " << timeRotations / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntRotationPrec << " fast rotation precomputation: " << timeRotationPrec / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000000000.0
+              << " s" << std::endl;
+    std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntAddCtxt
+              << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for cleartext poly operations v2: " << timePolyRest / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntClone << " ciphertext cloning: " << timeClone / 1000000000.0 << " s" << std::endl;
+    std::cout << "-Time for " << cntPackedPtxt
+              << " plaintexts encodings in hom. decoding: " << timePackedPtxt / 1000000000.0 << " s" << std::endl
               << std::endl;
 
     // std::vector<int64_t> prod(m_UT.size(), 0);
@@ -1574,7 +1512,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
     if (dc >= 1) {
         if (dc == 1) {
             if (divcs->q[1] != 1) {
-                timePolyRest += TOC(tVar3);
+                timePolyRest += TOC_NS(tVar3);
                 TIC(tVar);
                 cu = EvalMultConstBFV(powers.front(), divcs->q[1]);
                 timePolyClear -= TOC_NS(tVar);
@@ -1605,7 +1543,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
             timePolyClear -= TOC_NS(tVar);
         }
 
-        timePolyRest += TOC(tVar3);
+        timePolyRest += TOC_NS(tVar3);
         // adds the free term (at x^0)
         TIC(tVar);
         EvalAddInPlaceConstBFV(cu, divcs->q.front());
@@ -1618,7 +1556,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
     Ciphertext<DCRTPoly> qu;
 
     if (Degree(divqr->q) > k) {
-        timePolyRest += TOC(tVar3);
+        timePolyRest += TOC_NS(tVar3);
         qu = InnerEvalPolyPSBFV(x, divqr->q, k, m - 1, powers, powers2);
         TIC(tVar3);
     }
@@ -1658,7 +1596,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
             cntClone++;
             timePolyClear -= tempT;
         }
-        timePolyRest += TOC(tVar3);
+        timePolyRest += TOC_NS(tVar3);
         // adds the free term (at x^0)
         TIC(tVar);
         EvalAddInPlaceConstBFV(qu, divqr->q.front());
@@ -1667,7 +1605,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
 
     uint64_t ds = Degree(s2);
     Ciphertext<DCRTPoly> su;
-    timePolyRest += TOC(tVar3);
+    timePolyRest += TOC_NS(tVar3);
     TIC(tVar3);
 
     if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
@@ -1680,7 +1618,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
     }
     else {
         if (ds > k) {
-            timePolyRest += TOC(tVar3);
+            timePolyRest += TOC_NS(tVar3);
             su = InnerEvalPolyPSBFV(x, s2, k, m - 1, powers, powers2);
             TIC(tVar3);
         }
@@ -1689,7 +1627,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::
             // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
             auto scopy = s2;
             scopy.resize(k);
-            timePolyRest += TOC(tVar3);
+            timePolyRest += TOC_NS(tVar3);
             if (Degree(scopy) > 0) {
                 // TIC(tVar);
                 std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
@@ -1795,7 +1733,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
 
     std::cerr << "\nDegree: n = " << n << ", k = " << k << ", m = " << m << endl;
 
-    TOC(tVar3);
+    TOC_NS(tVar3);
 
     TIC(tIn);
     // set the indices for the powers of x that need to be computed to 1
@@ -1924,7 +1862,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     if (dc >= 1) {
         if (dc == 1) {
             if (divcs->q[1] != 1) {
-                timePolyRest += TOC(tVar3);
+                timePolyRest += TOC_NS(tVar3);
                 TIC(tVar);
                 cu = EvalMultConstBFV(powers.front(), static_cast<int64_t>(divcs->q[1]));
                 timePolyClear -= TOC_NS(tVar);
@@ -1954,7 +1892,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
             timePolyClear -= TOC_NS(tVar);
         }
 
-        timePolyRest += TOC(tVar3);
+        timePolyRest += TOC_NS(tVar3);
         // adds the free term (at x^0)
         TIC(tVar);
         EvalAddInPlaceConstBFV(cu, static_cast<int64_t>(divcs->q.front()));
@@ -1967,7 +1905,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     Ciphertext<DCRTPoly> qu;
 
     if (Degree(divqr->q) > k) {
-        timePolyRest += TOC(tVar3);
+        timePolyRest += TOC_NS(tVar3);
         qu = InnerEvalPolyPSBFV(x, divqr->q, k, m - 1, powers, powers2);
         TIC(tVar3);
     }
@@ -1976,7 +1914,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
         // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
         auto qcopy = divqr->q;
         qcopy.resize(k);
-        timePolyRest += TOC(tVar3);
+        timePolyRest += TOC_NS(tVar3);
         if (Degree(qcopy) > 0) {
             // TIC(tVar);
             std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
@@ -2012,7 +1950,7 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     TIC(tVar3);
     uint32_t ds = Degree(s2);
     Ciphertext<DCRTPoly> su;
-    timePolyRest += TOC(tVar3);
+    timePolyRest += TOC_NS(tVar3);
 
     if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
         TIC(tVar);
@@ -2667,8 +2605,7 @@ std::shared_ptr<schemeSwitchKeys> EvalAmortizedFHEWBootKeyGen(CryptoContextImpl<
     if (dim1 == 0)
         dim1 = getRatioBSGSPow2(N / 2);
     m_dim1BF = dim1;
-
-    m_LBF = L;
+    m_LBF    = L;
 
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTNRotationIndices(m_dim1BF, N);
@@ -3072,6 +3009,17 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
 
     TimeVar tVar;
     TIC(tVar);
+    ctxt         = cc.Compress(ctxt, 1);
+    ctxt_swapped = cc.Compress(ctxt_swapped, 1);
+    std::cout << "Compress time: " << static_cast<double>(TOC_NS(tVar)) / 1000000000.0 << " s" << std::endl;
+
+    // std::cout << "-----ctxt depth, level, GetElements().size(), and GetElements()[0].GetNumOfElements(): "
+    //           << ctxt->GetNoiseScaleDeg() << ", " << ctxt->GetLevel() << ", " << ctxt->GetElements().size() << ", "
+    //           << ctxt->GetElements()[0].GetNumOfElements() << std::endl;
+
+    TIC(tVar);
+    std::vector<Ciphertext<DCRTPoly>> fastRotation(2 * gStep - 2);
+
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
     auto digits  = cc.EvalFastRotationPrecompute(ctxt);
     auto digits2 = cc.EvalFastRotationPrecompute(ctxt_swapped);
@@ -3188,8 +3136,12 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecompute(const CryptoContextImpl<DCRTPoly>&
     std::cout << "Time for i updates interior: " << tInner3 / 1000000000.0 << " s" << std::endl;
     std::cout << "Time for i updates: " << tOuter3 / 1000000000.0 << " s" << std::endl;
 
-    return result;
-}
+    std::cout << "Time for i * j loops interior: " << tInner1 / 1000000000.0 << " s" << std::endl;
+    std::cout << "Time for i * j loops: " << tOuter1 / 1000000000.0 << " s" << std::endl;
+    std::cout << "Time for second i * j loops interior: " << tInner2 / 1000000000.0 << " s" << std::endl;
+    std::cout << "Time for second i * j loops: " << tOuter2 / 1000000000.0 << " s" << std::endl;
+    std::cout << "Time for i updates interior: " << tInner3 / 1000000000.0 << " s" << std::endl;
+    std::cout << "Time for i updates: " << tOuter3 / 1000000000.0 << " s" << std::endl;
 
 // Encrypted matrix-vector multiplication of size N implemented as two sized N/2 matrix-vector multiplications, double-hoisted computation
 Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextImpl<DCRTPoly>& cc,
@@ -3222,7 +3174,7 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextIm
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
     auto digits  = cc.EvalFastRotationPrecompute(ctxt);
     auto digits2 = cc.EvalFastRotationPrecompute(ctxt_swapped);
-    timeRotationPrec += TOC(tVar);
+    timeRotationPrec += TOC_NS(tVar);
     cntRotationPrec += 2;
 
     // Hoisted automorphisms
@@ -3230,10 +3182,10 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextIm
     for (size_t j = 1; j < gStep; j++) {
         TIC(tVar);
         fastRotation[j - 1] = cc.EvalFastRotationExt(ctxt, j * bStep, digits, true);
-        timeRotations += TOC(tVar);
+        timeRotations += TOC_NS(tVar);
         TIC(tVar);
         fastRotation[j - 1 + gStep - 1] = cc.EvalFastRotationExt(ctxt_swapped, j * bStep, digits2, true);
-        timeRotations += TOC(tVar);
+        timeRotations += TOC_NS(tVar);
         cntRotations += 2;
     }
 
@@ -3281,13 +3233,13 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextIm
             if (j == 0) {
                 TIC(tVar);
                 inner = EvalMultExt(KeySwitchExt(ctxt, true), A_ptxt);
-                timeMultPtxt += TOC(tVar);
+                timeMultPtxt += TOC_NS(tVar);
                 cntMultPtxt++;
             }
             else {
                 TIC(tVar);
                 EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j - 1], A_ptxt));
-                timeMultPtxt += TOC(tVar);
+                timeMultPtxt += TOC_NS(tVar);
                 cntMultPtxt++;
             }
         }
@@ -3298,13 +3250,13 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextIm
             if (j == gStep) {
                 TIC(tVar);
                 EvalAddExtInPlace(inner, EvalMultExt(KeySwitchExt(ctxt_swapped, true), A_ptxt));
-                timeMultPtxt += TOC(tVar);
+                timeMultPtxt += TOC_NS(tVar);
                 cntMultPtxt++;
             }
             else {
                 TIC(tVar);
                 EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j - 2], A_ptxt));
-                timeMultPtxt += TOC(tVar);
+                timeMultPtxt += TOC_NS(tVar);
                 cntMultPtxt++;
             }
         }
@@ -3336,12 +3288,12 @@ Ciphertext<DCRTPoly> EvalLTNWithoutPrecomputeDoubleHoisted(const CryptoContextIm
             // std::cout << "inner.GetNumElements: " << inner->GetElements()[0].GetNumOfElements() << std::endl;
             // std::cout << "innerDigits.GetNumElements: " << ((*innerDigits)[0].GetParams())->GetParams().size() << std::endl;
             // std::cout << "cc.EvalFastRotationExt(inner, i, innerDigits, false).GetNumElements: " << cc.EvalFastRotationExt(inner, i, innerDigits, false)->GetElements()[0].GetNumOfElements() << std::endl;
-            timeRotationPrec += TOC(tVar);
+            timeRotationPrec += TOC_NS(tVar);
             cntRotationPrec++;
             TIC(tVar);
             // cc.EvalAddInPlace(result, cc.EvalFastRotation(inner, i, M, innerDigits));
             EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, i, innerDigits, false));
-            timeRotations += TOC(tVar);
+            timeRotations += TOC_NS(tVar);
             cntRotations++;
         }
     }
