@@ -766,21 +766,22 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
         return algo->EvalKeySwitchPrecomputeCore(ciphertext->GetElements()[1], ciphertext->GetCryptoParameters());
     }
 
-    DCRTPoly c1     = ciphertext->GetElements()[1];
-    size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
-    size_t sizeQ    = c1.GetNumOfElements();
-    double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
-    // how many levels to drop
-    uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
-    // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
-    uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+    DCRTPoly c1  = ciphertext->GetElements()[1];
+    size_t sizeQ = c1.GetNumOfElements();
+    if (sizeQ > 1) {
+        size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
+        double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
+        // how many levels to drop
+        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
+        // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+        uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+        l          = 0;
 
-    std::cout << "Precompute: l = " << l << std::endl;
-
-    c1.SetFormat(COEFFICIENT);
-    c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
-                          cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
-    c1.SetFormat(EVALUATION);
+        c1.SetFormat(COEFFICIENT);
+        c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+                              cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+        c1.SetFormat(EVALUATION);
+    }
 
     return algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
 }
@@ -823,30 +824,10 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     std::shared_ptr<std::vector<DCRTPoly>> ba =
         algo->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
 
-    /* In the HPSOVERQLEVELED mode, we do modulus switching to a smaller modulus before we start key switching.
-    The modulus switching was already done when computing the ciphertext digits using EvalFastRotationPrecompute.
-    The goal of the "if branch" below is to extract the current modulus Ql from the element parameters of one of
-    the digit polynomials (by removing the auxiliary moduli added for hybrid key switching).
-    ATTN: elemParams should not be a shared_ptr because it would modify digits. */
-    // TODO (dsuponit): wrap the lines below in a function to return elemParams as an object
-    auto elemParams = *((*digits)[0].GetParams());
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-            size_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
-            for (size_t i = 0; i < sizeP; ++i) {
-                elemParams.PopLastParam();
-            }
-        }
-    }
-
-    std::shared_ptr<std::vector<DCRTPoly>> ba =
-        algo->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
-
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        size_t sizeQ = cv[0].GetNumOfElements();
+    size_t sizeQ = cv[0].GetNumOfElements();
+    if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && sizeQ > 1) {
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
         int32_t l = elemParams.GetParams().size() - 1;
-        std::cout << "FastRotation: l = " << l << std::endl;
 
         (*ba)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
                                      cryptoParams->GetQlHatModqPrecon(l), sizeQ);
