@@ -52,6 +52,19 @@ SCHEME convertToSCHEME(const std::string& str) {
     OPENFHE_THROW(config_error, errMsg);
 }
 
+std::string convertToString(SCHEME schemeId) noexcept {
+    switch (schemeId) {
+        case CKKSRNS_SCHEME:
+            return "CKKSRNS_SCHEME";
+        case BFVRNS_SCHEME:
+            return "BFVRNS_SCHEME";
+        case BGVRNS_SCHEME:
+            return "BGVRNS_SCHEME";
+        default:
+            return "INVALID_SCHEME[" + std::to_string(schemeId) + "]";
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, SCHEME schemeId) {
     switch (schemeId) {
         case CKKSRNS_SCHEME:

@@ -87,6 +87,21 @@ class CryptoContextImpl : public Serializable {
     using IntType  = typename Element::Integer;
     using ParmType = typename Element::Params;
 
+    /**
+    * @brief VerifyCKKSScheme is to check if the cryptocontext scheme is CKKS. if it is not
+    *        the function will thow an exception
+    * @param functionName is the calling function name. __func__ can be used instead
+    */
+    inline void VerifyCKKSScheme(const std::string& functionName) const {
+        if (!isCKKS(m_schemeId)) {
+            std::string errMsg = "Function " + std::string(functionName) +
+                                 " is available for the CKKS scheme only."
+                                 " The current scheme is " +
+                                 convertToString(m_schemeId);
+            OPENFHE_THROW(config_error, errMsg);
+        }
+    }
+
     void SetKSTechniqueInScheme();
 
     const CryptoContext<Element> GetContextForPointer(const CryptoContextImpl<Element>* cc) const {
@@ -101,6 +116,7 @@ class CryptoContextImpl : public Serializable {
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, usint slots) const {
+        VerifyCKKSScheme(__func__);
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         if (level > 0) {
             // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
@@ -1043,6 +1059,7 @@ public:
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t scaleDeg = 1,
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
                                       usint slots = 0) const {
+        VerifyCKKSScheme(__func__);
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
@@ -1060,6 +1077,7 @@ public:
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t scaleDeg = 1, uint32_t level = 0,
                                       const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
+        VerifyCKKSScheme(__func__);
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
