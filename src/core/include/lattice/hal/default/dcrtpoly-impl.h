@@ -163,8 +163,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(DugType& dug, const std::shared_ptr<Params>&
     : m_params{dcrtParams}, m_format{format} {
     m_vectors.reserve(m_params->GetParams().size());
     for (auto& p : m_params->GetParams()) {
-        dug.SetModulus(p->GetModulus());
-        NativeVector vals(dug.GenerateVector(p->GetRingDimension()));
+        NativeVector vals(dug.GenerateVector(p->GetRingDimension(), p->GetModulus()));
         DCRTPolyImpl::PolyType ilvector(p);
         ilvector.SetValues(std::move(vals), m_format);
         m_vectors.push_back(std::move(ilvector));
