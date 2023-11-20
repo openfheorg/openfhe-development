@@ -400,7 +400,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
     for (usint i = 0; i < indexList.size(); i++) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
+        // AKIM: For CI-CKKS M = 4N
+        usint index = NativeInteger(indexList[i]).ModInverse(4 * N).ConvertToInt();
         std::vector<usint> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 

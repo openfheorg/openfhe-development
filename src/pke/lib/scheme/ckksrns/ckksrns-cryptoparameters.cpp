@@ -159,7 +159,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
 uint64_t CryptoParametersCKKSRNS::FindAuxPrimeStep() const {
     size_t n = GetElementParams()->GetRingDimension();
-    return static_cast<uint64_t>(2 * n);
+    return static_cast<uint64_t>(4 * n);
 }
 
 }  // namespace lbcrypto

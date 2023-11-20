@@ -72,8 +72,9 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
+    uint32_t N     = cc.GetRingDimension();
     uint32_t M     = cc.GetCyclotomicOrder();
-    uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
+    uint32_t slots = (numSlots == 0) ? N : numSlots;
 
     // Set correction factor by default, if it is not already set.
     if (correctionFactor == 0) {
@@ -134,9 +135,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
 
     if (precompute) {
-        uint32_t m    = 4 * slots;
-        bool isSparse = (M != m) ? true : false;
-
+        uint32_t m = 4 * slots;
         // computes indices for all primitive roots of unity
         std::vector<uint32_t> rotGroup(slots);
         uint32_t fivePows = 1;
@@ -196,8 +195,24 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
                 }
             }
 
+            // AKIM : decode map is combined
+            for (size_t i = 0; i < slots; i++) {
+                for (size_t j = 1; j < slots; j++) {
+                    U0[i][j].real(U0[i][j].real() + U0[i][slots - j].imag());
+                }
+            }
+
+            for (size_t i = 0; i < slots; i++) {
+                for (size_t j = 0; j < slots; j++) {
+                    U0[i][j].imag(0);
+                    U0hatT[i][j].imag(0);
+                }
+            }
+
+            bool isSparse = (N != slots) ? true : false;
             if (!isSparse) {
-                precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, scaleEnc, lEnc);
+                // AKIM: Scaling is x2, as no addition with conjugate
+                precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, 2 * scaleEnc, lEnc);
                 precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
             }
             else {
@@ -224,16 +239,18 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
     auto cc    = privateKey->GetCryptoContext();
+    uint32_t N = cc->GetRingDimension();
     uint32_t M = cc->GetCyclotomicOrder();
 
     if (slots == 0)
-        slots = M / 4;
+        slots = N;
     // computing all indices for baby-step giant-step procedure
     auto algo     = cc->GetScheme();
     auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, FindBootstrapRotationIndices(slots, M));
 
-    auto conjKey       = ConjugateKeyGen(privateKey);
-    (*evalKeys)[M - 1] = conjKey;
+    // AKIM : No conjugation
+    // auto conjKey       = ConjugateKeyGen(privateKey);
+    // (*evalKeys)[M - 1] = conjKey;
 
     return evalKeys;
 }
@@ -249,8 +266,9 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
-    uint32_t M     = cc.GetCyclotomicOrder();
-    uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
+    uint32_t N = cc.GetRingDimension();
+    // uint32_t M     = cc.GetCyclotomicOrder();
+    uint32_t slots = (numSlots == 0) ? N : numSlots;
 
     std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap[slots];
 
@@ -262,9 +280,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget[0], dim1[0]);
     precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
 
-    uint32_t m    = 4 * slots;
-    bool isSparse = (M != m) ? true : false;
-
+    uint32_t m = 4 * slots;
     // computes indices for all primitive roots of unity
     std::vector<uint32_t> rotGroup(slots);
     uint32_t fivePows = 1;
@@ -323,9 +339,23 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
                 U1hatT[j][i] = std::conj(U1[i][j]);
             }
         }
+        // AKIM : decode map is combined
+        for (size_t i = 0; i < slots; i++) {
+            for (size_t j = 1; j < slots; j++) {
+                U0[i][j].real(U0[i][j].real() + U0[i][slots - j].imag());
+            }
+        }
 
+        for (size_t i = 0; i < slots; i++) {
+            for (size_t j = 0; j < slots; j++) {
+                U0[i][j].imag(0);
+                U0hatT[i][j].imag(0);
+            }
+        }
+        bool isSparse = (N != slots) ? true : false;
         if (!isSparse) {
-            precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, scaleEnc, lEnc);
+            // AKIM : Scaling is x2 as no addition with conjugate
+            precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, 2 * scaleEnc, lEnc);
             precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
         }
         else {
@@ -362,6 +392,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 #endif
 
     auto cc        = ciphertext->GetCryptoContext();
+    uint32_t N     = cc->GetRingDimension();
     uint32_t M     = cc->GetCyclotomicOrder();
     uint32_t L0    = cryptoParams->GetElementParams()->GetParams().size();
     auto initSizeQ = ciphertext->GetElements()[0].GetNumOfElements();
@@ -423,7 +454,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         OPENFHE_THROW(type_error, errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
-    size_t N                                          = cc->GetRingDimension();
 
     auto elementParamsRaised = *(cryptoParams->GetElementParams());
 
@@ -517,7 +547,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         k            = K_UNIFORM;
     }
 
-    double constantEvalMult = pre * (1.0 / (k * N));
+    // AKIM : Constant is changed
+    double constantEvalMult = pre * (1.0 / (k * N * 2));
 
     cc->EvalMultInPlace(raised, constantEvalMult);
 
@@ -529,7 +560,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     bool isLTBootstrap = (precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1) &&
                          (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
-    if (slots == M / 4) {
+    if (slots == N) {
         //------------------------------------------------------------------------------
         // FULLY PACKED CASE
         //------------------------------------------------------------------------------
@@ -549,22 +580,23 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
                                          EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
 
-        auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
-        auto conj       = Conjugate(ctxtEnc, evalKeyMap);
-        auto ctxtEncI   = cc->EvalSub(ctxtEnc, conj);
-        cc->EvalAddInPlace(ctxtEnc, conj);
-        algo->MultByMonomialInPlace(ctxtEncI, 3 * M / 4);
+        // AKIM : No conjugation
+        // auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
+        // auto conj       = Conjugate(ctxtEnc, evalKeyMap);
+        // auto ctxtEncI   = cc->EvalSub(ctxtEnc, conj);
+        // cc->EvalAddInPlace(ctxtEnc, conj);
+        // algo->MultByMonomialInPlace(ctxtEncI, 3 * M / 4);
 
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
             while (ctxtEnc->GetNoiseScaleDeg() > 1) {
                 cc->ModReduceInPlace(ctxtEnc);
-                cc->ModReduceInPlace(ctxtEncI);
+                // cc->ModReduceInPlace(ctxtEncI);
             }
         }
         else {
             if (ctxtEnc->GetNoiseScaleDeg() == 2) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
-                algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
+                // algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
         }
 
@@ -573,15 +605,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         //------------------------------------------------------------------------------
 
         // Evaluate Chebyshev series for the sine wave
-        ctxtEnc  = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
-        ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
+        ctxtEnc = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
+        // ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
 
         // Double-angle iterations
         if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
             (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
-                algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
+                // algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
             uint32_t numIter;
             if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
@@ -589,11 +621,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
             else
                 numIter = R_SPARSE;
             ApplyDoubleAngleIterations(ctxtEnc, numIter);
-            ApplyDoubleAngleIterations(ctxtEncI, numIter);
+            // ApplyDoubleAngleIterations(ctxtEncI, numIter);
         }
 
-        algo->MultByMonomialInPlace(ctxtEncI, M / 4);
-        cc->EvalAddInPlace(ctxtEnc, ctxtEncI);
+        // algo->MultByMonomialInPlace(ctxtEncI, M / 4);
+        // cc->EvalAddInPlace(ctxtEnc, ctxtEncI);
 
         // scale the message back up after Chebyshev interpolation
         algo->MultByIntegerInPlace(ctxtEnc, scalar);
@@ -784,7 +816,7 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
 
     // remove automorphisms corresponding to 0
     fullIndexList.erase(std::remove(fullIndexList.begin(), fullIndexList.end(), 0), fullIndexList.end());
-    fullIndexList.erase(std::remove(fullIndexList.begin(), fullIndexList.end(), M / 4), fullIndexList.end());
+    fullIndexList.erase(std::remove(fullIndexList.begin(), fullIndexList.end(), M / 2), fullIndexList.end());
 
     return fullIndexList;
 }
@@ -815,10 +847,9 @@ std::vector<int32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slo
         indexList.emplace_back(g * i);
     }
 
-    uint32_t m = slots * 4;
     // additional automorphisms are needed for sparse bootstrapping
-    if (m != M) {
-        for (uint32_t j = 1; j < M / m; j <<= 1) {
+    if (slots != M / 2) {
+        for (uint32_t j = 1; j < M / slots / 2; j <<= 1) {
             indexList.emplace_back(j * slots);
         }
     }
@@ -828,7 +859,7 @@ std::vector<int32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slo
 
     // remove automorphisms corresponding to 0
     indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
-    indexList.erase(std::remove(indexList.begin(), indexList.end(), M / 4), indexList.end());
+    indexList.erase(std::remove(indexList.begin(), indexList.end(), M / 2), indexList.end());
 
     return indexList;
 }
@@ -2331,7 +2362,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
     inverse.resize(slots);
 
-    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
+    // AKIM : CycloOrder = 4 * N
+    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 4);
     double powP = scFact;
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
@@ -2416,6 +2448,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
+    // AKIM : Should be refactored together with CKKSPackedPlaintext
+    temp.resize(slots);
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
