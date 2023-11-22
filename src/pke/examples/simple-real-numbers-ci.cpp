@@ -123,7 +123,7 @@ int main() {
     parameters.SetBatchSize(batchSize);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingTechnique(ScalingTechnique::FIXEDMANUAL);
-    parameters.SetRingDim(16);
+    parameters.SetRingDim(2*batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 

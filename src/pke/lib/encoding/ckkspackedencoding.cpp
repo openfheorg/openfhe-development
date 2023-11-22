@@ -249,6 +249,7 @@ bool CKKSPackedEncoding::Encode() {
     usint ringDim                             = GetElementRingDimension();
     // [TODO] CZR - need to check why this returns slots = ringDim
     usint slots                               = this->GetSlots();
+    usint gap = ringDim/slots;
     std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
     if (slots < inverse.size()) {
         std::string errMsg = std::string("The number of slots [") + std::to_string(slots) +
@@ -303,10 +304,10 @@ bool CKKSPackedEncoding::Encode() {
         int32_t logApprox   = logc - logValid;
         double approxFactor = pow(2, logApprox);
 
-        std::vector<int64_t> temp(2 * slots);
+        std::vector<int64_t> temp(ringDim);
         // TODO - CZR - for Real-CKKS, we can speed this up by ignoring the complex part
         // temp can be of size 1*slots rather than 2 * slots
-        for (size_t i = 0; i < slots; ++i) {
+        for (size_t i = 0, coeffidx = 0; i < slots; ++i, coeffidx+=gap) {
             // Scale down by approxFactor in case the value exceeds a 64-bit integer.
             double dre = inverse[i].real() / approxFactor;
             double dim = inverse[i].imag() / approxFactor;
@@ -325,7 +326,7 @@ bool CKKSPackedEncoding::Encode() {
                 // this to report it to the user, so they can identify
                 // large inputs.
 
-                DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 2);
+                DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 4);
 
                 double invLen = static_cast<double>(inverse.size());
                 double factor = 2 * M_PI * i;
@@ -370,10 +371,10 @@ bool CKKSPackedEncoding::Encode() {
             }
 
             int64_t re = std::llround(dre);
-            int64_t im = std::llround(dim);
+            // int64_t im = std::llround(dim);
 
-            temp[i]         = (re < 0) ? Max64BitValue() + re : re;
-            temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
+            temp[coeffidx]         = (re < 0) ? Max64BitValue() + re : re;
+            // temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
         }
         const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
         const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
