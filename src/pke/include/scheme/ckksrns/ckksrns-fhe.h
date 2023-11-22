@@ -173,12 +173,6 @@ public:
                                                               const std::vector<std::vector<std::complex<double>>>& A,
                                                               double scale = 1, uint32_t L = 0) const;
 
-    std::vector<ConstPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
-                                                              const std::vector<std::vector<std::complex<double>>>& A,
-                                                              const std::vector<std::vector<std::complex<double>>>& B,
-                                                              uint32_t orientation = 0, double scale = 1,
-                                                              uint32_t L = 0) const;
-
     std::vector<std::vector<ConstPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                          const std::vector<std::complex<double>>& A,
                                                                          const std::vector<uint32_t>& rotGroup,
