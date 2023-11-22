@@ -216,7 +216,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
     const auto ns                = cryptoParams->GetNoiseScale();
     const DCRTPoly::DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-    DCRTPoly::DugType dug;
     DCRTPoly::TugType tug;
 
     const DCRTPoly& sOld = oldSk->GetPrivateElement();

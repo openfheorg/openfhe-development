@@ -86,10 +86,9 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
     {
         typename V::Integer modulus("10403");
         auto dug = DiscreteUniformGeneratorImpl<V>();
-        dug.SetModulus(modulus);
 
         usint size      = 10;
-        V uniRandVector = dug.GenerateVector(size);
+        V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size)
             << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
@@ -107,10 +106,9 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
     {
         typename V::Integer modulus("10402635286389262637365363");
         auto dug = DiscreteUniformGeneratorImpl<V>();
-        dug.SetModulus(modulus);
 
         usint size      = 100;
-        V uniRandVector = dug.GenerateVector(size);
+        V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size) << "Failure testing vector_uniform_vector_large_modulus";
         // test content
@@ -145,12 +143,11 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
         try {
             typename V::Integer modulus("10402635286389262637365363");  // 10402635286389262637365363
             auto dug = DiscreteUniformGeneratorImpl<V>();
-            dug.SetModulus(modulus);
 
             usint eachIterationSize = 1000, noOfIterations = 100;
             typename V::Integer sum, mean, N(eachIterationSize);
 
-            V uniRandVector = dug.GenerateVector(eachIterationSize * noOfIterations);
+            V uniRandVector = dug.GenerateVector(eachIterationSize * noOfIterations, modulus);
 
             for (usint i = 0; i < noOfIterations; i++) {
                 sum = mean = typename V::Integer(0);

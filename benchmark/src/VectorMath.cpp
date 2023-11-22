@@ -38,6 +38,7 @@
 #include "benchmark/benchmark.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/hal/basicint.h"
+#include "math/math-hal.h"
 #include "math/nbtheory.h"
 
 #include <iostream>

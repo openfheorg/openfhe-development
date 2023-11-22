@@ -273,8 +273,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
     double sigma  = (base + 1) * SIGMA;
 
     Poly::DggType dgg(sigma);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
+    Poly::DugType dug;
 
     OPENFHE_DEBUG("1");
     Poly u(dug, params, Format::COEFFICIENT);
@@ -349,7 +348,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
     Matrix<DCRTPoly> rHat = trapPair.second.m_r;
 
     DCRTPoly::DggType dgg(sigma);
-    DCRTPoly::DugType dug = DCRTPoly::DugType();
+    DCRTPoly::DugType dug;
     DCRTPoly u(dug, params, Format::COEFFICIENT);
 
     usint k = moduli.size() * digitCount;
@@ -396,8 +395,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     double sigma  = (base + 1) * SIGMA;
 
     Poly::DggType dgg(SIGMA);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
+    Poly::DugType dug;
 
     OPENFHE_DEBUG("1");
     Poly u(dug, params, Format::COEFFICIENT);
@@ -491,8 +489,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
     // Format::EVALUATION);
 
     Poly::DggType dgg(sigma);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
+    Poly::DugType dug;
 
     uint32_t base = 2;
     double c      = (base + 1) * SIGMA;
@@ -704,9 +701,6 @@ TEST(UTTrapdoor, TrapDoorPerturbationSamplingTest) {
     Matrix<Poly> rHat = trapPair.second.m_r;
 
     Poly::DggType dgg(sigma);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
-
     Poly::DggType dggLargeSigma(sqrt(s * s - c * c));
 
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
