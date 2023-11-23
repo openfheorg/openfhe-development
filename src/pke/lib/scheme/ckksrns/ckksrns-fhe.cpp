@@ -105,26 +105,26 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     precom->m_slots = slots;
     precom->m_dim1  = dim1[0];
 
-    uint32_t logSlots = std::log2(slots);
+    // uint32_t logSlots = std::log2(slots);
     // Perform some checks on the level budget and compute parameters
     std::vector<uint32_t> newBudget = levelBudget;
 
-    if (levelBudget[0] > logSlots) {
-        std::cerr << "\nWarning, the level budget for encoding cannot be this large. The budget was changed to "
-                  << uint32_t(logSlots) << std::endl;
-        newBudget[0] = uint32_t(logSlots);
-    }
+    // if (levelBudget[0] > logSlots) {
+    //     std::cerr << "\nWarning, the level budget for encoding cannot be this large. The budget was changed to "
+    //               << uint32_t(logSlots) << std::endl;
+    //     newBudget[0] = uint32_t(logSlots);
+    // }
     if (levelBudget[0] < 1) {
         std::cerr << "\nWarning, the level budget for encoding has to be at least 1. The budget was changed to " << 1
                   << std::endl;
         newBudget[0] = 1;
     }
 
-    if (levelBudget[1] > logSlots) {
-        std::cerr << "\nWarning, the level budget for decoding cannot be this large. The budget was changed to "
-                  << uint32_t(logSlots) << std::endl;
-        newBudget[1] = uint32_t(logSlots);
-    }
+    // if (levelBudget[1] > logSlots) {
+    //     std::cerr << "\nWarning, the level budget for decoding cannot be this large. The budget was changed to "
+    //               << uint32_t(logSlots) << std::endl;
+    //     newBudget[1] = uint32_t(logSlots);
+    // }
     if (levelBudget[1] < 1) {
         std::cerr << "\nWarning, the level budget for decoding has to be at least 1. The budget was changed to " << 1
                   << std::endl;
@@ -182,16 +182,16 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         if (isLTBootstrap) {
             // allocate all vectors
             std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
-            std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
+            // std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
             std::vector<std::vector<std::complex<double>>> U0hatT(slots, std::vector<std::complex<double>>(slots));
-            std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
+            // std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
 
             for (size_t i = 0; i < slots; i++) {
                 for (size_t j = 0; j < slots; j++) {
                     U0[i][j]     = ksiPows[(j * rotGroup[i]) % m];
                     U0hatT[j][i] = std::conj(U0[i][j]);
-                    U1[i][j]     = std::complex<double>(0, 1) * U0[i][j];
-                    U1hatT[j][i] = std::conj(U1[i][j]);
+                    // U1[i][j]     = std::complex<double>(0, 1) * U0[i][j];
+                    // U1hatT[j][i] = std::conj(U1[i][j]);
                 }
             }
 
@@ -208,17 +208,17 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
                     U0hatT[i][j].imag(0);
                 }
             }
+            precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, 2 * scaleEnc, lEnc);
+            precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
 
-            bool isSparse = (N != slots) ? true : false;
-            if (!isSparse) {
-                // AKIM: Scaling is x2, as no addition with conjugate
-                precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, 2 * scaleEnc, lEnc);
-                precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
-            }
-            else {
-                precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
-                precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
-            }
+            // bool isSparse = (N != slots) ? true : false;
+            // if (!isSparse) {
+            //     // AKIM: Scaling is x2, as no addition with conjugate
+            // }
+            // else {
+            //     precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
+            //     precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
+            // }
         }
         else {
             precom->m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc);
@@ -327,16 +327,16 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     if (isLTBootstrap) {
         // allocate all vectors
         std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
-        std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
+        // std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
         std::vector<std::vector<std::complex<double>>> U0hatT(slots, std::vector<std::complex<double>>(slots));
-        std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
+        // std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
 
         for (size_t i = 0; i < slots; i++) {
             for (size_t j = 0; j < slots; j++) {
                 U0[i][j]     = ksiPows[(j * rotGroup[i]) % m];
                 U0hatT[j][i] = std::conj(U0[i][j]);
-                U1[i][j]     = std::complex<double>(0, 1) * U0[i][j];
-                U1hatT[j][i] = std::conj(U1[i][j]);
+                // U1[i][j]     = std::complex<double>(0, 1) * U0[i][j];
+                // U1hatT[j][i] = std::conj(U1[i][j]);
             }
         }
         // AKIM : decode map is combined
@@ -352,16 +352,16 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
                 U0hatT[i][j].imag(0);
             }
         }
-        bool isSparse = (N != slots) ? true : false;
-        if (!isSparse) {
-            // AKIM : Scaling is x2 as no addition with conjugate
-            precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, 2 * scaleEnc, lEnc);
-            precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
-        }
-        else {
-            precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
-            precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
-        }
+        precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, 2 * scaleEnc, lEnc);
+        precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
+        // bool isSparse = (N != slots) ? true : false;
+        // if (!isSparse) {
+        //     // AKIM : Scaling is x2 as no addition with conjugate
+        // }
+        // else {
+        //     precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
+        //     precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
+        // }
     }
     else {
         precom->m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc);
@@ -663,7 +663,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Running PartialSum
         //------------------------------------------------------------------------------
 
-        for (uint32_t j = 1; j < N / (2 * slots); j <<= 1) {
+        for (uint32_t j = 1; j < N / slots; j <<= 1) {
             auto temp = cc->EvalRotate(raised, j * slots);
             cc->EvalAddInPlace(raised, temp);
         }
@@ -681,9 +681,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
                                          EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
 
-        auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
-        auto conj       = Conjugate(ctxtEnc, evalKeyMap);
-        cc->EvalAddInPlace(ctxtEnc, conj);
+        // auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
+        // auto conj       = Conjugate(ctxtEnc, evalKeyMap);
+        // cc->EvalAddInPlace(ctxtEnc, conj);
 
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
             while (ctxtEnc->GetNoiseScaleDeg() > 1) {
@@ -754,7 +754,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         ctxtDec = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0Pre, ctxtEnc) :
                                     EvalSlotsToCoeffs(precom->m_U0PreFFT, ctxtEnc);
 
-        cc->EvalAddInPlace(ctxtDec, cc->EvalRotate(ctxtDec, slots));
+        // cc->EvalAddInPlace(ctxtDec, cc->EvalRotate(ctxtDec, slots));
     }
 
 #if NATIVEINT != 128
@@ -2390,16 +2390,16 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
-    std::vector<int64_t> temp(2 * slots);
-
-    for (size_t i = 0; i < slots; ++i) {
+    std::vector<int64_t> temp(N);
+    usint gap = N / slots;
+    for (size_t i = 0, coeffidx = 0; i < slots; ++i, coeffidx += gap) {
         // Scale down by approxFactor in case the value exceeds a 64-bit integer.
         double dre = inverse[i].real() / approxFactor;
         double dim = inverse[i].imag() / approxFactor;
 
         // Check for possible overflow
         if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
+            DiscreteFourierTransform::FFTSpecial(inverse, N * 4);
 
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
@@ -2443,13 +2443,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         }
 
         int64_t re = std::llround(dre);
-        int64_t im = std::llround(dim);
+        // int64_t im = std::llround(dim);
 
-        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
-        temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
+        temp[coeffidx] = (re < 0) ? Max64BitValue() + re : re;
+        // temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
-    // AKIM : Should be refactored together with CKKSPackedPlaintext
-    temp.resize(slots);
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();

@@ -88,7 +88,7 @@ void SimpleBootstrapExample() {
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
-    parameters.SetRingDim(16);
+    parameters.SetRingDim(1 << 6);
 
     /*  A4) Multiplicative depth.
     * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
@@ -114,20 +114,23 @@ void SimpleBootstrapExample() {
 
     usint ringDim = cryptoContext->GetRingDimension();
     // This is the maximum number of slots that can be used for full packing.
+    // usint numSlots = 1;
+    // usint numSlots = 16;
     usint numSlots = ringDim;
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
-    cryptoContext->EvalBootstrapSetup(levelBudget);
+    cryptoContext->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots);
 
     auto keyPair = cryptoContext->KeyGen();
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
+    // std::vector<double> x = {0.25};
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8};
     size_t encodedLength  = x.size();
 
     // We start with a depleted ciphertext that has used up all of its levels.
-    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
+    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, numSlots);
 
     ptxt->SetLength(encodedLength);
     std::cout << "Input: " << ptxt << std::endl;
