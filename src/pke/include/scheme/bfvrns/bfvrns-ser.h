@@ -42,4 +42,6 @@
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersBFVRNS);
 CEREAL_REGISTER_TYPE(lbcrypto::SchemeBFVRNS);
 
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRNS, lbcrypto::CryptoParametersBFVRNS);
+
 #endif

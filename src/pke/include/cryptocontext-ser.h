@@ -37,8 +37,9 @@
 #define LBCRYPTO_CRYPTO_CRYPTOCONTEXTSER_H
 
 #include "cryptocontext.h"
-
-#include "utils/serial.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
+#include "scheme/bgvrns/bgvrns-ser.h"
+#include "scheme/bfvrns/bfvrns-ser.h"
 
 #include <map>
 #include <memory>
