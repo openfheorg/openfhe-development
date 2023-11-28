@@ -116,14 +116,11 @@ TEST(UT128, modular_operations) {
 }
 
 TEST(UT128, NTT_operations) {
-    usint m1              = 16;
-    NativeInteger modulus = FirstPrime<NativeInteger>(100, m1);
-    NativeInteger rootOfUnity(RootOfUnity(m1, modulus));
+    usint m1   = 16;
+    usint bits = 100;
 
-    ILNativeParams params(m1, modulus, rootOfUnity);
-    ILNativeParams params2(m1 / 2, modulus, rootOfUnity);
-    auto x1p = std::make_shared<ILNativeParams>(params);
-    auto x2p = std::make_shared<ILNativeParams>(params2);
+    auto x1p = std::make_shared<ILNativeParams>(m1, bits);
+    auto x2p = std::make_shared<ILNativeParams>(m1 / 2, bits);
 
     NativePoly x1(x1p, Format::COEFFICIENT);
     x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};

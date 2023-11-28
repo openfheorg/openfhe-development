@@ -198,8 +198,10 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
             "Change parameters! Try reducing the number of additions per level, "
             "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
     }
+
+    // TODO: Readjust modulus bit length parameter settings in pke after issue-604 is resolved
     uint32_t totalModSize = firstModSize;
-    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
+    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize + 1, cyclOrder);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
         double extraModLowerBound =
@@ -214,7 +216,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
         totalModSize += extraModSize;
-        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
+        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize + 1, cyclOrder);
         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
             moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
         }
@@ -248,28 +250,28 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         totalModSize += modSize * (numPrimes - 1);
 
         // Compute moduli.
-        moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
+        moduliQ[1] = LastPrime<NativeInteger>(modSize, cyclOrder);
         if (scalTech == FLEXIBLEAUTOEXT) {
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
-                moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
+                moduliQ[1] = PreviousPrime<NativeInteger>(moduliQ[1], cyclOrder);
             }
 
             for (size_t i = 2; i < numPrimes; i++) {
-                moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
+                moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
-                    moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
+                    moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i], cyclOrder);
                 }
             }
         }
         else {
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == plainModulusInt) {
-                moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
+                moduliQ[1] = PreviousPrime<NativeInteger>(moduliQ[1], cyclOrder);
             }
 
             for (size_t i = 2; i < numPrimes; i++) {
-                moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
+                moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == plainModulusInt) {
-                    moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
+                    moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i], cyclOrder);
                 }
             }
         }
@@ -445,16 +447,12 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         modulusOrder = (uint64_t)pow2ptm * plaintextModulus;
 
         // Get the largest prime with size less or equal to firstModSize bits.
-        NativeInteger firstInteger = FirstPrime<NativeInteger>(firstModSize, modulusOrder);
-
-        firstInteger = PreviousPrime<NativeInteger>(firstInteger, modulusOrder);
-
-        moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, modulusOrder);
+        moduliQ[0] = LastPrime<NativeInteger>(firstModSize, modulusOrder);
         rootsQ[0]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
 
         if (numPrimes > 1) {
             NativeInteger q =
-                (firstModSize != dcrtBits) ? FirstPrime<NativeInteger>(dcrtBits, modulusOrder) : moduliQ[0];
+                (firstModSize != dcrtBits) ? LastPrime<NativeInteger>(dcrtBits, modulusOrder) : moduliQ[0];
 
             moduliQ[1] = PreviousPrime<NativeInteger>(q, modulusOrder);
             rootsQ[1]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[1]);
@@ -466,8 +464,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         }
     }
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
-        NativeInteger extraModulus = FirstPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
-        extraModulus               = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
+        NativeInteger extraModulus = LastPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
         std::vector<NativeInteger> extraModuli(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
         std::vector<NativeInteger> extraRoots(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
 

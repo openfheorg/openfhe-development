@@ -54,14 +54,11 @@ template <typename Element>
 void switch_format_simple_single_crt(const std::string& msg) {
     using ParmType = typename Element::Params;
 
-    usint m1 = 16;
+    usint m1   = 16;
+    usint bits = 16;
 
-    typename Element::Integer modulus = FirstPrime<typename Element::Integer>(22, m1);
-    typename Element::Integer rootOfUnity(RootOfUnity(m1, modulus));
-    ParmType params(m1, modulus, rootOfUnity);
-    ParmType params2(m1 / 2, modulus, rootOfUnity);
-    auto x1p = std::make_shared<ParmType>(params);
-    auto x2p = std::make_shared<ParmType>(params2);
+    auto x1p = std::make_shared<ParmType>(m1, bits);
+    auto x2p = std::make_shared<ParmType>(m1 / 2, bits);
 
     Element x1(x1p, Format::COEFFICIENT);
     x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};
@@ -87,28 +84,11 @@ TEST(UTNTT, switch_format_simple_single_crt) {
 
 template <typename Element>
 void switch_format_simple_double_crt(const std::string& msg) {
-    usint init_m = 16;
-
-    float init_stdDev = 4;
-
+    usint init_m    = 16;
     usint init_size = 2;
+    usint init_bits = 28;
 
-    std::vector<NativeInteger> init_moduli(init_size);
-    std::vector<NativeInteger> init_rootsOfUnity(init_size);
-
-    NativeInteger q = FirstPrime<NativeInteger>(28, init_m);
-    typename Element::Integer modulus(1);
-
-    for (size_t i = 0; i < init_size; i++) {
-        init_moduli[i]       = q;
-        init_rootsOfUnity[i] = RootOfUnity(init_m, init_moduli[i]);
-        modulus              = modulus * typename Element::Integer(init_moduli[i].ConvertToInt());
-        q                    = NextPrime(q, init_m);
-    }
-
-    DiscreteGaussianGeneratorImpl<typename Element::Vector> dgg(init_stdDev);
-
-    auto params = std::make_shared<ILDCRTParams<typename Element::Integer>>(init_m, init_moduli, init_rootsOfUnity);
+    auto params = std::make_shared<ILDCRTParams<typename Element::Integer>>(init_m, init_size, init_bits);
 
     Element x1(params, Format::COEFFICIENT);
     x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};

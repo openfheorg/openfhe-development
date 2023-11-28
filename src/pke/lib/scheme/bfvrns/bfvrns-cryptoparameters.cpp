@@ -684,16 +684,15 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         auto tmp = m_msk;
         while (tmp > 0) {
             tmp >>= 1;
-            s++;
+            ++s;
         }
 
         BigInteger Q(GetElementParams()->GetModulus());
         BigInteger maxConvolutionValue(BigInteger(2 * n) * BigInteger(GetPlaintextModulus()) * Q * Q);
         // check msk is large enough
         while (Q * B * BigInteger(m_msk) < maxConvolutionValue) {
-            auto firstInteger{FirstPrime<NativeInteger>(s + 1, 2 * n)};
-            m_msk = NextPrime<NativeInteger>(firstInteger, 2 * n);
-            if (++s >= 60)
+            m_msk = LastPrime<NativeInteger>(++s, 2 * n);
+            if (s >= 60)  // TODO: MAX_MODULUS_SIZE?
                 OPENFHE_THROW(math_error, "msk is larger than 60 bits");
         }
         m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));

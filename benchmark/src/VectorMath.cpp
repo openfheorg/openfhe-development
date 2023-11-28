@@ -53,7 +53,7 @@ static void add_BigVec(const V& a, const V& b) {
 template <typename V>
 static void BM_BigVec_Add(benchmark::State& state) {
     auto p = state.range(0);
-    auto q = GetMaxPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
     V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
@@ -69,7 +69,7 @@ static void addeq_BigVec(V& a, const V& b) {
 template <typename V>
 static void BM_BigVec_Addeq(benchmark::State& state) {
     auto p = state.range(0);
-    auto q = GetMaxPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
     V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
@@ -85,7 +85,7 @@ static void mult_BigVec(const V& a, const V& b) {
 template <typename V>
 static void BM_BigVec_Mult(benchmark::State& state) {
     auto p = state.range(0);
-    auto q = GetMaxPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
     V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
@@ -101,7 +101,7 @@ static void multeq_BigVec(V& a, const V& b) {
 template <typename V>
 static void BM_BigVec_Multeq(benchmark::State& state) {
     auto p = state.range(0);
-    auto q = GetMaxPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
     V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {

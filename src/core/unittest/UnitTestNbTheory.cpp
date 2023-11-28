@@ -54,7 +54,7 @@ void method_greatest_common_divisor(const std::string& msg) {
     {
         // TEST CASE TO FIND GREATEST COMMON DIVISOR OF TWO SMALL NUMBERS
         T a("10403"), b("103");
-        T c = lbcrypto::GreatestCommonDivisor(a, b);
+        T c = GreatestCommonDivisor(a, b);
 
         uint64_t expectedResult = 103;
 
@@ -64,7 +64,7 @@ void method_greatest_common_divisor(const std::string& msg) {
         // TEST CASE TO FIND GREATEST COMMON DIVISOR OF TWO POWERS OF 2 NUMBERS
 
         T a("1048576"), b("4096");
-        T c(lbcrypto::GreatestCommonDivisor(a, b));
+        T c(GreatestCommonDivisor(a, b));
 
         T expectedResult(b);
 
@@ -73,7 +73,7 @@ void method_greatest_common_divisor(const std::string& msg) {
     {
         // test that failed in Issue #409
         T a("883035439563027"), b("3042269397984931");
-        T c(lbcrypto::GreatestCommonDivisor(a, b));
+        T c(GreatestCommonDivisor(a, b));
         T expectedResult("1");
         EXPECT_EQ(expectedResult, c) << msg << " Failure Issue 409";
     }
@@ -88,30 +88,28 @@ void method_miller_rabin_primality(const std::string& msg) {
     {
         // TEST CASE FOR MILLER RABIN PRIMALITY TEST FOR SMALL PRIME
         T prime("24469");
-        EXPECT_TRUE(lbcrypto::MillerRabinPrimalityTest(prime)) << msg << " Failure is_prime_small_prime";
+        EXPECT_TRUE(MillerRabinPrimalityTest(prime)) << msg << " Failure is_prime_small_prime";
     }
     {
         // TEST CASE FOR MILLER RABIN PRIMALITY TEST FOR BIG PRIME
 
         T prime("952229140957");
 
-        EXPECT_TRUE(lbcrypto::MillerRabinPrimalityTest(prime)) << msg << " Failure is_prime_big_prime";
+        EXPECT_TRUE(MillerRabinPrimalityTest(prime)) << msg << " Failure is_prime_big_prime";
     }
     {
         // TEST CASE FOR MILLER RABIN PRIMALITY TEST FOR SMALL COMPOSITE NUMBER
 
         T isNotPrime("10403");
 
-        EXPECT_FALSE(lbcrypto::MillerRabinPrimalityTest(isNotPrime))
-            << msg << " Failure is_not_prime_small_composite_number";
+        EXPECT_FALSE(MillerRabinPrimalityTest(isNotPrime)) << msg << " Failure is_not_prime_small_composite_number";
     }
     {
         // TEST CASE FOR MILLER RABIN PRIMALITY TEST FOR BIG COMPOSITE NUMBER
 
         T isNotPrime("952229140959");
 
-        EXPECT_FALSE(lbcrypto::MillerRabinPrimalityTest(isNotPrime))
-            << msg << " Failure is_not_prime_big_composite_number";
+        EXPECT_FALSE(MillerRabinPrimalityTest(isNotPrime)) << msg << " Failure is_not_prime_big_composite_number";
     }
 }
 
@@ -134,7 +132,7 @@ void method_factorize_returns_factors(const std::string& msg) {
     std::set<T> factors;
     std::vector<T> answers({2, 3, 5, 7, 11, 13, 15, 17});
 
-    lbcrypto::PrimeFactorize(comp, factors);
+    PrimeFactorize(comp, factors);
 
     for (auto it = factors.begin(); it != factors.end(); ++it) {
         EXPECT_TRUE(isMemberOf(*it, answers)) << msg;
@@ -144,20 +142,23 @@ void method_factorize_returns_factors(const std::string& msg) {
 // NOLINTNEXTLINE
 TEST(UTNbTheory, method_factorize_returns_factors){
     RUN_ALL_BACKENDS_INT(method_factorize_returns_factors, "method_factorize_returns_factors")}
-#ifdef WITH_BE2
+
 TEST(UTNbTheory, first_prime_overflow) {
     // Failure case check
     usint m     = 512;
     usint nBits = NATIVEINT;
 
-    EXPECT_THROW(FirstPrime<NativeInteger>(nBits, m), math_error)
+    EXPECT_THROW(FirstPrime<NativeInteger>(nBits, m), config_error)
+        << "did not detect overflow and throw exception for Native";
+    EXPECT_THROW(LastPrime<NativeInteger>(nBits, m), config_error)
         << "did not detect overflow and throw exception for Native";
 
+#ifdef WITH_BE2
     nBits = BigIntegerBitLength + 10;
 
     EXPECT_THROW(FirstPrime<M2Integer>(nBits, m), math_error) << "did not detect overflow and throw exception for BE2";
-}
 #endif
+}
 
 template <typename T>
 void method_prime_modulus(const std::string& msg) {
@@ -167,18 +168,17 @@ void method_prime_modulus(const std::string& msg) {
         m     = 2048;
         nBits = 30;
 
-        T expectedResult("1073750017");
+        T expectedResult("1073707009");
 
-        EXPECT_EQ(expectedResult, lbcrypto::FirstPrime<T>(nBits, m)) << msg << " Failure foundPrimeModulus";
+        EXPECT_EQ(expectedResult, LastPrime<T>(nBits, m)) << msg << " Failure foundPrimeModulus";
     }
     {
         // TEST CASE TO FIND PRIME MODULUS FOR A HIGHER BIT LENGTH
         m     = 4096;
         nBits = 49;
 
-        T primeModulus = lbcrypto::FirstPrime<T>(nBits, m);
-        T expectedResult("562949953548289");
-        EXPECT_EQ(expectedResult, primeModulus) << msg << " Failure returns_higher_bit_length";
+        T expectedResult("562949953392641");
+        EXPECT_EQ(expectedResult, LastPrime<T>(nBits, m)) << msg << " Failure returns_higher_bit_length";
     }
 }
 
@@ -194,8 +194,8 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
         usint m     = 4096;
         usint nBits = 33;
 
-        T primeModulus         = lbcrypto::FirstPrime<T>(nBits, m);
-        T primitiveRootOfUnity = lbcrypto::RootOfUnity<T>(m, primeModulus);
+        T primeModulus         = LastPrime<T>(nBits, m);
+        T primitiveRootOfUnity = RootOfUnity<T>(m, primeModulus);
 
         T M(std::to_string(m)), MbyTwo(M.DividedBy(2));
 
@@ -215,10 +215,10 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
 
         T M(std::to_string(m)), MbyTwo(M.DividedBy(2)), MbyFour(MbyTwo.DividedBy(2));
 
-        T primeModulus = lbcrypto::FirstPrime<T>(nBits, m);
+        T primeModulus = LastPrime<T>(nBits, m);
 
         for (int i = 0; i < ITERATIONS; i++) {
-            T primitiveRootOfUnity = lbcrypto::RootOfUnity<T>(m, primeModulus);
+            T primitiveRootOfUnity = RootOfUnity<T>(m, primeModulus);
             T wpowerm              = primitiveRootOfUnity.ModExp(M, primeModulus);
             EXPECT_EQ(wpowerm, T(1)) << msg << " Failure single input iteration " << i << " equal_m";
             T wpowermbytwo = primitiveRootOfUnity.ModExp(MbyTwo, primeModulus);
@@ -296,11 +296,11 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
             // start = currentDateTime();
             // fout << "m=" << m << ", qBits=" << qBits << ", M=" << M << ", MbyTwo="
             // << MbyTwo << endl;
-            T primeModulus = lbcrypto::FirstPrime<T>(qBits, m);
+            T primeModulus = LastPrime<T>(qBits, m);
             // fout << "Prime modulus for n = " << n << " and qbits = " << qBits << "
             // is " << primeModulus << endl;
 
-            T primitiveRootOfUnity(lbcrypto::RootOfUnity<T>(m, primeModulus));
+            T primitiveRootOfUnity(RootOfUnity<T>(m, primeModulus));
 
             // fout << "The primitiveRootOfUnity is " << primitiveRootOfUnity << endl;
 
@@ -349,7 +349,7 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
         // the first way is to catch the error and expect the result.
         int caught_error = 0;
         try {
-            primitiveRootOfUnity1 = lbcrypto::RootOfUnity<T>(m, modulus1);
+            primitiveRootOfUnity1 = RootOfUnity<T>(m, modulus1);
         }
         catch (...) {
             caught_error = 1;
@@ -358,12 +358,12 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
 
         // the second way is to directly expect the throw.
         EXPECT_ANY_THROW(  // this call should throw
-            primitiveRootOfUnity1 = lbcrypto::RootOfUnity<T>(m, modulus1);)
+            primitiveRootOfUnity1 = RootOfUnity<T>(m, modulus1);)
             << msg << " RootOfUnity did not throw an error and should have";
 
         T primitiveRootOfUnity2;
         EXPECT_NO_THROW(  // this call should NOT throw
-            primitiveRootOfUnity2 = lbcrypto::RootOfUnity<T>(m, modulus2);)
+            primitiveRootOfUnity2 = RootOfUnity<T>(m, modulus2);)
             << msg << " RootOfUnity threw an error and should not have";
 
         OPENFHE_DEBUG("RootOfUnity for " << modulus1 << " is " << primitiveRootOfUnity1);
@@ -378,7 +378,7 @@ TEST(UTNbTheory, method_primitive_root_of_unity_VERY_LONG) {
 template <typename T>
 void test_nextQ(const std::string& msg) {
     usint m    = 2048;
-    usint bits = 22;
+    usint bits = 23;
 
     std::vector<T> moduliBBV = {T("4208641"), T("4263937"), T("4270081"), T("4274177"), T("4294657"),
                                 T("4300801"), T("4304897"), T("4319233"), T("4323329"), T("4360193")};
@@ -386,7 +386,7 @@ void test_nextQ(const std::string& msg) {
     auto q = FirstPrime<T>(bits, m);
     for (usint i = 0; i < 10; i++) {
         q = NextPrime(q, m);
-        EXPECT_EQ(q, moduliBBV.at(i)) << msg;
+        EXPECT_EQ(q, moduliBBV[i]) << msg;
     }
 }
 

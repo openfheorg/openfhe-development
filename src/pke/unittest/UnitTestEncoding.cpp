@@ -118,7 +118,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
     uint32_t init_size   = 3;
     uint32_t dcrtBits    = 24;
-    uint32_t dcrtBitsBig = 58;
+    uint32_t dcrtBitsBig = 57;
 
     uint32_t m = 1811;
 
@@ -133,13 +133,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     std::vector<NativeInteger> init_moduli(init_size);
     std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
-    NativeInteger q      = FirstPrime<NativeInteger>(dcrtBits, mArb);
-    init_moduli[0]       = q;
+    init_moduli[0]       = LastPrime<NativeInteger>(dcrtBits, mArb);
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
-    for (uint32_t i = 1; i < init_size; i++) {
-        q                    = lbcrypto::NextPrime(q, mArb);
-        init_moduli[i]       = q;
+    for (uint32_t i = 1; i < init_size; ++i) {
+        init_moduli[i]       = PreviousPrime(init_moduli[i - 1], mArb);
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
     }
 
@@ -148,13 +146,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     std::vector<NativeInteger> init_moduli_NTT(init_size);
     std::vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
 
-    q                        = FirstPrime<NativeInteger>(dcrtBitsBig, mNTT);
-    init_moduli_NTT[0]       = q;
+    init_moduli_NTT[0]       = LastPrime<NativeInteger>(dcrtBitsBig, mNTT);
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
-    for (uint32_t i = 1; i < init_size; i++) {
-        q                        = lbcrypto::NextPrime(q, mNTT);
-        init_moduli_NTT[i]       = q;
+    for (uint32_t i = 1; i < init_size; ++i) {
+        init_moduli_NTT[i]       = PreviousPrime(init_moduli_NTT[i - 1], mNTT);
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
     }
 
@@ -183,7 +179,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative) {
     uint32_t init_size   = 3;
     uint32_t dcrtBits    = 24;
-    uint32_t dcrtBitsBig = 58;
+    uint32_t dcrtBitsBig = 57;
 
     uint32_t m = 1811;
 
@@ -197,13 +193,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     std::vector<NativeInteger> init_moduli(init_size);
     std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
-    NativeInteger q      = FirstPrime<NativeInteger>(dcrtBits, mArb);
-    init_moduli[0]       = q;
+    init_moduli[0]       = LastPrime<NativeInteger>(dcrtBits, mArb);
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
-    for (uint32_t i = 1; i < init_size; i++) {
-        q                    = lbcrypto::NextPrime(q, mArb);
-        init_moduli[i]       = q;
+    for (uint32_t i = 1; i < init_size; ++i) {
+        init_moduli[i]       = PreviousPrime(init_moduli[i - 1], mArb);
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
     }
 
@@ -212,13 +206,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     std::vector<NativeInteger> init_moduli_NTT(init_size);
     std::vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
 
-    q                        = FirstPrime<NativeInteger>(dcrtBitsBig, mNTT);
-    init_moduli_NTT[0]       = q;
+    init_moduli_NTT[0]       = LastPrime<NativeInteger>(dcrtBitsBig, mNTT);
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
-    for (uint32_t i = 1; i < init_size; i++) {
-        q                        = lbcrypto::NextPrime(q, mNTT);
-        init_moduli_NTT[i]       = q;
+    for (uint32_t i = 1; i < init_size; ++i) {
+        init_moduli_NTT[i]       = PreviousPrime(init_moduli_NTT[i - 1], mNTT);
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
     }
 
