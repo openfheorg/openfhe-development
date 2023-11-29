@@ -61,7 +61,7 @@ public:
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
 
-    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl, BINFHE_PARAMSET slBin,
+    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>&, SecurityLevel sl, BINFHE_PARAMSET slBin,
                                       bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
                                       uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
 
@@ -154,6 +154,12 @@ public:
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override {
         m_ccLWE = ccLWE;
     }
+    Ciphertext<DCRTPoly> GetSwkFC() override {
+        return m_FHEWtoCKKSswk;
+    }
+    void SetSwkFC(Ciphertext<DCRTPoly> FHEWtoCKKSswk) override {
+        m_FHEWtoCKKSswk = FHEWtoCKKSswk;
+    }
     uint32_t GetNumCtxtsToSwitch() {
         return m_numCtxts;
     }
@@ -181,7 +187,7 @@ public:
         ar(cereal::make_nvp("oneHot", m_oneHot));
         ar(cereal::make_nvp("alt", m_alt));
         ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
-        ar(cereal::make_nvp("swlFC", m_FHEWtoCKKSswk));
+        // ar(cereal::make_nvp("swkFC", m_FHEWtoCKKSswk)); // Avoid a circular issue when deserializing
         ar(cereal::make_nvp("ctKS", m_ctxtKS));
     }
 
@@ -201,7 +207,7 @@ public:
         ar(cereal::make_nvp("oneHot", m_oneHot));
         ar(cereal::make_nvp("alt", m_alt));
         ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
-        ar(cereal::make_nvp("swlFC", m_FHEWtoCKKSswk));
+        // ar(cereal::make_nvp("swkFC", m_FHEWtoCKKSswk)); // Avoid a circular issue when deserializing
         ar(cereal::make_nvp("ctKS", m_ctxtKS));
     }
 

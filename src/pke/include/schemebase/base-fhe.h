@@ -275,7 +275,7 @@ public:
    * @return the FHEW secret key
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    virtual LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl,
+    virtual LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<Element>& ccCKKS, SecurityLevel sl,
                                                    BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
                                                    uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot,
                                                    bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
@@ -392,7 +392,17 @@ public:
     virtual void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
         OPENFHE_THROW(not_implemented_error, "SetBinCCForSchemeSwitch is not supported for this scheme");
     }
-    
+
+    /**
+     * Getter and setter for the switching key between FHEW to CKKS
+    */
+    virtual Ciphertext<Element> GetSwkFC() {
+        OPENFHE_THROW(not_implemented_error, "GetSwkFC is not supported for this scheme");
+    }
+    virtual void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
+        OPENFHE_THROW(not_implemented_error, "SetSwkFC is not supported for this scheme");
+    }
+
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

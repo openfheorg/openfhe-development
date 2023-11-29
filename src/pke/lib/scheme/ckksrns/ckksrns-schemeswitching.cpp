@@ -1214,23 +1214,16 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     indexRotationS2C.erase(unique(indexRotationS2C.begin(), indexRotationS2C.end()), indexRotationS2C.end());
     indexRotationS2C.erase(std::remove(indexRotationS2C.begin(), indexRotationS2C.end(), 0), indexRotationS2C.end());
 
-    auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
-
-    const DCRTPoly& s                       = privateKey->GetPrivateElement();
-    usint N                                 = s.GetRingDimension();
-    PrivateKey<DCRTPoly> privateKeyPermuted = std::make_shared<PrivateKeyImpl<DCRTPoly>>(ccCKKS);
-    usint index                             = 2 * N - 1;
-    std::vector<usint> vec(N);
-    PrecomputeAutoMap(N, index, &vec);
-    DCRTPoly sPermuted = s.AutomorphismTransform(index, vec);
-    privateKeyPermuted->SetPrivateElement(sPermuted);
-    privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
-    auto conjKey       = algo->KeySwitchGen(privateKey, privateKeyPermuted);
-    (*evalKeys)[M - 1] = conjKey;
+    auto algo = ccCKKS->GetScheme();
 
     // Compute multiplication key
     algo->EvalMultKeyGen(privateKey);
+
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
+
+    // Compute conjugation key
+    auto conjKey       = ConjugateKeyGen(privateKey);
+    (*evalKeys)[M - 1] = conjKey;
 
     return evalKeys;
 }
@@ -1793,16 +1786,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
 
     // Compute conjugation key
-    const DCRTPoly& s                       = privateKey->GetPrivateElement();
-    usint N                                 = s.GetRingDimension();
-    PrivateKey<DCRTPoly> privateKeyPermuted = std::make_shared<PrivateKeyImpl<DCRTPoly>>(ccCKKS);
-    usint index                             = 2 * N - 1;
-    std::vector<usint> vec(N);
-    PrecomputeAutoMap(N, index, &vec);
-    DCRTPoly sPermuted = s.AutomorphismTransform(index, vec);
-    privateKeyPermuted->SetPrivateElement(sPermuted);
-    privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
-    auto conjKey       = algo->KeySwitchGen(privateKey, privateKeyPermuted);
+    auto conjKey       = ConjugateKeyGen(privateKey);
     (*evalKeys)[M - 1] = conjKey;
 
     // Compute multiplication key

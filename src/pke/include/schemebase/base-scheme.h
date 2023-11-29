@@ -1462,7 +1462,7 @@ public:
         return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
     }
 
-    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl = HEStd_128_classic,
+    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<Element>& cc, SecurityLevel sl = HEStd_128_classic,
                                            BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 29,
                                            bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t numValues = 0,
                                            bool argmin = false, bool oneHot = true, bool alt = false,
@@ -1527,6 +1527,15 @@ public:
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
         VerifySchemeSwitchEnabled(__func__);
         m_SchemeSwitch->SetBinCCForSchemeSwitch(ccLWE);
+    }
+
+    Ciphertext<Element> GetSwkFC() {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->GetSwkFC();
+    }
+    void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
+        VerifySchemeSwitchEnabled(__func__);
+        m_SchemeSwitch->SetSwkFC(FHEWtoCKKSswk);
     }
 
     template <class Archive>

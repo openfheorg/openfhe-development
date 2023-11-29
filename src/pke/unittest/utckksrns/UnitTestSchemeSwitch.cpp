@@ -38,6 +38,8 @@
 #include "UnitTestCryptoContext.h"
 #include "utils/demangle.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
+#include "cryptocontext-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 
 #include <iostream>
 #include <vector>
@@ -55,6 +57,7 @@ enum TEST_CASE_TYPE {
     SCHEME_SWITCH_FUNC,
     SCHEME_SWITCH_ARGMIN,
     SCHEME_SWITCH_ALT_ARGMIN,
+    SCHEME_SWITCH_SERIALIZE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -74,6 +77,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case SCHEME_SWITCH_ALT_ARGMIN:
             typeName = "SCHEME_SWITCH_ALT_ARGMIN";
+            break;
+        case SCHEME_SWITCH_SERIALIZE:
+            typeName = "SCHEME_SWITCH_SERIALIZE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -229,6 +235,18 @@ static std::vector<TEST_CASE_UTCKKSRNS_SCHEMESWITCH> testCases = {
     // { SCHEME_SWITCH_ALT_ARGMIN, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, RDIM/2, false },
     // { SCHEME_SWITCH_ALT_ARGMIN, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, RDIM/2, false },
 #endif
+    // ==========================================
+    // TestType,     Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Dim1, LogQ, NumValues, Slots
+    { SCHEME_SWITCH_SERIALIZE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, true },
+    { SCHEME_SWITCH_SERIALIZE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, true },
+    { SCHEME_SWITCH_SERIALIZE, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, RDIM/2, true },
+    { SCHEME_SWITCH_SERIALIZE, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, RDIM/2, true },
+#if NATIVEINT != 128
+    { SCHEME_SWITCH_SERIALIZE, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, true },
+    { SCHEME_SWITCH_SERIALIZE, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, true },
+    { SCHEME_SWITCH_SERIALIZE, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, false },
+    { SCHEME_SWITCH_SERIALIZE, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, false },
+#endif
 };
 // clang-format on
 //===========================================================================================================
@@ -279,7 +297,7 @@ protected:
     void SetUp() {}
 
     void TearDown() {
-        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        CryptoContextFactory<Element>::ReleaseAllContexts();
     }
 
     void UnitTest_SchemeSwitch_CKKS_FHEW(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
@@ -297,11 +315,11 @@ protected:
             cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW);
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-            ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-            auto paramsQ                                  = elementParams.GetParams();
-            auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
-            auto modulus_LWE                              = 1 << testData.logQ;
-            auto pLWE                                     = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            ILDCRTParams<Element::Integer> elementParams = *(cryptoParams->GetElementParams());
+            auto paramsQ                                 = elementParams.GetParams();
+            auto modulus_CKKS_from                       = paramsQ[0]->GetModulus();
+            auto modulus_LWE                             = 1 << testData.logQ;
+            auto pLWE                                    = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
 
             double scFactor = cryptoParams->GetScalingFactorReal(0);
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -688,6 +706,165 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_SchemeSwitch_Serialize(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                         const std::string& failmsg = std::string()) {
+        try {
+            CryptoContextImpl<Element>::ClearEvalMultKeys();
+            CryptoContextImpl<Element>::ClearEvalSumKeys();
+            CryptoContextImpl<Element>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<Element>::ReleaseAllContexts();
+
+            CryptoContext<Element> ccInit(UnitTestGenerateContext(testData.params));
+
+            ccInit->Enable(SCHEMESWITCH);
+
+            auto privateKeyFHEWInit = ccInit->EvalSchemeSwitchingSetup(
+                HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots, testData.numValues, true,
+                testData.oneHot, false, 27, testData.dim1[0], testData.dim1[1]);
+            auto ccLWEInit = ccInit->GetBinCCForSchemeSwitch();
+
+            auto keyPairInit = ccInit->KeyGen();
+
+            ccInit->EvalSchemeSwitchingKeyGen(keyPairInit, privateKeyFHEWInit);
+            auto swkFHEWtoCKKSInit = ccInit->GetSwkFC();
+
+            // Serialize all necessary objects
+            std::stringstream cc_stream;
+            Serial::Serialize(ccInit, cc_stream, SerType::BINARY);
+
+            std::stringstream publicKey_stream;
+            Serial::Serialize(keyPairInit.publicKey, publicKey_stream, SerType::BINARY);
+
+            std::stringstream secretKey_stream;
+            Serial::Serialize(keyPairInit.secretKey, secretKey_stream, SerType::BINARY);
+
+            std::stringstream automorphismKey_stream;
+            CryptoContextImpl<Element>::SerializeEvalAutomorphismKey(automorphismKey_stream, SerType::BINARY);
+
+            std::stringstream evalMultKey_stream;
+            CryptoContextImpl<Element>::SerializeEvalMultKey(evalMultKey_stream, SerType::BINARY);
+
+            std::stringstream swkFC_stream;
+            Serial::Serialize(swkFHEWtoCKKSInit, swkFC_stream, SerType::BINARY);
+
+            std::stringstream binCC_stream;
+            Serial::Serialize(ccLWEInit, binCC_stream, SerType::BINARY);
+
+            std::stringstream refreshKey_stream;
+            Serial::Serialize(ccLWEInit->GetRefreshKey(), refreshKey_stream, SerType::BINARY);
+
+            std::stringstream ksKey_stream;
+            Serial::Serialize(ccLWEInit->GetSwitchKey(), ksKey_stream, SerType::BINARY);
+
+            // Serializing refreshing and key switching keys (needed for bootstrapping)
+            auto BTKeyMapInit = ccLWEInit->GetBTKeyMap();
+            std::vector<std::stringstream> refreshKeyIndex_stream(BTKeyMapInit->size());
+            std::vector<std::stringstream> ksKeyIndex_stream(BTKeyMapInit->size());
+            size_t idx = 0;
+            for (auto it = BTKeyMapInit->begin(); it != BTKeyMapInit->end(); it++) {
+                auto thekey = it->second;
+                Serial::Serialize(thekey.BSkey, refreshKeyIndex_stream[idx], SerType::BINARY);
+                Serial::Serialize(thekey.KSkey, ksKeyIndex_stream[idx], SerType::BINARY);
+                idx++;
+            }
+
+            //====================================================================================================
+            // Removed the serialized objects from the memory
+            CryptoContextImpl<Element>::ClearEvalMultKeys();
+            CryptoContextImpl<Element>::ClearEvalSumKeys();
+            CryptoContextImpl<Element>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<Element>::ReleaseAllContexts();
+            //====================================================================================================
+            // Deserialize all necessary objects
+            CryptoContext<Element> cc;
+            Serial::Deserialize(cc, cc_stream, SerType::BINARY);
+
+            KeyPair<Element> keyPair;
+            Serial::Deserialize(keyPair.secretKey, secretKey_stream, SerType::BINARY);
+            Serial::Deserialize(keyPair.publicKey, publicKey_stream, SerType::BINARY);
+
+            CryptoContextImpl<Element>::DeserializeEvalAutomorphismKey(automorphismKey_stream, SerType::BINARY);
+            CryptoContextImpl<Element>::DeserializeEvalMultKey(evalMultKey_stream, SerType::BINARY);
+
+            Ciphertext<Element> swkFHEWtoCKKS;
+            Serial::Deserialize(swkFHEWtoCKKS, swkFC_stream, SerType::BINARY);
+            cc->SetSwkFC(swkFHEWtoCKKS);
+
+            std::shared_ptr<lbcrypto::BinFHEContext> ccLWE;
+            Serial::Deserialize(ccLWE, binCC_stream, SerType::BINARY);
+            RingGSWACCKey refreshKey;
+            Serial::Deserialize(refreshKey, refreshKey_stream, SerType::BINARY);
+            LWESwitchingKey ksKey;
+            Serial::Deserialize(ksKey, ksKey_stream, SerType::BINARY);
+
+            std::vector<uint32_t> baseGlist = {1 << 18};
+            for (size_t i = 0; i < baseGlist.size(); i++) {
+                Serial::Deserialize(refreshKey, refreshKeyIndex_stream[i], SerType::BINARY);
+                Serial::Deserialize(ksKey, ksKeyIndex_stream[i], SerType::BINARY);
+
+                ccLWE->BTKeyMapLoadSingleElement(baseGlist[i], {refreshKey, ksKey});
+            }
+
+            ccLWE->BTKeyLoad({refreshKey, ksKey});
+            cc->SetBinCCForSchemeSwitch(ccLWE);
+
+            double scaleSign = 128.0;
+            auto modulus_LWE = 1 << testData.logQ;
+            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+
+            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
+            uint32_t init_level = 0;
+            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                init_level = 1;
+            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+
+            std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
+            auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
+            auto xargmin           = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
+
+            Plaintext p1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, testData.slots);
+            auto c1      = cc->Encrypt(keyPair.publicKey, p1);
+
+            auto result = cc->EvalMinSchemeSwitching(c1, keyPair.publicKey, testData.numValues, testData.slots);
+
+            Plaintext ptxtMin;
+            cc->Decrypt(keyPair.secretKey, result[0], &ptxtMin);
+            ptxtMin->SetLength(1);
+
+            checkEquality(ptxtMin->GetRealPackedValue()[0], xmin, eps1);
+
+            cc->Decrypt(keyPair.secretKey, result[1], &ptxtMin);
+            if (testData.oneHot) {
+                ptxtMin->SetLength(testData.numValues);
+
+                std::vector<std::complex<double>> xargminOH(testData.numValues);
+                xargminOH[xargmin] = 1;
+                checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
+                              failmsg + "Serialization for scheme switching fails.");
+            }
+            else {
+                ptxtMin->SetLength(1);
+                checkEquality(ptxtMin->GetRealPackedValue()[0], static_cast<double>(xargmin), eps1);
+            }
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 
 //===========================================================================================================
@@ -710,6 +887,9 @@ TEST_P(UTCKKSRNS_SCHEMESWITCH, CKKSRNS) {
             break;
         case SCHEME_SWITCH_ALT_ARGMIN:
             UnitTest_SchemeSwitch_AltArgmin(test, test.buildTestName());
+            break;
+        case SCHEME_SWITCH_SERIALIZE:
+            UnitTest_SchemeSwitch_Serialize(test, test.buildTestName());
             break;
         default:
             break;
