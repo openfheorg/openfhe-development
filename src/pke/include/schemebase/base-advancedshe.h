@@ -210,19 +210,21 @@ public:
    * @param privateKey private key.
    * @return returns the evaluation keys
    */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
-        const PrivateKey<Element> privateKey) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(const PrivateKey<Element> privateKey,
+                                                                             const PublicKey<Element> publicKey) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumRows; works
    * only for packed encoding
    *
    * @param privateKey private key.
+   * @param publicKey public key.
    * @param rowSize size of rows in the matrix
    * @param subringDim subring dimension (set to cyclotomic order if set to 0)
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
+                                                                                 const PublicKey<Element> publicKey,
                                                                                  usint rowSize, usint subringDim) const;
 
     /**
@@ -230,10 +232,11 @@ public:
    * only for packed encoding
    *
    * @param privateKey private key.
+   * @param publicKey public key.
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey) const;
+        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
 
     /**
    * Sums all elements in log (batch size) time - works only with packed

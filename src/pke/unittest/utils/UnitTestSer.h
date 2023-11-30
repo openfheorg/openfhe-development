@@ -53,7 +53,7 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
     try {
         KeyPair<Element> kp = cc->KeyGen();
         cc->EvalMultKeyGen(kp.secretKey);
-        cc->EvalSumKeyGen(kp.secretKey);
+        cc->EvalSumKeyGen(kp.secretKey, kp.publicKey);
 
         std::stringstream s;
         Serial::Serialize(cc, s, sertype);
