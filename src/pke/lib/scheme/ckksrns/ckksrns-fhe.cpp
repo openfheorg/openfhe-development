@@ -230,7 +230,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
         slots = M / 4;
     // computing all indices for baby-step giant-step procedure
     auto algo     = cc->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, FindBootstrapRotationIndices(slots, M));
+    auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, FindBootstrapRotationIndices(slots, M));
 
     auto conjKey       = ConjugateKeyGen(privateKey);
     (*evalKeys)[M - 1] = conjKey;

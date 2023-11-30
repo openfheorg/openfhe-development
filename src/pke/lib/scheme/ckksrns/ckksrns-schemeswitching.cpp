@@ -1193,7 +1193,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     indexRotationS2C.erase(unique(indexRotationS2C.begin(), indexRotationS2C.end()), indexRotationS2C.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
 
     const DCRTPoly& s                       = privateKey->GetPrivateElement();
     usint N                                 = s.GetRingDimension();
@@ -1386,7 +1386,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
                               indexRotationHomDec.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationHomDec);
+    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationHomDec);
 
     // Compute multiplication key
     ccCKKS->EvalMultKeyGen(privateKey);
@@ -1591,13 +1591,12 @@ std::pair<BinFHEContext, LWEPrivateKey> SWITCHCKKSRNS::EvalSchemeSwitchingSetup(
     bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
     auto FHEWcc = EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
 
-    // TODO (dsuponit): the code commented below is executed in EvalCKKStoFHEWSetup() using the same cryptocontext ccCKKS
-    // const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
 
-    // // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
-    // ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    // auto paramsQ                                  = elementParams.GetParams();
-    // m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
+    // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    auto paramsQ                                  = elementParams.GetParams();
+    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
 
     return FHEWcc;
 }
@@ -1719,7 +1718,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     indexRotationS2C.erase(unique(indexRotationS2C.begin(), indexRotationS2C.end()), indexRotationS2C.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
 
     // Compute conjugation key
     const DCRTPoly& s                       = privateKey->GetPrivateElement();

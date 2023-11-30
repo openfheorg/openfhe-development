@@ -90,12 +90,13 @@ std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const Private
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
+    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
+    const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
-    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList);
+    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -131,12 +132,12 @@ Ciphertext<Element> SchemeBase<Element>::ModReduce(ConstCiphertext<Element> ciph
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey) const {
+    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
-    auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey, publicKey);
     for (auto& key : *evalKeyMap) {
         key.second->SetKeyTag(privateKey->GetKeyTag());
     }
@@ -145,12 +146,12 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumK
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, usint rowSize, usint subringDim) const {
+    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
-    auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, rowSize, subringDim);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
     for (auto& key : *evalKeyMap) {
         key.second->SetKeyTag(privateKey->GetKeyTag());
     }
@@ -159,12 +160,12 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumR
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey) const {
+    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
-    auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, publicKey);
     for (auto& key : *evalKeyMap) {
         key.second->SetKeyTag(privateKey->GetKeyTag());
     }
@@ -422,6 +423,22 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAuto
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
+    for (auto& key : *evalKeyMap)
+        key.second->SetKeyTag(privateKey->GetKeyTag());
+    return evalKeyMap;
+}
+
+template <typename Element>
+std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGen(
+    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
+    const std::vector<usint>& indexList) const {
+    VerifyLeveledSHEEnabled(__func__);
+    if (!publicKey)
+        OPENFHE_THROW(config_error, "Input public key is nullptr");
+    if (!privateKey)
+        OPENFHE_THROW(config_error, "Input private key is nullptr");
+
+    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(publicKey, privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
