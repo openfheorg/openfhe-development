@@ -268,7 +268,7 @@ template <typename IntType>
 void PrimeFactorize(IntType n, std::set<IntType>& primeFactors);
 
 /**
- * Finds the first prime q that satisfies q = 1 mod m with at least nBits bits.
+ * Finds the first prime q that satisfies q = 1 mod m with at least nBits + 1 bits.
  *
  * @param nBits the number of bits needed to be in q.
  * @param m the the ring parameter.

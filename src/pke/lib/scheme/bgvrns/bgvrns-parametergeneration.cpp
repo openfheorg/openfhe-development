@@ -199,9 +199,8 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
             "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
     }
 
-    // TODO: Readjust modulus bit length parameter settings in pke after issue-604 is resolved
     uint32_t totalModSize = firstModSize;
-    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize + 1, cyclOrder);
+    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize - 1, cyclOrder);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
         double extraModLowerBound =
@@ -215,11 +214,13 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
                 "Change parameters! Try reducing the number of additions per level, "
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
-        totalModSize += extraModSize;
-        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize + 1, cyclOrder);
+
+        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
-            moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
+            moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
         }
+
+        totalModSize += moduliQ[numPrimes].GetMSB();
     }
 
     if (numPrimes > 1) {

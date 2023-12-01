@@ -119,8 +119,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     std::vector<NativeInteger> moduliQ(vecSize);
     std::vector<NativeInteger> rootsQ(vecSize);
 
-    // TODO: Readjust modulus bit length parameter settings in pke after issue-604 is resolved
-    NativeInteger q        = FirstPrime<NativeInteger>(dcrtBits + 1, cyclOrder);
+    NativeInteger q        = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
     moduliQ[numPrimes - 1] = q;
     rootsQ[numPrimes - 1]  = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);
 

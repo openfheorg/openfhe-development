@@ -378,7 +378,7 @@ TEST(UTNbTheory, method_primitive_root_of_unity_VERY_LONG) {
 template <typename T>
 void test_nextQ(const std::string& msg) {
     usint m    = 2048;
-    usint bits = 23;
+    usint bits = 22;
 
     std::vector<T> moduliBBV = {T("4208641"), T("4263937"), T("4270081"), T("4274177"), T("4294657"),
                                 T("4300801"), T("4304897"), T("4319233"), T("4323329"), T("4360193")};

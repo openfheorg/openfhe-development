@@ -334,16 +334,15 @@ IntType FirstPrime(uint32_t nBits, uint32_t m) {
     }
 
     IntType M(m);
-    IntType q(IntType(1) << (nBits - 1));
-    IntType qNew(q + IntType(1) + M - q.Mod(M));
+    IntType q(IntType(1) << nBits);
+    IntType r(q.Mod(M));
+    IntType qNew(q + IntType(1));
+    if (r > IntType(0))
+        qNew += (M - r);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew += M) < q)
             OPENFHE_THROW(math_error, std::string(__func__) + ": overflow growing candidate");
     }
-
-    //    if (qNew.GetMSB() != nBits)
-    //        OPENFHE_THROW(config_error, std::string(__func__) + ": Requested " + std::to_string(nBits) +
-    //                      " bits, but returned " + std::to_string(qNew.GetMSB())  + ". Please adjust parameters.");
 
     return qNew;
 }
