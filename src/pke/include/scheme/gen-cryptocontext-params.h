@@ -173,6 +173,7 @@ class Params {
     void SetToDefaults(SCHEME scheme);
 
     void ValidateRingDim(usint ringDim);
+    void ValidateMultiplicativeDepth(usint multiplicativeDepth);
 
 public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
@@ -387,6 +388,9 @@ public:
         numLargeDigits = numLargeDigits0;
     }
     void SetMultiplicativeDepth(usint multiplicativeDepth0) {
+        // TODO (dsuponit): move the check below ValidateMultiplicativeDepth() to a separate validating function. see
+        // https://github.com/openfheorg/openfhe-development/issues/400
+        ValidateMultiplicativeDepth(multiplicativeDepth0);
         multiplicativeDepth = multiplicativeDepth0;
     }
     void SetScalingModSize(usint scalingModSize0) {
