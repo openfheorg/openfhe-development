@@ -48,6 +48,7 @@ void BFVrnsEvalRotate2n();
 void CKKSEvalRotate2n();
 void BFVrnsEvalMerge2n();
 
+bool shouldTrack;
 int main() {
     std::cout << "\nThis code shows how the EvalRotate and EvalMerge operations work "
                  "for different cyclotomic rings (both power-of-two and cyclic).\n"

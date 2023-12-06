@@ -50,6 +50,7 @@ using namespace lbcrypto;
 
 void IterativeBootstrapExample();
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     // We run the example with 8 slots and ring dimension 4096.
     IterativeBootstrapExample();

@@ -41,6 +41,7 @@ void EvalLogisticExample();
 
 void EvalFunctionExample();
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     EvalLogisticExample();
     EvalFunctionExample();

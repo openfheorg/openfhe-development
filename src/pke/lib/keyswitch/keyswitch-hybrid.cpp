@@ -42,7 +42,9 @@
 #include "key/evalkeyrelin.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "ciphertext.h"
+#include "utils/instrumentation_utils.h"
 
+extern bool shouldTrack;
 namespace lbcrypto {
 
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
@@ -323,6 +325,15 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(const DCRTPoly& a,
                                                                       const EvalKey<DCRTPoly> evalKey) const {
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            static int HKSCount = 0;
+            auto myoriginalCount     = HKSCount;
+            HKSCount++;
+            auto k = a.GetNumOfElements();
+            logInstrumentationResults(myoriginalCount, HKSCount, "HKS-CALL - num towers("+std::to_string(k)+"): ");
+        }
+    #endif                                                                        
     return EvalFastKeySwitchCore(EvalKeySwitchPrecomputeCore(a, evalKey->GetCryptoParameters()), evalKey,
                                  a.GetParams());
 }
@@ -440,6 +451,15 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
+
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            static int EvalFastKeySwitchCoreExt = 0;
+            auto originalCount     = EvalFastKeySwitchCoreExt;
+            EvalFastKeySwitchCoreExt++;
+            logInstrumentationResults(originalCount, EvalFastKeySwitchCoreExt, "EvalFastKeySwitchCoreExt - dot product with key");
+        }
+    #endif
     const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
     const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
     const std::vector<DCRTPoly>& av = evalKey->GetAVector();

@@ -40,7 +40,7 @@ using namespace lbcrypto;
 void RunBGVrnsAdditive();
 void RunBFVrns();
 void RunCKKS();
-
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     std::cout << "\n=================RUNNING FOR BGVrns - Additive "
                  "====================="

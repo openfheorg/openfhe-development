@@ -45,6 +45,7 @@
 
 using namespace lbcrypto;
 
+bool shouldTrack;
 /*
  * A utility class defining a party that is involved in the collective bootstrapping protocol
  */

@@ -47,6 +47,7 @@ void HybridKeySwitchingDemo2();
 void FastRotationsDemo1();
 void FastRotationsDemo2();
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     /*
    * Our 128-bit implementation of CKKS includes two variants called

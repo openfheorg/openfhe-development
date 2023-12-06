@@ -50,6 +50,7 @@ void ArgminViaSchemeSwitchingUnit();
 void ArgminViaSchemeSwitchingAltUnit();
 std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 
+bool shouldTrack;
 int main() {
     SwitchCKKSToFHEW();
     SwitchFHEWtoCKKS();

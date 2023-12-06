@@ -40,6 +40,7 @@
 
 using namespace lbcrypto;
 
+bool shouldTrack;
 int main() {
     // Step 1: Setup CryptoContext
 
@@ -255,27 +256,38 @@ int main() {
     auto c2 = cc->Encrypt(keys.publicKey, ptxt2);
 
     // Step 4: Evaluation
-
+    shouldTrack = true;
     // Homomorphic addition
+    std::cout << ">>>>>>> calling EvalAdd\n";
     auto cAdd = cc->EvalAdd(c1, c2);
     
     // Homomorphic subtraction
+    std::cout << ">>>>>>> calling EvalSub\n";
     auto cSub = cc->EvalSub(c1, c2);
 
     // Homomorphic scalar multiplication
+    std::cout << ">>>>>>> calling EvalMult by 4\n";
     auto cScalar = cc->EvalMult(c1, 4.0);
+    std::cout << ">>>>>>> calling Rescale\n";
     cScalar = cc->Rescale(cScalar);
 
+    std::cout << ">>>>>>> calling EvalMult by ptxt\n";
     auto cPtxtMulCtxt = cc->EvalMult(c2, ptxt3);
+    std::cout << ">>>>>>> calling Rescale\n";
     cPtxtMulCtxt = cc->Rescale(cPtxtMulCtxt);
 
     // Homomorphic multiplication
+    std::cout << ">>>>>>> calling EvalMult ctxt-ctxt\n";
     auto cMul = cc->EvalMult(c1, c2);
+    std::cout << ">>>>>>> calling Rescale\n";
     cMul = cc->Rescale(cMul);
 
     // Homomorphic rotations
+    std::cout << ">>>>>>> calling EvalRotate by 1\n";
     auto cRot1 = cc->EvalRotate(c1, 1);
+    std::cout << ">>>>>>> calling EvalRotate by -2\n";
     auto cRot2 = cc->EvalRotate(c1, -2);
+    shouldTrack = false;
 
     // Step 5: Decryption and output
     Plaintext result;

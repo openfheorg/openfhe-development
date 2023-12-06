@@ -43,6 +43,7 @@ using namespace lbcrypto;
 
 void SimpleBootstrapExample();
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     SimpleBootstrapExample();
 }
@@ -102,7 +103,9 @@ void SimpleBootstrapExample() {
 
     uint32_t levelsAvailableAfterBootstrap = 10;
     usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
-    parameters.SetMultiplicativeDepth(depth);
+    // parameters.SetMultiplicativeDepth(depth);
+    std::cout << "depth: "<< depth << "\n";
+    parameters.SetMultiplicativeDepth(25);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
@@ -141,7 +144,10 @@ void SimpleBootstrapExample() {
 
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
+    shouldTrack = true;
+    std::cout << ">>>>>>> calling EvalBootstrap\n";
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
+    shouldTrack = false;
 
     std::cout << "Number of levels remaining after bootstrapping: " << depth - ciphertextAfter->GetLevel() << std::endl
               << std::endl;

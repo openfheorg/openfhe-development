@@ -40,7 +40,7 @@ using namespace lbcrypto;
 void RunBFVrns();
 void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm,
                   double& noise, double& logQ, EncryptionTechnique encMethod);
-
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     std::cout << "\n=================RUNNING FOR BFVrns=====================" << std::endl;
 

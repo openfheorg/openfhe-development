@@ -37,6 +37,7 @@
 
 using namespace lbcrypto;
 
+bool shouldTrack;
 int main() {
     // Sample Program: Step 1 - Set CryptoContext
     CCParams<CryptoContextBGVRNS> parameters;

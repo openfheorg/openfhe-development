@@ -47,6 +47,7 @@ void HybridKeySwitchingDemo2();
 void FastRotationsDemo1();
 void FastRotationsDemo2();
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     /*
    * Our implementation of CKKS includes four rescaling methods called

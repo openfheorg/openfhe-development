@@ -49,6 +49,7 @@
 
 using namespace lbcrypto;
 
+bool shouldTrack;
 /////////////////////////////////////////////////////////////////
 // NOTE:
 // If running locally, you may want to replace the "hardcoded" DATAFOLDER with

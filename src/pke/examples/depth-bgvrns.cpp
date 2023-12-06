@@ -45,6 +45,7 @@
 
 using namespace lbcrypto;
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     ////////////////////////////////////////////////////////////
     // Set-up of parameters

@@ -53,6 +53,7 @@
 #include <memory>
 #include <vector>
 
+extern bool shouldTrack;
 namespace lbcrypto {
 
 //------------------------------------------------------------------------------
@@ -1618,6 +1619,11 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlaintext>& A,
                                                      ConstCiphertext<DCRTPoly> ct) const {
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            std::cout << "FHECKKSRNS::EvalLinearTransform begins\n";
+        }
+    #endif
     uint32_t slots = A.size();
 
     auto pair = m_bootPrecomMap.find(slots);
@@ -1634,6 +1640,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
     uint32_t bStep = (precom->m_dim1 == 0) ? ceil(sqrt(slots)) : precom->m_dim1;
     uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
 
+    #ifdef ENABLE_INSTRUMENTATION
+    if (shouldTrack){
+            std::cout << "FHECKKSRNS::EvalLinearTransform BS-GS\n";
+            std::cout << "GS: " << gStep << std::endl;
+            std::cout << "BS: " << bStep << std::endl;
+        }
+    #endif
+
     uint32_t M = cc->GetCyclotomicOrder();
     uint32_t N = cc->GetRingDimension();
 
@@ -1646,6 +1660,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
     // hoisted automorphisms
 #pragma omp parallel for
     for (uint32_t j = 1; j < bStep; j++) {
+        #ifdef ENABLE_INSTRUMENTATION
+            if (shouldTrack){
+                    std::cout << "FHECKKSRNS::EvalLinearTransform - Inside for loop - EvalFastRotation\n";
+                }
+        #endif
         fastRotation[j - 1] = cc->EvalFastRotationExt(ct, j, digits, true);
     }
 
@@ -1685,12 +1704,22 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
     auto elements = result->GetElements();
     elements[0] += first;
     result->SetElements(elements);
-
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            std::cout << "FHECKKSRNS::EvalLinearTransform ends\n";
+        }
+    #endif
     return result;
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector<ConstPlaintext>>& A,
                                                    ConstCiphertext<DCRTPoly> ctxt) const {
+
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            std::cout << "FHECKKSRNS::EvalCoeffsToSlots begins\n";
+        }
+    #endif
     uint32_t slots = ctxt->GetSlots();
 
     auto pair = m_bootPrecomMap.find(slots);
@@ -1715,6 +1744,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
     int32_t numRotationsRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
     int32_t bRem            = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP_REM];
     int32_t gRem            = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
+
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            std::cout << "FHECKKSRNS::EvalCoeffsToSlots\n";
+            std::cout << "GS: " << g << std::endl;
+            std::cout << "BS: " << b << std::endl;
+        }
+    #endif
 
     int32_t stop    = -1;
     int32_t flagRem = 0;
@@ -1780,6 +1817,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
 #pragma omp parallel for
         for (int32_t j = 0; j < g; j++) {
             if (rot_in[s][j] != 0) {
+                #ifdef ENABLE_INSTRUMENTATION
+                    if (shouldTrack){
+                            std::cout << "FHECKKSRNS::EvalCoeffsToSlots - Inside for loop - EvalFastRotation\n";
+                        }
+                #endif
                 fastRotation[j] = cc->EvalFastRotationExt(result, rot_in[s][j], digits, true);
             }
             else {
@@ -1842,6 +1884,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
 #pragma omp parallel for
         for (int32_t j = 0; j < gRem; j++) {
             if (rot_in[stop][j] != 0) {
+                #ifdef ENABLE_INSTRUMENTATION
+                if (shouldTrack){
+                        std::cout << "FHECKKSRNS::EvalCoeffsToSlots - Inside for loop - EvalFastRotation\n";
+                    }
+                #endif
                 fastRotation[j] = cc->EvalFastRotationExt(result, rot_in[stop][j], digits, true);
             }
             else {
@@ -1896,11 +1943,22 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         elements[0] += first;
     }
 
+    #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            std::cout << "FHECKKSRNS::EvalCoeffsToSlots ends\n";
+        }
+    #endif
     return result;
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector<ConstPlaintext>>& A,
                                                    ConstCiphertext<DCRTPoly> ctxt) const {
+
+    #ifdef ENABLE_INSTRUMENTATION
+    if (shouldTrack){
+        std::cout << "FHECKKSRNS::EvalSlotsToCoeffs begins\n";
+    }
+    #endif                                                    
     uint32_t slots = ctxt->GetSlots();
 
     auto pair = m_bootPrecomMap.find(slots);
@@ -1927,6 +1985,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
     int32_t numRotationsRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
     int32_t bRem            = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP_REM];
     int32_t gRem            = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
+
+    #ifdef ENABLE_INSTRUMENTATION
+    if (shouldTrack){
+        std::cout << "FHECKKSRNS::EvalSlotsToCoeffs\n";
+        std::cout << "GS: " << g << std::endl;
+        std::cout << "BS: " << b << std::endl;
+    }
+    #endif
 
     auto algo = cc->GetScheme();
 
@@ -1992,6 +2058,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
 #pragma omp parallel for
         for (int32_t j = 0; j < g; j++) {
             if (rot_in[s][j] != 0) {
+                #ifdef ENABLE_INSTRUMENTATION
+                if (shouldTrack){
+                        std::cout << "FHECKKSRNS::EvalSlotsToCoeffs - Inside for loop - EvalFastRotation\n";
+                    }
+                #endif
                 fastRotation[j] = cc->EvalFastRotationExt(result, rot_in[s][j], digits, true);
             }
             else {
@@ -2056,6 +2127,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
 #pragma omp parallel for
         for (int32_t j = 0; j < gRem; j++) {
             if (rot_in[s][j] != 0) {
+                #ifdef ENABLE_INSTRUMENTATION
+                if (shouldTrack){
+                        std::cout << "FHECKKSRNS::EvalSlotsToCoeffs - Inside for loop - EvalFastRotation\n";
+                    }
+                #endif
                 fastRotation[j] = cc->EvalFastRotationExt(result, rot_in[s][j], digits, true);
             }
             else {

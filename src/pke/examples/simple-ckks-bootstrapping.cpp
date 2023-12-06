@@ -43,6 +43,7 @@ using namespace lbcrypto;
 
 void SimpleBootstrapExample();
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     SimpleBootstrapExample();
 }

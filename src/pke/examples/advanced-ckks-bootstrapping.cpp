@@ -43,6 +43,7 @@ using namespace lbcrypto;
 
 void BootstrapExample(uint32_t numSlots);
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     // We run the example with 8 slots and ring dimension 4096 to illustrate how to run bootstrapping with a sparse plaintext.
     // Using a sparse plaintext and specifying the smaller number of slots gives a performance improvement (typically up to 3x).

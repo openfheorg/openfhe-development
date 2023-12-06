@@ -44,6 +44,7 @@ the number of participating parties.
 
 using namespace std;
 using namespace lbcrypto;
+bool shouldTrack;
 
 static void checkApproximateEquality(const std::vector<std::complex<double>>& a,
                                      const std::vector<std::complex<double>>& b, int vectorSize, double epsilon) {

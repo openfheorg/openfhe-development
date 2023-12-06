@@ -39,6 +39,7 @@
 
 using namespace lbcrypto;
 
+bool shouldTrack;
 int main() {
     // Step 1: Setup CryptoContext
 

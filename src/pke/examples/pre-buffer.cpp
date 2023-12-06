@@ -47,6 +47,7 @@ using vecChar = std::vector<char>;     // vector of characters
 
 bool run_demo_pre(void);
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     ////////////////////////////////////////////////////////////
     // Set-up of parameters

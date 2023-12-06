@@ -38,6 +38,7 @@
 #include <vector>
 
 using namespace lbcrypto;
+bool shouldTrack;
 
 template <class T>
 T plainInnerProduct(std::vector<T> vec) {

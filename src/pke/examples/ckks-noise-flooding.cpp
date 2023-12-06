@@ -76,6 +76,7 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& cryptoP
  */
 Ciphertext<DCRTPoly> EncryptedComputation(CryptoContext<DCRTPoly>& cryptoContext, PublicKey<DCRTPoly> publicKey);
 
+bool shouldTrack;
 int main(int argc, char* argv[]) {
     CKKSNoiseFloodingDemo();
     return 0;

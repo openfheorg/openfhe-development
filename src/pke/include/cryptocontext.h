@@ -52,6 +52,7 @@
 #include "utils/caller_info.h"
 #include "utils/serial.h"
 #include "utils/type_name.h"
+#include "utils/instrumentation_utils.h"
 
 #include "binfhecontext.h"
 
@@ -63,6 +64,8 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+
+extern bool shouldTrack;
 
 namespace lbcrypto {
 
@@ -2117,6 +2120,20 @@ public:
    * decomposition)
    */
     std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
+                // Instrumented
+#ifdef ENABLE_INSTRUMENTATION
+    if (shouldTrack){
+        static int EvalFastRotationPrecomputeCount = 0;
+        auto originalCount     = EvalFastRotationPrecomputeCount;
+        EvalFastRotationPrecomputeCount++;
+        // Ciphertext<Element> nonContCtxtCopy = ciphertext->Clone();
+        const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+        // auto k = std::dynamic_pointer_cast<Ciphertext<Element>>(ciphertext)->GetElements()[0]->GetNumOfElements();
+        size_t k = cv[0].GetNumOfElements();
+        std::string label = "EvalFastRotationPrecomputeCount - num towers(" + std::to_string(k) + "): ";
+        logInstrumentationResults(originalCount, EvalFastRotationPrecomputeCount, label);
+    }
+#endif
         return GetScheme()->EvalFastRotationPrecompute(ciphertext);
     }
 
@@ -2174,6 +2191,16 @@ public:
    */
     Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
                                             const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
+        
+        // Instrumented
+        #ifdef ENABLE_INSTRUMENTATION
+        if (shouldTrack){
+            static int EvalFastRotationExt = 0;
+            auto originalCount     = EvalFastRotationExt;
+            EvalFastRotationExt++;
+            logInstrumentationResults(originalCount, EvalFastRotationExt, "EvalFastRotationExt");
+        }
+        #endif
         auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
 
         return GetScheme()->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeyMap);
@@ -2554,6 +2581,15 @@ public:
    */
     Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
                                             const std::vector<double>& coefficients, double a, double b) const {
+        
+        #ifdef ENABLE_INSTRUMENTATION
+            if (shouldTrack){
+                static int EvalChebyshevSeriesCount = 0;
+                auto originalCount     = EvalChebyshevSeriesCount;
+                EvalChebyshevSeriesCount++;
+                logInstrumentationResults(originalCount, EvalChebyshevSeriesCount, "EvalChebyshevSeriesCount");
+            }
+        #endif
         CheckCiphertext(ciphertext);
 
         return GetScheme()->EvalChebyshevSeries(ciphertext, coefficients, a, b);
@@ -3271,6 +3307,14 @@ public:
    */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
+        #ifdef ENABLE_INSTRUMENTATION
+            if (shouldTrack){
+                static int EvalBootstrapCount = 0;
+                auto originalCount     = EvalBootstrapCount;
+                EvalBootstrapCount++;
+                logInstrumentationResults(originalCount, EvalBootstrapCount, "EvalBootstrapCount");
+            }
+        #endif                                
         return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
     }
 

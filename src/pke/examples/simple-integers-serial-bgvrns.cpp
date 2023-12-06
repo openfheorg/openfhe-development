@@ -46,6 +46,7 @@ using namespace lbcrypto;
 
 const std::string DATAFOLDER = "demoData";
 
+bool shouldTrack;
 int main() {
     std::cout << "This program requres the subdirectory `" << DATAFOLDER << "' to exist, otherwise you will get "
               << "an error writing serializations." << std::endl;
