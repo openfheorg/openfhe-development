@@ -1093,7 +1093,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 // parallelizing the loop (below) with OMP causes a segfault on MinGW
 // see https://github.com/openfheorg/openfhe-development/issues/176
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
-    #pragma omp parallel for
+    // #pragma omp parallel for
 #endif
     for (int j = 0; j < gStep; j++) {
         int offset = -bStep * j;
@@ -1200,7 +1200,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
             newA[i] = vecA;
         }
 
-#pragma omp parallel for
+// #pragma omp parallel for
         for (int j = 0; j < gStep; j++) {
             int offset = -bStep * j;
             for (int i = 0; i < bStep; i++) {
@@ -1321,7 +1321,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
         for (int32_t s = levelBudget - 1; s > stop; s--) {
             for (int32_t i = 0; i < b; i++) {
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
-    #pragma omp parallel for
+    // #pragma omp parallel for
 #endif
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
@@ -1345,7 +1345,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
         if (flagRem) {
             for (int32_t i = 0; i < bRem; i++) {
-#pragma omp parallel for
+// #pragma omp parallel for
                 for (int32_t j = 0; j < gRem; j++) {
                     if (gRem * i + j != int32_t(numRotationsRem)) {
                         uint32_t rot = ReduceRotation(-gRem * i, slots);
@@ -1372,7 +1372,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
         for (int32_t s = levelBudget - 1; s > stop; s--) {
             for (int32_t i = 0; i < b; i++) {
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
-    #pragma omp parallel for
+    // #pragma omp parallel for
 #endif
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
@@ -1399,7 +1399,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
         if (flagRem) {
             for (int32_t i = 0; i < bRem; i++) {
-#pragma omp parallel for
+// #pragma omp parallel for
                 for (int32_t j = 0; j < gRem; j++) {
                     if (gRem * i + j != int32_t(numRotationsRem)) {
                         uint32_t rot = ReduceRotation(-gRem * i, M / 4);
@@ -1516,7 +1516,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 
         for (int32_t s = 0; s < levelBudget - flagRem; s++) {
             for (int32_t i = 0; i < b; i++) {
-#pragma omp parallel for
+// #pragma omp parallel for
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
                         uint32_t rot = ReduceRotation(-g * i * (1 << (s * layersCollapse)), slots);
@@ -1538,7 +1538,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
         if (flagRem) {
             int32_t s = levelBudget - flagRem;
             for (int32_t i = 0; i < bRem; i++) {
-#pragma omp parallel for
+// #pragma omp parallel for
                 for (int32_t j = 0; j < gRem; j++) {
                     if (gRem * i + j != int32_t(numRotationsRem)) {
                         uint32_t rot = ReduceRotation(-gRem * i * (1 << (s * layersCollapse)), slots);
@@ -1564,7 +1564,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 
         for (int32_t s = 0; s < levelBudget - flagRem; s++) {
             for (int32_t i = 0; i < b; i++) {
-#pragma omp parallel for
+// #pragma omp parallel for
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
                         uint32_t rot = ReduceRotation(-g * i * (1 << (s * layersCollapse)), M / 4);
@@ -1590,7 +1590,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
         if (flagRem) {
             int32_t s = levelBudget - flagRem;
             for (int32_t i = 0; i < bRem; i++) {
-#pragma omp parallel for
+// #pragma omp parallel for
                 for (int32_t j = 0; j < gRem; j++) {
                     if (gRem * i + j != int32_t(numRotationsRem)) {
                         uint32_t rot = ReduceRotation(-gRem * i * (1 << (s * layersCollapse)), M / 4);
@@ -1658,7 +1658,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
     std::vector<Ciphertext<DCRTPoly>> fastRotation(bStep - 1);
 
     // hoisted automorphisms
-#pragma omp parallel for
+// #pragma omp parallel for
     for (uint32_t j = 1; j < bStep; j++) {
         #ifdef ENABLE_INSTRUMENTATION
             if (shouldTrack){
@@ -1814,7 +1814,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         auto digits = cc->EvalFastRotationPrecompute(result);
 
         std::vector<Ciphertext<DCRTPoly>> fastRotation(g);
-#pragma omp parallel for
+// #pragma omp parallel for
         for (int32_t j = 0; j < g; j++) {
             if (rot_in[s][j] != 0) {
                 #ifdef ENABLE_INSTRUMENTATION
@@ -1881,7 +1881,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         auto digits = cc->EvalFastRotationPrecompute(result);
         std::vector<Ciphertext<DCRTPoly>> fastRotation(gRem);
 
-#pragma omp parallel for
+// #pragma omp parallel for
         for (int32_t j = 0; j < gRem; j++) {
             if (rot_in[stop][j] != 0) {
                 #ifdef ENABLE_INSTRUMENTATION
@@ -2055,7 +2055,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         auto digits = cc->EvalFastRotationPrecompute(result);
 
         std::vector<Ciphertext<DCRTPoly>> fastRotation(g);
-#pragma omp parallel for
+// #pragma omp parallel for
         for (int32_t j = 0; j < g; j++) {
             if (rot_in[s][j] != 0) {
                 #ifdef ENABLE_INSTRUMENTATION
@@ -2124,7 +2124,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         std::vector<Ciphertext<DCRTPoly>> fastRotation(gRem);
 
         int32_t s = levelBudget - flagRem;
-#pragma omp parallel for
+// #pragma omp parallel for
         for (int32_t j = 0; j < gRem; j++) {
             if (rot_in[s][j] != 0) {
                 #ifdef ENABLE_INSTRUMENTATION
