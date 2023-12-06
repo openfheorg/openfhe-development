@@ -106,9 +106,8 @@ void Params::ValidateRingDim(usint ringDim) {
 void Params::ValidateMultiplicativeDepth(usint multiplicativeDepth) {
     constexpr usint maxMultiplicativeDepthValue = 1000;
     if (multiplicativeDepth > maxMultiplicativeDepthValue) {
-        std::string errorMsg(std::string("Invalid multiplicativeDepth [") + std::to_string(multiplicativeDepth) +
-                             "]. MultiplicativeDepth value must be between 0 and " +
-                             std::to_string(maxMultiplicativeDepthValue) + ".");
+        std::string errorMsg(std::string("The provided multiplicative depth [") + std::to_string(multiplicativeDepth) +
+                             "] is not computationally feasible. Use a smaller value.");
         OPENFHE_THROW(config_error, errorMsg);
     }
 }
