@@ -813,7 +813,14 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     int32_t layersCollapse;
     int32_t remCollapse;
 
-    std::vector<uint32_t> dims = SelectLayers(std::log2(slots), levelBudget);
+    uint32_t logSlots = std::log2(slots);
+
+    // even for the case of a single slot we need one level for rescaling
+    if (logSlots == 0) {
+        logSlots = 1;
+    }
+
+    std::vector<uint32_t> dims = SelectLayers(logSlots, levelBudget);
     layersCollapse             = dims[0];
     remCollapse                = dims[2];
 
