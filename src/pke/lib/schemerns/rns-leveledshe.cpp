@@ -404,6 +404,76 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
 
     if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
         AdjustLevelsInPlace(ciphertext1, ciphertext2);
+
+        double scFactor = cryptoParams->GetScalingFactorReal();
+
+        // supported only for CKKS
+        if (scFactor == 0.0)
+            return;
+
+        DCRTPoly ptxt;
+        uint32_t ptxtDepth = 0;
+        uint32_t ctxtDepth = 0;
+        usint sizeQl       = 0;
+        uint32_t ptxtIndex = 0;
+
+        // Get moduli chain to create CRT representation of powP
+        std::vector<DCRTPoly::Integer> moduli;
+
+        if (ciphertext1->GetElements().size() == 1) {
+            ptxt      = ciphertext1->GetElements()[0];
+            ptxtDepth = ciphertext1->GetNoiseScaleDeg();
+            ctxtDepth = ciphertext2->GetNoiseScaleDeg();
+            sizeQl    = ciphertext2->GetElements()[0].GetNumOfElements();
+            moduli.resize(sizeQl);
+            for (usint i = 0; i < sizeQl; i++) {
+                moduli[i] = ciphertext2->GetElements()[0].GetElementAtIndex(i).GetModulus();
+            }
+            ptxtIndex = 1;
+        }
+        else if (ciphertext2->GetElements().size() == 1) {
+            ptxt      = ciphertext2->GetElements()[0];
+            ptxtDepth = ciphertext2->GetNoiseScaleDeg();
+            ctxtDepth = ciphertext1->GetNoiseScaleDeg();
+            sizeQl    = ciphertext1->GetElements()[0].GetNumOfElements();
+            moduli.resize(sizeQl);
+            for (usint i = 0; i < sizeQl; i++) {
+                moduli[i] = ciphertext1->GetElements()[0].GetElementAtIndex(i).GetModulus();
+            }
+            ptxtIndex = 2;
+        }
+        else
+            return;
+
+        // Bring to same depth if not already same
+        if (ptxtDepth < ctxtDepth) {
+            // Find out how many levels to scale plaintext up.
+            size_t diffDepth = ctxtDepth - ptxtDepth;
+
+            DCRTPoly::Integer intSF = static_cast<NativeInteger::Integer>(scFactor + 0.5);
+            std::vector<DCRTPoly::Integer> crtSF(sizeQl, intSF);
+            auto crtPowSF = crtSF;
+            for (usint j = 0; j < diffDepth - 1; j++) {
+                crtPowSF = CKKSPackedEncoding::CRTMult(crtPowSF, crtSF, moduli);
+            }
+
+            ptxt = ptxt.Times(crtPowSF);
+
+            if (ptxtIndex == 1) {
+                ciphertext1->SetElements({ptxt});
+                ciphertext1->SetNoiseScaleDeg(ctxtDepth);
+            }
+            else {
+                ciphertext2->SetElements({ptxt});
+                ciphertext2->SetNoiseScaleDeg(ctxtDepth);
+            }
+        }
+        else if (ptxtDepth > ctxtDepth) {
+            OPENFHE_THROW(not_available_error,
+                          "LPAlgorithmSHERNS<DCRTPoly>::AdjustForAddOrSubInPlace "
+                          "- plaintext cannot be encoded at a larger depth than that "
+                          "of the ciphertext.");
+        }
     }
     else if (cryptoParams->GetScalingTechnique() != NORESCALE) {
         AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
