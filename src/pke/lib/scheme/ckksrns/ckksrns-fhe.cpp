@@ -105,7 +105,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     precom->m_dim1  = dim1[0];
 
     uint32_t logSlots = std::log2(slots);
-
     // even for the case of a single slot we need one level for rescaling
     if (logSlots == 0) {
         logSlots = 1;
@@ -115,24 +114,20 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     std::vector<uint32_t> newBudget = levelBudget;
 
     if (newBudget[0] > logSlots) {
-        std::cerr << "\nWarning, the level budget for encoding cannot be this large. The budget was changed to "
-                  << uint32_t(logSlots) << std::endl;
-        newBudget[0] = uint32_t(logSlots);
+        std::cerr << "\nWarning, the level budget for encoding is too large. Setting it to " << logSlots << std::endl;
+        newBudget[0] = logSlots;
     }
     if (newBudget[0] < 1) {
-        std::cerr << "\nWarning, the level budget for encoding has to be at least 1. The budget was changed to " << 1
-                  << std::endl;
+        std::cerr << "\nWarning, the level budget for encoding can not be zero. Setting it to 1" << std::endl;
         newBudget[0] = 1;
     }
 
     if (newBudget[1] > logSlots) {
-        std::cerr << "\nWarning, the level budget for decoding cannot be this large. The budget was changed to "
-                  << uint32_t(logSlots) << std::endl;
-        newBudget[1] = uint32_t(logSlots);
+        std::cerr << "\nWarning, the level budget for decoding is too large. Setting it to " << logSlots << std::endl;
+        newBudget[1] = logSlots;
     }
     if (newBudget[1] < 1) {
-        std::cerr << "\nWarning, the level budget for decoding has to be at least 1. The budget was changed to " << 1
-                  << std::endl;
+        std::cerr << "\nWarning, the level budget for decoding can not be zero. Setting it to 1" << std::endl;
         newBudget[1] = 1;
     }
 
