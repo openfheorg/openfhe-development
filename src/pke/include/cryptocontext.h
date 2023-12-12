@@ -279,7 +279,6 @@ class CryptoContextImpl : public Serializable {
                                                value2);
     }
 
-private:
     // cached evalmult keys, by secret key UID
     static inline std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap{};
     // cached evalsum keys, by secret key UID
@@ -289,17 +288,17 @@ private:
 
 protected:
     // crypto parameters used for this context
-    std::shared_ptr<CryptoParametersBase<Element>> params;
+    std::shared_ptr<CryptoParametersBase<Element>> params{nullptr};
     // algorithm used; accesses all crypto methods
-    std::shared_ptr<SchemeBase<Element>> scheme;
+    std::shared_ptr<SchemeBase<Element>> scheme{nullptr};
 
     static std::map<std::string, std::vector<EvalKey<Element>>>& evalMultKeyMap();
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalSumKeyMap();
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalAutomorphismKeyMap();
 
-    SCHEME m_schemeId = SCHEME::INVALID_SCHEME;
+    SCHEME m_schemeId{SCHEME::INVALID_SCHEME};
 
-    uint32_t m_keyGenLevel;
+    uint32_t m_keyGenLevel{0};
 
     /**
    * TypeCheck makes sure that an operation between two ciphertexts is permitted
@@ -370,7 +369,7 @@ protected:
     }
 
     template <typename T>
-    void CheckKey(const T& key, CALLER_INFO_ARGS_HDR) const {
+    void ValidateKey(const T& key, CALLER_INFO_ARGS_HDR) const {
         if (key == nullptr) {
             std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
             OPENFHE_THROW(config_error, errorMsg);
@@ -381,7 +380,7 @@ protected:
         }
     }
 
-    void CheckCiphertext(const ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
+    void ValidateCiphertext(const ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
         if (ciphertext == nullptr) {
             std::string errorMsg(std::string("Ciphertext is nullptr") + CALLER_INFO);
             OPENFHE_THROW(config_error, errorMsg);
@@ -1177,7 +1176,7 @@ public:
     Ciphertext<Element> Encrypt(const Plaintext& plaintext, const PublicKey<Element> publicKey) const {
         if (plaintext == nullptr)
             OPENFHE_THROW(type_error, "Input plaintext is nullptr");
-        CheckKey(publicKey);
+        ValidateKey(publicKey);
 
         Ciphertext<Element> ciphertext = GetScheme()->Encrypt(plaintext->GetElement<Element>(), publicKey);
 
@@ -1200,6 +1199,7 @@ public:
    * @return ciphertext (or null on failure)
    */
     Ciphertext<Element> Encrypt(const PublicKey<Element> publicKey, Plaintext plaintext) const {
+        ValidateKey(publicKey);
         return Encrypt(plaintext, publicKey);
     }
 
@@ -1212,7 +1212,7 @@ public:
     Ciphertext<Element> Encrypt(const Plaintext& plaintext, const PrivateKey<Element> privateKey) const {
         //    if (plaintext == nullptr)
         //      OPENFHE_THROW(type_error, "Input plaintext is nullptr");
-        CheckKey(privateKey);
+        ValidateKey(privateKey);
 
         Ciphertext<Element> ciphertext = GetScheme()->Encrypt(plaintext->GetElement<Element>(), privateKey);
 
@@ -1235,6 +1235,7 @@ public:
    * @return ciphertext (or null on failure)
    */
     Ciphertext<Element> Encrypt(const PrivateKey<Element> privateKey, Plaintext plaintext) const {
+        ValidateKey(privateKey);
         return Encrypt(plaintext, privateKey);
     }
 
@@ -1275,8 +1276,8 @@ public:
    */
     EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
                                   const PrivateKey<Element> newPrivateKey) const {
-        CheckKey(oldPrivateKey);
-        CheckKey(newPrivateKey);
+        ValidateKey(oldPrivateKey);
+        ValidateKey(newPrivateKey);
 
         return GetScheme()->KeySwitchGen(oldPrivateKey, newPrivateKey);
     }
@@ -1288,8 +1289,8 @@ public:
    * @return new CiphertextImpl after applying key switch
    */
     Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
-        CheckCiphertext(ciphertext);
-        CheckKey(evalKey);
+        ValidateCiphertext(ciphertext);
+        ValidateKey(evalKey);
 
         return GetScheme()->KeySwitch(ciphertext, evalKey);
     }
@@ -1300,8 +1301,8 @@ public:
    * @param evalKey - evaluation key used for key switching
    */
     void KeySwitchInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
-        CheckCiphertext(ciphertext);
-        CheckKey(evalKey);
+        ValidateCiphertext(ciphertext);
+        ValidateKey(evalKey);
 
         GetScheme()->KeySwitchInPlace(ciphertext, evalKey);
     }
@@ -1316,7 +1317,7 @@ public:
    * @return new ciphertext -ct
    */
     Ciphertext<Element> EvalNegate(ConstCiphertext<Element> ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalNegate(ciphertext);
     }
@@ -1326,7 +1327,7 @@ public:
    * @param ciphertext input ciphertext
    */
     void EvalNegateInPlace(Ciphertext<Element>& ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         GetScheme()->EvalNegateInPlace(ciphertext);
     }
@@ -1470,6 +1471,7 @@ public:
    * @return new ciphertext for ciphertext + constant
    */
     Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, double constant) const {
+        ValidateCiphertext(ciphertext);
         Ciphertext<Element> result =
             constant >= 0 ? GetScheme()->EvalAdd(ciphertext, constant) : GetScheme()->EvalSub(ciphertext, -constant);
         return result;
@@ -1491,6 +1493,7 @@ public:
    * @param constant a real number
    */
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        ValidateCiphertext(ciphertext);
         if (constant == 0)
             return;
         if (constant > 0) {
@@ -1586,7 +1589,7 @@ public:
    * @return new ciphertext for ciphertext - plaintext
    */
     Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
-        TypeCheck((ConstCiphertext<Element>)ciphertext, (ConstPlaintext)plaintext);
+        TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalSubMutable(ciphertext, plaintext);
     }
 
@@ -1597,6 +1600,7 @@ public:
    * @return new ciphertext for plaintext - ciphertext
    */
     Ciphertext<Element> EvalSubMutable(Plaintext plaintext, Ciphertext<Element>& ciphertext) const {
+        TypeCheck(ciphertext, plaintext);
         Ciphertext<Element> negated = EvalNegate(ciphertext);
         Ciphertext<Element> result  = EvalAddMutable(negated, plaintext);
         ciphertext                  = EvalNegate(negated);
@@ -1610,6 +1614,7 @@ public:
    * @return new ciphertext for ciphertext - constant
    */
     Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, double constant) const {
+        ValidateCiphertext(ciphertext);
         Ciphertext<Element> result =
             constant >= 0 ? GetScheme()->EvalSub(ciphertext, constant) : GetScheme()->EvalAdd(ciphertext, -constant);
         return result;
@@ -1631,6 +1636,7 @@ public:
    * @param constant a real number
    */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        ValidateCiphertext(ciphertext);
         if (constant >= 0) {
             GetScheme()->EvalSubInPlace(ciphertext, constant);
         }
@@ -1680,9 +1686,7 @@ public:
    * @param key secret key
    */
     void EvalMultKeyGen(const PrivateKey<Element> key) {
-        if (key == nullptr || Mismatched(key->GetCryptoContext()))
-            OPENFHE_THROW(config_error, "Key passed to EvalMultKeyGen were not generated with this crypto context");
-
+        ValidateKey(key);
         EvalKey<Element> k = GetScheme()->EvalMultKeyGen(key);
 
         GetAllEvalMultKeys()[k->GetKeyTag()] = {k};
@@ -1698,8 +1702,7 @@ public:
    * @param key secret key
    */
     void EvalMultKeysGen(const PrivateKey<Element> key) {
-        if (key == nullptr || Mismatched(key->GetCryptoContext()))
-            OPENFHE_THROW(config_error, "Key passed to EvalMultsKeyGen were not generated with this crypto context");
+        ValidateKey(key);
 
         const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
 
@@ -1762,7 +1765,7 @@ public:
    * @return squared ciphertext
    */
     Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
@@ -1778,7 +1781,7 @@ public:
    * @return squared ciphertext
    */
     Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
@@ -1794,7 +1797,7 @@ public:
    * @return squared ciphertext
    */
     void EvalSquareInPlace(Ciphertext<Element>& ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
@@ -1823,8 +1826,7 @@ public:
    */
     Ciphertext<Element> Relinearize(ConstCiphertext<Element> ciphertext) const {
         // input parameter check
-        if (!ciphertext)
-            OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
+        ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
 
@@ -1843,8 +1845,7 @@ public:
    */
     void RelinearizeInPlace(Ciphertext<Element>& ciphertext) const {
         // input parameter check
-        if (!ciphertext)
-            OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
+        ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
@@ -1865,8 +1866,7 @@ public:
     Ciphertext<Element> EvalMultAndRelinearize(ConstCiphertext<Element> ciphertext1,
                                                ConstCiphertext<Element> ciphertext2) const {
         // input parameter check
-        if (!ciphertext1 || !ciphertext2)
-            OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
+        TypeCheck(ciphertext1, ciphertext2);
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
 
@@ -1958,9 +1958,8 @@ public:
    * @return the result of multiplication
    */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, double constant) const {
-        if (!ciphertext) {
-            OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
-        }
+        ValidateCiphertext(ciphertext);
+
         return GetScheme()->EvalMult(ciphertext, constant);
     }
 
@@ -1980,9 +1979,7 @@ public:
    * @param constant multiplicand
    */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
-        if (!ciphertext) {
-            OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
-        }
+        ValidateCiphertext(ciphertext);
 
         GetScheme()->EvalMultInPlace(ciphertext, constant);
     }
@@ -2010,7 +2007,7 @@ public:
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const {
-        CheckKey(privateKey);
+        ValidateKey(privateKey);
         if (!indexList.size())
             OPENFHE_THROW(config_error, "Input index vector is empty");
 
@@ -2023,8 +2020,7 @@ public:
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
         const std::vector<usint>& indexList) const {
-        CheckKey(publicKey);
-        CheckKey(privateKey);
+        ValidateKey(privateKey);
         if (!indexList.size())
             OPENFHE_THROW(config_error, "Input index vector is empty");
 
@@ -2043,7 +2039,7 @@ public:
     Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
                                          const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                          CALLER_INFO_ARGS_HDR) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         if (evalKeyMap.empty()) {
             std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
@@ -2059,7 +2055,7 @@ public:
 
         auto evalKey = key->second;
 
-        CheckKey(evalKey);
+        ValidateKey(evalKey);
 
         return GetScheme()->EvalAutomorphism(ciphertext, i, evalKeyMap);
     }
@@ -2099,7 +2095,7 @@ public:
    * @return a rotated ciphertext
    */
     Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
         return GetScheme()->EvalAtIndex(ciphertext, index, evalKeyMap);
@@ -2133,6 +2129,7 @@ public:
    * decomposition)
    */
     std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->EvalFastRotationPrecompute(ciphertext);
     }
 
@@ -2174,6 +2171,7 @@ public:
    */
     Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element> ciphertext, const usint index, const usint m,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->EvalFastRotation(ciphertext, index, m, digits);
     }
 
@@ -2190,6 +2188,7 @@ public:
    */
     Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
                                             const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
+        ValidateCiphertext(ciphertext);
         auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
 
         return GetScheme()->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeyMap);
@@ -2204,6 +2203,7 @@ public:
    * @return resulting ciphertext
    */
     Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->KeySwitchDown(ciphertext);
     }
 
@@ -2215,6 +2215,7 @@ public:
    * @return resulting polynomial
    */
     Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->KeySwitchDownFirstElement(ciphertext);
     }
 
@@ -2227,6 +2228,7 @@ public:
    * @return resulting ciphertext in basis P*Q
    */
     Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->KeySwitchExt(ciphertext, addFirst);
     }
 
@@ -2274,8 +2276,7 @@ public:
    */
     Ciphertext<Element> ComposedEvalMult(ConstCiphertext<Element> ciphertext1,
                                          ConstCiphertext<Element> ciphertext2) const {
-        CheckCiphertext(ciphertext1);
-        CheckCiphertext(ciphertext2);
+        TypeCheck(ciphertext1, ciphertext2);
 
         auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size()) {
@@ -2293,7 +2294,7 @@ public:
    * @return rescaled ciphertext
    */
     Ciphertext<Element> Rescale(ConstCiphertext<Element> ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
     }
@@ -2305,7 +2306,7 @@ public:
    * @param ciphertext - ciphertext to be rescaled in-place
    */
     void RescaleInPlace(Ciphertext<Element>& ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
     }
@@ -2316,7 +2317,7 @@ public:
    * @return mod reduced ciphertext
    */
     Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
     }
@@ -2326,7 +2327,7 @@ public:
    * @param ciphertext - ciphertext to be mod-reduced in-place
    */
     void ModReduceInPlace(Ciphertext<Element>& ciphertext) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
     }
@@ -2339,7 +2340,7 @@ public:
    */
     Ciphertext<Element> LevelReduce(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
                                     size_t levels = 1) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->LevelReduce(ciphertext, evalKey, levels);
     }
@@ -2350,7 +2351,7 @@ public:
    * @param evalKey input evaluation key (modified in place)
    */
     void LevelReduceInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey, size_t levels = 1) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
         if (levels <= 0) {
             return;
         }
@@ -2365,8 +2366,7 @@ public:
    * @return compressed ciphertext
    */
     Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, uint32_t towersLeft = 1) const {
-        if (ciphertext == nullptr)
-            OPENFHE_THROW(config_error, "input ciphertext is invalid (has no data)");
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->Compress(ciphertext, towersLeft);
     }
@@ -2429,7 +2429,6 @@ public:
         if (!ciphertextVec.size()) {
             OPENFHE_THROW(type_error, "Empty input ciphertext vector");
         }
-
         if (ciphertextVec.size() == 1) {
             return ciphertextVec[0];
         }
@@ -2514,7 +2513,7 @@ public:
    */
     virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element> ciphertext,
                                          const std::vector<double>& coefficients) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalPoly(ciphertext, coefficients);
     }
@@ -2531,7 +2530,7 @@ public:
    */
     Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element> ciphertext,
                                        const std::vector<double>& coefficients) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalPolyLinear(ciphertext, coefficients);
     }
@@ -2546,7 +2545,7 @@ public:
    * @return the result of polynomial evaluation.
    */
     Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element> ciphertext, const std::vector<double>& coefficients) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalPolyPS(ciphertext, coefficients);
     }
@@ -2570,7 +2569,7 @@ public:
    */
     Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
                                             const std::vector<double>& coefficients, double a, double b) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalChebyshevSeries(ciphertext, coefficients, a, b);
     }
@@ -2588,7 +2587,7 @@ public:
    */
     Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element> ciphertext,
                                                   const std::vector<double>& coefficients, double a, double b) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalChebyshevSeriesLinear(ciphertext, coefficients, a, b);
     }
@@ -2606,7 +2605,7 @@ public:
    */
     Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element> ciphertext,
                                               const std::vector<double>& coefficients, double a, double b) const {
-        CheckCiphertext(ciphertext);
+        ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
     }
@@ -2791,8 +2790,8 @@ public:
    * @return new evaluation key
    */
     EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
-        CheckKey(oldPrivateKey);
-        CheckKey(newPublicKey);
+        ValidateKey(oldPrivateKey);
+        ValidateKey(newPublicKey);
 
         return GetScheme()->ReKeyGen(oldPrivateKey, newPublicKey);
     }
@@ -2818,8 +2817,8 @@ public:
    */
     Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, EvalKey<Element> evalKey,
                                   const PublicKey<Element> publicKey = nullptr) const {
-        CheckCiphertext(ciphertext);
-        CheckKey(evalKey);
+        ValidateCiphertext(ciphertext);
+        ValidateKey(evalKey);
 
         return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey);
     }
@@ -2856,8 +2855,7 @@ public:
    * joined public key
    */
     KeyPair<Element> MultipartyKeyGen(const PublicKey<Element> publicKey, bool makeSparse = false, bool fresh = false) {
-        if (!publicKey)
-            OPENFHE_THROW(config_error, "Input public key is empty");
+        ValidateKey(publicKey);
         return GetScheme()->MultipartyKeyGen(GetContextForPointer(this), publicKey, makeSparse, fresh);
     }
 
@@ -2871,12 +2869,12 @@ public:
    */
     std::vector<Ciphertext<Element>> MultipartyDecryptLead(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
-        CheckKey(privateKey);
+        ValidateKey(privateKey);
 
         std::vector<Ciphertext<Element>> newCiphertextVec;
 
         for (size_t i = 0; i < ciphertextVec.size(); i++) {
-            CheckCiphertext(ciphertextVec[i]);
+            ValidateCiphertext(ciphertextVec[i]);
             newCiphertextVec.push_back(GetScheme()->MultipartyDecryptLead(ciphertextVec[i], privateKey));
         }
 
@@ -2893,11 +2891,11 @@ public:
    */
     std::vector<Ciphertext<Element>> MultipartyDecryptMain(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
-        CheckKey(privateKey);
+        ValidateKey(privateKey);
 
         std::vector<Ciphertext<Element>> newCiphertextVec;
         for (size_t i = 0; i < ciphertextVec.size(); i++) {
-            CheckCiphertext(ciphertextVec[i]);
+            ValidateCiphertext(ciphertextVec[i]);
             newCiphertextVec.push_back(GetScheme()->MultipartyDecryptMain(ciphertextVec[i], privateKey));
         }
 
@@ -2930,12 +2928,9 @@ public:
    */
     EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> originalPrivateKey,
                                        const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const {
-        if (!originalPrivateKey)
-            OPENFHE_THROW(config_error, "Input first private key is nullptr");
-        if (!newPrivateKey)
-            OPENFHE_THROW(config_error, "Input second private key is nullptr");
-        if (!evalKey)
-            OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        ValidateKey(originalPrivateKey);
+        ValidateKey(newPrivateKey);
+        ValidateKey(evalKey);
 
         return GetScheme()->MultiKeySwitchGen(originalPrivateKey, newPrivateKey, evalKey);
     }
@@ -2954,8 +2949,7 @@ public:
     std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
         const std::vector<usint>& indexList, const std::string& keyId = "") {
-        if (!privateKey)
-            OPENFHE_THROW(config_error, "Input private key is nullptr");
+        ValidateKey(privateKey);
         if (!evalKeyMap)
             OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
         if (!indexList.size())
@@ -2978,8 +2972,7 @@ public:
     std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
         const std::vector<int32_t>& indexList, const std::string& keyId = "") {
-        if (!privateKey)
-            OPENFHE_THROW(config_error, "Input private key is nullptr");
+        ValidateKey(privateKey);
         if (!evalKeyMap)
             OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
         if (!indexList.size())
@@ -3001,8 +2994,7 @@ public:
     std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
         const std::string& keyId = "") {
-        if (!privateKey)
-            OPENFHE_THROW(config_error, "Input private key is nullptr");
+        ValidateKey(privateKey);
         if (!evalKeyMap)
             OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
         return GetScheme()->MultiEvalSumKeyGen(privateKey, evalKeyMap, keyId);
@@ -3018,10 +3010,8 @@ public:
    */
     EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                       const std::string& keyId = "") {
-        if (!evalKey1)
-            OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
-        if (!evalKey2)
-            OPENFHE_THROW(config_error, "Input second evaluation key is nullptr");
+        ValidateKey(evalKey1);
+        ValidateKey(evalKey2);
 
         return GetScheme()->MultiAddEvalKeys(evalKey1, evalKey2, keyId);
     }
@@ -3038,10 +3028,8 @@ public:
    */
     EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
                                       const std::string& keyId = "") {
-        if (!privateKey)
-            OPENFHE_THROW(config_error, "Input private key is nullptr");
-        if (!evalKey)
-            OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        ValidateKey(privateKey);
+        ValidateKey(evalKey);
 
         return GetScheme()->MultiMultEvalKey(privateKey, evalKey, keyId);
     }
@@ -3094,10 +3082,8 @@ public:
    */
     PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
                                        const std::string& keyId = "") {
-        if (!publicKey1)
-            OPENFHE_THROW(config_error, "Input first public key is nullptr");
-        if (!publicKey2)
-            OPENFHE_THROW(config_error, "Input second public key is nullptr");
+        ValidateKey(publicKey1);
+        ValidateKey(publicKey2);
 
         return GetScheme()->MultiAddPubKeys(publicKey1, publicKey2, keyId);
     }
@@ -3112,10 +3098,8 @@ public:
     */
     EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                           const std::string& keyId = "") {
-        if (!evalKey1)
-            OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
-        if (!evalKey2)
-            OPENFHE_THROW(config_error, "Input second evaluation key is nullptr");
+        ValidateKey(evalKey1);
+        ValidateKey(evalKey2);
 
         return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
     }
@@ -3242,10 +3226,7 @@ public:
    * @param slots number of slots to support permutations on
    */
     void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
-        if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
-            OPENFHE_THROW(config_error, "Private key passed to " + std::string(__func__) +
-                                            " was not generated with this cryptocontext");
-        }
+        ValidateKey(privateKey);
 
         auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
 
@@ -3287,6 +3268,7 @@ public:
    */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
     }
 
