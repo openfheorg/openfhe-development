@@ -807,29 +807,26 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget) {
 }
 
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {
+    uint32_t logSlots = std::log2(slots);
+    // even for the case of a single slot we need one level for rescaling
+    if (logSlots == 0) {
+        logSlots = 1;
+    }
+
+    std::vector<uint32_t> dims = SelectLayers(logSlots, levelBudget);
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    int32_t layersCollapse;
-    int32_t remCollapse;
+    int32_t layersCollapse     = dims[0];
+    int32_t remCollapse        = dims[2];
 
-    std::vector<uint32_t> dims = SelectLayers(std::log2(slots), levelBudget);
-    layersCollapse             = dims[0];
-    remCollapse                = dims[2];
-
-    int32_t flagRem = 0;
-    if (remCollapse == 0) {
-        flagRem = 0;
-    }
-    else {
-        flagRem = 1;
-    }
+    bool flagRem = (remCollapse == 0) ? false : true;
 
     uint32_t numRotations    = (1 << (layersCollapse + 1)) - 1;
     uint32_t numRotationsRem = (1 << (remCollapse + 1)) - 1;
 
     // Computing the baby-step b and the giant-step g for the collapsed layers for decoding.
-    int32_t b, g;
+    int32_t g;
     if (dim1 == 0 || dim1 > numRotations) {
         if (numRotations > 7) {
             g = (1 << (int32_t(layersCollapse / 2) + 2));
@@ -841,11 +838,10 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     else {
         g = dim1;
     }
+    int32_t b    = (numRotations + 1) / g;
 
-    b            = (numRotations + 1) / g;
     int32_t bRem = 0;
     int32_t gRem = 0;
-
     if (flagRem) {
         if (numRotationsRem > 7) {
             gRem = (1 << (int32_t(remCollapse / 2) + 2));
