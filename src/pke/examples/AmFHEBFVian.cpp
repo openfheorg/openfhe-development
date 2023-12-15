@@ -828,6 +828,8 @@ void LUTthroughBFV() {
               << " s" << std::endl;
     std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
               << std::endl;
+    std::cout << "-Time for " << cntSquareCtxt << " ciphertext squarings: " << timeSquareCtxt / 1000000000.0 << " s"
+              << std::endl;
     std::cout << "-Time for " << cntAddCtxt
               << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
     std::cout << "-Time for cleartext poly operations: " << timePolyClear / 1000000000.0 << " s" << std::endl;
@@ -871,6 +873,8 @@ void LUTthroughBFV() {
     std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000000000.0
               << " s" << std::endl;
     std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntSquareCtxt << " ciphertext squarings: " << timeSquareCtxt / 1000000000.0 << " s"
               << std::endl;
     std::cout << "-Time for " << cntAddCtxt
               << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
