@@ -76,7 +76,7 @@ public:
    * @return
    */
     explicit ILParamsImpl(uint32_t order, uint32_t bits = MAX_MODULUS_SIZE)
-        : ILParamsImpl<IntType>(order, GetMaxPrime<IntType>(bits, order)) {}
+        : ILParamsImpl<IntType>(order, LastPrime<IntType>(bits, order)) {}
 
     explicit ILParamsImpl(uint32_t order, const IntType& modulus)
         : ElemParams<IntType>(order, modulus, RootOfUnity<IntType>(order, modulus)) {}

@@ -198,7 +198,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
             "Change parameters! Try reducing the number of additions per level, "
             "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
     }
-    uint32_t totalModSize = firstModSize;
+
     moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
@@ -207,16 +207,17 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         extraModLowerBound += keySwitchCount * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
         extraModLowerBound *= 2;
         usint extraModSize = ceil(log2(extraModLowerBound));
+
         if (extraModSize >= DCRT_MODULUS::MAX_SIZE) {
             OPENFHE_THROW(
                 config_error,
                 "Change parameters! Try reducing the number of additions per level, "
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
-        totalModSize += extraModSize;
+
         moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
-            moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
+            moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
         }
     }
 
@@ -245,7 +246,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
                 "Change parameters! Try reducing the number of additions per level, "
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
-        totalModSize += modSize * (numPrimes - 1);
 
         // Compute moduli.
         moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
@@ -275,7 +275,11 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         }
     }
 
-    return std::make_pair(moduliQ, totalModSize);
+    BigInteger composite(1);
+    for (BigInteger m : moduliQ)
+        composite *= m;
+
+    return std::make_pair(moduliQ, composite.GetMSB());
 }
 
 void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
@@ -445,16 +449,12 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         modulusOrder = (uint64_t)pow2ptm * plaintextModulus;
 
         // Get the largest prime with size less or equal to firstModSize bits.
-        NativeInteger firstInteger = FirstPrime<NativeInteger>(firstModSize, modulusOrder);
-
-        firstInteger = PreviousPrime<NativeInteger>(firstInteger, modulusOrder);
-
-        moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, modulusOrder);
+        moduliQ[0] = LastPrime<NativeInteger>(firstModSize, modulusOrder);
         rootsQ[0]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
 
         if (numPrimes > 1) {
             NativeInteger q =
-                (firstModSize != dcrtBits) ? FirstPrime<NativeInteger>(dcrtBits, modulusOrder) : moduliQ[0];
+                (firstModSize != dcrtBits) ? LastPrime<NativeInteger>(dcrtBits, modulusOrder) : moduliQ[0];
 
             moduliQ[1] = PreviousPrime<NativeInteger>(q, modulusOrder);
             rootsQ[1]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[1]);
@@ -466,8 +466,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         }
     }
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
-        NativeInteger extraModulus = FirstPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
-        extraModulus               = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
+        NativeInteger extraModulus = LastPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
         std::vector<NativeInteger> extraModuli(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
         std::vector<NativeInteger> extraRoots(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
 

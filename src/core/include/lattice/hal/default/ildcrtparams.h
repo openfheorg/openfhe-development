@@ -80,9 +80,9 @@ public:
         if (corder == 0)
             return;
 
-        auto q{FirstPrime<NativeInteger>(MAX_MODULUS_SIZE, corder)};
+        auto q{LastPrime<NativeInteger>(MAX_MODULUS_SIZE, corder)};
         m_params.reserve(32);
-        m_params.push_back(std::make_shared<ILNativeParams>(corder, (q = PreviousPrime(q, corder))));
+        m_params.push_back(std::make_shared<ILNativeParams>(corder, q));
 
         IntType compositeModulus(1);
         while ((compositeModulus *= IntType(q.template ConvertToInt<BasicInteger>())) < modulus)
@@ -92,7 +92,7 @@ public:
 
     /**
    * @brief Constructor with basic parameter set.
-   * q is selected as FirstPrime(bits, order)
+   * q is selected as LastPrime(bits, order)
    * @param corder the order of the ciphertext.
    * @param depth is the size of the tower.
    * @param bits is the number of bits of each tower's moduli.
@@ -104,9 +104,9 @@ public:
         if (bits > MAX_MODULUS_SIZE)
             OPENFHE_THROW(config_error, "Invalid bits for ILDCRTParams");
 
-        auto q{FirstPrime<NativeInteger>(bits, corder)};
+        auto q{LastPrime<NativeInteger>(bits, corder)};
         m_params.reserve(depth);
-        m_params.push_back(std::make_shared<ILNativeParams>(corder, (q = PreviousPrime(q, corder))));
+        m_params.push_back(std::make_shared<ILNativeParams>(corder, q));
 
         IntType compositeModulus(q.template ConvertToInt<BasicInteger>());
         for (uint32_t _ = 1; _ < depth; ++_) {
@@ -283,7 +283,8 @@ public:
    */
 
     void PopLastParam() {
-        ElemParams<IntType>::m_ciphertextModulus /= IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
+        ElemParams<IntType>::m_ciphertextModulus /=
+            IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.pop_back();
     }
 
@@ -292,7 +293,8 @@ public:
    *
    */
     void PopFirstParam() {
-        ElemParams<IntType>::m_ciphertextModulus /= IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
+        ElemParams<IntType>::m_ciphertextModulus /=
+            IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.erase(m_params.begin());
     }
 
@@ -329,7 +331,8 @@ public:
     void RecalculateModulus() {
         ElemParams<IntType>::m_ciphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
-            ElemParams<IntType>::m_ciphertextModulus *= IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
+            ElemParams<IntType>::m_ciphertextModulus *=
+                IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
     }
 
     /**

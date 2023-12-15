@@ -263,54 +263,55 @@ const IntType PollardRhoFactorization(const IntType& n);
  * Recursively factorizes to find the distinct primefactors of a number.
  * @param &n the value to factorize. [note the value of n is destroyed]
  * @param &primeFactors set of factors found [must begin cleared]
- Side effects: n is destroyed.
  */
 template <typename IntType>
 void PrimeFactorize(IntType n, std::set<IntType>& primeFactors);
 
 /**
- * Finds the first prime that satisfies q = 1 mod m
+ * Finds the first prime q that satisfies q = 1 mod m with at least (nBits + 1) bits.
  *
- * @param nBits the number of bits needed to be in q.
- * @param m the the ring parameter.
+ * @param nBits the bit parameter.
+ * @param m the ring parameter (cyclotomic order).
  *
  * @return the first prime modulus.
  */
 template <typename IntType>
-IntType FirstPrime(uint64_t nBits, uint64_t m);
+IntType FirstPrime(uint32_t nBits, uint32_t m);
 
 /**
- * Gets the max prime number for the given number of bits and the cyclotomic order.
+ * Finds the max prime q that satisfies q = 1 mod m with at most nBits bits.
  *
- * @param nBits the number of bits needs to be in the returned prime
- * @param m cyclotomic order
+ * @param nBits the bit parameter.
+ * @param m the ring parameter (cyclotomic order).
  *
- * @return the first prime modulus
+ * @return the last prime modulus
  */
 template <typename IntType>
-IntType GetMaxPrime(uint64_t nBits, uint64_t m);
+IntType LastPrime(uint32_t nBits, uint32_t m);
 
 /**
  * Finds the next prime that satisfies q = 1 mod m
  *
  * @param &q is the prime number to start from (the number itself is not
  * included)
+ * @param m the ring parameter (cyclotomic order).
  *
  * @return the next prime modulus.
  */
 template <typename IntType>
-IntType NextPrime(const IntType& q, uint64_t cyclotomicOrder);
+IntType NextPrime(const IntType& q, uint32_t m);
 
 /**
  * Finds the previous prime that satisfies q = 1 mod m
  *
  * @param &q is the prime number to start from (the number itself is not
  * included)
+ * @param m the ring parameter (cyclotomic order).
  *
  * @return the previous prime modulus.
  */
 template <typename IntType>
-IntType PreviousPrime(const IntType& q, uint64_t cyclotomicOrder);
+IntType PreviousPrime(const IntType& q, uint32_t m);
 
 /**
  * Multiplicative inverse for primitive unsigned integer data types

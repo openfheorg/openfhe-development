@@ -585,11 +585,8 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
     uint32_t order = 8;
     uint32_t nBits = 7;
 
-    typename VecType::Integer primeModulus = lbcrypto::FirstPrime<typename VecType::Integer>(nBits, order);
-    typename VecType::Integer primitiveRootOfUnity =
-        lbcrypto::RootOfUnity<typename VecType::Integer>(order, primeModulus);
-
-    auto ilparams = std::make_shared<ParmType>(order, primeModulus, primitiveRootOfUnity);
+    typename VecType::Integer primeModulus = LastPrime<typename VecType::Integer>(nBits, order);
+    auto ilparams                          = std::make_shared<ParmType>(order, primeModulus);
 
     typename Element::DugType distrUniGen;
 
