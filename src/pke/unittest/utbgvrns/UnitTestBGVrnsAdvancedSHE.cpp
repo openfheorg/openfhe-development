@@ -97,24 +97,24 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEAD
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint RING_DIM = 8192;
-constexpr usint PTM      = 20;
+constexpr usint RING_DIM = 128;
+constexpr usint PTM      = 129;
 constexpr usint DSIZE    = 4;
 constexpr double STD_DEV = 3.19;
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED = {
     // TestType,       Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech, EncTech, PREMode
-    { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_NotSet,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_NotSet,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_NotSet,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_NotSet,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     // ==========================================
     // TestType,      Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg,  FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech, EncTech, PREMode
-    { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_ADD_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_ADD_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     HEStd_NotSet,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     HEStd_NotSet,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     HEStd_NotSet,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     HEStd_NotSet,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 };
 // clang-format on
 //===========================================================================================================

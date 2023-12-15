@@ -336,14 +336,13 @@ IntType FirstPrime(uint32_t nBits, uint32_t m) {
     IntType M(m);
     IntType q(IntType(1) << nBits);
     IntType r(q.Mod(M));
-    IntType qNew(q + IntType(1));
+    IntType qNew(q + IntType(1) - r);
     if (r > IntType(0))
-        qNew += (M - r);
+        qNew += M;
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew += M) < q)
             OPENFHE_THROW(math_error, std::string(__func__) + ": overflow growing candidate");
     }
-
     return qNew;
 }
 
@@ -357,7 +356,10 @@ IntType LastPrime(uint32_t nBits, uint32_t m) {
 
     IntType M(m);
     IntType q(IntType(1) << nBits);
-    IntType qNew(q + IntType(1) - M - q.Mod(M));
+    IntType r(q.Mod(M));
+    IntType qNew(q + IntType(1) - r);
+    if (r < IntType(2))
+        qNew -= M;
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew -= M) > q)
             OPENFHE_THROW(math_error, std::string(__func__) + ": overflow shrinking candidate");

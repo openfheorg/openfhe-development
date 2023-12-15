@@ -200,7 +200,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     }
 
     uint32_t totalModSize = firstModSize;
-    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize - 1, cyclOrder);
+    moduliQ[0]            = LastPrime<NativeInteger>(firstModSize, cyclOrder);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
         double extraModLowerBound =
@@ -208,6 +208,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         extraModLowerBound += keySwitchCount * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
         extraModLowerBound *= 2;
         usint extraModSize = ceil(log2(extraModLowerBound));
+
         if (extraModSize >= DCRT_MODULUS::MAX_SIZE) {
             OPENFHE_THROW(
                 config_error,
@@ -215,9 +216,11 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
 
-        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        //        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        moduliQ[numPrimes] = LastPrime<NativeInteger>(extraModSize, cyclOrder);
         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
-            moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
+            //            moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
+            moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
         }
 
         totalModSize += moduliQ[numPrimes].GetMSB();
@@ -256,24 +259,32 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
                 moduliQ[1] = PreviousPrime<NativeInteger>(moduliQ[1], cyclOrder);
             }
+            if (moduliQ[1].GetMSB() != modSize)
+                OPENFHE_THROW(config_error, std::string(__func__) + ": bit width missmatch");
 
             for (size_t i = 2; i < numPrimes; i++) {
                 moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
                     moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i], cyclOrder);
                 }
+                if (moduliQ[i].GetMSB() != modSize)
+                    OPENFHE_THROW(config_error, std::string(__func__) + ": bit width missmatch");
             }
         }
         else {
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == plainModulusInt) {
                 moduliQ[1] = PreviousPrime<NativeInteger>(moduliQ[1], cyclOrder);
             }
+            if (moduliQ[1].GetMSB() != modSize)
+                OPENFHE_THROW(config_error, std::string(__func__) + ": bit width missmatch");
 
             for (size_t i = 2; i < numPrimes; i++) {
                 moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == plainModulusInt) {
                     moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i], cyclOrder);
                 }
+                if (moduliQ[i].GetMSB() != modSize)
+                    OPENFHE_THROW(config_error, std::string(__func__) + ": bit width missmatch");
             }
         }
     }
