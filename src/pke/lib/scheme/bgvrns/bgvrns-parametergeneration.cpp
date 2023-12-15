@@ -250,7 +250,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         }
 
         // Compute moduli.
-        moduliQ[1] = FirstPrime<NativeInteger>(modSize - 1, cyclOrder);
+        moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
         if (scalTech == FLEXIBLEAUTOEXT) {
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
                 moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
