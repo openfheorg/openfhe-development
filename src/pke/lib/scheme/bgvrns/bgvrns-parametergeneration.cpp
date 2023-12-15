@@ -200,7 +200,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     }
 
     moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
-    uint32_t totalModSize = moduliQ[0].GetMSB();
 
     if (scalTech == FLEXIBLEAUTOEXT) {
         double extraModLowerBound =
@@ -220,7 +219,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
             moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
         }
-        totalModSize += moduliQ[numPrimes].GetMSB();
     }
 
     if (numPrimes > 1) {
@@ -255,33 +253,33 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
                 moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
             }
-            totalModSize += moduliQ[1].GetMSB();
 
             for (size_t i = 2; i < numPrimes; i++) {
                 moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
                     moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
                 }
-                totalModSize += moduliQ[i].GetMSB();
             }
         }
         else {
             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == plainModulusInt) {
                 moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
             }
-            totalModSize += moduliQ[1].GetMSB();
 
             for (size_t i = 2; i < numPrimes; i++) {
                 moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == plainModulusInt) {
                     moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
                 }
-                totalModSize += moduliQ[i].GetMSB();
             }
         }
     }
 
-    return std::make_pair(moduliQ, totalModSize);
+    BigInteger composite(1);
+    for (BigInteger m : moduliQ)
+        composite *= m;
+
+    return std::make_pair(moduliQ, composite.GetMSB());
 }
 
 void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
