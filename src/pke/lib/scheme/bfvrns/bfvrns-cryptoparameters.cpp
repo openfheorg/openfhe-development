@@ -686,7 +686,9 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         BigInteger maxConvolutionValue(BigInteger(2 * n) * BigInteger(GetPlaintextModulus()) * Q);
         // check msk is large enough
         while (B * BigInteger(m_msk) < maxConvolutionValue) {
-            m_msk = LastPrime<NativeInteger>(++s, 2 * n);
+            // TODO: revisit this logic. Maybe change to m_msk = LastPrime<NativeInteger>(++s, 2 * n);
+            auto firstInteger{FirstPrime<NativeInteger>(++s, 2 * n)};
+            m_msk = NextPrime<NativeInteger>(firstInteger, 2 * n);
         }
         m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));
 
