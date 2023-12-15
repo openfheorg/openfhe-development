@@ -199,7 +199,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
             "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
     }
 
-    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize - 1, cyclOrder);
+    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
     uint32_t totalModSize = moduliQ[0].GetMSB();
 
     if (scalTech == FLEXIBLEAUTOEXT) {
@@ -216,7 +216,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
 
-        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
             moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[numPrimes], cyclOrder);
         }
