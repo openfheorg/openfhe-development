@@ -92,7 +92,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
         parameters.GetEvalAddCount(),
         parameters.GetMultiplicativeDepth(),
         parameters.GetKeySwitchCount(),
-        parameters.GetFirstModSize(),
+        parameters.GetScalingModSize(),
         parameters.GetRingDim(),
         parameters.GetNumLargeDigits());
     // clang-format on
