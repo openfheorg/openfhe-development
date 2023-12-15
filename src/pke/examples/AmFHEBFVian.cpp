@@ -53,6 +53,7 @@ double timeRotations      = 0;
 double timeMultPtxt       = 0;
 double timePolyClear      = 0;
 double timeMultCtxt       = 0;
+double timeSquareCtxt     = 0;
 double timeAddCtxt        = 0;
 double timeClone          = 0;
 double timeRotationPrec   = 0;
@@ -65,6 +66,7 @@ uint64_t cntAddConst      = 0;
 uint64_t cntRotations     = 0;
 uint64_t cntMultPtxt      = 0;
 uint64_t cntMultCtxt      = 0;
+uint64_t cntSquareCtxt    = 0;
 uint64_t cntAddCtxt       = 0;
 uint64_t cntClone         = 0;
 uint64_t cntRotationPrec  = 0;
@@ -214,6 +216,7 @@ void NANDthroughBFV() {
     timeRotations     = 0;
     timeMultPtxt      = 0;
     timeMultCtxt      = 0;
+    timeSquareCtxt    = 0;
     timePolyClear     = 0;
     timeAddCtxt       = 0;
     timeClone         = 0;
@@ -226,6 +229,7 @@ void NANDthroughBFV() {
     cntRotations      = 0;
     cntMultPtxt       = 0;
     cntMultCtxt       = 0;
+    cntSquareCtxt     = 0;
     cntAddCtxt        = 0;
     cntClone          = 0;
     cntRotationPrec   = 0;
@@ -560,6 +564,7 @@ void LUTthroughBFV() {
     timeRotations     = 0;
     timeMultPtxt      = 0;
     timeMultCtxt      = 0;
+    timeSquareCtxt    = 0;
     timePolyClear     = 0;
     timeAddCtxt       = 0;
     timeClone         = 0;
@@ -573,6 +578,7 @@ void LUTthroughBFV() {
     cntRotations      = 0;
     cntMultPtxt       = 0;
     cntMultCtxt       = 0;
+    cntSquareCtxt     = 0;
     cntAddCtxt        = 0;
     cntClone          = 0;
     cntRotationPrec   = 0;
@@ -746,6 +752,8 @@ void LUTthroughBFV() {
     std::cout << "-Time for " << cntMultPtxt << " multiplications by plaintexts: " << timeMultPtxt / 1000000000.0
               << " s" << std::endl;
     std::cout << "-Time for " << cntMultCtxt << " ciphertext multiplications: " << timeMultCtxt / 1000000000.0 << " s"
+              << std::endl;
+    std::cout << "-Time for " << cntSquareCtxt << " ciphertext squarings: " << timeSquareCtxt / 1000000000.0 << " s"
               << std::endl;
     std::cout << "-Time for " << cntAddCtxt
               << " ciphertext additions not counted before: " << timeAddCtxt / 1000000000.0 << " s" << std::endl;
@@ -1627,8 +1635,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
         TIC(tVar);
         xClone     = cc->EvalSquare(xClone);
         auto tempT = TOC_NS(tVar);
-        timeMultCtxt += tempT;
-        cntMultConst++;
+        timeSquareCtxt += tempT;
+        cntSquareCtxt++;
         timePolyClear -= tempT;
     }
 
@@ -1685,8 +1693,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
             // if i is a power of two
             TIC(tVar);
             powers[i - 1] = cc->EvalSquare(powers[i / 2 - 1]);
-            timeMultCtxt += TOC_NS(tVar);
-            cntMultCtxt++;
+            timeSquareCtxt += TOC_NS(tVar);
+            cntSquareCtxt++;
         }
         else {
             if (indices[i - 1] == 1) {
@@ -1711,8 +1719,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFV(ConstCiphertext<DCRTPoly> x, const std::vecto
     for (uint32_t i = 1; i < m; i++) {
         TIC(tVar);
         powers2[i] = cc->EvalSquare(powers2[i - 1]);
-        timeMultCtxt += TOC_NS(tVar);
-        cntMultCtxt++;
+        timeSquareCtxt += TOC_NS(tVar);
+        cntSquareCtxt++;
     }
 
     // computes the product of the powers in power2, that yield x^{k(2*m - 1)}
@@ -2197,8 +2205,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFVWithPrecompute(ConstCiphertext<DCRTPoly> x, bo
         TIC(tVar);
         xClone     = cc->EvalSquare(xClone);
         auto tempT = TOC_NS(tVar);
-        timeMultCtxt += tempT;
-        cntMultConst++;
+        timeSquareCtxt += tempT;
+        cntSquareCtxt++;
         timePolyClear -= tempT;
     }
 
@@ -2247,8 +2255,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFVWithPrecompute(ConstCiphertext<DCRTPoly> x, bo
             // if i is a power of two
             TIC(tVar);
             powers[i - 1] = cc->EvalSquare(powers[i / 2 - 1]);
-            timeMultCtxt += TOC_NS(tVar);
-            cntMultCtxt++;
+            timeSquareCtxt += TOC_NS(tVar);
+            cntSquareCtxt++;
         }
         else {
             if (indices[i - 1] == 1) {
@@ -2273,8 +2281,8 @@ Ciphertext<DCRTPoly> EvalPolyPSBFVWithPrecompute(ConstCiphertext<DCRTPoly> x, bo
     for (uint32_t i = 1; i < m; i++) {
         TIC(tVar);
         powers2[i] = cc->EvalSquare(powers2[i - 1]);
-        timeMultCtxt += TOC_NS(tVar);
-        cntMultCtxt++;
+        timeSquareCtxt += TOC_NS(tVar);
+        cntSquareCtxt++;
     }
 
     // computes the product of the powers in power2, that yield x^{k(2*m - 1)}
