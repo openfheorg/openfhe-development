@@ -1,6 +1,6 @@
 12/16/2023: OpenFHE 1.1.2 (stable) is released
 
-* Improves the performance of public-key encryption for all schemes (#598)
+* Improves the performance of secret-key encryption and key generation for all schemes (#598)
 * Improves the efficiency of X(N)OR gates for FHEW/TFHE (#578)
 * Adds an article explaining how to configure OpenFHE for best performance (#549)
 * Includes 18 bug fixes
