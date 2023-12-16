@@ -29,23 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "cryptocontext.h"
+#include "encoding/encodings.h"
+#include "gtest/gtest.h"
 #include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
+#include "utils/debug.h"
 
 #include <iostream>
 #include <vector>
-#include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-
-#include "utils/debug.h"
-#include "utils/parmfactory.h"
-
-#include "UnitTestUtils.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
 
 using namespace lbcrypto;
 

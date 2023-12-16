@@ -190,45 +190,5 @@ int main() {
     cc.Decrypt(sk, ctXNOR4, &result);
     std::cout << "0 XNOR 1 = " << result << "\n" << std::endl;
 
-    // Sample Program: Step 9: Evaluation of XOR gates
-    // using XOR_FAST (1 bootstrap but the probability of failure is higher)
-
-    auto ctXOR1_FAST = cc.EvalBinGate(XOR_FAST, ct10, ct11);
-    auto ctXOR2_FAST = cc.EvalBinGate(XOR_FAST, ct10, ct01);
-    auto ctXOR3_FAST = cc.EvalBinGate(XOR_FAST, ct00, ct01);
-    auto ctXOR4_FAST = cc.EvalBinGate(XOR_FAST, ct00, ct11);
-
-    cc.Decrypt(sk, ctXOR1_FAST, &result);
-    std::cout << "1 XOR_FAST 1 = " << result << std::endl;
-
-    cc.Decrypt(sk, ctXOR2_FAST, &result);
-    std::cout << "1 XOR_FAST 0 = " << result << std::endl;
-
-    cc.Decrypt(sk, ctXOR3_FAST, &result);
-    std::cout << "0 XOR_FAST 0 = " << result << std::endl;
-
-    cc.Decrypt(sk, ctXOR4_FAST, &result);
-    std::cout << "0 XOR_FAST 1 = " << result << "\n" << std::endl;
-
-    // Sample Program: Step 10: Evaluation of XNOR gates
-    // using XNOR_FAST (1 bootstrap but the probability of failure is higher)
-
-    auto ctXNOR1_FAST = cc.EvalBinGate(XNOR_FAST, ct10, ct11);
-    auto ctXNOR2_FAST = cc.EvalBinGate(XNOR_FAST, ct10, ct01);
-    auto ctXNOR3_FAST = cc.EvalBinGate(XNOR_FAST, ct00, ct01);
-    auto ctXNOR4_FAST = cc.EvalBinGate(XNOR_FAST, ct00, ct11);
-
-    cc.Decrypt(sk, ctXNOR1_FAST, &result);
-    std::cout << "1 XNOR_FAST 1 = " << result << std::endl;
-
-    cc.Decrypt(sk, ctXNOR2_FAST, &result);
-    std::cout << "1 XNOR_FAST 0 = " << result << std::endl;
-
-    cc.Decrypt(sk, ctXNOR3_FAST, &result);
-    std::cout << "0 XNOR_FAST 0 = " << result << std::endl;
-
-    cc.Decrypt(sk, ctXNOR4_FAST, &result);
-    std::cout << "0 XNOR_FAST 1 = " << result << "\n" << std::endl;
-
     return 0;
 }

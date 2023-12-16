@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -32,133 +32,116 @@
 /*
   This code benchmarks vector operations.
  */
+
 #define _USE_MATH_DEFINES
 
-#include "vechelper.h"
-#include "lattice/elemparamfactory.h"
-
 #include "benchmark/benchmark.h"
+#include "math/discreteuniformgenerator.h"
+#include "math/hal/basicint.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
 
 #include <iostream>
 
 using namespace lbcrypto;
 
-// add
 template <typename V>
 static void add_BigVec(const V& a, const V& b) {
     V c = a + b;
 }
 
 template <typename V>
-static void BM_BigVec_Add(benchmark::State& state) {  // benchmark
-    auto p     = state.range(0);
-    size_t idx = ElemParamFactory::GetNearestIndex(p);
-    typename V::Integer q(ElemParamFactory::DefaultSet[idx].q);
-    V a = makeVector<V>(p, q);
-    V b = makeVector<V>(p, q);
-
+static void BM_BigVec_Add(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
         add_BigVec<V>(a, b);
     }
 }
 
-// +=
 template <typename V>
 static void addeq_BigVec(V& a, const V& b) {
     a += b;
 }
 
 template <typename V>
-static void BM_BigVec_Addeq(benchmark::State& state) {  // benchmark
-    auto p     = state.range(0);
-    size_t idx = ElemParamFactory::GetNearestIndex(p);
-    typename V::Integer q(ElemParamFactory::DefaultSet[idx].q);
-    V b = makeVector<V>(p, q);
-    V a = makeVector<V>(p, q);
-
+static void BM_BigVec_Addeq(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
-        // V a = makeVector<V>(p, q);
         addeq_BigVec<V>(a, b);
     }
 }
 
-// mult
 template <typename V>
-static void mult_BigVec(const V& a, const V& b) {  // function
+static void mult_BigVec(const V& a, const V& b) {
     V c = a * b;
 }
 
 template <typename V>
-static void BM_BigVec_Mult(benchmark::State& state) {  // benchmark
-    auto p     = state.range(0);
-    size_t idx = ElemParamFactory::GetNearestIndex(p);
-    typename V::Integer q(ElemParamFactory::DefaultSet[idx].q);
-    V a = makeVector<V>(p, q);
-    V b = makeVector<V>(p, q);
-
+static void BM_BigVec_Mult(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
         mult_BigVec<V>(a, b);
     }
 }
 
-// mult
 template <typename V>
 static void multeq_BigVec(V& a, const V& b) {
     a *= b;
 }
 
 template <typename V>
-static void BM_BigVec_Multeq(benchmark::State& state) {  // benchmark
-    auto p     = state.range(0);
-    size_t idx = ElemParamFactory::GetNearestIndex(p);
-    typename V::Integer q(ElemParamFactory::DefaultSet[idx].q);
-    V b = makeVector<V>(p, q);
-    V a = makeVector<V>(p, q);
-
+static void BM_BigVec_Multeq(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
     while (state.KeepRunning()) {
-        // V a = makeVector<V>(p, q);
         multeq_BigVec<V>(a, b);
     }
 }
 
-#define DO_NATIVEVECTOR_BENCHMARK(X)                                                                     \
-    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);     \
-    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024); \
-    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);
-
-#define DO_VECTOR_BENCHMARK_TEMPLATE(X, Y)                                                         \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);          \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024);      \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);      \
-    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_4096")->Arg(4096);*/   \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_8192")->Arg(8192);      \
-    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16384")->Arg(16384);*/ \
+#define DO_VECTOR_BENCHMARK(X, Y)                                                               \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);       \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024);   \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);   \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_4096")->Arg(4096);   \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_8192")->Arg(8192);   \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16384")->Arg(16384); \
     BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_32768")->Arg(32768);
 
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Add)
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Addeq)
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Mult)
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Multeq)
+DO_VECTOR_BENCHMARK(BM_BigVec_Add, NativeVector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Addeq, NativeVector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Mult, NativeVector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Multeq, NativeVector)
 
 #ifdef WITH_BE2
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M2Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M2Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M2Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Multeq, M2Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Add, M2Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Addeq, M2Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Mult, M2Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Multeq, M2Vector)
 #endif
 
 #ifdef WITH_BE4
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M4Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M4Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M4Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Multeq, M4Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Add, M4Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Addeq, M4Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Mult, M4Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Multeq, M4Vector)
 #endif
 
 #ifdef WITH_NTL
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M6Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M6Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M6Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Multeq, M6Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Add, M6Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Addeq, M6Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Mult, M6Vector)
+DO_VECTOR_BENCHMARK(BM_BigVec_Multeq, M6Vector)
 #endif
 
 // execute the benchmarks

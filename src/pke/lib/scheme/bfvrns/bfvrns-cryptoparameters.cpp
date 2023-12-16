@@ -37,7 +37,6 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "cryptocontext.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "globals.h"
 
 namespace lbcrypto {
 
@@ -46,10 +45,6 @@ namespace lbcrypto {
 void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                  EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                  uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
-    // Don't run the function if it is not required
-    if (!PrecomputeCRTTablesAfterDeserializaton())
-        return;
-
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ = GetElementParams()->GetParams().size();
@@ -683,23 +678,17 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             B = B * BigInteger(m_moduliB.back());
         }
 
-        m_numb   = m_numq;
-        m_msk    = PreviousPrime<NativeInteger>(m_moduliB[m_numq - 1], 2 * n);
-        usint s  = 0;
-        auto tmp = m_msk;
-        while (tmp > 0) {
-            tmp >>= 1;
-            s++;
-        }
+        m_numb  = m_numq;
+        m_msk   = PreviousPrime<NativeInteger>(m_moduliB[m_numq - 1], 2 * n);
+        usint s = m_msk.GetMSB();
 
         BigInteger Q(GetElementParams()->GetModulus());
-        BigInteger maxConvolutionValue(BigInteger(2 * n) * BigInteger(GetPlaintextModulus()) * Q * Q);
+        BigInteger maxConvolutionValue(BigInteger(2 * n) * BigInteger(GetPlaintextModulus()) * Q);
         // check msk is large enough
-        while (Q * B * BigInteger(m_msk) < maxConvolutionValue) {
-            auto firstInteger{FirstPrime<NativeInteger>(s + 1, 2 * n)};
+        while (B * BigInteger(m_msk) < maxConvolutionValue) {
+            // TODO: revisit this logic. Maybe change to m_msk = LastPrime<NativeInteger>(++s, 2 * n);
+            auto firstInteger{FirstPrime<NativeInteger>(++s, 2 * n)};
             m_msk = NextPrime<NativeInteger>(firstInteger, 2 * n);
-            if (++s >= 60)
-                OPENFHE_THROW(math_error, "msk is larger than 60 bits");
         }
         m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));
 

@@ -39,15 +39,8 @@
 
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns-internal.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/ckksrns/cryptocontextparams-ckksrns.h"
-
-#include "scheme/ckksrns/ckksrns-scheme.h"
-#include "cryptocontextfactory.h"
-#include "schemebase/base-scheme.h"
 #include "math/dftransform.h"
 
 namespace lbcrypto {
@@ -1876,7 +1869,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
         cSelect            = cc->EvalAdd(
-            cSelect, cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
+                       cSelect, cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
 
         auto cExpandSelect = cSelect;
         if (M > 1) {

@@ -36,10 +36,7 @@
 #include "config_core.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
-#include "lattice/elemparams.h"
-#include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"
-#include "lattice/ilparams.h"
 #include "math/math-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
@@ -1251,7 +1248,7 @@ void GetInternalRepresentation(const std::string& msg) {
 
 // TODO: clean this up
 #ifdef WITH_BE4
-    #if NATIVEINT >= 64
+    #if (NATIVEINT >= 64 && defined(HAVE_INT128))
     correct = "2 68719476736";
     #endif
 #endif

@@ -75,7 +75,6 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};
-    dug.SetModulus(Q);
 
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};

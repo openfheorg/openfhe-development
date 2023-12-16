@@ -36,9 +36,9 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
 #include "benchmark/benchmark.h"
@@ -105,8 +105,7 @@ void NTTTransform1024(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
     NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
@@ -127,8 +126,7 @@ void INTTTransform1024(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
     NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
@@ -149,8 +147,7 @@ void NTTTransform4096(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
     NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
@@ -171,8 +168,7 @@ void INTTTransform4096(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
     NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
@@ -193,8 +189,7 @@ void NTTTransformInPlace1024(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
@@ -214,8 +209,7 @@ void INTTTransformInPlace1024(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
@@ -235,8 +229,7 @@ void NTTTransformInPlace4096(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
@@ -256,8 +249,7 @@ void INTTTransformInPlace4096(benchmark::State& state) {
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(modulusQ);
-    NativeVector x = dug.GenerateVector(phim);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
     NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;

@@ -502,12 +502,14 @@ template <typename Element>
 std::pair<BinFHEContext, LWEPrivateKey> CryptoContextImpl<Element>::EvalCKKStoFHEWSetup(
     SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
     uint32_t logQswitch) {
+    VerifyCKKSScheme(__func__);
     return GetScheme()->EvalCKKStoFHEWSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                       uint32_t dim1, uint32_t L) {
+    VerifyCKKSScheme(__func__);
     if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "CKKS private key passed to EvalCKKStoFHEWKeyGen was not generated with this crypto context");
@@ -538,12 +540,14 @@ void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& ke
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalCKKStoFHEWPrecompute(double scale) {
+    VerifyCKKSScheme(__func__);
     GetScheme()->EvalCKKStoFHEWPrecompute(*this, scale);
 }
 
 template <typename Element>
 std::vector<std::shared_ptr<LWECiphertextImpl>> CryptoContextImpl<Element>::EvalCKKStoFHEW(
     ConstCiphertext<Element> ciphertext, uint32_t numCtxts) {
+    VerifyCKKSScheme(__func__);
     if (ciphertext == nullptr)
         OPENFHE_THROW(config_error, "ciphertext passed to EvalCKKStoFHEW is empty");
     return GetScheme()->EvalCKKStoFHEW(ciphertext, numCtxts);
@@ -551,12 +555,15 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> CryptoContextImpl<Element>::Eval
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE, uint32_t numSlotsCKKS, uint32_t logQ) {
+    VerifyCKKSScheme(__func__);
     GetScheme()->EvalFHEWtoCKKSSetup(*this, ccLWE, numSlotsCKKS, logQ);
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                       uint32_t numSlots, uint32_t dim1, uint32_t L) {
+    VerifyCKKSScheme(__func__);
+
     if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
@@ -586,6 +593,7 @@ template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKS(
     std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, uint32_t numCtxts, uint32_t numSlots, uint32_t p,
     double pmin, double pmax) const {
+    VerifyCKKSScheme(__func__);
     return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
 }
 
@@ -593,6 +601,7 @@ template <typename Element>
 std::pair<BinFHEContext, LWEPrivateKey> CryptoContextImpl<Element>::EvalSchemeSwitchingSetup(
     SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
     uint32_t logQswitch) {
+    VerifyCKKSScheme(__func__);
     return GetScheme()->EvalSchemeSwitchingSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
 }
 
@@ -600,6 +609,8 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                            uint32_t numValues, bool oneHot, bool alt, uint32_t dim1CF,
                                                            uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
+    VerifyCKKSScheme(__func__);
+
     if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
@@ -629,6 +640,7 @@ void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element
 template <typename Element>
 void CryptoContextImpl<Element>::EvalCompareSwitchPrecompute(uint32_t pLWE, uint32_t initLevel, double scaleSign,
                                                              bool unit) {
+    VerifyCKKSScheme(__func__);
     GetScheme()->EvalCompareSwitchPrecompute(*this, pLWE, initLevel, scaleSign, unit);
 }
 
@@ -637,6 +649,8 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalCompareSchemeSwitching(Const
                                                                            ConstCiphertext<Element> ciphertext2,
                                                                            uint32_t numCtxts, uint32_t numSlots,
                                                                            uint32_t pLWE, double scaleSign, bool unit) {
+    VerifyCKKSScheme(__func__);
+
     if (ciphertext1 == nullptr || ciphertext2 == nullptr)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalCompareSchemeSwitching are empty");
     if (Mismatched(ciphertext1->GetCryptoContext()) || Mismatched(ciphertext2->GetCryptoContext()))
@@ -652,6 +666,8 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitch
                                                                                     uint32_t numValues,
                                                                                     uint32_t numSlots, bool oneHot,
                                                                                     uint32_t pLWE, double scaleSign) {
+    VerifyCKKSScheme(__func__);
+
     if (!ciphertext)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
     if (Mismatched(ciphertext->GetCryptoContext()))
@@ -665,6 +681,8 @@ template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitchingAlt(
     ConstCiphertext<Element> ciphertext, PublicKey<Element> publicKey, uint32_t numValues, uint32_t numSlots,
     bool oneHot, uint32_t pLWE, double scaleSign) {
+    VerifyCKKSScheme(__func__);
+
     if (ciphertext == nullptr)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
     if (Mismatched(ciphertext->GetCryptoContext()))
@@ -680,6 +698,8 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitch
                                                                                     uint32_t numValues,
                                                                                     uint32_t numSlots, bool oneHot,
                                                                                     uint32_t pLWE, double scaleSign) {
+    VerifyCKKSScheme(__func__);
+
     if (ciphertext == nullptr)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
     if (Mismatched(ciphertext->GetCryptoContext()))
@@ -693,6 +713,8 @@ template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMaxSchemeSwitchingAlt(
     ConstCiphertext<Element> ciphertext, PublicKey<Element> publicKey, uint32_t numValues, uint32_t numSlots,
     bool oneHot, uint32_t pLWE, double scaleSign) {
+    VerifyCKKSScheme(__func__);
+
     if (ciphertext == nullptr)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
     if (Mismatched(ciphertext->GetCryptoContext()))

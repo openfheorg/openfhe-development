@@ -40,6 +40,7 @@
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
 
+#include "utils/blockAllocator/xvector.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
@@ -125,7 +126,7 @@ private:
 #if BLOCK_VECTOR_ALLOCATION != 1
     std::vector<IntegerType> m_data{};
 #else
-    xvector<IntegerType> m_data;
+    xvector<IntegerType> m_data{};
 #endif
 
     // function to check if the index is a valid index.
@@ -308,9 +309,11 @@ public:
    * @param value is the modulus value to set.
    */
     void SetModulus(const IntegerType& value) {
-        if (value.GetMSB() > MAX_MODULUS_SIZE)
-            OPENFHE_THROW(lbcrypto::not_available_error,
-                          "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
+        if (value.GetMSB() > MAX_MODULUS_SIZE) {
+            std::string errMsg{"Requested modulus' size " + std::to_string(value.GetMSB()) + " is not supported."};
+            errMsg += " NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE);
+            OPENFHE_THROW(lbcrypto::not_available_error, errMsg);
+        }
         m_modulus.m_value = value.m_value;
     }
 

@@ -87,6 +87,21 @@ class CryptoContextImpl : public Serializable {
     using IntType  = typename Element::Integer;
     using ParmType = typename Element::Params;
 
+    /**
+    * @brief VerifyCKKSScheme is to check if the cryptocontext scheme is CKKS. if it is not
+    *        the function will thow an exception
+    * @param functionName is the calling function name. __func__ can be used instead
+    */
+    inline void VerifyCKKSScheme(const std::string& functionName) const {
+        if (!isCKKS(m_schemeId)) {
+            std::string errMsg = "Function " + std::string(functionName) +
+                                 " is available for the CKKS scheme only."
+                                 " The current scheme is " +
+                                 convertToString(m_schemeId);
+            OPENFHE_THROW(config_error, errMsg);
+        }
+    }
+
     void SetKSTechniqueInScheme();
 
     const CryptoContext<Element> GetContextForPointer(const CryptoContextImpl<Element>* cc) const {
@@ -101,6 +116,7 @@ class CryptoContextImpl : public Serializable {
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, usint slots) const {
+        VerifyCKKSScheme(__func__);
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         if (level > 0) {
             // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
@@ -1091,6 +1107,7 @@ public:
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t scaleDeg = 1,
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
                                       usint slots = 0) const {
+        VerifyCKKSScheme(__func__);
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
@@ -1108,6 +1125,7 @@ public:
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t scaleDeg = 1, uint32_t level = 0,
                                       const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
+        VerifyCKKSScheme(__func__);
         if (!value.size())
             OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
 
@@ -3197,7 +3215,8 @@ public:
    * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
    * decoding and stores the necessary parameters
    * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
-   * 3. EvalBootstrap: refreshes the given ciphertext
+   * 3. EvalBootstrapPrecompute: computes and stores the plaintexts for encoding and decoding if not already done in EvalBootstrapSetup
+   * 4. EvalBootstrap: refreshes the given ciphertext
    */
 
     /**
@@ -3208,11 +3227,12 @@ public:
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
-   * @param correctionFactor - value to internally rescale message by to improve precision of bootstrapping. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64.
+   * @param correctionFactor - value to internally rescale message by to improve precision of bootstrapping. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64
+   * @param precompute - flag specifying whether to precompute the plaintexts for encoding and decoding.
    */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
-                            uint32_t slots = 0, uint32_t correctionFactor = 0) {
-        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor);
+                            uint32_t slots = 0, uint32_t correctionFactor = 0, bool precompute = true) {
+        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute);
     }
     /**
    * Generates all automorphism keys for EvalBootstrap. Supported in CKKS only.
@@ -3246,6 +3266,14 @@ public:
                 iterRowKeys++;
             }
         }
+    }
+    /**
+   * Computes the plaintexts for encoding and decoding for both linear and FFT-like methods. Supported in CKKS only.
+   *
+   * @param slots - number of slots to be bootstrapped
+   */
+    void EvalBootstrapPrecompute(uint32_t slots = 0) {
+        GetScheme()->EvalBootstrapPrecompute(*this, slots);
     }
     /**
    * Defines the bootstrapping evaluation of ciphertext using either the

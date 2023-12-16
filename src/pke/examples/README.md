@@ -113,7 +113,7 @@ Now your code should look like this:
 ## Description of the CryptoContext parameters
 Choosing the CryptoContext parameters is important for obtaining the best performance for your encrypted application, while maintaining the desired level of security. We strongly recommend that you specify the security level and have OpenFHE automatically select the other parameters, unless you are an expert in homomorphic encryption. If you would like to modify the parameters to understand how they affect noise growth and performance, we provide descriptions below.
 
-The default values for all the parameters can be found in [cryptocontextparams-defaults.h](../include/scheme/cryptocontextparams-defaults.h)
+The default values for all the parameters can be found in [gen-cryptocontext-params-defaults.h](../include/scheme/gen-cryptocontext-params-defaults.h)
 
 **PlaintextModulus ptModulus** - plaintext modulus(for BGV/BFV), which impacts noise growth
 

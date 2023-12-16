@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H
 #define LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H
 
-#include "lattice/ildcrtparams.h"
+#include "lattice/hal/default/ildcrtparams.h"
 #include "lattice/ilelement.h"
 
 #include "math/math-hal.h"
@@ -137,9 +137,7 @@ public:
                                                                                  Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
-            DerivedType ilvec(dgg, params, Format::COEFFICIENT);
-            ilvec.SetFormat(resultFormat);
-            return ilvec;
+            return DerivedType(dgg, params, resultFormat);
         };
     }
 

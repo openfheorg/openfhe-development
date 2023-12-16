@@ -41,5 +41,10 @@
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersCKKSRNS);
 CEREAL_REGISTER_TYPE(lbcrypto::SchemeCKKSRNS);
+CEREAL_REGISTER_TYPE(lbcrypto::CKKSBootstrapPrecom);
+CEREAL_REGISTER_TYPE(lbcrypto::FHECKKSRNS);
+
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHERNS, lbcrypto::FHECKKSRNS);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRNS, lbcrypto::CryptoParametersCKKSRNS);
 
 #endif

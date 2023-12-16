@@ -220,7 +220,7 @@ void SwitchCKKSToFHEW() {
             LWEPlaintext resultDecomp;
             if (i == decomp.size() - 1) {
                 p = pLWE2 /
-                    pow(pLWE1, std::floor(std::log(pLWE2) /
+                    std::pow((double)pLWE1, std::floor(std::log(pLWE2) /
                                           std::log(pLWE1)));  // The last digit should be up to P / p^floor(log_p(P))
             }
             ccLWE.Decrypt(privateKeyFHEW, ct, &resultDecomp, p);

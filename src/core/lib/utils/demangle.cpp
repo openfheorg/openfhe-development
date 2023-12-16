@@ -34,14 +34,14 @@
 #if defined(__clang__) || defined(__GNUG__)
     #include <cxxabi.h>
 
-std::string demangle(const char* name) {
+std::string demangle(const char* const name) {
     int status = -1;
-    std::unique_ptr<char, void (*)(void*)> result{abi::__cxa_demangle(name, NULL, NULL, &status), std::free};
+    std::unique_ptr<char> result{abi::__cxa_demangle(name, NULL, NULL, &status)};
 
-    return (status == 0) ? result.get() : "UNKNOWN";
+    return (status == 0) ? result.get() : (std::string("Can not demangle symbol: ") + name);
 }
 #else
-std::string demangle(const char* name) {
+std::string demangle(const char* const name) {
     return name;
 }
 #endif

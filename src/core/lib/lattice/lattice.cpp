@@ -33,14 +33,9 @@
   implementation of the integer lattice
  */
 
-// needed?
-// #define BLOCK_VECTOR_IMPLEMENT
 #include "config_core.h"
 
-#include "lattice/elemparams.h"
 #include "lattice/field2n-impl.h"
-#include "lattice/ilparams.h"
-#include "lattice/ildcrtparams.h"
 #include "lattice/lat-hal.h"
 #include "lattice/matrix-lattice-impl.h"
 
@@ -52,6 +47,8 @@
 #include "math/discretegaussiangenerator-impl.h"
 #include "math/binaryuniformgenerator-impl.h"
 
+#include ILPARAMS_IMPLEMENTATION
+#include ILDCRTPARAMS_IMPLEMENTATION
 #include POLY_IMPLEMENTATION
 #include DCRTPOLY_IMPLEMENTATION
 
@@ -59,9 +56,8 @@
 namespace lbcrypto {
 
 template class ElemParams<NativeInteger>;
-// template class ILDCRTParamsImpl<NativeInteger>;
-template class ILParamsImpl<NativeInteger>;
 
+MAKE_ILPARAMS_TYPE(NativeInteger)
 MAKE_POLY_TYPE(NativeVector)
 
 template class Matrix<NativePoly>;
@@ -76,8 +72,7 @@ template class Matrix<Field2n>;
 }  // namespace lbcrypto
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<NativeInteger>, lbcrypto::ElemParams<NativeInteger>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<NativeInteger>, lbcrypto::ILParamsImpl<NativeInteger>::SerializedVersion());
-// CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<NativeInteger>,lbcrypto::ILDCRTParams<NativeInteger>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILNativeParams, lbcrypto::ILNativeParams::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::Field2n, lbcrypto::Field2n::SerializedVersion());
 
@@ -86,9 +81,9 @@ CEREAL_CLASS_VERSION(lbcrypto::Field2n, lbcrypto::Field2n::SerializedVersion());
 namespace lbcrypto {
 
 template class ElemParams<M2Integer>;
-template class ILParamsImpl<M2Integer>;
-template class ILDCRTParams<M2Integer>;
 
+MAKE_ILPARAMS_TYPE(M2Integer)
+MAKE_ILDCRTPARAMS_TYPE(M2Integer)
 MAKE_POLY_TYPE(M2Vector)
 MAKE_DCRTPOLY_TYPE(M2Vector)
 
@@ -109,8 +104,8 @@ template Matrix<M2Integer> Rotate(Matrix<M2DCRTPoly> const& inMat);
 }  // namespace lbcrypto
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M2Integer>, lbcrypto::ElemParams<M2Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M2Integer>, lbcrypto::ILParamsImpl<M2Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M2Integer>, lbcrypto::ILDCRTParams<M2Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M2Params, lbcrypto::M2Params::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M2DCRTParams, lbcrypto::M2DCRTParams::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M2Poly, lbcrypto::M2Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M2DCRTPoly, lbcrypto::M2DCRTPoly::SerializedVersion());
 #endif
@@ -120,9 +115,9 @@ CEREAL_CLASS_VERSION(lbcrypto::M2DCRTPoly, lbcrypto::M2DCRTPoly::SerializedVersi
 namespace lbcrypto {
 
 template class ElemParams<M4Integer>;
-template class ILParamsImpl<M4Integer>;
-template class ILDCRTParams<M4Integer>;
 
+MAKE_ILPARAMS_TYPE(M4Integer)
+MAKE_ILDCRTPARAMS_TYPE(M4Integer)
 MAKE_POLY_TYPE(M4Vector)
 MAKE_DCRTPOLY_TYPE(M4Vector)
 
@@ -143,8 +138,8 @@ template Matrix<M4Integer> Rotate(Matrix<M4DCRTPoly> const& inMat);
 }  // namespace lbcrypto
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M4Integer>, lbcrypto::ElemParams<M4Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M4Integer>, lbcrypto::ILParamsImpl<M4Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M4Integer>, lbcrypto::ILDCRTParams<M4Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M4Params, lbcrypto::M4Params::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M4DCRTParams, lbcrypto::M4DCRTParams::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M4Poly, lbcrypto::M4Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M4DCRTPoly, lbcrypto::M4DCRTPoly::SerializedVersion());
 #endif
@@ -154,9 +149,9 @@ CEREAL_CLASS_VERSION(lbcrypto::M4DCRTPoly, lbcrypto::M4DCRTPoly::SerializedVersi
 namespace lbcrypto {
 
 template class ElemParams<M6Integer>;
-template class ILParamsImpl<M6Integer>;
-template class ILDCRTParams<M6Integer>;
 
+MAKE_ILPARAMS_TYPE(M6Integer)
+MAKE_ILDCRTPARAMS_TYPE(M6Integer)
 MAKE_POLY_TYPE(M6Vector)
 MAKE_DCRTPOLY_TYPE(M6Vector)
 
@@ -177,8 +172,8 @@ template Matrix<M6Integer> Rotate(Matrix<M6DCRTPoly> const& inMat);
 }  // namespace lbcrypto
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M6Integer>, lbcrypto::ElemParams<M6Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M6Integer>, lbcrypto::ILParamsImpl<M6Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M6Integer>, lbcrypto::ILDCRTParams<M6Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M6Params, lbcrypto::M6Params::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M6DCRTParams, lbcrypto::M6DCRTParams::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M6Poly, lbcrypto::M6Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M6DCRTPoly, lbcrypto::M6DCRTPoly::SerializedVersion());
 #endif

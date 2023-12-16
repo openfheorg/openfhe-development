@@ -142,8 +142,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
     }
     else {
         DiscreteUniformGeneratorImpl<typename Element::Vector> dug;
-        dug.SetModulus(encodingParams->GetPlaintextModulus());
-        auto randomVector{dug.GenerateVector(n - 1)};
+        auto randomVector{dug.GenerateVector(n - 1, encodingParams->GetPlaintextModulus())};
 
         std::vector<int64_t> randomIntVector(n);
 

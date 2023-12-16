@@ -37,11 +37,7 @@
 #ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
 #define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
 
-// #include "math/math-hal.h"
 #include "math/discretegaussiangenerator.h"
-// #include "math/nbtheory.h"
-
-#include "utils/debug.h"
 #include "utils/exception.h"
 
 #include <cmath>
@@ -112,17 +108,17 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
 }
 
 template <typename VecType>
-std::shared_ptr<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(usint size) const {
+std::shared_ptr<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(uint32_t size) const {
     std::shared_ptr<int64_t> ans(new int64_t[size], std::default_delete<int64_t[]>());
 
     if (!peikert) {
-        for (usint i = 0; i < size; ++i)
+        for (uint32_t i = 0; i < size; ++i)
             (ans.get())[i] = GenerateIntegerKarney(0, m_std);
         return ans;
     }
 
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    for (usint i = 0; i < size; ++i) {
+    for (uint32_t i = 0; i < size; ++i) {
         // we need to use the binary uniform generator rather than regular
         // continuous distribution; see DG14 for details
         double seed = distribution(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
@@ -136,7 +132,7 @@ std::shared_ptr<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVect
 }
 
 template <typename VecType>
-usint DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<double>& S, double search) const {
+uint32_t DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<double>& S, double search) const {
     // STL binary search implementation
     auto lower = std::lower_bound(S.begin(), S.end(), search);
     if (lower != S.end()) {
@@ -160,11 +156,11 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
 }
 
 template <typename VecType>
-VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(const usint size,
+VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(const uint32_t size,
                                                                const typename VecType::Integer& modulus) const {
     auto result = GenerateIntVector(size);
     VecType ans(size, modulus);
-    for (usint i = 0; i < size; i++) {
+    for (uint32_t i = 0; i < size; ++i) {
         int32_t v = (result.get())[i];
         if (v < 0)
             ans[i] = modulus - typename VecType::Integer(-v);
@@ -206,9 +202,9 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
     std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
-    double sigmaFactor = 1 / (-2. * stddev * stddev);
-    usint count        = 0;
-    const usint limit  = 10000;
+    double sigmaFactor   = 1 / (-2. * stddev * stddev);
+    uint32_t count       = 0;
+    const uint32_t limit = 10000;
 
     int32_t x;
     bool flagSuccess = false;

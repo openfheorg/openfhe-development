@@ -167,7 +167,6 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<Ri
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};
-    dug.SetModulus(Q);
 
     // Reduce mod q (dealing with negative number as well)
     int64_t q  = params->Getq().ConvertToInt<int64_t>();
@@ -209,7 +208,6 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingG
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};
-    dug.SetModulus(Q);
 
     auto skAuto{skNTT.AutomorphismTransform(k)};
 

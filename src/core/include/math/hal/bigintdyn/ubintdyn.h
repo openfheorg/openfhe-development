@@ -62,13 +62,14 @@
         #include <utility>
         #include <vector>
 
-        #if NATIVEINT >= 64
-// TODO: fix shifting issues with expdtype = uint128_t
-// using expdtype = BasicInteger;
-using expdtype = uint64_t;
-        #elif NATIVEINT == 32
-using expdtype = BasicInteger;
+        // clang-format off
+        // TODO: fix shifting issue when limb_t == Dlimb_t
+        #if (NATIVEINT >= 64 && defined(HAVE_INT128))
+            using expdtype = uint64_t;
+        #else
+            using expdtype = uint32_t;
         #endif
+    // clang-format on
 
         #define _SECURE_SCL 0  // to speed up VS
         #define NO_BARRETT     // currently barrett is slower than mod

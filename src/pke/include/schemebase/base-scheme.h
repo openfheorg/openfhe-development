@@ -104,7 +104,7 @@ public:
    * Enable features with a bit mast of PKESchemeFeature codes
    * @param mask
    */
-    virtual void Enable(usint mask) {
+    void Enable(uint32_t mask) {
         if (mask & PKE)
             Enable(PKE);
         if (mask & KEYSWITCH)
@@ -123,8 +123,8 @@ public:
             Enable(SCHEMESWITCH);
     }
 
-    virtual usint GetEnabled() const {
-        usint flag = 0;
+    uint32_t GetEnabled() const {
+        uint32_t flag = 0;
         if (m_PKE != nullptr)
             flag |= PKE;
         if (m_KeySwitch != nullptr)
@@ -144,6 +144,46 @@ public:
         return flag;
     }
 
+    bool IsFeatureEnabled(PKESchemeFeature feature) {
+        switch (feature) {
+            case PKE:
+                if (m_PKE != nullptr)
+                    return true;
+                break;
+            case KEYSWITCH:
+                if (m_KeySwitch != nullptr)
+                    return true;
+                break;
+            case LEVELEDSHE:
+                if (m_LeveledSHE != nullptr)
+                    return true;
+                break;
+            case ADVANCEDSHE:
+                if (m_AdvancedSHE != nullptr)
+                    return true;
+                break;
+            case PRE:
+                if (m_PRE != nullptr)
+                    return true;
+                break;
+            case MULTIPARTY:
+                if (m_Multiparty != nullptr)
+                    return true;
+                break;
+            case FHE:
+                if (m_FHE != nullptr)
+                    return true;
+                break;
+            case SCHEMESWITCH:
+                if (m_SchemeSwitch != nullptr)
+                    return true;
+                break;
+            default:
+                OPENFHE_THROW(config_error, "Unknown PKESchemeFeature " + std::to_string(feature));
+                break;
+        }
+        return false;
+    }
     // instantiated in the scheme implementation class
     virtual void Enable(PKESchemeFeature feature) {
         OPENFHE_THROW(config_error, "Enable is not implemented");
@@ -1340,9 +1380,9 @@ public:
 
     void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, const std::vector<uint32_t>& levelBudget = {5, 4},
                             const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
-                            uint32_t correctionFactor = 0) {
+                            uint32_t correctionFactor = 0, bool precompute = true) {
         VerifyFHEEnabled(__func__);
-        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor);
+        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute);
         return;
     }
 
@@ -1350,6 +1390,12 @@ public:
                                                                            uint32_t slots) {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalBootstrapKeyGen(privateKey, slots);
+    }
+
+    void EvalBootstrapPrecompute(const CryptoContextImpl<Element>& cc, uint32_t slots = 0) {
+        VerifyFHEEnabled(__func__);
+        m_FHE->EvalBootstrapPrecompute(cc, slots);
+        return;
     }
 
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
@@ -1482,6 +1528,17 @@ public:
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
+        // TODO (dsuponit): should we serialize all feature pointers???
+        // if (IsFeatureEnabled()) {
+        // }
+        // ar(::cereal::make_nvp("params", m_ParamsGen));
+        // ar(::cereal::make_nvp("pke", m_PKE));
+        // ar(::cereal::make_nvp("keyswitch", m_KeySwitch));
+        // ar(::cereal::make_nvp("pre", m_PRE));
+        // ar(::cereal::make_nvp("lvldshe", m_LeveledSHE));
+        // ar(::cereal::make_nvp("advshe", m_AdvancedSHE));
+        ar(::cereal::make_nvp("fhe", m_FHE));
+        // ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
         ar(::cereal::make_nvp("enabled", GetEnabled()));
     }
 
@@ -1492,7 +1549,15 @@ public:
                                                  " is from a later version of the library");
         }
 
-        usint enabled;
+        // ar(::cereal::make_nvp("params", m_ParamsGen));
+        // ar(::cereal::make_nvp("pke", m_PKE));
+        // ar(::cereal::make_nvp("keyswitch", m_KeySwitch));
+        // ar(::cereal::make_nvp("pre", m_PRE));
+        // ar(::cereal::make_nvp("lvldshe", m_LeveledSHE));
+        // ar(::cereal::make_nvp("advshe", m_AdvancedSHE));
+        ar(::cereal::make_nvp("fhe", m_FHE));
+        // ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
+        uint32_t enabled = 0;
         ar(::cereal::make_nvp("enabled", enabled));
         Enable(enabled);
     }

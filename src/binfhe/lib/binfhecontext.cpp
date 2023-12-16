@@ -92,7 +92,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
         ringDim = N;
     }
     // find prime Q for NTT
-    NativeInteger Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(logQprime, 2 * ringDim), 2 * ringDim);
+    NativeInteger Q = LastPrime<NativeInteger>(logQprime, 2 * ringDim);
     // q = 2*ringDim by default for maximum plaintext space, if needed for arbitrary function evaluation, q = ringDim
     uint32_t q = arbFunc ? ringDim : 2 * ringDim;
 
@@ -153,8 +153,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 
     BinFHEContextParams params = search->second;
     // intermediate prime
-    NativeInteger Q(
-        PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
+    NativeInteger Q(LastPrime<NativeInteger>(params.numberBits, params.cyclOrder));
 
     usint ringDim  = params.cyclOrder / 2;
     auto lweparams = (PRIME == params.modKS) ?
@@ -173,8 +172,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     // intermediate prime
-    NativeInteger Q(
-        PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
+    NativeInteger Q(LastPrime<NativeInteger>(params.numberBits, params.cyclOrder));
 
     usint ringDim = params.cyclOrder / 2;
 

@@ -78,10 +78,12 @@ public:
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
-   * @param correctionFactor - value to rescale message by to improve precision. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64.
+   * @param correctionFactor - value to rescale message by to improve precision. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64
+   * @param precompute - flag specifying whether to precompute the plaintexts for encoding and decoding.
    */
     virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
-                                    std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor) {
+                                    std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor,
+                                    bool precompute) {
         OPENFHE_THROW(not_implemented_error, "Not supported");
     }
 
@@ -95,6 +97,15 @@ public:
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
                                                                                    uint32_t slots) {
+        OPENFHE_THROW(not_implemented_error, "Not supported");
+    }
+
+    /**
+   * Computes the plaintexts for encoding and decoding for both linear and FFT-like methods. Supported in CKKS only.
+   *
+   * @param slots - number of slots to be bootstrapped
+   */
+    virtual void EvalBootstrapPrecompute(const CryptoContextImpl<Element>& cc, uint32_t slots) {
         OPENFHE_THROW(not_implemented_error, "Not supported");
     }
 
@@ -373,6 +384,16 @@ public:
                                                                        double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
+
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
+
+    template <class Archive>
+    void save(Archive& ar) const {}
+
+    template <class Archive>
+    void load(Archive& ar) {}
 };
 
 }  // namespace lbcrypto

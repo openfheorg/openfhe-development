@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_CKKSRNS_CRYPTOPARAMETERS_H
 
 #include "schemerns/rns-cryptoparameters.h"
+#include "globals.h"
 
 #include <memory>
 #include <string>
@@ -108,8 +109,10 @@ public:
         }
         ar(cereal::base_class<CryptoParametersRNS>(this));
 
-        PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
-                            m_extraBits);
+        if (PrecomputeCRTTablesAfterDeserializaton()) {
+            PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
+                                m_extraBits);
+        }
     }
 
     std::string SerializedObjectName() const override {

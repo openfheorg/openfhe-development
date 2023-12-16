@@ -33,8 +33,8 @@
   Definitions for scheme parameter default class
  */
 
-#include "scheme/cryptocontextparams-base.h"
-#include "scheme/cryptocontextparams-defaults.h"
+#include "scheme/gen-cryptocontext-params.h"
+#include "scheme/gen-cryptocontext-params-defaults.h"
 #include "utils/exception.h"
 
 #include <string>
@@ -99,6 +99,15 @@ void Params::ValidateRingDim(usint ringDim) {
     if (!IsPowerOfTwo(ringDim)) {
         std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(ringDim) +
                              "]. Ring dimension must be a power of 2.");
+        OPENFHE_THROW(config_error, errorMsg);
+    }
+}
+//====================================================================================================================
+void Params::ValidateMultiplicativeDepth(usint multiplicativeDepth) {
+    constexpr usint maxMultiplicativeDepthValue = 1000;
+    if (multiplicativeDepth > maxMultiplicativeDepthValue) {
+        std::string errorMsg(std::string("The provided multiplicative depth [") + std::to_string(multiplicativeDepth) +
+                             "] is not computationally feasible. Use a smaller value.");
         OPENFHE_THROW(config_error, errorMsg);
     }
 }

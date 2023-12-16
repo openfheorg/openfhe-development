@@ -96,7 +96,6 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     const auto ns = cryptoParams->GetNoiseScale();
 
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-    DugType dug;
     TugType tug;
 
     Element s;

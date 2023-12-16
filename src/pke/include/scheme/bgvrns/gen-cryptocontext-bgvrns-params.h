@@ -30,21 +30,37 @@
 //==================================================================================
 
 /*
-  This is some helper code for benchmarking vector operations
+  Parameter class to generate BGVRNS crypto context
  */
 
-#ifndef _VECHELPER_H_
-#define _VECHELPER_H_
+#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__
 
-#define _USE_MATH_DEFINES
-#include "math/discreteuniformgenerator.h"
+#include "scheme/gen-cryptocontext-params.h"
 
-#include <utility>
-using namespace lbcrypto;
+#include <string>
+#include <vector>
 
-template <typename V>
-inline V makeVector(usint ringdim, const typename V::Integer& mod) {
-    return DiscreteUniformGeneratorImpl<V>().GenerateVector(ringdim, mod);
-}
+namespace lbcrypto {
 
-#endif
+class CryptoContextBGVRNS;
+
+// every CCParams class should include the following forward declaration as there is
+// no general CCParams class template. This way we may create scheme specific classes
+// derived from Params or have them completely independent.
+template <typename T>
+class CCParams;
+//====================================================================================================================
+template <>
+class CCParams<CryptoContextBGVRNS> : public Params {
+public:
+    CCParams() : Params(BGVRNS_SCHEME) {}
+    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
+    CCParams(const CCParams& obj) = default;
+    CCParams(CCParams&& obj)      = default;
+};
+//====================================================================================================================
+
+}  // namespace lbcrypto
+
+#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H__

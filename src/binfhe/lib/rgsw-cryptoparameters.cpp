@@ -79,13 +79,15 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         NativeInteger(7) * (m_q >> 3),   // AND
         NativeInteger(1) * (m_q >> 3),   // NOR
         NativeInteger(3) * (m_q >> 3),   // NAND
-        NativeInteger(5) * (m_q >> 3),   // XOR_FAST
-        NativeInteger(1) * (m_q >> 3),   // XNOR_FAST
+        NativeInteger(6) * (m_q >> 3),   // XOR
+        NativeInteger(2) * (m_q >> 3),   // XNOR
         NativeInteger(7) * (m_q >> 3),   // MAJORITY
         NativeInteger(11) * (m_q / 12),  // AND3
         NativeInteger(7) * (m_q / 12),   // OR3
         NativeInteger(15) * (m_q >> 4),  // AND4
-        NativeInteger(9) * (m_q >> 4)    // OR4
+        NativeInteger(9) * (m_q >> 4),   // OR4
+        NativeInteger(6) * (m_q >> 3),   // XOR_FAST
+        NativeInteger(2) * (m_q >> 3)    // XNOR_FAST
     };
 
     // Computes polynomials X^m - 1 that are needed in the accumulator for the
