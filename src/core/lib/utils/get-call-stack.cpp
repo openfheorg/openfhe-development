@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 // clang-format off
-#if defined(__linux__) || defined(__GNUG__)
+#if defined(__linux__) && defined(__GNUG__)
 #include "utils/get-call-stack.h"
 #include "utils/demangle.h"
 
