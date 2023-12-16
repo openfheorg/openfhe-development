@@ -1,3 +1,12 @@
+12/16/2023: OpenFHE 1.1.2 (stable) is released
+
+* Improves the performance of public-key encryption for all schemes (#598)
+* Improves the efficiency of X(N)OR gates for FHEW/TFHE (#578)
+* Adds an article explaining how to configure OpenFHE for best performance (#549)
+* Includes 18 bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.1.2%22
+
 08/23/2023: OpenFHE 1.1.1 (development) is released
 
 * Fixes the CMake files (binfhe module is now a dependency for the pke module) [#525, #538]
