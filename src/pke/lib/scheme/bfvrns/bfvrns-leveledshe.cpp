@@ -805,13 +805,14 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
-    auto elemParams         = *((*digits)[0].GetParams());
 
+    // ATTN: elemParams should not be a shared_ptr because it drops params in the loop below and it would modify digits
+    // TODO (dsuponit): wrap the lines below in a function to return elemParams as an object
+    auto elemParams = *((*digits)[0].GetParams());
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-            auto paramsP = cryptoParams->GetParamsP();
-            size_t sizeP = paramsP->GetParams().size();
-            for (uint32_t i = 0; i < sizeP; i++) {
+            size_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
+            for (size_t i = 0; i < sizeP; ++i) {
                 elemParams.PopLastParam();
             }
         }
