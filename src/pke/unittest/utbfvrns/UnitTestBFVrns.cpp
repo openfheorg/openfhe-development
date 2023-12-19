@@ -91,15 +91,15 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBFVRNS& test
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint MULDEPTH      = 5;
-constexpr usint PTM           = 65537;
+constexpr usint MULDEPTH = 5;
+constexpr usint PTM      = 65537;
 // clang-format off
 static std::vector<TEST_CASE_UTBFVRNS> testCases = {
     // TestType,         Descr,  Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech, PREMode
     { EVAL_FAST_ROTATION, "01", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
-    { EVAL_FAST_ROTATION, "02", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
-    { EVAL_FAST_ROTATION, "03", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
-    { EVAL_FAST_ROTATION, "04", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
+    { EVAL_FAST_ROTATION, "02", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
+    { EVAL_FAST_ROTATION, "03", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQ, DFLT,    DFLT}},
+    { EVAL_FAST_ROTATION, "04", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQ, DFLT,    DFLT}},
     // ==========================================
 };
 // clang-format on
@@ -148,44 +148,47 @@ protected:
             ciphertextMultResult      = cc->EvalSquare(ciphertextMultResult);
             ciphertextMultResult      = cc->EvalSquare(ciphertextMultResult);
 
-            auto digits      = cc->EvalFastRotationPrecompute(ciphertextMultResult);
+            auto digits      = cc->EvalFastRotationPrecompute(ciphertextMul12);
+            auto digits2     = cc->EvalFastRotationPrecompute(ciphertextMultResult);
             const uint32_t M = cc->GetCyclotomicOrder();
 
-            auto ciphertextRot1 = cc->EvalFastRotation(ciphertextMultResult, 1, M, digits);
-            auto ciphertextRot2 = cc->EvalFastRotation(ciphertextMultResult, 2, M, digits);
-            auto ciphertextRot3 = cc->EvalFastRotation(ciphertextMultResult, -1, M, digits);
-            auto ciphertextRot4 = cc->EvalFastRotation(ciphertextMultResult, -2, M, digits);
+            auto ciphertextRot1 = cc->EvalFastRotation(ciphertextMul12, 1, M, digits);
+            auto ciphertextRot2 = cc->EvalFastRotation(ciphertextMul12, -1, M, digits);
+            auto ciphertextRot3 = cc->EvalFastRotation(ciphertextMultResult, 2, M, digits2);
+            auto ciphertextRot4 = cc->EvalFastRotation(ciphertextMultResult, -2, M, digits2);
+
+            // Plaintext plaintextMul12;
+            // cc->Decrypt(keyPair.secretKey, ciphertextMul12, &plaintextMul12);
+            // plaintextMultResult => { 3 4 3 16 25 36 49 64 81 100 121 144 }
 
             // Plaintext plaintextMultResult;
             // cc->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
             // plaintextMultResult => { 81 4096 -14912 -16 15300 -29119 3875 16 -2298 15428 -8061 5916 }
 
             // EvalFastRotate +1 (left rotation)
-            std::vector<int64_t> expectedResults1 = {4096, -14912, -16,   15300, -29119, 3875,
-                                                     16,   -2298,  15428, -8061, 5916,   0};
+            std::vector<int64_t> expectedResults1 = {4, 3, 16, 25, 36, 49, 64, 81, 100, 121, 144, 0};
             Plaintext plaintextRot1;
             cc->Decrypt(keyPair.secretKey, ciphertextRot1, &plaintextRot1);
             plaintextRot1->SetLength(vectorOfInts1.size());
             auto results1 = plaintextRot1->GetPackedValue();
             checkEquality(results1, expectedResults1, eps, failmsg + " EvalFastRotation(+1) failed");
 
-            // EvalFastRotate +2 (left rotation)
-            std::vector<int64_t> expectedResults2 = {-14912, -16,   15300, -29119, 3875, 16,
-                                                     -2298,  15428, -8061, 5916,   0,    0};
+            // EvalFastRotate -1 (right rotation)
+            std::vector<int64_t> expectedResults2 = {0, 3, 4, 3, 16, 25, 36, 49, 64, 81, 100, 121};
             Plaintext plaintextRot2;
             cc->Decrypt(keyPair.secretKey, ciphertextRot2, &plaintextRot2);
             plaintextRot2->SetLength(vectorOfInts1.size());
             auto results2 = plaintextRot2->GetPackedValue();
-            checkEquality(results2, expectedResults2, eps, failmsg + " EvalFastRotation(+2) failed");
+            checkEquality(results2, expectedResults2, eps, failmsg + " EvalFastRotation(-1) failed");
 
-            // EvalFastRotate -1 (right rotation)
-            std::vector<int64_t> expectedResults3 = {0,      81,   4096, -14912, -16,   15300,
-                                                     -29119, 3875, 16,   -2298,  15428, -8061};
+            // EvalFastRotate +2 (left rotation)
+            std::vector<int64_t> expectedResults3 = {-14912, -16,   15300, -29119, 3875, 16,
+                                                     -2298,  15428, -8061, 5916,   0,    0};
             Plaintext plaintextRot3;
             cc->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
             plaintextRot3->SetLength(vectorOfInts1.size());
             auto results3 = plaintextRot3->GetPackedValue();
-            checkEquality(results3, expectedResults3, eps, failmsg + " EvalFastRotation(-1) failed");
+            checkEquality(results3, expectedResults3, eps, failmsg + " EvalFastRotation(+2) failed");
 
             // EvalFastRotate -2 (right rotation)
             std::vector<int64_t> expectedResults4 = {0,     0,      81,   4096, -14912, -16,
