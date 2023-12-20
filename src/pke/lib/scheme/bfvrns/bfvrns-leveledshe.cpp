@@ -806,7 +806,11 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
-    // ATTN: elemParams should not be a shared_ptr because it drops params in the loop below and it would modify digits
+    /* In the HPSOVERQLEVELED mode, we do modulus switching to a smaller modulus before we start key switching.
+    The modulus switching was already done when computing the ciphertext digits using EvalFastRotationPrecompute.
+    The goal of the "if branch" below is to extract the current modulus Ql from the element parameters of one of
+    the digit polynomials (by removing the auxiliary moduli added for hybrid key switching).
+    ATTN: elemParams should not be a shared_ptr because it would modify digits. */
     // TODO (dsuponit): wrap the lines below in a function to return elemParams as an object
     auto elemParams = *((*digits)[0].GetParams());
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
