@@ -67,12 +67,11 @@ class SchemeSwitchingDataSerializer {
 public:
     SchemeSwitchingDataSerializer() = default;
     SchemeSwitchingDataSerializer(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
-                                  std::shared_ptr<lbcrypto::BinFHEContext> binFHECryptoContext0,
-                                  Ciphertext<DCRTPoly> FHEWtoCKKSSwitchKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
+                                  Ciphertext<DCRTPoly> RAWCiphertext0)
         : cryptoContext(cryptoContext0),
           publicKey(publicKey0),
-          binFHECryptoContext(binFHECryptoContext0),
-          FHEWtoCKKSSwitchKey(FHEWtoCKKSSwitchKey0),
+          binFHECryptoContext(cryptoContext0->GetBinCCForSchemeSwitch()),
+          FHEWtoCKKSSwitchKey(cryptoContext0->GetSwkFC()),
           RAWCiphertext(RAWCiphertext0) {}
 
     void SetDataDirectory(const std::string& dir) {
@@ -84,12 +83,6 @@ public:
     }
     PublicKey<DCRTPoly> getPublicKey() {
         return publicKey;
-    }
-    std::shared_ptr<lbcrypto::BinFHEContext> getBinFHECryptoContext() {
-        return binFHECryptoContext;
-    }
-    Ciphertext<DCRTPoly> getFHEWtoCKKSSwitchKey() {
-        return FHEWtoCKKSSwitchKey;
     }
     Ciphertext<DCRTPoly> getRAWCiphertext() {
         return RAWCiphertext;

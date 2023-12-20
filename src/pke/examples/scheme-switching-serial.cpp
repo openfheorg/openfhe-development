@@ -164,8 +164,6 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
                                                              true, oneHot, false, 27, 0, 0, 1, 0);
 
     serverCC->EvalSchemeSwitchingKeyGen(serverKP, privateKeyFHEW);
-    auto serverBinCC   = serverCC->GetBinCCForSchemeSwitch();
-    auto swkFHEWtoCKKS = serverCC->GetSwkFC();
 
     std::vector<std::complex<double>> vec = {1.0, 2.0, 3.0, 4.0};
     std::cout << "\nDisplaying data vector: ";
@@ -202,7 +200,7 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
 
     demarcate("Scheme Switching Part 2: Data Serialization (server)");
 
-    SchemeSwitchingDataSerializer serializer(serverCC, serverKP.publicKey, serverBinCC, swkFHEWtoCKKS, serverC);
+    SchemeSwitchingDataSerializer serializer(serverCC, serverKP.publicKey, serverC);
     serializer.Serialize();
 
     return std::make_tuple(serverCC, serverKP, vec.size());
@@ -221,13 +219,13 @@ void clientProcess(uint32_t modulus_LWE) {
     CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
     CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 
-    SchemeSwitchingDataSerializer serializer;
-    serializer.Deserialize();
+    SchemeSwitchingDataSerializer deserializer;
+    deserializer.Deserialize();
 
-    CryptoContext<DCRTPoly> clientCC{serializer.getCryptoContext()};
-    PublicKey<DCRTPoly> clientPublicKey{serializer.getPublicKey()};
-    std::shared_ptr<lbcrypto::BinFHEContext> clientBinCC{serializer.getBinFHECryptoContext()};
-    Ciphertext<DCRTPoly> clientC{serializer.getRAWCiphertext()};
+    CryptoContext<DCRTPoly> clientCC{deserializer.getCryptoContext()};
+    PublicKey<DCRTPoly> clientPublicKey{deserializer.getPublicKey()};
+    std::shared_ptr<lbcrypto::BinFHEContext> clientBinCC{clientCC->GetBinCCForSchemeSwitch()};
+    Ciphertext<DCRTPoly> clientC{deserializer.getRAWCiphertext()};
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;

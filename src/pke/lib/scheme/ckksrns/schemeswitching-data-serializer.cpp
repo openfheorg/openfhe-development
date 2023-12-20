@@ -37,6 +37,7 @@
 
 namespace lbcrypto {
 
+// Macros to be used in this source file only
 #define THROW_SERIALIZATION_ERROR   OPENFHE_THROW(serialize_error, std::string("Error serializing to ") + outFile)
 #define THROW_DESERIALIZATION_ERROR OPENFHE_THROW(deserialize_error, std::string("Error deserializing from ") + outFile)
 #define THROW_CAN_NOT_OPEN_FILE     OPENFHE_THROW(config_error, std::string("Can not open ") + outFile)
