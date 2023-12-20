@@ -41,6 +41,7 @@
 
 #include "openfhe.h"
 #include "binfhecontext.h"
+#include "scheme/ckksrns/schemeswitching-data-serializer.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"
@@ -201,95 +202,8 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
 
     demarcate("Scheme Switching Part 2: Data Serialization (server)");
 
-    if (!Serial::SerializeToFile(DATAFOLDER + ccLocation, serverCC, SerType::BINARY)) {
-        std::cerr << "Error writing serialization of the crypto context to "
-                     "cryptocontext.txt"
-                  << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Cryptocontext serialized" << std::endl;
-
-    if (!Serial::SerializeToFile(DATAFOLDER + pubKeyLocation, serverKP.publicKey, SerType::BINARY)) {
-        std::cerr << "Exception writing public key to pubkey.txt" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Public key serialized" << std::endl;
-
-    std::ofstream multKeyFile(DATAFOLDER + multKeyLocation, std::ios::out | std::ios::binary);
-    if (multKeyFile.is_open()) {
-        if (!serverCC->SerializeEvalMultKey(multKeyFile, SerType::BINARY)) {
-            std::cerr << "Error writing eval mult keys" << std::endl;
-            std::exit(1);
-        }
-        std::cout << "EvalMult and relinearization keys have been serialized" << std::endl;
-        multKeyFile.close();
-    }
-    else {
-        std::cerr << "Error serializing EvalMult keys" << std::endl;
-        std::exit(1);
-    }
-
-    std::ofstream rotationKeyFile(DATAFOLDER + rotKeyLocation, std::ios::out | std::ios::binary);
-    if (rotationKeyFile.is_open()) {
-        if (!serverCC->SerializeEvalAutomorphismKey(rotationKeyFile, SerType::BINARY)) {
-            std::cerr << "Error writing rotation keys" << std::endl;
-            std::exit(1);
-        }
-        std::cout << "Rotation keys have been serialized" << std::endl;
-    }
-    else {
-        std::cerr << "Error serializing Rotation keys" << std::endl;
-        std::exit(1);
-    }
-
-    if (!Serial::SerializeToFile(DATAFOLDER + FHEWtoCKKSKeyLocation, swkFHEWtoCKKS, SerType::BINARY)) {
-        std::cerr << " Error writing switching key" << std::endl;
-        std::exit(1);
-    }
-
-    if (!Serial::SerializeToFile(DATAFOLDER + cipherLocation, serverC, SerType::BINARY)) {
-        std::cerr << " Error writing ciphertext" << std::endl;
-        std::exit(1);
-    }
-
-    if (!Serial::SerializeToFile(DATAFOLDER + binccLocation, serverBinCC, SerType::BINARY)) {
-        std::cerr << "Error serializing the binfhe cryptocontext" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The binfhe cryptocontext has been serialized." << std::endl;
-
-    // Serializing refreshing and key switching keys (needed for bootstrapping)
-
-    if (!Serial::SerializeToFile(DATAFOLDER + btRkLocation, (*serverBinCC).GetRefreshKey(), SerType::BINARY)) {
-        std::cerr << "Error serializing the refreshing key" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The refreshing key has been serialized." << std::endl;
-
-    if (!Serial::SerializeToFile(DATAFOLDER + btSwkLocation, (*serverBinCC).GetSwitchKey(), SerType::BINARY)) {
-        std::cerr << "Error serializing the switching key" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The key switching key has been serialized." << std::endl;
-
-    auto BTKeyMap = (*serverBinCC).GetBTKeyMap();
-    for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++) {
-        auto index  = it->first;
-        auto thekey = it->second;
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey,
-                                     SerType::BINARY)) {
-            std::cerr << "Error serializing the refreshing key" << std::endl;
-            std::exit(1);
-        }
-
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey,
-                                     SerType::BINARY)) {
-            std::cerr << "Error serializing the switching key" << std::endl;
-            std::exit(1);
-        }
-
-        std::cout << "The BT map element for baseG = " << index << " has been serialized." << std::endl;
-    }
+    SchemeSwitchingDataSerializer serializer(serverCC, serverKP.publicKey, serverBinCC, swkFHEWtoCKKS, serverC);
+    serializer.Serialize();
 
     return std::make_tuple(serverCC, serverKP, vec.size());
 }
@@ -307,108 +221,13 @@ void clientProcess(uint32_t modulus_LWE) {
     CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
     CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 
-    CryptoContext<DCRTPoly> clientCC;
-    if (!Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::BINARY)) {
-        std::cerr << "I cannot read serialized data from: " << DATAFOLDER + ccLocation << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Client CC deserialized" << std::endl;
+    SchemeSwitchingDataSerializer serializer;
+    serializer.Deserialize();
 
-    PublicKey<DCRTPoly> clientPublicKey;
-    if (!Serial::DeserializeFromFile(DATAFOLDER + pubKeyLocation, clientPublicKey, SerType::BINARY)) {
-        std::cerr << "I cannot read serialized data from: " << DATAFOLDER + pubKeyLocation << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Client KP deserialized" << std::endl;
-
-    std::ifstream multKeyIStream(DATAFOLDER + multKeyLocation, std::ios::in | std::ios::binary);
-    if (!multKeyIStream.is_open()) {
-        std::cerr << "Cannot read serialization from " << DATAFOLDER + multKeyLocation << std::endl;
-        std::exit(1);
-    }
-    if (!clientCC->DeserializeEvalMultKey(multKeyIStream, SerType::BINARY)) {
-        std::cerr << "Could not deserialize eval mult key file" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Deserialized eval mult keys" << std::endl;
-
-    std::ifstream rotKeyIStream(DATAFOLDER + rotKeyLocation, std::ios::in | std::ios::binary);
-    if (!rotKeyIStream.is_open()) {
-        std::cerr << "Cannot read serialization from " << DATAFOLDER + multKeyLocation << std::endl;
-        std::exit(1);
-    }
-    if (!clientCC->DeserializeEvalAutomorphismKey(rotKeyIStream, SerType::BINARY)) {
-        std::cerr << "Could not deserialize eval rot key file" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Deserialized rotation keys" << std::endl;
-
-    std::shared_ptr<lbcrypto::BinFHEContext> clientBinCC;
-    if (Serial::DeserializeFromFile(DATAFOLDER + binccLocation, clientBinCC, SerType::BINARY) == false) {
-        std::cerr << "Could not deserialize the binfhe cryptocontext" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The cryptocontext has been deserialized." << std::endl;
-
-    // deserializing the refreshing and switching keys (for bootstrapping)
-
-    RingGSWACCKey refreshKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + btRkLocation, refreshKey, SerType::BINARY) == false) {
-        std::cerr << "Could not deserialize the refresh key" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The refresh key has been deserialized." << std::endl;
-
-    LWESwitchingKey ksKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + btSwkLocation, ksKey, SerType::BINARY) == false) {
-        std::cerr << "Could not deserialize the switching key" << std::endl;
-        std::exit(1);
-    }
-    std::cout << "The switching key has been deserialized." << std::endl;
-
-    std::vector<uint32_t> baseGlist = {1 << 18};
-
-    for (size_t i = 0; i < baseGlist.size(); i++) {
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey,
-                                        SerType::BINARY) == false) {
-            std::cerr << "Could not deserialize the refresh key" << std::endl;
-            std::exit(1);
-        }
-
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey,
-                                        SerType::BINARY) == false) {
-            std::cerr << "Could not deserialize the switching key" << std::endl;
-            std::exit(1);
-        }
-        std::cout << "The BT map element for baseG = " << baseGlist[i] << " has been deserialized." << std::endl;
-
-        // Loading the keys in the cryptocontext
-        (*clientBinCC).BTKeyMapLoadSingleElement(baseGlist[i], {refreshKey, ksKey});
-    }
-
-    // Loading the keys in the cryptocontext
-    (*clientBinCC).BTKeyLoad({refreshKey, ksKey});
-
-    // Set the internal binfhe cryptocontext
-    clientCC->SetBinCCForSchemeSwitch(clientBinCC);
-
-    // Load the switching key between FHEW to CKKS
-    Ciphertext<DCRTPoly> swkFHEWtoCKKS;
-    if (!Serial::DeserializeFromFile(DATAFOLDER + FHEWtoCKKSKeyLocation, swkFHEWtoCKKS, SerType::BINARY)) {
-        std::cerr << "Cannot read serialization from " << DATAFOLDER + FHEWtoCKKSKeyLocation << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Deserialized switching key" << '\n' << std::endl;
-
-    // Set the switching key
-    clientCC->SetSwkFC(swkFHEWtoCKKS);
-
-    Ciphertext<DCRTPoly> clientC;
-    if (!Serial::DeserializeFromFile(DATAFOLDER + cipherLocation, clientC, SerType::BINARY)) {
-        std::cerr << "Cannot read serialization from " << DATAFOLDER + cipherLocation << std::endl;
-        std::exit(1);
-    }
-    std::cout << "Deserialized ciphertext" << '\n' << std::endl;
+    CryptoContext<DCRTPoly> clientCC{serializer.getCryptoContext()};
+    PublicKey<DCRTPoly> clientPublicKey{serializer.getPublicKey()};
+    std::shared_ptr<lbcrypto::BinFHEContext> clientBinCC{serializer.getBinFHECryptoContext()};
+    Ciphertext<DCRTPoly> clientC{serializer.getRAWCiphertext()};
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
