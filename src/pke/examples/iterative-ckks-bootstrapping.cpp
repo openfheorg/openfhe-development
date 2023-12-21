@@ -184,6 +184,7 @@ void IterativeBootstrapExample() {
 
     // Output the precision of bootstrapping after two iterations. It should be approximately double the original precision.
     std::cout << "Bootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
-    std::cout << "Number of levels remaining after 2 bootstrappings: " << depth - ciphertextTwoIterations->GetLevel()
+    std::cout << "Number of levels remaining after 2 bootstrappings: "
+              << depth - ciphertextTwoIterations->GetLevel() - (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
               << std::endl;
 }
