@@ -1828,7 +1828,7 @@ public:
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
 
-        if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
+        if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(type_error,
                           "Insufficient value was used for maxRelinSkDeg to generate "
                           "keys for EvalMult");
@@ -1847,7 +1847,7 @@ public:
             OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
+        if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(type_error,
                           "Insufficient value was used for maxRelinSkDeg to generate "
                           "keys for EvalMult");
@@ -1870,7 +1870,8 @@ public:
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
 
-        if (evalKeyVec.size() < (ciphertext1->GetElements().size() + ciphertext2->GetElements().size() - 3)) {
+        if (evalKeyVec.size() <
+            (ciphertext1->NumberCiphertextElements() + ciphertext2->NumberCiphertextElements() - 3)) {
             OPENFHE_THROW(type_error,
                           "Insufficient value was used for maxRelinSkDeg to generate "
                           "keys for EvalMult");
@@ -2100,6 +2101,10 @@ public:
    */
     Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const {
         CheckCiphertext(ciphertext);
+        // rotation can be performed on 2-element ciphertexts only
+        if (ciphertext->NumberCiphertextElements() != 2) {
+            OPENFHE_THROW(config_error, "Ciphertext should be relinearized before rotation.");
+        }
 
         auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
         return GetScheme()->EvalAtIndex(ciphertext, index, evalKeyMap);
@@ -2435,7 +2440,7 @@ public:
         }
 
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
-        if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
+        if (evalKeyVec.size() < (ciphertextVec[0]->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(type_error, "Insufficient value was used for maxRelinSkDeg to generate keys");
         }
 
