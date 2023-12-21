@@ -206,11 +206,11 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
-        if (extraModSize == dcrtBits || extraModSize == firstModSize) {
+        if (extraModSize == firstModSize) {
             moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
         }
         else {
-            moduliQ[numPrimes] = LastPrime<NativeInteger>(extraModSize, cyclOrder);
+            moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
         }
         rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
     }
