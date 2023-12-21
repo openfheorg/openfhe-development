@@ -1219,7 +1219,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     // Compute multiplication key
     algo->EvalMultKeyGen(privateKey);
 
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
 
     // Compute conjugation key
     auto conjKey       = ConjugateKeyGen(privateKey);

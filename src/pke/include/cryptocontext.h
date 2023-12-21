@@ -3343,12 +3343,31 @@ public:
    */
     void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
-        ValidateKey(keyPair.secretKey);
+        if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error,
+                          "CKKS private key passed to EvalCKKStoFHEWKeyGen was not generated with this crypto context");
+        }
         if (!lwesk) {
             OPENFHE_THROW(config_error, "FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
         }
         auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk);
-        InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
+        auto ekv      = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
     }
 
     /**
@@ -3405,9 +3424,30 @@ public:
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
                               uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0) {
         VerifyCKKSScheme(__func__);
-        ValidateKey(keyPair.secretKey);
+
+        if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error,
+                          "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
+        }
+
         auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
-        InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
+        auto ekv      = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
     }
 
     /**
@@ -3470,9 +3510,30 @@ public:
    */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
-        ValidateKey(keyPair.secretKey);
+
+        if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error,
+                          "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
+        }
+
         auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
-        InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
+        auto ekv      = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
     }
 
     /**
@@ -3510,8 +3571,12 @@ public:
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
                                                    bool unit = false) {
         VerifyCKKSScheme(__func__);
-        ValidateCiphertext(ciphertext1);
-        ValidateCiphertext(ciphertext2);
+        if (ciphertext1 == nullptr || ciphertext2 == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalCompareSchemeSwitching are empty");
+        if (Mismatched(ciphertext1->GetCryptoContext()) || Mismatched(ciphertext2->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "A ciphertext passed to EvalCompareSchemeSwitching was not "
+                          "generated with this crypto context");
         return GetScheme()->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
                                                        unit);
     }
@@ -3537,7 +3602,12 @@ public:
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                             double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
-        ValidateCiphertext(ciphertext);
+        if (!ciphertext)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitching was not "
+                          "generated with this crypto context");
         return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
     }
 
@@ -3549,7 +3619,12 @@ public:
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                                double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
-        ValidateCiphertext(ciphertext);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitchingAlt are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
+                          "generated with this crypto context");
         return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
     }
 
@@ -3574,7 +3649,12 @@ public:
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                             double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
-        ValidateCiphertext(ciphertext);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitching was not "
+                          "generated with this crypto context");
         return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
     }
 
@@ -3586,7 +3666,12 @@ public:
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                                double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
-        ValidateCiphertext(ciphertext);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
+                          "generated with this crypto context");
         return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
     }
 
