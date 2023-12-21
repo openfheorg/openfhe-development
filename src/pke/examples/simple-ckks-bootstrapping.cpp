@@ -99,7 +99,8 @@ void SimpleBootstrapExample() {
     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
-    // Note that the actual number of levels reported below will be levelsAvailableAfterBootstrap + 1 because an additional level
+    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping 
+    // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
     uint32_t levelsAvailableAfterBootstrap = 10;
     usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
