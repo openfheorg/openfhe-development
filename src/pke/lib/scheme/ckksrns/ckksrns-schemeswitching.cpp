@@ -43,8 +43,6 @@
 
 #include "math/dftransform.h"
 
-// #include <malloc.h>
-
 namespace lbcrypto {
 
 //------------------------------------------------------------------------------
@@ -2071,7 +2069,6 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
         auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
 
         // Transform the ciphertext from CKKS to FHEW
-        // auto cTemp = cc->EvalCKKStoFHEW(cDiff, numValues / (2 * M));
         auto cTemp = EvalCKKStoFHEW(cDiff, numValues / (2 * M));
 
         // Evaluate the sign
@@ -2083,8 +2080,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
         }
 
         // Scheme switching from FHEW to CKKS
-        auto dim1 = getRatioBSGSLT(numValues / (2 * M));
-        // auto cSelect = cc->EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
+        auto dim1    = getRatioBSGSLT(numValues / (2 * M));
         auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
@@ -2159,7 +2155,6 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
         auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
 
         // Transform the ciphertext from CKKS to FHEW
-        // auto cTemp = cc->EvalCKKStoFHEW(cDiff, numValues / (2 * M));
         auto cTemp = EvalCKKStoFHEW(cDiff, numValues / (2 * M));
 
         // Evaluate the sign
@@ -2177,8 +2172,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
         }
 
         // Scheme switching from FHEW to CKKS
-        auto dim1 = getRatioBSGSLT(numValues);
-        // auto cExpandSelect = cc->EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1);
+        auto dim1          = getRatioBSGSLT(numValues);
         auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1);
 
         // Update the ciphertext of values and the indicator
