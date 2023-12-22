@@ -40,6 +40,7 @@
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
 
+#include "utils/blockAllocator/xvector.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
@@ -125,7 +126,7 @@ private:
 #if BLOCK_VECTOR_ALLOCATION != 1
     std::vector<IntegerType> m_data{};
 #else
-    xvector<IntegerType> m_data;
+    xvector<IntegerType> m_data{};
 #endif
 
     // function to check if the index is a valid index.
