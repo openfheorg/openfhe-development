@@ -2101,10 +2101,6 @@ public:
    */
     Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const {
         CheckCiphertext(ciphertext);
-        // rotation can be performed on 2-element ciphertexts only
-        if (ciphertext->NumberCiphertextElements() != 2) {
-            OPENFHE_THROW(config_error, "Ciphertext should be relinearized before rotation.");
-        }
 
         auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
         return GetScheme()->EvalAtIndex(ciphertext, index, evalKeyMap);

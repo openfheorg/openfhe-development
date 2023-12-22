@@ -416,6 +416,11 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
                                                               const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                                               CALLER_INFO_ARGS_CPP) const {
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2) {
+        OPENFHE_THROW(config_error, "Ciphertext should be relinearized before.");
+    }
+
     // verify if the key i exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(i);
     if (evalKeyIterator == evalKeyMap.end()) {
