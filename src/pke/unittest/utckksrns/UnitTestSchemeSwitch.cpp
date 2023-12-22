@@ -753,7 +753,7 @@ protected:
             CryptoContextFactory<Element>::ReleaseAllContexts();
             //====================================================================================================
             // Deserialize all necessary objects
-            SchemeSwitchingDataSerializer deserializer;
+            SchemeSwitchingDataDeserializer deserializer;
             deserializer.Deserialize();
 
             CryptoContext<DCRTPoly> cc{deserializer.getCryptoContext()};

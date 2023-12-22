@@ -219,7 +219,7 @@ void clientProcess(uint32_t modulus_LWE) {
     CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
     CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 
-    SchemeSwitchingDataSerializer deserializer;
+    SchemeSwitchingDataDeserializer deserializer;
     deserializer.Deserialize();
 
     CryptoContext<DCRTPoly> clientCC{deserializer.getCryptoContext()};

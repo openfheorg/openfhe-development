@@ -38,7 +38,8 @@
 
 namespace lbcrypto {
 
-class SchemeSwitchingDataSerializer {
+class DataAndLocation {
+protected:
     CryptoContext<DCRTPoly> cryptoContext{nullptr};
     PublicKey<DCRTPoly> publicKey{nullptr};
     std::shared_ptr<lbcrypto::BinFHEContext> binFHECryptoContext{nullptr};
@@ -64,19 +65,41 @@ class SchemeSwitchingDataSerializer {
         return std::string(dataDirectory) + "/" + std::to_string(index) + "_" + baseFileName;
     }
 
-public:
-    SchemeSwitchingDataSerializer() = default;
-    SchemeSwitchingDataSerializer(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
-                                  Ciphertext<DCRTPoly> RAWCiphertext0)
+    DataAndLocation() = default;
+    DataAndLocation(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
+                    Ciphertext<DCRTPoly> RAWCiphertext0)
         : cryptoContext(cryptoContext0),
           publicKey(publicKey0),
           binFHECryptoContext(cryptoContext0->GetBinCCForSchemeSwitch()),
           FHEWtoCKKSSwitchKey(cryptoContext0->GetSwkFC()),
           RAWCiphertext(RAWCiphertext0) {}
 
+public:
     void SetDataDirectory(const std::string& dir) {
-        dataDirectory = dir;
+        if (dir.empty()) {
+            OPENFHE_THROW(config_error, "dir is an empty string");
+        }
+
+        // remove slash if it is the last charactes in "dir"
+        if (dir.back() == '/')
+            dataDirectory = dir.substr(0, dir.size() - 1);
+        else
+            dataDirectory = dir;
     }
+};
+
+class SchemeSwitchingDataSerializer : public DataAndLocation {
+public:
+    SchemeSwitchingDataSerializer(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
+                                  Ciphertext<DCRTPoly> RAWCiphertext0)
+        : DataAndLocation(cryptoContext0, publicKey0, RAWCiphertext0) {}
+
+    void Serialize();
+};
+
+class SchemeSwitchingDataDeserializer : public DataAndLocation {
+public:
+    SchemeSwitchingDataDeserializer() = default;
 
     CryptoContext<DCRTPoly> getCryptoContext() {
         return cryptoContext;
@@ -88,7 +111,6 @@ public:
         return RAWCiphertext;
     }
 
-    void Serialize();
     void Deserialize();
 };
 

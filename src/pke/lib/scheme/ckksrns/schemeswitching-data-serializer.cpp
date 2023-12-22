@@ -142,7 +142,7 @@ void SchemeSwitchingDataSerializer::Serialize() {
     //=============================================================================================================
 }
 
-void SchemeSwitchingDataSerializer::Deserialize() {
+void SchemeSwitchingDataDeserializer::Deserialize() {
     std::string outFile;
     //=============================================================================================================
     outFile = dataDirectory + "/" + cryptoContextFile;
