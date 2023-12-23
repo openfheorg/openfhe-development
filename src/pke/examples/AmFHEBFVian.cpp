@@ -607,7 +607,7 @@ void LUTthroughBFV() {
     lwesk = ccLWE.KeyGen();
 
     // Step 2. Main BFV cryptocontext generation
-    uint32_t numDigits = 3;
+    uint32_t numDigits = 4;
     uint32_t maxRelin  = 2;
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(

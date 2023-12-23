@@ -373,11 +373,11 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
                 cvMult[i].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GettQlSlHatInvModsDivsModq(l),
                                         cryptoParams->GettQlSlHatInvModsDivsFrac(l), cryptoParams->GetModqBarrettMu());
 
-            if (l < sizeQ - 1) {
-                // Expand back to basis Q.
-                cvMult[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
-                                              cryptoParams->GetQlHatModqPrecon(l), sizeQ);
-            }
+            //            if (l < sizeQ - 1) {
+            //                // Expand back to basis Q.
+            //                cvMult[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+            //                                              cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+            //            }
         }
     }
     else {
@@ -660,11 +660,11 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
                 cryptoParams->GetParamsQl(l), cryptoParams->GettQlSlHatInvModsDivsModq(l),
                 cryptoParams->GettQlSlHatInvModsDivsFrac(l), cryptoParams->GetModqBarrettMu());
 
-            if (l < sizeQ - 1) {
-                // Expand back to basis Q.
-                cvSquare[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
-                                                cryptoParams->GetQlHatModqPrecon(l), sizeQ);
-            }
+            //            if (l < sizeQ - 1) {
+            //                // Expand back to basis Q.
+            //                cvSquare[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+            //                                                cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+            //            }
         }
     }
     else {
@@ -699,25 +699,25 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
                                                 ConstCiphertext<DCRTPoly> ciphertext2,
                                                 const EvalKey<DCRTPoly> evalKey) const {
     Ciphertext<DCRTPoly> ciphertext = EvalMult(ciphertext1, ciphertext2);
-    RelinearizeCore(ciphertext, evalKey);
+    RelinearizeCoreMult(ciphertext, evalKey);
     return ciphertext;
 }
 
 void LeveledSHEBFVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2,
                                        const EvalKey<DCRTPoly> evalKey) const {
     ciphertext1 = EvalMult(ciphertext1, ciphertext2);
-    RelinearizeCore(ciphertext1, evalKey);
+    RelinearizeCoreMult(ciphertext1, evalKey);
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciphertext,
                                                   const EvalKey<DCRTPoly> evalKey) const {
     Ciphertext<DCRTPoly> csquare = EvalSquare(ciphertext);
-    RelinearizeCore(csquare, evalKey);
+    RelinearizeCoreMult(csquare, evalKey);
     return csquare;
 }
 
 void LeveledSHEBFVRNS::EvalSquareInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const {
-    ciphertext = EvalSquare(ciphertext);
+    ciphertext = EvalSquareMult(ciphertext);
     RelinearizeCore(ciphertext, evalKey);
 }
 
@@ -979,6 +979,66 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
     else {
         cv[1].SetFormat(Format::EVALUATION);
         cv[1] += (*ab)[1];
+    }
+
+    cv.resize(2);
+}
+
+void LeveledSHEBFVRNS::RelinearizeCoreMult(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+    uint32_t l = 0;
+
+    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    bool isKeySwitch          = (cv.size() == 2);
+
+    auto algo = ciphertext->GetCryptoContext()->GetScheme();
+
+    size_t sizeQl = cv[0].GetNumOfElements();
+    l             = sizeQl - 1;
+
+    //    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+    //        size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
+    //        size_t sizeQ    = cv[0].GetNumOfElements();
+    //        double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
+    //
+    //        // how many levels to drop
+    //        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
+    //        l                      = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+    //        if (isKeySwitch) {
+    //            cv[1].SetFormat(COEFFICIENT);
+    //            cv[1] = cv[1].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+    //                                        cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+    //        }
+    //        else {
+    //            cv[2].SetFormat(COEFFICIENT);
+    //            cv[2] = cv[2].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+    //                                        cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+    //        }
+    //    }
+
+    for (auto& c : cv)
+        c.SetFormat(Format::EVALUATION);
+
+    std::shared_ptr<std::vector<DCRTPoly>> ab =
+        isKeySwitch ? algo->KeySwitchCore(cv[1], evalKey) : algo->KeySwitchCore(cv[2], evalKey);
+
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+        // size_t sizeQ = cv[0].GetNumOfElements();
+        (*ab)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+                                     cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+        (*ab)[1].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+                                     cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+    }
+
+    cv[0] += (*ab)[0];
+
+    if (!isKeySwitch) {
+        cv[1] += (*ab)[1];
+    }
+    else {
+        cv[1] = (*ab)[1];
     }
 
     cv.resize(2);
