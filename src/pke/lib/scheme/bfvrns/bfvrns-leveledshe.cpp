@@ -717,8 +717,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
 }
 
 void LeveledSHEBFVRNS::EvalSquareInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const {
-    ciphertext = EvalSquareMult(ciphertext);
-    RelinearizeCore(ciphertext, evalKey);
+    ciphertext = EvalSquare(ciphertext);
+    RelinearizeCoreMult(ciphertext, evalKey);
 }
 
 void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const {
