@@ -660,11 +660,11 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
                 cryptoParams->GetParamsQl(l), cryptoParams->GettQlSlHatInvModsDivsModq(l),
                 cryptoParams->GettQlSlHatInvModsDivsFrac(l), cryptoParams->GetModqBarrettMu());
 
-            //            if (l < sizeQ - 1) {
-            //                // Expand back to basis Q.
-            //                cvSquare[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
-            //                                                cryptoParams->GetQlHatModqPrecon(l), sizeQ);
-            //            }
+            // if (l < sizeQ - 1) {
+            // Expand back to basis Q.
+            // cvSquare[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+            // cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+            // }
         }
     }
     else {
@@ -1023,15 +1023,6 @@ void LeveledSHEBFVRNS::RelinearizeCoreMult(Ciphertext<DCRTPoly>& ciphertext, con
     std::shared_ptr<std::vector<DCRTPoly>> ab =
         isKeySwitch ? algo->KeySwitchCore(cv[1], evalKey) : algo->KeySwitchCore(cv[2], evalKey);
 
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-        // size_t sizeQ = cv[0].GetNumOfElements();
-        (*ab)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
-                                     cryptoParams->GetQlHatModqPrecon(l), sizeQ);
-        (*ab)[1].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
-                                     cryptoParams->GetQlHatModqPrecon(l), sizeQ);
-    }
-
     cv[0] += (*ab)[0];
 
     if (!isKeySwitch) {
@@ -1039,6 +1030,15 @@ void LeveledSHEBFVRNS::RelinearizeCoreMult(Ciphertext<DCRTPoly>& ciphertext, con
     }
     else {
         cv[1] = (*ab)[1];
+    }
+
+    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+        // size_t sizeQ = cv[0].GetNumOfElements();
+        cv[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+                                  cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+        cv[1].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
+                                  cryptoParams->GetQlHatModqPrecon(l), sizeQ);
     }
 
     cv.resize(2);
