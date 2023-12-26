@@ -116,7 +116,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->GetElements().size() == 0) {
+    if (ciphertext->NumberCiphertextElements() == 0) {
         std::string msg = "IntMPBootAdjustScale: no polynomials in the input ciphertext.";
         OPENFHE_THROW(openfhe_error, msg);
     }
@@ -134,12 +134,11 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     size_t numTowersToKeep = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
     if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
-        std::string msg = std::string(__func__) +": not enough towers in the input polynomial.";
+        std::string msg = std::string(__func__) + ": not enough towers in the input polynomial.";
         OPENFHE_THROW(config_error, msg);
     }
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-
         auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep + 1);
 
         uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
@@ -292,7 +291,7 @@ DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
     auto c1Copy = c1;
 
     // drop twoers until we reach maskBoundNumTowers
-    c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);   
+    c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);
 
     auto& ildcrtparams = c1Copy.GetParams();
     typename DCRTPoly::DugType dug;
@@ -411,7 +410,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
                                                          const std::vector<Ciphertext<DCRTPoly>>& sharesPair,
                                                          ConstCiphertext<DCRTPoly> a,
                                                          ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->GetElements().size() == 0) {
+    if (ciphertext->NumberCiphertextElements() == 0) {
         std::string msg = "IntMPBootEncrypt: no polynomials in the input ciphertext.";
         OPENFHE_THROW(openfhe_error, msg);
     }

@@ -266,6 +266,10 @@ public:
         return m_elements;
     }
 
+    size_t NumberCiphertextElements() const {
+        return m_elements.size();
+    }
+
     /**
    * SetElement - sets the ring element for the cases that use only one element
    * in the vector this method will throw an exception if it's ever called in
@@ -439,7 +443,7 @@ public:
    */
     std::shared_ptr<Metadata> GetMetadataByKey(const std::string& key) const {
         auto it = m_metadataMap->find(key);
-        if(it == m_metadataMap->end()) {
+        if (it == m_metadataMap->end()) {
             OPENFHE_THROW(openfhe_error, "Metadata element with key [" + key + "] is not found in the Metadata map.");
         }
         return std::make_shared<Metadata>(*(it->second));

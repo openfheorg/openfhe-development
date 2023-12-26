@@ -79,9 +79,9 @@ class SchemeBase {
 
 protected:
     inline void CheckMultipartyDecryptCompatibility(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
-        if (ciphertext->GetElements().size() > 2) {
+        if (ciphertext->NumberCiphertextElements() > 2) {
             std::string errorMsg(std::string("ciphertext's number of elements is [") +
-                                 std::to_string(ciphertext->GetElements().size()) +
+                                 std::to_string(ciphertext->NumberCiphertextElements()) +
                                  "]. Must be 2 or less for Multiparty Decryption." + CALLER_INFO);
             OPENFHE_THROW(openfhe_error, errorMsg);
         }
