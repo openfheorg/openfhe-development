@@ -3320,26 +3320,55 @@ public:
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
    * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
-   * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
-   * from the secret key is created, then we can only return the secret key)
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
+   * @return the FHEW secret key
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(SecurityLevel sl      = HEStd_128_classic,
-                                                                BINFHE_PARAMSET slBin = STD128, bool arbFunc = false,
-                                                                uint32_t logQ = 25, bool dynamic = false,
-                                                                uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27);
+    LWEPrivateKey EvalCKKStoFHEWSetup(SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128,
+                                      bool arbFunc = false, uint32_t logQ = 25, bool dynamic = false,
+                                      uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27, uint32_t dim1 = 0,
+                                      uint32_t L = 1) {
+        VerifyCKKSScheme(__func__);
+        return GetScheme()->EvalCKKStoFHEWSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch,
+                                                dim1, L);
+    }
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
-   * for the linear transform in the homomorphic decoding, conjugation keys, switching key from CKKS to FHEW
+   * Generates all keys for scheme switching: the rotation keys for the linear transform in the homomorphic decoding,
+   * conjugation keys, switching key from CKKS to FHEW
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1 = 0,
-                              uint32_t L = 1);
+    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
+        VerifyCKKSScheme(__func__);
+        if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error,
+                          "CKKS private key passed to EvalCKKStoFHEWKeyGen was not generated with this crypto context");
+        }
+        if (!lwesk) {
+            OPENFHE_THROW(config_error, "FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
+        }
+        auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk);
+        auto ekv      = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
+    }
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalCKKStoFHEWSetup
@@ -3347,7 +3376,10 @@ public:
    *
    * @param scale factor with which to scale the matrix in the linear transform
    */
-    void EvalCKKStoFHEWPrecompute(double scale = 1.0);
+    void EvalCKKStoFHEWPrecompute(double scale = 1.0) {
+        VerifyCKKSScheme(__func__);
+        GetScheme()->EvalCKKStoFHEWPrecompute(*this, scale);
+    }
 
     /**
    * Performs the scheme switching on a CKKS ciphertext
@@ -3357,7 +3389,12 @@ public:
    * @return a vector of LWE ciphertexts of length the numCtxts
    */
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
-                                                                   uint32_t numCtxts = 0);
+                                                                   uint32_t numCtxts = 0) {
+        VerifyCKKSScheme(__func__);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertext passed to EvalCKKStoFHEW is empty");
+        return GetScheme()->EvalCKKStoFHEW(ciphertext, numCtxts);
+    }
 
     /**
    * Sets all parameters for switching from FHEW to CKKS. The CKKS cryptocontext to switch to is
@@ -3367,7 +3404,11 @@ public:
    * @param numSlotsCKKS number of FHEW ciphertexts that becomes the number of slots in CKKS encryption
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    */
-    void EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE, uint32_t numSlotsCKKS = 0, uint32_t logQ = 25);
+    void EvalFHEWtoCKKSSetup(const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS = 0,
+                             uint32_t logQ = 25) {
+        VerifyCKKSScheme(__func__);
+        GetScheme()->EvalFHEWtoCKKSSetup(*this, ccLWE, numSlotsCKKS, logQ);
+    }
 
     /**
    * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
@@ -3376,11 +3417,38 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
+   * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
-                              uint32_t dim1 = 0, uint32_t L = 0);
+                              uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0) {
+        VerifyCKKSScheme(__func__);
+
+        if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error,
+                          "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
+        }
+
+        auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
+        auto ekv      = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
+    }
 
     /**
    * Performs the scheme switching on a vector of FHEW ciphertexts
@@ -3391,11 +3459,15 @@ public:
    * @param p plaintext modulus to use to decide postscaling, by default p = 4
    * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
    * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
+   * @param dim1 baby-step for the linear transform, necessary only for argmin
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
    */
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
-                                       double pmax = 2.0) const;
+                                       double pmax = 2.0, uint32_t dim1 = 0) const {
+        VerifyCKKSScheme(__func__);
+        return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
+    }
 
     /**
    * Sets all parameters for switching from CKKS to FHEW and back
@@ -3406,35 +3478,63 @@ public:
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
-   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
-   * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
-   * from the secret key is created, then we can only return the secret key)
-   * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
-   */
-    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(SecurityLevel sl      = HEStd_128_classic,
-                                                                     BINFHE_PARAMSET slBin = STD128,
-                                                                     bool arbFunc = false, uint32_t logQ = 25,
-                                                                     bool dynamic = false, uint32_t numSlotsCKKS = 0,
-                                                                     uint32_t logQswitch = 27);
-
-    /**
-   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
-   * in the linear transform for the homomorphic encoding and partial decryption, the switching key from
-   * FHEW to CKKS
-   *
-   * @param keypair CKKS key pair
-   * @param lwesk FHEW secret key
-   * @param numValues parameter of argmin computation, set to zero if not needed
+   * @param numValues number of values to switch
+   * @param argmin flag that indicates whether argmin is being computed
    * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
    * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
+   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
    * @param dim1CF baby-step for the linear transform in CKKS to FHEW
    * @param dim1FC baby-step for the linear transform in FHEW to CKKS
    * @param LCF level on which to do the linear transform in CKKS to FHEW
    * @param LFC level on which to do the linear transform in FHEW to CKKS
+   * @return the FHEW secret key
+   * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0,
-                                   bool oneHot = true, bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
-                                   uint32_t LCF = 1, uint32_t LFC = 0);
+    LWEPrivateKey EvalSchemeSwitchingSetup(SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128,
+                                           bool arbFunc = false, uint32_t logQ = 25, bool dynamic = false,
+                                           uint32_t numSlotsCKKS = 0, uint32_t numValues = 0, bool argmin = false,
+                                           bool oneHot = true, bool alt = false, uint32_t logQswitch = 27,
+                                           uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1,
+                                           uint32_t LFC = 0) {
+        VerifyCKKSScheme(__func__);
+        return GetScheme()->EvalSchemeSwitchingSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, numValues,
+                                                     argmin, oneHot, alt, logQswitch, dim1CF, dim1FC, LCF, LFC);
+    }
+
+    /**
+   * Generates all keys for scheme switching: the rotation keys for the linear transform for the homomorphic encoding
+   * and partial decryption, the switching key from FHEW to CKKS
+   *
+   * @param keypair CKKS key pair
+   * @param lwesk FHEW secret key
+   */
+    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
+        VerifyCKKSScheme(__func__);
+
+        if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error,
+                          "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
+        }
+
+        auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
+        auto ekv      = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
+    }
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup
@@ -3447,7 +3547,10 @@ public:
    * @param unit whether the input messages are normalized to the unit circle
    */
     void EvalCompareSwitchPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0,
-                                     bool unit = false);
+                                     bool unit = false) {
+        VerifyCKKSScheme(__func__);
+        GetScheme()->EvalCompareSwitchPrecompute(*this, pLWE, initLevel, scaleSign, unit);
+    }
 
     /**
    * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function
@@ -3466,7 +3569,17 @@ public:
     Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                    ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
-                                                   bool unit = false);
+                                                   bool unit = false) {
+        VerifyCKKSScheme(__func__);
+        if (ciphertext1 == nullptr || ciphertext2 == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalCompareSchemeSwitching are empty");
+        if (Mismatched(ciphertext1->GetCryptoContext()) || Mismatched(ciphertext2->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "A ciphertext passed to EvalCompareSchemeSwitching was not "
+                          "generated with this crypto context");
+        return GetScheme()->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
+                                                       unit);
+    }
 
     /**
    * Computes the minimum and argument of the first numValues packed in a CKKS ciphertext via repeated
@@ -3476,7 +3589,6 @@ public:
    * @param publicKey public key of the CKKS cryptocontext
    * @param numValues number of values to extract from the CKKS ciphertext. We always assume for the moment numValues is a power of two
    * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param oneHot whether the argmin result is given as a one hot/elementary vector or as the index
    * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
@@ -3487,16 +3599,34 @@ public:
    */
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
-                                                            uint32_t numSlots = 0, bool oneHot = true,
-                                                            uint32_t pLWE = 0, double scaleSign = 1.0);
+                                                            uint32_t numSlots = 0, uint32_t pLWE = 0,
+                                                            double scaleSign = 1.0) {
+        VerifyCKKSScheme(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitching was not "
+                          "generated with this crypto context");
+        return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
+    }
 
     /**
      * Same as EvalMinSchemeSwitching but performs more operations in FHEW than in CKKS. Slightly better precision but slower.
     */
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
-                                                               uint32_t numSlots = 0, bool oneHot = true,
-                                                               uint32_t pLWE = 0, double scaleSign = 1.0);
+                                                               uint32_t numSlots = 0, uint32_t pLWE = 0,
+                                                               double scaleSign = 1.0) {
+        VerifyCKKSScheme(__func__);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitchingAlt are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
+                          "generated with this crypto context");
+        return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
+    }
 
     /**
    * Computes the maximum and argument of the first numValues packed in a CKKS ciphertext via repeated
@@ -3506,7 +3636,6 @@ public:
    * @param publicKey public key of the CKKS cryptocontext
    * @param numValues number of values to extract from the CKKS ciphertext. We always assume for the moment numValues is a power of two
    * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param oneHot whether the argmax result is given as a one hot/elementary vector or as the index
    * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
@@ -3517,16 +3646,66 @@ public:
    */
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
-                                                            uint32_t numSlots = 0, bool oneHot = true,
-                                                            uint32_t pLWE = 0, double scaleSign = 1.0);
+                                                            uint32_t numSlots = 0, uint32_t pLWE = 0,
+                                                            double scaleSign = 1.0) {
+        VerifyCKKSScheme(__func__);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitching was not "
+                          "generated with this crypto context");
+        return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
+    }
 
     /**
      * Same as EvalMaxSchemeSwitching but performs more operations in FHEW than in CKKS. Slightly better precision but slower.
     */
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
-                                                               uint32_t numSlots = 0, bool oneHot = true,
-                                                               uint32_t pLWE = 0, double scaleSign = 1.0);
+                                                               uint32_t numSlots = 0, uint32_t pLWE = 0,
+                                                               double scaleSign = 1.0) {
+        VerifyCKKSScheme(__func__);
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertexts passed to EvalMaxSchemeSwitching are empty");
+        if (Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                          "The ciphertext passed to EvalMinSchemeSwitchingAlt was not "
+                          "generated with this crypto context");
+        return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
+    }
+
+    /* Getter and setter for the binFHE cryptocontext used in scheme switching
+    */
+    std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() {
+        return GetScheme()->GetBinCCForSchemeSwitch();
+    }
+    void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
+        GetScheme()->SetBinCCForSchemeSwitch(ccLWE);
+    }
+    /* Getter and setter for the switching key between FHEW and CKKS
+    */
+    Ciphertext<Element> GetSwkFC() {
+        return GetScheme()->GetSwkFC();
+    }
+    void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
+        GetScheme()->SetSwkFC(FHEWtoCKKSswk);
+    }
+
+    /**
+     * @brief GetExistingEvalAutomorphismKeyIndices gets indices for all existing automorphism keys
+     * @param keyTag map search id for the automorphism keys
+     * @return vector with all indices in the map. if nothing is found for the given keyTag, then the vector is empty
+     **/
+    static std::vector<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
+
+    /**
+     * @brief GetUniqueValues compares 2 vectors to generate a vector with unique values from the 2nd vector
+     * @param oldValues vector of integers to compare against (passed by value)
+     * @param newValues vector of integers to find unique values from  (passed by value)
+     * @return vector with unique values from newValues
+     **/
+    static std::vector<uint32_t> GetUniqueValues(std::vector<uint32_t> oldValues, std::vector<uint32_t> newValues);
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

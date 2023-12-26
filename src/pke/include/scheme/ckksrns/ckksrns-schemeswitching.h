@@ -61,14 +61,12 @@ public:
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
 
-    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
-                                                                BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
-                                                                bool dynamic, uint32_t numSlotsCKKS,
-                                                                uint32_t logQswitch) override;
+    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>&, SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                      bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
+                                      uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             ConstLWEPrivateKey& lwesk, uint32_t dim1,
-                                                                             uint32_t L) override;
+                                                                             ConstLWEPrivateKey& lwesk) override;
 
     void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) override;
 
@@ -87,7 +85,8 @@ public:
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                         const std::vector<std::vector<std::complex<double>>>& A,
-                                                        ConstCiphertext<DCRTPoly> ct, uint32_t dim1, uint32_t L) const;
+                                                        ConstCiphertext<DCRTPoly> ct, bool wide, uint32_t dim1,
+                                                        uint32_t L) const;
 
     Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                  ConstCiphertext<DCRTPoly> ciphertext) const;
@@ -100,27 +99,26 @@ public:
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
                                                                    uint32_t numCtxts) override;
 
-    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
+    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const std::shared_ptr<BinFHEContext>& ccLWE,
                              uint32_t numSlotsCKKS, uint32_t logQ) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk,
-                                                                             uint32_t numSlots, uint32_t dim1,
-                                                                             uint32_t L) override;
+                                                                             uint32_t numSlots, uint32_t numCtxts,
+                                                                             uint32_t dim1, uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                        uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
-                                        double pmax) const override;
+                                        uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
+                                        uint32_t dim1) const override;
 
-    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                                                                     SecurityLevel sl, BINFHE_PARAMSET slBin,
-                                                                     bool arbFunc, uint32_t logQ, bool dynamic,
-                                                                     uint32_t numSlotsCKKS,
-                                                                     uint32_t logQswitch) override;
+    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
+                                           BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
+                                           uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot,
+                                           bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
+                                           uint32_t LCF, uint32_t LFC) override;
 
-    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
-        uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
+    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
+                                                                                  ConstLWEPrivateKey& lwesk) override;
 
     void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
                                      double scaleSign, bool unit) override;
@@ -132,23 +130,42 @@ public:
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                             uint32_t numSlots, uint32_t pLWE,
                                                              double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                 PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                             uint32_t numSlots, uint32_t pLWE,
                                                              double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                 PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
+
+    std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
+        return m_ccLWE;
+    }
+    void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override {
+        m_ccLWE = ccLWE;
+    }
+    Ciphertext<DCRTPoly> GetSwkFC() override {
+        return m_FHEWtoCKKSswk;
+    }
+    void SetSwkFC(Ciphertext<DCRTPoly> FHEWtoCKKSswk) override {
+        m_FHEWtoCKKSswk = FHEWtoCKKSswk;
+    }
+    uint32_t GetNumCtxtsToSwitch() {
+        return m_numCtxts;
+    }
+    NativeInteger GetModulusLWEToSwitch() {
+        return m_modulus_LWE;
+    }
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -157,11 +174,41 @@ public:
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("QLWE", m_modulus_LWE));
+        ar(cereal::make_nvp("QCKKS1", m_modulus_CKKS_initial));
+        ar(cereal::make_nvp("QCKKS2", m_modulus_CKKS_from));
+        ar(cereal::make_nvp("slots", m_numSlotsCKKS));
+        ar(cereal::make_nvp("ctxts", m_numCtxts));
+        ar(cereal::make_nvp("bCF", m_dim1CF));
+        ar(cereal::make_nvp("bFC", m_dim1FC));
+        ar(cereal::make_nvp("lCF", m_LCF));
+        ar(cereal::make_nvp("lFC", m_LFC));
+        ar(cereal::make_nvp("argmin", m_argmin));
+        ar(cereal::make_nvp("oneHot", m_oneHot));
+        ar(cereal::make_nvp("alt", m_alt));
+        ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
+        // ar(cereal::make_nvp("swkFC", m_FHEWtoCKKSswk)); // Avoid a circular issue when deserializing
+        ar(cereal::make_nvp("ctKS", m_ctxtKS));
     }
 
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<FHERNS>(this));
+        ar(cereal::make_nvp("QLWE", m_modulus_LWE));
+        ar(cereal::make_nvp("QCKKS1", m_modulus_CKKS_initial));
+        ar(cereal::make_nvp("QCKKS2", m_modulus_CKKS_from));
+        ar(cereal::make_nvp("slots", m_numSlotsCKKS));
+        ar(cereal::make_nvp("ctxts", m_numCtxts));
+        ar(cereal::make_nvp("bCF", m_dim1CF));
+        ar(cereal::make_nvp("bFC", m_dim1FC));
+        ar(cereal::make_nvp("lCF", m_LCF));
+        ar(cereal::make_nvp("lFC", m_LFC));
+        ar(cereal::make_nvp("argmin", m_argmin));
+        ar(cereal::make_nvp("oneHot", m_oneHot));
+        ar(cereal::make_nvp("alt", m_alt));
+        ar(cereal::make_nvp("swkCF", m_CKKStoFHEWswk));
+        // ar(cereal::make_nvp("swkFC", m_FHEWtoCKKSswk)); // Avoid a circular issue when deserializing
+        ar(cereal::make_nvp("ctKS", m_ctxtKS));
     }
 
     std::string SerializedObjectName() const {
@@ -215,37 +262,38 @@ private:
     // Private members
     //------------------------------------------------------------------------------
 
-    // Precomputed matrix for CKKS to FHEW switching
-    std::vector<ConstPlaintext> m_U0Pre;
-    // the LWE cryptocontext to generate when scheme switching from CKKS
-    BinFHEContext m_ccLWE;
-    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
-    CryptoContext<DCRTPoly> m_ccKS;
     // the associated ciphertext modulus Q for the LWE cryptocontext
     NativeInteger m_modulus_LWE;
     // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
     NativeInteger m_modulus_CKKS_initial;
     // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
     NativeInteger m_modulus_CKKS_from;
-    // switching key from CKKS to FHEW
-    EvalKey<DCRTPoly> m_CKKStoFHEWswk;
-    // switching key from FHEW to CKKS
-    Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
-    // a ciphertext under the intermediate cryptocontext
-    Ciphertext<DCRTPoly> m_ctxtKS;
     // number of slots encoded in the CKKS ciphertext
     uint32_t m_numSlotsCKKS;
+    // number of ciphertexts to switch, different logic for argmin (i.e., it starts from number of ciphertexts / 2)
+    uint32_t m_numCtxts;
     // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
     uint32_t m_dim1CF;
     uint32_t m_dim1FC;
     // starting levels for linear transforms
     uint32_t m_LCF;
     uint32_t m_LFC;
-
-    // target FHEW plaintext modulus
-    uint64_t m_plaintextFHEW;
-    // scaling factor of CKKS "outer" ciphertext
-    double m_scFactorOuter;
+    // flags indicating type of argmin computation
+    bool m_argmin;
+    bool m_oneHot;
+    bool m_alt;
+    // the LWE cryptocontext to generate when scheme switching from CKKS
+    std::shared_ptr<BinFHEContext> m_ccLWE;
+    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
+    CryptoContext<DCRTPoly> m_ccKS;
+    // switching key from CKKS to FHEW
+    EvalKey<DCRTPoly> m_CKKStoFHEWswk;
+    // switching key from FHEW to CKKS
+    Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
+    // a ciphertext under the intermediate cryptocontext
+    Ciphertext<DCRTPoly> m_ctxtKS;
+    // Precomputed matrix for CKKS to FHEW switching
+    std::vector<ConstPlaintext> m_U0Pre;
 
 #define Pi 3.14159265358979323846
 

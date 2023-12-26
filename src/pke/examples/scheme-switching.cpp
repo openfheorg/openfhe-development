@@ -53,7 +53,7 @@ std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 int main() {
     SwitchCKKSToFHEW();
     SwitchFHEWtoCKKS();
-    FloorViaSchemeSwitching();
+    // FloorViaSchemeSwitching();
     // FuncViaSchemeSwitching();
     // PolyViaSchemeSwitching();
     ComparisonViaSchemeSwitching();
@@ -105,21 +105,20 @@ void SwitchCKKSToFHEW() {
     cc->Enable(SCHEMESWITCH);
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension();
-    std::cout << ", number of slots " << slots << ", and suports a multiplicative depth of " << multDepth << std::endl
+    std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
               << std::endl;
 
     // Generate encryption keys
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(sl, slBin, false, logQ_ccLWE, false, slots);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(sl, slBin, false, logQ_ccLWE, false, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
     cc->EvalCKKStoFHEWKeyGen(keys, privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Compute the scaling factor to decrypt correctly in FHEW; the LWE mod switch is performed on the ciphertext at the last level
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -127,9 +126,9 @@ void SwitchCKKSToFHEW() {
     auto paramsQ                                  = elementParams.GetParams();
     auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
 
-    auto pLWE1       = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
 
     double scFactor = cryptoParams->GetScalingFactorReal(0);
@@ -177,7 +176,7 @@ void SwitchCKKSToFHEW() {
     std::cout << "FHEW decryption: ";
     LWEPlaintext result;
     for (uint32_t i = 0; i < cTemp.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cTemp[i], &result, pLWE1);
+        ccLWE->Decrypt(privateKeyFHEW, cTemp[i], &result, pLWE1);
         std::cout << result << " ";
     }
     std::cout << "\n" << std::endl;
@@ -198,7 +197,7 @@ void SwitchCKKSToFHEW() {
     std::cout << "Input x2: " << ptxt2->GetRealPackedValue() << std::endl;
     std::cout << "FHEW decryption: ";
     for (uint32_t i = 0; i < cTemp2.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cTemp2[i], &result, pLWE2);
+        ccLWE->Decrypt(privateKeyFHEW, cTemp2[i], &result, pLWE2);
         std::cout << result << " ";
     }
     std::cout << "\n" << std::endl;
@@ -206,14 +205,14 @@ void SwitchCKKSToFHEW() {
     // C: Decompose the FHEW ciphertexts in smaller digits
     std::cout << "Decomposed values for digit size of " << NativeInteger(pLWE1) << ": " << std::endl;
     // Generate the bootstrapping keys (refresh and switching keys)
-    ccLWE.BTKeyGen(privateKeyFHEW);
+    ccLWE->BTKeyGen(privateKeyFHEW);
 
     for (uint32_t j = 0; j < cTemp2.size(); j++) {
         // Decompose the large ciphertext into small ciphertexts that fit in q
-        auto decomp = ccLWE.EvalDecomp(cTemp2[j]);
+        auto decomp = ccLWE->EvalDecomp(cTemp2[j]);
 
         // Decryption
-        auto p = ccLWE.GetMaxPlaintextSpace().ConvertToInt();
+        auto p = ccLWE->GetMaxPlaintextSpace().ConvertToInt();
         LWECiphertext ct;
         for (size_t i = 0; i < decomp.size(); i++) {
             ct = decomp[i];
@@ -223,7 +222,7 @@ void SwitchCKKSToFHEW() {
                     std::pow((double)pLWE1, std::floor(std::log(pLWE2) /
                                           std::log(pLWE1)));  // The last digit should be up to P / p^floor(log_p(P))
             }
-            ccLWE.Decrypt(privateKeyFHEW, ct, &resultDecomp, p);
+            ccLWE->Decrypt(privateKeyFHEW, ct, &resultDecomp, p);
             std::cout << "(" << resultDecomp << " * " << NativeInteger(pLWE1) << "^" << i << ")";
             if (i != decomp.size() - 1) {
                 std::cout << " + ";
@@ -272,36 +271,37 @@ void SwitchFHEWtoCKKS() {
     cc->Enable(SCHEMESWITCH);
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension();
-    std::cout << ", number of slots " << slots << ", and suports a multiplicative depth of " << multDepth << std::endl
+    std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
               << std::endl;
 
     // Generate encryption keys.
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto ccLWE = BinFHEContext();
-    ccLWE.BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
+    auto ccLWE = std::make_shared<BinFHEContext>();
+    ccLWE->BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
 
     // LWE private key
     LWEPrivateKey lwesk;
-    lwesk = ccLWE.KeyGen();
+    lwesk = ccLWE->KeyGen();
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS
     cc->EvalFHEWtoCKKSSetup(ccLWE, slots, logQ_ccLWE);
+    cc->SetBinCCForSchemeSwitch(ccLWE);
 
     cc->EvalFHEWtoCKKSKeyGen(keys, lwesk);
 
     // Step 4: Encoding and encryption of inputs
     // For correct CKKS decryption, the messages have to be much smaller than the FHEW plaintext modulus!
 
-    auto pLWE1       = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
-    uint32_t pLWE2   = 256;                                          // Medium precision
+    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    uint32_t pLWE2   = 256;                                           // Medium precision
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE3       = modulus_LWE / (2 * beta);  // Large precision
     // Inputs
     std::vector<int> x1 = {1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
@@ -316,28 +316,28 @@ void SwitchFHEWtoCKKS() {
     std::vector<LWECiphertext> ctxtsLWE1(slots);
     for (uint32_t i = 0; i < slots; i++) {
         ctxtsLWE1[i] =
-            ccLWE.Encrypt(lwesk, x1[i]);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
+            ccLWE->Encrypt(lwesk, x1[i]);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
     }
 
     std::vector<LWECiphertext> ctxtsLWE2(slots);
     for (uint32_t i = 0; i < slots; i++) {
         ctxtsLWE2[i] =
-            ccLWE.Encrypt(lwesk, x1[i], FRESH,
-                          pLWE1);  // encrypted under larger plaintext modulus p = 16 but small ciphertext modulus
+            ccLWE->Encrypt(lwesk, x1[i], FRESH,
+                           pLWE1);  // encrypted under larger plaintext modulus p = 16 but small ciphertext modulus
     }
 
     std::vector<LWECiphertext> ctxtsLWE3(slots);
     for (uint32_t i = 0; i < slots; i++) {
         ctxtsLWE3[i] =
-            ccLWE.Encrypt(lwesk, x2[i], FRESH, pLWE2,
-                          modulus_LWE);  // encrypted under larger plaintext modulus and large ciphertext modulus
+            ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE2,
+                           modulus_LWE);  // encrypted under larger plaintext modulus and large ciphertext modulus
     }
 
     std::vector<LWECiphertext> ctxtsLWE4(slots);
     for (uint32_t i = 0; i < slots; i++) {
         ctxtsLWE4[i] =
-            ccLWE.Encrypt(lwesk, x2[i], FRESH, pLWE3,
-                          modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+            ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE3,
+                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
     }
 
     // Step 5. Perform the scheme switching
@@ -426,27 +426,25 @@ void FloorViaSchemeSwitching() {
     cc->Enable(SCHEMESWITCH);
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension();
-    std::cout << ", number of slots " << slots << ", and suports a multiplicative depth of " << multDepth << std::endl
+    std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
               << std::endl;
 
     // Generate encryption keys.
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    bool arbFunc    = false;
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    bool arbFunc        = false;
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     // Generate bootstrapping key for EvalFloor
-    ccLWE.BTKeyGen(privateKeyFHEW);
+    ccLWE->BTKeyGen(privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -455,7 +453,7 @@ void FloorViaSchemeSwitching() {
     auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
 
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
     double scFactor = cryptoParams->GetScalingFactorReal(0);
@@ -483,7 +481,7 @@ void FloorViaSchemeSwitching() {
 
     std::vector<LWECiphertext> cFloor(cTemp.size());
     for (uint32_t i = 0; i < cTemp.size(); i++) {
-        cFloor[i] = ccLWE.EvalFloor(cTemp[i], bits);
+        cFloor[i] = ccLWE->EvalFloor(cTemp[i], bits);
     }
 
     std::cout << "Input x1: " << ptxt1->GetRealPackedValue() << std::endl;
@@ -495,7 +493,7 @@ void FloorViaSchemeSwitching() {
     std::cout << "\nFHEW decryption p = " << NativeInteger(pLWE)
               << "/(1 << bits) = " << NativeInteger(pLWE) / (1 << bits) << ": ";
     for (uint32_t i = 0; i < cFloor.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cFloor[i], &pFloor, pLWE / (1 << bits));
+        ccLWE->Decrypt(privateKeyFHEW, cFloor[i], &pFloor, pLWE / (1 << bits));
         std::cout << pFloor << " ";
     }
     std::cout << "\n" << std::endl;
@@ -549,19 +547,17 @@ void FuncViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
     // Generate the bootstrapping keys for EvalFunc in FHEW
-    ccLWE.BTKeyGen(privateKeyFHEW);
+    ccLWE->BTKeyGen(privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -569,7 +565,7 @@ void FuncViaSchemeSwitching() {
     auto paramsQ                                  = elementParams.GetParams();
     auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
     auto pLWE =
-        ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision because GenerateLUTviaFunction needs p < q
+        ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision because GenerateLUTviaFunction needs p < q
     double scFactor = cryptoParams->GetScalingFactorReal(0);
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         scFactor = cryptoParams->GetScalingFactorReal(1);
@@ -588,7 +584,7 @@ void FuncViaSchemeSwitching() {
     };
 
     // Generate LUT from function f(x)
-    auto lut = ccLWE.GenerateLUTviaFunction(fp, pLWE);
+    auto lut = ccLWE->GenerateLUTviaFunction(fp, pLWE);
 
     // Step 4: Encoding and encryption of inputs
     // Inputs
@@ -607,14 +603,14 @@ void FuncViaSchemeSwitching() {
     std::cout << "FHEW decryption: ";
     LWEPlaintext result;
     for (uint32_t i = 0; i < cTemp.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cTemp[i], &result, pLWE);
+        ccLWE->Decrypt(privateKeyFHEW, cTemp[i], &result, pLWE);
         std::cout << result << " ";
     }
 
     // Step 6: Evaluate the function
     std::vector<LWECiphertext> cFunc(cTemp.size());
     for (uint32_t i = 0; i < cTemp.size(); i++) {
-        cFunc[i] = ccLWE.EvalFunc(cTemp[i], lut);
+        cFunc[i] = ccLWE->EvalFunc(cTemp[i], lut);
     }
 
     std::cout << "\nExpected result x^3 + 2*x + 1 mod p: ";
@@ -624,7 +620,7 @@ void FuncViaSchemeSwitching() {
     LWEPlaintext pFunc;
     std::cout << "\nFHEW decryption mod " << NativeInteger(pLWE) << ": ";
     for (uint32_t i = 0; i < cFunc.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cFunc[i], &pFunc, pLWE);
+        ccLWE->Decrypt(privateKeyFHEW, cFunc[i], &pFunc, pLWE);
         std::cout << pFunc << " ";
     }
     std::cout << "\n" << std::endl;
@@ -692,29 +688,27 @@ void ComparisonViaSchemeSwitching() {
     cc->Enable(SCHEMESWITCH);
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension();
-    std::cout << ", number of slots " << slots << ", and suports a multiplicative depth of " << multDepth << std::endl
+    std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
               << std::endl;
 
     // Generate encryption keys.
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
-    ccLWE.BTKeyGen(privateKeyFHEW);
-
+    ccLWE->BTKeyGen(privateKeyFHEW);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
-    auto pLWE1       = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
 
     double scaleSignFHEW    = 1.0;
@@ -761,7 +755,7 @@ void ComparisonViaSchemeSwitching() {
     LWEPlaintext plainLWE;
     std::cout << "\nFHEW decryption with plaintext modulus " << NativeInteger(pLWE2) << ": ";
     for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE2);
+        ccLWE->Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE2);
         std::cout << plainLWE << " ";
     }
 
@@ -779,8 +773,8 @@ void ComparisonViaSchemeSwitching() {
               << scaleSignFHEW << ": ";
     std::vector<LWECiphertext> LWESign(LWECiphertexts.size());
     for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
-        LWESign[i] = ccLWE.EvalSign(LWECiphertexts[i]);
-        ccLWE.Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
+        LWESign[i] = ccLWE->EvalSign(LWECiphertexts[i]);
+        ccLWE->Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
         std::cout << plainLWE << " ";
     }
     std::cout << "\n";
@@ -803,7 +797,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\nFHEW decryption with plaintext modulus " << NativeInteger(pLWE2) << " and scale " << scaleSignFHEW
               << ": ";
     for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE2);
+        ccLWE->Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE2);
         std::cout << plainLWE << " ";
     }
     std::cout << "\nExpected sign result in FHEW with plaintext modulus " << NativeInteger(pLWE2) << " and scale "
@@ -818,8 +812,8 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "Obtained sign result in FHEW with plaintext modulus " << NativeInteger(pLWE2) << " and scale "
               << scaleSignFHEW << ": ";
     for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
-        LWESign[i] = ccLWE.EvalSign(LWECiphertexts[i]);
-        ccLWE.Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
+        LWESign[i] = ccLWE->EvalSign(LWECiphertexts[i]);
+        ccLWE->Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
         std::cout << plainLWE << " ";
     }
     std::cout << "\n";
@@ -843,7 +837,7 @@ void ComparisonViaSchemeSwitching() {
 
     std::cout << "\nFHEW decryption with plaintext modulus " << NativeInteger(pLWE1) << ": ";
     for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE1);
+        ccLWE->Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE1);
         std::cout << plainLWE << " ";
     }
     std::cout << "\nExpected sign result in FHEW with plaintext modulus " << NativeInteger(pLWE1) << " and scale "
@@ -858,8 +852,8 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "Obtained sign result in FHEW with plaintext modulus " << NativeInteger(pLWE1) << " and scale "
               << scaleSignFHEW << ": ";
     for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
-        LWESign[i] = ccLWE.EvalSign(LWECiphertexts[i]);
-        ccLWE.Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
+        LWESign[i] = ccLWE->EvalSign(LWECiphertexts[i]);
+        ccLWE->Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
         std::cout << plainLWE << " ";
     }
     std::cout << "\n";
@@ -889,7 +883,7 @@ void ArgminViaSchemeSwitching() {
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
-    ScalingTechnique scTech = FIXEDMANUAL;
+    ScalingTechnique scTech = FIXEDAUTO;
     uint32_t multDepth =
         9 + 3 + 1 + static_cast<int>(std::log2(numValues));  // 13 for FHEW to CKKS, log2(numValues) for argmin
     if (scTech == FLEXIBLEAUTOEXT)
@@ -921,20 +915,20 @@ void ArgminViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
     uint32_t init_level     = 0;
@@ -950,6 +944,10 @@ void ArgminViaSchemeSwitching() {
     // Inputs
     std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
                               9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    if (x1.size() < numValues) {
+        std::vector<int> zeros(numValues - x1.size(), 0);
+        x1.insert(x1.end(), zeros.begin(), zeros.end());
+    }
 
     std::cout << "Expected minimum value " << *(std::min_element(x1.begin(), x1.begin() + numValues)) << " at location "
               << std::min_element(x1.begin(), x1.begin() + numValues) - x1.begin() << std::endl;
@@ -965,7 +963,7 @@ void ArgminViaSchemeSwitching() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -981,7 +979,7 @@ void ArgminViaSchemeSwitching() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1049,20 +1047,20 @@ void ArgminViaSchemeSwitchingAlt() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot, alt);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
     uint32_t init_level     = 0;
@@ -1079,6 +1077,10 @@ void ArgminViaSchemeSwitchingAlt() {
     // Inputs
     std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
                               9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    if (x1.size() < numValues) {
+        std::vector<int> zeros(numValues - x1.size(), 0);
+        x1.insert(x1.end(), zeros.begin(), zeros.end());
+    }
 
     std::cout << "Expected minimum value " << *(std::min_element(x1.begin(), x1.begin() + numValues)) << " at location "
               << std::min_element(x1.begin(), x1.begin() + numValues) - x1.begin() << std::endl;
@@ -1094,7 +1096,7 @@ void ArgminViaSchemeSwitchingAlt() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1110,7 +1112,7 @@ void ArgminViaSchemeSwitchingAlt() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1178,16 +1180,15 @@ void ArgminViaSchemeSwitchingUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto privateKeyFHEW =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
-
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     uint32_t init_level     = 0;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -1230,7 +1231,7 @@ void ArgminViaSchemeSwitchingUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1246,7 +1247,7 @@ void ArgminViaSchemeSwitchingUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1316,16 +1317,15 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
+    auto privateKeyFHEW =
+        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot, alt);
-
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     uint32_t init_level     = 0;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -1368,7 +1368,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1384,7 +1384,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1440,28 +1440,26 @@ void PolyViaSchemeSwitching() {
     cc->Enable(SCHEMESWITCH);
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension();
-    std::cout << ", number of slots " << slots << ", and suports a multiplicative depth of " << multDepth << std::endl
+    std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
               << std::endl;
 
     // Generate encryption keys.
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots);
-
-    auto ccLWE          = FHEWparams.first;
-    auto privateKeyFHEW = FHEWparams.second;
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS and back
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, slots);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
-    std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
-    std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    auto pLWE1       = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE.GetBeta().ConvertToInt();
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -1501,15 +1499,15 @@ void PolyViaSchemeSwitching() {
     // Encrypt
     std::vector<LWECiphertext> ctxtsLWE1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE1[i] = ccLWE.Encrypt(privateKeyFHEW,
-                                     x1[i]);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
+        ctxtsLWE1[i] = ccLWE->Encrypt(privateKeyFHEW,
+                                      x1[i]);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
     }
 
     std::vector<LWECiphertext> ctxtsLWE2(slots);
     for (uint32_t i = 0; i < slots; i++) {
         ctxtsLWE2[i] =
-            ccLWE.Encrypt(privateKeyFHEW, x2[i], FRESH, pLWE2,
-                          modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+            ccLWE->Encrypt(privateKeyFHEW, x2[i], FRESH, pLWE2,
+                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
     }
 
     // Step 5. Perform the scheme switching
@@ -1532,7 +1530,7 @@ void PolyViaSchemeSwitching() {
     LWEPlaintext result;
     std::cout << "FHEW decryption with plaintext modulus " << NativeInteger(pLWE1) << ": ";
     for (uint32_t i = 0; i < cTemp1.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cTemp1[i], &result, pLWE1);
+        ccLWE->Decrypt(privateKeyFHEW, cTemp1[i], &result, pLWE1);
         std::cout << result << " ";
     }
     std::cout << "\n" << std::endl;
@@ -1556,7 +1554,7 @@ void PolyViaSchemeSwitching() {
 
     std::cout << "FHEW decryption with plaintext modulus " << NativeInteger(pLWE2) << ": ";
     for (uint32_t i = 0; i < cTemp2.size(); ++i) {
-        ccLWE.Decrypt(privateKeyFHEW, cTemp2[i], &result, pLWE2);
+        ccLWE->Decrypt(privateKeyFHEW, cTemp2[i], &result, pLWE2);
         std::cout << result << " ";
     }
     std::cout << "\n" << std::endl;
