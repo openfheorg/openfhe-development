@@ -395,20 +395,28 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
 
     auto evalKeys = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
+    // Do not generate those keys that have been already generated and added to the static storage (map)
+    const std::string id{privateKey->GetKeyTag()};
+    std::vector<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
+    // if no index found for the given id, then all keys are to be generated
+    std::vector<uint32_t> indicesToGenerate =
+        (existingIndices.empty()) ? indexList :
+                                    CryptoContextImpl<Element>::GetUniqueValues(existingIndices, {indexList});
+
     // TODO pragma omp currently gives concurrent error
-    // #pragma omp parallel for if (indexList.size() >= 4)
-    for (usint i = 0; i < indexList.size(); i++) {
+    // #pragma omp parallel for if (indicesToGenerate.size() >= 4)
+    for (usint i = 0; i < indicesToGenerate.size(); i++) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
+        usint index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
         std::vector<usint> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         Element sPermuted = s.AutomorphismTransform(index, vec);
         privateKeyPermuted->SetPrivateElement(sPermuted);
-        (*evalKeys)[indexList[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
+        (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
     }
-
+    
     return evalKeys;
 }
 
