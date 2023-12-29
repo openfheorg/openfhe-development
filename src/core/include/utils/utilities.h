@@ -36,6 +36,7 @@
 #include "utils/inttypes.h"
 
 #include <climits>  // CHAR_BIT
+#include <cmath>
 #include <limits>   // std::numeric_limits
 #include <string>
 #include <type_traits>  // std::is_integral
