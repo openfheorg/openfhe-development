@@ -134,7 +134,6 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
                                                                                 uint32_t logQ_LWE, bool oneHot) {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    bool arbFunc          = false;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -160,8 +159,15 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
     KeyPair<DCRTPoly> serverKP = serverCC->KeyGen();
     std::cout << "Keypair generated" << std::endl;
 
-    auto privateKeyFHEW = serverCC->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_LWE, false, batchSize, batchSize,
-                                                             true, oneHot, false, 27, 0, 0, 1, 0);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_LWE);
+    params.SetNumSlotsCKKS(batchSize);
+    params.SetNumValues(batchSize);
+    params.SetComputeArgmin(true);
+    params.SetOneHotEncoding(oneHot);
+    auto privateKeyFHEW = serverCC->EvalSchemeSwitchingSetup(params);
 
     serverCC->EvalSchemeSwitchingKeyGen(serverKP, privateKeyFHEW);
 

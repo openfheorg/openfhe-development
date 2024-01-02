@@ -38,6 +38,7 @@
 #include "binfhecontext.h"
 #include "lwe-pke.h"
 #include "lwe-ciphertext.h"
+#include "scheme/scheme-swch-params.h"
 
 #include <memory>
 #include <string>
@@ -61,9 +62,7 @@ public:
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
 
-    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>&, SecurityLevel sl, BINFHE_PARAMSET slBin,
-                                      bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
-                                      uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
+    LWEPrivateKey EvalCKKStoFHEWSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk) override;
@@ -111,11 +110,7 @@ public:
                                         uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
                                         uint32_t dim1) const override;
 
-    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
-                                           BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
-                                           uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot,
-                                           bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
-                                           uint32_t LCF, uint32_t LFC) override;
+    LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                                   ConstLWEPrivateKey& lwesk) override;
