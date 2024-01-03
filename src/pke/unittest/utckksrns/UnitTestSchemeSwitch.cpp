@@ -457,9 +457,9 @@ protected:
             params.SetNumValues(testData.numValues);
             params.SetOneHotEncoding(testData.oneHot);
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
-            params.SetBStepLTrFHEWtoCKKS(testData.dim1[2]);
+            params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-            auto ccLWE = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
             ccLWE->BTKeyGen(privateKeyFHEW);
 
@@ -539,9 +539,9 @@ protected:
             params.SetComputeArgmin(true);
             params.SetOneHotEncoding(testData.oneHot);
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
-            params.SetBStepLTrFHEWtoCKKS(testData.dim1[2]);
+            params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-            auto ccLWE = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
             cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
@@ -648,9 +648,9 @@ protected:
             params.SetOneHotEncoding(testData.oneHot);
             params.SetUseAltArgmin(true);
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
-            params.SetBStepLTrFHEWtoCKKS(testData.dim1[2]);
+            params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-            auto ccLWE = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
             cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
@@ -755,9 +755,8 @@ protected:
             params.SetNumSlotsCKKS(testData.slots);
             params.SetNumValues(testData.numValues);
             params.SetComputeArgmin(true);
-            params.SetUseAltArgmin(true);
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
-            params.SetBStepLTrFHEWtoCKKS(testData.dim1[2]);
+            params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEWInit = ccInit->EvalSchemeSwitchingSetup(params);
             auto ccLWEInit          = ccInit->GetBinCCForSchemeSwitch();
 

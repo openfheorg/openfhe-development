@@ -3485,7 +3485,7 @@ public:
    * @return the FHEW secret key
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams params) {
+    LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams& params) {
         VerifyCKKSScheme(__func__);
         SetParamsFromCKKSCryptocontext(params);
         return GetScheme()->EvalSchemeSwitchingSetup(params);

@@ -38,7 +38,7 @@
 #include "utils/exception.h"
 
 #include <cstdint>
-
+#include <iosfwd>
 
 namespace lbcrypto {
 
@@ -47,14 +47,6 @@ class SchSwchParams {
     SecurityLevel securityLevelCKKS{HEStd_128_classic};
     // security level for FHEW cryptocontext
     BINFHE_PARAMSET securityLevelFHEW{STD128};
-    // binfhecontext created is for arbitrary function evaluation
-    bool arbitraryFunctionEvaluation{false};
-    bool useDynamicModeFHEW{false};
-    bool computeArgmin{false};
-    // have the argmin result one hot encoding
-    bool oneHotEncoding{true};
-    // use the alternative version of argmin which requires fewer automorphism keys
-    bool useAltArgmin{false};
     // number of slots in CKKS encryption
     uint32_t numSlotsCKKS{0};
     // number of values to switch
@@ -71,14 +63,21 @@ class SchSwchParams {
     uint32_t levelLTrCKKStoFHEW{1};
     // level on which to do the linear transform in FHEW to CKKS
     uint32_t levelLTrFHEWtoCKKS{0};
+    // binfhecontext created is for arbitrary function evaluation
+    bool arbitraryFunctionEvaluation{false};
+    bool useDynamicModeFHEW{false};
+    bool computeArgmin{false};
+    // have the argmin result one hot encoding
+    bool oneHotEncoding{true};
+    // use the alternative version of argmin which requires fewer automorphism keys
+    bool useAltArgmin{false};
 
-    // CKKS cryptocontext data
+    // CKKS cryptocontext data (internally populated, NOT by the user)
+    bool setParamsFromCKKSCryptocontextCalled{false};
     NativeInteger initialCKKSModulus{0};
     uint32_t ringDimension{0};
     uint32_t scalingModSize{0};
     uint32_t batchSize{0};
-
-    bool setParamsFromCKKSCryptocontextCalled{false};
 
     void VerifyObjectData() const {
         if (!setParamsFromCKKSCryptocontextCalled) {
@@ -89,6 +88,8 @@ class SchSwchParams {
     }
 
 public:
+    friend std::ostream& operator<<(std::ostream& s, const SchSwchParams& obj);
+    //=================================================================================================================
     void SetSecurityLevelCKKS(SecurityLevel securityLevelCKKS0) {
         securityLevelCKKS = securityLevelCKKS0;
     }
@@ -228,6 +229,6 @@ public:
     }
 };
 
-} // namespace lbcrypto
+}  // namespace lbcrypto
 
-#endif // __SCHEME_SWCH_PARAMS_H__
+#endif  // __SCHEME_SWCH_PARAMS_H__
