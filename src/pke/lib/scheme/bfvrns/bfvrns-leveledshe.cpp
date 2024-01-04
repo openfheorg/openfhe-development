@@ -141,7 +141,7 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
     double logqPrev = 6. * log(10);
     double logq     = logqBFV(n, logqPrev);
 
-    while (fabs(logq - logqPrev) > log(1.001)) {
+    while (std::fabs(logq - logqPrev) > log(1.001)) {
         logqPrev = logq;
         logq     = logqBFV(n, logqPrev);
     }
