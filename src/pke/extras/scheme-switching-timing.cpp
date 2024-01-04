@@ -370,7 +370,7 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
     params.SetNumValues(slots);
     TIC(t);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    timeSetup = TOC(t);
+    timeSetup           = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
     auto ccLWE = cc->GetBinCCForSchemeSwitch();
@@ -479,6 +479,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
     uint32_t logQ_ccLWE   = 26;
+    bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
 
     uint32_t batchSize      = slots;
     ScalingTechnique scTech = FLEXIBLEAUTO;
@@ -513,6 +514,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
+    params.SetOneHotEncoding(oneHot);
     TIC(t);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     timeSetup           = TOC(t);
@@ -632,6 +634,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
     uint32_t logQ_ccLWE   = 26;
+    bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
 
     uint32_t batchSize      = slots;
     ScalingTechnique scTech = FLEXIBLEAUTO;
@@ -666,6 +669,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
+    params.SetOneHotEncoding(oneHot);
     params.SetUseAltArgmin(true);
     TIC(t);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
@@ -787,6 +791,7 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
     uint32_t scaleModSize = 52;
     uint32_t firstModSize = 60;
     uint32_t logQ_ccLWE   = 26;
+    bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
 
     uint32_t batchSize      = slots;
     ScalingTechnique scTech = FLEXIBLEAUTO;
@@ -823,9 +828,10 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
+    params.SetOneHotEncoding(oneHot);
     TIC(t);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    timeSetup = TOC(t);
+    timeSetup           = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup / 1000 << " s" << std::endl;
 
     auto ccLWE = cc->GetBinCCForSchemeSwitch();
@@ -942,6 +948,7 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
     uint32_t scaleModSize = 52;
     uint32_t firstModSize = 60;
     uint32_t logQ_ccLWE   = 26;
+    bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
 
     uint32_t batchSize      = slots;
     ScalingTechnique scTech = FLEXIBLEAUTO;
@@ -978,6 +985,7 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
+    params.SetOneHotEncoding(oneHot);
     params.SetUseAltArgmin(true);
     TIC(t);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
