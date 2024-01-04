@@ -35,6 +35,7 @@
 #include "config_core.h"
 #include "utils/inttypes.h"
 
+#include <cmath>
 #include <climits>  // CHAR_BIT
 #include <limits>   // std::numeric_limits
 #include <string>

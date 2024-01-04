@@ -222,25 +222,25 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
                 d.front() = 2 * g[n - k];
 
                 for (uint32_t i = 1; i < 2 * k + 1; i++) {
-                    d[i] = g[abs(int32_t(n - k - i))];
+                    d[i] = g[std::abs(int32_t(n - k - i))];
                 }
             }
             else {
                 if (int32_t(k) > int32_t(n - k)) {
                     d.front() = 2 * g[n - k];
                     for (uint32_t i = 1; i < k - (n - k) + 1; i++) {
-                        d[i] = g[abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
+                        d[i] = g[std::abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
                     }
 
                     for (uint32_t i = k - (n - k) + 1; i < n + 1; i++) {
-                        d[i] = g[abs(int32_t(i - n + k))];
+                        d[i] = g[std::abs(int32_t(i - n + k))];
                     }
                 }
                 else {
                     d[n - k] = g.front();
                     for (uint32_t i = n - 2 * k; i < n + 1; i++) {
                         if (i != n - k) {
-                            d[i] = g[abs(int32_t(i - n + k))];
+                            d[i] = g[std::abs(int32_t(i - n + k))];
                         }
                     }
                 }
@@ -772,7 +772,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 }
 
 std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget) {
-    uint32_t layers = ceil(static_cast<double>(logSlots) / budget);
+    uint32_t layers = std::ceil(static_cast<double>(logSlots) / budget);
     uint32_t rows   = logSlots / layers;
     uint32_t rem    = logSlots % layers;
 
@@ -817,8 +817,8 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    int32_t layersCollapse     = dims[0];
-    int32_t remCollapse        = dims[2];
+    int32_t layersCollapse = dims[0];
+    int32_t remCollapse    = dims[2];
 
     bool flagRem = (remCollapse == 0) ? false : true;
 
@@ -838,7 +838,7 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     else {
         g = dim1;
     }
-    int32_t b    = (numRotations + 1) / g;
+    int32_t b = (numRotations + 1) / g;
 
     int32_t bRem = 0;
     int32_t gRem = 0;
@@ -862,7 +862,7 @@ uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
         return 1;
     }
     // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
-    return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))) + 1)));
+    return (1 << (static_cast<uint32_t>(std::log2(std::ceil(sqrt(slots))) + 1)));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
@@ -875,7 +875,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
 
     // Computing the baby-step g and the giant-step h
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
 
     // Computing all indices for baby-step giant-step procedure
     std::vector<int32_t> indexList;
@@ -905,7 +905,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
     // Computing the baby-step g and the giant-step h
     uint32_t bStep = getRatioBSGSLT(slots);
-    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
     uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
 
     std::vector<int32_t> indexList;
@@ -932,7 +932,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
         // Computing the baby-step g and the giant-step h
         bStep = getRatioBSGSLT(slots);
-        gStep = ceil(static_cast<double>(slots) / bStep);
+        gStep = std::ceil(static_cast<double>(slots) / bStep);
     }
 
     // Remove possible duplicates
