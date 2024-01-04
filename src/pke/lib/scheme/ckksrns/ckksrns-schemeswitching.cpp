@@ -255,8 +255,12 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
 
-            double realMax = -1, imagMax = -1;
-            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
+            double realMax = -1;
+            double imagMax = -1;
+            // TODO (dsuponit): is this correct - "uint32_t realMaxIdx = -1" and "uint32_t imagMaxIdx = -1"? if yes,
+            // TODO (dsuponit): shouldn't it better be "uint32_t realMaxIdx = std::numeric_limits<uint32_t>::max()"?"
+            uint32_t realMaxIdx = -1;
+            uint32_t imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < inverse.size(); idx++) {
                 // exp( j*2*pi*n*k/N )
@@ -535,19 +539,20 @@ void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, Nat
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for the same ring dimension.");
     }
 
-    const std::vector<DCRTPoly> cv = ctxt->GetElements();
+    const std::vector<DCRTPoly>& cv = ctxt->GetElements();
 
     if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1) {
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for ciphertext with one tower.");
     }
 
     const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
-    std::vector<DCRTPoly> resultElements(cv.size());
+    std::vector<DCRTPoly> resultElements;
+    resultElements.reserve(cv.size());
 
-    for (uint32_t i = 0; i < cv.size(); i++) {
-        resultElements[i] = DCRTPoly(paramsQlP, Format::COEFFICIENT, true);
-        resultElements[i].SetValuesModSwitch(cv[i], modulus_CKKS_to);
-        resultElements[i].SetFormat(Format::EVALUATION);
+    for (const auto& elem : cv) {
+        auto& ref = resultElements.emplace_back(paramsQlP, Format::COEFFICIENT, true);
+        ref.SetValuesModSwitch(elem, modulus_CKKS_to);
+        ref.SetFormat(Format::EVALUATION);
     }
 
     ctxtKS->SetElements(resultElements);
@@ -704,21 +709,21 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
             elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -777,22 +782,21 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
             elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParams->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -964,22 +968,21 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
         elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -1107,7 +1110,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalPartialHomDecryption(const CryptoContext
 LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
     if (params.GetSecurityLevelFHEW() != TOY && params.GetSecurityLevelFHEW() != STD128)
         OPENFHE_THROW(config_error, "Only STD128 or TOY are currently supported.");
-        
+
     uint32_t ringDim = params.GetRingDimension();
     if (params.GetNumSlotsCKKS() == 0 || params.GetNumSlotsCKKS() == (ringDim / 2))  // fully-packed
         m_numSlotsCKKS = ringDim / 2;
@@ -1143,7 +1146,7 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
 
     // Get the ciphertext modulus
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_ccKS->GetCryptoParameters());
-    m_modulus_CKKS_from = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus();
+    m_modulus_CKKS_from     = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus();
 
     m_ccLWE = std::make_shared<BinFHEContext>();
     m_ccLWE->BinFHEContext::GenerateBinFHEContext(
@@ -1567,21 +1570,21 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     for (uint32_t i = 0; i < towersToDrop; i++)
         elementParams.PopLastParam();
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
