@@ -38,6 +38,7 @@
 #include "binfhecontext.h"
 #include "lwe-pke.h"
 #include "lwe-ciphertext.h"
+#include "scheme/scheme-swch-params.h"
 
 #include <memory>
 #include <string>
@@ -61,40 +62,12 @@ public:
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
 
-    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>&, SecurityLevel sl, BINFHE_PARAMSET slBin,
-                                      bool arbFunc, uint32_t logQ, bool dynamic, uint32_t numSlotsCKKS,
-                                      uint32_t logQswitch, uint32_t dim1, uint32_t L) override;
+    LWEPrivateKey EvalCKKStoFHEWSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk) override;
 
     void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) override;
-
-    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                       const std::vector<std::vector<std::complex<double>>>& A,
-                                                       uint32_t dim1, uint32_t L, double scale) const;
-
-    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                       const std::vector<std::vector<std::complex<double>>>& A,
-                                                       const std::vector<std::vector<std::complex<double>>>& B,
-                                                       uint32_t dim1, uint32_t L, double scale) const;
-
-    Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                    ConstCiphertext<DCRTPoly> ctxt,
-                                                    const std::vector<ConstPlaintext>& A, uint32_t dim1) const;
-
-    Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                        const std::vector<std::vector<std::complex<double>>>& A,
-                                                        ConstCiphertext<DCRTPoly> ct, bool wide, uint32_t dim1,
-                                                        uint32_t L) const;
-
-    Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                 ConstCiphertext<DCRTPoly> ciphertext) const;
-
-    Ciphertext<DCRTPoly> EvalPartialHomDecryption(const CryptoContextImpl<DCRTPoly>& cc,
-                                                  const std::vector<std::vector<std::complex<double>>>& A,
-                                                  ConstCiphertext<DCRTPoly> ct, uint32_t dim1, double scale,
-                                                  uint32_t L) const;
 
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
                                                                    uint32_t numCtxts) override;
@@ -111,11 +84,7 @@ public:
                                         uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
                                         uint32_t dim1) const override;
 
-    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
-                                           BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
-                                           uint32_t numSlotsCKKS, uint32_t numValues, bool argmin, bool oneHot,
-                                           bool alt, uint32_t logQswitch, uint32_t dim1CF, uint32_t dim1FC,
-                                           uint32_t LCF, uint32_t LFC) override;
+    LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                                   ConstLWEPrivateKey& lwesk) override;
@@ -216,6 +185,32 @@ public:
     }
 
 private:
+    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                       const std::vector<std::vector<std::complex<double>>>& A,
+                                                       uint32_t dim1, uint32_t L, double scale) const;
+
+    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                       const std::vector<std::vector<std::complex<double>>>& A,
+                                                       const std::vector<std::vector<std::complex<double>>>& B,
+                                                       uint32_t dim1, uint32_t L, double scale) const;
+
+    Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                    ConstCiphertext<DCRTPoly> ctxt,
+                                                    const std::vector<ConstPlaintext>& A, uint32_t dim1) const;
+
+    Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                        const std::vector<std::vector<std::complex<double>>>& A,
+                                                        ConstCiphertext<DCRTPoly> ct, bool wide, uint32_t dim1,
+                                                        uint32_t L) const;
+
+    Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                 ConstCiphertext<DCRTPoly> ciphertext) const;
+
+    Ciphertext<DCRTPoly> EvalPartialHomDecryption(const CryptoContextImpl<DCRTPoly>& cc,
+                                                  const std::vector<std::vector<std::complex<double>>>& A,
+                                                  ConstCiphertext<DCRTPoly> ct, uint32_t dim1, double scale,
+                                                  uint32_t L) const;
+
     //------------------------------------------------------------------------------
     // Complex Plaintext Functions, copied from ckksrns-fhe. TODO: fix this
     //------------------------------------------------------------------------------

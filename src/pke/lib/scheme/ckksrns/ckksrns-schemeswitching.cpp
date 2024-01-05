@@ -255,8 +255,12 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
 
-            double realMax = -1, imagMax = -1;
-            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
+            double realMax = -1;
+            double imagMax = -1;
+            // TODO (dsuponit): is this correct - "uint32_t realMaxIdx = -1" and "uint32_t imagMaxIdx = -1"? if yes,
+            // TODO (dsuponit): shouldn't it better be "uint32_t realMaxIdx = std::numeric_limits<uint32_t>::max()"?"
+            uint32_t realMaxIdx = -1;
+            uint32_t imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < inverse.size(); idx++) {
                 // exp( j*2*pi*n*k/N )
@@ -535,19 +539,20 @@ void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, Nat
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for the same ring dimension.");
     }
 
-    const std::vector<DCRTPoly> cv = ctxt->GetElements();
+    const std::vector<DCRTPoly>& cv = ctxt->GetElements();
 
     if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1) {
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for ciphertext with one tower.");
     }
 
     const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
-    std::vector<DCRTPoly> resultElements(cv.size());
+    std::vector<DCRTPoly> resultElements;
+    resultElements.reserve(cv.size());
 
-    for (uint32_t i = 0; i < cv.size(); i++) {
-        resultElements[i] = DCRTPoly(paramsQlP, Format::COEFFICIENT, true);
-        resultElements[i].SetValuesModSwitch(cv[i], modulus_CKKS_to);
-        resultElements[i].SetFormat(Format::EVALUATION);
+    for (const auto& elem : cv) {
+        auto& ref = resultElements.emplace_back(paramsQlP, Format::COEFFICIENT, true);
+        ref.SetValuesModSwitch(elem, modulus_CKKS_to);
+        ref.SetFormat(Format::EVALUATION);
     }
 
     ctxtKS->SetElements(resultElements);
@@ -704,21 +709,21 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
             elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -777,22 +782,21 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
             elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParams->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -964,22 +968,21 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
         elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -1104,41 +1107,36 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalPartialHomDecryption(const CryptoContext
 //------------------------------------------------------------------------------
 // Scheme switching Wrapper
 //------------------------------------------------------------------------------
-LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
-                                                 BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
-                                                 uint32_t numSlotsCKKS, uint32_t logQswitch, uint32_t dim1,
-                                                 uint32_t L) {
-    uint32_t M = cc.GetCyclotomicOrder();
-    if (numSlotsCKKS == 0 || numSlotsCKKS == M / 4)  // fully-packed
-        m_numSlotsCKKS = M / 4;
-    else  // sparsely-packed
-        m_numSlotsCKKS = numSlotsCKKS;
+LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
+    if (params.GetSecurityLevelFHEW() != TOY && params.GetSecurityLevelFHEW() != STD128)
+        OPENFHE_THROW(config_error, "Only STD128 or TOY are currently supported.");
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus();
+    uint32_t ringDim = params.GetRingDimension();
+    if (params.GetNumSlotsCKKS() == 0 || params.GetNumSlotsCKKS() == (ringDim / 2))  // fully-packed
+        m_numSlotsCKKS = ringDim / 2;
+    else  // sparsely-packed
+        m_numSlotsCKKS = params.GetNumSlotsCKKS();
+
+    m_modulus_CKKS_initial = params.GetInitialCKKSModulus();
     // Modulus to switch to in order to have secure RLWE samples with ring dimension n.
     // We can select any Qswitch less than 27 bits corresponding to 128 bits of security for lattice parameter n=1024 < 1305
     // according to https://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
     // or any Qswitch for TOY security.
     // Ensure that Qswitch is larger than Q_FHEW and smaller than Q_CKKS.
-    if (logQ >= logQswitch || logQswitch > GetMSB(m_modulus_CKKS_initial.ConvertToInt()) - 1)
+    if (params.GetCtxtModSizeFHEWIntermedSwch() <= params.GetCtxtModSizeFHEWLargePrec() ||
+        params.GetCtxtModSizeFHEWIntermedSwch() > GetMSB(m_modulus_CKKS_initial.ConvertToInt()) - 1) {
         OPENFHE_THROW(config_error, "Qswitch should be larger than QFHEW and smaller than QCKKS.");
-
+    }
     // Intermediate cryptocontext
-    uint32_t multDepth    = 0;
-    uint32_t scaleModSize = cc.GetEncodingParams()->GetPlaintextModulus();
-
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetMultiplicativeDepth(multDepth);
-    parameters.SetFirstModSize(logQswitch);
-    parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(
-        FIXEDMANUAL);  // This doesn't need this to be the same scaling technique as the outer cryptocontext, since we only do a key switch
-    parameters.SetSecurityLevel(sl);
-    parameters.SetRingDim(cc.GetRingDimension());
-    parameters.SetBatchSize(cc.GetEncodingParams()->GetBatchSize());
+    parameters.SetMultiplicativeDepth(0);
+    parameters.SetFirstModSize(params.GetCtxtModSizeFHEWIntermedSwch());
+    parameters.SetScalingModSize(params.GetScalingModSize());
+    // This doesn't need this to be the same scaling technique as the outer cryptocontext, since we only do a key switch
+    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetSecurityLevel(params.GetSecurityLevelCKKS());
+    parameters.SetRingDim(ringDim);
+    parameters.SetBatchSize(params.GetBatchSize());
 
     m_ccKS = GenCryptoContext(parameters);
 
@@ -1147,27 +1145,26 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPol
     m_ccKS->Enable(KEYSWITCH);
 
     // Get the ciphertext modulus
-    const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_ccKS->GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams2 = *(cryptoParams2->GetElementParams());
-    auto paramsQ2                                  = elementParams2.GetParams();
-    m_modulus_CKKS_from                            = paramsQ2[0]->GetModulus();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_ccKS->GetCryptoParameters());
+    m_modulus_CKKS_from     = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus();
 
     m_ccLWE = std::make_shared<BinFHEContext>();
-    if (slBin != TOY && slBin != STD128)
-        OPENFHE_THROW(config_error, "Only STD128 or TOY are currently supported.");
-    m_ccLWE->BinFHEContext::GenerateBinFHEContext(slBin, arbFunc, logQ, 0, GINX, dynamic);
+    m_ccLWE->BinFHEContext::GenerateBinFHEContext(
+        params.GetSecurityLevelFHEW(), params.GetArbitraryFunctionEvaluation(), params.GetCtxtModSizeFHEWLargePrec(), 0,
+        GINX, params.GetUseDynamicModeFHEW());
 
     // For arbitrary functions, the LWE ciphertext needs to be at most the ring dimension in FHEW bootstrapping
-    m_modulus_LWE = (arbFunc == false) ? 1 << logQ : m_ccLWE->GetParams()->GetLWEParams()->Getq().ConvertToInt();
+    m_modulus_LWE = (!params.GetArbitraryFunctionEvaluation()) ?
+                        1 << params.GetCtxtModSizeFHEWLargePrec() :
+                        m_ccLWE->GetParams()->GetLWEParams()->Getq().ConvertToInt();
 
     // LWE private key
     LWEPrivateKey lwesk = m_ccLWE->KeyGen();
 
     // The baby-step and number of levels for the linear transformation associated to the homomorphic decoding
-    if (dim1 == 0)
-        dim1 = getRatioBSGSLT(numSlotsCKKS);
-    m_dim1CF = dim1;
-    m_LCF    = L;
+    m_dim1CF = (params.GetBStepLTrCKKStoFHEW() == 0) ? getRatioBSGSLT(params.GetNumSlotsCKKS()) :
+                                                       params.GetBStepLTrCKKStoFHEW();
+    m_LCF    = params.GetLevelLTrCKKStoFHEW();
 
     return lwesk;
 }
@@ -1573,21 +1570,21 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     for (uint32_t i = 0; i < towersToDrop; i++)
         elementParams.PopLastParam();
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
-
-    for (size_t i = 0; i < sizeP; i++) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
     }
 
     auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
@@ -1619,35 +1616,27 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     return BminusAdotSres;
 }
 
-LWEPrivateKey SWITCHCKKSRNS::EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl,
-                                                      BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ, bool dynamic,
-                                                      uint32_t numSlotsCKKS, uint32_t numValues, bool argmin,
-                                                      bool oneHot, bool alt, uint32_t logQswitch, uint32_t dim1CF,
-                                                      uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
-
+LWEPrivateKey SWITCHCKKSRNS::EvalSchemeSwitchingSetup(const SchSwchParams& params) {
     // CKKS to FHEW
-    auto lwesk = EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch, dim1CF, LCF);
+    auto lwesk = EvalCKKStoFHEWSetup(params);
 
     // FHEW to CKKS
+    // Save the parameters to be used in EvalSchemeSwitchingKeyGen
+    m_argmin = params.GetComputeArgmin();
+    m_oneHot = params.GetOneHotEncoding();
+    m_alt    = params.GetUseAltArgmin();
+
     // Set parameters for linear transform for FHEW to CKKS
-    if (!argmin || (argmin && alt)) {
-        m_numCtxts = (numValues == 0) ? m_numSlotsCKKS : numValues;
+    if (!m_argmin || (m_argmin && m_alt)) {
+        m_numCtxts = (params.GetNumValues() == 0) ? m_numSlotsCKKS : params.GetNumValues();
     }
     else {  // argmin not in the alternative mode
-        m_numCtxts = (numValues == 0) ? m_numSlotsCKKS / 2 : numValues / 2;
+        m_numCtxts = (params.GetNumValues() == 0) ? m_numSlotsCKKS / 2 : params.GetNumValues() / 2;
     }
 
-    if (dim1FC == 0)
-        dim1FC = getRatioBSGSLT(
-            m_numCtxts);  // There are multiple dim1's required in argmin, but they are specified individually in EvalSchemeSwitchingKeyGen
-    m_dim1FC = dim1FC;
-    m_LFC    = LFC;
-
-    // Save the rest of meta parameters to be used in EvalSchemeSwitchingKeyGen
-    m_argmin = argmin;
-    m_oneHot = oneHot;
-    m_alt    = alt;
+    // There are multiple dim1's required in argmin, but they are specified individually in EvalSchemeSwitchingKeyGen
+    m_dim1FC = (params.GetBStepLTrFHEWtoCKKS() == 0) ? getRatioBSGSLT(m_numCtxts) : params.GetBStepLTrFHEWtoCKKS();
+    m_LFC    = params.GetLevelLTrFHEWtoCKKS();
 
     return lwesk;
 }

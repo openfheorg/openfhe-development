@@ -44,6 +44,7 @@
 #include "ciphertext.h"
 
 #include "key/keypair.h"
+#include "scheme/scheme-swch-params.h"
 
 #include "utils/exception.h"
 #include "utils/caller_info.h"
@@ -1406,13 +1407,9 @@ public:
 
     // SCHEMESWITCHING methods
 
-    LWEPrivateKey EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc, SecurityLevel sl = HEStd_128_classic,
-                                      BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 29,
-                                      bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27,
-                                      uint32_t dim1 = 0, uint32_t L = 1) {
+    LWEPrivateKey EvalCKKStoFHEWSetup(const SchSwchParams& params) {
         VerifySchemeSwitchEnabled(__func__);
-        return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch,
-                                                   dim1, L);
+        return m_SchemeSwitch->EvalCKKStoFHEWSetup(params);
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
@@ -1462,15 +1459,9 @@ public:
         return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
     }
 
-    LWEPrivateKey EvalSchemeSwitchingSetup(const CryptoContextImpl<Element>& cc, SecurityLevel sl = HEStd_128_classic,
-                                           BINFHE_PARAMSET slBin = STD128, bool arbFunc = false, uint32_t logQ = 29,
-                                           bool dynamic = false, uint32_t numSlotsCKKS = 0, uint32_t numValues = 0,
-                                           bool argmin = false, bool oneHot = true, bool alt = false,
-                                           uint32_t logQswitch = 27, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
-                                           uint32_t LCF = 1, uint32_t LFC = 0) {
+    LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) {
         VerifySchemeSwitchEnabled(__func__);
-        return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, numValues,
-                                                        argmin, oneHot, alt, logQswitch, dim1CF, dim1FC, LCF, LFC);
+        return m_SchemeSwitch->EvalSchemeSwitchingSetup(params);
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair,

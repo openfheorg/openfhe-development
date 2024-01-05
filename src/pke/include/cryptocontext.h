@@ -49,6 +49,8 @@
 #include "schemebase/base-scheme.h"
 #include "schemerns/rns-cryptoparameters.h"
 
+#include "scheme/scheme-swch-params.h"
+
 #include "utils/caller_info.h"
 #include "utils/serial.h"
 #include "utils/type_name.h"
@@ -3314,25 +3316,14 @@ public:
     /**
    * Sets all parameters for switching from CKKS to FHEW
    *
-   * @param sl security level for CKKS cryptocontext
-   * @param slBin security level for FHEW cryptocontext (only STD128 and TOY are currently supported)
-   * @param arbFunc whether the binfhecontext should be created for arbitrary function evaluation or not
-   * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
-   * @param dynamic whether to use dynamic mode for FHEW
-   * @param numSlotsCKKS number of slots in CKKS encryption
-   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
+   * @param params objects holding all necessary paramters
    * @return the FHEW secret key
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    LWEPrivateKey EvalCKKStoFHEWSetup(SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128,
-                                      bool arbFunc = false, uint32_t logQ = 25, bool dynamic = false,
-                                      uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27, uint32_t dim1 = 0,
-                                      uint32_t L = 1) {
+    LWEPrivateKey EvalCKKStoFHEWSetup(SchSwchParams params) {
         VerifyCKKSScheme(__func__);
-        return GetScheme()->EvalCKKStoFHEWSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch,
-                                                dim1, L);
+        SetParamsFromCKKSCryptocontext(params);
+        return GetScheme()->EvalCKKStoFHEWSetup(params);
     }
 
     /**
@@ -3471,35 +3462,33 @@ public:
     }
 
     /**
+   * Gets data from CKKS cryptocontext to set some parameters for scheme switching
+   */
+    void SetParamsFromCKKSCryptocontext(SchSwchParams& params) {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(GetCryptoParameters());
+        if (!cryptoParams) {
+            OPENFHE_THROW(config_error, "std::dynamic_pointer_cast<CryptoParametersCKKSRNS>() failed");
+        }
+        params.SetInitialCKKSModulus(cryptoParams->GetElementParams()->GetParams()[0]->GetModulus());
+        params.SetRingDimension(GetRingDimension());
+        // TODO (dsuponit): is this correct - PlaintextModulus used as scalingModSize?
+        params.SetScalingModSize(GetEncodingParams()->GetPlaintextModulus());
+        params.SetBatchSize(GetEncodingParams()->GetBatchSize());
+
+        params.SetParamsFromCKKSCryptocontextCalled();
+    }
+
+    /**
    * Sets all parameters for switching from CKKS to FHEW and back
    *
-   * @param sl security level for CKKS cryptocontext
-   * @param slBin security level for FHEW cryptocontext
-   * @param arbFunc whether the binfhecontext should be created for arbitrary function evaluation or not
-   * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
-   * @param dynamic whether to use dynamic mode for FHEW
-   * @param numSlotsCKKS number of slots in CKKS encryption
-   * @param numValues number of values to switch
-   * @param argmin flag that indicates whether argmin is being computed
-   * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
-   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
-   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
-   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
-   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
-   * @param LCF level on which to do the linear transform in CKKS to FHEW
-   * @param LFC level on which to do the linear transform in FHEW to CKKS
+   * @param params objects holding all necessary paramters
    * @return the FHEW secret key
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    LWEPrivateKey EvalSchemeSwitchingSetup(SecurityLevel sl = HEStd_128_classic, BINFHE_PARAMSET slBin = STD128,
-                                           bool arbFunc = false, uint32_t logQ = 25, bool dynamic = false,
-                                           uint32_t numSlotsCKKS = 0, uint32_t numValues = 0, bool argmin = false,
-                                           bool oneHot = true, bool alt = false, uint32_t logQswitch = 27,
-                                           uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1,
-                                           uint32_t LFC = 0) {
+    LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams& params) {
         VerifyCKKSScheme(__func__);
-        return GetScheme()->EvalSchemeSwitchingSetup(*this, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, numValues,
-                                                     argmin, oneHot, alt, logQswitch, dim1CF, dim1FC, LCF, LFC);
+        SetParamsFromCKKSCryptocontext(params);
+        return GetScheme()->EvalSchemeSwitchingSetup(params);
     }
 
     /**

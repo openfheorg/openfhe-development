@@ -112,7 +112,12 @@ void SwitchCKKSToFHEW() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(sl, slBin, false, logQ_ccLWE, false, slots);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(params);
     auto ccLWE          = cc->GetBinCCForSchemeSwitch();
     cc->EvalCKKStoFHEWKeyGen(keys, privateKeyFHEW);
 
@@ -433,8 +438,13 @@ void FloorViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    bool arbFunc        = false;
-    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(slots);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -519,7 +529,6 @@ void FuncViaSchemeSwitching() {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
-    bool arbFunc          = true;
     uint32_t slots        = 8;  // sparsely-packed
     uint32_t batchSize    = slots;
 
@@ -547,7 +556,14 @@ void FuncViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, slots);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetArbitraryFunctionEvaluation(true);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(slots);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -695,7 +711,13 @@ void ComparisonViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(slots);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     ccLWE->BTKeyGen(privateKeyFHEW);
@@ -877,7 +899,6 @@ void ArgminViaSchemeSwitching() {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
-    bool arbFunc          = false;
     bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
 
     uint32_t slots          = 16;  // sparsely-packed
@@ -915,8 +936,14 @@ void ArgminViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW =
-        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(numValues);
+    params.SetComputeArgmin(true);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -1007,10 +1034,7 @@ void ArgminViaSchemeSwitchingAlt() {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
-    bool arbFunc          = false;
     bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
-    bool alt =
-        true;  // alternative mode of argmin which has fewer rotation keys and does more operations in FHEW than in CKKS
 
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
@@ -1047,8 +1071,15 @@ void ArgminViaSchemeSwitchingAlt() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW =
-        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(numValues);
+    params.SetComputeArgmin(true);
+    params.SetUseAltArgmin(true);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -1140,7 +1171,6 @@ void ArgminViaSchemeSwitchingUnit() {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
-    bool arbFunc          = false;
     bool oneHot           = true;
 
     uint32_t slots          = 32;  // sparsely-packed
@@ -1180,8 +1210,14 @@ void ArgminViaSchemeSwitchingUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW =
-        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(numValues);
+    params.SetComputeArgmin(true);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -1275,10 +1311,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
-    bool arbFunc          = false;
     bool oneHot           = true;
-    bool alt =
-        true;  // alternative mode of argmin which has fewer rotation keys and does more operations in FHEW than in CKKS
 
     uint32_t slots          = 32;  // sparsely-packed
     uint32_t batchSize      = slots;
@@ -1317,8 +1350,15 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW =
-        cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots, numValues, true, oneHot, alt);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(numValues);
+    params.SetComputeArgmin(true);
+    params.SetUseAltArgmin(true);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -1447,7 +1487,13 @@ void PolyViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots, slots);
+    SchSwchParams params;
+    params.SetSecurityLevelCKKS(sl);
+    params.SetSecurityLevelFHEW(slBin);
+    params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
+    params.SetNumSlotsCKKS(slots);
+    params.SetNumValues(slots);
+    auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
     auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS and back
