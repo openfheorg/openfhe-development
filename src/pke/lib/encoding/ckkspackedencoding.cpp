@@ -50,7 +50,7 @@ std::vector<std::complex<double>> Conjugate(const std::vector<std::complex<doubl
     uint32_t n = vec.size();
     std::vector<std::complex<double>> result(n);
     for (size_t i = 1; i < n; i++) {
-        result[i] = {-vec[n - i].imag(), -vec[n - i].real()};
+        result[i] = {-vec[n - i].imag(), vec[n - i].real()};
     }
     result[0] = {vec[0].real(), -vec[0].imag()};
     return result;
@@ -98,7 +98,7 @@ double StdDev(const std::vector<std::complex<double>>& vec, const std::vector<st
     };
 
     // use the symmetry condition
-    double variance = 2 * accumulate(complexValues.begin() + 1, complexValues.begin() + slots / 2, 0.0, variance_func);
+    double variance = 2 * std::accumulate(complexValues.begin() + 1, complexValues.begin() + slots / 2, 0.0, variance_func);
     // and then add values at indices 0 and Nh/2
     variance += (complexValues[0].imag() - mean) * (complexValues[0].imag() - mean);
     variance += 2 * (complexValues[slots / 2].real() - mean) * (complexValues[slots / 2].real() - mean);
