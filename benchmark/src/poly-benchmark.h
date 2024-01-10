@@ -48,7 +48,7 @@ using namespace lbcrypto;
 constexpr size_t POLY_NUM    = 16;
 constexpr size_t POLY_NUM_M1 = (POLY_NUM - 1);
 
-std::vector<uint32_t> tow_args({1, 2, 4, 8});
+std::vector<uint32_t> tow_args({1, 2, 4, 8, 16});
 std::shared_ptr<std::vector<NativePoly>> NativepolysEval;
 std::shared_ptr<std::vector<NativePoly>> NativepolysCoef;
 std::map<uint32_t, std::shared_ptr<std::vector<DCRTPoly>>> DCRTpolysEval;
