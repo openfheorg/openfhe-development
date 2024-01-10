@@ -116,9 +116,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     for (size_t l = 0; l < levels; ++l) {
         for (size_t i = 0; i < cv.size(); ++i) {
             cv[i].DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
-                                          cryptoParams->GetQlQlInvModqlDivqlModqPrecon(diffQl + l),
-                                          cryptoParams->GetqlInvModq(diffQl + l),
-                                          cryptoParams->GetqlInvModqPrecon(diffQl + l));
+                                          cryptoParams->GetqlInvModq(diffQl + l));
         }
     }
 
