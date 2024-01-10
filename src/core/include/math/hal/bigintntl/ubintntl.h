@@ -872,17 +872,26 @@ public:
     // OpenFHE conversion methods
     template <typename T = BasicInteger>
     T ConvertToInt() const {
-        std::stringstream s;  // slower
-        s << *this;
-        T result;
-        s >> result;
-
-        if ((this->GetMSB() > (sizeof(T) * 8)) || (this->GetMSB() > NTL_ZZ_NBITS)) {
-            std::cerr << "Warning myZZ::ConvertToInt() Loss of precision. " << std::endl;
-            std::cerr << "input  " << *this << std::endl;
-            std::cerr << "result  " << result << std::endl;
+        #if defined(HAVE_INT128)
+        if constexpr (std::is_same_v<T, uint128_t>) {
+            uint128_t tmp2 = (*this >> 64).ConvertToInt<uint64_t>();
+            return (tmp2 << 64) | (*this % myZZ(1).LShiftEq(64)).ConvertToInt<uint64_t>();
         }
-        return result;
+        else
+        #endif
+        {
+            std::stringstream s;  // slower
+            s << *this;
+            T result;
+            s >> result;
+
+            if ((this->GetMSB() > (sizeof(T) * 8)) || (this->GetMSB() > NTL_ZZ_NBITS)) {
+                std::cerr << "Warning myZZ::ConvertToInt() Loss of precision. " << std::endl;
+                std::cerr << "input  " << *this << std::endl;
+                std::cerr << "result  " << result << std::endl;
+            }
+            return result;
+        }
     }
     uint64_t ConvertToUint64() const;
     double ConvertToDouble() const;
