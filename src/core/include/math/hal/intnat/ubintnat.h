@@ -73,13 +73,6 @@
 #define NATIVEINT_DO_CHECKS false
 #define NATIVEINT_BARRET_MOD
 
-// TODO: remove these?
-using U32BITS = uint32_t;
-using U64BITS = uint64_t;
-#if defined(HAVE_INT128)
-using U128BITS = uint128_t;
-#endif
-
 namespace intnat {
 
 // Forward declare class and give it an alias for the expected type
@@ -1783,7 +1776,7 @@ public:
     }
 
     template <class Archive, typename T = void>
-    typename std::enable_if_t<std::is_same_v<NativeInt, U64BITS> || std::is_same_v<NativeInt, U32BITS>, T> load(
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
@@ -1794,7 +1787,7 @@ public:
 
 #if defined(HAVE_INT128)
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && !cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
                               void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
@@ -1810,7 +1803,7 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
                               void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
@@ -1827,18 +1820,18 @@ public:
 #endif
 
     template <class Archive, typename T = void>
-    typename std::enable_if_t<std::is_same_v<NativeInt, U64BITS> || std::is_same<NativeInt, U32BITS>::value, T> save(
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same<NativeInt, uint32_t>::value, T> save(
         Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
 
 #if defined(HAVE_INT128)
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && !cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
         // save 2 unint64_t values instead of uint128_t
-        constexpr U128BITS mask = (static_cast<U128BITS>(1) << 64) - 1;
+        constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
         vec[1] = m_value >> 64;   // most significant word
@@ -1846,11 +1839,11 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
         // save 2 unint64_t values instead of uint128_t
-        constexpr U128BITS mask = (static_cast<U128BITS>(1) << 64) - 1;
+        constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
         vec[1] = m_value >> 64;   // most significant word
@@ -1907,96 +1900,91 @@ private:
    * @param b multiplicand
    * @param &x result of multiplication
    */
-    static void MultD(U32BITS a, U32BITS b, typeD& res) {
-        U64BITS c{static_cast<U64BITS>(a) * b};
-        res.hi = static_cast<U32BITS>(c >> 32);
-        res.lo = static_cast<U32BITS>(c);
-    }
+    static void MultD(NativeInt a, NativeInt b, typeD& res) {
+        if constexpr (std::is_same_v<NativeInt, uint32_t>) {
+            uint64_t c{static_cast<uint64_t>(a) * b};
+            res.hi = static_cast<uint32_t>(c >> 32);
+            res.lo = static_cast<uint32_t>(c);
+        }
 
-    static void MultD(U64BITS a, U64BITS b, typeD& res) {
-#if defined(__x86_64__)
-    #if defined(HAVE_INT128)
-        U128BITS c{static_cast<U128BITS>(a) * b};
-        res.hi = static_cast<U64BITS>(c >> 64);
-        res.lo = static_cast<U64BITS>(c);
-    #else
-        // clang-format off
-    __asm__("mulq %[b]"
-            : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
-            : [ a ] "%[lo]"(a), [ b ] "rm"(b)
-            : "cc");
-                // clang-format on
-    #endif
-#elif defined(__aarch64__)
-        typeD x;
-        x.hi = 0;
-        x.lo = a;
-        U64BITS y(b);
-        res.lo = x.lo * y;
-        asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
-        res.hi += x.hi * y;
-#elif defined(__arm__)  // 32 bit processor
-        uint64_t wres(0), wa(a), wb(b);
-        wres   = wa * wb;
-        res.hi = wres >> 32;
-        res.lo = (uint32_t)wres & 0xFFFFFFFF;
-#elif __riscv
-        U128BITS wres(0), wa(a), wb(b);
-        wres   = wa * wb;
-        res.hi = (uint64_t)(wres >> 64);
-        res.lo = (uint64_t)wres;
+        if constexpr (std::is_same_v<NativeInt, uint64_t>) {
+#if defined(HAVE_INT128)
+            // includes defined(__x86_64__), defined(__powerpc64__), defined(__riscv), defined(__s390__)
+            uint128_t c{static_cast<uint128_t>(a) * b};
+            res.hi = static_cast<uint64_t>(c >> 64);
+            res.lo = static_cast<uint64_t>(c);
 #elif defined(__EMSCRIPTEN__)  // web assembly
-        U64BITS a1 = a >> 32;
-        U64BITS a2 = (uint32_t)a;
-        U64BITS b1 = b >> 32;
-        U64BITS b2 = (uint32_t)b;
+            uint64_t a1 = a >> 32;
+            uint64_t a2 = (uint32_t)a;
+            uint64_t b1 = b >> 32;
+            uint64_t b2 = (uint32_t)b;
 
-        // use schoolbook multiplication
-        res.hi            = a1 * b1;
-        res.lo            = a2 * b2;
-        U64BITS lowBefore = res.lo;
+            res.hi             = a1 * b1;
+            res.lo             = a2 * b2;
+            uint64_t lowBefore = res.lo;
 
-        U64BITS p1   = a2 * b1;
-        U64BITS p2   = a1 * b2;
-        U64BITS temp = p1 + p2;
-        res.hi += temp >> 32;
-        res.lo += U64BITS((uint32_t)temp) << 32;
+            uint64_t p1   = a2 * b1;
+            uint64_t p2   = a1 * b2;
+            uint64_t temp = p1 + p2;
+            res.hi += temp >> 32;
+            res.lo += uint64_t((uint32_t)temp) << 32;
 
-        // adds the carry to the high word
-        if (lowBefore > res.lo)
-            res.hi++;
+            // adds the carry to the high word
+            if (lowBefore > res.lo)
+                ++res.hi;
 
-        // if there is an overflow in temp, add 2^32
-        if ((temp < p1) || (temp < p2))
-            res.hi += (U64BITS)1 << 32;
+            // if there is an overflow in temp, add 2^32
+            if ((temp < p1) || (temp < p2))
+                res.hi += (uint64_t)1 << 32;
+#elif defined(__x86_64__)
+            // clang-format off
+            __asm__("mulq %[b]"
+                : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
+                : [ a ] "%[lo]"(a), [ b ] "rm"(b)
+                : "cc");
+                // clang-format on
+#elif defined(__aarch64__)
+            typeD x;
+            x.hi = 0;
+            x.lo = a;
+            uint64_t y(b);
+            res.lo = x.lo * y;
+            asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
+            res.hi += x.hi * y;
+#elif defined(__arm__) || defined(__powerpc__)  // 32 bit processor
+            uint64_t wres(0), wa(a), wb(b);
+            wres   = wa * wb;
+            res.hi = wres >> 32;
+            res.lo = (uint32_t)wres & 0xFFFFFFFF;
 #else
     #error Architecture not supported for MultD()
 #endif
-    }
+        }
 
 #if defined(HAVE_INT128)
-    static void MultD(U128BITS a, U128BITS b, typeD& res) {
-        static constexpr U128BITS masklo = (static_cast<U128BITS>(1) << 64) - 1;
-        static constexpr U128BITS onehi  = static_cast<U128BITS>(1) << 64;
+        if constexpr (std::is_same_v<NativeInt, uint128_t>) {
+            static constexpr uint128_t masklo = (static_cast<uint128_t>(1) << 64) - 1;
+            static constexpr uint128_t onehi  = static_cast<uint128_t>(1) << 64;
 
-        U128BITS a1{a >> 64};
-        U128BITS a2{a & masklo};
-        U128BITS b1{b >> 64};
-        U128BITS b2{b & masklo};
-        U128BITS a1b2{a1 * b2};
-        U128BITS a2b1{a2 * b1};
-        U128BITS tmp{a1b2 + a2b1};
-        U128BITS lo{a2 * b2};
+            uint128_t a1{a >> 64};
+            uint128_t a2{a & masklo};
+            uint128_t b1{b >> 64};
+            uint128_t b2{b & masklo};
+            uint128_t a1b2{a1 * b2};
+            uint128_t a2b1{a2 * b1};
+            uint128_t tmp{a1b2 + a2b1};
+            uint128_t lo{a2 * b2};
 
-        res = {a1 * b1, lo};
-        res.lo += tmp << 64;
-        if (lo > res.lo)
-            ++res.hi;
-        if ((tmp < a1b2) || (tmp < a2b1))
-            res.hi += onehi;
-        res.hi += tmp >> 64;
-    }
+            res = {a1 * b1, lo};
+            res.lo += tmp << 64;
+            if (lo > res.lo)
+                ++res.hi;
+            if ((tmp < a1b2) || (tmp < a2b1))
+                res.hi += onehi;
+            res.hi += tmp >> 64;
+        }
 #endif
+    }
 
     /**
    * Multiplies two single-word integers and stores the high word of the

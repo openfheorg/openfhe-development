@@ -40,36 +40,33 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-// Precomputation of CRT tables encryption, decryption, and  homomorphic
-// multiplication
+// Precomputation of CRT tables for encryption, decryption, and homomorphic multiplication
 void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                  EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                  uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
-    size_t sizeQ = GetElementParams()->GetParams().size();
-
-    std::vector<NativeInteger> moduliQ(sizeQ);
-    std::vector<NativeInteger> rootsQ(sizeQ);
-
-    for (size_t i = 0; i < sizeQ; i++) {
-        moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-        rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
-    }
-
+    NativeInteger t     = GetPlaintextModulus();
     uint32_t n          = GetElementParams()->GetRingDimension();
     BigInteger modulusQ = GetElementParams()->GetModulus();
-    NativeInteger t     = GetPlaintextModulus();
+    const auto& paramsQ = GetElementParams()->GetParams();
+    size_t sizeQ        = paramsQ.size();
 
-    const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
-    const BigInteger TwoPower64("18446744073709551616");                            // 2^64
-    m_modqBarrettMu.resize(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; i++) {
-        BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
-        uint64_t val[2];
-        val[0] = (mu % TwoPower64).ConvertToInt();
-        val[1] = mu.RShift(64).ConvertToInt();
-        memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
+    m_modqBarrettMu.resize(0);
+    m_modqBarrettMu.reserve(sizeQ);
+    m_tInvModq.resize(0);
+    m_tInvModq.reserve(sizeQ);
+
+    std::vector<NativeInteger> moduliQ, rootsQ;
+    moduliQ.reserve(sizeQ);
+    rootsQ.reserve(sizeQ);
+
+    const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+    for (const auto& p : paramsQ) {
+        m_tInvModq.emplace_back(t.ModInverse(p->GetModulus()));
+        m_modqBarrettMu.emplace_back((BarrettBase128Bit / BigInteger(p->GetModulus())).ConvertToInt<DoubleNativeInt>());
+        moduliQ.emplace_back(p->GetModulus());
+        rootsQ.emplace_back(p->GetRootOfUnity());
     }
 
     /////////////////////////////////////
@@ -78,11 +75,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
     NativeInteger modulusr = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], 2 * n);
     NativeInteger rootr    = RootOfUnity<NativeInteger>(2 * n, modulusr);
-
-    m_tInvModq.resize(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; i++) {
-        m_tInvModq[i] = t.ModInverse(moduliQ[i]);
-    }
 
     m_negQModt       = modulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
     m_negQModt       = t.Sub(m_negQModt);
@@ -124,25 +116,19 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         size_t sizeR = (multTech == HPS) ? sizeQ + 1 : sizeQ;
         std::vector<NativeInteger> moduliR(sizeR);
         std::vector<NativeInteger> rootsR(sizeR);
+        m_modrBarrettMu.resize(sizeR);
 
-        moduliR[0] = modulusr;
-        rootsR[0]  = rootr;
+        moduliR[0]         = modulusr;
+        rootsR[0]          = rootr;
+        m_modrBarrettMu[0] = (BarrettBase128Bit / BigInteger(moduliR[0])).ConvertToInt<DoubleNativeInt>();
 
         for (size_t j = 1; j < sizeR; j++) {
-            moduliR[j] = PreviousPrime<NativeInteger>(moduliR[j - 1], 2 * n);
-            rootsR[j]  = RootOfUnity<NativeInteger>(2 * n, moduliR[j]);
+            moduliR[j]         = PreviousPrime<NativeInteger>(moduliR[j - 1], 2 * n);
+            rootsR[j]          = RootOfUnity<NativeInteger>(2 * n, moduliR[j]);
+            m_modrBarrettMu[j] = (BarrettBase128Bit / BigInteger(moduliR[j])).ConvertToInt<DoubleNativeInt>();
         }
 
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsR, 2 * n, moduliR);
-        m_modrBarrettMu.resize(sizeR);
-        for (uint32_t i = 0; i < sizeR; i++) {
-            BigInteger mu = BarrettBase128Bit / BigInteger(moduliR[i]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
-            memcpy(&m_modrBarrettMu[i], val, sizeof(DoubleNativeInt));
-        }
 
         // BFVrns : Mult : ExpandCRTBasis
         // Pre-compute values [Ql/q_i]_{r_j}
@@ -254,12 +240,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         m_modrBarrettMu.resize(sizeR);
         for (uint32_t j = 0; j < moduliR.size(); j++) {
-            BigInteger mu = BarrettBase128Bit / BigInteger(moduliR[j]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
-            memcpy(&m_modrBarrettMu[j], val, sizeof(DoubleNativeInt));
+            m_modrBarrettMu[j] = (BarrettBase128Bit / BigInteger(moduliR[j])).ConvertToInt<DoubleNativeInt>();
         }
 
         m_qInv.resize(sizeQ);
@@ -703,11 +684,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // populate Barrett constant for m_BskModuli
         m_modbskBarrettMu.resize(m_moduliBsk.size());
         for (uint32_t i = 0; i < m_modbskBarrettMu.size(); i++) {
-            BigInteger mu = BarrettBase128Bit / BigInteger(m_moduliBsk[i]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-            memcpy(&m_modbskBarrettMu[i], val, sizeof(DoubleNativeInt));
+            m_modbskBarrettMu[i] = (BarrettBase128Bit / BigInteger(m_moduliBsk[i])).ConvertToInt<DoubleNativeInt>();
         }
 
         // Populate [t*(Q/q_i)^-1]_{q_i}
