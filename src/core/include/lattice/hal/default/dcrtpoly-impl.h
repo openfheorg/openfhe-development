@@ -919,20 +919,21 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
 #if defined(HAVE_INT128) && NATIVEINT == 64
     uint32_t ringDim = m_params->GetRingDimension();
     std::vector<DoubleNativeInt> sum(sizeP);
-#pragma omp parallel for firstprivate(sum) num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+    #pragma omp parallel for firstprivate(sum) num_threads(OpenFHEParallelControls.GetThreadLimit(8))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         std::fill(sum.begin(), sum.end(), 0);
         for (uint32_t i = 0; i < sizeQ; ++i) {
-            const auto& qi           = m_vectors[i].GetModulus();
-            const auto& xi           = m_vectors[i][ri];
-            const auto& QHatModpi    = QHatModp[i];
-            const auto xQHatInvModqi = xi.ModMulFastConst(QHatInvModq[i], qi, QHatInvModqPrecon[i]).ConvertToInt<uint64_t>();
+            const auto& qi        = m_vectors[i].GetModulus();
+            const auto& xi        = m_vectors[i][ri];
+            const auto& QHatModpi = QHatModp[i];
+            const auto xQHatInvModqi =
+                xi.ModMulFastConst(QHatInvModq[i], qi, QHatInvModqPrecon[i]).ConvertToInt<uint64_t>();
             for (uint32_t j = 0; j < sizeP; ++j)
                 sum[j] += Mul128(xQHatInvModqi, QHatModpi[j].ConvertToInt<uint64_t>());
         }
         for (uint32_t j = 0; j < sizeP; ++j) {
             const auto& pj       = ans.m_vectors[j].GetModulus();
-            ans.m_vectors[j][ri] = BarrettUint128ModUint64(sum[j], pj.ConvertToInt<uint64_t>(), modpBarrettMu[j]);
+            ans.m_vectors[j][ri] = BarrettUint128ModUint64(sum[j], pj.ConvertToInt(), modpBarrettMu[j]);
         }
     }
 #else
@@ -1001,7 +1002,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     }
     partP.OverrideFormat(Format::COEFFICIENT);
 
-    auto partPSwitchedToQ = partP.ApproxSwitchCRTBasis(paramsP, paramsQ, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
+    auto partPSwitchedToQ =
+        partP.ApproxSwitchCRTBasis(paramsP, paramsQ, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
 
     // Combine the switched DCRTPoly with the Q part of this to get the result
     DCRTPolyImpl<VecType> ans(paramsQ, Format::EVALUATION, true);
@@ -1030,7 +1032,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
                                                             const std::vector<double>& qInv) const {
     size_t sizeQ = m_vectors.size();
     size_t sizeP = paramsP->GetParams().size();
-/*
+    /*
     // TODO: do we really want/need all of these checks?
     if (sizeQ == 0)
         OPENFHE_THROW(config_error, "sizeQ must be positive");
@@ -1151,26 +1153,29 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
 
     size_t sizeQP = paramsQP->GetParams().size();
     partP.m_vectors.reserve(sizeQP);
-    partP.m_vectors.insert(partP.m_vectors.end(), std::make_move_iterator(m_vectors.begin()), std::make_move_iterator(m_vectors.end()));
+    partP.m_vectors.insert(partP.m_vectors.end(), std::make_move_iterator(m_vectors.begin()),
+                           std::make_move_iterator(m_vectors.end()));
     m_vectors = std::move(partP.m_vectors);
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQP))
     for (size_t i = 0; i < sizeQP; ++i)
         m_vectors[i].SetFormat(resultFormat);
-    m_format  = resultFormat;
-    m_params  = paramsQP;
+    m_format = resultFormat;
+    m_params = paramsQP;
 }
 
 // TODO: revisit after issue #237 is resolved
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const Precomputations& precomputed) {
 #if defined(HAVE_INT128) && NATIVEINT == 64
-    auto partPl = ApproxSwitchCRTBasis(m_params, precomputed.paramsPl, precomputed.mPlQHatInvModq, precomputed.mPlQHatInvModqPrecon, precomputed.qInvModp, precomputed.modpBarrettMu);
+    auto partPl =
+        ApproxSwitchCRTBasis(m_params, precomputed.paramsPl, precomputed.mPlQHatInvModq,
+                             precomputed.mPlQHatInvModqPrecon, precomputed.qInvModp, precomputed.modpBarrettMu);
 #else
     DCRTPolyImpl<VecType> partPl(precomputed.paramsPl, m_format, true);
     size_t sizeQ  = m_vectors.size();
     size_t sizePl = partPl.m_vectors.size();
-#if 0
+    #if 0
     for (size_t i = 0; i < sizeQ; ++i) {
         auto xQHatInvModqi = m_vectors[i] * precomputed.mPlQHatInvModq[i];
         for (size_t j = 0; j < sizePl; ++j) {
@@ -1179,32 +1184,33 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const Precomputations& pre
             partPl.m_vectors[j] += (temp *= precomputed.qInvModp[i][j]);
         }
     }
-#else
+    #else
     std::vector<NativeInteger> mu;
     mu.reserve(sizePl);
     for (const auto& p : precomputed.paramsPl->GetParams())
         mu.push_back(p->GetModulus().ComputeMu());
 
     uint32_t ringDim = m_params->GetRingDimension();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+        #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         for (size_t i = 0; i < sizeQ; ++i) {
             const auto& qInvModpi = precomputed.qInvModp[i];
             const auto& qi        = m_vectors[i].GetModulus();
             const auto& xi        = m_vectors[i][ri];
-            auto xQHatInvModqi    = xi.ModMulFastConst(precomputed.mPlQHatInvModq[i], qi, precomputed.mPlQHatInvModqPrecon[i]);
+            auto xQHatInvModqi =
+                xi.ModMulFastConst(precomputed.mPlQHatInvModq[i], qi, precomputed.mPlQHatInvModqPrecon[i]);
             for (size_t j = 0; j < sizePl; ++j) {
                 const auto& pj = partPl.m_vectors[j].GetModulus();
                 partPl.m_vectors[j][ri].ModAddFastEq(xQHatInvModqi.ModMul(qInvModpi[j], pj, mu[j]), pj);
             }
         }
     }
+    #endif
 #endif
-#endif
-    auto partQl = partPl.SwitchCRTBasis(
-        precomputed.paramsQl, precomputed.PlHatInvModp, precomputed.PlHatInvModpPrecon, precomputed.PlHatModq,
-        precomputed.alphaPlModq, precomputed.modqBarrettMu, precomputed.pInv);
-    m_vectors = std::move(partQl.m_vectors);
+    auto partQl = partPl.SwitchCRTBasis(precomputed.paramsQl, precomputed.PlHatInvModp, precomputed.PlHatInvModpPrecon,
+                                        precomputed.PlHatModq, precomputed.alphaPlModq, precomputed.modqBarrettMu,
+                                        precomputed.pInv);
+    m_vectors   = std::move(partQl.m_vectors);
     m_vectors.reserve(partQl.m_vectors.size() + partPl.m_vectors.size());
     m_vectors.insert(m_vectors.end(), std::make_move_iterator(partPl.m_vectors.begin()),
                      std::make_move_iterator(partPl.m_vectors.end()));
@@ -1693,7 +1699,10 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
             // xi*t*gamma*(q/qi)^-1 mod qi
             // -tmp/qi mod gamma*t < 2^58
             const NativeInteger& qi = moduliQ[i];
-            s.ModAddFastEq(m_vectors[i][k].ModMulFastConst(tgammaQHatModq[i], qi, tgammaQHatModqPrecon[i]).ModMulFastConst(negInvqModtgamma[i], tgamma, negInvqModtgammaPrecon[i]), tgamma);
+            s.ModAddFastEq(m_vectors[i][k]
+                               .ModMulFastConst(tgammaQHatModq[i], qi, tgammaQHatModqPrecon[i])
+                               .ModMulFastConst(negInvqModtgamma[i], tgamma, negInvqModtgammaPrecon[i]),
+                           tgamma);
         }
 
         // Compute s + s & (gamma-1)
@@ -1799,7 +1808,8 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
 #if defined(HAVE_INT128) && NATIVEINT == 64
             DoubleNativeInt result = 0;
             for (uint32_t i = 0; i < numQ; ++i)
-                result += Mul128(ximtildeQHatModqi[i * n + k].ConvertToInt<uint64_t>(), QHatModbsk[i][j].ConvertToInt<uint64_t>());
+                result += Mul128(ximtildeQHatModqi[i * n + k].ConvertToInt<uint64_t>(),
+                                 QHatModbsk[i][j].ConvertToInt<uint64_t>());
             m_vectors[numQ + j][k] = BarrettUint128ModUint64(result, moduliBskj.ConvertToInt(), modbskBarrettMu[j]);
 #else
             for (uint32_t i = 0; i < numQ; ++i)
@@ -1808,9 +1818,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
 #endif
             NativeInteger r_m_tilde(result_mtilde[k]);  // mtilde = 2^16 < all moduli of Bsk
             if (result_mtilde[k] >= mtilde_half)
-                r_m_tilde += moduliBskj - mtilde;  // centred remainder
+                r_m_tilde += moduliBskj - mtilde;                               // centred remainder
             r_m_tilde.ModMulFastConstEq(qModBskj, moduliBskj, qModBskjPrecon);  // (r_mtilde) * q mod Bski
-            r_m_tilde.ModAddFastEq(m_vectors[numQ + j][k], moduliBskj);  // (c``_m + (r_mtilde* q)) mod Bski
+            r_m_tilde.ModAddFastEq(m_vectors[numQ + j][k], moduliBskj);         // (c``_m + (r_mtilde* q)) mod Bski
             m_vectors[numQ + j][k] = r_m_tilde.ModMulFastConst(mtildeInvModbskj, moduliBskj, mtildeInvModbskPreconj);
         }
         m_vectors[numQ + j].SetFormat(Format::EVALUATION);
@@ -1820,7 +1830,8 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     if (polyInNTT.size() > 0) {
         // if input polynomial was in evaluation representation, use towers for Q from it
         std::move(polyInNTT.begin(), polyInNTT.end(), m_vectors.begin());
-    } else {
+    }
+    else {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numQ))
         for (uint32_t i = 0; i < numQ; ++i)
             m_vectors[i].SetFormat(Format::EVALUATION);
@@ -1857,7 +1868,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
     std::vector<NativeInteger> txiqiDivqModqi(n * numBsk);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numBsk))
     for (uint32_t j = 0; j < numBsk; ++j) {
-        const auto& moduliBskj             = moduliBsk[j];
+        const auto& moduliBskj         = moduliBsk[j];
         const auto& tDivqModBskj       = tQInvModbsk[j];
         const auto& tDivqModBskjPrecon = tQInvModbskPrecon[j];
         for (uint32_t k = 0; k < n; ++k) {
@@ -1867,7 +1878,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
                 const auto& xi = m_vectors[i][k];
                 aq += Mul128(xi.ConvertToInt<uint64_t>(), qInvModbsk[i][j].ConvertToInt<uint64_t>());
             }
-            txiqiDivqModqi[j * n + k] = BarrettUint128ModUint64(aq, moduliBskj.ConvertToInt<uint64_t>(), modbskBarrettMu[j]);
+            txiqiDivqModqi[j * n + k] = BarrettUint128ModUint64(aq, moduliBskj.ConvertToInt(), modbskBarrettMu[j]);
 #else
             for (uint32_t i = 0; i < numQ; ++i) {
                 const auto& xi = m_vectors[i][k];
@@ -1919,7 +1930,8 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
         const auto& bDivBiModBiPrecon = BHatInvModbPrecon[i];
         for (uint32_t k = 0; k < n; ++k) {
             m_vectors[sizeQ + i][k].ModMulFastConstEq(bDivBiModBi, moduliBski, bDivBiModBiPrecon);
-            alphaskxVector[k].ModAddEq(m_vectors[sizeQ + i][k].ModMul(bHatModmski, moduliBsk[sizeBskm1], muBsk), moduliBsk[sizeBskm1]);
+            alphaskxVector[k].ModAddEq(m_vectors[sizeQ + i][k].ModMul(bHatModmski, moduliBsk[sizeBskm1], muBsk),
+                                       moduliBsk[sizeBskm1]);
         }
     }
     for (uint32_t k = 0; k < n; ++k) {
@@ -1944,9 +1956,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
             NativeInteger result(0);
             for (uint32_t i = 0; i < sizeBskm1; ++i) {  // exclude msk residue
                 const auto& xi = m_vectors[sizeQ + i][k];
-                resut.ModAddFastEq(xi.ModMul(BHatModq[i][j], moduliQj, mu[j]), moduliQ[j]);
+                result.ModAddFastEq(xi.ModMul(BHatModq[i][j], moduliQj, mu[j]), moduliQ[j]);
             }
-            m_vectors[j][k] = resut;
+            m_vectors[j][k] = result;
 #endif
             // do (m_vector - alphaskx*M) mod q
             NativeInteger alphaskBModqj = alphaskxVector[k];
