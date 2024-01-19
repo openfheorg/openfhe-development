@@ -56,8 +56,7 @@ using namespace lbcrypto;
  */
 
 [[maybe_unused]] static void DepthArgs(benchmark::internal::Benchmark* b) {
-    for (uint32_t d : {1, 4, 16, 32})
-        //    for (uint32_t d : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16})
+    for (uint32_t d : {1, 2, 4, 6, 8, 10, 12})
         b->ArgName("depth")->Arg(d);
 }
 
@@ -316,7 +315,7 @@ void BFVrns_AddInPlace(benchmark::State& state) {
 BENCHMARK(BFVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 void BFVrns_MultNoRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext();
+    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext(state.range(0));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
@@ -332,12 +331,14 @@ void BFVrns_MultNoRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
     }
+
+    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 void BFVrns_MultRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext();
+    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext(state.range(0));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
@@ -354,9 +355,11 @@ void BFVrns_MultRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cryptoContext->EvalMult(ciphertext1, ciphertext2);
     }
+
+    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 void BFVrns_EvalAtIndex(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
@@ -860,7 +863,7 @@ void BGVrns_AddInPlace(benchmark::State& state) {
 BENCHMARK(BGVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 void BGVrns_MultNoRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
+    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(state.range(0));
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
@@ -876,12 +879,14 @@ void BGVrns_MultNoRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
     }
+
+    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 void BGVrns_MultRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
+    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(state.range(0));
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -898,9 +903,11 @@ void BGVrns_MultRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cc->EvalMult(ciphertext1, ciphertext2);
     }
+
+    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 void BGVrns_Relin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
