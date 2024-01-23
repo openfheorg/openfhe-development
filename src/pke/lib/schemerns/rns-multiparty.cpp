@@ -208,9 +208,8 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         }
     }
     else {
-        const auto& elementParams = cryptoParams->GetElementParams();
-        const auto& paramsQ       = cryptoParams->GetElementParams();
-        const auto& paramsQP      = cryptoParams->GetParamsQP();
+        const auto& paramsQ  = cryptoParams->GetElementParams();
+        const auto& paramsQP = cryptoParams->GetParamsQP();
 
         usint sizeQ  = paramsQ->GetParams().size();
         usint sizeQP = paramsQP->GetParams().size();
