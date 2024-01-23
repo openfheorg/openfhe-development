@@ -228,6 +228,7 @@ void BaseSampler::Initialize(double mean) {
 
     double temp;
 
+    m_vals.reserve(2 * fin + 2);
     for (int i = -1 * fin; i <= fin; i++) {
         temp = b_a * exp(-(static_cast<double>((i - mean) * (i - mean) / (2 * variance))));
         m_vals.push_back(temp);

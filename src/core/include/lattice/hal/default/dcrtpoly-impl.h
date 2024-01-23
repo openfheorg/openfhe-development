@@ -115,6 +115,7 @@ template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(const std::vector<DCRTPolyImpl::PolyType>& towers)
     : m_params{nullptr}, m_format{towers[0].GetFormat()}, m_vectors(towers) {
     std::vector<std::shared_ptr<ILNativeParams>> parms;
+    parms.reserve(m_vectors.size());
     const auto cyclotomicOrder = m_vectors[0].GetCyclotomicOrder();
     for (const auto& v : m_vectors) {
         if (v.GetCyclotomicOrder() != cyclotomicOrder)

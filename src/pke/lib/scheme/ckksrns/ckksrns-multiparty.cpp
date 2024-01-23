@@ -175,9 +175,13 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 // Calculating RNS parameters
 void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint to, RNSExtensionTables& rnsExtTables) {
     std::vector<NativeInteger> moduliQ;
+    moduliQ.reserve(from);
     std::vector<NativeInteger> rootsQ;
+    rootsQ.reserve(from);
     std::vector<NativeInteger> moduliP;
+    moduliP.reserve(to - from);
     std::vector<NativeInteger> rootsP;
+    rootsP.reserve(to - from);
 
     for (size_t i = 0; i < from; i++) {
         moduliQ.push_back(cc->GetCryptoParameters()->GetElementParams()->GetParams()[i]->GetModulus());
@@ -225,24 +229,24 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
 
     // compute the [Q/q_i]_{p_j}
     // used for homomorphic multiplication
-    rnsExtTables.QHatModp.resize(sizeP);
+    rnsExtTables.QHatModp.resize(sizeP, std::vector<NativeInteger>(sizeQ));
     for (usint j = 0; j < sizeP; j++) {
         BigInteger pj(moduliP[j].ConvertToInt());
         for (usint i = 0; i < sizeQ; i++) {
             BigInteger qi(moduliQ[i].ConvertToInt());
-            BigInteger QHati = modulusQ / qi;
-            rnsExtTables.QHatModp[j].push_back(QHati.Mod(pj).ConvertToInt());
+            BigInteger QHati            = modulusQ / qi;
+            rnsExtTables.QHatModp[j][i] = QHati.Mod(pj).ConvertToInt();
         }
     }
 
     // compute the [\alpha*Q]p_j for 0 <= alpha <= sizeQ
     // used for homomorphic multiplication
-    rnsExtTables.alphaQModp.resize(sizeQ + 1);
+    rnsExtTables.alphaQModp.resize(sizeQ + 1, std::vector<NativeInteger>(sizeP));
     for (usint j = 0; j < sizeP; j++) {
         BigInteger pj(moduliP[j].ConvertToInt());
         NativeInteger QModpj = modulusQ.Mod(pj).ConvertToInt();
         for (usint i = 0; i < sizeQ + 1; i++) {
-            rnsExtTables.alphaQModp[i].push_back(QModpj.ModMul(NativeInteger(i), moduliP[j]));
+            rnsExtTables.alphaQModp[i][j] = QModpj.ModMul(NativeInteger(i), moduliP[j]);
         }
     }
 

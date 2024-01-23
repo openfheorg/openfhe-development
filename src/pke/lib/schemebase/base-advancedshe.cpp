@@ -188,8 +188,10 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
                                                                     GenerateIndices_2n(batchSize, m);
     }
     else {  // Arbitrary cyclotomics
+        int isize = floor(log2(batchSize));
+        indices.reserve(isize);
         usint g = encodingParams->GetPlaintextGenerator();
-        for (int i = 0; i < floor(log2(batchSize)); i++) {
+        for (int i = 0; i < isize; i++) {
             indices.push_back(g);
             g = (g * g) % m;
         }
@@ -447,8 +449,10 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize,
     std::vector<usint> indices;
 
     if (batchSize > 1) {
+        int isize = ceil(log2(batchSize)) - 1;
+        indices.reserve(isize + 1);
         usint g = 5;
-        for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
+        for (int i = 0; i < isize; i++) {
             indices.push_back(g);
             g = (g * g) % m;
         }
@@ -463,13 +467,16 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize,
 
 template <class Element>
 std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplex(usint batchSize, usint m) const {
+    size_t jsize = ceil(log2(batchSize));
+
     // stores automorphism indices needed for EvalSum
     std::vector<usint> indices;
+    indices.reserve(jsize);
 
     // generator
     usint g = 5;
 
-    for (size_t j = 0; j < ceil(log2(batchSize)); j++) {
+    for (size_t j = 0; j < jsize; j++) {
         indices.push_back(g);
         g = (g * g) % m;
     }
@@ -479,10 +486,12 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplex(usint batc
 
 template <class Element>
 std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplexRows(usint rowSize, usint m) const {
+    usint colSize = m / (4 * rowSize);
+    size_t jsize  = ceil(log2(colSize));
+
     // stores automorphism indices needed for EvalSum
     std::vector<usint> indices;
-
-    usint colSize = m / (4 * rowSize);
+    indices.reserve(jsize);
 
     // generator
     int32_t g0 = 5;
@@ -490,7 +499,7 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplexRows(usint 
 
     int32_t f = (NativeInteger(g0).ModExp(rowSize, m)).ConvertToInt();
 
-    for (size_t j = 0; j < ceil(log2(colSize)); j++) {
+    for (size_t j = 0; j < jsize; j++) {
         g = f;
 
         indices.push_back(g);
@@ -503,14 +512,17 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplexRows(usint 
 
 template <class Element>
 std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplexCols(usint batchSize, usint m) const {
+    size_t jsize = ceil(log2(batchSize));
+
     // stores automorphism indices needed for EvalSum
     std::vector<usint> indices;
+    indices.reserve(jsize);
 
     // generator
     int32_t g    = NativeInteger(5).ModInverse(m).ConvertToInt();
     usint gFinal = g;
 
-    for (size_t j = 0; j < ceil(log2(batchSize)); j++) {
+    for (size_t j = 0; j < jsize; j++) {
         indices.push_back(gFinal);
         g = (g * g) % m;
 

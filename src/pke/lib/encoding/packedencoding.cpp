@@ -175,6 +175,7 @@ bool PackedEncoding::Encode() {
 template <typename T>
 static void fillVec(const T& poly, const PlaintextModulus& mod, std::vector<int64_t>& vec) {
     vec.clear();
+    vec.reserve(poly.GetLength());
 
     int64_t half = int64_t(mod) / 2;
     // const typename T::Integer &q = poly.GetModulus();

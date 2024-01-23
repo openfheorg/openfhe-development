@@ -156,19 +156,20 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const Pri
 
     const Element& s = privateKey->GetPrivateElement();
 
-    std::vector<EvalKey<Element>> evalKeyVec;
-
-    usint maxRelinSkDeg = cryptoParams->GetMaxRelinSkDeg();
-    std::vector<Element> sPower(maxRelinSkDeg - 1);
+    size_t maxRelinSkDeg = cryptoParams->GetMaxRelinSkDeg() - 1;
+    std::vector<Element> sPower(maxRelinSkDeg);
 
     sPower[0] = s * s;
-    for (size_t i = 1; i < maxRelinSkDeg - 1; i++) {
+    for (size_t i = 1; i < maxRelinSkDeg; i++) {
         sPower[i] = sPower[i - 1] * s;
     }
 
     auto algo = cc->GetScheme();
 
-    for (size_t i = 0; i < maxRelinSkDeg - 1; i++) {
+    std::vector<EvalKey<Element>> evalKeyVec;
+    evalKeyVec.reserve(maxRelinSkDeg);
+
+    for (size_t i = 0; i < maxRelinSkDeg; i++) {
         privateKeyPower->SetPrivateElement(std::move(sPower[i]));
         evalKeyVec.push_back(algo->KeySwitchGen(privateKeyPower, privateKey));
     }
@@ -416,7 +417,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
         privateKeyPermuted->SetPrivateElement(sPermuted);
         (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
     }
-    
+
     return evalKeys;
 }
 

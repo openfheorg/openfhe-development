@@ -1285,7 +1285,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
 
     // Step 4. Extract LWE ciphertexts with the modulus Q'
     uint32_t n = m_ccLWE->GetParams()->GetLWEParams()->Getn();  // lattice parameter for additive LWE
-    std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts;
+    std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts(numCtxts);
     auto AandB = ExtractLWEpacked(ctSwitched);
 
     if (numCtxts == 0 || numCtxts > slots) {
@@ -1295,8 +1295,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     uint32_t gap = ccKS->GetRingDimension() / (2 * slots);
 
     for (uint32_t i = 0, idx = 0; i < numCtxts; ++i, idx += gap) {
-        auto temp = ExtractLWECiphertext(AandB, m_modulus_CKKS_from, n, idx);
-        LWEciphertexts.emplace_back(temp);
+        LWEciphertexts[i] = ExtractLWECiphertext(AandB, m_modulus_CKKS_from, n, idx);
     }
 
     // Step 5. Modulus switch to q in FHEW

@@ -209,8 +209,10 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     std::vector<usint> indices;
 
     if (batchSize > 1) {
+        int isize = ceil(log2(batchSize)) - 1;
+        indices.reserve(isize + 1);
         usint g = 5;
-        for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
+        for (int i = 0; i < isize; i++) {
             indices.push_back(g);
             g = (g * g) % M;
         }
@@ -314,12 +316,12 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalKeys(EvalKey<Element> eval
 
     EvalKey<Element> evalKeySum = std::make_shared<EvalKeyRelinImpl<Element>>(cc);
 
-    const std::vector<Element>& a = evalKey1->GetAVector();
-
+    const std::vector<Element>& a  = evalKey1->GetAVector();
     const std::vector<Element>& b1 = evalKey1->GetBVector();
     const std::vector<Element>& b2 = evalKey2->GetBVector();
 
     std::vector<Element> b;
+    b.reserve(a.size());
 
     for (usint i = 0; i < a.size(); i++) {
         b.push_back(b1[i] + b2[i]);
@@ -340,12 +342,13 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> 
 
     const std::vector<Element>& a1 = evalKey1->GetAVector();
     const std::vector<Element>& a2 = evalKey2->GetAVector();
-
     const std::vector<Element>& b1 = evalKey1->GetBVector();
     const std::vector<Element>& b2 = evalKey2->GetBVector();
 
     std::vector<Element> a;
+    a.reserve(a1.size());
     std::vector<Element> b;
+    b.reserve(a1.size());
 
     for (usint i = 0; i < a1.size(); i++) {
         a.push_back(a1[i] + a2[i]);
@@ -377,14 +380,13 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> p
     const auto ns    = cryptoParams->GetNoiseScale();
 
     std::vector<Element> a;
+    a.reserve(a0.size());
     std::vector<Element> b;
+    b.reserve(a0.size());
 
     for (usint i = 0; i < a0.size(); i++) {
-        Element e1(dgg, elementParams, Format::EVALUATION);
-        Element e2(dgg, elementParams, Format::EVALUATION);
-
-        a.push_back(a0[i] * s + ns * e1);
-        b.push_back(b0[i] * s + ns * e2);
+        a.push_back(a0[i] * s + ns * Element(dgg, elementParams, Format::EVALUATION));
+        b.push_back(b0[i] * s + ns * Element(dgg, elementParams, Format::EVALUATION));
     }
 
     evalKeyResult->SetAVector(std::move(a));
