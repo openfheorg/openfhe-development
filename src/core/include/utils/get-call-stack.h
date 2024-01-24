@@ -31,7 +31,7 @@
 #ifndef __GET_CALL_STACK_H__
 #define __GET_CALL_STACK_H__
 
-#if defined(__linux__) && defined(__GNUG__)
+#if defined(__linux__) && defined(__GNUC__)
     // clang-format off
 #include <string>
 #include <vector>
