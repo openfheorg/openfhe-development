@@ -635,7 +635,6 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-
         Serial::Deserialize(CryptoContextImpl<Element>::s_evalMultKeyMap, ser, sertype);
 
         // TODO (dsuponit): should we keep the code below?
@@ -670,7 +669,8 @@ public:
    * @param cc crypto context
    */
     static void ClearEvalMultKeys(const CryptoContext<Element> cc) {
-        for (auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.begin(); it != CryptoContextImpl<Element>::s_evalMultKeyMap.end();) {
+        for (auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.begin();
+             it != CryptoContextImpl<Element>::s_evalMultKeyMap.end();) {
             if (it->second[0]->GetCryptoContext() == cc) {
                 it = CryptoContextImpl<Element>::s_evalMultKeyMap.erase(it);
             }
@@ -983,28 +983,15 @@ public:
     /**
    * Get a map of automorphism keys for all secret keys
    */
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys() {
-        return CryptoContextImpl<Element>::s_evalAutomorphismKeyMap;
-    }
-
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
     /**
    * Get automorphism keys for a specific secret key tag
    */
-    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID) {
-        auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
-        if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
-            std::string errMsg(
-                std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
-                "].");
-            OPENFHE_THROW(not_available_error, errMsg);
-        }
-        return ekv->second;
-    }
+    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
 
     static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyID) {
         return *(CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID));
     }
-
 
     /**
    * Get a map of summation keys (each is composed of several automorphism keys) for all secret keys
@@ -1650,9 +1637,10 @@ public:
     void EvalMultKeyGen(const PrivateKey<Element> key) {
         ValidateKey(key);
 
-        if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) == CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
+            CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
             // the key is not found in the map, so the key has to be generated
-            EvalKey<Element> k               = GetScheme()->EvalMultKeyGen(key);
+            EvalKey<Element> k                                           = GetScheme()->EvalMultKeyGen(key);
             CryptoContextImpl<Element>::s_evalMultKeyMap[k->GetKeyTag()] = {k};
         }
     }
@@ -1669,10 +1657,11 @@ public:
     void EvalMultKeysGen(const PrivateKey<Element> key) {
         ValidateKey(key);
 
-        if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) == CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
+            CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
             // the key is not found in the map, so the key has to be generated
-            const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
-            CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()]            = evalKeys;
+            const std::vector<EvalKey<Element>>& evalKeys                  = GetScheme()->EvalMultKeysGen(key);
+            CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = evalKeys;
         }
     }
 
@@ -2768,7 +2757,7 @@ public:
    * @return resulting ciphertext
    */
     Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2,
-        usint batchSize) const;
+                                         usint batchSize) const;
 
     /**
    * Evaluates inner product in packed encoding (uses EvalSum)
@@ -2779,7 +2768,7 @@ public:
    * @return resulting ciphertext
    */
     Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext,
-        usint batchSize) const;
+                                         usint batchSize) const;
 
     /**
    * Merges multiple ciphertexts with encrypted results in slot 0 into a single
@@ -3493,7 +3482,7 @@ public:
         VerifyCKKSScheme(__func__);
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
-        
+
         return GetScheme()->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
                                                        unit);
     }

@@ -46,7 +46,8 @@ namespace lbcrypto {
 template <typename Element>
 std::map<std::string, std::vector<EvalKey<Element>>> CryptoContextImpl<Element>::s_evalMultKeyMap{};
 template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> CryptoContextImpl<Element>::s_evalAutomorphismKeyMap{};
+std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>
+    CryptoContextImpl<Element>::s_evalAutomorphismKeyMap{};
 
 template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
@@ -113,12 +114,31 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
     auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, publicKey);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys; // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
+    return evalKeys;  // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
 }
 
 template <typename Element>
 const std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
     return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(keyID);
+}
+
+template <typename Element>
+std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
+CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
+    return CryptoContextImpl<Element>::s_evalAutomorphismKeyMap;
+}
+
+template <typename Element>
+std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
+    const std::string& keyID) {
+    auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
+    if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
+        std::string errMsg(
+            std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
+            "].");
+        OPENFHE_THROW(not_available_error, errMsg);
+    }
+    return ekv->second;
 }
 
 template <typename Element>
@@ -190,7 +210,8 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<Element> cc) {
-    for (auto it = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.begin(); it != CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end();) {
+    for (auto it = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.begin();
+         it != CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end();) {
         if (it->second->begin()->second->GetCryptoContext() == cc) {
             it = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.erase(it);
         }
@@ -278,7 +299,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Elem
                                                             const std::map<usint, EvalKey<Element>>& evalSumKeys,
                                                             usint subringDim) const {
     ValidateCiphertext(ciphertext);
-    
+
     auto rv = GetScheme()->EvalSumRows(ciphertext, rowSize, evalSumKeys, subringDim);
     return rv;
 }
@@ -379,8 +400,8 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
     // Plaintext decrypted =
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
-    Plaintext decrypted = CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
-                                                 ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
+    Plaintext decrypted = CryptoContextImpl<Element>::GetPlaintextForDecrypt(
+        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
 
     DecryptResult result;
 
@@ -487,8 +508,8 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
     // Plaintext decrypted =
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
-    Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
-                                                 ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
+    Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
+        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
 
     DecryptResult result;
 
@@ -542,9 +563,9 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     }
 
     // determine which type of plaintext that you need to decrypt into
-    Plaintext decrypted =
-        CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(partialCiphertextVec[0]->GetEncodingType(),
-                               partialCiphertextVec[0]->GetElements()[0].GetParams(), this->GetEncodingParams());
+    Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
+        partialCiphertextVec[0]->GetEncodingType(), partialCiphertextVec[0]->GetElements()[0].GetParams(),
+        this->GetEncodingParams());
 
     if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (partialCiphertextVec[0]->GetElements()[0].GetParams()->GetParams().size() > 1))
