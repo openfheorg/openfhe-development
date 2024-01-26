@@ -580,23 +580,20 @@ public:
    */
     template <typename ST>
     static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, std::string id = "") {
-        std::map<std::string, std::vector<EvalKey<Element>>>* smap;
-        std::map<std::string, std::vector<EvalKey<Element>>> omap;
-
+        const auto& evalMultKeys = CryptoContextImpl<Element>::GetAllEvalMultKeys();
         if (id.length() == 0) {
-            smap = &CryptoContextImpl<Element>::s_evalMultKeyMap;
+            Serial::Serialize(evalMultKeys, ser, sertype);
         }
         else {
-            const auto k = CryptoContextImpl<Element>::s_evalMultKeyMap.find(id);
-
-            if (k == CryptoContextImpl<Element>::s_evalMultKeyMap.end())
+            const auto it = evalMultKeys.find(id);
+            if (it == evalMultKeys.end())
                 return false;  // no such id
 
-            smap           = &omap;
-            omap[k->first] = k->second;
+            std::map<std::string, std::vector<EvalKey<Element>>> omap{{it->first, it->second}};
+
+            Serial::Serialize(omap, ser, sertype);
         }
 
-        Serial::Serialize(*smap, ser, sertype);
         return true;
     }
 
@@ -611,9 +608,9 @@ public:
     template <typename ST>
     static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
         std::map<std::string, std::vector<EvalKey<Element>>> omap;
-        for (const auto& k : CryptoContextImpl<Element>::s_evalMultKeyMap) {
-            if (k.second[0]->GetCryptoContext() == cc) {
-                omap[k.first] = k.second;
+        for (const auto& [key, vec] : CryptoContextImpl<Element>::GetAllEvalMultKeys()) {
+            if (vec[0]->GetCryptoContext() == cc) {
+                omap[key] = vec;
             }
         }
 
@@ -635,7 +632,7 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        Serial::Deserialize(CryptoContextImpl<Element>::s_evalMultKeyMap, ser, sertype);
+        Serial::Deserialize(CryptoContextImpl<Element>::GetAllEvalMultKeys(), ser, sertype);
 
         // TODO (dsuponit): should we keep the code below?
         // // The deserialize call created any contexts that needed to be created....
@@ -650,35 +647,18 @@ public:
     /**
    * ClearEvalMultKeys - flush EvalMultKey cache
    */
-    static void ClearEvalMultKeys() {
-        CryptoContextImpl<Element>::s_evalMultKeyMap.clear();
-    }
+    static void ClearEvalMultKeys();
 
     /**
    * ClearEvalMultKeys - flush EvalMultKey cache for a given id
    * @param id the correponding key id
    */
-    static void ClearEvalMultKeys(const std::string& id) {
-        auto kd = CryptoContextImpl<Element>::s_evalMultKeyMap.find(id);
-        if (kd != CryptoContextImpl<Element>::s_evalMultKeyMap.end())
-            CryptoContextImpl<Element>::s_evalMultKeyMap.erase(kd);
-    }
-
+    static void ClearEvalMultKeys(const std::string& id);
     /**
    * ClearEvalMultKeys - flush EvalMultKey cache for a given context
    * @param cc crypto context
    */
-    static void ClearEvalMultKeys(const CryptoContext<Element> cc) {
-        for (auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.begin();
-             it != CryptoContextImpl<Element>::s_evalMultKeyMap.end();) {
-            if (it->second[0]->GetCryptoContext() == cc) {
-                it = CryptoContextImpl<Element>::s_evalMultKeyMap.erase(it);
-            }
-            else {
-                ++it;
-            }
-        }
-    }
+    static void ClearEvalMultKeys(const CryptoContext<Element> cc);
 
     /**
    * InsertEvalMultKey - add the given vector of keys to the map, replacing the
@@ -821,7 +801,7 @@ public:
 
         // The deserialize call created any contexts that needed to be created....
         // so all we need to do is put the keys into the maps for their context
-        for (auto k : keyMap) {
+        for (auto& k : keyMap) {
             CryptoContextImpl<Element>::InsertEvalAutomorphismKey(k.second, k.first);
         }
         return true;
@@ -963,22 +943,12 @@ public:
     /**
    * Get a map of relinearization keys for all secret keys
    */
-    static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys() {
-        return CryptoContextImpl<Element>::s_evalMultKeyMap;
-    }
+    static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys();
 
     /**
    * Get relinearization keys for a specific secret key tag
    */
-    static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(const std::string& keyID) {
-        auto ekv = CryptoContextImpl<Element>::s_evalMultKeyMap.find(keyID);
-        if (ekv == CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
-            OPENFHE_THROW(not_available_error,
-                          "You need to use EvalMultKeyGen so that you have an "
-                          "EvalMultKey available for this ID");
-        }
-        return ekv->second;
-    }
+    static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(const std::string& keyID);
 
     /**
    * Get a map of automorphism keys for all secret keys
@@ -1634,16 +1604,7 @@ public:
    * the new evaluation key is stored in cryptocontext
    * @param key secret key
    */
-    void EvalMultKeyGen(const PrivateKey<Element> key) {
-        ValidateKey(key);
-
-        if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
-            CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
-            // the key is not found in the map, so the key has to be generated
-            EvalKey<Element> k                                           = GetScheme()->EvalMultKeyGen(key);
-            CryptoContextImpl<Element>::s_evalMultKeyMap[k->GetKeyTag()] = {k};
-        }
-    }
+    void EvalMultKeyGen(const PrivateKey<Element> key);
 
     /**
    * EvalMultsKeyGen creates a vector evalmult keys that can be used with the
@@ -1654,16 +1615,7 @@ public:
    *
    * @param key secret key
    */
-    void EvalMultKeysGen(const PrivateKey<Element> key) {
-        ValidateKey(key);
-
-        if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
-            CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
-            // the key is not found in the map, so the key has to be generated
-            const std::vector<EvalKey<Element>>& evalKeys                  = GetScheme()->EvalMultKeysGen(key);
-            CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = evalKeys;
-        }
-    }
+    void EvalMultKeysGen(const PrivateKey<Element> key);
 
     /**
    * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts (uses a relinearization key from the crypto context)
@@ -2874,10 +2826,9 @@ public:
         ValidateKey(privateKey);
 
         std::vector<Ciphertext<Element>> newCiphertextVec;
-
-        for (size_t i = 0; i < ciphertextVec.size(); i++) {
-            ValidateCiphertext(ciphertextVec[i]);
-            newCiphertextVec.push_back(GetScheme()->MultipartyDecryptLead(ciphertextVec[i], privateKey));
+        for (const auto& ciphertext : ciphertextVec) {
+            ValidateCiphertext(ciphertext);
+            newCiphertextVec.push_back(GetScheme()->MultipartyDecryptLead(ciphertext, privateKey));
         }
 
         return newCiphertextVec;
@@ -2896,9 +2847,9 @@ public:
         ValidateKey(privateKey);
 
         std::vector<Ciphertext<Element>> newCiphertextVec;
-        for (size_t i = 0; i < ciphertextVec.size(); i++) {
-            ValidateCiphertext(ciphertextVec[i]);
-            newCiphertextVec.push_back(GetScheme()->MultipartyDecryptMain(ciphertextVec[i], privateKey));
+        for (const auto& ciphertext : ciphertextVec) {
+            ValidateCiphertext(ciphertext);
+            newCiphertextVec.push_back(GetScheme()->MultipartyDecryptMain(ciphertext, privateKey));
         }
 
         return newCiphertextVec;

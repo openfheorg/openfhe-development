@@ -67,6 +67,54 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
 /////////////////////////////////////////
 // SHE MULTIPLICATION
 /////////////////////////////////////////
+template <typename Element>
+void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element> key) {
+    ValidateKey(key);
+
+    if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
+        CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        // the key is not found in the map, so the key has to be generated
+        EvalKey<Element> k                                           = GetScheme()->EvalMultKeyGen(key);
+        CryptoContextImpl<Element>::s_evalMultKeyMap[k->GetKeyTag()] = {k};
+    }
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element> key) {
+    ValidateKey(key);
+
+    if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
+        CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        // the key is not found in the map, so the key has to be generated
+        const std::vector<EvalKey<Element>>& evalKeys                  = GetScheme()->EvalMultKeysGen(key);
+        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = evalKeys;
+    }
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::ClearEvalMultKeys() {
+    CryptoContextImpl<Element>::s_evalMultKeyMap.clear();
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& id) {
+    auto kd = CryptoContextImpl<Element>::s_evalMultKeyMap.find(id);
+    if (kd != CryptoContextImpl<Element>::s_evalMultKeyMap.end())
+        CryptoContextImpl<Element>::s_evalMultKeyMap.erase(kd);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element> cc) {
+    for (auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.begin();
+         it != CryptoContextImpl<Element>::s_evalMultKeyMap.end();) {
+        if (it->second[0]->GetCryptoContext() == cc) {
+            it = CryptoContextImpl<Element>::s_evalMultKeyMap.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
 
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert) {
@@ -120,6 +168,21 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
 template <typename Element>
 const std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
     return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(keyID);
+}
+
+template <typename Element>
+std::map<std::string, std::vector<EvalKey<Element>>>& CryptoContextImpl<Element>::GetAllEvalMultKeys() {
+    return CryptoContextImpl<Element>::s_evalMultKeyMap;
+}
+
+template <typename Element>
+const std::vector<EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyID) {
+    auto ekv = CryptoContextImpl<Element>::s_evalMultKeyMap.find(keyID);
+    if (ekv == CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        std::string errMsg(std::string("Call EvalMultKeyGen() to have EvalMultKey available for ID [") + keyID + "].");
+        OPENFHE_THROW(not_available_error, errMsg);
+    }
+    return ekv->second;
 }
 
 template <typename Element>
