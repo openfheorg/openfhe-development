@@ -193,33 +193,33 @@ void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BIN
 LWEPrivateKey BinFHEContext::KeyGen() const {
     auto& LWEParams = m_params->GetLWEParams();
     if (LWEParams->GetKeyDist() == GAUSSIAN)
-        return m_LWEscheme->KeyGenGaussian(LWEParams->Getn(), LWEParams->GetqKS());
-    return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
+        return m_LWEscheme.KeyGenGaussian(LWEParams->Getn(), LWEParams->GetqKS());
+    return m_LWEscheme.KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
     auto& LWEParams = m_params->GetLWEParams();
     if (LWEParams->GetKeyDist() == GAUSSIAN)
-        return m_LWEscheme->KeyGenGaussian(LWEParams->GetN(), LWEParams->GetQ());
-    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+        return m_LWEscheme.KeyGenGaussian(LWEParams->GetN(), LWEParams->GetQ());
+    return m_LWEscheme.KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 }
 
 LWEKeyPair BinFHEContext::KeyGenPair() const {
     auto&& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KeyGenPair(LWEParams);
+    return m_LWEscheme.KeyGenPair(LWEParams);
 }
 
 LWEPublicKey BinFHEContext::PubKeyGen(ConstLWEPrivateKey& sk) const {
     auto&& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->PubKeyGen(LWEParams, sk);
+    return m_LWEscheme.PubKeyGen(LWEParams, sk);
 }
 
 LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output,
                                      LWEPlaintextModulus p, const NativeInteger& mod) const {
     const auto& LWEParams = m_params->GetLWEParams();
 
-    LWECiphertext ct = (mod == 0) ? m_LWEscheme->Encrypt(LWEParams, sk, m, p, LWEParams->Getq()) :
-                                    m_LWEscheme->Encrypt(LWEParams, sk, m, p, mod);
+    LWECiphertext ct = (mod == 0) ? m_LWEscheme.Encrypt(LWEParams, sk, m, p, LWEParams->Getq()) :
+                                    m_LWEscheme.Encrypt(LWEParams, sk, m, p, mod);
 
     // BINFHE_OUTPUT is kept as it is for backward compatibility but
     // this logic is obsolete now and commented out
@@ -234,8 +234,8 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
                                      const NativeInteger& mod) const {
     const auto& LWEParams = m_params->GetLWEParams();
 
-    LWECiphertext ct = (mod == 0) ? m_LWEscheme->EncryptN(LWEParams, pk, m, p, LWEParams->GetQ()) :
-                                    m_LWEscheme->EncryptN(LWEParams, pk, m, p, mod);
+    LWECiphertext ct = (mod == 0) ? m_LWEscheme.EncryptN(LWEParams, pk, m, p, LWEParams->GetQ()) :
+                                    m_LWEscheme.EncryptN(LWEParams, pk, m, p, mod);
 
     // Switch from ct of modulus Q and dimension N to smaller q and n
     // This is done by default while calling Encrypt but the output could
@@ -257,7 +257,7 @@ LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECip
         OPENFHE_THROW(config_error, errMsg);
     }
 
-    LWECiphertext ct1 = m_LWEscheme->SwitchCTtoqn(LWEParams, ksk, ct);
+    LWECiphertext ct1 = m_LWEscheme.SwitchCTtoqn(LWEParams, ksk, ct);
 
     return ct1;
 }
@@ -265,11 +265,11 @@ LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECip
 void BinFHEContext::Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEPlaintext* result,
                             LWEPlaintextModulus p) const {
     auto&& LWEParams = m_params->GetLWEParams();
-    m_LWEscheme->Decrypt(LWEParams, sk, ct, result, p);
+    m_LWEscheme.Decrypt(LWEParams, sk, ct, result, p);
 }
 
 LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const {
-    return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
+    return m_LWEscheme.KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
 void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
@@ -313,7 +313,7 @@ LWECiphertext BinFHEContext::EvalNOT(ConstLWECiphertext& ct) const {
 }
 
 LWECiphertext BinFHEContext::EvalConstant(bool value) const {
-    return m_LWEscheme->NoiselessEmbedding(m_params->GetLWEParams(), value);
+    return m_LWEscheme.NoiselessEmbedding(m_params->GetLWEParams(), value);
 }
 
 LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT) const {

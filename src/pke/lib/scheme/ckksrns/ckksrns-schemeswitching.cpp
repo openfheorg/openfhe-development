@@ -1988,7 +1988,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
         for (uint32_t j = 0; j < numValues / (2 * M); j++) {
             LWECiphertext tempSign    = m_ccLWE->EvalSign(cTemp[j], true);
             LWECiphertext negTempSign = std::make_shared<LWECiphertextImpl>(*tempSign);
-            m_ccLWE->GetLWEScheme()->EvalAddConstEq(negTempSign, negTempSign->GetModulus() >> 1);  // "negated" tempSign
+            m_ccLWE->GetLWEScheme().EvalAddConstEq(negTempSign, negTempSign->GetModulus() >> 1);  // "negated" tempSign
             for (uint32_t i = 0; i < 2 * M; i += 2) {
                 LWESign[i * numValues / (2 * M) + j]       = tempSign;
                 LWESign[(i + 1) * numValues / (2 * M) + j] = negTempSign;
@@ -2149,7 +2149,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
         for (uint32_t j = 0; j < numValues / (2 * M); j++) {
             LWECiphertext tempSign    = m_ccLWE->EvalSign(cTemp[j], true);
             LWECiphertext negTempSign = std::make_shared<LWECiphertextImpl>(*tempSign);
-            m_ccLWE->GetLWEScheme()->EvalAddConstEq(negTempSign, negTempSign->GetModulus() >> 1);  // "negated" tempSign
+            m_ccLWE->GetLWEScheme().EvalAddConstEq(negTempSign, negTempSign->GetModulus() >> 1);  // "negated" tempSign
             for (uint32_t i = 0; i < 2 * M; i += 2) {
                 LWESign[i * numValues / (2 * M) + j]       = negTempSign;
                 LWESign[(i + 1) * numValues / (2 * M) + j] = tempSign;

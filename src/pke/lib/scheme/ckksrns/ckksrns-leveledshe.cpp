@@ -225,11 +225,32 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     }
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    int32_t logSF       = static_cast<int32_t>(std::ceil(log2(std::fabs(operand * scFactor))));
-    int32_t logValid    = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
-                              logSF :
-                              LargeScalingFactorConstants::MAX_BITS_IN_WORD;
-    int32_t logApprox   = logSF - logValid;
+
+    // the logic below was added as the code crashes when linked with clang++ in the Debug mode and
+    // with the following flags and res is ZERO:
+    // -O2
+    // -g
+    // -fsanitize-trap=all
+    // -fsanitize=alignment,return,returns-nonnull-attribute,vla-bound,unreachable,float-cast-overflow
+    // -fsanitize=null
+    // -gz=zlib
+    // -fno-asynchronous-unwind-tables
+    // -fno-optimize-sibling-calls
+    // -fsplit-dwarf-inlining
+    // -gsimple-template-names
+    // -gsplit-dwarf
+    int32_t logApprox = 0;
+    const double res  = std::fabs(operand * scFactor);
+    if (res == 0) {
+        // do not do anything; logApprox = 0 in this case
+    }
+    else {
+        int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
+        int32_t logValid = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
+                               logSF :
+                               LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+        logApprox        = logSF - logValid;
+    }
     double approxFactor = pow(2, logApprox);
 
     DCRTPoly::Integer scConstant = static_cast<uint64_t>(operand * scFactor / approxFactor + 0.5);
@@ -336,16 +357,37 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 
     #if defined(HAVE_INT128)
     typedef int128_t DoubleInteger;
-    int32_t MAX_BITS_IN_WORD = 125;
+    int32_t MAX_BITS_IN_WORD_LOCAL = 125;
     #else
     typedef int64_t DoubleInteger;
-    int32_t MAX_BITS_IN_WORD = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+    int32_t MAX_BITS_IN_WORD_LOCAL = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
     #endif
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    int32_t logSF       = static_cast<int32_t>(std::ceil(log2(std::fabs(operand * scFactor))));
-    int32_t logValid    = (logSF <= MAX_BITS_IN_WORD) ? logSF : MAX_BITS_IN_WORD;
-    int32_t logApprox   = logSF - logValid;
+
+    // the logic below was added as the code crashes when linked with clang++ in the Debug mode and
+    // with the following flags and res is ZERO:
+    // -O2
+    // -g
+    // -fsanitize-trap=all
+    // -fsanitize=alignment,return,returns-nonnull-attribute,vla-bound,unreachable,float-cast-overflow
+    // -fsanitize=null
+    // -gz=zlib
+    // -fno-asynchronous-unwind-tables
+    // -fno-optimize-sibling-calls
+    // -fsplit-dwarf-inlining
+    // -gsimple-template-names
+    // -gsplit-dwarf
+    int32_t logApprox = 0;
+    const double res  = std::fabs(operand * scFactor);
+    if (res == 0) {
+        // do not do anything; logApprox = 0 in this case
+    }
+    else {
+        int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
+        int32_t logValid = (logSF <= MAX_BITS_IN_WORD_LOCAL) ? logSF : MAX_BITS_IN_WORD_LOCAL;
+        logApprox        = logSF - logValid;
+    }
     double approxFactor = pow(2, logApprox);
 
     DoubleInteger large     = static_cast<DoubleInteger>(operand / approxFactor * scFactor + 0.5);
