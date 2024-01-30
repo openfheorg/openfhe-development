@@ -654,8 +654,8 @@ std::vector<std::vector<NativeInteger>> ExtractLWEpacked(const Ciphertext<DCRTPo
     auto& originalAVals = originalA.GetValues();
     auto& originalBVals = originalB.GetValues();
 
-    extracted[1].insert(extracted[1].end(), &originalAVals[0], &originalAVals[N]);
-    extracted[0].insert(extracted[0].end(), &originalBVals[0], &originalBVals[N]);
+    extracted[1].insert(extracted[1].end(), &originalAVals[0], &originalAVals[N - 1]);
+    extracted[0].insert(extracted[0].end(), &originalBVals[0], &originalBVals[N - 1]);
 
     return extracted;
 }
@@ -1421,7 +1421,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     std::vector<double> coefficientsFHEW;  // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
     if (n == 32) {
         K = 16.0;
-        coefficientsFHEW.insert(coefficientsFHEW.end(), &g_coefficientsFHEW16[0], &g_coefficientsFHEW16[LEN_16]);
+        coefficientsFHEW.insert(coefficientsFHEW.end(), &g_coefficientsFHEW16[0], &g_coefficientsFHEW16[LEN_16 - 1]);
     }
     else {
         K = 128.0;  // Failure probability of 2^{-49}
@@ -1429,11 +1429,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
             coefficientsFHEW.insert(
                 coefficientsFHEW.end(), &g_coefficientsFHEW128_8[0],
                 &g_coefficientsFHEW128_8
-                    [LEN_128_8]);  // If the output messages are bits, we could use a lower degree polynomial
+                    [LEN_128_8 - 1]);  // If the output messages are bits, we could use a lower degree polynomial
         }
         else {
             coefficientsFHEW.insert(coefficientsFHEW.end(), &g_coefficientsFHEW128_9[0],
-                                    &g_coefficientsFHEW128_9[LEN_128_9]);
+                                    &g_coefficientsFHEW128_9[LEN_128_9 - 1]);
         }
     }
 
