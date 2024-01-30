@@ -480,9 +480,9 @@ protected:
             auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-            uint32_t init_level     = 0;
+            uint32_t init_level     = testData.params.multiplicativeDepth;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level = 1;
+                init_level++;
             double scaleSignFHEW = 8.0;
 
             cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSignFHEW);
@@ -552,9 +552,9 @@ protected:
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-            uint32_t init_level = 0;
+            uint32_t init_level = testData.params.multiplicativeDepth;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level = 1;
+                init_level++;
             cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
@@ -661,9 +661,9 @@ protected:
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-            uint32_t init_level = 0;
+            uint32_t init_level = testData.params.multiplicativeDepth;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level = 1;
+                init_level++;
             cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
@@ -806,9 +806,10 @@ protected:
 
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-            uint32_t init_level = 0;
+            uint32_t init_level = testData.params.multiplicativeDepth;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level = 1;
+                init_level++;
+
             cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
 
             auto result = cc->EvalMinSchemeSwitching(clientC, clientPublicKey, testData.numValues, testData.slots);
