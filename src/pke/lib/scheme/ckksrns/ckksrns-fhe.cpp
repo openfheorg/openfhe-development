@@ -768,14 +768,12 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
                          (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
 
     if (isLTBootstrap) {
-        std::vector<int32_t> indexList = FindLinearTransformRotationIndices(slots, M);
-        fullIndexList.insert(fullIndexList.end(), indexList.begin(), indexList.end());
+        fullIndexList = FindLinearTransformRotationIndices(slots, M);
     }
     else {
-        std::vector<int32_t> indexListCtS = FindCoeffsToSlotsRotationIndices(slots, M);
-        std::vector<int32_t> indexListStC = FindSlotsToCoeffsRotationIndices(slots, M);
+        fullIndexList = FindCoeffsToSlotsRotationIndices(slots, M);
 
-        fullIndexList.insert(fullIndexList.end(), indexListCtS.begin(), indexListCtS.end());
+        std::vector<int32_t> indexListStC = FindSlotsToCoeffsRotationIndices(slots, M);
         fullIndexList.insert(fullIndexList.end(), indexListStC.begin(), indexListStC.end());
     }
 
@@ -1152,11 +1150,10 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         std::vector<std::vector<std::complex<double>>> newA(slots);
 
         //  A and B are concatenated horizontally
-        for (uint32_t i = 0; i < A.size(); i++) {
-            auto vecA = A[i];
-            auto vecB = B[i];
-            vecA.insert(vecA.end(), vecB.begin(), vecB.end());
-            newA[i] = vecA;
+        for (uint32_t i = 0; i < slots; ++i) {
+            newA[i].reserve(A[i].size() + B[i].size());
+            newA[i].insert(newA[i].end(), A[i].begin(), A[i].end());
+            newA[i].insert(newA[i].end(), B[i].begin(), B[i].end());
         }
 
 #pragma omp parallel for

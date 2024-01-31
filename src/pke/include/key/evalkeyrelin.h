@@ -40,6 +40,9 @@
 #include <string>
 #include <utility>
 
+// TODO: fix insert issue if SetBVector used before SetAVector
+// TODO: fix vector growth issue if SetAVector/SetBVector called multiple times
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -67,18 +70,16 @@ public:
    *
    *@param &rhs key to copy from
    */
-    explicit EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs) : EvalKeyImpl<Element>(rhs.GetCryptoContext()) {
-        m_rKey = rhs.m_rKey;
-    }
+    explicit EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
+        : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(rhs.m_rKey) {}
 
     /**
    * Move constructor
    *
    *@param &rhs key to move from
    */
-    explicit EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) : EvalKeyImpl<Element>(rhs.GetCryptoContext()) {
-        m_rKey = std::move(rhs.m_rKey);
-    }
+    explicit EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
+        : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(std::move(rhs.m_rKey)) {}
 
     operator bool() const {
         return static_cast<bool>(this->context) && m_rKey.size() != 0;
@@ -89,7 +90,7 @@ public:
    *
    * @param &rhs key to copy from
    */
-    const EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
+    EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
         this->m_rKey  = rhs.m_rKey;
         return *this;
@@ -100,7 +101,7 @@ public:
    *
    * @param &rhs key to move from
    */
-    const EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) {
+    EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) {
         this->context = rhs.context;
         rhs.context   = 0;
         m_rKey        = std::move(rhs.m_rKey);

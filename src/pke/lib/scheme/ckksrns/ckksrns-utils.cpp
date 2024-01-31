@@ -148,40 +148,34 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
         OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divisor is zero.");
     }
 
-    std::vector<double> q;
-    std::vector<double> r = f;
+    if (int32_t(n - k) < 0)
+        return std::make_shared<longDiv>(std::vector<double>(1), f);
+
+    std::vector<double> q(n - k + 1);
+    std::vector<double> r(f);
     std::vector<double> d;
+    d.reserve(g.size() + n);
 
-    if (int32_t(n - k) >= 0) {
-        std::vector<double> q2(n - k + 1, 0.0);
-        q = q2;
+    while (int32_t(n - k) >= 0) {
+        // d is g padded with zeros before up to n
+        d.clear();
+        d.resize(n - k);
+        d.insert(d.end(), g.begin(), g.end());
 
-        while (int32_t(n - k) >= 0) {
-            d = g;
-            d.insert(d.begin(), n - k, 0);  // d is g padded with zeros before up to n
-            q[n - k] = r.back();
+        q[n - k] = r.back();
+        if (IsNotEqualOne(g[k]))
+            q[n - k] /= g.back();
 
-            if (IsNotEqualOne(g[k])) {
-                q[n - k] /= g.back();
-            }
-
-            // d *= q[n - k]
-            std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::multiplies<double>(), std::placeholders::_1, q[n - k]));
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
-            }
+        // d *= q[n - k]
+        std::transform(d.begin(), d.end(), d.begin(),
+                       std::bind(std::multiplies<double>(), std::placeholders::_1, q[n - k]));
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
         }
     }
-    else {
-        std::vector<double> q2(1, 0.0);
-        q = q2;
-        r = f;
-    }
-
     return std::make_shared<longDiv>(q, r);
 }
 
@@ -203,98 +197,92 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
         OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
     }
 
-    std::vector<double> q;
-    std::vector<double> r = f;
+    if (int32_t(n - k) < 0)
+        return std::make_shared<longDiv>(std::vector<double>(1), f);
 
-    if (int32_t(n - k) >= 0) {
-        std::vector<double> q2(n - k + 1, 0.0);
-        q = q2;
+    std::vector<double> q(n - k + 1);
+    std::vector<double> r(f);
+    std::vector<double> d;
+    d.reserve(g.size() + n);
 
-        while (int32_t(n - k) > 0) {
-            q[n - k] = 2 * r.back();
-            if (IsNotEqualOne(g[k])) {
-                q[n - k] /= g.back();
+    while (int32_t(n - k) > 0) {
+        d.clear();
+        d.resize(n + 1);
+
+        q[n - k] = 2 * r.back();
+        if (IsNotEqualOne(g[k]))
+            q[n - k] /= g.back();
+
+        if (int32_t(k) == int32_t(n - k)) {
+            d.front() = 2 * g[n - k];
+
+            for (uint32_t i = 1; i < 2 * k + 1; i++) {
+                d[i] = g[std::abs(int32_t(n - k - i))];
             }
-
-            std::vector<double> d(n + 1, 0.0);
-
-            if (int32_t(k) == int32_t(n - k)) {
+        }
+        else {
+            if (int32_t(k) > int32_t(n - k)) {
                 d.front() = 2 * g[n - k];
-
-                for (uint32_t i = 1; i < 2 * k + 1; i++) {
-                    d[i] = g[std::abs(int32_t(n - k - i))];
+                for (uint32_t i = 1; i < k - (n - k) + 1; i++) {
+                    d[i] = g[std::abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
+                }
+                for (uint32_t i = k - (n - k) + 1; i < n + 1; i++) {
+                    d[i] = g[std::abs(int32_t(i - n + k))];
                 }
             }
             else {
-                if (int32_t(k) > int32_t(n - k)) {
-                    d.front() = 2 * g[n - k];
-                    for (uint32_t i = 1; i < k - (n - k) + 1; i++) {
-                        d[i] = g[std::abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
-                    }
-
-                    for (uint32_t i = k - (n - k) + 1; i < n + 1; i++) {
+                d[n - k] = g.front();
+                for (uint32_t i = n - 2 * k; i < n + 1; i++) {
+                    if (i != n - k) {
                         d[i] = g[std::abs(int32_t(i - n + k))];
                     }
                 }
-                else {
-                    d[n - k] = g.front();
-                    for (uint32_t i = n - 2 * k; i < n + 1; i++) {
-                        if (i != n - k) {
-                            d[i] = g[std::abs(int32_t(i - n + k))];
-                        }
-                    }
-                }
-            }
-
-            if (IsNotEqualOne(r.back())) {
-                // d *= f[n]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
-            }
-            if (IsNotEqualOne(g.back())) {
-                // d /= g[k]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
-            }
-
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
             }
         }
 
-        if (n == k) {
-            q.front() = r.back();
-            if (IsNotEqualOne(g.back())) {
-                q.front() /= g.back();  // q[0] /= g[k]
-            }
-            std::vector<double> d = g;
-            if (IsNotEqualOne(r.back())) {
-                // d *= f[n]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
-            }
-            if (IsNotEqualOne(g.back())) {
-                // d /= g[k]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
-            }
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
-            }
+        if (IsNotEqualOne(r.back())) {
+            // d *= f[n]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
         }
-        q.front() *= 2;  // Because we want to have [c0] in the last spot, not [c0/2]
+        if (IsNotEqualOne(g.back())) {
+            // d /= g[k]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
+        }
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
+        }
     }
-    else {
-        std::vector<double> q2(1, 0.0);
-        q = q2;
-        r = f;
+
+    if (n == k) {
+        d = g;
+
+        q.front() = r.back();
+        if (IsNotEqualOne(g.back())) {
+            q.front() /= g.back();  // q[0] /= g[k]
+        }
+        if (IsNotEqualOne(r.back())) {
+            // d *= f[n]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
+        }
+        if (IsNotEqualOne(g.back())) {
+            // d /= g[k]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
+        }
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
+        }
     }
+    q.front() *= 2;  // Because we want to have [c0] in the last spot, not [c0/2]
 
     return std::make_shared<longDiv>(q, r);
 }

@@ -70,13 +70,10 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     // Public Key Generation
     Element a(dug, elementParams, Format::EVALUATION);
     Element e(dgg, elementParams, Format::EVALUATION);
-
-    Element b = ns * e - a * s;
+    Element b(ns * e - a * s);
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-
-    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
-    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetPublicElements(std::vector<Element>{std::move(b), std::move(a)});
 
     return keyPair;
 }
@@ -128,9 +125,7 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-
-    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
-    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetPublicElements(std::vector<Element>{std::move(b), std::move(a)});
 
     return keyPair;
 }
@@ -295,17 +290,12 @@ DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(const std::vector
 template <class Element>
 PublicKey<Element> MultipartyBase<Element>::MultiAddPubKeys(PublicKey<Element> publicKey1,
                                                             PublicKey<Element> publicKey2) const {
-    const auto cc = publicKey1->GetCryptoContext();
-
-    PublicKey<Element> publicKeySum = std::make_shared<PublicKeyImpl<Element>>(cc);
-
-    const Element& a = publicKey1->GetPublicElements()[1];
+    PublicKey<Element> publicKeySum = std::make_shared<PublicKeyImpl<Element>>(publicKey1->GetCryptoContext());
 
     const Element& b1 = publicKey1->GetPublicElements()[0];
     const Element& b2 = publicKey2->GetPublicElements()[0];
-
-    publicKeySum->SetPublicElementAtIndex(0, std::move(b1 + b2));
-    publicKeySum->SetPublicElementAtIndex(1, a);
+    const Element& a  = publicKey1->GetPublicElements()[1];
+    publicKeySum->SetPublicElements(std::vector<Element>{(b1 + b2), a});
 
     return publicKeySum;
 }
