@@ -405,7 +405,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, cTemp, &plaintextDec);
             plaintextDec->SetLength(testData.numValues);
 
-            checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x1), eps1,
+            checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x1_values), eps1,
                           failmsg + "FHEW to CKKS fails for binary messages.");
 
             cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, testData.numValues, testData.slots, pLWE, 0, pLWE);
@@ -413,7 +413,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, cTemp, &plaintextDec);
             plaintextDec->SetLength(testData.numValues);
 
-            checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x2), eps2,
+            checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x2_values), eps2,
                           failmsg + "FHEW to CKKS fails for larger messages.");
         }
         catch (std::exception& e) {
