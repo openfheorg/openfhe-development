@@ -52,6 +52,8 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
 
 LWEPrivateKey LWEEncryptionScheme::KeyGenGaussian(usint size, const NativeInteger& modulus) const {
     DiscreteGaussianGeneratorImpl<NativeVector> dgg;
+    double STD_DEV = 3.19 ;
+    dgg.SetStd(STD_DEV);
     return std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(dgg.GenerateVector(size, modulus)));
 }
 
