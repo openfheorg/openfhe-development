@@ -320,18 +320,9 @@ protected:
             auto ccLWE          = cc->GetBinCCForSchemeSwitch();
             cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW);
 
-            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-            ILDCRTParams<Element::Integer> elementParams = *(cryptoParams->GetElementParams());
-            auto paramsQ                                 = elementParams.GetParams();
-            auto modulus_CKKS_from                       = paramsQ[0]->GetModulus();
-            auto modulus_LWE                             = 1 << testData.logQ;
-            auto pLWE                                    = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
-
-            double scFactor = cryptoParams->GetScalingFactorReal(0);
-            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                scFactor = cryptoParams->GetScalingFactorReal(1);
-            double scale = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE);
-
+            auto modulus_LWE = 1 << testData.logQ;
+            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            double scale     = 1.0 / pLWE;
             cc->EvalCKKStoFHEWPrecompute(scale);
 
             std::vector<std::complex<double>> input(
@@ -476,16 +467,10 @@ protected:
 
             auto cDiff = cc->EvalSub(c1, c2);
 
-            auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
-
-            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-            uint32_t init_level     = testData.params.multiplicativeDepth;
-            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level++;
+            auto modulus_LWE     = 1 << testData.logQ;
+            auto pLWE            = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
             double scaleSignFHEW = 8.0;
-
-            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSignFHEW);
+            cc->EvalCompareSwitchPrecompute(pLWE, scaleSignFHEW);
 
             Plaintext pDiff;
             cc->Decrypt(keyPair.secretKey, cDiff, &pDiff);
@@ -549,13 +534,7 @@ protected:
 
             auto modulus_LWE = 1 << testData.logQ;
             auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
-
-            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-
-            uint32_t init_level = testData.params.multiplicativeDepth;
-            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level++;
-            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+            cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
             auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
@@ -658,13 +637,7 @@ protected:
 
             auto modulus_LWE = 1 << testData.logQ;
             auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
-
-            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-
-            uint32_t init_level = testData.params.multiplicativeDepth;
-            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level++;
-            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+            cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
             auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
@@ -803,14 +776,7 @@ protected:
             double scaleSign = 128.0;
             auto modulus_LWE = 1 << testData.logQ;
             auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
-
-            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-
-            uint32_t init_level = testData.params.multiplicativeDepth;
-            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                init_level++;
-
-            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+            cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
 
             auto result = cc->EvalMinSchemeSwitching(clientC, clientPublicKey, testData.numValues, testData.slots);
 

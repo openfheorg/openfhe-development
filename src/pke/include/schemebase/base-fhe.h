@@ -216,13 +216,12 @@ public:
    *
    * @param cc the CKKS cryptocontext from which to switch
    * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
-   * @param initLevel the level of the ciphertext that will be switched
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * @param unit whether the input messages are normalized to the unit circle
    */
-    virtual void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE,
-                                             uint32_t initLevel, double scaleSign, bool unit) {
+    virtual void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE, double scaleSign,
+                                             bool unit) {
         OPENFHE_THROW(not_implemented_error, "EvalCompareSwitchPrecompute is not supported for this scheme");
     }
 
