@@ -120,15 +120,6 @@ public:
     DCRTPolyType CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg, Format format) const override;
     DCRTPolyType CloneTowers(uint32_t startTower, uint32_t endTower) const;
 
-    Integer& at(usint i) override;
-    const Integer& at(usint i) const override;
-    Integer& operator[](usint i) override {
-        return DCRTPolyType::CRTInterpolateIndex(i)[i];
-    }
-    const Integer& operator[](usint i) const override {
-        return DCRTPolyType::CRTInterpolateIndex(i)[i];
-    }
-
     bool operator==(const DCRTPolyType& rhs) const override;
 
     DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
@@ -216,9 +207,7 @@ public:
     void DropLastElement() override;
     void DropLastElements(size_t i) override;
     void DropLastElementAndScale(const std::vector<NativeInteger>& QlQlInvModqlDivqlModq,
-                                 const std::vector<NativeInteger>& QlQlInvModqlDivqlModqPrecon,
-                                 const std::vector<NativeInteger>& qlInvModq,
-                                 const std::vector<NativeInteger>& qlInvModqPrecon) override;
+                                 const std::vector<NativeInteger>& qlInvModq) override;
 
     void ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
                    const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,

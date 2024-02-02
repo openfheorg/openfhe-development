@@ -153,10 +153,10 @@ public:
    * @return will throw an error.
    */
     virtual IntType& at(usint i) {
-        OPENFHE_THROW(not_implemented_error, "at not implemented");
+        OPENFHE_THROW(not_implemented_error, "at() not implemented");
     }
     virtual const IntType& at(usint i) const {
-        OPENFHE_THROW(not_implemented_error, "const at not implemented");
+        OPENFHE_THROW(not_implemented_error, "const at() not implemented");
     }
     virtual IntType& operator[](usint i) {
         OPENFHE_THROW(not_implemented_error, "[] not implemented");

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2024, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -88,15 +88,15 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
     uint32_t k                = cryptoParamsBFVrns->GetNumPerPartQ();
     uint32_t numPartQ         = cryptoParamsBFVrns->GetNumPartQ();
     uint32_t thresholdParties = cryptoParamsBFVrns->GetThresholdNumOfParties();
-    // Bkey set to thresholdParties * 1 for ternary distribution
-    const double Bkey = (cryptoParamsBFVrns->GetSecretKeyDist() == GAUSSIAN) ?
-                            sqrt(thresholdParties) * sigma * sqrt(alpha) :
-                            thresholdParties;
-
-    double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
 
     // Bound of the Gaussian error polynomial
     double Berr = sigma * sqrt(alpha);
+
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    const double Bkey =
+        (cryptoParamsBFVrns->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * Berr : thresholdParties;
+
+    double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
 
     // expansion factor delta
     auto delta = [](uint32_t n) -> double {
@@ -863,8 +863,8 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     bool isKeySwitch          = (cv.size() == 2);
-
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
+    auto algo                 = ciphertext->GetCryptoContext()->GetScheme();
+    size_t sel                = 1 + !isKeySwitch;
 
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
@@ -872,25 +872,15 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
 
         // how many levels to drop
-        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
-        l                      = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
-        if (isKeySwitch) {
-            cv[1].SetFormat(COEFFICIENT);
-            cv[1] = cv[1].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+        l = sizeQ - 1 - FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
+
+        cv[sel].SetFormat(COEFFICIENT);
+        cv[sel] = cv[sel].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                                         cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
-        }
-        else {
-            cv[2].SetFormat(COEFFICIENT);
-            cv[2] = cv[2].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
-                                        cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
-        }
     }
 
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
-
-    std::shared_ptr<std::vector<DCRTPoly>> ab =
-        isKeySwitch ? algo->KeySwitchCore(cv[1], evalKey) : algo->KeySwitchCore(cv[2], evalKey);
+    cv[sel].SetFormat(Format::EVALUATION);
+    auto ab = algo->KeySwitchCore(cv[sel], evalKey);
 
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         size_t sizeQ = cv[0].GetNumOfElements();
@@ -900,13 +890,15 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
                                      cryptoParams->GetQlHatModqPrecon(l), sizeQ);
     }
 
+    cv[0].SetFormat(Format::EVALUATION);
     cv[0] += (*ab)[0];
 
-    if (!isKeySwitch) {
-        cv[1] += (*ab)[1];
+    if (isKeySwitch) {
+        cv[1] = std::move((*ab)[1]);
     }
     else {
-        cv[1] = (*ab)[1];
+        cv[1].SetFormat(Format::EVALUATION);
+        cv[1] += (*ab)[1];
     }
 
     cv.resize(2);
@@ -938,9 +930,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly> cipher
     for (size_t l = 0; l < levels; ++l) {
         for (size_t i = 0; i < cv.size(); ++i) {
             cv[i].DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
-                                          cryptoParams->GetQlQlInvModqlDivqlModqPrecon(diffQl + l),
-                                          cryptoParams->GetqlInvModq(diffQl + l),
-                                          cryptoParams->GetqlInvModqPrecon(diffQl + l));
+                                          cryptoParams->GetqlInvModq(diffQl + l));
         }
     }
 
