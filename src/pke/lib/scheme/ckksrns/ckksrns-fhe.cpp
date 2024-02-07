@@ -768,14 +768,12 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
                          (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
 
     if (isLTBootstrap) {
-        std::vector<int32_t> indexList = FindLinearTransformRotationIndices(slots, M);
-        fullIndexList.insert(fullIndexList.end(), indexList.begin(), indexList.end());
+        fullIndexList = FindLinearTransformRotationIndices(slots, M);
     }
     else {
-        std::vector<int32_t> indexListCtS = FindCoeffsToSlotsRotationIndices(slots, M);
-        std::vector<int32_t> indexListStC = FindSlotsToCoeffsRotationIndices(slots, M);
+        fullIndexList = FindCoeffsToSlotsRotationIndices(slots, M);
 
-        fullIndexList.insert(fullIndexList.end(), indexListCtS.begin(), indexListCtS.end());
+        std::vector<int32_t> indexListStC = FindSlotsToCoeffsRotationIndices(slots, M);
         fullIndexList.insert(fullIndexList.end(), indexListStC.begin(), indexListStC.end());
     }
 
@@ -808,7 +806,7 @@ std::vector<int32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slo
 
     // computing all indices for baby-step giant-step procedure
     // ATTN: resize() is used as indexListEvalLT may be empty here
-    indexList.reserve(g + h - 2);
+    indexList.reserve(g + h + M - 2);
     for (int i = 0; i < g; i++) {
         indexList.emplace_back(i + 1);
     }
@@ -868,12 +866,7 @@ std::vector<int32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots
     }
 
     // Computing all indices for baby-step giant-step procedure for encoding and decoding
-    if (flagRem == 0) {
-        indexList.reserve(b + g - 2 + 1);
-    }
-    else {
-        indexList.reserve(b + g - 2 + bRem + gRem - 2 + 1);
-    }
+    indexList.reserve(b + g - 2 + bRem + gRem - 2 + 1 + M);
 
     for (int32_t s = int32_t(levelBudget) - 1; s > stop; s--) {
         for (int32_t j = 0; j < g; j++) {
@@ -947,12 +940,7 @@ std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots
     }
 
     // Computing all indices for baby-step giant-step procedure for encoding and decoding
-    if (flagRem == 0) {
-        indexList.reserve(b + g - 2 + 1);
-    }
-    else {
-        indexList.reserve(b + g - 2 + bRem + gRem - 2 + 1);
-    }
+    indexList.reserve(b + g - 2 + bRem + gRem - 2 + 1 + M);
 
     for (int32_t s = 0; s < int32_t(levelBudget); s++) {
         for (int32_t j = 0; j < g; j++) {
@@ -1162,11 +1150,10 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         std::vector<std::vector<std::complex<double>>> newA(slots);
 
         //  A and B are concatenated horizontally
-        for (uint32_t i = 0; i < A.size(); i++) {
-            auto vecA = A[i];
-            auto vecB = B[i];
-            vecA.insert(vecA.end(), vecB.begin(), vecB.end());
-            newA[i] = vecA;
+        for (uint32_t i = 0; i < slots; ++i) {
+            newA[i].reserve(A[i].size() + B[i].size());
+            newA[i].insert(newA[i].end(), A[i].begin(), A[i].end());
+            newA[i].insert(newA[i].end(), B[i].begin(), B[i].end());
         }
 
 #pragma omp parallel for
@@ -2355,8 +2342,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     if (logc < 0) {
         OPENFHE_THROW(math_error, "Too small scaling factor");
     }
-    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox = logc - logValid;
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2387,11 +2374,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax = realVal;
+                    realMax    = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax = imagVal;
+                    imagMax    = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2414,11 +2401,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2454,7 +2441,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
+        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 

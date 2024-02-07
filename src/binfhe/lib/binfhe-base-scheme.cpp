@@ -244,7 +244,9 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
         // TODO: figure out a way to not do this :(
 
         // repeat the LUT to make it periodic
-        std::vector<NativeInteger> LUT2 = LUT;
+        std::vector<NativeInteger> LUT2;
+        LUT2.reserve(LUT.size() + LUT.size());
+        LUT2.insert(LUT2.end(), LUT.begin(), LUT.end());
         LUT2.insert(LUT2.end(), LUT.begin(), LUT.end());
 
         NativeInteger dq{q << 1};

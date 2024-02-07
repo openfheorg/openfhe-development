@@ -98,6 +98,7 @@ bool CoefPackedEncoding::Encode() {
 template <typename P>
 inline static void fillVec(const P& poly, const PlaintextModulus& mod, std::vector<int64_t>& value) {
     value.clear();
+    value.reserve(poly.GetLength());
 
     int64_t half                 = int64_t(mod) / 2;
     const typename P::Integer& q = poly.GetModulus();

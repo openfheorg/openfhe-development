@@ -826,6 +826,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
 
     // vector of indexes of the clients
     std::vector<uint32_t> client_indexes;
+    client_indexes.reserve(N);
     for (uint32_t i = 1; i <= N; ++i) {
         if (sk_shares.find(i) != sk_shares.end())
             client_indexes.push_back(i);

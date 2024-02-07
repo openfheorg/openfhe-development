@@ -217,11 +217,17 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             m_paramsQlRl.resize(sizeQ);
 
             std::vector<NativeInteger> moduliQl;
+            moduliQl.reserve(sizeQ);
             std::vector<NativeInteger> rootsQl;
+            rootsQl.reserve(sizeQ);
             std::vector<NativeInteger> moduliRl;
+            moduliRl.reserve(sizeQ);
             std::vector<NativeInteger> rootsRl;
+            rootsRl.reserve(sizeQ);
             std::vector<NativeInteger> moduliQlRl;
+            moduliQlRl.reserve(2 * sizeQ);
             std::vector<NativeInteger> rootsQlRl;
+            rootsQlRl.reserve(2 * sizeQ);
 
             for (usint l = 0; l < sizeQ; ++l) {
                 moduliQl.push_back(moduliQ[l]);
@@ -273,6 +279,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         m_tRSHatInvModsDivsModr.resize(sizeR);
         for (usint j = 0; j < sizeR; j++) {
+            m_tRSHatInvModsDivsModr[j].reserve(sizeQ + 1);
             BigInteger rj(moduliR[j].ConvertToInt());
             for (usint i = 0; i < sizeQ; i++) {
                 BigInteger qi(moduliQ[i].ConvertToInt());
@@ -317,23 +324,22 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // BFVrns : Mult : ExpandCRTBasis
         if (multTech == HPS) {
             m_alphaQlModr.resize(1);
-            m_alphaQlModr[0].resize(sizeQ + 1);
+            m_alphaQlModr[0].resize(sizeQ + 1, std::vector<NativeInteger>(sizeR));
             for (usint j = 0; j < sizeR; j++) {
                 NativeInteger QModrj = modulusQ.Mod(moduliR[j]).ConvertToInt();
                 for (usint i = 0; i < sizeQ + 1; i++) {
-                    m_alphaQlModr[0][i].push_back(QModrj.ModMul(NativeInteger(i), moduliR[j]));
+                    m_alphaQlModr[0][i][j] = QModrj.ModMul(NativeInteger(i), moduliR[j]);
                 }
             }
         }
         else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
             m_alphaQlModr.resize(sizeQ);
             for (usint l = sizeQ; l > 0; l--) {
-                m_alphaQlModr[l - 1].resize(l + 1);
+                m_alphaQlModr[l - 1].resize(l + 1, std::vector<NativeInteger>(sizeR));
                 for (usint i = 0; i < sizeR; i++) {
-                    BigInteger ri(moduliR[i].ConvertToInt());
-                    NativeInteger QlModri = Ql[l].Mod(ri).ConvertToInt();
+                    NativeInteger QlModri = Ql[l].Mod(moduliR[i]).ConvertToInt();
                     for (usint j = 0; j < l + 1; ++j) {
-                        m_alphaQlModr[l - 1][j].push_back(QlModri.ModMul(NativeInteger(j), ri));
+                        m_alphaQlModr[l - 1][j][i] = QlModri.ModMul(NativeInteger(j), moduliR[i]);
                     }
                 }
             }
@@ -371,10 +377,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             for (usint l = sizeR; l > 0; l--) {
                 m_RlHatInvModr[l - 1].resize(l);
                 m_RlHatInvModrPrecon[l - 1].resize(l);
-                m_RlHatModq[l - 1].resize(l);
-                for (size_t i = 0; i < l; i++) {
-                    m_RlHatModq[l - 1][i].resize(l);
-                }
+                m_RlHatModq[l - 1].resize(l, std::vector<NativeInteger>(l));
                 for (size_t j = 0; j < l; j++) {
                     BigInteger RlHatj              = Rl[l] / BigInteger(moduliR[j]);
                     BigInteger RlHatInvModrj       = RlHatj.ModInverse(moduliR[j]);
@@ -392,23 +395,22 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // used for homomorphic multiplication
         if (multTech == HPS) {
             m_alphaRlModq.resize(1);
-            m_alphaRlModq[0].resize(sizeR + 1);
+            m_alphaRlModq[0].resize(sizeR + 1, std::vector<NativeInteger>(sizeQ));
             for (usint i = 0; i < sizeQ; i++) {
                 NativeInteger RModqi = modulusR.Mod(moduliQ[i]).ConvertToInt();
                 for (usint j = 0; j < sizeR + 1; ++j) {
-                    m_alphaRlModq[0][j].push_back(RModqi.ModMul(NativeInteger(j), moduliQ[i]));
+                    m_alphaRlModq[0][j][i] = RModqi.ModMul(NativeInteger(j), moduliQ[i]);
                 }
             }
         }
         else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
             m_alphaRlModq.resize(sizeR);
             for (usint l = sizeR; l > 0; l--) {
-                m_alphaRlModq[l - 1].resize(l + 1);
+                m_alphaRlModq[l - 1].resize(l + 1, std::vector<NativeInteger>(sizeQ));
                 for (usint i = 0; i < sizeQ; i++) {
-                    BigInteger qi(moduliQ[i].ConvertToInt());
-                    NativeInteger RlModqi = Rl[l].Mod(qi).ConvertToInt();
+                    NativeInteger RlModqi = Rl[l].Mod(moduliQ[i]).ConvertToInt();
                     for (usint j = 0; j < l + 1; ++j) {
-                        m_alphaRlModq[l - 1][j].push_back(RlModqi.ModMul(NativeInteger(j), qi));
+                        m_alphaRlModq[l - 1][j][i] = RlModqi.ModMul(NativeInteger(j), moduliQ[i]);
                     }
                 }
             }
@@ -516,19 +518,19 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                     static_cast<double>(rj.ConvertToInt());
             }
             m_tQlSlHatInvModsDivsModq.resize(1);
-            m_tQlSlHatInvModsDivsModq[0].resize(sizeQ);
+            m_tQlSlHatInvModsDivsModq[0].resize(sizeQ, std::vector<NativeInteger>(sizeR + 1));
             for (usint i = 0; i < sizeQ; i++) {
                 BigInteger qi(moduliQ[i].ConvertToInt());
                 for (usint j = 0; j < sizeR; j++) {
                     BigInteger rj(moduliR[j].ConvertToInt());
                     BigInteger tQlSlHatInvMods     = modulust * modulusQ * ((modulusQR.DividedBy(rj)).ModInverse(rj));
                     BigInteger tQlSlHatInvModsDivs = tQlSlHatInvMods / rj;
-                    m_tQlSlHatInvModsDivsModq[0][i].push_back(tQlSlHatInvModsDivs.Mod(qi).ConvertToInt());
+                    m_tQlSlHatInvModsDivsModq[0][i][j] = tQlSlHatInvModsDivs.Mod(qi).ConvertToInt();
                 }
 
                 BigInteger tQlSlHatInvMods     = modulust * modulusQ * ((modulusQR.DividedBy(qi)).ModInverse(qi));
                 BigInteger tQlSlHatInvModsDivs = tQlSlHatInvMods / qi;
-                m_tQlSlHatInvModsDivsModq[0][i].push_back(tQlSlHatInvModsDivs.Mod(qi).ConvertToInt());
+                m_tQlSlHatInvModsDivsModq[0][i][sizeR] = tQlSlHatInvModsDivs.Mod(qi).ConvertToInt();
             }
         }
         else if (multTech == HPSPOVERQLEVELED) {
@@ -544,19 +546,19 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                             ((QlRl[l].DividedBy(rj)).ModInverse(rj) * Ql[l] * modulust).Mod(rj).ConvertToInt()) /
                         static_cast<double>(rj.ConvertToInt());
                 }
-                m_tQlSlHatInvModsDivsModq[l - 1].resize(l);
+                m_tQlSlHatInvModsDivsModq[l - 1].resize(l, std::vector<NativeInteger>(l + 1));
                 for (usint i = 0; i < l; i++) {
                     BigInteger qi(moduliQ[i].ConvertToInt());
                     for (usint j = 0; j < l; j++) {
                         BigInteger rj(moduliR[j].ConvertToInt());
                         BigInteger tQlSlHatInvMods     = modulust * Ql[l] * ((QlRl[l].DividedBy(rj)).ModInverse(rj));
                         BigInteger tQlSlHatInvModsDivs = tQlSlHatInvMods / rj;
-                        m_tQlSlHatInvModsDivsModq[l - 1][i].push_back(tQlSlHatInvModsDivs.Mod(qi).ConvertToInt());
+                        m_tQlSlHatInvModsDivsModq[l - 1][i][j] = tQlSlHatInvModsDivs.Mod(qi).ConvertToInt();
                     }
 
                     BigInteger tQlSlHatInvMods     = modulust * Ql[l] * ((QlRl[l].DividedBy(qi)).ModInverse(qi));
                     BigInteger tQlSlHatInvModsDivs = tQlSlHatInvMods / qi;
-                    m_tQlSlHatInvModsDivsModq[l - 1][i].push_back(tQlSlHatInvModsDivs.Mod(qi).ConvertToInt());
+                    m_tQlSlHatInvModsDivsModq[l - 1][i][l] = tQlSlHatInvModsDivs.Mod(qi).ConvertToInt();
                 }
             }
         }
@@ -577,16 +579,17 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             }
             m_QlQHatInvModqDivqModq[l - 1].resize(l);
             for (usint i = 0; i < l; i++) {
+                m_QlQHatInvModqDivqModq[l - 1][i].resize(sizeQ - l + 1);
                 BigInteger qi(moduliQ[i].ConvertToInt());
                 for (usint j = 0; j < sizeQ - l; j++) {
                     BigInteger qj(moduliQ[l + j].ConvertToInt());
-                    BigInteger QlQHatInvModq     = Ql[l] * ((modulusQ.DividedBy(qj)).ModInverse(qj));
-                    BigInteger QlQHatInvModqDivq = QlQHatInvModq / qj;
-                    m_QlQHatInvModqDivqModq[l - 1][i].push_back(QlQHatInvModqDivq.Mod(qi).ConvertToInt());
+                    BigInteger QlQHatInvModq             = Ql[l] * ((modulusQ.DividedBy(qj)).ModInverse(qj));
+                    BigInteger QlQHatInvModqDivq         = QlQHatInvModq / qj;
+                    m_QlQHatInvModqDivqModq[l - 1][i][j] = QlQHatInvModqDivq.Mod(qi).ConvertToInt();
                 }
-                BigInteger QlQHatInvModq     = Ql[l] * ((modulusQ.DividedBy(qi)).ModInverse(qi));
-                BigInteger QlQHatInvModqDivq = QlQHatInvModq / qi;
-                m_QlQHatInvModqDivqModq[l - 1][i].push_back(QlQHatInvModqDivq.Mod(qi).ConvertToInt());
+                BigInteger QlQHatInvModq                     = Ql[l] * ((modulusQ.DividedBy(qi)).ModInverse(qi));
+                BigInteger QlQHatInvModqDivq                 = QlQHatInvModq / qi;
+                m_QlQHatInvModqDivqModq[l - 1][i][sizeQ - l] = QlQHatInvModqDivq.Mod(qi).ConvertToInt();
             }
         }
 

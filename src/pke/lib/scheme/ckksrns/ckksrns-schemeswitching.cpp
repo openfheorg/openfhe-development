@@ -733,10 +733,9 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
 
     //  A and B are concatenated horizontally
     for (uint32_t i = 0; i < A.size(); i++) {
-        auto vecA        = A[i];
-        const auto& vecB = B[i];
-        vecA.insert(vecA.end(), vecB.begin(), vecB.end());
-        newA[i] = std::move(vecA);
+        newA[i].reserve(A[i].size() + B[i].size());
+        newA[i].insert(newA[i].end(), A[i].begin(), A[i].end());
+        newA[i].insert(newA[i].end(), B[i].begin(), B[i].end());
     }
 
 #pragma omp parallel for
@@ -841,14 +840,16 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
         for (uint32_t j = 0; j < gStep; j++) {
             for (uint32_t i = 0; i < bStep; i++) {
                 if (bStep * j + i < n) {
-                    std::vector<std::complex<double>> diag(0);
+                    std::vector<std::complex<double>> diag;
+                    diag.reserve(A.size() * num_slices);
                     for (uint32_t k = 0; k < num_slices; k++) {
                         auto tmp = ExtractShiftedDiagonal(A_slices[k], bStep * j + i);
-                        diag.insert(diag.end(), tmp.begin(), tmp.end());
+                        diag.insert(diag.end(), std::make_move_iterator(tmp.begin()),
+                                    std::make_move_iterator(tmp.end()));
                     }
                     std::transform(diag.begin(), diag.end(), diag.begin(),
                                    [&](const std::complex<double>& elem) { return elem * scale; });
-                    diags[bStep * j + i] = diag;
+                    diags[bStep * j + i] = std::move(diag);
                 }
             }
         }
@@ -861,7 +862,7 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
                     std::vector<std::complex<double>> diag = ExtractShiftedDiagonal(A, bStep * j + i);
                     std::transform(diag.begin(), diag.end(), diag.begin(),
                                    [&](const std::complex<double>& elem) { return elem * scale; });
-                    diags[bStep * j + i] = diag;
+                    diags[bStep * j + i] = std::move(diag);
                 }
             }
         }
@@ -1090,10 +1091,9 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalPartialHomDecryption(const CryptoContext
     std::vector<std::vector<std::complex<double>>> Acopy(A);
     uint32_t cols_po2 = 1 << static_cast<uint32_t>(std::ceil(std::log2(A[0].size())));
 
-    if (cols_po2 != A[0].size()) {
-        std::vector<std::complex<double>> padding(cols_po2 - A[0].size());
+    if (cols_po2 > A[0].size()) {
         for (size_t i = 0; i < A.size(); ++i) {
-            Acopy[i].insert(Acopy[i].end(), padding.begin(), padding.end());
+            Acopy[i].resize(cols_po2);
         }
     }
 
@@ -1285,7 +1285,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
 
     // Step 4. Extract LWE ciphertexts with the modulus Q'
     uint32_t n = m_ccLWE->GetParams()->GetLWEParams()->Getn();  // lattice parameter for additive LWE
-    std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts;
+    std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts(numCtxts);
     auto AandB = ExtractLWEpacked(ctSwitched);
 
     if (numCtxts == 0 || numCtxts > slots) {
@@ -1295,8 +1295,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     uint32_t gap = ccKS->GetRingDimension() / (2 * slots);
 
     for (uint32_t i = 0, idx = 0; i < numCtxts; ++i, idx += gap) {
-        auto temp = ExtractLWECiphertext(AandB, m_modulus_CKKS_from, n, idx);
-        LWEciphertexts.emplace_back(temp);
+        LWEciphertexts[i] = ExtractLWECiphertext(AandB, m_modulus_CKKS_from, n, idx);
     }
 
     // Step 5. Modulus switch to q in FHEW

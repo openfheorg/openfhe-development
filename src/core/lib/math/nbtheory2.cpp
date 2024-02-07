@@ -121,6 +121,7 @@ std::vector<int> GetCyclotomicPolynomialRecursive(usint m) {
 
     auto GetDivisibleNumbers = [](usint val) {
         std::vector<usint> div;
+        div.reserve(val / 2);
         for (usint i = 1; i < val; i++) {
             if (val % i == 0)
                 div.push_back(i);

@@ -70,18 +70,16 @@ public:
    *
    *@param &rhs PublicKeyImpl to copy from
    */
-    explicit PublicKeyImpl(const PublicKeyImpl<Element>& rhs) : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()) {
-        m_h = rhs.m_h;
-    }
+    explicit PublicKeyImpl(const PublicKeyImpl<Element>& rhs)
+        : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_h(rhs.m_h) {}
 
     /**
    * Move constructor
    *
    *@param &rhs PublicKeyImpl to move from
    */
-    explicit PublicKeyImpl(PublicKeyImpl<Element>&& rhs) : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()) {
-        m_h = std::move(rhs.m_h);
-    }
+    explicit PublicKeyImpl(PublicKeyImpl<Element>&& rhs) noexcept
+        : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_h(std::move(rhs.m_h)) {}
 
     operator bool() const {
         return static_cast<bool>(this->context) && m_h.size() != 0;
@@ -92,9 +90,9 @@ public:
    *
    * @param &rhs PublicKeyImpl to copy from
    */
-    const PublicKeyImpl<Element>& operator=(const PublicKeyImpl<Element>& rhs) {
+    PublicKeyImpl<Element>& operator=(const PublicKeyImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
-        this->m_h                      = rhs.m_h;
+        this->m_h = rhs.m_h;
         return *this;
     }
 
@@ -103,9 +101,9 @@ public:
    *
    * @param &rhs PublicKeyImpl to copy from
    */
-    const PublicKeyImpl<Element>& operator=(PublicKeyImpl<Element>&& rhs) {
+    PublicKeyImpl<Element>& operator=(PublicKeyImpl<Element>&& rhs) {
         CryptoObject<Element>::operator=(rhs);
-        m_h                            = std::move(rhs.m_h);
+        m_h = std::move(rhs.m_h);
         return *this;
     }
 

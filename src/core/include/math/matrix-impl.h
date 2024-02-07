@@ -51,6 +51,7 @@ Matrix<Element>::Matrix(alloc_func allocZero, size_t rows, size_t cols, alloc_fu
     : data(), rows(rows), cols(cols), allocZero(allocZero) {
     data.resize(rows);
     for (auto row = data.begin(); row != data.end(); ++row) {
+        row->reserve(cols);
         for (size_t col = 0; col < cols; ++col) {
             row->push_back(allocGen());
         }
