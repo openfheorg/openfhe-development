@@ -46,7 +46,7 @@ bool StringEncoding::Encode() {
     auto mod = this->encodingParams->GetPlaintextModulus();
 
     if (mod != 256) {
-        OPENFHE_THROW(config_error, "Plaintext modulus must be " + std::to_string(charPtm) + " for string encoding");
+        OPENFHE_THROW("Plaintext modulus must be " + std::to_string(charPtm) + " for string encoding");
     }
 
     if (this->typeFlag == IsNativePoly) {

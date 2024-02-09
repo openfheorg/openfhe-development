@@ -145,7 +145,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     usint N          = s.GetRingDimension();
 
     if (indexList.size() > N - 1)
-        OPENFHE_THROW(math_error, "size exceeds the ring dimension");
+        OPENFHE_THROW("size exceeds the ring dimension");
 
     const auto cc = privateKey->GetCryptoContext();
 
@@ -165,7 +165,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
         // verify if the key indexList[i] exists in the evalKeyMap
         auto evalKeyIterator = evalKeyMap->find(indexList[i]);
         if (evalKeyIterator == evalKeyMap->end()) {
-            OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(indexList[i]) + "] is not found.");
+            OPENFHE_THROW("EvalKey for index [" + std::to_string(indexList[i]) + "] is not found.");
         }
 
         (*result)[indexList[i]] = MultiKeySwitchGen(privateKey, privateKeyPermuted, evalKeyIterator->second);
@@ -417,26 +417,26 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
 
 template <class Element>
 Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 template <class Element>
 Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                                        const PublicKey<Element> publicKey) const {
-    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 template <class Element>
 std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                                            ConstCiphertext<Element> ciphertext,
                                                                            ConstCiphertext<Element> a) const {
-    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 template <class Element>
 std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootAdd(
     std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 template <class Element>
@@ -444,7 +444,7 @@ Ciphertext<Element> MultipartyBase<Element>::IntMPBootEncrypt(const PublicKey<El
                                                               const std::vector<Ciphertext<Element>>& sharesPair,
                                                               ConstCiphertext<Element> a,
                                                               ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 }  // namespace lbcrypto

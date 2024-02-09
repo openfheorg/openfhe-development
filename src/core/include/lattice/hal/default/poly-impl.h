@@ -190,9 +190,9 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(uint64_t val) {
 template <typename VecType>
 void PolyImpl<VecType>::SetValues(const VecType& values, Format format) {
     if (m_params->GetRootOfUnity() == Integer(0))
-        OPENFHE_THROW(type_error, "Polynomial has a 0 root of unity");
+        OPENFHE_THROW("Polynomial has a 0 root of unity");
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus())
-        OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+        OPENFHE_THROW("Parameter mismatch on SetValues for Polynomial");
     m_format = format;
     m_values = std::make_unique<VecType>(values);
 }
@@ -200,9 +200,9 @@ void PolyImpl<VecType>::SetValues(const VecType& values, Format format) {
 template <typename VecType>
 void PolyImpl<VecType>::SetValues(VecType&& values, Format format) {
     if (m_params->GetRootOfUnity() == Integer(0))
-        OPENFHE_THROW(type_error, "Polynomial has a 0 root of unity");
+        OPENFHE_THROW("Polynomial has a 0 root of unity");
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus())
-        OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+        OPENFHE_THROW("Parameter mismatch on SetValues for Polynomial");
     m_format = format;
     m_values = std::make_unique<VecType>(std::move(values));
 }
@@ -277,7 +277,7 @@ template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Negate() const {
     //  UnitTestBFVrnsCRTOperations.cpp line 316 throws with this uncommented
     //    if (m_format != Format::EVALUATION)
-    //        OPENFHE_THROW(not_implemented_error, "Negate for PolyImpl is supported only in Format::EVALUATION format.\n");
+    //        OPENFHE_THROW("Negate for PolyImpl is supported only in Format::EVALUATION format.\n");
     return PolyImpl<VecType>(m_params, m_format, true) -= *this;
 }
 
@@ -315,7 +315,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k) const {
 
     // if (!bf && !bp)
     if (!bp)
-        OPENFHE_THROW(not_implemented_error, "Automorphism Poly Format not EVALUATION or not power-of-two");
+        OPENFHE_THROW("Automorphism Poly Format not EVALUATION or not power-of-two");
     /*
     // TODO: is this branch ever called?
 
@@ -340,7 +340,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k) const {
     }
 */
     if (k % 2 == 0)
-        OPENFHE_THROW(math_error, "Automorphism index not odd\n");
+        OPENFHE_THROW("Automorphism index not odd\n");
 
     PolyImpl<VecType> result(m_params, m_format, true);
     uint32_t logm{lbcrypto::GetMSB(m) - 1};
@@ -365,9 +365,9 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k) const {
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k, const std::vector<uint32_t>& precomp) const {
     if ((m_format != Format::EVALUATION) || (m_params->GetRingDimension() != (m_params->GetCyclotomicOrder() >> 1)))
-        OPENFHE_THROW(not_implemented_error, "Automorphism Poly Format not EVALUATION or not power-of-two");
+        OPENFHE_THROW("Automorphism Poly Format not EVALUATION or not power-of-two");
     if (k % 2 == 0)
-        OPENFHE_THROW(math_error, "Automorphism index not odd\n");
+        OPENFHE_THROW("Automorphism index not odd\n");
     PolyImpl<VecType> tmp(m_params, m_format, true);
     uint32_t n = m_params->GetRingDimension();
     for (uint32_t j = 0; j < n; ++j)
@@ -418,7 +418,7 @@ void PolyImpl<VecType>::SwitchFormat() {
     }
 
     if (!m_values)
-        OPENFHE_THROW(not_available_error, "Poly switch format to empty values");
+        OPENFHE_THROW("Poly switch format to empty values");
 
     if (m_format != Format::COEFFICIENT) {
         m_format = Format::COEFFICIENT;
@@ -432,7 +432,7 @@ void PolyImpl<VecType>::SwitchFormat() {
 template <typename VecType>
 void PolyImpl<VecType>::ArbitrarySwitchFormat() {
     if (m_values == nullptr)
-        OPENFHE_THROW(not_available_error, "Poly switch format to empty values");
+        OPENFHE_THROW("Poly switch format to empty values");
     const auto& lr = m_params->GetRootOfUnity();
     const auto& bm = m_params->GetBigModulus();
     const auto& br = m_params->GetBigRootOfUnity();

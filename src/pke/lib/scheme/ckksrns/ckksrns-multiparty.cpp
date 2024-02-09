@@ -81,7 +81,6 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
     //    *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
     //  } else {
     //    OPENFHE_THROW(
-    //        math_error,
     //        "Decryption failure: No towers left; consider increasing the depth.");
     //  }
 
@@ -107,7 +106,6 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
     //    *plaintext = b.GetElementAtIndex(0);
     //  else
     //    OPENFHE_THROW(
-    //        math_error,
     //        "Decryption failure: No towers left; consider increasing the depth.");
 
     *plaintext = b.GetElementAtIndex(0);
@@ -118,7 +116,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
     if (ciphertext->NumberCiphertextElements() == 0) {
         std::string msg = "IntMPBootAdjustScale: no polynomials in the input ciphertext.";
-        OPENFHE_THROW(openfhe_error, msg);
+        OPENFHE_THROW(msg);
     }
 
     auto cc                 = ciphertext->GetCryptoContext();
@@ -135,7 +133,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
 
     if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
         std::string msg = std::string(__func__) + ": not enough towers in the input polynomial.";
-        OPENFHE_THROW(config_error, msg);
+        OPENFHE_THROW(msg);
     }
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
@@ -267,7 +265,7 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
 DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const DCRTPoly& poly, bool IsZeroNoise) {
     if (sk.GetNumOfElements() != poly.GetNumOfElements()) {
         std::string errMsg = "ERROR: Number of towers in input polys does not match!";
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     DCRTPoly res = sk * poly;
@@ -389,7 +387,7 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootAdd(
     std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const {
     if (sharesPairVec.size() == 0) {
         std::string msg = "IntMPBootAdd: no polynomials in input share(s).";
-        OPENFHE_THROW(openfhe_error, msg);
+        OPENFHE_THROW(msg);
     }
 
     std::vector<Ciphertext<DCRTPoly>> result = sharesPairVec[0];
@@ -409,7 +407,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
                                                          ConstCiphertext<DCRTPoly> ciphertext) const {
     if (ciphertext->NumberCiphertextElements() == 0) {
         std::string msg = "IntMPBootEncrypt: no polynomials in the input ciphertext.";
-        OPENFHE_THROW(openfhe_error, msg);
+        OPENFHE_THROW(msg);
     }
 
     auto cc = ciphertext->GetCryptoContext();

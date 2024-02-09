@@ -85,7 +85,7 @@ public:
     virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
                                     std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor,
                                     bool precompute) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
+        OPENFHE_THROW("Not supported");
     }
 
     /**
@@ -98,7 +98,7 @@ public:
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
                                                                                    uint32_t slots) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
+        OPENFHE_THROW("Not supported");
     }
 
     /**
@@ -107,7 +107,7 @@ public:
    * @param slots - number of slots to be bootstrapped
    */
     virtual void EvalBootstrapPrecompute(const CryptoContextImpl<Element>& cc, uint32_t slots) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
+        OPENFHE_THROW("Not supported");
     }
 
     /**
@@ -127,7 +127,7 @@ public:
    */
     virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations,
                                               uint32_t precision) const {
-        OPENFHE_THROW(not_implemented_error, "EvalBootstrap is not implemented for this scheme");
+        OPENFHE_THROW("EvalBootstrap is not implemented for this scheme");
     }
 
     /**
@@ -137,7 +137,7 @@ public:
    * @return the FHEW secret key
    */
     virtual LWEPrivateKey EvalCKKStoFHEWSetup(const SchSwchParams& params) {
-        OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWSetup is not supported for this scheme");
+        OPENFHE_THROW("EvalCKKStoFHEWSetup is not supported for this scheme");
     }
 
     /**
@@ -149,7 +149,7 @@ public:
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
                                                                                     ConstLWEPrivateKey& lwesk) {
-        OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWKeyGen is not supported for this scheme");
+        OPENFHE_THROW("EvalCKKStoFHEWKeyGen is not supported for this scheme");
     }
 
     /**
@@ -162,7 +162,7 @@ public:
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale) {
-        OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWPrecompute is not supported for this scheme");
+        OPENFHE_THROW("EvalCKKStoFHEWPrecompute is not supported for this scheme");
     }
 
     /**
@@ -173,7 +173,7 @@ public:
    */
     virtual std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
                                                                            uint32_t numCtxts) {
-        OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEW is not implemented for this scheme");
+        OPENFHE_THROW("EvalCKKStoFHEW is not implemented for this scheme");
     }
 
     /**
@@ -188,7 +188,7 @@ public:
     virtual void EvalFHEWtoCKKSSetup(const CryptoContextImpl<Element>& ccCKKS,
                                      const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS,
                                      uint32_t logQ) {
-        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSSetup is not supported for this scheme");
+        OPENFHE_THROW("EvalFHEWtoCKKSSetup is not supported for this scheme");
     }
 
     /**
@@ -207,7 +207,7 @@ public:
                                                                                     uint32_t numSlots = 0,
                                                                                     uint32_t numCtxts = 0,
                                                                                     uint32_t dim1 = 0, uint32_t L = 0) {
-        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSKeyGen is not supported for this scheme");
+        OPENFHE_THROW("EvalFHEWtoCKKSKeyGen is not supported for this scheme");
     }
 
     /**
@@ -240,7 +240,7 @@ public:
     virtual Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                                double pmax, uint32_t dim1) const {
-        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKS is not implemented for this scheme");
+        OPENFHE_THROW("EvalFHEWtoCKKS is not implemented for this scheme");
     }
 
     /**
@@ -251,7 +251,7 @@ public:
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     virtual LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) {
-        OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingSetup is not supported for this scheme");
+        OPENFHE_THROW("EvalSchemeSwitchingSetup is not supported for this scheme");
     }
 
     /**
@@ -264,7 +264,7 @@ public:
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
         const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
-        OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingKeyGen is not supported for this scheme");
+        OPENFHE_THROW("EvalSchemeSwitchingKeyGen is not supported for this scheme");
     }
 
     /**
@@ -285,7 +285,7 @@ public:
                                                            ConstCiphertext<Element> ciphertext2, uint32_t numCtxts,
                                                            uint32_t numSlots, uint32_t pLWE, double scaleSign,
                                                            bool unit) {
-        OPENFHE_THROW(not_implemented_error, "EvalCompareSchemeSwitching is not supported for this scheme");
+        OPENFHE_THROW("EvalCompareSchemeSwitching is not supported for this scheme");
     }
 
     /**
@@ -308,7 +308,7 @@ public:
                                                                     PublicKey<Element> publicKey, uint32_t numValues,
                                                                     uint32_t numSlots, uint32_t pLWE,
                                                                     double scaleSign) {
-        OPENFHE_THROW(not_implemented_error, "EvalMinSchemeSwitching is not supported for this scheme");
+        OPENFHE_THROW("EvalMinSchemeSwitching is not supported for this scheme");
     }
 
     /**
@@ -318,7 +318,7 @@ public:
                                                                        PublicKey<Element> publicKey, uint32_t numValues,
                                                                        uint32_t numSlots, uint32_t pLWE,
                                                                        double scaleSign) {
-        OPENFHE_THROW(not_implemented_error, "EvalMinSchemeSwitchingAlt is not supported for this scheme");
+        OPENFHE_THROW("EvalMinSchemeSwitchingAlt is not supported for this scheme");
     }
 
     /**
@@ -341,7 +341,7 @@ public:
                                                                     PublicKey<Element> publicKey, uint32_t numValues,
                                                                     uint32_t numSlots, uint32_t pLWE,
                                                                     double scaleSign) {
-        OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitching is not supported for this scheme");
+        OPENFHE_THROW("EvalMaxSchemeSwitching is not supported for this scheme");
     }
 
     /**
@@ -351,27 +351,27 @@ public:
                                                                        PublicKey<Element> publicKey, uint32_t numValues,
                                                                        uint32_t numSlots, uint32_t pLWE,
                                                                        double scaleSign) {
-        OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitchingAlt is not supported for this scheme");
+        OPENFHE_THROW("EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
 
     /**
      * Getter and setter for the binFHE cryptocontext used in scheme switching
     */
     virtual std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() {
-        OPENFHE_THROW(not_implemented_error, "GetBinCCForSchemeSwitch is not supported for this scheme");
+        OPENFHE_THROW("GetBinCCForSchemeSwitch is not supported for this scheme");
     }
     virtual void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
-        OPENFHE_THROW(not_implemented_error, "SetBinCCForSchemeSwitch is not supported for this scheme");
+        OPENFHE_THROW("SetBinCCForSchemeSwitch is not supported for this scheme");
     }
 
     /**
      * Getter and setter for the switching key between FHEW to CKKS
     */
     virtual Ciphertext<Element> GetSwkFC() {
-        OPENFHE_THROW(not_implemented_error, "GetSwkFC is not supported for this scheme");
+        OPENFHE_THROW("GetSwkFC is not supported for this scheme");
     }
     virtual void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
-        OPENFHE_THROW(not_implemented_error, "SetSwkFC is not supported for this scheme");
+        OPENFHE_THROW("SetSwkFC is not supported for this scheme");
     }
 
     /////////////////////////////////////

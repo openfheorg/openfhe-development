@@ -38,23 +38,23 @@
 namespace lbcrypto {
 
 // Macros to be used in this source file only
-#define THROW_SERIALIZATION_ERROR   OPENFHE_THROW(serialize_error, std::string("Error serializing to ") + outFile)
-#define THROW_DESERIALIZATION_ERROR OPENFHE_THROW(deserialize_error, std::string("Error deserializing from ") + outFile)
-#define THROW_CAN_NOT_OPEN_FILE     OPENFHE_THROW(config_error, std::string("Can not open ") + outFile)
+#define THROW_SERIALIZATION_ERROR   OPENFHE_THROW(std::string("Error serializing to ") + outFile)
+#define THROW_DESERIALIZATION_ERROR OPENFHE_THROW(std::string("Error deserializing from ") + outFile)
+#define THROW_CAN_NOT_OPEN_FILE     OPENFHE_THROW(std::string("Can not open ") + outFile)
 #define SERTYPE                     SerType::BINARY
 
 void SchemeSwitchingDataSerializer::Serialize() {
     // check if all 5 data memebers to be serialized are valid (not NULL)
     if (nullptr == cryptoContext)
-        OPENFHE_THROW(config_error, "cryptoContext is nullptr");
+        OPENFHE_THROW("cryptoContext is nullptr");
     else if (nullptr == publicKey)
-        OPENFHE_THROW(config_error, "publicKey is nullptr");
+        OPENFHE_THROW("publicKey is nullptr");
     else if (nullptr == binFHECryptoContext)
-        OPENFHE_THROW(config_error, "binFHECryptoContext is nullptr");
+        OPENFHE_THROW("binFHECryptoContext is nullptr");
     else if (nullptr == FHEWtoCKKSSwitchKey)
-        OPENFHE_THROW(config_error, "FHEWtoCKKSSwitchKey is nullptr");
+        OPENFHE_THROW("FHEWtoCKKSSwitchKey is nullptr");
     else if (nullptr == RAWCiphertext)
-        OPENFHE_THROW(config_error, "RAWCiphertext is nullptr");
+        OPENFHE_THROW("RAWCiphertext is nullptr");
 
     std::string outFile;
     //=============================================================================================================
@@ -214,7 +214,7 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
     }
     else if (!indices.size()) {
         std::string errMsg(std::string("Error deserializing from ") + outFile + ". No indices found.");
-        OPENFHE_THROW(deserialize_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     for (uint32_t index : indices) {
         RingGSWBTKey thekey;

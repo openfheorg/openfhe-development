@@ -42,14 +42,13 @@ template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, int64_t ub,
                              const std::vector<int64_t>& value, SCHEME schemeID) {
     if (ub > INT32_MAX || lb < INT32_MIN)
-        OPENFHE_THROW(config_error, "Cannot encode a coefficient larger than 32 bits");
+        OPENFHE_THROW("Cannot encode a coefficient larger than 32 bits");
 
     poly.SetValuesToZero();
     for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
         if (value[i] <= lb || value[i] > ub)
-            OPENFHE_THROW(config_error, "Cannot encode integer " + std::to_string(value[i]) + " at position " +
-                                            std::to_string(i) + " because it is out of range of plaintext modulus " +
-                                            std::to_string(mod));
+            OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " + std::to_string(i) +
+                          " because it is out of range of plaintext modulus " + std::to_string(mod));
 
         typename P::Integer entry{value[i]};
 

@@ -131,7 +131,7 @@ protected:
         keyPair1 = cryptoContext->KeyGen();
 
         if (!keyPair1.good()) {
-            OPENFHE_THROW(math_error, "Key generation failed!");
+            OPENFHE_THROW("Key generation failed!");
         }
 
         ////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ protected:
                     reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
                     break;
                 default:
-                    OPENFHE_THROW(config_error, "Not a valid security mode");
+                    OPENFHE_THROW("Not a valid security mode");
             }
 
             reEncryptedCTs.push_back(reEncryptedCT);
@@ -226,7 +226,7 @@ protected:
         for (unsigned int j = 0; j < unpackedPT.size(); j++) {
             EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]);
             if (unpackedPT[j] != unpackedDecPT[j]) {
-                OPENFHE_THROW(math_error, "Decryption failure");
+                OPENFHE_THROW("Decryption failure");
             }
         }
 

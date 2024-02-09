@@ -133,7 +133,7 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
     }
 
     if (!cc)
-        OPENFHE_THROW(openfhe_error, "Error generating crypto context.");
+        OPENFHE_THROW("Error generating crypto context.");
 
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
@@ -165,7 +165,7 @@ CryptoContext<Element> UnitTestGenerateContext(const BaseTestCase& testCase) {
     }
 
     if (!cc)
-        OPENFHE_THROW(openfhe_error, "Error generating crypto context.");
+        OPENFHE_THROW("Error generating crypto context.");
 
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);

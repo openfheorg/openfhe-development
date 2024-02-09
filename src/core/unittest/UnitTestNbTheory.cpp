@@ -148,15 +148,16 @@ TEST(UTNbTheory, first_prime_overflow) {
     usint m     = 512;
     usint nBits = NATIVEINT;
 
-    EXPECT_THROW(FirstPrime<NativeInteger>(nBits, m), config_error)
+    EXPECT_THROW(FirstPrime<NativeInteger>(nBits, m), OpenFHEException)
         << "did not detect overflow and throw exception for Native";
-    EXPECT_THROW(LastPrime<NativeInteger>(nBits, m), config_error)
+    EXPECT_THROW(LastPrime<NativeInteger>(nBits, m), OpenFHEException)
         << "did not detect overflow and throw exception for Native";
 
 #ifdef WITH_BE2
     nBits = BigIntegerBitLength + 10;
 
-    EXPECT_THROW(FirstPrime<M2Integer>(nBits, m), math_error) << "did not detect overflow and throw exception for BE2";
+    EXPECT_THROW(FirstPrime<M2Integer>(nBits, m), OpenFHEException)
+        << "did not detect overflow and throw exception for BE2";
 #endif
 }
 

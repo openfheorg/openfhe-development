@@ -265,7 +265,7 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     double CalculateApproximationError(const std::vector<std::complex<double>>& result,
                                        const std::vector<std::complex<double>>& expectedResult) {
         if (result.size() != expectedResult.size())
-            OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+            OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
         // using the infinity norm
         double maxError = 0;
@@ -281,7 +281,7 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     double CalculateApproximationErrorInt(const std::vector<int32_t>& result,
                                           const std::vector<int32_t>& expectedResult) {
         if (result.size() != expectedResult.size())
-            OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+            OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
         // using the infinity norm
         double maxError = 0;

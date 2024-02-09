@@ -73,7 +73,7 @@ public:
         else if (method == LMKCDEY)
             ACCscheme = std::make_shared<RingGSWAccumulatorLMKCDEY>();
         else
-            OPENFHE_THROW(config_error, "method is invalid");
+            OPENFHE_THROW("method is invalid");
     }
 
     /**

@@ -83,7 +83,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
         scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
         std::string errMsg = "ERROR: Scaling technique is not supported!";
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     CCParams<CryptoContextCKKSRNS> parameters;

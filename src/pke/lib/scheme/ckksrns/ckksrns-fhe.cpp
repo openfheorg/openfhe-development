@@ -65,11 +65,10 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW(config_error,
-                      "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+        OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
     uint32_t M     = cc.GetCyclotomicOrder();
@@ -218,11 +217,10 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW(config_error,
-                      "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+        OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
     auto cc    = privateKey->GetCryptoContext();
     uint32_t M = cc->GetCyclotomicOrder();
@@ -243,11 +241,10 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW(config_error,
-                      "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+        OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
     uint32_t M     = cc.GetCyclotomicOrder();
@@ -345,14 +342,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW(config_error,
-                      "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+        OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
     if (numIterations != 1 && numIterations != 2) {
-        OPENFHE_THROW(config_error, "CKKS Iterative Bootstrapping is only supported for 1 or 2 iterations.");
+        OPENFHE_THROW("CKKS Iterative Bootstrapping is only supported for 1 or 2 iterations.");
     }
 
 #ifdef BOOTSTRAPTIMING
@@ -421,7 +417,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup and then EvalBootstrapKeyGen to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
     size_t N                                          = cc->GetRingDimension();
@@ -454,9 +450,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     int32_t deg = std::round(std::log2(qDouble / powP));
 #if NATIVEINT != 128
     if (deg > static_cast<int32_t>(m_correctionFactor)) {
-        OPENFHE_THROW(math_error, "Degree [" + std::to_string(deg) +
-                                      "] must be less than or equal to the correction factor [" +
-                                      std::to_string(m_correctionFactor) + "].");
+        OPENFHE_THROW("Degree [" + std::to_string(deg) + "] must be less than or equal to the correction factor [" +
+                      std::to_string(m_correctionFactor) + "].");
     }
 #endif
     uint32_t correction = m_correctionFactor - deg;
@@ -758,7 +753,7 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -794,7 +789,7 @@ std::vector<int32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slo
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -838,7 +833,7 @@ std::vector<int32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -915,7 +910,7 @@ std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -990,7 +985,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A, double scale,
     uint32_t L) const {
     if (A[0].size() != A.size()) {
-        OPENFHE_THROW(math_error, "The matrix passed to EvalLTPrecompute is not square");
+        OPENFHE_THROW("The matrix passed to EvalLTPrecompute is not square");
     }
 
     uint32_t slots = A.size();
@@ -1000,7 +995,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -1078,7 +1073,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -1187,7 +1182,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -1388,7 +1383,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -1582,7 +1577,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup and EvalBootstrapKeyGen to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -1655,7 +1650,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup and EvalBootstrapKeyGen to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
@@ -1865,7 +1860,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalBootstrapSetup and EvalBootstrapKeyGen to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
 
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
@@ -2229,7 +2224,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
             buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-            OPENFHE_THROW(math_error, buffer.str());
+            OPENFHE_THROW(buffer.str());
         }
 
         int64_t re64       = std::llround(dre);
@@ -2258,7 +2253,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
 
         if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
-            OPENFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
+            OPENFHE_THROW("Overflow, try to decrease scaling factor");
         }
     }
 
@@ -2340,10 +2335,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         }
     }
     if (logc < 0) {
-        OPENFHE_THROW(math_error, "Too small scaling factor");
+        OPENFHE_THROW("Too small scaling factor");
     }
-    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox   = logc - logValid;
+    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2374,11 +2369,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax    = realVal;
+                    realMax = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax    = imagVal;
+                    imagMax = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2395,17 +2390,17 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
             buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-            OPENFHE_THROW(math_error, buffer.str());
+            OPENFHE_THROW(buffer.str());
         }
 
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
+        temp[i] = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2441,7 +2436,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
+        auto intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
@@ -2539,7 +2534,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                                    NativeVector* nativeVec) const {
     if (nativeVec == nullptr)
-        OPENFHE_THROW(config_error, "The passed native vector is empty.");
+        OPENFHE_THROW("The passed native vector is empty.");
     NativeInteger bigValueHf(bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = bigBound - modulus;
@@ -2560,7 +2555,7 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                                    NativeVector* nativeVec) const {
     if (nativeVec == nullptr)
-        OPENFHE_THROW(config_error, "The passed native vector is empty.");
+        OPENFHE_THROW("The passed native vector is empty.");
     NativeInteger bigValueHf((uint128_t)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = NativeInteger((uint128_t)bigBound) - modulus;

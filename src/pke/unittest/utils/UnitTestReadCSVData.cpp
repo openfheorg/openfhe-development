@@ -82,14 +82,14 @@ static void checkColumnNamesForCryptocontextParameters(std::ifstream& testData) 
             std::string(
                 "Check the number and names of the columns for cryptoparameters as they do not match the expected: ") +
             s);
-        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 }
 //===========================================================================================================
 std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileName) {
     std::ifstream testData(dataFileName);
     if (!testData.is_open()) {
-        OPENFHE_THROW(lbcrypto::config_error, "Cannot read file " + dataFileName);
+        OPENFHE_THROW("Cannot read file " + dataFileName);
     }
 
     try {
@@ -108,7 +108,7 @@ std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileNa
     }
     catch (std::exception& e) {
         std::string errMsg(std::string("Exception for data file ") + dataFileName + ": " + e.what());
-        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     catch (...) {
 #if defined EMSCRIPTEN
@@ -117,7 +117,7 @@ std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileNa
         std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
 #endif
         std::string errMsg(std::string("Unknown exception for data file ") + dataFileName + ": type " + name);
-        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 }
 //===========================================================================================================

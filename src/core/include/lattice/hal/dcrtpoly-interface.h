@@ -267,10 +267,10 @@ public:
    * @return interpolated value at index i.
    */
     BigIntType& at(usint i) final {
-        OPENFHE_THROW(not_implemented_error, "at() not implemented for DCRTPoly");
+        OPENFHE_THROW("at() not implemented for DCRTPoly");
     }
     const BigIntType& at(usint i) const final {
-        OPENFHE_THROW(not_implemented_error, "const at() not implemented for DCRTPoly");
+        OPENFHE_THROW("const at() not implemented for DCRTPoly");
     }
 
     /**
@@ -279,10 +279,10 @@ public:
    * @return interpolated value at index i.
    */
     BigIntType& operator[](usint i) final {
-        OPENFHE_THROW(not_implemented_error, "operator[] not implemented for DCRTPoly");
+        OPENFHE_THROW("operator[] not implemented for DCRTPoly");
     }
     const BigIntType& operator[](usint i) const final {
-        OPENFHE_THROW(not_implemented_error, "const operator[] not implemented for DCRTPoly");
+        OPENFHE_THROW("const operator[] not implemented for DCRTPoly");
     }
 
     /**
@@ -514,9 +514,9 @@ public:
    */
     DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT)
-            OPENFHE_THROW(not_implemented_error,
-                          "DCRTPolyInterface element transposition is currently "
-                          "implemented only in the Evaluation representation.");
+            OPENFHE_THROW(
+                "DCRTPolyInterface element transposition is currently "
+                "implemented only in the Evaluation representation.");
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
 
@@ -664,7 +664,7 @@ public:
    * @warning Will remove, this is only inplace because of BFV
    */
     DerivedType MultiplyAndRound(const BigIntType& p, const BigIntType& q) const final {
-        OPENFHE_THROW(not_implemented_error, "MultiplyAndRound not implemented for DCRTPoly");
+        OPENFHE_THROW("MultiplyAndRound not implemented for DCRTPoly");
     }
 
     /**
@@ -677,7 +677,7 @@ public:
    * @warning Will remove, this is only inplace because of BFV
    */
     DerivedType DivideAndRound(const BigIntType& q) const final {
-        OPENFHE_THROW(not_implemented_error, "DivideAndRound not implemented for DCRTPoly");
+        OPENFHE_THROW("DivideAndRound not implemented for DCRTPoly");
     }
 
     /**
@@ -734,7 +734,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     DerivedType ModByTwo() const final {
-        OPENFHE_THROW(not_implemented_error, "Mod of a BigIntType not implemented for DCRTPoly");
+        OPENFHE_THROW("Mod of a BigIntType not implemented for DCRTPoly");
     }
 
     /**
@@ -747,7 +747,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     DerivedType Mod(const BigIntType& modulus) const final {
-        OPENFHE_THROW(not_implemented_error, "Mod of a BigIntType not implemented for DCRTPoly");
+        OPENFHE_THROW("Mod of a BigIntType not implemented for DCRTPoly");
     }
 
     /**
@@ -758,7 +758,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     const BigVecType& GetValues() const final {
-        OPENFHE_THROW(not_implemented_error, "GetValues not implemented for DCRTPoly");
+        OPENFHE_THROW("GetValues not implemented for DCRTPoly");
     }
 
     /**
@@ -770,7 +770,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     void SetValues(const BigVecType& values, Format format) {
-        OPENFHE_THROW(not_implemented_error, "SetValues not implemented for DCRTPoly");
+        OPENFHE_THROW("SetValues not implemented for DCRTPoly");
     }
 
     /**
@@ -795,7 +795,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     DerivedType AddRandomNoise(const BigIntType& modulus) const {
-        OPENFHE_THROW(not_implemented_error, "AddRandomNoise is not currently implemented for DCRTPoly");
+        OPENFHE_THROW("AddRandomNoise is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -807,7 +807,7 @@ public:
    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
    */
     void MakeSparse(uint32_t wFactor) final {
-        OPENFHE_THROW(not_implemented_error, "MakeSparse is not currently implemented for DCRTPoly");
+        OPENFHE_THROW("MakeSparse is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -1401,7 +1401,7 @@ public:
    */
     void SwitchModulus(const BigIntType& modulus, const BigIntType& rootOfUnity, const BigIntType& modulusArb,
                        const BigIntType& rootOfUnityArb) final {
-        OPENFHE_THROW(not_implemented_error, "SwitchModulus not implemented for DCRTPoly");
+        OPENFHE_THROW("SwitchModulus not implemented for DCRTPoly");
     }
 
     /**

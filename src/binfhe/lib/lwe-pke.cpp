@@ -104,7 +104,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
                                            LWEPlaintext m, LWEPlaintextModulus p, NativeInteger mod) const {
     if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     NativeVector s = sk->GetElement();
@@ -134,7 +134,7 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
                                             LWEPlaintext m, LWEPlaintextModulus p, NativeInteger mod) const {
     if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     auto bp  = pk->Getv();
@@ -188,7 +188,7 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     const auto& mod = ct->GetModulus();
     if (mod % (p * 2) != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     const auto& a = ct->GetA();

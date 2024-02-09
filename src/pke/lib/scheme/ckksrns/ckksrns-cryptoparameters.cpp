@@ -93,11 +93,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
 
                 if (ratio <= 0.5 || ratio >= 2.0)
-                    OPENFHE_THROW(config_error,
-                                  "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                                  "- FLEXIBLEAUTO cannot support this "
-                                  "number of levels in this parameter setting. Please use "
-                                  "FIXEDMANUAL.");
+                    OPENFHE_THROW(
+                        "CryptoParametersCKKSRNS::PrecomputeCRTTables "
+                        "- FLEXIBLEAUTO cannot support this "
+                        "number of levels in this parameter setting. Please use "
+                        "FIXEDMANUAL.");
             }
         }
         else {
@@ -108,11 +108,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
 
                 if (ratio <= 0.5 || ratio >= 2.0)
-                    OPENFHE_THROW(config_error,
-                                  "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                                  "- FLEXIBLEAUTO cannot support this "
-                                  "number of levels in this parameter setting. Please use "
-                                  "FIXEDMANUAL.");
+                    OPENFHE_THROW(
+                        "CryptoParametersCKKSRNS::PrecomputeCRTTables "
+                        "- FLEXIBLEAUTO cannot support this "
+                        "number of levels in this parameter setting. Please use "
+                        "FIXEDMANUAL.");
             }
         }
 

@@ -737,11 +737,11 @@ public:
     }
 
     myZZ ModMulFastConst(const myZZ& b, const myZZ& modulus, const myZZ& bInv) const {
-        OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 6");
+        OPENFHE_THROW("ModMulFastConst is not implemented for backend 6");
     }
 
     myZZ& ModMulFastConstEq(const myZZ& b, const myZZ& modulus, const myZZ& bInv) {
-        OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 6");
+        OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 6");
     }
 
     /**
@@ -777,7 +777,7 @@ public:
    */
     myZZ ModInverse(const myZZ& modulus) const {
         if (modulus == myZZ(0)) {
-            OPENFHE_THROW(lbcrypto::math_error, "zero has no inverse");
+            OPENFHE_THROW("zero has no inverse");
         }
         myZZ tmp(0);
         try {
@@ -789,7 +789,7 @@ public:
             errmsg << "ModInverse exception "
                    << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a() << "," << e.get_n() << "!=1"
                    << std::endl;
-            OPENFHE_THROW(lbcrypto::math_error, errmsg.str());
+            OPENFHE_THROW(errmsg.str());
         }
         return tmp;
     }
@@ -802,7 +802,7 @@ public:
    */
     myZZ& ModInverseEq(const myZZ& modulus) {
         if (modulus == myZZ(0)) {
-            OPENFHE_THROW(lbcrypto::math_error, "zero has no inverse");
+            OPENFHE_THROW("zero has no inverse");
         }
         try {
             *this = InvMod(*this % modulus, modulus);
@@ -813,7 +813,7 @@ public:
             errmsg << "ModInverse exception "
                    << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a() << "," << e.get_n() << "!=1"
                    << std::endl;
-            OPENFHE_THROW(lbcrypto::math_error, errmsg.str());
+            OPENFHE_THROW(errmsg.str());
         }
         return *this;
     }
@@ -1029,8 +1029,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ::cereal::size_type len;
         ar(::cereal::binary_data(&len, sizeof(len)));
@@ -1052,8 +1052,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         std::string s;
         ar(::cereal::make_nvp("v", s));

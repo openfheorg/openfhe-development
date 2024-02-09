@@ -49,7 +49,7 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsPK      = cryptoParams->GetParamsPK();
     if (!paramsPK) {
-        OPENFHE_THROW(config_error, "PrecomputeCRTTables() must be called before using precomputed params.");
+        OPENFHE_THROW("PrecomputeCRTTables() must be called before using precomputed params.");
     }
 
     const auto ns      = cryptoParams->GetNoiseScale();

@@ -382,7 +382,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
     // we already have checks on higher level?
     //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
     //  if (it != indexList.end())
-    //    OPENFHE_THROW(not_available_error, "conjugation is disabled");
+    //    OPENFHE_THROW("conjugation is disabled");
 
     const auto cc = privateKey->GetCryptoContext();
     auto algo     = cc->GetScheme();
@@ -392,7 +392,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
 
     // we already have checks on higher level?
     //  if (indexList.size() > N - 1)
-    //    OPENFHE_THROW(math_error, "size exceeds the ring dimension");
+    //    OPENFHE_THROW("size exceeds the ring dimension");
 
     auto evalKeys = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
@@ -427,13 +427,13 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
                                                               CALLER_INFO_ARGS_CPP) const {
     // this operation can be performed on 2-element ciphertexts only
     if (ciphertext->NumberCiphertextElements() != 2) {
-        OPENFHE_THROW(config_error, "Ciphertext should be relinearized before.");
+        OPENFHE_THROW("Ciphertext should be relinearized before.");
     }
 
     // verify if the key i exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(i);
     if (evalKeyIterator == evalKeyMap.end()) {
-        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(i) + "] is not found." + CALLER_INFO);
+        OPENFHE_THROW("EvalKey for index [" + std::to_string(i) + "] is not found." + CALLER_INFO);
     }
     const std::vector<Element>& cv = ciphertext->GetElements();
 
@@ -442,18 +442,17 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
     //    std::string errorMsg(
     //        std::string("Insufficient number of elements in ciphertext: ") +
     //        std::to_string(cv.size()) + CALLER_INFO);
-    //    OPENFHE_THROW(config_error, errorMsg);
+    //    OPENFHE_THROW( errorMsg);
     //  }
 
     usint N = cv[0].GetRingDimension();
 
     //  if (i == 2 * N - 1)
-    //    OPENFHE_THROW(not_available_error,
+    //    OPENFHE_THROW(
     //                   "conjugation is disabled " + CALLER_INFO);
 
     //  if (i > 2 * N - 1)
     //    OPENFHE_THROW(
-    //        not_available_error,
     //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
 
     std::vector<usint> vec(N);
@@ -499,7 +498,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
     // verify if the key autoIndex exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(autoIndex);
     if (evalKeyIterator == evalKeyMap.end()) {
-        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+        OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
     }
     auto evalKey = evalKeyIterator->second;
 

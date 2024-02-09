@@ -53,7 +53,7 @@ namespace lbcrypto {
 // Constructor from ring element
 Field2n::Field2n(const Poly& element) : format(Format::COEFFICIENT) {
     if (element.GetFormat() != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Poly not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Poly not in Format::COEFFICIENT representation");
     size_t size = element.GetLength();
     this->std::vector<std::complex<double>>::reserve(size);
     // the value of element[i] is usually small - so a 64-bit integer is more
@@ -72,7 +72,7 @@ Field2n::Field2n(const Poly& element) : format(Format::COEFFICIENT) {
 // Constructor from ring element
 Field2n::Field2n(const NativePoly& element) : format(Format::COEFFICIENT) {
     if (element.GetFormat() != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Poly not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Poly not in Format::COEFFICIENT representation");
     size_t size = element.GetLength();
     this->std::vector<std::complex<double>>::reserve(size);
     // the value of element[i] is usually small - so a 64-bit integer is more
@@ -91,7 +91,7 @@ Field2n::Field2n(const NativePoly& element) : format(Format::COEFFICIENT) {
 // Constructor from DCRTPoly ring element
 Field2n::Field2n(const DCRTPoly& DCRTelement) : format(Format::COEFFICIENT) {
     if (DCRTelement.GetFormat() != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "DCRTPoly not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("DCRTPoly not in Format::COEFFICIENT representation");
     // the value of element[i] is usually small - so a 64-bit integer is more
     // than enough Also it is assumed that the prime moduli are large enough (60
     // bits or more) - so the CRT interpolation is not needed this approach is
@@ -121,7 +121,7 @@ Field2n::Field2n(const Matrix<int64_t>& element) : format(Format::COEFFICIENT) {
 // Inverse operation for the field elements
 Field2n Field2n::Inverse() const {
     if (format == Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Polynomial not in Format::EVALUATION representation");
+        OPENFHE_THROW("Polynomial not in Format::EVALUATION representation");
     Field2n inverse(*this);
     for (size_t i = 0; i < inverse.size(); ++i) {
         auto real{inverse[i].real()};
@@ -135,7 +135,7 @@ Field2n Field2n::Inverse() const {
 // Addition operation for field elements
 Field2n Field2n::Plus(const Field2n& rhs) const {
     if (format != rhs.GetFormat())
-        OPENFHE_THROW(type_error, "Operands are not in the same format");
+        OPENFHE_THROW("Operands are not in the same format");
     Field2n sum(*this);
     for (size_t i = 0; i < rhs.size(); ++i)
         sum[i] += rhs[i];
@@ -145,9 +145,9 @@ Field2n Field2n::Plus(const Field2n& rhs) const {
 // Scalar addition operation for field elements
 Field2n Field2n::Plus(double scalar) const {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(not_implemented_error,
-                      "Field2n scalar addition is currently supported only for "
-                      "Format::COEFFICIENT representation");
+        OPENFHE_THROW(
+            "Field2n scalar addition is currently supported only for "
+            "Format::COEFFICIENT representation");
     Field2n sum(*this);
     sum.at(0) += scalar;
     return sum;
@@ -156,7 +156,7 @@ Field2n Field2n::Plus(double scalar) const {
 // Substraction operation for field elements
 Field2n Field2n::Minus(const Field2n& rhs) const {
     if (format != rhs.GetFormat())
-        OPENFHE_THROW(type_error, "Operands are not in the same format");
+        OPENFHE_THROW("Operands are not in the same format");
     Field2n difference(*this);
     for (size_t i = 0; i < rhs.size(); ++i)
         difference[i] -= rhs[i];
@@ -166,9 +166,9 @@ Field2n Field2n::Minus(const Field2n& rhs) const {
 // Multiplication operation for field elements
 Field2n Field2n::Times(const Field2n& rhs) const {
     if (format != Format::EVALUATION && rhs.GetFormat() != Format::EVALUATION)
-        OPENFHE_THROW(type_error,
-                      "At least one of the polynomials is not in "
-                      "Format::EVALUATION representation");
+        OPENFHE_THROW(
+            "At least one of the polynomials is not in "
+            "Format::EVALUATION representation");
     Field2n result(*this);
     for (size_t i = 0; i < rhs.size(); ++i)
         result[i] *= rhs[i];
@@ -178,7 +178,7 @@ Field2n Field2n::Times(const Field2n& rhs) const {
 // Right shift operation for the field element
 Field2n Field2n::ShiftRight() {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     Field2n result(*this);
     size_t i = this->std::vector<std::complex<double>>::size() - 1;
     auto tmp = std::complex<double>(-1., 0.) * result[i];
@@ -191,11 +191,11 @@ Field2n Field2n::ShiftRight() {
 // Performs an automorphism transform operation and returns the result.
 Field2n Field2n::AutomorphismTransform(size_t i) const {
     if (format != Format::EVALUATION)
-        OPENFHE_THROW(not_implemented_error,
-                      "Field2n Automorphism is only implemented for "
-                      "Format::EVALUATION format");
+        OPENFHE_THROW(
+            "Field2n Automorphism is only implemented for "
+            "Format::EVALUATION format");
     if (i % 2 == 0)
-        OPENFHE_THROW(math_error, "automorphism index should be odd\n");
+        OPENFHE_THROW("automorphism index should be odd\n");
     Field2n result(*this);
     size_t m = this->std::vector<std::complex<double>>::size() * 2;
     for (size_t j = 1; j < m; j += 2) {
@@ -222,7 +222,7 @@ Field2n Field2n::Transpose() const {
 // Function for extracting odd factors of the field element
 Field2n Field2n::ExtractOdd() const {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     size_t size = this->std::vector<std::complex<double>>::size();
     Field2n odds(size / 2, Format::COEFFICIENT, true);
     for (size_t i = 0; i < odds.size(); ++i)
@@ -233,7 +233,7 @@ Field2n Field2n::ExtractOdd() const {
 // Function for extracting even factors of the field element
 Field2n Field2n::ExtractEven() const {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     size_t size = this->std::vector<std::complex<double>>::size();
     Field2n evens(size / 2, Format::COEFFICIENT, true);
     for (size_t i = 0; i < evens.size(); ++i)
@@ -245,7 +245,7 @@ Field2n Field2n::ExtractEven() const {
 // https://eprint.iacr.org/2017/844.pdf
 Field2n Field2n::Permute() const {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     size_t size{this->std::vector<std::complex<double>>::size()};
     Field2n permuted(size, Format::COEFFICIENT, true);
     size_t evenPtr{0}, oddPtr{size / 2};
@@ -260,7 +260,7 @@ Field2n Field2n::Permute() const {
 // Algorithm 4 of https://eprint.iacr.org/2017/844.pdf
 Field2n Field2n::InversePermute() const {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     size_t size{this->std::vector<std::complex<double>>::size()};
     Field2n invpermuted(size, Format::COEFFICIENT, true);
     size_t evenPtr{0}, oddPtr{size / 2};

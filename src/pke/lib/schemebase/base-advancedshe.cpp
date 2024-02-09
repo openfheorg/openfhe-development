@@ -41,7 +41,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddMany(const std::vector<Ciph
     const size_t inSize = ciphertextVec.size();
 
     if (ciphertextVec.size() < 1)
-        OPENFHE_THROW(config_error, "Input ciphertext vector size should be 1 or more");
+        OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
 
     const size_t lim = inSize * 2 - 2;
     std::vector<Ciphertext<Element>> ciphertextSumVec;
@@ -63,7 +63,7 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddManyInPlace(
     std::vector<Ciphertext<Element>>& ciphertextVec) const {
     if (ciphertextVec.size() < 1)
-        OPENFHE_THROW(config_error, "Input ciphertext vector size should be 1 or more");
+        OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
 
     auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
@@ -89,7 +89,7 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const std::vector<EvalKey<Element>>& evalKeys) const {
     if (ciphertextVec.size() < 1)
-        OPENFHE_THROW(config_error, "Input ciphertext vector size should be 1 or more");
+        OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
 
     const size_t inSize = ciphertextVec.size();
     const size_t lim    = inSize * 2 - 2;
@@ -112,7 +112,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Element> ciphertext) const {
     if (!ciphertext)
-        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+        OPENFHE_THROW("Input ciphertext is nullptr");
 
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
 
@@ -166,7 +166,7 @@ template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
     /*
    * we don't validate publicKey as it is needed by NTRU-based scheme only
    * NTRU-based scheme only and it is checked for null later.
@@ -207,17 +207,17 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     auto cc = privateKey->GetCryptoContext();
 
     if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of row-vectors is only supported for "
-                      "CKKSPackedEncoding.");
+        OPENFHE_THROW(
+            "Matrix summation of row-vectors is only supported for "
+            "CKKSPackedEncoding.");
 
     usint m =
         (subringDim == 0) ? privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() : subringDim;
 
     if (!IsPowerOfTwo(m))
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of row-vectors is not supported for "
-                      "arbitrary cyclotomics.");
+        OPENFHE_THROW(
+            "Matrix summation of row-vectors is not supported for "
+            "arbitrary cyclotomics.");
 
     // stores automorphism indices needed for EvalSum
     std::vector<usint> indices = GenerateIndices2nComplexRows(rowSize, m);
@@ -233,16 +233,16 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     auto cc = privateKey->GetCryptoContext();
 
     if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of column-vectors is only supported for "
-                      "CKKSPackedEncoding.");
+        OPENFHE_THROW(
+            "Matrix summation of column-vectors is only supported for "
+            "CKKSPackedEncoding.");
 
     const auto cryptoParams = privateKey->GetCryptoParameters();
     usint M                 = cryptoParams->GetElementParams()->GetCyclotomicOrder();
     if (!IsPowerOfTwo(M))
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of column-vectors is not supported "
-                      "for arbitrary cyclotomics.");
+        OPENFHE_THROW(
+            "Matrix summation of column-vectors is not supported "
+            "for arbitrary cyclotomics.");
 
     usint batchSize            = cryptoParams->GetEncodingParams()->GetBatchSize();
     std::vector<usint> indices = GenerateIndices2nComplexCols(batchSize, M);
@@ -259,10 +259,10 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
     const auto encodingParams = cryptoParams->GetEncodingParams();
 
     if ((encodingParams->GetBatchSize() == 0))
-        OPENFHE_THROW(config_error,
-                      "EvalSum: Packed encoding parameters 'batch size' is not set; "
-                      "Please "
-                      "check the EncodingParams passed to the crypto context.");
+        OPENFHE_THROW(
+            "EvalSum: Packed encoding parameters 'batch size' is not set; "
+            "Please "
+            "check the EncodingParams passed to the crypto context.");
 
     usint m = cryptoParams->GetElementParams()->GetCyclotomicOrder();
 
@@ -276,10 +276,10 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
     }
     else {  // Arbitrary cyclotomics
         if (encodingParams->GetPlaintextGenerator() == 0) {
-            OPENFHE_THROW(config_error,
-                          "EvalSum: Packed encoding parameters 'plaintext "
-                          "generator' is not set; Please check the "
-                          "EncodingParams passed to the crypto context.");
+            OPENFHE_THROW(
+                "EvalSum: Packed encoding parameters 'plaintext "
+                "generator' is not set; Please check the "
+                "EncodingParams passed to the crypto context.");
         }
         else {
             auto algo = ciphertext->GetCryptoContext()->GetScheme();
@@ -301,25 +301,25 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(ConstCiphertext<Elemen
                                                           const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                                           usint subringDim) const {
     if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of row-vectors is only supported "
-                      "for CKKS packed encoding.");
+        OPENFHE_THROW(
+            "Matrix summation of row-vectors is only supported "
+            "for CKKS packed encoding.");
 
     const auto cryptoParams   = ciphertext->GetCryptoParameters();
     const auto encodingParams = cryptoParams->GetEncodingParams();
 
     if ((encodingParams->GetBatchSize() == 0))
-        OPENFHE_THROW(config_error,
-                      "EvalSum: Packed encoding parameters 'batch size' is not set; "
-                      "Please "
-                      "check the EncodingParams passed to the crypto context.");
+        OPENFHE_THROW(
+            "EvalSum: Packed encoding parameters 'batch size' is not set; "
+            "Please "
+            "check the EncodingParams passed to the crypto context.");
 
     usint m = (subringDim == 0) ? cryptoParams->GetElementParams()->GetCyclotomicOrder() : subringDim;
 
     if (!IsPowerOfTwo(m))
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of row-vectors is not supported for "
-                      "arbitrary cyclotomics.");
+        OPENFHE_THROW(
+            "Matrix summation of row-vectors is not supported for "
+            "arbitrary cyclotomics.");
 
     return EvalSum2nComplexRows(ciphertext->Clone(), rowSize, m, evalKeyMap);
 }
@@ -329,32 +329,32 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
     ConstCiphertext<Element> ciphertext, usint batchSize, const std::map<usint, EvalKey<Element>>& evalSumKeyMap,
     const std::map<usint, EvalKey<Element>>& evalSumColsKeyMap) const {
     if (!ciphertext)
-        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+        OPENFHE_THROW("Input ciphertext is nullptr");
     if (!evalSumKeyMap.size())
-        OPENFHE_THROW(config_error, "Input evalKeys map is empty");
+        OPENFHE_THROW("Input evalKeys map is empty");
     if (!evalSumColsKeyMap.size())
-        OPENFHE_THROW(config_error, "Input rightEvalKeys map is empty");
+        OPENFHE_THROW("Input rightEvalKeys map is empty");
 
     if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of column-vectors is only supported "
-                      "for CKKS packed encoding.");
+        OPENFHE_THROW(
+            "Matrix summation of column-vectors is only supported "
+            "for CKKS packed encoding.");
 
     const auto cryptoParams   = ciphertext->GetCryptoParameters();
     const auto encodingParams = cryptoParams->GetEncodingParams();
 
     if ((encodingParams->GetBatchSize() == 0))
-        OPENFHE_THROW(config_error,
-                      "EvalSumCols: Packed encoding parameters 'batch size' is not set; "
-                      "Please check the EncodingParams passed to the crypto context.");
+        OPENFHE_THROW(
+            "EvalSumCols: Packed encoding parameters 'batch size' is not set; "
+            "Please check the EncodingParams passed to the crypto context.");
 
     const auto elementParams = cryptoParams->GetElementParams();
     usint m                  = elementParams->GetCyclotomicOrder();
 
     if (!IsPowerOfTwo(m))
-        OPENFHE_THROW(config_error,
-                      "Matrix summation of column-vectors is not supported "
-                      "for arbitrary cyclotomics.");
+        OPENFHE_THROW(
+            "Matrix summation of column-vectors is not supported "
+            "for arbitrary cyclotomics.");
 
     Ciphertext<Element> newCiphertext = EvalSum2nComplex(ciphertext->Clone(), batchSize, m, evalSumKeyMap);
 
@@ -413,9 +413,9 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                         const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
     if (ciphertextVec.size() == 0)
-        OPENFHE_THROW(math_error,
-                      "EvalMerge: the vector of ciphertexts to be merged "
-                      "cannot be empty");
+        OPENFHE_THROW(
+            "EvalMerge: the vector of ciphertexts to be merged "
+            "cannot be empty");
 
     const std::shared_ptr<CryptoParametersBase<Element>> cryptoParams = ciphertextVec[0]->GetCryptoParameters();
     Ciphertext<Element> ciphertextMerged(std::make_shared<CiphertextImpl<Element>>(*(ciphertextVec[0])));
