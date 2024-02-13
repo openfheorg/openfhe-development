@@ -878,7 +878,7 @@ public:
     // TODO (dsuponit): make ConvertToInt() a template utility function
     template <typename T = BasicInteger>
     T ConvertToInt() const {
-        constexpr usint bits = lbcrypto::GetIntegerTypeBitLength<T>();
+        constexpr usint bits = sizeof(T) * CHAR_BIT;
         T result             = 0;
         // set num to number of equisized chunks
         usint num     = bits / m_uintBitLength;

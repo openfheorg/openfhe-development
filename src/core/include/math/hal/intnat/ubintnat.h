@@ -176,7 +176,9 @@ public:
     }
     // explicit NativeIntegerT(const char strval) : m_value{NativeInt(strval - '0')} {}
 
-    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+    template <typename T,
+              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                               bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
@@ -207,7 +209,9 @@ public:
         return *this;
     }
 
-    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+    template <typename T,
+              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                               bool> = true>
     constexpr NativeIntegerT& operator=(T val) noexcept {
         m_value = val;
         return *this;
@@ -1645,7 +1649,9 @@ public:
    *
    * @return the int representation of the value as usint.
    */
-    template <typename T = NativeInt, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+    template <typename T             = NativeInt,
+              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                               bool> = true>
     constexpr T ConvertToInt() const noexcept {
         // static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
         return static_cast<T>(m_value);

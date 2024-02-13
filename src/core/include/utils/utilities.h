@@ -95,18 +95,6 @@ inline uint64_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
     return (c = a + b) < b;
 }
 
-/**
- * GetIntegerTypeBitLength() calculates the number of all bits in type T and
- * std::enable_if<...> constrains the allowable types to primitive integers only.
- * All other types are excluded. Examples: enum, bool, floating point,
- * any class or struct (ex.: BigInteger, NativeIntegerT, etc.)
- * Ex: auto bitlen = GetIntegerTypeBitLength<short>(); bitlen == 16
- */
-template <typename T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>, bool> = true>
-inline constexpr usint GetIntegerTypeBitLength() {
-    return sizeof(T) * CHAR_BIT;
-}
-
 // TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
 // that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
 inline constexpr int64_t Max64BitValue() {
