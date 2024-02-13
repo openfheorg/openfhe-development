@@ -487,21 +487,6 @@ NativeInteger RoundqQAlter(const NativeInteger& v, const NativeInteger& q, const
         .Mod(q);
 }
 
-NativeInteger RoundqQAlterDouble(const double& v, const NativeInteger& q, const double& Q) {
-    return NativeInteger((BasicInteger)std::floor(0.5 + v * q.ConvertToDouble() / Q)).Mod(q);
-}
-
-NativeInteger RoundqScale(const NativeInteger& v, const NativeInteger& q, const double& Q) {
-    return NativeInteger((BasicInteger)std::floor(0.5 + v.ConvertToDouble() / Q * q.ConvertToDouble())).Mod(q);
-}
-
-NativeInteger RoundqScaleAlter(const NativeInteger& v, const NativeInteger& q, const double& scFactor,
-                               const NativeInteger& p) {
-    return NativeInteger((BasicInteger)std::floor(0.5 + v.ConvertToDouble() / scFactor *
-                                                            (q.ConvertToDouble() / p.ConvertToDouble())))
-        .Mod(q);
-}
-
 EvalKey<DCRTPoly> switchingKeyGenRLWE(
     const PrivateKey<DCRTPoly>& ckksSK,
     ConstLWEPrivateKey& LWEsk) {  // This function is without the intermediate ModSwitch
