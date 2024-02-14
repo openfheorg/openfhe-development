@@ -876,9 +876,11 @@ public:
    * @return the int representation of the value as uint64_t.
    */
     // TODO (dsuponit): make ConvertToInt() a template utility function
-    template <typename T = BasicInteger>
+    template <typename T             = BasicInteger,
+              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                               bool> = true>
     T ConvertToInt() const {
-        constexpr usint bits = lbcrypto::GetIntegerTypeBitLength<T>();
+        constexpr usint bits = sizeof(T) * CHAR_BIT;
         T result             = 0;
         // set num to number of equisized chunks
         usint num     = bits / m_uintBitLength;
