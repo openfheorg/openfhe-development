@@ -84,11 +84,10 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
         A.push_back(dug.GenerateVector(dim));
 
     // compute v = As + e
-    DiscreteGaussianGeneratorImpl<NativeVector> dgg;
-    NativeVector v   = dgg.GenerateVector(dim, modulus);
-    NativeVector ske = skN->GetElement();
+    const auto& ske  = skN->GetElement();
     NativeInteger mu = modulus.ComputeMu();
 
+    auto v = params->GetDgg().GenerateVector(dim, modulus);
     for (size_t j = 0; j < dim; ++j) {
         for (size_t i = 0; i < dim; ++i) {
             v[j].ModAddFastEq(A[j][i].ModMulFast(ske[i], modulus, mu), modulus);
@@ -114,11 +113,6 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 
     NativeInteger b = (m % p) * (mod / p) + params->GetDgg().GenerateInteger(mod);
 
-    // #if defined(BINFHE_DEBUG)
-    //    std::cout << b % mod << std::endl;
-    //    std::cout << (m % p) * (mod / p) << std::endl;
-    // #endif
-
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeVector a = dug.GenerateVector(n, mod);
 
@@ -143,27 +137,29 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
-    const auto& bp = pk->Getv();
-    size_t N       = bp.GetLength();
+    auto bp  = pk->Getv();
+    size_t N = bp.GetLength();
+    bp.SwitchModulus(mod);  // todo : this is probably not required
 
     TernaryUniformGeneratorImpl<NativeVector> tug;
     NativeVector sp = tug.GenerateVector(N, mod);
 
     // compute a in the ciphertext (a, b)
-    auto dgg = params->GetDgg();
-    auto a   = dgg.GenerateVector(N, mod);
-    auto& A  = pk->GetA();
+    const auto& dgg = params->GetDgg();
+    auto a          = dgg.GenerateVector(N, mod);
+    auto& A         = pk->GetA();
     for (size_t j = 0; j < N; ++j) {
         // columnwise a = A_1s1 + ... + A_NsN
         a.ModAddEq(A[j].ModMul(sp[j]));
     }
 
     // compute b in ciphertext (a,b)
-    NativeInteger b  = (m % p) * (mod / p) + dgg.GenerateInteger(mod);
     NativeInteger mu = mod.ComputeMu();
-    for (size_t i = 0; i < N; ++i) {
-        b.ModAddFastEq(bp[i].ModMul(sp[i], mod, mu), mod);
-    }
+    NativeInteger b  = (m % p) * (mod / p) + dgg.GenerateInteger(mod);
+    if (b >= mod)
+        b.ModEq(mod);
+    for (size_t i = 0; i < N; ++i)
+        b.ModAddFastEq(bp[i].ModMulFast(sp[i], mod, mu), mod);
 
     auto ct = std::make_shared<LWECiphertextImpl>(std::move(a), std::move(b));
     ct->SetptModulus(p);
@@ -189,16 +185,16 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     // the ct parameters
 
     // Create local variables to speed up the computations
-    const NativeInteger& mod = ct->GetModulus();
+    const auto& mod = ct->GetModulus();
     if (mod % (p * 2) != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
-    NativeVector a   = ct->GetA();
-    NativeVector s   = sk->GetElement();
-    uint32_t n       = s.GetLength();
-    NativeInteger mu = mod.ComputeMu();
+    const auto& a = ct->GetA();
+    auto s        = sk->GetElement();
+    uint32_t n    = s.GetLength();
+    auto mu       = mod.ComputeMu();
     s.SwitchModulus(mod);
     NativeInteger inner(0);
     for (size_t i = 0; i < n; ++i) {
