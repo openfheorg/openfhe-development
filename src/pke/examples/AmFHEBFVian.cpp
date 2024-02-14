@@ -31,11 +31,15 @@
 
 #define PROFILE
 
+#define ITERATIVE
+#define TESTALT0
+
 #include "openfhe.h"
 #include "binfhecontext.h"
 #include "fhew_bt_coeff.h"
+
+#include <algorithm>
 #include <queue>
-// #include <malloc.h>
 
 using namespace lbcrypto;
 using namespace std;
@@ -78,6 +82,7 @@ uint32_t cntLongDiv       = 0;
 // FUNCTIONS
 void NANDthroughBFV();
 void LUTthroughBFV();
+void cLUTthroughBFV();
 
 Ciphertext<DCRTPoly> EvalFHEWtoBFV(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<LWECiphertext>& lweCtxt,
                                    const std::vector<Ciphertext<DCRTPoly>>& keyCtxt);
@@ -94,7 +99,7 @@ Ciphertext<DCRTPoly> EvalMatMultColWithoutPrecompute(const CryptoContextImpl<DCR
 
 std::vector<ConstPlaintext> EvalLTNPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                               const std::vector<std::vector<int64_t>>& A, uint32_t dim1, uint32_t L,
-                                              double scale = 1);
+                                              double scale = 1.0);
 void EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale, bool precompute);
 Ciphertext<DCRTPoly> EvalLTNWithPrecompute(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
                                            const std::vector<ConstPlaintext>& A, uint32_t dim1);
@@ -142,13 +147,12 @@ std::vector<queue<std::shared_ptr<longDivMod>>> cs;
 std::shared_ptr<longDivMod> LongDivisionPolyMod(const std::vector<int64_t>& f, const std::vector<int64_t>& g,
                                                 int64_t q = PTXT_MOD);
 
-uint32_t Degree(const std::vector<int64_t>& coefficients);
+uint32_t Degree(const std::vector<int64_t>& coefficients, uint32_t limit = 0);
 uint32_t FindFirstNonZero(const std::vector<int64_t>& coefficients);
 uint32_t CountNonZero(const std::vector<int64_t>& coefficients);
 std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index);
 std::vector<int64_t> Fill(const std::vector<int64_t>& a, int32_t slots);
-std::vector<int64_t> ExtractShiftedDiagonalN(const std::vector<std::vector<int64_t>>& A, int32_t idx_in,
-                                             int32_t idx_out);
+std::vector<int64_t> ExtractShiftedDiagonalN(const std::vector<std::vector<int64_t>>& A, uint32_t idx_in, uint32_t idx_out);
 std::vector<int32_t> FindLTNRotationIndices(uint32_t dim1, uint32_t N);
 uint32_t getRatioBSGSPow2(uint32_t slots);
 
@@ -156,10 +160,9 @@ struct schemeSwitchKeys {
     std::vector<lbcrypto::Ciphertext<lbcrypto::DCRTPoly>>
         FHEWtoBFVKey;  // Only for column method, otherwise it is a single ciphertext
     lbcrypto::EvalKey<lbcrypto::DCRTPoly> BFVtoFHEWSwk;
-    schemeSwitchKeys() {}
-    schemeSwitchKeys(const std::vector<lbcrypto::Ciphertext<lbcrypto::DCRTPoly>>& key1,
-                     const lbcrypto::EvalKey<lbcrypto::DCRTPoly>& key2)
-        : FHEWtoBFVKey(key1), BFVtoFHEWSwk(key2) {}
+    schemeSwitchKeys(std::vector<lbcrypto::Ciphertext<lbcrypto::DCRTPoly>>&& key1,
+                     lbcrypto::EvalKey<lbcrypto::DCRTPoly>&& key2) noexcept
+        : FHEWtoBFVKey(std::move(key1)), BFVtoFHEWSwk(std::move(key2)) {}
 };
 std::shared_ptr<schemeSwitchKeys> EvalAmortizedFHEWBootKeyGen(CryptoContextImpl<DCRTPoly>& cc,
                                                               const KeyPair<DCRTPoly>& keyPair,
@@ -196,7 +199,9 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
 
 int main() {
     // NANDthroughBFV();
-    LUTthroughBFV();
+    // LUTthroughBFV();
+
+    cLUTthroughBFV();
 
     return 0;
 }
@@ -928,57 +933,46 @@ void LUTthroughBFV() {
 
 Ciphertext<DCRTPoly> EvalLinearWSumBFV(const std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                        const std::vector<int64_t>& constants) {
-    auto size = std::min(ciphertexts.size(), constants.size());
+    uint32_t size = std::min(ciphertexts.size(), constants.size());
 
-    std::vector<Ciphertext<DCRTPoly>> cts(size);
-    std::vector<int64_t> constantsNZ(size);
+    std::vector<Ciphertext<DCRTPoly>> cts;
+    cts.reserve(size);
+    std::vector<int64_t> constantsNZ;
+    constantsNZ.reserve(size);
 
     TimeVar tVar;
     TIC(tVar);
-    uint32_t pos = 0;
     for (uint32_t i = 0; i < size; i++) {
         if (constants[i] != 0) {
-            cts[pos]         = ciphertexts[i]->Clone();
-            constantsNZ[pos] = constants[i];
-            pos += 1;
+            cts.push_back(ciphertexts[i]->Clone());
+            constantsNZ.push_back(constants[i]);
+            ++cntClone;
         }
     }
     timeClone += TOC_NS(tVar);
-    cntClone += pos;
 
     return EvalLinearWSumMutableBFV(cts, constantsNZ);
 }
-
 // This does not actually modify ciphertexts, and it would be incorrect if it would
 Ciphertext<DCRTPoly> EvalLinearWSumMutableBFV(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                               const std::vector<int64_t>& constants) {
-    TimeVar tVar;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertexts[0]->GetCryptoParameters());
-
-    auto cc   = ciphertexts[0]->GetCryptoContext();
-    auto algo = cc->GetScheme();
-
-    auto pos = FindFirstNonZero(constants);
+    uint32_t pos = FindFirstNonZero(constants);
 
     if (pos < ciphertexts.size()) {
-        Ciphertext<DCRTPoly> weightedSum = EvalMultConstBFV(ciphertexts[pos], constants[pos]);
-
-        Ciphertext<DCRTPoly> tmp;
+        TimeVar tVar;
+        auto cc = ciphertexts[0]->GetCryptoContext();
+        Ciphertext<DCRTPoly> weightedSum(EvalMultConstBFV(ciphertexts[pos], constants[pos]));
         for (uint32_t i = pos + 1; i < ciphertexts.size(); i++) {
             if (constants[i] != 0) {
-                tmp = EvalMultConstBFV(ciphertexts[i], constants[i]);
                 TIC(tVar);
-                cc->EvalAddInPlace(weightedSum, tmp);
+                cc->EvalAddInPlace(weightedSum, EvalMultConstBFV(ciphertexts[i], constants[i]));
                 timeAddCtxt += TOC_NS(tVar);
                 cntAddCtxt++;
             }
         }
-
         return weightedSum;
     }
-    else {
-        return ciphertexts[0]->CloneZero();
-    }
+    return ciphertexts[0]->CloneZero();
 }
 
 Ciphertext<DCRTPoly> EvalMultConstBFV(ConstCiphertext<DCRTPoly> ciphertext, const int64_t constant) {
@@ -1002,24 +996,21 @@ Ciphertext<DCRTPoly> EvalAddConstBFV(ConstCiphertext<DCRTPoly> ciphertext, const
 }
 
 uint64_t ModDownConst(const int64_t constant, const NativeInteger t) {
-    int64_t int_t        = t.ConvertToInt();
-    int64_t mod_constant = constant % int_t;
-
-    if (mod_constant < 0) {
-        mod_constant += int_t;
-    }
+    auto t_int        = t.ConvertToInt<int64_t>();
+    auto mod_constant = constant % t_int;
+    if (mod_constant < 0)
+        mod_constant += t_int;
     return mod_constant;
 }
 
 int64_t ModDownHalfConst(const int64_t constant, const NativeInteger t) {
-    int64_t int_t        = t.ConvertToInt();
-    int64_t mod_constant = constant % int_t;
-
-    if (mod_constant < -static_cast<int32_t>(int_t / 2)) {
-        mod_constant += int_t;
+    auto t_int        = t.ConvertToInt<int64_t>();
+    auto mod_constant = constant % t_int;
+    if (mod_constant < -static_cast<int32_t>(t_int / 2)) {  // <--- why int32_t?
+        mod_constant += t_int;
     }
-    else if (mod_constant >= int_t / 2) {
-        mod_constant -= int_t;
+    else if (mod_constant >= t_int / 2) {
+        mod_constant -= t_int;
     }
     return mod_constant;
 }
@@ -1083,39 +1074,27 @@ void EvalAddInPlaceConstBFV(Ciphertext<DCRTPoly>& ciphertext, const int64_t cons
 //------------------------------------------------------------------------------
 std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index) {
     int32_t slots = a.size();
-
-    std::vector<int64_t> result(slots);
-
-    if (index < 0 || index > slots) {
+    if (index < 0 || index > slots)
         index = ReduceRotation(index, slots);
-    }
+    if (index == 0)
+        return a;
 
-    if (index == 0) {
-        result = a;
-    }
-
-    else {
-        // two cases: i+index <= slots and i+index > slots
-        for (int32_t i = 0; i < slots - index; i++) {
-            result[i] = a[i + index];
-        }
-        for (int32_t i = slots - index; i < slots; i++) {
-            result[i] = a[i + index - slots];
-        }
-    }
-
+    std::vector<int64_t> result;
+    result.reserve(slots);
+    result.insert(result.end(), a.begin() + index, a.end());
+    result.insert(result.end(), a.begin(), a.begin() + index);
     return result;
 }
 
 std::vector<int64_t> Fill(const std::vector<int64_t>& a, int32_t slots) {
-    int usedSlots = a.size();
-
+    int32_t usedSlots = a.size();
     std::vector<int64_t> result(slots);
-
-    for (int i = 0; i < slots; i++) {
-        result[i] = a[i % usedSlots];
+    int32_t j = 0;
+    for (int32_t i = 0; i < slots; ++i) {
+        result[i] = a[j];
+        if (++j == usedSlots)
+            j = 0;
     }
-
     return result;
 }
 
@@ -1152,31 +1131,38 @@ uint32_t getRatioBSGSPow2(uint32_t slots) {
 }
 
 // Method to arrange diagonals of a matrix NxN such that it is compatible with BFV rotations, N is a power of 2
-std::vector<int64_t> ExtractShiftedDiagonalN(const std::vector<std::vector<int64_t>>& A, int32_t idx_out,
-                                             int32_t idx_in) {
-    int32_t cols = A[0].size();
-    int32_t rows = A.size();
-    if (rows != cols)
+std::vector<int64_t> ExtractShiftedDiagonalN(const std::vector<std::vector<int64_t>>& A, uint32_t idx_out, uint32_t idx_in) {
+    uint32_t N = A.size();
+    if (N != A[0].size())
         OPENFHE_THROW(config_error, "ExtractShiftedDiagonalN is implemented only for square matrices.");
+    uint32_t Nby2 = N >> 1;
+    uint32_t mask = Nby2 - 1;
 
-    std::vector<int64_t> result(cols);
-
-#pragma omp parallel for
-    for (int32_t j = 0; j < cols; ++j) {
-        auto row_idx = (j - idx_out) % (rows / 2);
-        row_idx      = (row_idx < 0) ? row_idx + rows / 2 : row_idx;  // Because modulo can return negative value
-        row_idx      = (j >= cols / 2) ? row_idx + rows / 2 : row_idx;
-        auto col_idx = (j + idx_in) % (cols / 2);  // Because modulo can return negative value
-        col_idx      = (col_idx < 0) ? col_idx + cols / 2 : col_idx;
-        if (idx_in < rows / 2) {
-            col_idx = (j >= cols / 2) ? col_idx + cols / 2 : col_idx;
+    std::vector<int64_t> result(N);
+    if (idx_in < Nby2) {
+        for (uint32_t j = 0; j < Nby2; ++j) {
+            auto row_idx = (j - idx_out) & mask;
+            auto col_idx = (j + idx_in) & mask;
+            result[j] = A[row_idx][col_idx];
         }
-        else {
-            col_idx = (j < cols / 2) ? col_idx + cols / 2 : col_idx;
+        for (uint32_t j = Nby2; j < N; ++j) {
+            auto row_idx = Nby2 + ((j - idx_out) & mask);
+            auto col_idx = Nby2 + ((j + idx_in) & mask);
+            result[j] = A[row_idx][col_idx];
         }
-        result[j] = A[row_idx][col_idx];
     }
-
+    else {
+        for (uint32_t j = 0; j < Nby2; ++j) {
+            auto row_idx = (j - idx_out) & mask;
+            auto col_idx = Nby2 + ((j + idx_in) & mask);
+            result[j] = A[row_idx][col_idx];
+        }
+        for (uint32_t j = Nby2; j < N; ++j) {
+            auto row_idx = Nby2 + ((j - idx_out) & mask);
+            auto col_idx = (j + idx_in) & mask;
+            result[j] = A[row_idx][col_idx];
+        }
+    }
     return result;
 }
 
@@ -1198,59 +1184,62 @@ std::shared_ptr<longDivMod> LongDivisionPolyMod(const std::vector<int64_t>& f, c
         OPENFHE_THROW(math_error, "LongDivisionPolyMod: The dominant coefficient of the divisor is zero.");
     }
 
-    std::vector<int64_t> q;
-    std::vector<int64_t> r = f;
+    if (int32_t(n - k) < 0)
+        return std::make_shared<longDivMod>(std::vector<int64_t>(1), f);
+
+    auto res = std::make_shared<longDivMod>();
+
+    auto& q = res->q;
+    q.resize(n - k + 1);
+
+    auto& r = res->r;
+    r = f;
+
     std::vector<int64_t> d;
+    d.reserve(g.size() + n);
 
-    if (int32_t(n - k) >= 0) {
-        std::vector<int64_t> q2(n - k + 1, 0.0);
-        q = q2;
+    while (int32_t(n - k) >= 0) {
+        // d is g padded with zeros before up to n
+        d.clear();
+        d.resize(n - k);
+        d.insert(d.end(), g.begin(), g.end());
 
-        while (int32_t(n - k) >= 0) {
-            d = g;
-            d.insert(d.begin(), n - k, 0);  // d is g padded with zeros before up to n
-            q[n - k] = r.back();
+        q[n - k] = r.back();
+        if (g[k] != 1)
+            q[n - k] = (q[n - k] / g.back()) % t;
 
-            if (g[k] != 1) {
-                q[n - k] = (q[n - k] / g.back()) % t;
-            }
+        std::transform(d.begin(), d.end(), d.begin(), [&](const int64_t& elem) { return (elem * q[n - k]) % t; });
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), [&](const auto& elem1, const auto& elem2) { return (elem1 - elem2) % t; });
 
-            std::transform(d.begin(), d.end(), d.begin(), [&](const int64_t& elem) { return (elem * q[n - k]) % t; });
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(),
-                           [&](const auto& elem1, const auto& elem2) { return (elem1 - elem2) % t; });
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
-            }
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
         }
     }
-    else {
-        std::vector<int64_t> q2(1, 0.0);
-        q = q2;
-        r = f;
-    }
-
-    return std::make_shared<longDivMod>(q, r);
+    return res;
 }
 
 /*Return the degree of the polynomial described by coefficients,
 which is the index of the last non-zero element in the coefficients - 1.
 Don't throw an error if all the coefficients are zero, but return 0. */
-uint32_t Degree(const std::vector<int64_t>& coefficients) {
+uint32_t Degree(const std::vector<int64_t>& coefficients, uint32_t limit) {
     TimeVar tVar;
     TIC(tVar);
+
+    if (limit == 0)
+        limit = coefficients.size();
+
     uint32_t deg = 1;
-    for (int32_t i = coefficients.size() - 1; i > 0; i--) {
-        if (coefficients[i] == 0) {
-            deg += 1;
-        }
-        else
+    for (int32_t i = limit - 1; i > 0; --i, ++deg) {
+        if (coefficients[i] != 0)
             break;
     }
+
     timeDeg += TOC_NS(tVar);
-    cntDeg++;
-    return coefficients.size() - deg;
+    ++cntDeg;
+
+    return limit - deg;
 }
 
 /*Return the position of the first non-zero coefficient.
@@ -2554,7 +2543,7 @@ std::shared_ptr<schemeSwitchKeys> EvalAmortizedFHEWBootKeyGen(CryptoContextImpl<
     // Compute switching key hint between main BFV secret key to the intermediate BFV (for modulus switching) key to the FHEW key
     auto BFVtoFHEWSwk = switchingKeyGenRLWEcc(privateKeyKS, privateKey, lwesk);
 
-    return make_shared<schemeSwitchKeys>(FHEWtoBFVKey, BFVtoFHEWSwk);
+    return make_shared<schemeSwitchKeys>(std::move(FHEWtoBFVKey), std::move(BFVtoFHEWSwk));
 }
 
 std::vector<Plaintext> EvalMatMultColPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
@@ -2588,13 +2577,9 @@ std::vector<ConstPlaintext> EvalLTNPrecompute(const CryptoContextImpl<DCRTPoly>&
         OPENFHE_THROW(math_error, "The matrix passed to EvalLTPrecomputeSwitch is not square");
     }
 
-    uint32_t size = A.size();
     uint32_t N    = cc.GetRingDimension();  // When this method is used for homomorphic decoding in BFV, N = size
-
+    uint32_t size  = A.size();
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSPow2(size / 2) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(size / 2) / bStep);
-
-    // std::cout << "bStep = " << bStep << ", gStep = " << gStep << ", N = " << N << std::endl;
 
     TIC(tVar);
     // Encode plaintext at minimum number of levels
@@ -2607,21 +2592,18 @@ std::vector<ConstPlaintext> EvalLTNPrecompute(const CryptoContextImpl<DCRTPoly>&
     }
     auto elementParamsPtr = std::make_shared<DCRTPoly::Params>(elementParams);
     // std::cout << "elementParams size: " << elementParams.GetParams().size() << std::endl;
-    std::cout << "Time to get element parameters: " << static_cast<double>(TOC_NS(tVar)) / 1000000000.0 << " s"
-              << std::endl;
+    std::cout << "Time to get element parameters: " << static_cast<double>(TOC_NS(tVar)) / 1000000000.0 << " s\n";
 
     TIC(tVar);
     std::vector<ConstPlaintext> result(size);
-#pragma omp parallel for
-    for (size_t i = 0; i < bStep; ++i) {
-        for (size_t j = 0; j < 2 * gStep; j++) {
-            if (bStep * j + i < size) {
-                auto diag = ExtractShiftedDiagonalN(A, static_cast<int32_t>(i), static_cast<int32_t>(bStep * j));
-                std::transform(diag.begin(), diag.end(), diag.begin(),
-                               [&](const int64_t& elem) { return elem * scale; });
-                // result[bStep * j + i] = cc.MakePackedPlaintext(Fill(diag, N));
-                result[bStep * j + i] = cc.MakePackedPlaintextAux(Fill(diag, N), 1, 0, elementParamsPtr);
-            }
+    for (uint32_t i = 0, j = 0, k = 0; k < size; ++k) {
+        auto diag = ExtractShiftedDiagonalN(A, i, j);
+        if (scale != 1.0)
+            std::transform(diag.begin(), diag.end(), diag.begin(), [&](const int64_t& elem) { return elem * scale; });
+        result[k] = cc.MakePackedPlaintextAux(Fill(diag, N), 1, 0, elementParamsPtr);
+        if (++i == bStep) {
+            i = 0;
+            j += bStep;
         }
     }
     timePackedPrePtxt += TOC_NS(tVar);
@@ -2640,7 +2622,7 @@ void EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double s
     NativeInteger initRoot = RootOfUnity<NativeInteger>(M, t);
 
     // Matrix for decoding
-    std::vector<std::vector<std::int64_t>> UT(N, std::vector<int64_t>(N));
+    std::vector<std::vector<int64_t>> UT(N, std::vector<int64_t>(N));
 
     // Computes indices for all primitive roots of unity
     std::vector<uint32_t> rotGroup(slots);
@@ -2659,15 +2641,15 @@ void EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double s
 
     for (size_t i = 0; i < slots; i++) {
         for (size_t j = 0; j < N; j++) {
-            UT[i][j]         = NativeInteger(zetaPows[i].ModExp(j, t)).ConvertToInt();
-            UT[i + slots][j] = NativeInteger(UT[i][j]).ModInverse(t).ConvertToInt();
+            UT[i][j]         = NativeInteger(zetaPows[i].ModExp(j, t)).ConvertToInt<int64_t>();
+            UT[i + slots][j] = NativeInteger(UT[i][j]).ModInverse(t).ConvertToInt<int64_t>();
         }
     }
 
-    m_UT = UT;
     if (precompute) {
-        m_UTPre = EvalLTNPrecompute(cc, UT, m_dim1BF, 1, 1);
+        m_UTPre = EvalLTNPrecompute(cc, UT, m_dim1BF, 1);
     }
+    m_UT = std::move(UT);
 }
 
 //------------------------------------------------------------------------------
@@ -2676,57 +2658,22 @@ void EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double s
 
 Ciphertext<DCRTPoly> EvalFHEWtoBFV(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<LWECiphertext>& lweCtxt,
                                    const std::vector<Ciphertext<DCRTPoly>>& keyCtxt) {
-    // Step 1. Form matrix A and vector b from the LWE ciphertexts
-    auto numValues = lweCtxt.size();
-    auto n         = lweCtxt[0]->GetLength();
-    std::vector<std::vector<int64_t>> A(numValues);
+    uint32_t numValues = lweCtxt.size();
+    uint32_t n         = lweCtxt[0]->GetLength();
+    uint32_t cols_po2  = 1 << static_cast<uint32_t>(std::ceil(std::log2(n)));
 
-    vector<int64_t> b(numValues);
-    NativeVector a_v(n);
-    for (size_t i = 0; i < numValues; ++i) {
-        A[i].resize(n);
-        a_v = lweCtxt[i]->GetA();
-        for (size_t j = 0; j < n; ++j) {
-            A[i][j] = a_v[j].ConvertToInt();
+    std::vector<std::vector<int64_t>> A(numValues, std::vector<int64_t>(cols_po2));
+    std::vector<int64_t> b(numValues);
+
+    for (uint32_t i = 0; i < numValues; ++i) {
+        const auto& a_v = lweCtxt[i]->GetA();
+        for (uint32_t j = 0; j < n; ++j) {
+            A[i][j] = a_v[j].ConvertToInt<int64_t>();
         }
-        b[i] = lweCtxt[i]->GetB().ConvertToInt();
+        b[i] = lweCtxt[i]->GetB().ConvertToInt<int64_t>();
     }
 
-    // Step 2. Compute the product between the ciphertext of the LWE key and the matrix of first components
-
-    // Currently, by design, the # rows (# LWE ciphertexts to switch) is a power of two.
-    // Ensure that # cols (LWE lattice parameter n) is padded up to a power of two
-    std::vector<std::vector<int64_t>> Acopy(A);
-    uint32_t cols_po2 = 1 << static_cast<uint32_t>(std::ceil(std::log2(A[0].size())));
-
-    if (cols_po2 != A[0].size()) {
-        std::vector<int64_t> padding(cols_po2 - A[0].size());
-        for (size_t i = 0; i < A.size(); ++i) {
-            Acopy[i].insert(Acopy[i].end(), padding.begin(), padding.end());
-        }
-    }
-
-    // // If we have the diagonal method
-    // auto Apre = EvalLTRectPrecomputeSwitch(Acopy, dim1, scale);
-    // auto res  = EvalLTRectWithPrecomputeSwitch(cc, Apre, ct[0], (Acopy.size() < A[0].size()), dim1,
-    //                                            L);  // The result is repeated every Acopy.size() slots
-
-    // Currently, for computational speed, we implement the column method since it does not require rotations. However, it requires storing n ciphertexts at the highest level
-    // The linear transform happens at the highest level
-    // auto Apre  = EvalMatMultColPrecompute(cc, Acopy, 0);
-    // auto AdotS = EvalMatMultCol(cc, Apre, keyCtxt);
-    auto AdotS = EvalMatMultColWithoutPrecompute(cc, Acopy, keyCtxt);  // To not store the plaintexts here
-
-    // Step 3. Get the ciphertext of B - A*s
-    Plaintext BPlain = cc.MakePackedPlaintext(b);  //, AdotS->GetNoiseScaleDeg(), AdotS->GetLevel());
-
-    TimeVar tVar;
-    TIC(tVar);
-    auto BminusAdotS = cc.EvalAdd(cc.EvalNegate(AdotS), BPlain);
-    timeAddCtxt += TOC_NS(tVar);
-    cntAddCtxt += 2;
-
-    return BminusAdotS;
+    return cc.EvalAdd(cc.EvalNegate(EvalMatMultColWithoutPrecompute(cc, A, keyCtxt)), cc.MakePackedPlaintext(b));
 }
 
 Ciphertext<DCRTPoly> EvalPartialHomDecryptionOrig(const CryptoContextImpl<DCRTPoly>& cc,
@@ -2802,51 +2749,37 @@ Ciphertext<DCRTPoly> EvalMatMultColWithoutPrecompute(const CryptoContextImpl<DCR
                                                      const std::vector<std::vector<int64_t>>& A,
                                                      const std::vector<Ciphertext<DCRTPoly>>& ct) {
     TimeVar tVar;
-
     uint32_t rows = A.size();
+    std::vector<int64_t> temp_vec1(rows), temp_vec2(rows);
 
-    Ciphertext<DCRTPoly> res;
-    uint32_t n = ct.size();
+    uint32_t log_n = lbcrypto::GetMSB(ct.size()) - 1;
+    uint32_t jj    = 1 << (log_n - 1);
+    std::vector<Ciphertext<DCRTPoly>> layer;
+    layer.reserve(jj);
 
-    uint32_t log_n = lbcrypto::GetMSB(n) - 1;
-    std::vector<Ciphertext<DCRTPoly>> layer((1 << (log_n - 1)));
+    for (uint32_t j = 0; j < jj; ++j) {
+        for (uint32_t k = 0; k < rows; ++k) {
+            temp_vec1[k] = A[k][j * 2];
+            temp_vec2[k] = A[k][j * 2 + 1];
+        }
+        TIC(tVar);
+        layer.push_back(cc.EvalAdd(cc.EvalMult(cc.MakePackedPlaintext(temp_vec1), ct[j * 2]),
+                                   cc.EvalMult(cc.MakePackedPlaintext(temp_vec2), ct[j * 2 + 1])));
+        timeMultPtxt += TOC_NS(tVar);
+    }
+    cntMultPtxt += 2 * jj;
 
-    for (size_t i = 0; i < log_n; ++i) {
-        for (size_t j = 0; j < static_cast<uint32_t>(1 << (log_n - i - 1)); ++j) {
-            if (i == 0) {  // first layer, need to compute the multiplications
-                std::vector<int64_t> temp_vec1(rows), temp_vec2(rows);
-                for (size_t k = 0; k < rows; ++k) {
-                    temp_vec1[k] = A[k][j * 2];
-                    temp_vec2[k] = A[k][j * 2 + 1];
-                }
-                TIC(tVar);
-                layer[j] = cc.EvalAdd(cc.EvalMult(cc.MakePackedPlaintext(temp_vec1), ct[j * 2]),
-                                      cc.EvalMult(cc.MakePackedPlaintext(temp_vec2), ct[j * 2 + 1]));
-                timeMultPtxt += TOC_NS(tVar);
-                cntMultPtxt += 2;
-            }
-            else {
-                TIC(tVar);
-                layer[j] = cc.EvalAdd(layer[j * 2], layer[j * 2 + 1]);
-                timeAddCtxt += TOC_NS(tVar);
-                cntAddCtxt++;
-            }
+    jj >>= 1;
+    for (uint32_t i = 0; i < log_n; ++i, jj >>= 1) {
+        TIC(tVar);
+        for (uint32_t j = 0; j < jj; ++j) {
+            layer[j] = cc.EvalAdd(layer[j * 2], layer[j * 2 + 1]);
         }
-        if (i == log_n - 1) {
-            res = layer[0];
-        }
-        else {
-            layer.resize((1 << (log_n - i - 1)));
-        }
+        timeAddCtxt += TOC_NS(tVar);
+        cntAddCtxt += jj;
     }
 
-    // // Linear summation
-    // res = cc.EvalMult(A[0], ct[0]);
-    // for (size_t i = 1; i < n; ++i) {
-    // res = cc.EvalAdd(res, cc.EvalMult(A[i], ct[i]));
-    // }
-
-    return res;
+    return layer[0];
 }
 
 // Encrypted matrix-vector multiplication of size N implemented as two sized N/2 matrix-vector multiplications
@@ -3137,91 +3070,79 @@ std::vector<LWECiphertext> EvalBFVtoFHEW(const CryptoContextImpl<DCRTPoly>& cc, 
 }
 
 void ModSwitchDown(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, NativeInteger modulus_to) {
-    if (ctxt->GetElements()[0].GetRingDimension() != ctxtKS->GetElements()[0].GetRingDimension()) {
+    if (ctxt->GetElements()[0].GetRingDimension() != ctxtKS->GetElements()[0].GetRingDimension())
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for the same ring dimension.");
-    }
 
-    const std::vector<DCRTPoly> cv = ctxt->GetElements();
-
-    if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1) {
+    const auto& cv = ctxt->GetElements();
+    if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1)
         OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for ciphertext with one tower.");
-    }
 
     const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
-    std::vector<DCRTPoly> resultElements(cv.size());
+    std::vector<DCRTPoly> resultElements;
+    resultElements.reserve(cv.size());
 
-    for (uint32_t i = 0; i < cv.size(); i++) {
-        resultElements[i] = DCRTPoly(paramsQlP, Format::COEFFICIENT, true);
-        resultElements[i].SetValuesModSwitch(cv[i], modulus_to);
-        resultElements[i].SetFormat(Format::EVALUATION);
+    for (const auto& v : cv) {
+        resultElements.emplace_back(paramsQlP, Format::COEFFICIENT, true);
+        resultElements.back().SetValuesModSwitch(v, modulus_to);
+        resultElements.back().SetFormat(Format::EVALUATION);
     }
 
-    ctxtKS->SetElements(resultElements);
+    ctxtKS->SetElements(std::move(resultElements));
 }
 
 std::vector<std::vector<NativeInteger>> ExtractLWEpacked(ConstCiphertext<DCRTPoly> ct) {
-    auto originalA{(ct->GetElements()[1]).GetElementAtIndex(0)};
-    auto originalB{(ct->GetElements()[0]).GetElementAtIndex(0)};
+    auto originalA{(ct->GetElements()[0]).GetElementAtIndex(0)};
     originalA.SetFormat(Format::COEFFICIENT);
+    const auto itA = std::vector<NativeInteger>::const_iterator(&originalA.GetValues()[0]);
+
+    auto originalB{(ct->GetElements()[1]).GetElementAtIndex(0)};
     originalB.SetFormat(Format::COEFFICIENT);
-    auto N = originalB.GetLength();
+    const auto itB = std::vector<NativeInteger>::const_iterator(&originalB.GetValues()[0]);
 
-    std::vector<std::vector<NativeInteger>> extracted(2);
-    extracted[0].reserve(N);
-    extracted[1].reserve(N);
-
-    auto& originalAVals = originalA.GetValues();
-    auto& originalBVals = originalB.GetValues();
-
-    extracted[1].insert(extracted[1].end(), &originalAVals[0], &originalAVals[N]);
-    extracted[0].insert(extracted[0].end(), &originalBVals[0], &originalBVals[N]);
-
-    return extracted;
+    // create 2 "begin" iterators to work with element values
+    size_t N = originalA.GetLength();
+    return std::vector<std::vector<NativeInteger>>{std::vector<NativeInteger>(itA, itA + N),
+                                                   std::vector<NativeInteger>(itB, itB + N)};
 }
 
 std::vector<std::shared_ptr<LWECiphertextImpl>> ExtractAndScaleLWE(const CryptoContextImpl<DCRTPoly>& cc,
                                                                    ConstCiphertext<DCRTPoly> ctxt, uint32_t n,
                                                                    NativeInteger modulus_from,
                                                                    NativeInteger modulus_to) {
+    auto AandB    = ExtractLWEpacked(ctxt);
+    uint32_t size = AandB[0].size();
+
     std::vector<std::shared_ptr<LWECiphertextImpl>> LWECiphertexts;
-    auto AandB = ExtractLWEpacked(ctxt);
-    auto N     = cc.GetRingDimension();
-    auto size  = AandB[0].size();
+    auto N = cc.GetRingDimension();
+    LWECiphertexts.reserve(N);
 
     // std::cout << "AandB size = " << size << ", N = " << N << std::endl;
 
     for (uint32_t i = 0, idx = 0; i < N; ++i, ++idx) {
         NativeVector a(n, modulus_from);
-        NativeInteger b;
-
-        for (size_t j = 0; j < n && j <= idx; ++j) {
+        for (uint32_t j = 0; j < n && j <= idx; ++j)
             a[j] = modulus_from - AandB[1][idx - j];
-        }
+
         if (n > idx) {
-            for (size_t k = idx + 1; k < n; ++k) {
+            for (uint32_t k = idx + 1; k < n; ++k) {
                 a[k] = AandB[1][size + idx - k];
             }
         }
-
-        b         = AandB[0][idx];
-        auto temp = std::make_shared<LWECiphertextImpl>(std::move(a), std::move(b));
-        LWECiphertexts.emplace_back(temp);
+        LWECiphertexts.emplace_back(std::make_shared<LWECiphertextImpl>(std::move(a), NativeInteger(AandB[0][idx])));
     }
 
     // Modulus switch from modulus_from to modulus_to
 #pragma omp parallel for
     for (uint32_t i = 0; i < size; ++i) {
-        auto original_a = LWECiphertexts[i]->GetA();
-        auto original_b = LWECiphertexts[i]->GetB();
+        auto& original_a = LWECiphertexts[i]->GetA();
+        auto& original_b = LWECiphertexts[i]->GetB();
         // multiply by Q_LWE/Q' and round to Q_LWE
         NativeVector a_round(n, modulus_to);
-        for (uint32_t j = 0; j < n; ++j) {
+        for (uint32_t j = 0; j < n; ++j)
             a_round[j] = RoundqQAlter(original_a[j], modulus_to, modulus_from);
-        }
         NativeInteger b_round = RoundqQAlter(original_b, modulus_to, modulus_from);
         LWECiphertexts[i]     = std::make_shared<LWECiphertextImpl>(std::move(a_round), std::move(b_round));
     }
-
     return LWECiphertexts;
 }
 
@@ -3259,13 +3180,18 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& bfvSKto, con
     skElementsFrom.SetFormat(Format::COEFFICIENT);
     auto skElements2 = bfvSKto->GetPrivateElement();
     skElements2.SetFormat(Format::COEFFICIENT);
-    auto lweskElements = LWEsk->GetElement();
+    const auto& lweskElements = LWEsk->GetElement();
 
-    for (size_t i = 0; i < skElements.GetNumOfElements(); i++) {
-        auto skElementsPlain     = skElements.GetElementAtIndex(i);
-        auto skElementsFromPlain = skElementsFrom.GetElementAtIndex(i);
-        auto skElementsPlainLWE  = skElements2.GetElementAtIndex(i);
-        for (size_t j = 0; j < skElementsPlain.GetLength(); j++) {
+    uint32_t ii = skElements.GetNumOfElements();
+
+    for (uint32_t i = 0; i < ii; ++i) {
+        auto& skElementsPlain            = skElements.GetAllElements()[i];
+        auto& skElementsPlainLWE         = skElements2.GetAllElements()[i];
+        const auto& skElementsFromPlain = skElementsFrom.GetElementAtIndex(i);
+
+        uint32_t jj = skElementsPlain.GetLength();
+        auto tmp    = skElementsPlain.GetModulus() - 1;
+        for (uint32_t j = 0; j < jj; ++j) {
             if (skElementsFromPlain[j] == 0) {
                 skElementsPlain[j] = 0;
             }
@@ -3273,7 +3199,7 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& bfvSKto, con
                 skElementsPlain[j] = 1;
             }
             else
-                skElementsPlain[j] = skElementsPlain.GetModulus() - 1;
+                skElementsPlain[j] = tmp;
 
             if (j >= lweskElements.GetLength()) {
                 skElementsPlainLWE[j] = 0;
@@ -3282,27 +3208,25 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& bfvSKto, con
                 if (lweskElements[j] == 0) {
                     skElementsPlainLWE[j] = 0;
                 }
-                else if (lweskElements[j].ConvertToInt() == 1) {
+                else if (lweskElements[j] == 1) {
                     skElementsPlainLWE[j] = 1;
                 }
                 else
-                    skElementsPlainLWE[j] = skElementsPlain.GetModulus() - 1;
+                    skElementsPlainLWE[j] = tmp;
             }
         }
-        skElements.SetElementAtIndex(i, skElementsPlain);
-        skElements2.SetElementAtIndex(i, skElementsPlainLWE);
     }
-
-    skElements.SetFormat(Format::EVALUATION);
-    skElements2.SetFormat(Format::EVALUATION);
 
     auto cc              = bfvSKto->GetCryptoContext();
     auto oldTranformedSK = cc->KeyGen().secretKey;
+    skElements.SetFormat(Format::EVALUATION);
     oldTranformedSK->SetPrivateElement(std::move(skElements));
+
     auto RLWELWEsk = cc->KeyGen().secretKey;
+    skElements2.SetFormat(Format::EVALUATION);
     RLWELWEsk->SetPrivateElement(std::move(skElements2));
 
-    return cc->KeySwitchGen(oldTranformedSK, RLWELWEsk);
+    return cc->KeySwitchGen(std::move(oldTranformedSK), std::move(RLWELWEsk));
 }
 
 //------------------------------------------------------------------------------
@@ -3504,3 +3428,626 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
 
     return levels;
 };
+
+
+
+// ####################################################################################################################################################
+
+std::shared_ptr<schemeSwitchKeys> cEvalAmortizedFHEWBootKeyGen(CryptoContextImpl<DCRTPoly>& cc,
+                                                              const KeyPair<DCRTPoly>& keyPair,
+                                                              ConstLWEPrivateKey& lwesk,
+                                                              const PrivateKey<DCRTPoly> privateKeyKS, uint32_t dim1,
+                                                              uint32_t L) {
+    const auto& privateKey = keyPair.secretKey;
+    const auto& publicKey  = keyPair.publicKey;
+
+    // Compute automorphism keys for homomorphic decoding;
+    uint32_t M = cc.GetCyclotomicOrder();
+    uint32_t N = cc.GetRingDimension();
+    // Computing the baby-step
+    if (dim1 == 0)
+        dim1 = getRatioBSGSPow2(N / 2);
+    m_dim1BF = dim1;
+    m_LBF    = L;
+
+    // Compute indices for rotations for slotToCoeff transform
+    std::vector<int32_t> indexRotationS2C = FindLTNRotationIndices(m_dim1BF, N);
+    indexRotationS2C.push_back(M);
+
+    // std::cout << indexRotationS2C << std::endl;
+    cc.EvalAtIndexKeyGen(privateKey, indexRotationS2C);
+
+    // Compute multiplication key
+    cc.EvalMultKeyGen(privateKey);
+
+    // Compute BFV encryption of FHEW key
+    uint32_t n    = lwesk->GetElement().GetLength();
+    auto& temp_sk = lwesk->GetElement();  // re-encode to binary
+
+    std::vector<int64_t> LWE_sk;
+    LWE_sk.reserve(n);
+    std::vector<int64_t> vec_LWE_sk(N);
+    std::vector<Ciphertext<DCRTPoly>> FHEWtoBFVKey;
+    FHEWtoBFVKey.reserve(n);
+
+    // This encoding is for the column method: obtain n ciphertext each containing one repeated element of the vector of LWE sk
+    for (uint32_t i = 0; i < n; i++) {
+        auto temp = temp_sk[i].ConvertToInt<int64_t>();
+        LWE_sk.push_back(temp > 1 ? -1 : temp);
+        std::fill(vec_LWE_sk.begin(), vec_LWE_sk.end(), LWE_sk.back());
+        FHEWtoBFVKey.push_back(cc.Encrypt(publicKey, cc.MakePackedPlaintext(vec_LWE_sk)));
+    }
+
+    // Compute switching key hint between main BFV secret key to the intermediate BFV (for modulus switching) key to the FHEW key
+    auto BFVtoFHEWSwk = switchingKeyGenRLWEcc(privateKeyKS, privateKey, lwesk);
+
+    return make_shared<schemeSwitchKeys>(std::move(FHEWtoBFVKey), std::move(BFVtoFHEWSwk));
+}
+
+Ciphertext<DCRTPoly> cEvalMultConstBFV(const ConstCiphertext<DCRTPoly>& ciphertext, const int64_t constant) {
+    const auto& t = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+    auto res      = ciphertext->Clone();
+
+    NativeInteger mod_constant = ModDownConst(constant, t);
+    for (auto& c : res->GetElements())
+        c *= mod_constant;
+
+    return res;
+}
+
+void cEvalAddInPlaceConstBFV(Ciphertext<DCRTPoly>& ciphertext, const int64_t constant) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+
+    const std::vector<NativeInteger>& tInvModq = cryptoParams->GettInvModq();
+    const NativeInteger& t                     = cryptoParams->GetPlaintextModulus();
+    const NativeInteger& NegQModt              = cryptoParams->GetNegQModt();
+    const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon();
+
+    DCRTPoly tmp(ciphertext->GetElements()[0].GetParams(), Format::COEFFICIENT, true);
+    tmp = {ModDownConst(constant, t)};
+    tmp.TimesQovert(cryptoParams->GetElementParams(), tInvModq, t, NegQModt, NegQModtPrecon);
+    tmp.SetFormat(Format::EVALUATION);
+    ciphertext->GetElements()[0] += tmp;
+}
+
+Ciphertext<DCRTPoly> cEvalLinearWSumBFV(const std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+                                        const std::vector<int64_t>& constants, const uint32_t limit) {
+#if 1
+    uint32_t i = 1;
+    for (; i <= limit; ++i) {
+        if (constants[i] != 0)
+            break;
+    }
+
+    if (i <= limit) {
+        auto cc = ciphertexts[i - 1]->GetCryptoContext();
+        Ciphertext<DCRTPoly> weightedSum = cEvalMultConstBFV(ciphertexts[i - 1], constants[i]);
+        for (++i; i <= limit; ++i) {
+            if (constants[i] != 0)
+                cc->EvalAddInPlace(weightedSum, cEvalMultConstBFV(ciphertexts[i - 1], constants[i]));
+        }
+        return weightedSum;
+    }
+    return ciphertexts[0]->CloneZero();
+#else
+    auto cc          = ciphertexts[0]->GetCryptoContext();
+    auto weightedSum = cEvalMultConstBFV(ciphertexts[0], constants[1]);
+
+    for (uint32_t i = 2; i <= limit; ++i) {
+        if (constants[i] != 0)
+            cc->EvalAddInPlace(weightedSum, cEvalMultConstBFV(ciphertexts[i - 1], constants[i]));
+    }
+    return weightedSum;
+#endif
+}
+
+inline Ciphertext<DCRTPoly> evalqu(const ConstCiphertext<DCRTPoly>& x, uint32_t k,
+                            const std::vector<int64_t>& qrq,
+                            const std::vector<Ciphertext<DCRTPoly>>& p) {
+//    Ciphertext<DCRTPoly> result = p[k - 1]->Clone();
+//    cEvalAddInPlaceConstBFV(result, qrq.front());
+//    x->GetCryptoContext()->EvalAddInPlace(result, cEvalLinearWSumBFV(p, qrq, Degree(qrq, k)));
+//    return result;
+
+    Ciphertext<DCRTPoly> result = p[k - 1]->Clone();
+    if (auto d = Degree(qrq, k); d > 0) {
+        if (d == 0)
+            x->GetCryptoContext()->EvalAddInPlace(result, cEvalMultConstBFV(p.front(), qrq[1]));
+        else
+            x->GetCryptoContext()->EvalAddInPlace(result, cEvalLinearWSumBFV(p, qrq, d));
+    }
+    cEvalAddInPlaceConstBFV(result, qrq.front());
+    return result;
+}
+
+inline Ciphertext<DCRTPoly> evalcu(const ConstCiphertext<DCRTPoly>& x, uint32_t m,
+                            const std::vector<int64_t>& csq,
+                            const std::vector<Ciphertext<DCRTPoly>>& p,
+                            const std::vector<Ciphertext<DCRTPoly>>& p2) {
+//    Ciphertext<DCRTPoly> result = p2[m - 1]->Clone();
+//    cEvalAddInPlaceConstBFV(result, csq.front());
+//    x->GetCryptoContext()->EvalAddInPlace(result, cEvalLinearWSumBFV(p, csq, Degree(csq)));
+//    return result;
+
+    Ciphertext<DCRTPoly> result = p2[m - 1]->Clone();
+    if (auto d = Degree(csq); d > 0) {
+        if (d == 0)
+            x->GetCryptoContext()->EvalAddInPlace(result, cEvalMultConstBFV(p.front(), csq[1]));
+        else
+            x->GetCryptoContext()->EvalAddInPlace(result, cEvalLinearWSumBFV(p, csq, d));
+    }
+    cEvalAddInPlaceConstBFV(result, csq.front());
+    return result;
+}
+
+
+#ifdef ITERATIVE
+
+struct TreeNode {
+    uint32_t m;
+    std::vector<int64_t> qrq, csq, csr;
+    Ciphertext<DCRTPoly> res;
+    TreeNode* left{nullptr};
+    TreeNode* right{nullptr};
+    TreeNode(uint32_t m, const std::vector<int64_t>& qrq) : m(m), qrq(qrq) {}
+};
+std::vector<TreeNode> schedule;
+
+#else
+
+void cInnerEvalPolyPSBFVPrecompute(const std::vector<int64_t>& f2, uint32_t k, uint32_t m) {
+    // Compute k*2^m because we use it often
+    uint32_t k2m2k = k * (1 << (m - 1)) - k;
+
+    // Divide f2 by x^{k*2^{m-1}}
+    std::vector<int64_t> xkm(k2m2k + k + 1);
+    xkm.back() = 1;
+
+    auto divqr = LongDivisionPolyMod(f2, xkm);
+    qr[m].push(divqr);
+
+    // Subtract x^{k(2^{m-1} - 1)} from r
+    auto& r2 = divqr->r;
+    if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
+        r2[k2m2k] -= 1;
+        r2.resize(Degree(r2) + 1);
+    }
+    else {
+        r2.resize(k2m2k + 1);
+        r2.back() = -1;
+    }
+
+    // Divide r2 by q
+    auto divcs = LongDivisionPolyMod(r2, divqr->q);
+    cs[m].push(divcs);
+
+    // Add x^{k(2^{m-1} - 1)} to s
+    auto& s2 = divcs->r;
+    s2.resize(k2m2k + 1);
+    s2.back() = 1;
+
+    if (Degree(divqr->q) > k)
+        cInnerEvalPolyPSBFVPrecompute(divqr->q, k, m - 1);
+
+    if (!std::equal(s2.begin(), s2.end(), divqr->q.begin()) && (Degree(s2) > k))
+        cInnerEvalPolyPSBFVPrecompute(s2, k, m - 1);
+}
+
+Ciphertext<DCRTPoly> cInnerEvalPolyPSBFVWithPrecompute(const ConstCiphertext<DCRTPoly>& x, uint32_t k, uint32_t m,
+                                                       const std::vector<Ciphertext<DCRTPoly>>& powers,
+                                                       const std::vector<Ciphertext<DCRTPoly>>& powers2) {
+    auto qrq = std::move(qr[m].front()->q);
+    qr[m].pop();
+
+    auto csq = std::move(cs[m].front()->q);
+    auto csr = std::move(cs[m].front()->r);
+    cs[m].pop();
+
+#ifdef TESTALT0
+    Ciphertext<DCRTPoly> qu = (Degree(qrq) > k)
+                                ? cInnerEvalPolyPSBFVWithPrecompute(x, k, m - 1, powers, powers2)
+                                : evalqu(x, k, qrq, powers);
+
+    const auto& cc = x->GetCryptoContext();
+    if (std::equal(csr.begin(), csr.end(), qrq.begin()))
+        return cc->EvalAdd(cc->EvalMult(evalcu(x, m, csq, powers, powers2), qu), qu);
+
+    Ciphertext<DCRTPoly> su = (Degree(csr) > k)
+                                ? cInnerEvalPolyPSBFVWithPrecompute(x, k, m - 1, powers, powers2)
+                                : evalqu(x, k, csr, powers);
+
+    return cc->EvalAdd(cc->EvalMult(evalcu(x, m, csq, powers, powers2), qu), su);
+#else
+    const auto& cc = x->GetCryptoContext();
+    Ciphertext<DCRTPoly> qu;
+    if (Degree(qrq) > k) {
+        qu = cInnerEvalPolyPSBFVWithPrecompute(x, k, m - 1, powers, powers2);
+    }
+    else {
+        qu = powers[k - 1]->Clone();
+        cEvalAddInPlaceConstBFV(qu, qrq.front());
+        cc->EvalAddInPlace(qu, cEvalLinearWSumBFV(powers, qrq, Degree(qrq, k)));
+    }
+
+    Ciphertext<DCRTPoly> cu(powers2[m - 1]->Clone());
+    cEvalAddInPlaceConstBFV(cu, csq.front());
+    cc->EvalAddInPlace(cu, cEvalLinearWSumBFV(powers, csq, Degree(csq)));
+
+    if (std::equal(csr.begin(), csr.end(), qrq.begin()))
+        return cc->EvalAdd(cc->EvalMult(cu, qu), qu);
+
+    Ciphertext<DCRTPoly> su;
+    if (Degree(csr) > k) {
+        su = cInnerEvalPolyPSBFVWithPrecompute(x, k, m - 1, powers, powers2);
+    }
+    else {
+        su = powers[k - 1]->Clone();
+        cEvalAddInPlaceConstBFV(su, csr.front());
+        cc->EvalAddInPlace(su, cEvalLinearWSumBFV(powers, csr, Degree(csr, k)));
+    }
+
+    return cc->EvalAdd(cc->EvalMult(cu, qu), su);
+#endif
+}
+#endif
+
+
+void cEvalPolyPSBFVPrecompute(const std::vector<int64_t>& coefficients) {
+    uint32_t n = Degree(coefficients);
+    auto degs  = ComputeDegreesPS(n);
+    uint32_t k = degs[0];
+    uint32_t m = degs[1];
+    m_nPS      = n;
+    m_kPS      = k;
+    m_mPS      = m;
+
+    uint32_t k2m2k = k * (1 << (m - 1)) - k;
+    cout << "\nDegree: n = " << n << ", k = " << k << ", m = " << m << ", k2m2k = " << k2m2k << endl;
+
+#ifdef ITERATIVE
+    schedule.reserve(1 << m);
+    schedule.emplace_back(m, coefficients);
+
+    schedule[0].qrq.resize(2 * k2m2k + k + 1);
+    schedule[0].qrq.back() = 1;
+
+    std::vector<int64_t> xkm(k2m2k + k + 1);
+
+    uint32_t i = 0;
+    while (i < schedule.size()) {
+        auto& node = schedule[i];
+        ++i;
+
+        k2m2k = k * (1 << (node.m - 1)) - k;
+        xkm.resize(k2m2k + k + 1);
+        xkm.back() = 1;
+
+        auto divqr = LongDivisionPolyMod(node.qrq, xkm);
+        node.qrq   = std::move(divqr->q);
+
+        // Subtract x^{k(2^{m-1} - 1)} from r
+        auto& r2 = divqr->r;
+        if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
+            r2[k2m2k] -= 1;
+            r2.resize(Degree(r2) + 1);
+        }
+        else {
+            r2.resize(k2m2k + 1);
+            r2.back() = -1;
+        }
+
+        auto divcs = LongDivisionPolyMod(r2, node.qrq);
+        node.csq   = std::move(divcs->q);
+        node.csr   = std::move(divcs->r);
+        node.csr.resize(k2m2k + 1);
+        node.csr.back() = 1;
+
+        if (Degree(node.qrq) > k) {
+            schedule.emplace_back(node.m - 1, node.qrq);
+            node.left = &schedule.back();
+        }
+
+#ifdef TESTALT0
+        if (Degree(node.csr) > k) {
+#else
+        if (!std::equal(node.csr.begin(), node.csr.end(), node.qrq.begin()) && (Degree(node.csr) > k)) {
+#endif
+            schedule.emplace_back(node.m - 1, node.csr);
+            node.right = &schedule.back();
+        }
+    }
+#else
+    qr.resize(m + 1);
+    cs.resize(m + 1);
+
+    std::vector<int64_t> f2(coefficients);
+    f2.resize(2 * k2m2k + k + 1);
+    f2.back() = 1;
+
+    cInnerEvalPolyPSBFVPrecompute(f2, k, m);
+#endif
+}
+
+Ciphertext<DCRTPoly> cEvalPolyPSBFVWithPrecompute(const ConstCiphertext<DCRTPoly>& x, bool symmetric) {
+
+    uint32_t n = m_nPS;
+    uint32_t k = m_kPS;
+    uint32_t m = m_mPS;
+
+    std::cerr << "\nDegree: n = " << n << ", k = " << k << ", m = " << m << endl;
+
+    TimeVar tIn;
+    TIC(tIn);
+
+    const auto& cc = x->GetCryptoContext();
+    std::vector<Ciphertext<DCRTPoly>> powers;
+    powers.reserve(k);
+    powers.push_back((symmetric ? cc->EvalSquare(x) : x->Clone()));
+
+    // computes all powers up to k for x
+    uint32_t powerOf2 = 2;
+    uint32_t rem      = 0;
+    for (uint32_t i = 2; i <= k; i++) {
+        powers.push_back((rem == 0) ? cc->EvalSquare(powers[(powerOf2 >> 1) - 1])
+                                    : cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]));
+        if (++rem == powerOf2) {
+            powerOf2 <<= 1;
+            rem = 0;
+        }
+    }
+
+    std::vector<Ciphertext<DCRTPoly>> powers2;
+    powers2.reserve(m);
+    powers2.push_back(powers.back()->Clone());
+    auto power2km1 = powers.back()->Clone();
+    for (uint32_t i = 1; i < m; i++) {
+        powers2.push_back(cc->EvalSquare(powers2[i - 1]));
+        power2km1 = cc->EvalMult(power2km1, powers2.back());
+    }
+
+    std::cout << "-----Time to compute the powers for poly eval: " << TOC_NS(tIn) / 1000000000.0 << " s" << std::endl;
+
+#ifdef ITERATIVE
+    for (auto node = schedule.rbegin(); node != schedule.rend(); ++node) {
+        Ciphertext<DCRTPoly> qu = node->left
+                                ? node->left->res
+                                : evalqu(x, k, node->qrq, powers);
+#ifndef TESTALT0
+        if (std::equal(node->csr.begin(), node->csr.end(), node->qrq.begin()))
+            node->res = cc->EvalAdd(cc->EvalMult(evalcu(x, node->m, node->csq, powers, powers2), qu), qu);
+#endif
+        Ciphertext<DCRTPoly> su = node->right
+                                ? node->right->res
+                                : evalqu(x, k, node->csr, powers);
+        node->res = cc->EvalAdd(cc->EvalMult(evalcu(x, node->m, node->csq, powers, powers2), qu), su);
+    }
+    return cc->EvalSub(schedule.front().res, power2km1);
+#else
+    return cc->EvalSub(cInnerEvalPolyPSBFVWithPrecompute(x, k, m, powers, powers2), power2km1);
+#endif
+}
+
+Ciphertext<DCRTPoly> cEvalLTNWithPrecompute(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
+                                           const std::vector<ConstPlaintext>& A, uint32_t dim1) {
+
+    uint32_t N     = A.size();
+    uint32_t M     = cc.GetCyclotomicOrder();
+    uint32_t bStep = (dim1 == 0) ? getRatioBSGSPow2(N / 2) : dim1;
+    uint32_t gStep = ceil(static_cast<double>(N / 2) / bStep);
+
+    auto ctxt_swapped = cc.Compress(cc.EvalAtIndex(ctxt, N / 2), 1);
+    ctxt = cc.Compress(ctxt, 1);
+
+    std::vector<Ciphertext<DCRTPoly>> fastRotation;
+    fastRotation.reserve(gStep);
+    auto digits  = cc.EvalFastRotationPrecompute(ctxt);
+
+    std::vector<Ciphertext<DCRTPoly>> fastRotation2;
+    fastRotation2.reserve(gStep);
+    auto digits2 = cc.EvalFastRotationPrecompute(ctxt_swapped);
+
+    for (uint32_t j = 1; j < gStep; j++) {
+        fastRotation.push_back(cc.EvalFastRotation(ctxt, j * bStep, M, digits));
+        fastRotation2.push_back(cc.EvalFastRotation(ctxt_swapped, j * bStep, M, digits2));
+    }
+
+    Ciphertext<DCRTPoly> result = cc.EvalMult(ctxt, A[0]);
+    cc.EvalAddInPlace(result, cc.EvalMult(ctxt_swapped, A[bStep * gStep]));
+    for (uint32_t j = 1, j2 = gStep + 1; j < gStep; ++j, ++j2) {
+        cc.EvalAddInPlace(result, cc.EvalMult(fastRotation[j - 1], A[bStep * j]));
+        cc.EvalAddInPlace(result, cc.EvalMult(fastRotation2[j - 1], A[bStep * j2]));
+    }
+
+    Ciphertext<DCRTPoly> inner;
+    for (uint32_t i = 1; i < bStep; ++i) {
+        inner = cc.EvalMult(ctxt, A[i]);
+        cc.EvalAddInPlace(inner, cc.EvalMult(ctxt_swapped, A[bStep * gStep + i]));
+        for (uint32_t j = 1, j2 = gStep + 1; j < gStep; ++j, ++j2) {
+            cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j - 1], A[bStep * j + i]));
+            cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation2[j - 1], A[bStep * j2 + i]));
+        }
+        cc.EvalAddInPlace(result, cc.EvalFastRotation(inner, i, M, cc.EvalFastRotationPrecompute(inner)));
+    }
+
+    return result;
+}
+
+Ciphertext<DCRTPoly> cEvalSlotsToCoeffs(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
+                                       bool precompute) {
+    auto ctxtToDecode = ctxt;  // ->Clone();
+    if (precompute)
+        return cEvalLTNWithPrecompute(cc, ctxtToDecode, m_UTPre, m_dim1BF);
+    return EvalLTNWithoutPrecompute(cc, ctxtToDecode, m_UT, m_dim1BF);
+}
+
+
+void cLUTthroughBFV() {
+    std::cout << "\n*****AMORTIZED LUT*****\n" << std::endl;
+
+    TimeVar tVar, tOnline;
+
+    // Step 1. FHEW cryptocontext generation
+    TIC(tVar);
+    auto ccLWE            = BinFHEContext();
+    const uint32_t n      = 1024;
+    const uint32_t NN     = 1024;  // RSGW ring dim. Not used
+    const uint32_t p      = 512;
+    const NativeInteger q = 65537;
+    const NativeInteger Q = 18014398509404161;
+
+    ccLWE.BinFHEContext::GenerateBinFHEContext(n, NN, q, Q, 3.19, 32, 32, 32, UNIFORM_TERNARY, GINX, 10);
+    auto params = ccLWE.GetParams();
+    auto QFHEW  = ccLWE.GetParams()->GetLWEParams()->Getq();
+
+    LWEPrivateKey lwesk = ccLWE.KeyGen();
+
+    std::cout << "\n--- Time for Step1: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "    FHEW params: p = " << p << ", n = " << n << ", q = " << q << std::endl;
+
+
+    // Step 2. Main BFV cryptocontext generation
+    uint32_t numDigits = 4;
+    uint32_t maxRelin  = 2;
+    uint32_t numValues = 8;
+
+    CCParams<CryptoContextBFVRNS> parameters;
+    // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
+    parameters.SetPlaintextModulus(q.ConvertToInt());
+    parameters.SetMultiplicativeDepth(18);
+    parameters.SetMaxRelinSkDeg(maxRelin);
+    parameters.SetNumLargeDigits(numDigits);
+    parameters.SetFirstModSize(60);
+    parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(32768);
+
+    CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
+    ccBFV->Enable(PKE);
+    ccBFV->Enable(KEYSWITCH);
+    ccBFV->Enable(LEVELEDSHE);
+    ccBFV->Enable(ADVANCEDSHE);
+
+    auto keys = ccBFV->KeyGen();
+
+    std::cout << "\n--- Time for Step2: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+
+    uint32_t ringDim = ccBFV->GetRingDimension();
+
+    std::cout << "    BFV params: t = " << ccBFV->GetCryptoParameters()->GetPlaintextModulus() << ", N = " << ringDim
+              << ", log2 q = " << log2(ccBFV->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << std::endl;
+
+    std::cout << "    Number of digits for keyswitch: " << numDigits << std::endl;
+    std::cout << "    MaxRelinSkDeg: " << maxRelin << std::endl;
+
+    // Step 3. Intermediate BFV cruptocontext generation
+    TIC(tVar);
+    CCParams<CryptoContextBFVRNS> parameters_KS;
+    // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
+    parameters_KS.SetPlaintextModulus(q.ConvertToInt());
+    parameters_KS.SetMultiplicativeDepth(0);
+    parameters_KS.SetMaxRelinSkDeg(2);
+    parameters_KS.SetRingDim(ringDim);
+    parameters_KS.SetFirstModSize(27);
+    parameters_KS.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
+    parameters_KS.SetSecurityLevel(HEStd_NotSet);
+    parameters_KS.SetMultiplicationTechnique(HPSPOVERQ);  // Don't need HPSPOVERQLEVELED here
+
+    CryptoContext<DCRTPoly> ccBFV_KS = GenCryptoContext(parameters_KS);
+    ccBFV_KS->Enable(PKE);
+    ccBFV_KS->Enable(KEYSWITCH);
+    ccBFV_KS->Enable(LEVELEDSHE);
+    ccBFV_KS->Enable(ADVANCEDSHE);
+
+    auto keys_KS = ccBFV_KS->KeyGen();
+
+    // Ciphertext with intermediate cryptocontext used to switch the ciphertext from the large cryptocontext
+    auto ptxtZeroKS = ccBFV_KS->MakePackedPlaintext(std::vector<int64_t>{0});
+    auto ctxtKS     = ccBFV_KS->Compress(ccBFV_KS->Encrypt(keys_KS.publicKey, ptxtZeroKS), 1);
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ccBFV->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    auto paramsQ                                  = elementParams.GetParams();
+    auto modulus_BFV_from                         = paramsQ[0]->GetModulus();
+
+    const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ccBFV_KS->GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams2 = *(cryptoParams2->GetElementParams());
+    auto paramsQ2                                  = elementParams2.GetParams();
+    auto modulus_BFV_to                            = paramsQ2[0]->GetModulus();
+
+
+    std::cout << "\n--- Time for Step3: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "    modulus_BFV_from: " << modulus_BFV_from << ", modulus_BFV_to: " << modulus_BFV_to << std::endl;
+
+
+    // Step 4. Key generation for switching and precomputations
+    TIC(tVar);
+    // Automorphism keys for homomorphic decoding, FHEW to BFV key and BFV to FHEW key
+    auto keyStruct       = cEvalAmortizedFHEWBootKeyGen(*ccBFV, keys, lwesk, keys_KS.secretKey, 128, 0);
+    auto& ctxt_vec_LWE_sk = keyStruct->FHEWtoBFVKey;
+    auto& BFVtoFHEWSwk    = keyStruct->BFVtoFHEWSwk;
+
+    EvalSlotsToCoeffsPrecompute(*ccBFV, 1, true);
+    cEvalPolyPSBFVPrecompute(DRaMLUT_coeff_sqrt_9);
+
+    std::cout << "\n--- Time for Step4: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+
+
+    // Step 5. Inputs and encryption
+    TIC(tOnline);
+    TIC(tVar);
+
+    vector<int32_t> x1 = {-4, 0, 1, 4, 9, 16, 121, 144};
+    if (x1.size() < numValues)
+        x1.resize(numValues);
+
+    std::vector<LWECiphertext> ctxtsLWE1;
+    ctxtsLWE1.reserve(numValues);
+    for (uint32_t i = 0; i < numValues; i++)
+        ctxtsLWE1.push_back(ccLWE.Encrypt(lwesk, x1[i], FRESH, p));
+
+    std::vector<LWEPlaintext> LWEptxt(numValues);
+    for (uint32_t i = 0; i < numValues; i++)
+        ccLWE.Decrypt(lwesk, ctxtsLWE1[i], &LWEptxt[i], p);
+
+    std::cout << "Encrypted LWE message" << std::endl;
+    std::cout << LWEptxt << std::endl;
+
+    std::cout << "\n--- Time for Step5: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
+
+
+    // Step 6. Conversion from LWE to RLWE
+    TIC(tVar);
+    auto BminusAdotS = EvalFHEWtoBFV(*ccBFV, ctxtsLWE1, ctxt_vec_LWE_sk);
+    std::cout << "\n--- Time for Step6: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
+
+
+    // Step 7. Polynomial evaluation for rounding and modding down
+    TIC(tVar);
+    auto ctxt_poly = cEvalPolyPSBFVWithPrecompute(BminusAdotS, false);
+    std::cout << "\n--- Time for Step7: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
+
+
+    // Step 8. Decoding
+    TIC(tVar);
+    auto decoded = cEvalSlotsToCoeffs(*ccBFV, ctxt_poly, true);
+    std::cout << "\n--- Time for Step8: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
+
+
+    // Step 9. Translating back to FHEW
+    TIC(tVar);
+    auto ctxtsFHEW = EvalBFVtoFHEW(*ccBFV, *ccBFV_KS, decoded, ctxtKS, BFVtoFHEWSwk, modulus_BFV_to, QFHEW, n);
+    std::cout << "\nDecrypting switched ciphertexts" << std::endl;
+    vector<LWEPlaintext> ptxtsFHEW(numValues);
+    for (uint32_t i = 0; i < numValues; i++) {
+        ccLWE.Decrypt(lwesk, ctxtsFHEW[i], &ptxtsFHEW[i], p);
+    }
+    std::cout << ptxtsFHEW << std::endl;
+    std::cout << "\n--- Time for Step9: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
+    std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
+}
