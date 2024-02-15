@@ -195,7 +195,17 @@ public:
     }
 };
 
-#define OPENFHE_THROW(expr) throw lbcrypto::OpenFHEException(expr)
+// ATTN:
+// 1. OPENFHE_THROW is to be overloaded for the period of transition to OpenFHEException only.
+// 2. After that openfhe_error, all classes derived from it and OPENFHE_THROW_OLD must be removed
+// 3. All the macros below should be removed except OPENFHE_THROW_NEW. OPENFHE_THROW_NEW should
+//    be renamed to OPENFHE_THROW
+// #define OPENFHE_THROW(expr) throw lbcrypto::OpenFHEException(expr)
+#define OPENFHE_THROW_OLD(exc, expr) throw exc(__FILE__, __LINE__, (expr))
+#define OPENFHE_THROW_NEW(expr)      throw lbcrypto::OpenFHEException(expr)
+
+#define GET_CORRECT_MACRO(_1, _2, NAME, ...) NAME
+#define OPENFHE_THROW(...)                   GET_CORRECT_MACRO(__VA_ARGS__, OPENFHE_THROW_OLD, OPENFHE_THROW_NEW)(__VA_ARGS__)
 
 }  // namespace lbcrypto
 
