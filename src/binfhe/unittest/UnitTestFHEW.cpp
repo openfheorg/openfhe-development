@@ -252,8 +252,8 @@ protected:
 
             auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
-            LWECiphertext eQ1 = cc.GetLWEScheme().KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-            LWECiphertext eQ0 = cc.GetLWEScheme().KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+            LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+            LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
 
             LWEPlaintext resultAfterKeySwitch1;
             cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
@@ -301,8 +301,8 @@ protected:
             auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
 
             // switches the modulus from Q to q
-            auto ct1 = cc.GetLWEScheme().ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
-            auto ct0 = cc.GetLWEScheme().ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
+            auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
+            auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
 
             LWEPlaintext resultAfterModSwitch1;
             cc.Decrypt(sk, ct1, &resultAfterModSwitch1);

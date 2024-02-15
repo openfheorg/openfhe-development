@@ -241,10 +241,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     // -gsplit-dwarf
     int32_t logApprox = 0;
     const double res  = std::fabs(operand * scFactor);
-    if (res == 0) {
-        // do not do anything; logApprox = 0 in this case
-    }
-    else {
+    if (res > 0) {
         int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
         int32_t logValid = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
                                logSF :
@@ -380,10 +377,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     // -gsplit-dwarf
     int32_t logApprox = 0;
     const double res  = std::fabs(operand * scFactor);
-    if (res == 0) {
-        // do not do anything; logApprox = 0 in this case
-    }
-    else {
+    if (res > 0) {
         int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
         int32_t logValid = (logSF <= MAX_BITS_IN_WORD_LOCAL) ? logSF : MAX_BITS_IN_WORD_LOCAL;
         logApprox        = logSF - logValid;

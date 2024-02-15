@@ -394,7 +394,7 @@ public:
    * Getter for LWE scheme
    * @return
    */
-    const LWEEncryptionScheme& GetLWEScheme() {
+    const std::shared_ptr<LWEEncryptionScheme>& GetLWEScheme() {
         return m_LWEscheme;
     }
 
@@ -449,8 +449,8 @@ private:
     // Shared pointer to Ring GSW + LWE parameters
     std::shared_ptr<BinFHECryptoParams> m_params{nullptr};
 
-    // underlying additive LWE scheme
-    LWEEncryptionScheme m_LWEscheme;
+    // Shared pointer to the underlying additive LWE scheme
+    const std::shared_ptr<LWEEncryptionScheme> m_LWEscheme{std::make_shared<LWEEncryptionScheme>()};
 
     // Shared pointer to the underlying RingGSW/RLWE scheme
     std::shared_ptr<BinFHEScheme> m_binfhescheme{nullptr};
