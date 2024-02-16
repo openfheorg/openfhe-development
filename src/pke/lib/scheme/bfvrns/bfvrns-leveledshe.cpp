@@ -768,14 +768,14 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
 
     DCRTPoly c1  = ciphertext->GetElements()[1];
     size_t sizeQ = c1.GetNumOfElements();
-    if (sizeQ > 1) {
+    if (sizeQ > 1) { // Andreea: This is a change from the dev branch
         size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
         double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
         // how many levels to drop
         uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
         // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
         uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
-        l          = 0;
+        // l          = 0;
 
         c1.SetFormat(COEFFICIENT);
         c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
@@ -825,7 +825,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
         algo->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
 
     size_t sizeQ = cv[0].GetNumOfElements();
-    if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && sizeQ > 1) {
+    if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && sizeQ > 1) {  // Andreea: This is a change from the dev branch
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
         int32_t l = elemParams.GetParams().size() - 1;
 
