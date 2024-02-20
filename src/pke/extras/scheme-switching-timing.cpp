@@ -389,16 +389,11 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
 
     TIC(t);
     // Pre-computations
-    auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE        = modulus_LWE / (2 * beta);
-
-    double scaleSignFHEW    = 8.0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    uint32_t init_level     = 0;
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
-    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSignFHEW);
+    auto modulus_LWE     = 1 << logQ_ccLWE;
+    auto beta            = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE            = modulus_LWE / (2 * beta);
+    double scaleSignFHEW = 8.0;
+    cc->EvalCompareSwitchPrecompute(pLWE, scaleSignFHEW);
     timePrecomp = TOC(t);
     std::cout << "Time to perform precomputations: " << timePrecomp / 1000 << " s" << std::endl;
 
@@ -539,12 +534,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
-    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp / 1000 << " s" << std::endl;
 
@@ -695,12 +685,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
-    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp / 1000 << " s" << std::endl;
 
@@ -853,12 +838,7 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
-    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp / 1000 << " s" << std::endl;
 

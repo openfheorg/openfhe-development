@@ -487,17 +487,6 @@ NativeInteger RoundqQAlter(const NativeInteger& v, const NativeInteger& q, const
         .Mod(q);
 }
 
-NativeInteger RoundqScale(const NativeInteger& v, const NativeInteger& q, const double& Q) {
-    return NativeInteger((BasicInteger)std::floor(0.5 + v.ConvertToDouble() / Q * q.ConvertToDouble())).Mod(q);
-}
-
-NativeInteger RoundqScaleAlter(const NativeInteger& v, const NativeInteger& q, const double& scFactor,
-                               const NativeInteger& p) {
-    return NativeInteger((BasicInteger)std::floor(0.5 + v.ConvertToDouble() / scFactor *
-                                                            (q.ConvertToDouble() / p.ConvertToDouble())))
-        .Mod(q);
-}
-
 EvalKey<DCRTPoly> switchingKeyGenRLWE(
     const PrivateKey<DCRTPoly>& ckksSK,
     ConstLWEPrivateKey& LWEsk) {  // This function is without the intermediate ModSwitch
@@ -702,7 +691,8 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
-    uint32_t towersToDrop                         = 0;
+
+    uint32_t towersToDrop = 0;
     if (L != 0) {
         towersToDrop = elementParams.GetParams().size() - L - 1;
         for (uint32_t i = 0; i < towersToDrop; i++)
@@ -753,6 +743,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
             }
         }
     }
+
     return result;
 }
 
@@ -1059,7 +1050,27 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
     bool isSparse  = (M != m) ? true : false;
 
     auto ctxtToDecode = ctxt->Clone();
-    ctxtToDecode      = cc.Compress(ctxtToDecode, 2);
+
+    uint32_t numTowersToKeep = 2;
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
+        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+        ctxtToDecode = cc.Compress(ctxtToDecode, numTowersToKeep + 1);
+
+        double targetSF =
+            cryptoParams->GetScalingFactorReal(cryptoParams->GetElementParams()->GetParams().size() - numTowersToKeep);
+        double sourceSF    = ctxtToDecode->GetScalingFactor();
+        uint32_t numTowers = ctxtToDecode->GetElements()[0].GetNumOfElements();
+        double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
+        double adjustmentFactor = (targetSF / sourceSF) * (modToDrop / sourceSF);
+
+        ctxtToDecode = cc.EvalMult(ctxtToDecode, adjustmentFactor);
+        cc.GetScheme()->ModReduceInternalInPlace(ctxtToDecode, 1);
+        ctxtToDecode->SetScalingFactor(targetSF);
+    }
+    else {
+        ctxtToDecode = cc.Compress(ctxtToDecode, numTowersToKeep);
+    }
 
     Ciphertext<DCRTPoly> ctxtDecoded;
 
@@ -1258,6 +1269,11 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
         }
     }
 
+    // Obtain the right scaling for encoded messages in FHEW coming from encoded messages in CKKS
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    double scFactor = cryptoParams->GetScalingFactorReal(cryptoParams->GetElementParams()->GetParams().size() - 1);
+    scale *= m_modulus_CKKS_initial.ConvertToDouble() / scFactor;
+
     if (!isSparse) {  // fully packed
         m_U0Pre = EvalLTPrecomputeSwitch(cc, U0, m_dim1CF, m_LCF, scale);
     }
@@ -1273,7 +1289,9 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
 
     // Step 1. Homomorphic decoding
     auto ctxtDecoded = EvalSlotsToCoeffsSwitch(*ccCKKS, ciphertext);
-    ctxtDecoded      = ccCKKS->Compress(ctxtDecoded);
+    ccCKKS->GetScheme()->ModReduceInternalInPlace(ctxtDecoded, 1);
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS->GetCryptoParameters());
 
     // Step 2. Modulus switch to Q', such that CKKS is secure for (Q',n)
     auto ctxtKS = m_ctxtKS->Clone();
@@ -1299,6 +1317,8 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     }
 
     // Step 5. Modulus switch to q in FHEW
+
+    // Compute the necessary factor to obtaine the message Q'/pLWE
     if (m_modulus_LWE != m_modulus_CKKS_from) {
 #pragma omp parallel for
         for (uint32_t i = 0; i < numCtxts; i++) {
@@ -1791,17 +1811,10 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
 }
 
 void SWITCHCKKSRNS::EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE,
-                                                uint32_t initLevel, double scaleSign, bool unit) {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
-
+                                                double scaleSign, bool unit) {
     double scaleCF = 1.0;
-
-    if (pLWE != 0) {
-        double scFactor = cryptoParams->GetScalingFactorReal(initLevel);
-        if (unit)  // The messages are already scaled between 0 and 1, no need to divide by pLWE
-            scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / scFactor;
-        else
-            scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / (scFactor * pLWE);
+    if ((pLWE != 0) && (!unit)) {  // The messages are already scaled between 0 and 1, no need to divide by pLWE
+        scaleCF = 1.0 / pLWE;
     }
     // Else perform no scaling; the implicit FHEW plaintext modulus will be m_modulus_CKKS_initial / scFactor
     scaleCF *= scaleSign;
@@ -1829,16 +1842,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
     if (pLWE != 0) {
-        double scFactor = cryptoParams->GetScalingFactorReal(cDiff->GetLevel());
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-            scFactor = cryptoParams->GetScalingFactorReal(cDiff->GetLevel() + 1);
-
         double scaleCF = 1.0;
-        if (unit)  // The messages are already scaled between 0 and 1, no need to divide by pLWE
-            scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / scFactor;
-        else
-            scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / (scFactor * pLWE);
+        if ((pLWE != 0) && (!unit)) {
+            scaleCF = 1.0 / pLWE;
+        }
         scaleCF *= scaleSign;
+
         EvalCKKStoFHEWPrecompute(*ccCKKS, scaleCF);
     }
 
@@ -1862,10 +1871,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
     if (pLWE != 0) {
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
-        double scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / (scFactor * pLWE);
+        double scaleCF = 1.0 / pLWE;
         scaleCF *= scaleSign;
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
@@ -1947,10 +1953,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
     if (pLWE != 0) {
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
-        double scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / (scFactor * pLWE);
+        double scaleCF = 1.0 / pLWE;
         scaleCF *= scaleSign;
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
@@ -2028,10 +2031,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
     if (pLWE != 0) {
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
-        double scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / (scFactor * pLWE);
+        double scaleCF = 1.0 / pLWE;
         scaleCF *= scaleSign;
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
@@ -2114,10 +2114,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
     if (pLWE != 0) {
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
-        double scaleCF = m_modulus_CKKS_initial.ConvertToDouble() / (scFactor * pLWE);
+        double scaleCF = 1.0 / pLWE;
         scaleCF *= scaleSign;
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }

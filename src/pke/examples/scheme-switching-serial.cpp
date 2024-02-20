@@ -238,7 +238,7 @@ void clientProcess(uint32_t modulus_LWE) {
     auto beta        = clientBinCC->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
-    clientCC->EvalCompareSwitchPrecompute(pLWE, 0, scaleSign, false);
+    clientCC->EvalCompareSwitchPrecompute(pLWE, scaleSign, false);
 
     std::cout << "Done with precomputations" << '\n' << std::endl;
 

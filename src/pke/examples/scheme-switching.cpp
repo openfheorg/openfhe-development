@@ -91,7 +91,7 @@ void SwitchCKKSToFHEW() {
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(FLEXIBLEAUTOEXT);
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
@@ -125,22 +125,14 @@ void SwitchCKKSToFHEW() {
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    // Compute the scaling factor to decrypt correctly in FHEW; the LWE mod switch is performed on the ciphertext at the last level
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
-
+    // Compute the scaling factor to decrypt correctly in FHEW; under the hood, the LWE mod switch will performed on the ciphertext at the last level
     auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
 
-    double scFactor = cryptoParams->GetScalingFactorReal(0);
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        scFactor = cryptoParams->GetScalingFactorReal(1);
-    double scale1 = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE1);
-    double scale2 = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE2);
+    double scale1 = 1.0 / pLWE1;
+    double scale2 = 1.0 / pLWE2;
 
     // Perform the precomputation for switching
     cc->EvalCKKStoFHEWPrecompute(scale1);
@@ -222,10 +214,9 @@ void SwitchCKKSToFHEW() {
         for (size_t i = 0; i < decomp.size(); i++) {
             ct = decomp[i];
             LWEPlaintext resultDecomp;
+            // The last digit should be up to P / p^floor(log_p(P))
             if (i == decomp.size() - 1) {
-                p = pLWE2 /
-                    std::pow((double)pLWE1, std::floor(std::log(pLWE2) /
-                                          std::log(pLWE1)));  // The last digit should be up to P / p^floor(log_p(P))
+                p = pLWE2 / std::pow(static_cast<double>(pLWE1), std::floor(std::log(pLWE2) / std::log(pLWE1)));
             }
             ccLWE->Decrypt(privateKeyFHEW, ct, &resultDecomp, p);
             std::cout << "(" << resultDecomp << " * " << NativeInteger(pLWE1) << "^" << i << ")";
@@ -245,8 +236,8 @@ void SwitchFHEWtoCKKS() {
 
     // A. Specify main parameters
     ScalingTechnique scTech = FIXEDAUTO;
-    uint32_t multDepth =
-        3 + 9 + 1;  // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling
+    // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling
+    uint32_t multDepth = 3 + 9 + 1;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     uint32_t scaleModSize = 50;
@@ -398,13 +389,12 @@ void FloorViaSchemeSwitching() {
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
     // Step 1: Setup CryptoContext for CKKS
-    ScalingTechnique scTech = FIXEDAUTO;
+    ScalingTechnique scTech = FLEXIBLEAUTO;
 
-    uint32_t multDepth =
-        3 + 9 + 1;  // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling
+    // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling
+    uint32_t multDepth = 3 + 9 + 1;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
-
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
@@ -456,20 +446,11 @@ void FloorViaSchemeSwitching() {
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
-
+    // Set the scaling factor to be able to decrypt; under the hood, the LWE mod switch will be performed on the ciphertext at the last level
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    double scFactor = cryptoParams->GetScalingFactorReal(0);
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        scFactor = cryptoParams->GetScalingFactorReal(1);
-    double scaleCF = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE);
+    double scaleCF   = 1.0 / pLWE;
 
     cc->EvalCKKStoFHEWPrecompute(scaleCF);
 
@@ -523,7 +504,8 @@ void FuncViaSchemeSwitching() {
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
     // Step 1: Setup CryptoContext for CKKS
-    uint32_t multDepth    = 9 + 3 + 2;  // 1 for CKKS to FHEW, 14 for FHEW to CKKS
+    // 1 for CKKS to FHEW, 14 for FHEW to CKKS
+    uint32_t multDepth    = 9 + 3 + 2;
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 2048;
     SecurityLevel sl      = HEStd_NotSet;
@@ -535,7 +517,7 @@ void FuncViaSchemeSwitching() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(FIXEDAUTO);
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
@@ -575,17 +557,10 @@ void FuncViaSchemeSwitching() {
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
+    // Set the scaling factor to be able to decrypt; under the hood, the LWE mod switch will be performed on the ciphertext at the last level
     auto pLWE =
         ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision because GenerateLUTviaFunction needs p < q
-    double scFactor = cryptoParams->GetScalingFactorReal(0);
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        scFactor = cryptoParams->GetScalingFactorReal(1);
-    double scaleCF = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE);
+    double scaleCF = 1.0 / pLWE;
 
     cc->EvalCKKStoFHEWPrecompute(scaleCF);
 
@@ -668,7 +643,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
     // Step 1: Setup CryptoContext for CKKS
-    ScalingTechnique scTech = FIXEDAUTO;
+    ScalingTechnique scTech = FLEXIBLEAUTO;
     uint32_t multDepth      = 17;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
@@ -707,7 +682,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
               << std::endl;
 
-    // Generate encryption keys.
+    // Generate encryption keys
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
@@ -728,17 +703,12 @@ void ComparisonViaSchemeSwitching() {
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
-    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
-    auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
-
-    double scaleSignFHEW    = 1.0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    uint32_t init_level     = 0;
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
-    cc->EvalCompareSwitchPrecompute(pLWE2, init_level, scaleSignFHEW);
+    auto pLWE1           = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto modulus_LWE     = 1 << logQ_ccLWE;
+    auto beta            = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE2           = modulus_LWE / (2 * beta);  // Large precision
+    double scaleSignFHEW = 1.0;
+    cc->EvalCompareSwitchPrecompute(pLWE2, scaleSignFHEW);
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
@@ -811,7 +781,7 @@ void ComparisonViaSchemeSwitching() {
 
     // Step 2': Recompute the scaled matrix using a larger scaling
     scaleSignFHEW = 8.0;
-    cc->EvalCompareSwitchPrecompute(pLWE2, init_level, scaleSignFHEW);
+    cc->EvalCompareSwitchPrecompute(pLWE2, scaleSignFHEW);
 
     // Step 4': CKKS to FHEW switching and sign evaluation to test correctness
     LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
@@ -852,7 +822,7 @@ void ComparisonViaSchemeSwitching() {
         << "\nFor very small LWE plaintext modulus and initial fractional inputs, the sign does not always behave properly close to the boundaries at 0 and p/2."
         << std::endl;
     scaleSignFHEW = 1.0;
-    cc->EvalCompareSwitchPrecompute(pLWE1, init_level, scaleSignFHEW);
+    cc->EvalCompareSwitchPrecompute(pLWE1, scaleSignFHEW);
 
     // Step 4'': CKKS to FHEW switching and sign evaluation to test correctness
     LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
@@ -904,9 +874,9 @@ void ArgminViaSchemeSwitching() {
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
-    ScalingTechnique scTech = FIXEDAUTO;
-    uint32_t multDepth =
-        9 + 3 + 1 + static_cast<int>(std::log2(numValues));  // 13 for FHEW to CKKS, log2(numValues) for argmin
+    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
+    // 13 for FHEW to CKKS, log2(numValues) for argmin
+    uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
 
@@ -944,7 +914,7 @@ void ArgminViaSchemeSwitching() {
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -957,15 +927,10 @@ void ArgminViaSchemeSwitching() {
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
     // This formulation is for clarity
-    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
-    // cc->EvalCompareSwitchPrecompute(pLWE / scaleSign, init_level, 1);
+    // cc->EvalCompareSwitchPrecompute(pLWE / scaleSign, 1);
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
@@ -1039,9 +1004,9 @@ void ArgminViaSchemeSwitchingAlt() {
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
-    ScalingTechnique scTech = FIXEDAUTO;
-    uint32_t multDepth =
-        9 + 3 + 1 + static_cast<int>(std::log2(numValues));  // 13 for FHEW to CKKS, log2(numValues) for argmin
+    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
+    // 13 for FHEW to CKKS, log2(numValues) for argmin
+    uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
 
@@ -1080,7 +1045,7 @@ void ArgminViaSchemeSwitchingAlt() {
     params.SetComputeArgmin(true);
     params.SetUseAltArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1093,15 +1058,10 @@ void ArgminViaSchemeSwitchingAlt() {
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
     // This formulation is for clarity
-    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
-    // cc->EvalCompareSwitchPrecompute(pLWE / scaleSign, init_level, 1);
+    // cc->EvalCompareSwitchPrecompute(pLWE / scaleSign, 1);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1176,10 +1136,9 @@ void ArgminViaSchemeSwitchingUnit() {
     uint32_t slots          = 32;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 32;
-    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
-    uint32_t multDepth =
-        9 + 3 + 1 +
-        static_cast<int>(std::log2(numValues));  // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    ScalingTechnique scTech = FLEXIBLEAUTO;
+    // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
 
@@ -1218,7 +1177,7 @@ void ArgminViaSchemeSwitchingUnit() {
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1226,13 +1185,8 @@ void ArgminViaSchemeSwitchingUnit() {
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
     // Here we assume the message does not need scaling, as they are in the unit circle.
-    cc->EvalCompareSwitchPrecompute(1, init_level, 1);
+    cc->EvalCompareSwitchPrecompute(1, 1);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1316,10 +1270,9 @@ void ArgminViaSchemeSwitchingAltUnit() {
     uint32_t slots          = 32;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 32;
-    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
-    uint32_t multDepth =
-        9 + 3 + 1 +
-        static_cast<int>(std::log2(numValues));  // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    ScalingTechnique scTech = FLEXIBLEAUTO;
+    // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
 
@@ -1359,7 +1312,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     params.SetComputeArgmin(true);
     params.SetUseAltArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1367,13 +1320,8 @@ void ArgminViaSchemeSwitchingAltUnit() {
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    uint32_t init_level     = 0;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        init_level = 1;
     // Here we assume the message does not need scaling, as they are in the unit circle.
-    cc->EvalCompareSwitchPrecompute(1, init_level, 1);
+    cc->EvalCompareSwitchPrecompute(1, 1);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1447,10 +1395,9 @@ void PolyViaSchemeSwitching() {
     // Step 1: Setup CryptoContext for CKKS to be switched into
 
     // A. Specify main parameters
-    ScalingTechnique scTech = FIXEDAUTO;
-    uint32_t multDepth =
-        3 + 9 + 1 +
-        2;  // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling, 3 levels for functionality
+    ScalingTechnique scTech = FIXEDMANUAL;
+    // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling, 3 levels for functionality
+    uint32_t multDepth = 3 + 9 + 1 + 2;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     uint32_t scaleModSize = 50;
@@ -1508,15 +1455,8 @@ void PolyViaSchemeSwitching() {
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
-    auto paramsQ                                  = elementParams.GetParams();
-    auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
-    double scFactor                               = cryptoParams->GetScalingFactorReal(0);
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        scFactor = cryptoParams->GetScalingFactorReal(1);
-    double scale1 = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE1);
-    double scale2 = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE2);
+    double scale1 = 1.0 / pLWE1;
+    double scale2 = 1.0 / pLWE2;
 
     // Generate keys for the CKKS intermediate computation
     cc->EvalMultKeyGen(keys.secretKey);
