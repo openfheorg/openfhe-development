@@ -223,25 +223,21 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev) {
-    int64_t result;
-    std::uniform_int_distribution<int32_t> uniform_sign(0, 1);
+    std::uniform_int_distribution<int64_t> uniform_sign(0, 1);
     std::uniform_int_distribution<int64_t> uniform_j(0, ceil(stddev) - 1);
 
     PRNG& g = PseudoRandomNumberGenerator::GetPRNG();
 
-    bool flagSuccess = false;
-    int32_t k;
-
-    while (!flagSuccess) {
+    while (true) {
         // STEP D1
-        k = AlgorithmG(g);
+        int32_t k = AlgorithmG(g);
 
         // STEP D2
         if (!AlgorithmP(g, k * (k - 1)))
             continue;
 
         // STEP D3
-        int32_t s = uniform_sign(g);
+        int64_t s = uniform_sign(g);
         if (s == 0)
             s = -1;
 
@@ -265,11 +261,8 @@ int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mea
             continue;
 
         // STEP D8
-        result      = s * (i0 + j);
-        flagSuccess = true;
+        return (s * (i0 + j));
     }
-
-    return result;
 }
 
 template <typename VecType>
