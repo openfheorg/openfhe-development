@@ -99,16 +99,16 @@ int main() {
     std::cerr << "step 2" << std::endl;
 
     // Homomorphic multiplications
-    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
-    auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
+    //    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+    //    auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
 
     std::cerr << "step 3" << std::endl;
 
     // Homomorphic rotations
-    auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
-    auto ciphertextRot2 = cryptoContext->EvalRotate(ciphertext1, 2);
-    auto ciphertextRot3 = cryptoContext->EvalRotate(ciphertext1, -1);
-    auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
+    //    auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
+    //    auto ciphertextRot2 = cryptoContext->EvalRotate(ciphertext1, 2);
+    //    auto ciphertextRot3 = cryptoContext->EvalRotate(ciphertext1, -1);
+    //    auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
 
     std::cerr << "step 4" << std::endl;
 
@@ -118,24 +118,24 @@ int main() {
     Plaintext plaintextAddResult;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAddResult, &plaintextAddResult);
 
-    // Decrypt the result of multiplications
-    Plaintext plaintextMultResult;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
-
-    // Decrypt the result of rotations
-    Plaintext plaintextRot1;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot1, &plaintextRot1);
-    Plaintext plaintextRot2;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot2, &plaintextRot2);
-    Plaintext plaintextRot3;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
-    Plaintext plaintextRot4;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
-
-    plaintextRot1->SetLength(vectorOfInts1.size());
-    plaintextRot2->SetLength(vectorOfInts1.size());
-    plaintextRot3->SetLength(vectorOfInts1.size());
-    plaintextRot4->SetLength(vectorOfInts1.size());
+    //    // Decrypt the result of multiplications
+    //    Plaintext plaintextMultResult;
+    //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
+    //
+    //    // Decrypt the result of rotations
+    //    Plaintext plaintextRot1;
+    //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot1, &plaintextRot1);
+    //    Plaintext plaintextRot2;
+    //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot2, &plaintextRot2);
+    //    Plaintext plaintextRot3;
+    //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
+    //    Plaintext plaintextRot4;
+    //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
+    //
+    //    plaintextRot1->SetLength(vectorOfInts1.size());
+    //    plaintextRot2->SetLength(vectorOfInts1.size());
+    //    plaintextRot3->SetLength(vectorOfInts1.size());
+    //    plaintextRot4->SetLength(vectorOfInts1.size());
 
     std::cout << "Plaintext #1: " << plaintext1 << std::endl;
     std::cout << "Plaintext #2: " << plaintext2 << std::endl;
@@ -144,11 +144,11 @@ int main() {
     // Output results
     std::cout << "\nResults of homomorphic computations" << std::endl;
     std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
-    std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
-    std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
-    std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
-    std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
-    std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
+    //    std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
+    //    std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
+    //    std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
+    //    std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
+    //    std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
 
     return 0;
 }
