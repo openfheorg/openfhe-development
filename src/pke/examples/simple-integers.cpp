@@ -41,7 +41,7 @@ int main() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(2);
+    parameters.SetMultiplicativeDepth(4);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -67,34 +67,50 @@ int main() {
 
     // First plaintext vector is encoded
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1, 1, 1);
     // Second plaintext vector is encoded
     std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2, 1, 1);
     // Third plaintext vector is encoded
     std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
+    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3, 1, 1);
+
+    std::cerr << "crypto params = " << *cryptoContext->GetCryptoParameters() << std::endl;
+    std::cerr << "params = " << *plaintext3->GetElement<DCRTPoly>().GetParams() << std::endl;
+
+    std::cerr << "step 0.1" << std::endl;
 
     // The encoded vectors are encrypted
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+
+    std::cerr << "step 0.2" << std::endl;
+
     auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
     auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
 
     // Sample Program: Step 4: Evaluation
 
+    std::cerr << "step 1" << std::endl;
+
     // Homomorphic additions
     auto ciphertextAdd12     = cryptoContext->EvalAdd(ciphertext1, ciphertext2);
     auto ciphertextAddResult = cryptoContext->EvalAdd(ciphertextAdd12, ciphertext3);
 
+    std::cerr << "step 2" << std::endl;
+
     // Homomorphic multiplications
     auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
     auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
+
+    std::cerr << "step 3" << std::endl;
 
     // Homomorphic rotations
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
     auto ciphertextRot2 = cryptoContext->EvalRotate(ciphertext1, 2);
     auto ciphertextRot3 = cryptoContext->EvalRotate(ciphertext1, -1);
     auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
+
+    std::cerr << "step 4" << std::endl;
 
     // Sample Program: Step 5: Decryption
 

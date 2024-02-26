@@ -212,11 +212,11 @@ class CryptoContextImpl : public Serializable {
                             uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         if (level > 0) {
-            if (getSchemeId() == SCHEME::BFVRNS_SCHEME) {
-                std::string errorMsg("The level value should be zero for BFVRNS_SCHEME. Currently: level is [" +
-                                     std::to_string(level) + "]");
-                OPENFHE_THROW(errorMsg);
-            }
+//            if (getSchemeId() == SCHEME::BFVRNS_SCHEME) {
+//                std::string errorMsg("The level value should be zero for BFVRNS_SCHEME. Currently: level is [" +
+//                                     std::to_string(level) + "]");
+//                OPENFHE_THROW(errorMsg);
+//            }
             // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
             // readily available. so, what we get is numModuli and use it for calculations
             size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
@@ -237,26 +237,38 @@ class CryptoContextImpl : public Serializable {
             }
         }
 
+        std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
+        if (level != 0) {
+            ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
+            for (uint32_t i = 0; i < level; i++) {
+                elemParams.PopLastParam();
+            }
+            elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+        }
+        else {
+            elemParamsPtr = cryptoParams->GetElementParams();
+        }
+
         Plaintext p;
         if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
                                                        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
             NativeInteger scf;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
-                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
+                                                      getSchemeId(), 1, level, scf);
                 p->SetNoiseScaleDeg(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
-                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
+                                                      getSchemeId(), depth, level, scf);
             }
         }
         else {
-            auto elementParams = this->GetElementParams();
-            p = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
-                                                getSchemeId());
+            // auto elementParams = this->GetElementParams();
+            p = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
+                                                getSchemeId(), depth, level);
         }
 
         return p;
