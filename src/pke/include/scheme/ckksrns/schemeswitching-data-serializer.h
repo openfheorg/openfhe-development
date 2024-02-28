@@ -77,7 +77,7 @@ protected:
 public:
     void SetDataDirectory(const std::string& dir) {
         if (dir.empty()) {
-            OPENFHE_THROW(config_error, "dir is an empty string");
+            OPENFHE_THROW("dir is an empty string");
         }
 
         // remove slash if it is the last charactes in "dir"

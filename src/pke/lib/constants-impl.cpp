@@ -83,7 +83,7 @@ ScalingTechnique convertToScalingTechnique(const std::string& str) {
         return NORESCALE;
 
     std::string errMsg(std::string("Unknown ScalingTechnique ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 ScalingTechnique convertToScalingTechnique(uint32_t num) {
     auto scTech = static_cast<ScalingTechnique>(num);
@@ -100,7 +100,7 @@ ScalingTechnique convertToScalingTechnique(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for ScalingTechnique ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
     switch (t) {
@@ -142,7 +142,7 @@ ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str) {
         return DIVIDE_AND_ROUND_HRA;
 
     std::string errMsg(std::string("Unknown ProxyReEncryptionMode ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num) {
     auto encrMode = static_cast<ProxyReEncryptionMode>(num);
@@ -158,7 +158,7 @@ ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for ProxyReEncryptionMode ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
     switch (p) {
@@ -193,7 +193,7 @@ MultipartyMode convertToMultipartyMode(const std::string& str) {
         return NOISE_FLOODING_MULTIPARTY;
 
     std::string errMsg(std::string("Unknown MultipartyMode ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 MultipartyMode convertToMultipartyMode(uint32_t num) {
     auto mptyMode = static_cast<MultipartyMode>(num);
@@ -207,7 +207,7 @@ MultipartyMode convertToMultipartyMode(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for MultipartyMode ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, MultipartyMode t) {
     switch (t) {
@@ -234,7 +234,7 @@ ExecutionMode convertToExecutionMode(const std::string& str) {
         return EXEC_NOISE_ESTIMATION;
 
     std::string errMsg(std::string("Unknown ExecutionMode ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 ExecutionMode convertToExecutionMode(uint32_t num) {
     auto execMode = static_cast<ExecutionMode>(num);
@@ -247,7 +247,7 @@ ExecutionMode convertToExecutionMode(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for ExecutionMode ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, ExecutionMode t) {
     switch (t) {
@@ -271,7 +271,7 @@ DecryptionNoiseMode convertToDecryptionNoiseMode(const std::string& str) {
         return NOISE_FLOODING_DECRYPT;
 
     std::string errMsg(std::string("Unknown DecryptionNoiseMode ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num) {
     auto noiseMode = static_cast<DecryptionNoiseMode>(num);
@@ -284,7 +284,7 @@ DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for DecryptionNoiseMode ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t) {
     switch (t) {
@@ -308,7 +308,7 @@ KeySwitchTechnique convertToKeySwitchTechnique(const std::string& str) {
         return HYBRID;
 
     std::string errMsg(std::string("Unknown KeySwitchTechnique ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num) {
     auto ksTech = static_cast<KeySwitchTechnique>(num);
@@ -322,7 +322,7 @@ KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for KeySwitchTechnique ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t) {
     switch (t) {
@@ -346,7 +346,7 @@ EncryptionTechnique convertToEncryptionTechnique(const std::string& str) {
         return EXTENDED;
 
     std::string errMsg(std::string("Unknown EncryptionTechnique ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 EncryptionTechnique convertToEncryptionTechnique(uint32_t num) {
     auto encrTech = static_cast<EncryptionTechnique>(num);
@@ -359,7 +359,7 @@ EncryptionTechnique convertToEncryptionTechnique(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for EncryptionTechnique ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t) {
     switch (t) {
@@ -387,7 +387,7 @@ MultiplicationTechnique convertToMultiplicationTechnique(const std::string& str)
         return HPSPOVERQLEVELED;
 
     std::string errMsg(std::string("Unknown MultiplicationTechnique ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num) {
     auto multTech = static_cast<MultiplicationTechnique>(num);
@@ -402,7 +402,7 @@ MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for MultiplicationTechnique ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t) {
     switch (t) {
@@ -454,7 +454,7 @@ COMPRESSION_LEVEL convertToCompressionLevel(const std::string& str) {
         return SLACK;
 
     std::string errMsg(std::string("Unknown COMPRESSION_LEVEL ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num) {
     auto compressionLevel = static_cast<COMPRESSION_LEVEL>(num);
@@ -467,7 +467,7 @@ COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for COMPRESSION_LEVEL ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL p) {
     switch (p) {

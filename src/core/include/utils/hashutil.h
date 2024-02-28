@@ -59,7 +59,7 @@ public:
                 return;
 
             default:
-                OPENFHE_THROW(not_available_error, "ERROR: Unknown Hash Algorithm");
+                OPENFHE_THROW("ERROR: Unknown Hash Algorithm");
         }
     }
 

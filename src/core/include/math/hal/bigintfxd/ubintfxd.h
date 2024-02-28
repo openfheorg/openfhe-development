@@ -780,12 +780,12 @@ public:
 
     BigIntegerFixedT ModMulFastConst(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
                                      const BigIntegerFixedT& bInv) const {
-        OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 2");
+        OPENFHE_THROW("ModMulFastConst is not implemented for backend 2");
     }
 
     BigIntegerFixedT& ModMulFastConstEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
                                         const BigIntegerFixedT& bInv) {
-        OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 2");
+        OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 2");
     }
 
     /**
@@ -890,7 +890,7 @@ public:
             result += ((T)this->m_value[m_nSize - i - 1] << (m_uintBitLength * i));
         }
         if (this->m_MSB > bits) {
-            OPENFHE_THROW(lbcrypto::math_error, std::string("MSB cannot be bigger than ") + std::to_string(bits));
+            OPENFHE_THROW(std::string("MSB cannot be bigger than ") + std::to_string(bits));
         }
         return result;
     }
@@ -1071,8 +1071,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::binary_data(m_value, sizeof(m_value)));
         ar(::cereal::binary_data(&m_MSB, sizeof(m_MSB)));
@@ -1082,8 +1082,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));

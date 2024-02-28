@@ -76,7 +76,7 @@ public:
             m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
         }
         else
-            OPENFHE_THROW(config_error, "ksTech is invalid");
+            OPENFHE_THROW("ksTech is invalid");
     }
 
     /////////////////////////////////////

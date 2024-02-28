@@ -192,7 +192,7 @@ public:
     // sets modulus and the NTL init function uint64_t argument
     inline void SetModulus(const uint64_t& value) {
         if (value == 0) {
-            OPENFHE_THROW(lbcrypto::math_error, "SetModulus(uint64_t) cannot be zero");
+            OPENFHE_THROW("SetModulus(uint64_t) cannot be zero");
         }
         this->m_modulus       = myT(value);
         this->m_modulus_state = INITIALIZED;
@@ -201,7 +201,7 @@ public:
     // sets modulus and the NTL init function myT argument
     void SetModulus(const myT& value) {
         if (value == myT(0)) {
-            OPENFHE_THROW(lbcrypto::math_error, "SetModulus(myT) cannot be zero");
+            OPENFHE_THROW("SetModulus(myT) cannot be zero");
         }
         this->m_modulus       = value;
         this->m_modulus_state = INITIALIZED;
@@ -211,7 +211,7 @@ public:
     inline void SetModulus(const std::string& value) {
         this->m_modulus = myT(value);
         if (this->m_modulus == myT(0)) {
-            OPENFHE_THROW(lbcrypto::math_error, "SetModulus(string) cannot be zero");
+            OPENFHE_THROW("SetModulus(string) cannot be zero");
         }
         this->m_modulus_state = INITIALIZED;
     }
@@ -220,7 +220,7 @@ public:
     inline void SetModulus(const myVecP& value) {
         this->m_modulus = value.GetModulus();
         if (this->m_modulus == myT(0)) {
-            OPENFHE_THROW(lbcrypto::math_error, "SetModulus(myVecP) cannot be zero");
+            OPENFHE_THROW("SetModulus(myVecP) cannot be zero");
         }
         this->m_modulus_state = INITIALIZED;
     }
@@ -230,7 +230,7 @@ public:
             return (this->m_modulus);
         }
         else {
-            OPENFHE_THROW(lbcrypto::config_error, "modulus not set");
+            OPENFHE_THROW("modulus not set");
         }
     }
 
@@ -638,8 +638,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         // YSP. This was seg-faulting in MINGW
         // std::string m;
@@ -670,8 +670,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         std::string m;
         ar(::cereal::make_nvp("m", m));
@@ -700,7 +700,7 @@ private:
     // use when argument to function is myT
     void ModulusCheck(std::string msg) const {
         if (!isModulusSet()) {
-            OPENFHE_THROW(lbcrypto::config_error, msg + " uninitialized this->modulus");
+            OPENFHE_THROW(msg + " uninitialized this->modulus");
         }
     }
 
@@ -708,13 +708,13 @@ private:
     // use when argument to function is myVecP
     void ArgCheckVector(const myVecP& b, std::string fname) const {
         if (this->m_modulus != b.m_modulus) {
-            OPENFHE_THROW(lbcrypto::math_error, fname + " modulus vector modulus vector op of different moduli");
+            OPENFHE_THROW(fname + " modulus vector modulus vector op of different moduli");
         }
         else if (!isModulusSet()) {
-            OPENFHE_THROW(lbcrypto::config_error, fname + " modulus vector modulus vector op  GARBAGE  moduli");
+            OPENFHE_THROW(fname + " modulus vector modulus vector op  GARBAGE  moduli");
         }
         else if (this->GetLength() != b.GetLength()) {
-            OPENFHE_THROW(lbcrypto::math_error, fname + " vectors of different lengths");
+            OPENFHE_THROW(fname + " vectors of different lengths");
         }
     }
 

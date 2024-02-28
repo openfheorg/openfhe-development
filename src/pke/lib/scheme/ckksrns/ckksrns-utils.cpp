@@ -98,7 +98,7 @@ uint32_t GetDepthByDegree(size_t degree) {
 
     std::string errMsg("Polynomial degree is supported from 5 to 2031 inclusive. Its current value is ");
     errMsg += std::to_string(degree);
-    OPENFHE_THROW(math_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 
 }  // namespace
@@ -119,7 +119,7 @@ inline bool IsNotEqualOne(double val) {
 uint32_t Degree(const std::vector<double>& coefficients) {
     const size_t coefficientsSize = coefficients.size();
     if (!coefficientsSize) {
-        OPENFHE_THROW(math_error, "The coefficients vector can not be empty");
+        OPENFHE_THROW("The coefficients vector can not be empty");
     }
 
     int32_t indx = coefficientsSize;
@@ -141,11 +141,11 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
     uint32_t k = Degree(g);
 
     if (n != f.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divident is zero.");
+        OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divident is zero.");
     }
 
     if (k != g.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divisor is zero.");
+        OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divisor is zero.");
     }
 
     if (int32_t(n - k) < 0)
@@ -190,11 +190,11 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
     uint32_t k = Degree(g);
 
     if (n != f.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
+        OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
     }
 
     if (k != g.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
+        OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
     }
 
     if (int32_t(n - k) < 0)
@@ -296,7 +296,7 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
 	degrees.*/
 std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
     if (n == 0) {
-        OPENFHE_THROW(math_error, "ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
+        OPENFHE_THROW("ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
     }
 
     // index n-1 in the vector corresponds to degree n
@@ -332,7 +332,7 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
 uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized) {
     size_t vecSize = vec.size();
     if (!vecSize) {
-        OPENFHE_THROW(math_error, "Cannot perform operation on empty vector. vec.size() == 0");
+        OPENFHE_THROW("Cannot perform operation on empty vector. vec.size() == 0");
     }
 
     size_t degree      = vecSize - 1;

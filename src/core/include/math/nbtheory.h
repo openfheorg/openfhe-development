@@ -151,7 +151,7 @@ inline usint ReverseBits(usint num, usint msb) {
                    shift_trick[msb & 0x7];
         default:
             return -1;
-            // OPENFHE_THROW(math_error, "msbb value not handled:" +
+            // OPENFHE_THROW("msbb value not handled:" +
             // std::to_string(msbb));
     }
 }
@@ -189,7 +189,7 @@ inline constexpr usint GetMSB(T x) {
     }
 #endif
     else {
-        OPENFHE_THROW(math_error, "Unsupported int type (GetMSB() supports 32-, 64- and 128-bit integers only)");
+        OPENFHE_THROW("Unsupported int type (GetMSB() supports 32-, 64- and 128-bit integers only)");
         return 0;
     }
 }

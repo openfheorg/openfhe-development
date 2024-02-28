@@ -169,7 +169,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
                                                 ConstCiphertext<DCRTPoly> ciphertext2) const {
     if (!(ciphertext1->GetCryptoParameters() == ciphertext2->GetCryptoParameters())) {
         std::string errMsg = "AlgorithmSHEBFVrns::EvalMult crypto parameters are not the same";
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     Ciphertext<DCRTPoly> ciphertextMult = ciphertext1->CloneEmpty();
@@ -797,7 +797,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     // verify if the key autoIndex exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(autoIndex);
     if (evalKeyIterator == evalKeyMap.end()) {
-        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+        OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
     }
     auto evalKey = evalKeyIterator->second;
 
@@ -907,15 +907,13 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
     if (towersLeft != 1) {
         OPENFHE_THROW(
-            openfhe_error,
             "BFV Compress is currently supported only for the case when one RNS tower is left after compression.");
     }
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetMultiplicationTechnique() == BEHZ) {
-        OPENFHE_THROW(openfhe_error,
-                      "BFV Compress is not currently supported for BEHZ. Use one of the HPS* methods instead.");
+        OPENFHE_THROW("BFV Compress is not currently supported for BEHZ. Use one of the HPS* methods instead.");
     }
 
     Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);

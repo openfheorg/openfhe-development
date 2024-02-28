@@ -84,7 +84,7 @@ MODSUBEQ_FOR_TYPE(BigInteger)
 Matrix<double> Cholesky(const Matrix<int32_t>& input) {
     //  http://eprint.iacr.org/2013/297.pdf
     if (input.GetRows() != input.GetCols()) {
-        OPENFHE_THROW(math_error, "not square");
+        OPENFHE_THROW("not square");
     }
     size_t rows = input.GetRows();
     Matrix<double> result([]() { return 0; }, rows, rows);
@@ -119,7 +119,7 @@ Matrix<double> Cholesky(const Matrix<int32_t>& input) {
 void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
     //  http://eprint.iacr.org/2013/297.pdf
     if (input.GetRows() != input.GetCols()) {
-        OPENFHE_THROW(math_error, "not square");
+        OPENFHE_THROW("not square");
     }
     size_t rows = input.GetRows();
     //  Matrix<LargeFloat> result([]() { return make_unique<LargeFloat>(); },

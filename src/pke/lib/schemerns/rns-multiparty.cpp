@@ -55,8 +55,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
         if (sizeQl < 3) {
-            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
-                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
+            OPENFHE_THROW("sizeQl " + std::to_string(sizeQl) +
+                          " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
         }
         DugType dug;
         auto params                            = cv[0].GetParams();
@@ -129,8 +129,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
         if (sizeQl < 3) {
-            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
-                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
+            OPENFHE_THROW("sizeQl " + std::to_string(sizeQl) +
+                          " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
         }
         DugType dug;
         auto params                         = cv[0].GetParams();

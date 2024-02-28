@@ -67,7 +67,7 @@ public:
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+            OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
         }
     }
 
@@ -86,16 +86,16 @@ public:
         : PlaintextImpl(vp, ep, CKKSRNS_SCHEME), value(coeffs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
-            OPENFHE_THROW(config_error, "The number of slots should be a power of two");
+            OPENFHE_THROW("The number of slots should be a power of two");
         }
 
         this->slots = (slots) ? slots : GetDefaultSlotSize();
 
         if (this->slots < coeffs.size()) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
+            OPENFHE_THROW("The number of slots cannot be smaller than value vector size");
         }
         else if (this->slots > (GetElementRingDimension() / 2)) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+            OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
         }
 
         this->noiseScaleDeg = noiseScaleDeg;
@@ -112,16 +112,16 @@ public:
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME), value(rhs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
-            OPENFHE_THROW(config_error, "The number of slots should be a power of two");
+            OPENFHE_THROW("The number of slots should be a power of two");
         }
 
         this->slots = (slots) ? slots : GetDefaultSlotSize();
 
         if (this->slots < rhs.size()) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
+            OPENFHE_THROW("The number of slots cannot be smaller than value vector size");
         }
         else if (this->slots > (GetElementRingDimension() / 2)) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+            OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
         }
     }
 
@@ -131,7 +131,7 @@ public:
     CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
-            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+            OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
         }
     }
 
@@ -144,8 +144,7 @@ public:
     bool Encode();
 
     bool Decode() {
-        OPENFHE_THROW(not_available_error,
-                      "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
+        OPENFHE_THROW("CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
     }
 
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);

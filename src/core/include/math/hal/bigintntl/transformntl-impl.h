@@ -123,7 +123,7 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformIterative(const VecTy
                                                                      const VecType& rootOfUnityTable, VecType* result) {
     usint n = element.GetLength();
     if (result->GetLength() != n) {
-        OPENFHE_THROW(math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     auto modulus = element.GetModulus();
@@ -241,7 +241,7 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverse(const Ve
                                                                         VecType* result) {
     usint n = element.GetLength();
     if (result->GetLength() != n) {
-        OPENFHE_THROW(math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     IntType modulus = element.GetModulus();
@@ -347,7 +347,7 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverse(const Ve
     usint n = element.GetLength();
 
     if (result->GetLength() != n) {
-        OPENFHE_THROW(math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     IntType modulus = element.GetModulus();
@@ -463,7 +463,7 @@ void NumberTheoreticTransformNtl<VecType>::InverseTransformFromBitReverse(const 
     usint n = element.GetLength();
 
     if (result->GetLength() != n) {
-        OPENFHE_THROW(math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     result->SetModulus(element.GetModulus());
@@ -535,7 +535,7 @@ void NumberTheoreticTransformNtl<VecType>::InverseTransformFromBitReverse(
     const IntType& cycloOrderInv, const IntType& preconCycloOrderInv, VecType* result) {
     usint n = element.GetLength();
     if (result->GetLength() != n) {
-        OPENFHE_THROW(math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     result->SetModulus(element.GetModulus());
@@ -558,12 +558,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::ForwardTransformToBitReverseInPla
     }
 
     if (!IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(math_error, "CyclotomicOrder is not a power of two");
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (element->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(math_error, "element size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("element size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element->GetModulus();
@@ -593,12 +593,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::ForwardTransformToBitReverse(cons
     }
 
     if (!IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(math_error, "CyclotomicOrder is not a power of two");
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (result->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(math_error, "result size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("result size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element.GetModulus();
@@ -629,12 +629,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::InverseTransformFromBitReverseInP
     }
 
     if (!IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(math_error, "CyclotomicOrder is not a power of two");
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (element->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(math_error, "element size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("element size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element->GetModulus();
@@ -667,12 +667,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::InverseTransformFromBitReverse(co
     }
 
     if (!IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(math_error, "CyclotomicOrder is not a power of two");
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (result->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(math_error, "result size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("result size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element.GetModulus();
@@ -770,7 +770,7 @@ void ChineseRemainderTransformFTTNtl<VecType>::PreCompute(std::vector<IntType>& 
     usint numModulii = moduliiChain.size();
 
     if (numOfRootU != numModulii) {
-        OPENFHE_THROW(math_error, "size of root of unity and size of moduli chain not of same size");
+        OPENFHE_THROW("size of root of unity and size of moduli chain not of same size");
     }
 
     for (usint i = 0; i < numOfRootU; ++i) {
@@ -891,7 +891,7 @@ template <typename VecType>
 VecType BluesteinFFTNtl<VecType>::ForwardTransform(const VecType& element, const IntType& root, const usint cycloOrder,
                                                    const ModulusRoot<IntType>& nttModulusRoot) {
     if (element.GetLength() != cycloOrder) {
-        OPENFHE_THROW(math_error, "expected size of element vector should be equal to cyclotomic order");
+        OPENFHE_THROW("expected size of element vector should be equal to cyclotomic order");
     }
 
     const auto& modulus                    = element.GetModulus();
@@ -1088,7 +1088,7 @@ VecType ChineseRemainderTransformArbNtl<VecType>::ForwardTransform(const VecType
                                                                    const usint cycloOrder) {
     usint phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim) {
-        OPENFHE_THROW(math_error, "element size should be equal to phim");
+        OPENFHE_THROW("element size should be equal to phim");
     }
 
     const auto& modulus                    = element.GetModulus();
@@ -1126,7 +1126,7 @@ VecType ChineseRemainderTransformArbNtl<VecType>::InverseTransform(const VecType
                                                                    const usint cycloOrder) {
     usint phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim) {
-        OPENFHE_THROW(math_error, "element size should be equal to phim");
+        OPENFHE_THROW("element size should be equal to phim");
     }
 
     const auto& modulus = element.GetModulus();

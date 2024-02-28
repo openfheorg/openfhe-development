@@ -80,7 +80,7 @@ public:
     virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
                                  uint32_t numPartQ) const {
-        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 
     /**
@@ -98,7 +98,7 @@ public:
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
                                   usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ,
                                   COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
-        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 
     /**
@@ -118,7 +118,7 @@ public:
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
-        OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
+        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 
     template <class Archive>

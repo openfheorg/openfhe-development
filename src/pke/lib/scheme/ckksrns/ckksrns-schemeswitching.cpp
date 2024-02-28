@@ -229,7 +229,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
             buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-            OPENFHE_THROW(math_error, buffer.str());
+            OPENFHE_THROW(buffer.str());
         }
 
         int64_t re64       = std::llround(dre);
@@ -258,7 +258,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
         temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
 
         if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
-            OPENFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
+            OPENFHE_THROW("Overflow, try to decrease scaling factor");
         }
     }
 
@@ -340,7 +340,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
         }
     }
     if (logc < 0) {
-        OPENFHE_THROW(math_error, "Too small scaling factor");
+        OPENFHE_THROW("Too small scaling factor");
     }
     int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
     int32_t logApprox   = logc - logValid;
@@ -398,7 +398,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
             buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-            OPENFHE_THROW(math_error, buffer.str());
+            OPENFHE_THROW(buffer.str());
         }
 
         int64_t re = std::llround(dre);
@@ -543,7 +543,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> cipherte
 void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                                       NativeVector* nativeVec) const {
     if (nativeVec == nullptr)
-        OPENFHE_THROW(config_error, "The passed native vector is empty.");
+        OPENFHE_THROW("The passed native vector is empty.");
     NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = NativeInteger((unsigned __int128)bigBound) - modulus;
@@ -563,7 +563,7 @@ void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int1
 void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                                       NativeVector* nativeVec) const {
     if (nativeVec == nullptr)
-        OPENFHE_THROW(config_error, "The passed native vector is empty.");
+        OPENFHE_THROW("The passed native vector is empty.");
     NativeInteger bigValueHf(bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = bigBound - modulus;
@@ -629,13 +629,13 @@ EvalKey<DCRTPoly> switchingKeyGenRLWE(
 
 void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, NativeInteger modulus_CKKS_to) {
     if (ctxt->GetElements()[0].GetRingDimension() != ctxtKS->GetElements()[0].GetRingDimension()) {
-        OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for the same ring dimension.");
+        OPENFHE_THROW("ModSwitch is implemented only for the same ring dimension.");
     }
 
     const std::vector<DCRTPoly>& cv = ctxt->GetElements();
 
     if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1) {
-        OPENFHE_THROW(not_implemented_error, "ModSwitch is implemented only for ciphertext with one tower.");
+        OPENFHE_THROW("ModSwitch is implemented only for ciphertext with one tower.");
     }
 
     const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
@@ -852,7 +852,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1,
     uint32_t L, double scale = 1) const {
     if (A[0].size() != A.size()) {
-        OPENFHE_THROW(math_error, "The matrix passed to EvalLTPrecomputeSwitch is not square");
+        OPENFHE_THROW("The matrix passed to EvalLTPrecomputeSwitch is not square");
     }
 
     uint32_t slots = A.size();
@@ -913,7 +913,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
 std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
     const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale) {
     if (!IsPowerOfTwo(A.size()) || !IsPowerOfTwo(A[0].size())) {
-        OPENFHE_THROW(math_error, "The matrix passed to EvalLTPrecompute is not padded up to powers of two");
+        OPENFHE_THROW("The matrix passed to EvalLTPrecompute is not padded up to powers of two");
     }
     uint32_t n     = std::min(A.size(), A[0].size());
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
@@ -1179,7 +1179,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalCKKSToFHEWPrecompute to proceed"));
-        OPENFHE_THROW(type_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
 
     if (!isSparse) {  // fully packed
@@ -1221,7 +1221,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalPartialHomDecryption(const CryptoContext
 //------------------------------------------------------------------------------
 LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
     if (params.GetSecurityLevelFHEW() != TOY && params.GetSecurityLevelFHEW() != STD128)
-        OPENFHE_THROW(config_error, "Only STD128 or TOY are currently supported.");
+        OPENFHE_THROW("Only STD128 or TOY are currently supported.");
 
     uint32_t ringDim = params.GetRingDimension();
     if (params.GetNumSlotsCKKS() == 0 || params.GetNumSlotsCKKS() == (ringDim / 2))  // fully-packed
@@ -1237,7 +1237,7 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
     // Ensure that Qswitch is larger than Q_FHEW and smaller than Q_CKKS.
     if (params.GetCtxtModSizeFHEWIntermedSwch() <= params.GetCtxtModSizeFHEWLargePrec() ||
         params.GetCtxtModSizeFHEWIntermedSwch() > GetMSB(m_modulus_CKKS_initial.ConvertToInt()) - 1) {
-        OPENFHE_THROW(config_error, "Qswitch should be larger than QFHEW and smaller than QCKKS.");
+        OPENFHE_THROW("Qswitch should be larger than QFHEW and smaller than QCKKS.");
     }
     // Intermediate cryptocontext
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -1289,12 +1289,10 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW(config_error,
-                      "CKKS to FHEW scheme switching is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS to FHEW scheme switching is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW(config_error,
-                      "128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+        OPENFHE_THROW("128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
     auto ccCKKS = privateKey->GetCryptoContext();
@@ -1447,7 +1445,7 @@ void SWITCHCKKSRNS::EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKK
     m_ccLWE = ccLWE;
 
     if (m_ccLWE->GetParams()->GetLWEParams()->Getn() * 2 > ccCKKS.GetRingDimension())
-        OPENFHE_THROW(config_error, "The lattice parameter in LWE cannot be larger than half the RLWE ring dimension.");
+        OPENFHE_THROW("The lattice parameter in LWE cannot be larger than half the RLWE ring dimension.");
 
     if (numSlotsCKKS == 0) {
         if (ccCKKS.GetEncodingParams()->GetBatchSize() != 0)
@@ -1546,7 +1544,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
                                                    uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                                    double pmax, uint32_t dim1) const {
     if (!LWECiphertexts.size())
-        OPENFHE_THROW(type_error, "Empty input FHEW ciphertext vector");
+        OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
     // This is the number of CKKS slots to use in eg_coefficientsFHEW128_9ncoding
     const uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
@@ -1752,12 +1750,10 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW(config_error,
-                      "CKKS to FHEW scheme switching is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS to FHEW scheme switching is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW(config_error,
-                      "128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+        OPENFHE_THROW("128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
     auto ccCKKS = privateKey->GetCryptoContext();
@@ -1917,7 +1913,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
 
     if (unit) {
         if (pLWE == 0)
-            OPENFHE_THROW(config_error, "To scale to the unit circle, pLWE must be non-zero.");
+            OPENFHE_THROW("To scale to the unit circle, pLWE must be non-zero.");
         else {
             cDiff = ccCKKS->EvalMult(cDiff, 1.0 / static_cast<double>(pLWE));
             cDiff = ccCKKS->Rescale(cDiff);

@@ -123,7 +123,7 @@ void DCRT_constructors(const std::string& msg) {
         for (size_t ii = 0; ii < ilvector2nVectorInconsistent.size(); ii++) {
             OPENFHE_DEBUG(ii << " item " << ilvector2nVectorInconsistent.at(ii).GetParams().use_count());
         }
-        EXPECT_THROW(testDCRTPolyConstructorNegative(ilvector2nVectorInconsistent), math_error)
+        EXPECT_THROW(testDCRTPolyConstructorNegative(ilvector2nVectorInconsistent), OpenFHEException)
             << msg << " Failure: ilvector2nVectorInconsistent";
     }
 
@@ -445,7 +445,8 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
             << msg << " Failure: ilvectInv2 MultiplicativeInverse() modulus";
         EXPECT_EQ(NativeInteger("156"), ilvectInv2.GetRootOfUnity())
             << msg << " Failure: ilvectInv2 MultiplicativeInverse() rootOfUnity";
-        EXPECT_THROW(ilva1.MultiplicativeInverse(), math_error) << msg << " Failure: throw MultiplicativeInverse()";
+        EXPECT_THROW(ilva1.MultiplicativeInverse(), OpenFHEException)
+            << msg << " Failure: throw MultiplicativeInverse()";
     }
 
     // DCRTPoly::MakeSparse() Only used by RingSwitching, which is no longer supported

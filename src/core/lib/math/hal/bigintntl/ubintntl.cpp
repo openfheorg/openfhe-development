@@ -127,7 +127,7 @@ myZZ& myZZ::MultiplyAndRoundEq(const myZZ& p, const myZZ& q) {
 
 myZZ myZZ::DivideAndRound(const myZZ& q) const {
     if (q == myZZ(0)) {
-        OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+        OPENFHE_THROW("DivideAndRound() Divisor is zero");
     }
     myZZ halfQ(q >> 1);
     if (*this < q) {
@@ -151,7 +151,7 @@ myZZ myZZ::DivideAndRound(const myZZ& q) const {
 
 myZZ& myZZ::DivideAndRoundEq(const myZZ& q) {
     if (q == myZZ(0)) {
-        OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+        OPENFHE_THROW("DivideAndRound() Divisor is zero");
     }
     myZZ halfQ(q >> 1);
     if (*this < q) {

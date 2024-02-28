@@ -65,7 +65,7 @@ void DiscreteUniformGeneratorImpl<VecType>::SetModulus(const typename VecType::I
 template <typename VecType>
 typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateInteger() const {
     if (m_modulus == typename VecType::Integer(0))
-        OPENFHE_THROW(math_error, "0 modulus?");
+        OPENFHE_THROW("0 modulus?");
 
     std::uniform_int_distribution<uint32_t> dist(DUG_CHUNK_MIN, DUG_CHUNK_MAX);
     while (true) {

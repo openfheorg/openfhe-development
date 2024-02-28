@@ -246,6 +246,7 @@ int64_t BaseSampler::GenerateIntegerPeikert() const {
     int64_t val = 0;
     double seed;
     int32_t ans = 0;
+    // TODO (dsuponit): this function should be reviewed as you may not hide caught exceptions
     try {
         // we need to use the binary uniform generator rathen than regular
         // continuous distribution; see DG14 for details
@@ -253,7 +254,7 @@ int64_t BaseSampler::GenerateIntegerPeikert() const {
         val  = FindInVector(m_vals, seed);
         ans  = val;
     }
-    catch (std::runtime_error& e) {
+    catch (std::exception& e) {
     }
     return ans - fin + b_mean;
 }
@@ -264,8 +265,7 @@ usint BaseSampler::FindInVector(const std::vector<double>& S, double search) con
     if (lower != S.end())
         return lower - S.begin();
 
-    OPENFHE_THROW(not_available_error,
-                  "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
+    OPENFHE_THROW("DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
 DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std,

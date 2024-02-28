@@ -200,7 +200,7 @@ public:
    */
     usint GetLength() const final {
         //        if (this->GetDerived().IsEmpty())
-        //            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
+        //            OPENFHE_THROW("No values in PolyImpl");
         return this->GetDerived().GetValues().GetLength();
     }
 
@@ -439,9 +439,9 @@ public:
    */
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
-            OPENFHE_THROW(not_implemented_error,
-                          "PolyInterface element transposition is currently "
-                          "implemented only in the Evaluation representation.");
+            OPENFHE_THROW(
+                "PolyInterface element transposition is currently "
+                "implemented only in the Evaluation representation.");
         }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }

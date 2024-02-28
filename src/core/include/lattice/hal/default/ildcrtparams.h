@@ -102,7 +102,7 @@ public:
         if (corder == 0)
             return;
         if (bits > MAX_MODULUS_SIZE)
-            OPENFHE_THROW(config_error, "Invalid bits for ILDCRTParams");
+            OPENFHE_THROW("Invalid bits for ILDCRTParams");
 
         auto q{LastPrime<NativeInteger>(bits, corder)};
         m_params.reserve(depth);
@@ -133,7 +133,7 @@ public:
         : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
         if (limbs != rootsOfUnity.size())
-            OPENFHE_THROW(math_error, "sizes of moduli and roots of unity do not match 1");
+            OPENFHE_THROW("sizes of moduli and roots of unity do not match 1");
 
         m_params.reserve(limbs);
         IntType compositeModulus(1);
@@ -150,7 +150,7 @@ public:
         : ElemParams<IntType>(corder, 0), m_originalModulus(inputOriginalModulus) {
         size_t limbs{moduli.size()};
         if (limbs != rootsOfUnity.size() || limbs != moduliBig.size() || limbs != rootsOfUnityBig.size())
-            OPENFHE_THROW(math_error, "sizes of moduli and roots of unity do not match 2");
+            OPENFHE_THROW("sizes of moduli and roots of unity do not match 2");
 
         m_params.reserve(limbs);
         IntType compositeModulus(1);
@@ -243,8 +243,8 @@ public:
    */
     std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(uint32_t start, uint32_t end) const {
         if (end < start || end > m_params.size())
-            OPENFHE_THROW(math_error, "Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +
-                                          ", end:" + std::to_string(end) + ")");
+            OPENFHE_THROW("Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +
+                          ", end:" + std::to_string(end) + ")");
         return std::vector<std::shared_ptr<ILNativeParams>>(m_params.begin() + start, m_params.begin() + end + 1);
     }
 
@@ -356,8 +356,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::base_class<ElemParams<IntType>>(this));
         ar(::cereal::make_nvp("p", m_params));

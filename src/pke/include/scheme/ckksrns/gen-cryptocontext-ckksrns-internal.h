@@ -55,7 +55,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     const CCParams<ContextGeneratorType>& parameters) {
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        OPENFHE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
+        OPENFHE_THROW("128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
     }
 #endif
     using ParmType                   = typename Element::Params;
@@ -70,7 +70,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
         if (parameters.GetNoiseEstimate() == 0) {
             OPENFHE_THROW(
-                config_error,
                 "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
         }
         double logstd =
@@ -84,9 +83,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         scalingModSize = MAX_MODULUS_SIZE - 1;
         firstModSize   = MAX_MODULUS_SIZE;
         if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
-            OPENFHE_THROW(config_error, "Precision of less than 3 bits is not supported. logstd " +
-                                            std::to_string(logstd) + " + noiseEstimate " +
-                                            std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
+            OPENFHE_THROW("Precision of less than 3 bits is not supported. logstd " + std::to_string(logstd) +
+                          " + noiseEstimate " + std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
         }
 #endif
     }

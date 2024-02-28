@@ -152,14 +152,14 @@ public:
     DCRTPolyType Plus(const std::vector<Integer>& rhs) const;
     DCRTPolyType Plus(const DCRTPolyType& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW(math_error, "RingDimension missmatch");
+            OPENFHE_THROW("RingDimension missmatch");
         if (m_format != rhs.m_format)
-            OPENFHE_THROW(not_implemented_error, "Format missmatch");
+            OPENFHE_THROW("Format missmatch");
         size_t size{m_vectors.size()};
         if (size != rhs.m_vectors.size())
-            OPENFHE_THROW(math_error, "tower size mismatch; cannot add");
+            OPENFHE_THROW("tower size mismatch; cannot add");
         if (m_vectors[0].GetModulus() != rhs.m_vectors[0].GetModulus())
-            OPENFHE_THROW(math_error, "Modulus missmatch");
+            OPENFHE_THROW("Modulus missmatch");
         DCRTPolyType tmp(m_params, m_format);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
@@ -173,14 +173,14 @@ public:
 
     DCRTPolyType Times(const DCRTPolyType& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW(math_error, "RingDimension missmatch");
+            OPENFHE_THROW("RingDimension missmatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
-            OPENFHE_THROW(not_implemented_error, "operator* for DCRTPolyImpl supported only in Format::EVALUATION");
+            OPENFHE_THROW("operator* for DCRTPolyImpl supported only in Format::EVALUATION");
         size_t size{m_vectors.size()};
         if (size != rhs.m_vectors.size())
-            OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+            OPENFHE_THROW("tower size mismatch; cannot multiply");
         if (m_vectors[0].GetModulus() != rhs.m_vectors[0].GetModulus())
-            OPENFHE_THROW(math_error, "Modulus missmatch");
+            OPENFHE_THROW("Modulus missmatch");
         DCRTPolyType tmp(m_params, m_format);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
@@ -343,8 +343,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_vectors));
         ar(::cereal::make_nvp("f", m_format));

@@ -430,7 +430,7 @@ template <class myT>
 myVecP<myT> myVecP<myT>::ModAddAtIndex(size_t i, const myT& b) const {
     if (i > this->GetLength() - 1) {
         std::string errMsg = "myVecP::ModAddAtIndex. Index is out of range. i = " + std::to_string(i);
-        OPENFHE_THROW(lbcrypto::math_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     myVecP ans(*this);  // copy vector
     ModulusCheck("myVecP::ModAddAtIndex");
@@ -442,7 +442,7 @@ template <class myT>
 myVecP<myT>& myVecP<myT>::ModAddAtIndexEq(size_t i, const myT& b) {
     if (i > this->GetLength() - 1) {
         std::string errMsg = "myVecP::ModAddAtIndex. Index is out of range. i = " + std::to_string(i);
-        OPENFHE_THROW(lbcrypto::math_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     ModulusCheck("myVecP::ModAddAtIndex");
     (*this)[i] = (*this)[i].ModAdd(b, this->m_modulus);

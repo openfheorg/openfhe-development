@@ -190,7 +190,7 @@ ubint<limb_t> ubint<limb_t>::Mul(const ubint& b) const {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::DividedBy(const ubint& b) const {
     if (b.m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "Divisor is zero");
+        OPENFHE_THROW("Divisor is zero");
     if (b.m_MSB > m_MSB)
         return ubint();
     if ((b.m_MSB == m_MSB) && (b.m_value.back() == m_value.back()))
@@ -203,7 +203,7 @@ ubint<limb_t> ubint<limb_t>::DividedBy(const ubint& b) const {
 template <typename limb_t>
 ubint<limb_t>& ubint<limb_t>::DividedByEq(const ubint& b) {
     if (b.m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "Divisor is zero");
+        OPENFHE_THROW("Divisor is zero");
     if (b.m_MSB > m_MSB) {
         m_MSB = 0;
         m_value.resize(1);
@@ -237,7 +237,7 @@ ubint<limb_t> ubint<limb_t>::Exp(usint p) const {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::MultiplyAndRound(const ubint& p, const ubint& q) const {
     if (q.m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "MultiplyAndRound() Divisor is zero");
+        OPENFHE_THROW("MultiplyAndRound() Divisor is zero");
     auto t{ubint<limb_t>::Mul(p)};
     ubint halfQ(q >> 1);
     if (t <= halfQ)
@@ -254,7 +254,7 @@ ubint<limb_t> ubint<limb_t>::MultiplyAndRound(const ubint& p, const ubint& q) co
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint& q) const {
     if (q.m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+        OPENFHE_THROW("DivideAndRound() Divisor is zero");
     ubint halfQ(q >> 1);
     if (*this <= halfQ)
         return ubint();
@@ -270,7 +270,7 @@ ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint& q) const {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus) const {
     if (modulus.m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "Mod() using zero modulus");
+        OPENFHE_THROW("Mod() using zero modulus");
     if (*this < modulus)
         return *this;
     if (modulus.m_MSB == 2 && modulus.m_value[0] == 2)
@@ -283,7 +283,7 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus) const {
 template <typename limb_t>
 ubint<limb_t>& ubint<limb_t>::ModEq(const ubint& modulus) {
     if (modulus.m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "Mod() using zero modulus");
+        OPENFHE_THROW("Mod() using zero modulus");
     if (*this < modulus)
         return *this;
     if (modulus.m_MSB == 2 && modulus.m_value[0] == 2) {
@@ -417,7 +417,7 @@ ubint<limb_t> ubint<limb_t>::ModMulFast(const ubint& b, const ubint& modulus) co
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
     if (m_MSB == 0)
-        OPENFHE_THROW(lbcrypto::math_error, "Zero has no inverse");
+        OPENFHE_THROW("Zero has no inverse");
 
     ubint second(*this);
     if (second >= modulus)
@@ -436,7 +436,7 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
 
     if (mod_back.m_MSB == 0) {
         std::string msg = ubint<limb_t>::ToString() + " does not have a ModInverse using " + modulus.ToString();
-        OPENFHE_THROW(lbcrypto::math_error, msg);
+        OPENFHE_THROW(msg);
     }
 
     // max number of iterations should be < 2^k where k == min(bitsize(inputs))
@@ -600,7 +600,7 @@ float ubint<limb_t>::ConvertToFloat() const {
         ans = std::stof(ubint<limb_t>::ToString());
     }
     catch (const std::exception& e) {
-        OPENFHE_THROW(lbcrypto::type_error, "ConvertToFloat() parse error converting to float");
+        OPENFHE_THROW("ConvertToFloat() parse error converting to float");
     }
     return ans;
 }
@@ -619,7 +619,7 @@ double ubint<limb_t>::ConvertToDouble() const {
             ans += power * m_value[i];
     }
     catch (const std::exception& e) {
-        OPENFHE_THROW(lbcrypto::type_error, "ConvertToDouble() parse error converting to double");
+        OPENFHE_THROW("ConvertToDouble() parse error converting to double");
     }
     return ans;
 }
@@ -632,7 +632,7 @@ long double ubint<limb_t>::ConvertToLongDouble() const {
         ans = std::stold(ubint<limb_t>::ToString());
     }
     catch (const std::exception& e) {
-        OPENFHE_THROW(lbcrypto::type_error, "ConvertToLongDouble() parse error converting to long double");
+        OPENFHE_THROW("ConvertToLongDouble() parse error converting to long double");
     }
     return ans;
 }
