@@ -108,14 +108,12 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
     }
     // todosara
     // NativeVector v (dim, modulus);
-    std::cout << "here" << std::endl;
     for (size_t j = 0; j < dim; ++j) {
         for (size_t i = 0; i < dim; ++i) {
             v[j].ModAddEq(A[j][i].ModMulFast(ske[i], modulus, mu), modulus);
         }
     }
 
-    std::cout << "here after" << std::endl;
     // public key A, v
     LWEPublicKeyImpl Av(A, v);
 

@@ -111,7 +111,6 @@ RingGSWBTKey BinFHEScheme::MultiPartyKeyGen(const std::shared_ptr<LWECryptoParam
         ek.KSkey = LWEscheme->KeySwitchGen(params, LWEsk, LWEskN);
     }
     else {
-        std::cout << "multikeygen" << std::endl;
         pkN      = LWEscheme->MultipartyPubKeyGen(LWEskN, publicKey);
         ek.KSkey = LWEscheme->MultiPartyKeySwitchGen(params, LWEsk, LWEskN, prevkskey);
     }
