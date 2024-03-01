@@ -45,10 +45,8 @@
 
 #include <iterator>
 
-namespace lbcrypto {
-
 // K = 16
-constexpr std::initializer_list<double> g_coefficientsFHEW16{
+static constexpr std::initializer_list<double> g_coefficientsFHEW16{
     0.2455457340168511,     -0.04791906488334782,   0.2838870204084082,     -0.02994453873551349,
     0.3557652261903648,     0.01510656188507299,    0.2953294667450001,     0.07120360233373937,
     -0.1034734733966807,    0.04499759051255525,    -0.4275071243192574,    -0.09034212972909554,
@@ -81,7 +79,7 @@ constexpr std::initializer_list<double> g_coefficientsFHEW16{
     -6.975352498995555e-16, -8.743006318923108e-16};
 
 // K = 128
-constexpr std::initializer_list<double> g_coefficientsFHEW128_9{
+static constexpr std::initializer_list<double> g_coefficientsFHEW128_9{
     0.08761193238226354,    -0.01738402917379392,   0.08935060894767313,    -0.01667686631436392,
     0.09435445639097996,    -0.01518333497826596,   0.1019473189108075,     -0.01276275748916528,
     0.110882655474149,      -0.009252446966171999,  0.1192111685574758,     -0.004534979909938953,
@@ -123,7 +121,7 @@ constexpr std::initializer_list<double> g_coefficientsFHEW128_9{
     -1.620799477984723e-15, 4.003965342611375e-16,  -5.245330582249314e-16, 1.754761547401069e-15,
     -5.0481471966847e-16,   -4.722624632690369e-16, 1.628901569091919e-16,  -1.219903204684612e-15};
 
-constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
+static constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
     0.08761193238226343,    -0.01738402917379268,  0.08935060894767202,   -0.0166768663143651,   0.09435445639098095,
     -0.01518333497826714,   0.1019473189108076,    -0.01276275748916462,  0.1108826554741475,    -0.009252446966171845,
     0.1192111685574773,     -0.004534979909938402, 0.1242004317120066,    0.001362904847616587,  0.1224283765086535,
@@ -148,6 +146,8 @@ constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
     0.008763390064061401,   -0.03094806130001855,  -0.00421829525869962,  0.01419485740772663,   0.001848300494047458,
     -0.005955037043195616,  -0.000743799726455706, 0.002303513291010024,  0.0002767049434914361, -0.0008281705698254814,
     -9.515056665793518e-05, 0.0002835460400168608, 2.833421059257267e-05, -0.0001121393482639905};
+
+namespace lbcrypto {
 
 //------------------------------------------------------------------------------
 // Complex Plaintext Functions, copied from ckksrns-fhe. TODO: fix this
@@ -738,18 +738,14 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& ckksSKto, co
 
 std::vector<std::vector<NativeInteger>> ExtractLWEpacked(const Ciphertext<DCRTPoly>& ct) {
     auto originalA{(ct->GetElements()[1]).GetElementAtIndex(0)};
-    auto originalB{(ct->GetElements()[0]).GetElementAtIndex(0)};
     originalA.SetFormat(Format::COEFFICIENT);
+    auto* ptrA = &originalA.GetValues()[0];
+    auto originalB{(ct->GetElements()[0]).GetElementAtIndex(0)};
     originalB.SetFormat(Format::COEFFICIENT);
-
+    auto* ptrB = &originalB.GetValues()[0];
     size_t N = originalB.GetLength();
-
-    // create 2 "begin" iterators to work with element values
-    const auto itA = std::vector<NativeInteger>::const_iterator(&originalA.GetValues()[0]);
-    const auto itB = std::vector<NativeInteger>::const_iterator(&originalB.GetValues()[0]);
-    std::vector<std::vector<NativeInteger>> extracted{std::vector<NativeInteger>(itB, itB + N),
-                                                      std::vector<NativeInteger>(itA, itA + N)};
-
+    std::vector<std::vector<NativeInteger>> extracted{std::vector<NativeInteger>(ptrB, ptrB + N),
+                                                      std::vector<NativeInteger>(ptrA, ptrA + N)};
     return extracted;
 }
 

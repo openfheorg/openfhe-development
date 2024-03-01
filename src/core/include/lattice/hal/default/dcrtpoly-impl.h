@@ -928,7 +928,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
             const auto& xi        = m_vectors[i][ri];
             const auto& QHatModpi = QHatModp[i];
             const auto xQHatInvModqi =
-                xi.ModMulFastConst(QHatInvModq[i], qi, QHatInvModqPrecon[i]).ConvertToInt<uint64_t>();
+                xi.ModMulFastConst(QHatInvModq[i], qi, QHatInvModqPrecon[i]).template ConvertToInt<uint64_t>();
             for (uint32_t j = 0; j < sizeP; ++j)
                 sum[j] += Mul128(xQHatInvModqi, QHatModpi[j].ConvertToInt<uint64_t>());
         }
@@ -1876,7 +1876,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
             DoubleNativeInt aq = 0;
             for (uint32_t i = 0; i < numQ; ++i) {
                 const auto& xi = m_vectors[i][k];
-                aq += Mul128(xi.ConvertToInt<uint64_t>(), qInvModbsk[i][j].ConvertToInt<uint64_t>());
+                aq += Mul128(xi.template ConvertToInt<uint64_t>(), qInvModbsk[i][j].ConvertToInt<uint64_t>());
             }
             txiqiDivqModqi[j * n + k] = BarrettUint128ModUint64(aq, moduliBskj.ConvertToInt(), modbskBarrettMu[j]);
 #else
@@ -1949,7 +1949,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
             DoubleNativeInt result = 0;
             for (uint32_t i = 0; i < sizeBskm1; ++i) {  // exclude msk residue
                 const auto& xi = m_vectors[sizeQ + i][k];
-                result += Mul128(xi.ConvertToInt<uint64_t>(), BHatModq[i][j].ConvertToInt<uint64_t>());
+                result += Mul128(xi.template ConvertToInt<uint64_t>(), BHatModq[i][j].ConvertToInt<uint64_t>());
             }
             m_vectors[j][k] = BarrettUint128ModUint64(result, moduliQj.ConvertToInt(), modqBarrettMu[j]);
 #else
