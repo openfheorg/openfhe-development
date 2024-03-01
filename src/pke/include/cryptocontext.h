@@ -2659,7 +2659,7 @@ public:
     //     OPENFHE_THROW( errMsg);
     // }
 
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
+    // std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
 
     /**
    * Function for evaluating a sum of all components in a vector.
