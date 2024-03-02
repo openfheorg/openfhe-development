@@ -36,7 +36,6 @@
 #define PROFILE
 #include "openfhe.h"
 #include "binfhecontext.h"
-#include <malloc.h>
 #include <chrono>
 #include <unistd.h>
 
