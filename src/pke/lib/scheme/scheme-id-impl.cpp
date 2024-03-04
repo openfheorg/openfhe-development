@@ -49,7 +49,7 @@ SCHEME convertToSCHEME(const std::string& str) {
         return BGVRNS_SCHEME;
 
     std::string errMsg(std::string("Unknown schemeId ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 
 std::string convertToString(SCHEME schemeId) noexcept {
@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& os, SCHEME schemeId) {
             break;
         default:
             std::string errMsg(std::string("Unknown schemeId ") + std::to_string(schemeId));
-            OPENFHE_THROW(config_error, errMsg);
+            OPENFHE_THROW(errMsg);
     }
 
     return os;

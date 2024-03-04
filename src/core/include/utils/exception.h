@@ -36,11 +36,13 @@
 #ifndef SRC_CORE_LIB_UTILS_EXCEPTION_H_
 #define SRC_CORE_LIB_UTILS_EXCEPTION_H_
 
+#include "utils/get-call-stack.h"
 #include <exception>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -159,7 +161,51 @@ public:
     deserialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
-#define OPENFHE_THROW(exc, expr) throw exc(__FILE__, __LINE__, (expr))
+class OpenFHEException : public std::exception {
+    std::string m_errorDescription;
+    std::string m_fileName;
+    std::string m_funcName;
+    size_t m_lineNumber;
+
+    std::string m_errorMessage;
+    std::vector<std::string> m_callStack;
+
+public:
+    OpenFHEException(const std::string errorDescription, const std::string fileName = __builtin_FILE(),
+                     const std::string funcName = __builtin_FUNCTION(), size_t lineNumber = __builtin_LINE())
+        : m_errorDescription(errorDescription), m_fileName(fileName), m_funcName(funcName), m_lineNumber(lineNumber) {
+        m_errorMessage =
+            m_fileName + ":l." + std::to_string(m_lineNumber) + ":" + m_funcName + "(): " + m_errorDescription;
+        m_callStack = get_call_stack();
+    }
+
+    OpenFHEException(const OpenFHEException& ex) = default;
+
+    const char* what() const noexcept {
+        return m_errorDescription.c_str();
+    }
+
+    std::vector<std::string> getCallStackAsVector() {
+        return m_callStack;
+    }
+
+    // getCallStackAsString() was added to be used by JSON logger. the implementtion will follow
+    std::string getCallStackAsString() {
+        return std::string();
+    }
+};
+
+// ATTN:
+// 1. OPENFHE_THROW is to be overloaded for the period of transition to OpenFHEException only.
+// 2. After that openfhe_error, all classes derived from it and OPENFHE_THROW_OLD must be removed
+// 3. All the macros below should be removed except OPENFHE_THROW_NEW. OPENFHE_THROW_NEW should
+//    be renamed to OPENFHE_THROW
+// #define OPENFHE_THROW(expr) throw lbcrypto::OpenFHEException(expr)
+#define OPENFHE_THROW_OLD(exc, expr) throw exc(__FILE__, __LINE__, (expr))
+#define OPENFHE_THROW_NEW(expr)      throw lbcrypto::OpenFHEException(expr)
+
+#define GET_CORRECT_MACRO(_1, _2, NAME, ...) NAME
+#define OPENFHE_THROW(...)                   GET_CORRECT_MACRO(__VA_ARGS__, OPENFHE_THROW_OLD, OPENFHE_THROW_NEW)(__VA_ARGS__)
 
 }  // namespace lbcrypto
 

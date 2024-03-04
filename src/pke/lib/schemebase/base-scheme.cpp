@@ -42,9 +42,9 @@ EvalKey<Element> SchemeBase<Element>::ReKeyGen(const PrivateKey<Element> oldPriv
                                                const PublicKey<Element> newPublicKey) const {
     VerifyPREEnabled(__func__);
     if (!oldPrivateKey)
-        OPENFHE_THROW(config_error, "Input first private key is nullptr");
+        OPENFHE_THROW("Input first private key is nullptr");
     if (!newPublicKey)
-        OPENFHE_THROW(config_error, "Input second public key is nullptr");
+        OPENFHE_THROW("Input second public key is nullptr");
 
     auto result = m_PRE->ReKeyGen(oldPrivateKey, newPublicKey);
     result->SetKeyTag(newPublicKey->GetKeyTag());
@@ -56,9 +56,9 @@ Ciphertext<Element> SchemeBase<Element>::ReEncrypt(ConstCiphertext<Element> ciph
                                                    const PublicKey<Element> publicKey) const {
     VerifyPREEnabled(__func__);
     if (!ciphertext)
-        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+        OPENFHE_THROW("Input ciphertext is nullptr");
     if (!evalKey)
-        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        OPENFHE_THROW("Input evaluation key is nullptr");
 
     auto result = m_PRE->ReEncrypt(ciphertext, evalKey, publicKey);
     result->SetKeyTag(evalKey->GetKeyTag());
@@ -69,7 +69,7 @@ template <typename Element>
 EvalKey<Element> SchemeBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKey = m_LeveledSHE->EvalMultKeyGen(privateKey);
     evalKey->SetKeyTag(privateKey->GetKeyTag());
@@ -80,7 +80,7 @@ template <typename Element>
 std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyVec = m_LeveledSHE->EvalMultKeysGen(privateKey);
     for (auto& evalKey : evalKeyVec)
@@ -94,7 +94,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAtIn
     const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
     for (auto& key : *evalKeyMap)
@@ -108,11 +108,11 @@ Ciphertext<Element> SchemeBase<Element>::ComposedEvalMult(ConstCiphertext<Elemen
                                                           const EvalKey<Element> evalKey) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!ciphertext1)
-        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
+        OPENFHE_THROW("Input first ciphertext is nullptr");
     if (!ciphertext2)
-        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
+        OPENFHE_THROW("Input second ciphertext is nullptr");
     if (!evalKey)
-        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        OPENFHE_THROW("Input evaluation key is nullptr");
 
     auto result = m_LeveledSHE->ComposedEvalMult(ciphertext1, ciphertext2, evalKey);
     result->SetKeyTag(evalKey->GetKeyTag());
@@ -123,7 +123,7 @@ template <typename Element>
 Ciphertext<Element> SchemeBase<Element>::ModReduce(ConstCiphertext<Element> ciphertext, size_t levels) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!ciphertext)
-        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+        OPENFHE_THROW("Input ciphertext is nullptr");
 
     auto result = m_LeveledSHE->ModReduce(ciphertext, levels);
     result->SetKeyTag(ciphertext->GetKeyTag());
@@ -135,7 +135,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumK
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey, publicKey);
     for (auto& key : *evalKeyMap) {
@@ -149,7 +149,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumR
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
     for (auto& key : *evalKeyMap) {
@@ -163,7 +163,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumC
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, publicKey);
     for (auto& key : *evalKeyMap) {
@@ -179,13 +179,13 @@ Ciphertext<Element> SchemeBase<Element>::EvalInnerProduct(ConstCiphertext<Elemen
                                                           const EvalKey<Element> evalMultKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!ciphertext1)
-        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
+        OPENFHE_THROW("Input first ciphertext is nullptr");
     if (!ciphertext2)
-        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
+        OPENFHE_THROW("Input second ciphertext is nullptr");
     if (!evalSumKeyMap.size())
-        OPENFHE_THROW(config_error, "Input evaluation key map is empty");
+        OPENFHE_THROW("Input evaluation key map is empty");
     if (!evalMultKey)
-        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        OPENFHE_THROW("Input evaluation key is nullptr");
 
     auto result = m_AdvancedSHE->EvalInnerProduct(ciphertext1, ciphertext2, batchSize, evalSumKeyMap, evalMultKey);
     result->SetKeyTag(evalSumKeyMap.begin()->second->GetKeyTag());
@@ -198,9 +198,9 @@ KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc
                                                        bool makeSparse) {
     VerifyMultipartyEnabled(__func__);
     if (!cc)
-        OPENFHE_THROW(config_error, "Input crypto context is nullptr");
+        OPENFHE_THROW("Input crypto context is nullptr");
     if (!privateKeyVec.size())
-        OPENFHE_THROW(config_error, "Input private key vector is empty");
+        OPENFHE_THROW("Input private key vector is empty");
 
     auto keyPair = m_Multiparty->MultipartyKeyGen(cc, privateKeyVec, makeSparse);
     keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
@@ -212,9 +212,9 @@ KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc
                                                        bool makeSparse, bool PRE) {
     VerifyMultipartyEnabled(__func__);
     if (!cc)
-        OPENFHE_THROW(config_error, "Input crypto context is nullptr");
+        OPENFHE_THROW("Input crypto context is nullptr");
     if (!publicKey)
-        OPENFHE_THROW(config_error, "Input public key is empty");
+        OPENFHE_THROW("Input public key is empty");
 
     auto keyPair = m_Multiparty->MultipartyKeyGen(cc, publicKey, makeSparse, PRE);
     keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
@@ -249,11 +249,11 @@ EvalKey<Element> SchemeBase<Element>::MultiKeySwitchGen(const PrivateKey<Element
                                                         const EvalKey<Element> evalKey) const {
     VerifyMultipartyEnabled(__func__);
     if (!oldPrivateKey)
-        OPENFHE_THROW(config_error, "Input first private key is nullptr");
+        OPENFHE_THROW("Input first private key is nullptr");
     if (!newPrivateKey)
-        OPENFHE_THROW(config_error, "Input second private key is nullptr");
+        OPENFHE_THROW("Input second private key is nullptr");
     if (!evalKey)
-        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        OPENFHE_THROW("Input evaluation key is nullptr");
 
     auto result = m_Multiparty->MultiKeySwitchGen(oldPrivateKey, newPrivateKey, evalKey);
     result->SetKeyTag(newPrivateKey->GetKeyTag());
@@ -266,11 +266,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::MultiEva
     const std::vector<usint>& indexList, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
     if (!evalAutoKeyMap)
-        OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
+        OPENFHE_THROW("Input evaluation key map is nullptr");
     if (!indexList.size())
-        OPENFHE_THROW(config_error, "Input index vector is empty");
+        OPENFHE_THROW("Input index vector is empty");
 
     auto result = m_Multiparty->MultiEvalAutomorphismKeyGen(privateKey, evalAutoKeyMap, indexList);
     for (auto& key : *result) {
@@ -287,11 +287,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::MultiEva
     const std::vector<int32_t>& indexList, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
     if (!evalAutoKeyMap)
-        OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
+        OPENFHE_THROW("Input evaluation key map is nullptr");
     if (!indexList.size())
-        OPENFHE_THROW(config_error, "Input index vector is empty");
+        OPENFHE_THROW("Input index vector is empty");
 
     auto result = m_Multiparty->MultiEvalAtIndexKeyGen(privateKey, evalAutoKeyMap, indexList);
     for (auto& key : *result) {
@@ -308,9 +308,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::MultiEva
     const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
     if (!evalSumKeyMap)
-        OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
+        OPENFHE_THROW("Input evaluation key map is nullptr");
 
     auto result = m_Multiparty->MultiEvalSumKeyGen(privateKey, evalSumKeyMap);
     for (auto& key : *result) {
@@ -326,9 +326,9 @@ EvalKey<Element> SchemeBase<Element>::MultiAddEvalKeys(EvalKey<Element> evalKey1
                                                        const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!evalKey1)
-        OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
+        OPENFHE_THROW("Input first evaluation key is nullptr");
     if (!evalKey2)
-        OPENFHE_THROW(config_error, "Input second evaluation key is nullptr");
+        OPENFHE_THROW("Input second evaluation key is nullptr");
 
     auto evalKeySum = m_Multiparty->MultiAddEvalKeys(evalKey1, evalKey2);
     evalKeySum->SetKeyTag(keyId);
@@ -340,9 +340,9 @@ EvalKey<Element> SchemeBase<Element>::MultiMultEvalKey(PrivateKey<Element> priva
                                                        const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
     if (!evalKey)
-        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+        OPENFHE_THROW("Input evaluation key is nullptr");
 
     auto result = m_Multiparty->MultiMultEvalKey(privateKey, evalKey);
     result->SetKeyTag(keyId);
@@ -355,9 +355,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::MultiAdd
     const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!evalSumKeyMap1)
-        OPENFHE_THROW(config_error, "Input first evaluation key map is nullptr");
+        OPENFHE_THROW("Input first evaluation key map is nullptr");
     if (!evalSumKeyMap2)
-        OPENFHE_THROW(config_error, "Input second evaluation key map is nullptr");
+        OPENFHE_THROW("Input second evaluation key map is nullptr");
 
     auto result = m_Multiparty->MultiAddEvalSumKeys(evalSumKeyMap1, evalSumKeyMap2);
     for (auto& key : *result) {
@@ -374,9 +374,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::MultiAdd
     const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!evalSumKeyMap1)
-        OPENFHE_THROW(config_error, "Input first evaluation key map is nullptr");
+        OPENFHE_THROW("Input first evaluation key map is nullptr");
     if (!evalSumKeyMap2)
-        OPENFHE_THROW(config_error, "Input second evaluation key map is nullptr");
+        OPENFHE_THROW("Input second evaluation key map is nullptr");
 
     auto result = m_Multiparty->MultiAddEvalAutomorphismKeys(evalSumKeyMap1, evalSumKeyMap2);
     for (auto& key : *result) {
@@ -392,9 +392,9 @@ PublicKey<Element> SchemeBase<Element>::MultiAddPubKeys(PublicKey<Element> publi
                                                         const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!publicKey1)
-        OPENFHE_THROW(config_error, "Input first public key is nullptr");
+        OPENFHE_THROW("Input first public key is nullptr");
     if (!publicKey2)
-        OPENFHE_THROW(config_error, "Input second public key is nullptr");
+        OPENFHE_THROW("Input second public key is nullptr");
 
     auto publicKeySum = m_Multiparty->MultiAddPubKeys(publicKey1, publicKey2);
     publicKeySum->SetKeyTag(keyId);
@@ -406,9 +406,9 @@ EvalKey<Element> SchemeBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> eval
                                                            const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     if (!evalKey1)
-        OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
+        OPENFHE_THROW("Input first evaluation key is nullptr");
     if (!evalKey2)
-        OPENFHE_THROW(config_error, "Input second evaluation key is nullptr");
+        OPENFHE_THROW("Input second evaluation key is nullptr");
 
     auto evalKeySum = m_Multiparty->MultiAddEvalMultKeys(evalKey1, evalKey2);
     evalKeySum->SetKeyTag(keyId);
@@ -420,7 +420,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAuto
     const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
@@ -434,9 +434,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAuto
     const std::vector<usint>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     if (!publicKey)
-        OPENFHE_THROW(config_error, "Input public key is nullptr");
+        OPENFHE_THROW("Input public key is nullptr");
     if (!privateKey)
-        OPENFHE_THROW(config_error, "Input private key is nullptr");
+        OPENFHE_THROW("Input private key is nullptr");
 
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(publicKey, privateKey, indexList);
     for (auto& key : *evalKeyMap)

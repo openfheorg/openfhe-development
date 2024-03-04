@@ -53,20 +53,20 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
                                           BINFHE_METHOD method, bool timeOptimization) {
     if (GINX != method) {
         std::string errMsg("ERROR: CGGI is the only supported method");
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     if (set != STD128 && set != TOY) {
         std::string errMsg("ERROR: STD128 and TOY are the only supported sets");
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     if (logQ > 29) {
         std::string errMsg("ERROR: logQ > 29 is not supported");
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     if (logQ < 11) {
         std::string errMsg("ERROR: logQ < 11 is not supported");
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     auto logQprime = 54;
     uint32_t baseG = 0;
@@ -148,7 +148,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     auto search = paramsMap.find(set);
     if (paramsMap.end() == search) {
         std::string errMsg("ERROR: Unknown parameter set [" + std::to_string(set) + "] for FHEW.");
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     BinFHEContextParams params = search->second;
@@ -254,7 +254,7 @@ LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECip
 
     if ((ct->GetLength() != N) && (ct->GetModulus() != Q)) {
         std::string errMsg("ERROR: Ciphertext dimension and modulus are not large N and Q");
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     LWECiphertext ct1 = m_LWEscheme->SwitchCTtoqn(LWEParams, ksk, ct);
@@ -344,7 +344,7 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
                                                                  NativeInteger p) {
     if (ceil(log2(p.ConvertToInt())) != floor(log2(p.ConvertToInt()))) {
         std::string errMsg("ERROR: Only support plaintext space to be power-of-two.");
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     NativeInteger q        = GetParams()->GetLWEParams()->Getq();
@@ -356,7 +356,7 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
         auto temp = f(NativeInteger(i) / interval, p);
         if (temp >= p) {
             std::string errMsg("ERROR: input function should output in Z_{p_output}.");
-            OPENFHE_THROW(not_implemented_error, errMsg);
+            OPENFHE_THROW(errMsg);
         }
         vec[i] = temp * outerval;
     }

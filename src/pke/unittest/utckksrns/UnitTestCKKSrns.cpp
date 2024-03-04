@@ -612,7 +612,7 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     template <typename T>
     double CalculateApproximationError(const std::vector<std::complex<double>>& result,
                                        const std::vector<std::complex<double>>& expectedResult) {
-        OPENFHE_THROW(not_implemented_error, "CalculateApproximationError() is not implemented for this datatype");
+        OPENFHE_THROW("CalculateApproximationError() is not implemented for this datatype");
     }
 
 protected:
@@ -2156,7 +2156,7 @@ template <>
 double UTCKKSRNS::CalculateApproximationError<double>(const std::vector<std::complex<double>>& result,
                                                       const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
-        OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+        OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
     // using the Euclidean norm
     double avrg = 0;

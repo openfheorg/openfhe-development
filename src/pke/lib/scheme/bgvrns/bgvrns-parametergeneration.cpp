@@ -67,14 +67,13 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoP
             // Check whether particular selection is standards-compliant
             auto he_std_n = nRLWE(qBound);
             if (he_std_n > ringDimension) {
-                OPENFHE_THROW(math_error, "The specified ring dimension (" + std::to_string(ringDimension) +
-                                              ") does not comply with HE standards recommendation (" +
-                                              std::to_string(he_std_n) + ").");
+                OPENFHE_THROW("The specified ring dimension (" + std::to_string(ringDimension) +
+                              ") does not comply with HE standards recommendation (" + std::to_string(he_std_n) + ").");
             }
         }
     }
     else if (ringDimension == 0) {
-        OPENFHE_THROW(math_error, "Please specify the ring dimension or desired security level.");
+        OPENFHE_THROW("Please specify the ring dimension or desired security level.");
     }
     return ringDimension;
 }
@@ -108,8 +107,7 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     double keySwitchingNoise = 0;
     if (ksTech == BV) {
         if (digitSize == 0) {
-            OPENFHE_THROW(config_error,
-                          "digitSize is not allowed to be 0 for BV key switching in BGV when scalingModSize = 0.");
+            OPENFHE_THROW("digitSize is not allowed to be 0 for BV key switching in BGV when scalingModSize = 0.");
         }
         int relinBase       = pow(2.0, digitSize);
         int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
@@ -170,7 +168,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
     uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
     if (numPrimes < 1) {
-        OPENFHE_THROW(config_error, "numPrimes must be at least 1");
+        OPENFHE_THROW("numPrimes must be at least 1");
     }
 
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
@@ -194,12 +192,11 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     usint firstModSize = ceil(log2(firstModLowerBound));
     if (firstModSize >= DCRT_MODULUS::MAX_SIZE) {
         OPENFHE_THROW(
-            config_error,
             "Change parameters! Try reducing the number of additions per level, "
             "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
     }
 
-    moduliQ[0]            = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
+    moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
         double extraModLowerBound =
@@ -210,7 +207,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
         if (extraModSize >= DCRT_MODULUS::MAX_SIZE) {
             OPENFHE_THROW(
-                config_error,
                 "Change parameters! Try reducing the number of additions per level, "
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
@@ -242,7 +238,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         usint modSize = ceil(log2(modLowerBound));
         if (modSize >= DCRT_MODULUS::MAX_SIZE) {
             OPENFHE_THROW(
-                config_error,
                 "Change parameters! Try reducing the number of additions per level, "
                 "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
         }
@@ -321,7 +316,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                               (auxBits / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
             }
             else {
-                OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
+                OPENFHE_THROW("Relinwindow value cannot be 0 for BV keyswitching");
             }
         }
         else if (ksTech == HYBRID) {
@@ -334,12 +329,12 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) * noise_param;
             }
             else {
-                OPENFHE_THROW(config_error, "Relinwindow value can only  be zero for Hybrid keyswitching");
+                OPENFHE_THROW("Relinwindow value can only  be zero for Hybrid keyswitching");
             }
         }
     }
     else if (PREMode == DIVIDE_AND_ROUND_HRA) {
-        OPENFHE_THROW(config_error, "Noise Flooding not applicable for PRE DIVIDE_AND_ROUND_HRA mode");
+        OPENFHE_THROW("Noise Flooding not applicable for PRE DIVIDE_AND_ROUND_HRA mode");
     }
     // set the flooding distribution parameter to the distribution.
     dggFlooding.SetStd(noise_param);
@@ -361,13 +356,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     ProxyReEncryptionMode PREMode    = cryptoParamsBGVRNS->GetPREMode();
     MultipartyMode multipartyMode    = cryptoParamsBGVRNS->GetMultipartyMode();
     if (!ptm)
-        OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
+        OPENFHE_THROW("plaintextModulus cannot be zero.");
 
     if ((PREMode != INDCPA) && (PREMode != FIXED_NOISE_HRA) && (PREMode != NOISE_FLOODING_HRA) &&
         (PREMode != NOT_SET)) {
         std::stringstream s;
         s << "This PRE mode " << PREMode << " is not supported for BGVRNS";
-        OPENFHE_THROW(not_available_error, s.str());
+        OPENFHE_THROW(s.str());
     }
 
     bool dcrtBitsSet = (dcrtBits == 0) ? false : true;
@@ -494,10 +489,10 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
 
     const EncodingParams encodingParams = cryptoParamsBGVRNS->GetEncodingParams();
     if (encodingParams->GetBatchSize() > n)
-        OPENFHE_THROW(config_error, "The batch size cannot be larger than the ring dimension.");
+        OPENFHE_THROW("The batch size cannot be larger than the ring dimension.");
 
     if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
-        OPENFHE_THROW(config_error, "The batch size can only be set to zero (for full packing) or a power of two.");
+        OPENFHE_THROW("The batch size can only be set to zero (for full packing) or a power of two.");
 
     // if no batch size was specified compute a default value
     if (encodingParams->GetBatchSize() == 0) {
@@ -535,9 +530,9 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             }
 
             if (n % b != 0)
-                OPENFHE_THROW(math_error,
-                              "BGVrns.ParamsGen: something went wrong when computing "
-                              "the batchSize");
+                OPENFHE_THROW(
+                    "BGVrns.ParamsGen: something went wrong when computing "
+                    "the batchSize");
 
             batchSize = n / b;
         }

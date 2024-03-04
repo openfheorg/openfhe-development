@@ -156,19 +156,20 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const Pri
 
     const Element& s = privateKey->GetPrivateElement();
 
-    std::vector<EvalKey<Element>> evalKeyVec;
-
-    usint maxRelinSkDeg = cryptoParams->GetMaxRelinSkDeg();
-    std::vector<Element> sPower(maxRelinSkDeg - 1);
+    size_t maxRelinSkDeg = cryptoParams->GetMaxRelinSkDeg() - 1;
+    std::vector<Element> sPower(maxRelinSkDeg);
 
     sPower[0] = s * s;
-    for (size_t i = 1; i < maxRelinSkDeg - 1; i++) {
+    for (size_t i = 1; i < maxRelinSkDeg; i++) {
         sPower[i] = sPower[i - 1] * s;
     }
 
     auto algo = cc->GetScheme();
 
-    for (size_t i = 0; i < maxRelinSkDeg - 1; i++) {
+    std::vector<EvalKey<Element>> evalKeyVec;
+    evalKeyVec.reserve(maxRelinSkDeg);
+
+    for (size_t i = 0; i < maxRelinSkDeg; i++) {
         privateKeyPower->SetPrivateElement(std::move(sPower[i]));
         evalKeyVec.push_back(algo->KeySwitchGen(privateKeyPower, privateKey));
     }
@@ -381,7 +382,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
     // we already have checks on higher level?
     //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
     //  if (it != indexList.end())
-    //    OPENFHE_THROW(not_available_error, "conjugation is disabled");
+    //    OPENFHE_THROW("conjugation is disabled");
 
     const auto cc = privateKey->GetCryptoContext();
     auto algo     = cc->GetScheme();
@@ -391,22 +392,30 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
 
     // we already have checks on higher level?
     //  if (indexList.size() > N - 1)
-    //    OPENFHE_THROW(math_error, "size exceeds the ring dimension");
+    //    OPENFHE_THROW("size exceeds the ring dimension");
 
     auto evalKeys = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
+    // Do not generate those keys that have been already generated and added to the static storage (map)
+    const std::string id{privateKey->GetKeyTag()};
+    std::vector<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
+    // if no index found for the given id, then all keys are to be generated
+    std::vector<uint32_t> indicesToGenerate =
+        (existingIndices.empty()) ? indexList :
+                                    CryptoContextImpl<Element>::GetUniqueValues(existingIndices, {indexList});
+
     // TODO pragma omp currently gives concurrent error
-    // #pragma omp parallel for if (indexList.size() >= 4)
-    for (usint i = 0; i < indexList.size(); i++) {
+    // #pragma omp parallel for if (indicesToGenerate.size() >= 4)
+    for (usint i = 0; i < indicesToGenerate.size(); i++) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
+        usint index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
         std::vector<usint> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         Element sPermuted = s.AutomorphismTransform(index, vec);
         privateKeyPermuted->SetPrivateElement(sPermuted);
-        (*evalKeys)[indexList[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
+        (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
@@ -416,10 +425,15 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
                                                               const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                                               CALLER_INFO_ARGS_CPP) const {
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2) {
+        OPENFHE_THROW("Ciphertext should be relinearized before.");
+    }
+
     // verify if the key i exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(i);
     if (evalKeyIterator == evalKeyMap.end()) {
-        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(i) + "] is not found." + CALLER_INFO);
+        OPENFHE_THROW("EvalKey for index [" + std::to_string(i) + "] is not found." + CALLER_INFO);
     }
     const std::vector<Element>& cv = ciphertext->GetElements();
 
@@ -428,18 +442,17 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
     //    std::string errorMsg(
     //        std::string("Insufficient number of elements in ciphertext: ") +
     //        std::to_string(cv.size()) + CALLER_INFO);
-    //    OPENFHE_THROW(config_error, errorMsg);
+    //    OPENFHE_THROW( errorMsg);
     //  }
 
     usint N = cv[0].GetRingDimension();
 
     //  if (i == 2 * N - 1)
-    //    OPENFHE_THROW(not_available_error,
+    //    OPENFHE_THROW(
     //                   "conjugation is disabled " + CALLER_INFO);
 
     //  if (i > 2 * N - 1)
     //    OPENFHE_THROW(
-    //        not_available_error,
     //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
 
     std::vector<usint> vec(N);
@@ -485,7 +498,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
     // verify if the key autoIndex exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(autoIndex);
     if (evalKeyIterator == evalKeyMap.end()) {
-        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+        OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
     }
     auto evalKey = evalKeyIterator->second;
 

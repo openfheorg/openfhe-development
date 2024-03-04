@@ -98,7 +98,7 @@ uint32_t GetDepthByDegree(size_t degree) {
 
     std::string errMsg("Polynomial degree is supported from 5 to 2031 inclusive. Its current value is ");
     errMsg += std::to_string(degree);
-    OPENFHE_THROW(math_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 
 }  // namespace
@@ -119,7 +119,7 @@ inline bool IsNotEqualOne(double val) {
 uint32_t Degree(const std::vector<double>& coefficients) {
     const size_t coefficientsSize = coefficients.size();
     if (!coefficientsSize) {
-        OPENFHE_THROW(math_error, "The coefficients vector can not be empty");
+        OPENFHE_THROW("The coefficients vector can not be empty");
     }
 
     int32_t indx = coefficientsSize;
@@ -141,47 +141,41 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
     uint32_t k = Degree(g);
 
     if (n != f.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divident is zero.");
+        OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divident is zero.");
     }
 
     if (k != g.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divisor is zero.");
+        OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divisor is zero.");
     }
 
-    std::vector<double> q;
-    std::vector<double> r = f;
+    if (int32_t(n - k) < 0)
+        return std::make_shared<longDiv>(std::vector<double>(1), f);
+
+    std::vector<double> q(n - k + 1);
+    std::vector<double> r(f);
     std::vector<double> d;
+    d.reserve(g.size() + n);
 
-    if (int32_t(n - k) >= 0) {
-        std::vector<double> q2(n - k + 1, 0.0);
-        q = q2;
+    while (int32_t(n - k) >= 0) {
+        // d is g padded with zeros before up to n
+        d.clear();
+        d.resize(n - k);
+        d.insert(d.end(), g.begin(), g.end());
 
-        while (int32_t(n - k) >= 0) {
-            d = g;
-            d.insert(d.begin(), n - k, 0);  // d is g padded with zeros before up to n
-            q[n - k] = r.back();
+        q[n - k] = r.back();
+        if (IsNotEqualOne(g[k]))
+            q[n - k] /= g.back();
 
-            if (IsNotEqualOne(g[k])) {
-                q[n - k] /= g.back();
-            }
-
-            // d *= q[n - k]
-            std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::multiplies<double>(), std::placeholders::_1, q[n - k]));
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
-            }
+        // d *= q[n - k]
+        std::transform(d.begin(), d.end(), d.begin(),
+                       std::bind(std::multiplies<double>(), std::placeholders::_1, q[n - k]));
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
         }
     }
-    else {
-        std::vector<double> q2(1, 0.0);
-        q = q2;
-        r = f;
-    }
-
     return std::make_shared<longDiv>(q, r);
 }
 
@@ -196,105 +190,99 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
     uint32_t k = Degree(g);
 
     if (n != f.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
+        OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
     }
 
     if (k != g.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
+        OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
     }
 
-    std::vector<double> q;
-    std::vector<double> r = f;
+    if (int32_t(n - k) < 0)
+        return std::make_shared<longDiv>(std::vector<double>(1), f);
 
-    if (int32_t(n - k) >= 0) {
-        std::vector<double> q2(n - k + 1, 0.0);
-        q = q2;
+    std::vector<double> q(n - k + 1);
+    std::vector<double> r(f);
+    std::vector<double> d;
+    d.reserve(g.size() + n);
 
-        while (int32_t(n - k) > 0) {
-            q[n - k] = 2 * r.back();
-            if (IsNotEqualOne(g[k])) {
-                q[n - k] /= g.back();
+    while (int32_t(n - k) > 0) {
+        d.clear();
+        d.resize(n + 1);
+
+        q[n - k] = 2 * r.back();
+        if (IsNotEqualOne(g[k]))
+            q[n - k] /= g.back();
+
+        if (int32_t(k) == int32_t(n - k)) {
+            d.front() = 2 * g[n - k];
+
+            for (uint32_t i = 1; i < 2 * k + 1; i++) {
+                d[i] = g[std::abs(int32_t(n - k - i))];
             }
-
-            std::vector<double> d(n + 1, 0.0);
-
-            if (int32_t(k) == int32_t(n - k)) {
+        }
+        else {
+            if (int32_t(k) > int32_t(n - k)) {
                 d.front() = 2 * g[n - k];
-
-                for (uint32_t i = 1; i < 2 * k + 1; i++) {
-                    d[i] = g[abs(int32_t(n - k - i))];
+                for (uint32_t i = 1; i < k - (n - k) + 1; i++) {
+                    d[i] = g[std::abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
+                }
+                for (uint32_t i = k - (n - k) + 1; i < n + 1; i++) {
+                    d[i] = g[std::abs(int32_t(i - n + k))];
                 }
             }
             else {
-                if (int32_t(k) > int32_t(n - k)) {
-                    d.front() = 2 * g[n - k];
-                    for (uint32_t i = 1; i < k - (n - k) + 1; i++) {
-                        d[i] = g[abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
-                    }
-
-                    for (uint32_t i = k - (n - k) + 1; i < n + 1; i++) {
-                        d[i] = g[abs(int32_t(i - n + k))];
-                    }
-                }
-                else {
-                    d[n - k] = g.front();
-                    for (uint32_t i = n - 2 * k; i < n + 1; i++) {
-                        if (i != n - k) {
-                            d[i] = g[abs(int32_t(i - n + k))];
-                        }
+                d[n - k] = g.front();
+                for (uint32_t i = n - 2 * k; i < n + 1; i++) {
+                    if (i != n - k) {
+                        d[i] = g[std::abs(int32_t(i - n + k))];
                     }
                 }
             }
-
-            if (IsNotEqualOne(r.back())) {
-                // d *= f[n]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
-            }
-            if (IsNotEqualOne(g.back())) {
-                // d /= g[k]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
-            }
-
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
-            }
         }
 
-        if (n == k) {
-            q.front() = r.back();
-            if (IsNotEqualOne(g.back())) {
-                q.front() /= g.back();  // q[0] /= g[k]
-            }
-            std::vector<double> d = g;
-            if (IsNotEqualOne(r.back())) {
-                // d *= f[n]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
-            }
-            if (IsNotEqualOne(g.back())) {
-                // d /= g[k]
-                std::transform(d.begin(), d.end(), d.begin(),
-                               std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
-            }
-            // f-=d
-            std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
-            if (r.size() > 1) {
-                n = Degree(r);
-                r.resize(n + 1);
-            }
+        if (IsNotEqualOne(r.back())) {
+            // d *= f[n]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
         }
-        q.front() *= 2;  // Because we want to have [c0] in the last spot, not [c0/2]
+        if (IsNotEqualOne(g.back())) {
+            // d /= g[k]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
+        }
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
+        }
     }
-    else {
-        std::vector<double> q2(1, 0.0);
-        q = q2;
-        r = f;
+
+    if (n == k) {
+        d = g;
+
+        q.front() = r.back();
+        if (IsNotEqualOne(g.back())) {
+            q.front() /= g.back();  // q[0] /= g[k]
+        }
+        if (IsNotEqualOne(r.back())) {
+            // d *= f[n]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
+        }
+        if (IsNotEqualOne(g.back())) {
+            // d /= g[k]
+            std::transform(d.begin(), d.end(), d.begin(),
+                           std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
+        }
+        // f-=d
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        if (r.size() > 1) {
+            n = Degree(r);
+            r.resize(n + 1);
+        }
     }
+    q.front() *= 2;  // Because we want to have [c0] in the last spot, not [c0/2]
 
     return std::make_shared<longDiv>(q, r);
 }
@@ -308,7 +296,7 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
 	degrees.*/
 std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
     if (n == 0) {
-        OPENFHE_THROW(math_error, "ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
+        OPENFHE_THROW("ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
     }
 
     // index n-1 in the vector corresponds to degree n
@@ -344,7 +332,7 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
 uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized) {
     size_t vecSize = vec.size();
     if (!vecSize) {
-        OPENFHE_THROW(math_error, "Cannot perform operation on empty vector. vec.size() == 0");
+        OPENFHE_THROW("Cannot perform operation on empty vector. vec.size() == 0");
     }
 
     size_t degree      = vecSize - 1;
@@ -772,7 +760,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 }
 
 std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget) {
-    uint32_t layers = ceil(static_cast<double>(logSlots) / budget);
+    uint32_t layers = std::ceil(static_cast<double>(logSlots) / budget);
     uint32_t rows   = logSlots / layers;
     uint32_t rem    = logSlots % layers;
 
@@ -817,8 +805,8 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    int32_t layersCollapse     = dims[0];
-    int32_t remCollapse        = dims[2];
+    int32_t layersCollapse = dims[0];
+    int32_t remCollapse    = dims[2];
 
     bool flagRem = (remCollapse == 0) ? false : true;
 
@@ -838,7 +826,7 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     else {
         g = dim1;
     }
-    int32_t b    = (numRotations + 1) / g;
+    int32_t b = (numRotations + 1) / g;
 
     int32_t bRem = 0;
     int32_t gRem = 0;
@@ -857,8 +845,12 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
             int32_t(numRotationsRem), bRem,           gRem};
 }
 
-uint32_t getRatioBSGSLT(uint32_t slots) {
-    return ceil(sqrt(slots));
+uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
+    if (slots <= 1) {
+        return 1;
+    }
+    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
+    return (1 << (static_cast<uint32_t>(std::log2(std::ceil(sqrt(slots))) + 1)));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
@@ -871,7 +863,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
 
     // Computing the baby-step g and the giant-step h
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
 
     // Computing all indices for baby-step giant-step procedure
     std::vector<int32_t> indexList;
@@ -880,6 +872,56 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
         indexList.emplace_back(i + 1);
     for (uint32_t i = 2; i < gStep; i++)
         indexList.emplace_back(bStep * i);
+
+    // Remove possible duplicates
+    sort(indexList.begin(), indexList.end());
+    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
+
+    // Remove automorphisms corresponding to 0
+    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+
+    return indexList;
+}
+
+std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols) {
+    uint32_t slots;
+    // Set slots depending on packing mode (fully-packed or sparsely-packed)
+    if ((blockDimension == 0) || (blockDimension == m / 4))
+        slots = m / 4;
+    else
+        slots = blockDimension;
+
+    // Computing the baby-step g and the giant-step h
+    uint32_t bStep = getRatioBSGSLT(slots);
+    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
+    uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+
+    std::vector<int32_t> indexList;
+    indexList.reserve(bStep + gStep +
+                      cols);  // There will be a lot of intersection between the rotations, provide an upper bound
+
+    while (slots >= 1) {
+        // Computing all indices for baby-step giant-step procedure
+        for (uint32_t i = 0; i < bStep; i++)
+            indexList.emplace_back(i + 1);
+        for (uint32_t i = 2; i < gStep; i++)
+            indexList.emplace_back(bStep * i);
+
+        // If the linear transform is wide instead of tall, we need extra rotations
+        if (slots < cols) {
+            logl = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+            for (size_t j = 1; j <= logl; ++j) {
+                indexList.emplace_back(slots * (1 << (j - 1)));
+            }
+        }
+
+        // Go deeper into the binary tree
+        slots /= 2;
+
+        // Computing the baby-step g and the giant-step h
+        bStep = getRatioBSGSLT(slots);
+        gStep = std::ceil(static_cast<double>(slots) / bStep);
+    }
 
     // Remove possible duplicates
     sort(indexList.begin(), indexList.end());

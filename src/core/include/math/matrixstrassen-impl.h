@@ -52,6 +52,7 @@ MatrixStrassen<Element>::MatrixStrassen(alloc_func allocZero, size_t rows, size_
     : data(), rows(rows), cols(cols), allocZero(allocZero) {
     data.resize(rows);
     for (auto& row : data) {
+        row.reserve(cols);
         for (size_t col = 0; col < cols; ++col) {
             row.push_back(allocGen());
         }
@@ -144,7 +145,7 @@ void MatrixStrassen<Element>::SetFormat(Format format) {
 template <class Element>
 MatrixStrassen<Element>& MatrixStrassen<Element>::operator+=(MatrixStrassen<Element> const& other) {
     if (rows != other.rows || cols != other.cols) {
-        OPENFHE_THROW(math_error, "Addition operands have incompatible dimensions");
+        OPENFHE_THROW("Addition operands have incompatible dimensions");
     }
 #pragma omp parallel for
     for (size_t j = 0; j < cols; ++j) {
@@ -158,7 +159,7 @@ MatrixStrassen<Element>& MatrixStrassen<Element>::operator+=(MatrixStrassen<Elem
 template <class Element>
 inline MatrixStrassen<Element>& MatrixStrassen<Element>::operator-=(MatrixStrassen<Element> const& other) {
     if (rows != other.rows || cols != other.cols) {
-        OPENFHE_THROW(math_error, "Subtraction operands have incompatible dimensions");
+        OPENFHE_THROW("Subtraction operands have incompatible dimensions");
     }
 #pragma omp parallel for
     for (size_t j = 0; j < cols; ++j) {
@@ -192,10 +193,10 @@ MatrixStrassen<Element> MatrixStrassen<Element>::Transpose() const {
 template <class Element>
 void MatrixStrassen<Element>::Determinant(Element* determinant) const {
     if (rows != cols)
-        OPENFHE_THROW(math_error, "Supported only for square matrix");
+        OPENFHE_THROW("Supported only for square matrix");
     // auto determinant = *allocZero();
     if (rows < 1)
-        OPENFHE_THROW(math_error, "Dimension should be at least one");
+        OPENFHE_THROW("Dimension should be at least one");
 
     if (rows == 1) {
         *determinant = *data[0][0];
@@ -249,7 +250,7 @@ void MatrixStrassen<Element>::Determinant(Element* determinant) const {
 template <class Element>
 MatrixStrassen<Element> MatrixStrassen<Element>::CofactorMatrixStrassen() const {
     if (rows != cols)
-        OPENFHE_THROW(math_error, "Supported only for square matrix");
+        OPENFHE_THROW("Supported only for square matrix");
 
     size_t ii, jj, iNew, jNew;
 
@@ -296,7 +297,7 @@ MatrixStrassen<Element> MatrixStrassen<Element>::CofactorMatrixStrassen() const 
 template <class Element>
 MatrixStrassen<Element>& MatrixStrassen<Element>::VStack(MatrixStrassen<Element> const& other) {
     if (cols != other.cols) {
-        OPENFHE_THROW(math_error, "VStack rows not equal size");
+        OPENFHE_THROW("VStack rows not equal size");
     }
     for (size_t row = 0; row < other.rows; ++row) {
         std::vector<std::unique_ptr<Element>> rowElems;
@@ -313,7 +314,7 @@ MatrixStrassen<Element>& MatrixStrassen<Element>::VStack(MatrixStrassen<Element>
 template <class Element>
 inline MatrixStrassen<Element>& MatrixStrassen<Element>::HStack(MatrixStrassen<Element> const& other) {
     if (rows != other.rows) {
-        OPENFHE_THROW(math_error, "HStack cols not equal size");
+        OPENFHE_THROW("HStack cols not equal size");
     }
     for (size_t row = 0; row < rows; ++row) {
         std::vector<std::unique_ptr<Element>> rowElems;
@@ -483,7 +484,7 @@ inline std::ostream& operator<<(std::ostream& os, const MatrixStrassen<Element>&
 MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input) {
     //  http://eprint.iacr.org/2013/297.pdf
     if (input.GetRows() != input.GetCols()) {
-        OPENFHE_THROW(math_error, "not square");
+        OPENFHE_THROW("not square");
     }
     size_t rows = input.GetRows();
     MatrixStrassen<double> result([]() { return 0; }, rows, rows);

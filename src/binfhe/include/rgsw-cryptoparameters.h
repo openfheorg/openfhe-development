@@ -87,9 +87,9 @@ public:
           m_keyDist(keyDist),
           m_numAutoKeys(numAutoKeys) {
         if (!IsPowerOfTwo(baseG))
-            OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
+            OPENFHE_THROW("Gadget base should be a power of two.");
         if ((method == LMKCDEY) & (numAutoKeys == 0))
-            OPENFHE_THROW(config_error, "numAutoKeys should be greater than 0.");
+            OPENFHE_THROW("numAutoKeys should be greater than 0.");
         auto logQ{log(m_Q.ConvertToDouble())};
         m_digitsG = static_cast<uint32_t>(std::ceil(logQ / log(static_cast<double>(m_baseG))));
         m_dgg.SetStd(std);
@@ -194,8 +194,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("bN", m_N));
         ar(::cereal::make_nvp("bQ", m_Q));

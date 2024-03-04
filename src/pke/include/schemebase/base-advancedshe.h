@@ -110,7 +110,7 @@ public:
     virtual Ciphertext<Element> EvalLinearWSum(std::vector<ConstCiphertext<Element>>& ciphertextVec,
                                                const std::vector<double>& weights) const {
         std::string errMsg = "EvalLinearWSum is not implemented for this scheme.";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     /**
@@ -125,7 +125,7 @@ public:
     virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
                                                       const std::vector<double>& weights) const {
         std::string errMsg = "EvalLinearWSumMutable is not implemented for this scheme.";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     //------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ public:
    */
     virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element> ciphertext,
                                          const std::vector<double>& coefficients) const {
-        OPENFHE_THROW(config_error, "EvalPoly is not supported for the scheme.");
+        OPENFHE_THROW("EvalPoly is not supported for the scheme.");
     }
 
     /**
@@ -159,11 +159,11 @@ public:
    */
     virtual Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element> ciphertext,
                                                const std::vector<double>& coefficients) const {
-        OPENFHE_THROW(config_error, "EvalPolyLinear is not supported for the scheme.");
+        OPENFHE_THROW("EvalPolyLinear is not supported for the scheme.");
     }
 
     virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element> x, const std::vector<double>& coefficients) const {
-        OPENFHE_THROW(config_error, "EvalPolyPS is not supported for the scheme.");
+        OPENFHE_THROW("EvalPolyPS is not supported for the scheme.");
     }
 
     //------------------------------------------------------------------------------
@@ -184,19 +184,19 @@ public:
    */
     virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
                                                     const std::vector<double>& coefficients, double a, double b) const {
-        OPENFHE_THROW(config_error, "EvalChebyshevSeries is not supported for the scheme.");
+        OPENFHE_THROW("EvalChebyshevSeries is not supported for the scheme.");
     }
 
     virtual Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element> ciphertext,
                                                           const std::vector<double>& coefficients, double a,
                                                           double b) const {
-        OPENFHE_THROW(config_error, "EvalChebyshevSeriesLinear is not supported for the scheme.");
+        OPENFHE_THROW("EvalChebyshevSeriesLinear is not supported for the scheme.");
     }
 
     virtual Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element> ciphertext,
                                                       const std::vector<double>& coefficients, double a,
                                                       double b) const {
-        OPENFHE_THROW(config_error, "EvalChebyshevSeriesPS is not supported for the scheme.");
+        OPENFHE_THROW("EvalChebyshevSeriesPS is not supported for the scheme.");
     }
 
     //------------------------------------------------------------------------------

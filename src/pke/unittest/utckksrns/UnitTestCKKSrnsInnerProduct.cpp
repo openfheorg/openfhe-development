@@ -89,7 +89,7 @@ double CKKSrnsInnerProduct(const std::vector<double> testVec) {
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    KeyPair keys = cc->KeyGen();
+    KeyPair<DCRTPoly> keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalSumKeyGen(keys.secretKey);
 

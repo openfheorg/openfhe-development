@@ -247,7 +247,8 @@ public:
    */
     // TODO: this doesn't look right
     const BigIntType GetRootOfUnity() const {
-        return BigIntType(0);
+        //        return BigIntType(0);
+        return this->GetDerived().GetParams()->GetRootOfUnity();
     }
 
     /**
@@ -265,18 +266,24 @@ public:
    * Note this operation is computationally intense. Does bound checking
    * @return interpolated value at index i.
    */
-    BigIntType& at(usint i) override             = 0;
-    const BigIntType& at(usint i) const override = 0;
+    BigIntType& at(usint i) final {
+        OPENFHE_THROW("at() not implemented for DCRTPoly");
+    }
+    const BigIntType& at(usint i) const final {
+        OPENFHE_THROW("const at() not implemented for DCRTPoly");
+    }
 
     /**
    * @brief Get interpolated value of element at index i.
    * Note this operation is computationally intense. No bound checking
    * @return interpolated value at index i.
    */
-    BigIntType& operator[](usint i) override = 0;
-    //    return this->GetDerived()[i];
-    const BigIntType& operator[](usint i) const override = 0;
-    //    return this->GetDerived()[i];
+    BigIntType& operator[](usint i) final {
+        OPENFHE_THROW("operator[] not implemented for DCRTPoly");
+    }
+    const BigIntType& operator[](usint i) const final {
+        OPENFHE_THROW("const operator[] not implemented for DCRTPoly");
+    }
 
     /**
    * @brief Get method that returns a vector of all component elements.
@@ -307,19 +314,6 @@ public:
    * @returns a reference to the returned tower
    */
     const TowerType& GetElementAtIndex(usint i) const {
-        return this->GetDerived().GetAllElements()[i];
-    }
-
-    /**
-   * @brief Get value of element at index i.
-   *
-   * @return value at index i.
-   *
-   * @warning Should be removed to disable access to the towers, all modifications
-   * in the lattice layer should be done in the lattice layer. This means new functions
-   * will be need in the lattice layer.
-   */
-    TowerType& ElementAtIndex(usint i) {
         return this->GetDerived().GetAllElements()[i];
     }
 
@@ -520,9 +514,9 @@ public:
    */
     DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT)
-            OPENFHE_THROW(not_implemented_error,
-                          "DCRTPolyInterface element transposition is currently "
-                          "implemented only in the Evaluation representation.");
+            OPENFHE_THROW(
+                "DCRTPolyInterface element transposition is currently "
+                "implemented only in the Evaluation representation.");
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
 
@@ -670,9 +664,7 @@ public:
    * @warning Will remove, this is only inplace because of BFV
    */
     DerivedType MultiplyAndRound(const BigIntType& p, const BigIntType& q) const final {
-        std::string errMsg = "Operation not implemented yet";
-        OPENFHE_THROW(not_implemented_error, errMsg);
-        return this->GetDerived();
+        OPENFHE_THROW("MultiplyAndRound not implemented for DCRTPoly");
     }
 
     /**
@@ -685,9 +677,7 @@ public:
    * @warning Will remove, this is only inplace because of BFV
    */
     DerivedType DivideAndRound(const BigIntType& q) const final {
-        std::string errMsg = "Operation not implemented yet";
-        OPENFHE_THROW(not_implemented_error, errMsg);
-        return this->GetDerived();
+        OPENFHE_THROW("DivideAndRound not implemented for DCRTPoly");
     }
 
     /**
@@ -719,7 +709,7 @@ public:
     virtual DerivedType& operator*=(const LilIntType& rhs)  = 0;
 
     /**
-   * @brief Performs an multiplication operation and returns the result.
+   * @brief Performs a multiplication operation and returns the result.
    *
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
@@ -744,7 +734,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     DerivedType ModByTwo() const final {
-        OPENFHE_THROW(not_implemented_error, "Mod of an BigIntType not implemented on DCRTPoly");
+        OPENFHE_THROW("Mod of a BigIntType not implemented for DCRTPoly");
     }
 
     /**
@@ -757,7 +747,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     DerivedType Mod(const BigIntType& modulus) const final {
-        OPENFHE_THROW(not_implemented_error, "Mod of an BigIntType not implemented on DCRTPoly");
+        OPENFHE_THROW("Mod of a BigIntType not implemented for DCRTPoly");
     }
 
     /**
@@ -768,7 +758,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     const BigVecType& GetValues() const final {
-        OPENFHE_THROW(not_implemented_error, "GetValues not implemented on DCRTPoly");
+        OPENFHE_THROW("GetValues not implemented for DCRTPoly");
     }
 
     /**
@@ -780,7 +770,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     void SetValues(const BigVecType& values, Format format) {
-        OPENFHE_THROW(not_implemented_error, "SetValues not implemented on DCRTPoly");
+        OPENFHE_THROW("SetValues not implemented for DCRTPoly");
     }
 
     /**
@@ -805,7 +795,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     DerivedType AddRandomNoise(const BigIntType& modulus) const {
-        OPENFHE_THROW(not_implemented_error, "AddRandomNoise is not currently implemented for DCRTPoly");
+        OPENFHE_THROW("AddRandomNoise is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -817,7 +807,7 @@ public:
    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
    */
     void MakeSparse(uint32_t wFactor) final {
-        OPENFHE_THROW(not_implemented_error, "MakeSparse is not currently implemented for DCRTPoly");
+        OPENFHE_THROW("MakeSparse is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -848,9 +838,7 @@ public:
    * @param &qlInvModqPrecon NTL-specific precomputations
    */
     virtual void DropLastElementAndScale(const std::vector<NativeInteger>& QlQlInvModqlDivqlModq,
-                                         const std::vector<NativeInteger>& QlQlInvModqlDivqlModqPrecon,
-                                         const std::vector<NativeInteger>& qlInvModq,
-                                         const std::vector<NativeInteger>& qlInvModqPrecon) = 0;
+                                         const std::vector<NativeInteger>& qlInvModq) = 0;
 
     /**
    * @brief ModReduces reduces the DCRTPoly element's composite modulus by
@@ -870,7 +858,7 @@ public:
                            const std::vector<NativeInteger>& qlInvModqPrecon) = 0;
 
     /**
-   * @brief Interpolates the DCRTPoly to an Poly based on the Chinese Remainder
+   * @brief Interpolates the DCRTPoly to a Poly based on the Chinese Remainder
    * Transform Interpolation. and then returns a Poly with that single element
    *
    * @return the interpolated ring element as a Poly object.
@@ -889,7 +877,7 @@ public:
     virtual TowerType ToNativePoly() const = 0;
 
     /**
-   * @brief Interpolates the DCRTPoly to an Poly based on the Chinese Remainder
+   * @brief Interpolates the DCRTPoly to a Poly based on the Chinese Remainder
    * Transform Interpolation, only at element index i, all other elements are
    * zero. and then returns a Poly with that single element
    *
@@ -1396,7 +1384,7 @@ public:
     void SwitchFormat() override = 0;
 
     /**
-   * @brief Sets format to value without calling FFT. Only use if you know what you're doing.
+   * @brief Sets format to value without performing NTT. Only use if you know what you're doing.
    *
    */
     virtual void OverrideFormat(const Format f) = 0;
@@ -1413,7 +1401,7 @@ public:
    */
     void SwitchModulus(const BigIntType& modulus, const BigIntType& rootOfUnity, const BigIntType& modulusArb,
                        const BigIntType& rootOfUnityArb) final {
-        OPENFHE_THROW(not_implemented_error, "SwitchModulus not implemented on DCRTPoly");
+        OPENFHE_THROW("SwitchModulus not implemented for DCRTPoly");
     }
 
     /**

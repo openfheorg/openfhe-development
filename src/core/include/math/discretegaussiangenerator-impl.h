@@ -62,7 +62,7 @@ void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
     if (log2(m_std) > 59) {
         //    if (lbcrypto::GetMSB(static_cast<uint64_t>(std)) > 59) {
         std::string errorMsg(std::string("Standard deviation cannot exceed 59 bits"));
-        OPENFHE_THROW(config_error, errorMsg);
+        OPENFHE_THROW(errorMsg);
     }
 
     if ((peikert = ((m_std = std) < KARNEY_THRESHOLD)))
@@ -138,8 +138,7 @@ uint32_t DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<
     if (lower != S.end()) {
         return lower - S.begin() + 1;
     }
-    OPENFHE_THROW(not_available_error,
-                  "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
+    OPENFHE_THROW("DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
 template <typename VecType>
@@ -193,9 +192,9 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
 template <typename VecType>
 int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, double stddev, size_t n) const {
     if (std::isinf(mean))
-        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
+        OPENFHE_THROW("DiscreteGaussianGeneratorImpl called with mean == +-inf");
     if (std::isinf(stddev))
-        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
+        OPENFHE_THROW("DiscreteGaussianGeneratorImpl called with stddev == +-inf");
 
     // this representation of log_2 is used for Visual Studio
     double t = log2(n) * stddev;
@@ -216,32 +215,28 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
         //  check if dice land below pdf
         flagSuccess = (dice <= UnnormalizedGaussianPDFOptimized(mean, sigmaFactor, x));
         if (++count > limit)
-            OPENFHE_THROW(not_available_error, "GenerateInteger could not find success after repeated attempts");
+            OPENFHE_THROW("GenerateInteger could not find success after repeated attempts");
     }
     return x;
 }
 
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev) {
-    int64_t result;
-    std::uniform_int_distribution<int32_t> uniform_sign(0, 1);
+    std::uniform_int_distribution<int64_t> uniform_sign(0, 1);
     std::uniform_int_distribution<int64_t> uniform_j(0, ceil(stddev) - 1);
 
     PRNG& g = PseudoRandomNumberGenerator::GetPRNG();
 
-    bool flagSuccess = false;
-    int32_t k;
-
-    while (!flagSuccess) {
+    while (true) {
         // STEP D1
-        k = AlgorithmG(g);
+        int32_t k = AlgorithmG(g);
 
         // STEP D2
         if (!AlgorithmP(g, k * (k - 1)))
             continue;
 
         // STEP D3
-        int32_t s = uniform_sign(g);
+        int64_t s = uniform_sign(g);
         if (s == 0)
             s = -1;
 
@@ -265,11 +260,8 @@ int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mea
             continue;
 
         // STEP D8
-        result      = s * (i0 + j);
-        flagSuccess = true;
+        return (s * (i0 + j));
     }
-
-    return result;
 }
 
 template <typename VecType>

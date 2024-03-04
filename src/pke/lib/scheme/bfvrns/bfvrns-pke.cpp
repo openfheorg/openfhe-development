@@ -81,8 +81,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool mak
 
     DCRTPoly a(dug, paramsPK, Format::EVALUATION);
     DCRTPoly e(dgg, paramsPK, Format::EVALUATION);
-
-    DCRTPoly b = ns * e - a * s;
+    DCRTPoly b(ns * e - a * s);
 
     usint sizeQ  = elementParams->GetParams().size();
     usint sizePK = paramsPK->GetParams().size();
@@ -91,8 +90,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool mak
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
-    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetPublicElements(std::vector<DCRTPoly>{std::move(b), std::move(a)});
     keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
 
     return keyPair;
