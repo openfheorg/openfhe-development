@@ -51,7 +51,6 @@ Matrix<Element>::Matrix(alloc_func allocZero, size_t rows, size_t cols, alloc_fu
     : data(), rows(rows), cols(cols), allocZero(allocZero) {
     data.resize(rows);
     for (auto row = data.begin(); row != data.end(); ++row) {
-        row->reserve(cols);
         for (size_t col = 0; col < cols; ++col) {
             row->push_back(allocGen());
         }
@@ -81,7 +80,7 @@ Matrix<Element> Matrix<Element>::Mult(Matrix<Element> const& other) const {
     // NUM_THREADS = omp_get_max_threads();
 
     if (cols != other.rows) {
-        OPENFHE_THROW("incompatible matrix multiplication");
+        OPENFHE_THROW(math_error, "incompatible matrix multiplication");
     }
     Matrix<Element> result(allocZero, rows, other.cols);
     if (rows == 1) {
@@ -108,7 +107,7 @@ Matrix<Element> Matrix<Element>::Mult(Matrix<Element> const& other) const {
 template <class Element>
 Matrix<Element>& Matrix<Element>::operator+=(Matrix<Element> const& other) {
     if (rows != other.rows || cols != other.cols) {
-        OPENFHE_THROW("Addition operands have incompatible dimensions");
+        OPENFHE_THROW(math_error, "Addition operands have incompatible dimensions");
     }
 #pragma omp parallel for
     for (size_t j = 0; j < cols; ++j) {
@@ -122,7 +121,7 @@ Matrix<Element>& Matrix<Element>::operator+=(Matrix<Element> const& other) {
 template <class Element>
 Matrix<Element>& Matrix<Element>::operator-=(Matrix<Element> const& other) {
     if (rows != other.rows || cols != other.cols) {
-        OPENFHE_THROW("Subtraction operands have incompatible dimensions");
+        OPENFHE_THROW(math_error, "Subtraction operands have incompatible dimensions");
     }
 #pragma omp parallel for
     for (size_t j = 0; j < cols; ++j) {
@@ -155,10 +154,10 @@ Matrix<Element> Matrix<Element>::Transpose() const {
 template <class Element>
 void Matrix<Element>::Determinant(Element* determinant) const {
     if (rows != cols)
-        OPENFHE_THROW("Supported only for square matrix");
+        OPENFHE_THROW(math_error, "Supported only for square matrix");
     // auto determinant = *allocZero();
     if (rows < 1)
-        OPENFHE_THROW("Dimension should be at least one");
+        OPENFHE_THROW(math_error, "Dimension should be at least one");
 
     if (rows == 1) {
         *determinant = data[0][0];
@@ -212,7 +211,7 @@ void Matrix<Element>::Determinant(Element* determinant) const {
 template <class Element>
 Matrix<Element> Matrix<Element>::CofactorMatrix() const {
     if (rows != cols)
-        OPENFHE_THROW("Supported only for square matrix");
+        OPENFHE_THROW(not_available_error, "Supported only for square matrix");
 
     size_t ii, jj, iNew, jNew;
 
@@ -260,7 +259,7 @@ Matrix<Element> Matrix<Element>::CofactorMatrix() const {
 template <class Element>
 Matrix<Element>& Matrix<Element>::VStack(Matrix<Element> const& other) {
     if (cols != other.cols) {
-        OPENFHE_THROW("VStack rows not equal size");
+        OPENFHE_THROW(math_error, "VStack rows not equal size");
     }
     for (size_t row = 0; row < other.rows; ++row) {
         data_row_t rowElems;
@@ -277,7 +276,7 @@ Matrix<Element>& Matrix<Element>::VStack(Matrix<Element> const& other) {
 template <class Element>
 inline Matrix<Element>& Matrix<Element>::HStack(Matrix<Element> const& other) {
     if (rows != other.rows) {
-        OPENFHE_THROW("HStack cols not equal size");
+        OPENFHE_THROW(math_error, "HStack cols not equal size");
     }
     for (size_t row = 0; row < rows; ++row) {
         data_row_t rowElems;

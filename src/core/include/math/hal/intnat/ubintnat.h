@@ -73,6 +73,13 @@
 #define NATIVEINT_DO_CHECKS false
 #define NATIVEINT_BARRET_MOD
 
+// TODO: remove these?
+using U32BITS = uint32_t;
+using U64BITS = uint64_t;
+#if defined(HAVE_INT128)
+using U128BITS = uint128_t;
+#endif
+
 namespace intnat {
 
 // Forward declare class and give it an alias for the expected type
@@ -176,9 +183,7 @@ public:
     }
     // explicit NativeIntegerT(const char strval) : m_value{NativeInt(strval - '0')} {}
 
-    template <typename T,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
@@ -209,9 +214,7 @@ public:
         return *this;
     }
 
-    template <typename T,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
     constexpr NativeIntegerT& operator=(T val) noexcept {
         m_value = val;
         return *this;
@@ -238,9 +241,9 @@ public:
         NativeInt acc{0}, tst{0};
         for (auto c : str) {
             if ((c - '0') > 9)
-                OPENFHE_THROW("String contains a non-digit");
+                OPENFHE_THROW(lbcrypto::type_error, "String contains a non-digit");
             if ((acc = (10 * acc) + static_cast<NativeInt>(c - '0')) < tst)
-                OPENFHE_THROW(str + " is too large to fit in this native integer object");
+                OPENFHE_THROW(lbcrypto::math_error, str + " is too large to fit in this native integer object");
             tst = acc;
         }
         m_value = acc;
@@ -282,7 +285,7 @@ public:
     NativeIntegerT AddCheck(const NativeIntegerT& b) const {
         auto r{m_value + b.m_value};
         if (r < m_value || r < b.m_value)
-            OPENFHE_THROW("NativeIntegerT AddCheck: Overflow");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT AddCheck: Overflow");
         return {r};
     }
 
@@ -316,7 +319,7 @@ public:
     NativeIntegerT& AddEqCheck(const NativeIntegerT& b) {
         auto oldv{m_value};
         if ((m_value += b.m_value) < oldv)
-            OPENFHE_THROW("NativeIntegerT AddEqCheck: Overflow");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT AddEqCheck: Overflow");
         return *this;
     }
 
@@ -381,7 +384,7 @@ public:
    */
     NativeIntegerT& SubEqCheck(const NativeIntegerT& b) {
         if (m_value < b.m_value)
-            OPENFHE_THROW("NativeIntegerT SubEqCheck: neg value");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT SubEqCheck: neg value");
         return *this = m_value - b.m_value;
     }
 
@@ -421,7 +424,7 @@ public:
     NativeIntegerT MulCheck(const NativeIntegerT& b) const {
         auto p{b.m_value * m_value};
         if (p < m_value || p < b.m_value)
-            OPENFHE_THROW("NativeIntegerT MulCheck: Overflow");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT MulCheck: Overflow");
         return {p};
     }
 
@@ -455,7 +458,7 @@ public:
     NativeIntegerT& MulEqCheck(const NativeIntegerT& b) {
         auto oldv{m_value};
         if ((m_value *= b.m_value) < oldv)
-            OPENFHE_THROW("NativeIntegerT MulEqCheck: Overflow");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT MulEqCheck: Overflow");
         return *this;
     }
 
@@ -478,7 +481,7 @@ public:
    */
     NativeIntegerT DividedBy(const NativeIntegerT& b) const {
         if (b.m_value == 0)
-            OPENFHE_THROW("NativeIntegerT DividedBy: zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT DividedBy: zero");
         return {m_value / b.m_value};
     }
 
@@ -490,7 +493,7 @@ public:
    */
     NativeIntegerT& DividedByEq(const NativeIntegerT& b) {
         if (b.m_value == 0)
-            OPENFHE_THROW("NativeIntegerT DividedByEq: zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT DividedByEq: zero");
         return *this = m_value / b.m_value;
     }
 
@@ -531,7 +534,7 @@ public:
    */
     NativeIntegerT MultiplyAndRound(const NativeIntegerT& p, const NativeIntegerT& q) const {
         if (q.m_value == 0)
-            OPENFHE_THROW("NativeIntegerT MultiplyAndRound: Divide by zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT MultiplyAndRound: Divide by zero");
         return static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
     }
 
@@ -545,7 +548,7 @@ public:
    */
     NativeIntegerT& MultiplyAndRoundEq(const NativeIntegerT& p, const NativeIntegerT& q) {
         if (q.m_value == 0)
-            OPENFHE_THROW("NativeIntegerT MultiplyAndRoundEq: Divide by zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT MultiplyAndRoundEq: Divide by zero");
         return *this =
                    static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
     }
@@ -591,7 +594,7 @@ public:
    */
     NativeIntegerT DivideAndRound(const NativeIntegerT& q) const {
         if (q.m_value == 0)
-            OPENFHE_THROW("NativeIntegerT DivideAndRound: zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT DivideAndRound: zero");
         auto ans{m_value / q.m_value};
         auto rem{m_value % q.m_value};
         auto halfQ{q.m_value >> 1};
@@ -609,7 +612,7 @@ public:
    */
     NativeIntegerT& DivideAndRoundEq(const NativeIntegerT& q) {
         if (q.m_value == 0)
-            OPENFHE_THROW("NativeIntegerT DivideAndRoundEq: zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT DivideAndRoundEq: zero");
         auto ans{m_value / q.m_value};
         auto rem{m_value % q.m_value};
         auto halfQ{q.m_value >> 1};
@@ -646,7 +649,7 @@ public:
     template <typename T = NativeInt>
     NativeIntegerT ComputeMu(typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
         if (m_value == 0)
-            OPENFHE_THROW("NativeIntegerT ComputeMu: Divide by zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT ComputeMu: Divide by zero");
         auto&& tmp{DNativeInt{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
         return {tmp / DNativeInt(m_value)};
     }
@@ -654,7 +657,7 @@ public:
     template <typename T = NativeInt>
     NativeIntegerT ComputeMu(typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
         if (m_value == 0)
-            OPENFHE_THROW("NativeIntegerT ComputeMu: Divide by zero");
+            OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT ComputeMu: Divide by zero");
         auto&& tmp{bigintbackend::BigInteger{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
         return {(tmp / bigintbackend::BigInteger(m_value)).template ConvertToInt<NativeInt>()};
     }
@@ -1443,7 +1446,7 @@ public:
         const NativeIntegerT& modulus,
         typename std::enable_if<!std::is_same<T, DNativeInt>::value, bool>::type = true) const {
         if (modulus.m_value == 0)
-            OPENFHE_THROW("Divide by zero");
+            OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
         auto&& w{DNativeInt(m_value) << NativeIntegerT::MaxBits()};
         return {w / DNativeInt(modulus.m_value)};
     }
@@ -1453,7 +1456,7 @@ public:
         const NativeIntegerT& modulus,
         typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type = true) const {
         if (modulus.m_value == 0)
-            OPENFHE_THROW("Divide by zero");
+            OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
         auto&& w{bigintbackend::BigInteger(m_value) << NativeIntegerT::MaxBits()};
         return {(w / bigintbackend::BigInteger(modulus.m_value)).template ConvertToInt<NativeInt>()};
     }
@@ -1562,7 +1565,7 @@ public:
         if (a == 0) {
             std::string msg = NativeIntegerT::toString(m_value) + " does not have a ModInverse using " +
                               NativeIntegerT::toString(mod.m_value);
-            OPENFHE_THROW(msg);
+            OPENFHE_THROW(lbcrypto::math_error, msg);
         }
         if (modulus == 1)
             return NativeIntegerT();
@@ -1649,9 +1652,7 @@ public:
    *
    * @return the int representation of the value as usint.
    */
-    template <typename T             = NativeInt,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+    template <typename T = NativeInt, std::enable_if_t<std::is_integral_v<T>, bool> = true>
     constexpr T ConvertToInt() const noexcept {
         // static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
         return static_cast<T>(m_value);
@@ -1674,12 +1675,12 @@ public:
    */
     static NativeIntegerT FromBinaryString(const std::string& bitString) {
         if (bitString.length() > NativeIntegerT::MaxBits())
-            OPENFHE_THROW("Bit string is too long to fit in an intnat");
+            OPENFHE_THROW(lbcrypto::math_error, "Bit string is too long to fit in an intnat");
         NativeInt v{0};
         for (size_t i = 0; i < bitString.length(); ++i) {
             auto n = bitString[i] - '0';
             if (n < 0 || n > 1)
-                OPENFHE_THROW("Bit string must contain only 0 or 1");
+                OPENFHE_THROW(lbcrypto::math_error, "Bit string must contain only 0 or 1");
             v = (v << 1) | static_cast<NativeInt>(n);
         }
         return {v};
@@ -1741,7 +1742,7 @@ public:
    */
     uschar GetBitAtIndex(usint index) const {
         if (index == 0)
-            OPENFHE_THROW("Zero index in GetBitAtIndex");
+            OPENFHE_THROW(lbcrypto::math_error, "Zero index in GetBitAtIndex");
         return static_cast<uschar>((m_value >> (index - 1)) & 0x1);
     }
 
@@ -1782,23 +1783,23 @@ public:
     }
 
     template <class Archive, typename T = void>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> load(
+    typename std::enable_if_t<std::is_same_v<NativeInt, U64BITS> || std::is_same_v<NativeInt, U32BITS>, T> load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
+                                                           " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
     }
 
 #if defined(HAVE_INT128)
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && !cereal::traits::is_text_archive<Archive>::value,
                               void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
+                                                           " is from a later version of the library");
         }
         // get an array with 2 unint64_t values for m_value
         uint64_t vec[2];
@@ -1809,12 +1810,12 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && cereal::traits::is_text_archive<Archive>::value,
                               void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
+                                                           " is from a later version of the library");
         }
         // get an array with 2 unint64_t values for m_value
         uint64_t vec[2];
@@ -1826,18 +1827,18 @@ public:
 #endif
 
     template <class Archive, typename T = void>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same<NativeInt, uint32_t>::value, T> save(
+    typename std::enable_if_t<std::is_same_v<NativeInt, U64BITS> || std::is_same<NativeInt, U32BITS>::value, T> save(
         Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
 
 #if defined(HAVE_INT128)
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && !cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
         // save 2 unint64_t values instead of uint128_t
-        constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
+        constexpr U128BITS mask = (static_cast<U128BITS>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
         vec[1] = m_value >> 64;   // most significant word
@@ -1845,11 +1846,11 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
         // save 2 unint64_t values instead of uint128_t
-        constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
+        constexpr U128BITS mask = (static_cast<U128BITS>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
         vec[1] = m_value >> 64;   // most significant word
@@ -1906,91 +1907,96 @@ private:
    * @param b multiplicand
    * @param &x result of multiplication
    */
-    static void MultD(NativeInt a, NativeInt b, typeD& res) {
-        if constexpr (std::is_same_v<NativeInt, uint32_t>) {
-            uint64_t c{static_cast<uint64_t>(a) * b};
-            res.hi = static_cast<uint32_t>(c >> 32);
-            res.lo = static_cast<uint32_t>(c);
-        }
+    static void MultD(U32BITS a, U32BITS b, typeD& res) {
+        U64BITS c{static_cast<U64BITS>(a) * b};
+        res.hi = static_cast<U32BITS>(c >> 32);
+        res.lo = static_cast<U32BITS>(c);
+    }
 
-        if constexpr (std::is_same_v<NativeInt, uint64_t>) {
-#if defined(HAVE_INT128)
-            // includes defined(__x86_64__), defined(__powerpc64__), defined(__riscv), defined(__s390__)
-            uint128_t c{static_cast<uint128_t>(a) * b};
-            res.hi = static_cast<uint64_t>(c >> 64);
-            res.lo = static_cast<uint64_t>(c);
-#elif defined(__EMSCRIPTEN__)  // web assembly
-            uint64_t a1 = a >> 32;
-            uint64_t a2 = (uint32_t)a;
-            uint64_t b1 = b >> 32;
-            uint64_t b2 = (uint32_t)b;
-
-            res.hi             = a1 * b1;
-            res.lo             = a2 * b2;
-            uint64_t lowBefore = res.lo;
-
-            uint64_t p1   = a2 * b1;
-            uint64_t p2   = a1 * b2;
-            uint64_t temp = p1 + p2;
-            res.hi += temp >> 32;
-            res.lo += uint64_t((uint32_t)temp) << 32;
-
-            // adds the carry to the high word
-            if (lowBefore > res.lo)
-                ++res.hi;
-
-            // if there is an overflow in temp, add 2^32
-            if ((temp < p1) || (temp < p2))
-                res.hi += (uint64_t)1 << 32;
-#elif defined(__x86_64__)
-            // clang-format off
-            __asm__("mulq %[b]"
-                : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
-                : [ a ] "%[lo]"(a), [ b ] "rm"(b)
-                : "cc");
+    static void MultD(U64BITS a, U64BITS b, typeD& res) {
+#if defined(__x86_64__)
+    #if defined(HAVE_INT128)
+        U128BITS c{static_cast<U128BITS>(a) * b};
+        res.hi = static_cast<U64BITS>(c >> 64);
+        res.lo = static_cast<U64BITS>(c);
+    #else
+        // clang-format off
+    __asm__("mulq %[b]"
+            : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
+            : [ a ] "%[lo]"(a), [ b ] "rm"(b)
+            : "cc");
                 // clang-format on
+    #endif
 #elif defined(__aarch64__)
-            typeD x;
-            x.hi = 0;
-            x.lo = a;
-            uint64_t y(b);
-            res.lo = x.lo * y;
-            asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
-            res.hi += x.hi * y;
-#elif defined(__arm__) || defined(__powerpc__)  // 32 bit processor
-            uint64_t wres(0), wa(a), wb(b);
-            wres   = wa * wb;
-            res.hi = wres >> 32;
-            res.lo = (uint32_t)wres & 0xFFFFFFFF;
+        typeD x;
+        x.hi = 0;
+        x.lo = a;
+        U64BITS y(b);
+        res.lo = x.lo * y;
+        asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
+        res.hi += x.hi * y;
+#elif defined(__arm__)  // 32 bit processor
+        uint64_t wres(0), wa(a), wb(b);
+        wres   = wa * wb;
+        res.hi = wres >> 32;
+        res.lo = (uint32_t)wres & 0xFFFFFFFF;
+#elif __riscv
+        U128BITS wres(0), wa(a), wb(b);
+        wres   = wa * wb;
+        res.hi = (uint64_t)(wres >> 64);
+        res.lo = (uint64_t)wres;
+#elif defined(__EMSCRIPTEN__)  // web assembly
+        U64BITS a1 = a >> 32;
+        U64BITS a2 = (uint32_t)a;
+        U64BITS b1 = b >> 32;
+        U64BITS b2 = (uint32_t)b;
+
+        // use schoolbook multiplication
+        res.hi            = a1 * b1;
+        res.lo            = a2 * b2;
+        U64BITS lowBefore = res.lo;
+
+        U64BITS p1   = a2 * b1;
+        U64BITS p2   = a1 * b2;
+        U64BITS temp = p1 + p2;
+        res.hi += temp >> 32;
+        res.lo += U64BITS((uint32_t)temp) << 32;
+
+        // adds the carry to the high word
+        if (lowBefore > res.lo)
+            res.hi++;
+
+        // if there is an overflow in temp, add 2^32
+        if ((temp < p1) || (temp < p2))
+            res.hi += (U64BITS)1 << 32;
 #else
     #error Architecture not supported for MultD()
 #endif
-        }
+    }
 
 #if defined(HAVE_INT128)
-        if constexpr (std::is_same_v<NativeInt, uint128_t>) {
-            static constexpr uint128_t masklo = (static_cast<uint128_t>(1) << 64) - 1;
-            static constexpr uint128_t onehi  = static_cast<uint128_t>(1) << 64;
+    static void MultD(U128BITS a, U128BITS b, typeD& res) {
+        static constexpr U128BITS masklo = (static_cast<U128BITS>(1) << 64) - 1;
+        static constexpr U128BITS onehi  = static_cast<U128BITS>(1) << 64;
 
-            uint128_t a1{a >> 64};
-            uint128_t a2{a & masklo};
-            uint128_t b1{b >> 64};
-            uint128_t b2{b & masklo};
-            uint128_t a1b2{a1 * b2};
-            uint128_t a2b1{a2 * b1};
-            uint128_t tmp{a1b2 + a2b1};
-            uint128_t lo{a2 * b2};
+        U128BITS a1{a >> 64};
+        U128BITS a2{a & masklo};
+        U128BITS b1{b >> 64};
+        U128BITS b2{b & masklo};
+        U128BITS a1b2{a1 * b2};
+        U128BITS a2b1{a2 * b1};
+        U128BITS tmp{a1b2 + a2b1};
+        U128BITS lo{a2 * b2};
 
-            res = {a1 * b1, lo};
-            res.lo += tmp << 64;
-            if (lo > res.lo)
-                ++res.hi;
-            if ((tmp < a1b2) || (tmp < a2b1))
-                res.hi += onehi;
-            res.hi += tmp >> 64;
-        }
-#endif
+        res = {a1 * b1, lo};
+        res.lo += tmp << 64;
+        if (lo > res.lo)
+            ++res.hi;
+        if ((tmp < a1b2) || (tmp < a2b1))
+            res.hi += onehi;
+        res.hi += tmp >> 64;
     }
+#endif
 
     /**
    * Multiplies two single-word integers and stores the high word of the

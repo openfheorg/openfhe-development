@@ -39,7 +39,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <utility>
 
 /**
  * @namespace lbcrypto
@@ -107,10 +106,10 @@ protected:
                         ExecutionMode executionMode                           = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
-        : CryptoParametersRLWE<DCRTPoly>(
-              std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
-              distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,
-              multipartyMode, executionMode, decryptionNoiseMode) {
+        : CryptoParametersRLWE<DCRTPoly>(std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
+                                         distributionParameter, assuranceMeasure, securityLevel, digitSize,
+                                         maxRelinSkDeg, secretKeyDist, INDCPA, multipartyMode, executionMode,
+                                         decryptionNoiseMode) {
         m_ksTechnique                         = ksTech;
         m_scalTechnique                       = scalTech;
         m_encTechnique                        = encTech;
@@ -129,10 +128,10 @@ protected:
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
                         uint32_t thresholdNumOfParties                        = 1,
                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
-        : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
-                                         assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
-                                         PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
-                                         statisticalSecurity, numAdversarialQueries, thresholdNumOfParties) {
+        : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter, assuranceMeasure, securityLevel,
+                                         digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
+                                         executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
+                                         numAdversarialQueries, thresholdNumOfParties) {
         m_ksTechnique                         = ksTech;
         m_scalTechnique                       = scalTech;
         m_encTechnique                        = encTech;
@@ -414,9 +413,9 @@ public:
         if (part < m_PartQlHatInvModq.size() && sublvl < m_PartQlHatInvModq[part].size())
             return m_PartQlHatInvModq[part][sublvl];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
-            "index out of bounds.");
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
+                      "index out of bounds.");
     }
 
     /**
@@ -429,10 +428,10 @@ public:
         if (part < m_PartQlHatInvModqPrecon.size() && sublvl < m_PartQlHatInvModqPrecon[part].size())
             return m_PartQlHatInvModqPrecon[part][sublvl];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::"
-            "GetPartitionQHatInvModQPreconTable - index "
-            "out of bounds.");
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::"
+                      "GetPartitionQHatInvModQPreconTable - index "
+                      "out of bounds.");
     }
 
     /**
@@ -445,9 +444,9 @@ public:
         if (lvl < m_PartQlHatModp.size() && part < m_PartQlHatModp[lvl].size())
             return m_PartQlHatModp[lvl][part];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionQHatModPTable - "
-            "index out of bounds.");
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::GetPartitionQHatModPTable - "
+                      "index out of bounds.");
     }
 
     /**
@@ -460,9 +459,9 @@ public:
         if (lvl < m_modComplPartqBarrettMu.size() && part < m_modComplPartqBarrettMu[lvl].size())
             return m_modComplPartqBarrettMu[lvl][part];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionPrecon - index out "
-            "of bounds.");
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::GetPartitionPrecon - index out "
+                      "of bounds.");
     }
 
     /**
@@ -1760,7 +1759,7 @@ public:
         if (version > SerializedVersion()) {
             std::string errMsg("serialized object version " + std::to_string(version) +
                                " is from a later version of the library");
-            OPENFHE_THROW(errMsg);
+            OPENFHE_THROW(deserialize_error, errMsg);
         }
         ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
         ar(cereal::make_nvp("ks", m_ksTechnique));

@@ -28,10 +28,9 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "utils/get-call-stack.h"
-
-#if defined(__linux__) && defined(__GNUC__)
 // clang-format off
+#if defined(__linux__) && defined(__GNUG__)
+#include "utils/get-call-stack.h"
 #include "utils/demangle.h"
 
 #include <execinfo.h>
@@ -86,8 +85,5 @@ std::vector<std::string> get_call_stack() {
 
     return ret;
 }
-#else
-std::vector<std::string> get_call_stack() {
-    return std::vector<std::string>();
-}
+
 #endif

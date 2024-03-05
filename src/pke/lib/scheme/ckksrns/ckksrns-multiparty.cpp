@@ -81,6 +81,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
     //    *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
     //  } else {
     //    OPENFHE_THROW(
+    //        math_error,
     //        "Decryption failure: No towers left; consider increasing the depth.");
     //  }
 
@@ -106,6 +107,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
     //    *plaintext = b.GetElementAtIndex(0);
     //  else
     //    OPENFHE_THROW(
+    //        math_error,
     //        "Decryption failure: No towers left; consider increasing the depth.");
 
     *plaintext = b.GetElementAtIndex(0);
@@ -114,9 +116,9 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->NumberCiphertextElements() == 0) {
+    if (ciphertext->GetElements().size() == 0) {
         std::string msg = "IntMPBootAdjustScale: no polynomials in the input ciphertext.";
-        OPENFHE_THROW(msg);
+        OPENFHE_THROW(openfhe_error, msg);
     }
 
     auto cc                 = ciphertext->GetCryptoContext();
@@ -132,11 +134,12 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     size_t numTowersToKeep = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
     if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
-        std::string msg = std::string(__func__) + ": not enough towers in the input polynomial.";
-        OPENFHE_THROW(msg);
+        std::string msg = std::string(__func__) +": not enough towers in the input polynomial.";
+        OPENFHE_THROW(config_error, msg);
     }
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+
         auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep + 1);
 
         uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
@@ -173,13 +176,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 // Calculating RNS parameters
 void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint to, RNSExtensionTables& rnsExtTables) {
     std::vector<NativeInteger> moduliQ;
-    moduliQ.reserve(from);
     std::vector<NativeInteger> rootsQ;
-    rootsQ.reserve(from);
     std::vector<NativeInteger> moduliP;
-    moduliP.reserve(to - from);
     std::vector<NativeInteger> rootsP;
-    rootsP.reserve(to - from);
 
     for (size_t i = 0; i < from; i++) {
         moduliQ.push_back(cc->GetCryptoParameters()->GetElementParams()->GetParams()[i]->GetModulus());
@@ -227,31 +226,38 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
 
     // compute the [Q/q_i]_{p_j}
     // used for homomorphic multiplication
-    rnsExtTables.QHatModp.resize(sizeP, std::vector<NativeInteger>(sizeQ));
+    rnsExtTables.QHatModp.resize(sizeP);
     for (usint j = 0; j < sizeP; j++) {
         BigInteger pj(moduliP[j].ConvertToInt());
         for (usint i = 0; i < sizeQ; i++) {
             BigInteger qi(moduliQ[i].ConvertToInt());
-            BigInteger QHati            = modulusQ / qi;
-            rnsExtTables.QHatModp[j][i] = QHati.Mod(pj).ConvertToInt();
+            BigInteger QHati = modulusQ / qi;
+            rnsExtTables.QHatModp[j].push_back(QHati.Mod(pj).ConvertToInt());
         }
     }
 
     // compute the [\alpha*Q]p_j for 0 <= alpha <= sizeQ
     // used for homomorphic multiplication
-    rnsExtTables.alphaQModp.resize(sizeQ + 1, std::vector<NativeInteger>(sizeP));
+    rnsExtTables.alphaQModp.resize(sizeQ + 1);
     for (usint j = 0; j < sizeP; j++) {
         BigInteger pj(moduliP[j].ConvertToInt());
         NativeInteger QModpj = modulusQ.Mod(pj).ConvertToInt();
         for (usint i = 0; i < sizeQ + 1; i++) {
-            rnsExtTables.alphaQModp[i][j] = QModpj.ModMul(NativeInteger(i), moduliP[j]);
+            rnsExtTables.alphaQModp[i].push_back(QModpj.ModMul(NativeInteger(i), moduliP[j]));
         }
     }
 
-    const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+    // Precomputations for Barrett modulo reduction
+    const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
+    const BigInteger TwoPower64("18446744073709551616");                            // 2^64
     rnsExtTables.modpBarrettMu.resize(sizeP);
     for (uint32_t j = 0; j < moduliP.size(); j++) {
-        rnsExtTables.modpBarrettMu[j] = (BarrettBase128Bit / BigInteger(moduliP[j])).ConvertToInt<DoubleNativeInt>();
+        BigInteger mu = BarrettBase128Bit / BigInteger(moduliP[j]);
+        uint64_t val[2];
+        val[0] = (mu % TwoPower64).ConvertToInt();
+        val[1] = mu.RShift(64).ConvertToInt();
+
+        memcpy(&rnsExtTables.modpBarrettMu[j], val, sizeof(DoubleNativeInt));
     }
 
     rnsExtTables.qInv.resize(sizeQ);
@@ -265,7 +271,7 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
 DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const DCRTPoly& poly, bool IsZeroNoise) {
     if (sk.GetNumOfElements() != poly.GetNumOfElements()) {
         std::string errMsg = "ERROR: Number of towers in input polys does not match!";
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     DCRTPoly res = sk * poly;
@@ -286,7 +292,7 @@ DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
     auto c1Copy = c1;
 
     // drop twoers until we reach maskBoundNumTowers
-    c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);
+    c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);   
 
     auto& ildcrtparams = c1Copy.GetParams();
     typename DCRTPoly::DugType dug;
@@ -387,7 +393,7 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootAdd(
     std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const {
     if (sharesPairVec.size() == 0) {
         std::string msg = "IntMPBootAdd: no polynomials in input share(s).";
-        OPENFHE_THROW(msg);
+        OPENFHE_THROW(openfhe_error, msg);
     }
 
     std::vector<Ciphertext<DCRTPoly>> result = sharesPairVec[0];
@@ -405,9 +411,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
                                                          const std::vector<Ciphertext<DCRTPoly>>& sharesPair,
                                                          ConstCiphertext<DCRTPoly> a,
                                                          ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->NumberCiphertextElements() == 0) {
+    if (ciphertext->GetElements().size() == 0) {
         std::string msg = "IntMPBootEncrypt: no polynomials in the input ciphertext.";
-        OPENFHE_THROW(msg);
+        OPENFHE_THROW(openfhe_error, msg);
     }
 
     auto cc = ciphertext->GetCryptoContext();

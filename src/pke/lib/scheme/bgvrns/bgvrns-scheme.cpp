@@ -80,7 +80,8 @@ void SchemeBGVRNS::Enable(PKESchemeFeature feature) {
         default:
             std::stringstream ss;
             ss << feature;
-            OPENFHE_THROW(std::string("This feature [") + ss.str() + "] is not supported for BGVRNS scheme");
+            OPENFHE_THROW(not_implemented_error,
+                          std::string("This feature [") + ss.str() + "] is not supported for BGVRNS scheme");
     }
 }
 

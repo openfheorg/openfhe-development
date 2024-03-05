@@ -56,7 +56,7 @@ public:
     /**
    * Generates a secret key of dimension n using modulus q
    *
-   * @param size lattice parameter for the additive LWE scheme
+   * @param params a shared pointer to LWE scheme parameters
    * @param modulus the modulus for the secret key
    * @return a shared pointer to the secret key
    */
@@ -65,7 +65,7 @@ public:
     /**
    * Generates a secret key of dimension n using modulus q
    *
-   * @param size lattice parameter for the additive LWE scheme
+   * @param params a shared pointer to LWE scheme parameters
    * @param modulus the modulus for the secret key
    * @return a shared pointer to the secret key
    */

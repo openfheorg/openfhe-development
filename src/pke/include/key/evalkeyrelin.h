@@ -40,9 +40,6 @@
 #include <string>
 #include <utility>
 
-// TODO: fix insert issue if SetBVector used before SetAVector
-// TODO: fix vector growth issue if SetAVector/SetBVector called multiple times
-
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -70,16 +67,18 @@ public:
    *
    *@param &rhs key to copy from
    */
-    explicit EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
-        : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(rhs.m_rKey) {}
+    explicit EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs) : EvalKeyImpl<Element>(rhs.GetCryptoContext()) {
+        m_rKey = rhs.m_rKey;
+    }
 
     /**
    * Move constructor
    *
    *@param &rhs key to move from
    */
-    explicit EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
-        : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(std::move(rhs.m_rKey)) {}
+    explicit EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) : EvalKeyImpl<Element>(rhs.GetCryptoContext()) {
+        m_rKey = std::move(rhs.m_rKey);
+    }
 
     operator bool() const {
         return static_cast<bool>(this->context) && m_rKey.size() != 0;
@@ -90,7 +89,7 @@ public:
    *
    * @param &rhs key to copy from
    */
-    EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
+    const EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
         this->m_rKey  = rhs.m_rKey;
         return *this;
@@ -101,7 +100,7 @@ public:
    *
    * @param &rhs key to move from
    */
-    EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) {
+    const EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) {
         this->context = rhs.context;
         rhs.context   = 0;
         m_rKey        = std::move(rhs.m_rKey);
@@ -265,8 +264,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
         }
         ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
         ar(::cereal::make_nvp("k", m_rKey));

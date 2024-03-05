@@ -51,6 +51,7 @@ protected:
 public:
 };
 
+
 enum TEST_ESTIMATED_RESULT { SUCCESS, FAILURE };
 
 }  // anonymous namespace
@@ -87,7 +88,7 @@ int64_t BFVrnsInnerProduct(const std::vector<int64_t> testVec) {
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    KeyPair<DCRTPoly> keys = cc->KeyGen();
+    KeyPair keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalSumKeyGen(keys.secretKey);
 
@@ -100,9 +101,9 @@ int64_t BFVrnsInnerProduct(const std::vector<int64_t> testVec) {
 }
 
 TEST_F(UTBFVRNS_INNERPRODUCT, Test_BFVrns_INNERPRODUCT) {
-    const std::vector<int64_t> testVec{1, 2, 3, 4, 5};
-    auto innerProductHE = BFVrnsInnerProduct(testVec);
+   const std::vector<int64_t> testVec{1, 2, 3, 4, 5};
+   auto innerProductHE = BFVrnsInnerProduct(testVec);
 
-    int64_t expectedResult = plainInnerProduct(testVec);
-    EXPECT_EQ(innerProductHE, expectedResult);
+   int64_t expectedResult = plainInnerProduct(testVec);
+   EXPECT_EQ(innerProductHE, expectedResult);
 }

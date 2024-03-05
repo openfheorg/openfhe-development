@@ -105,7 +105,7 @@ public:
         if (version > SerializedVersion()) {
             std::string errMsg("serialized object version " + std::to_string(version) +
                                " is from a later version of the library");
-            OPENFHE_THROW(errMsg);
+            OPENFHE_THROW(deserialize_error, errMsg);
         }
         ar(cereal::base_class<CryptoParametersRNS>(this));
 

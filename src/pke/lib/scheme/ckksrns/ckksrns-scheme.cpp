@@ -75,7 +75,8 @@ void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
         default:
             std::stringstream ss;
             ss << feature;
-            OPENFHE_THROW(std::string("This feature [") + ss.str() + "] is not supported for CKKSRNS scheme");
+            OPENFHE_THROW(not_implemented_error,
+                          std::string("This feature [") + ss.str() + "] is not supported for CKKSRNS scheme");
     }
 }
 
