@@ -69,7 +69,6 @@ public:
         : data(), rows(rows), cols(cols), allocZero(allocZero) {
         data.resize(rows);
         for (auto row = data.begin(); row != data.end(); ++row) {
-            row->reserve(cols);
             for (size_t col = 0; col < cols; ++col) {
                 row->push_back(allocZero());
             }
@@ -99,7 +98,7 @@ public:
 
     void SetSize(size_t rows, size_t cols) {
         if (this->rows != 0 || this->cols != 0) {
-            OPENFHE_THROW("You cannot SetSize on a non-empty matrix");
+            OPENFHE_THROW(not_available_error, "You cannot SetSize on a non-empty matrix");
         }
 
         this->rows = rows;
@@ -107,7 +106,6 @@ public:
 
         data.resize(rows);
         for (auto row = data.begin(); row != data.end(); ++row) {
-            row->reserve(cols);
             for (size_t col = 0; col < cols; ++col) {
                 row->push_back(allocZero());
             }
@@ -300,7 +298,7 @@ public:
    */
     inline MatrixStrassen<Element> Add(MatrixStrassen<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
-            OPENFHE_THROW("Addition operands have incompatible dimensions");
+            OPENFHE_THROW(math_error, "Addition operands have incompatible dimensions");
         }
         MatrixStrassen<Element> result(*this);
 #pragma omp parallel for
@@ -339,7 +337,7 @@ public:
    */
     inline MatrixStrassen<Element> Sub(MatrixStrassen<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
-            OPENFHE_THROW("Subtraction operands have incompatible dimensions");
+            OPENFHE_THROW(math_error, "Subtraction operands have incompatible dimensions");
         }
         MatrixStrassen<Element> result(allocZero, rows, other.cols);
 #pragma omp parallel for

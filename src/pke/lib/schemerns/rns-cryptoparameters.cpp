@@ -78,7 +78,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 "switching parameters: Can't appropriately distribute " +
                 std::to_string(sizeQ) + " towers into " + std::to_string(numPartQ) +
                 " digits. Please select different number of digits.";
-            OPENFHE_THROW(str);
+            OPENFHE_THROW(config_error, str);
         }
 
         m_numPerPartQ = a;
@@ -268,11 +268,17 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 }
                 m_paramsComplPartQ[l][j] = std::make_shared<ParmType>(cyclOrder, moduli, roots);
 
-                const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+                // Pre-compute Barrett mu for 128-bit by 64-bit reduction
+                const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
+                const BigInteger TwoPower64("18446744073709551616");                            // 2^64
                 m_modComplPartqBarrettMu[l][j].resize(moduli.size());
                 for (uint32_t i = 0; i < moduli.size(); i++) {
-                    m_modComplPartqBarrettMu[l][j][i] =
-                        (BarrettBase128Bit / BigInteger(moduli[i])).ConvertToInt<DoubleNativeInt>();
+                    BigInteger mu = BarrettBase128Bit / BigInteger(moduli[i]);
+                    uint64_t val[2];
+                    val[0] = (mu % TwoPower64).ConvertToInt();
+                    val[1] = mu.RShift(64).ConvertToInt();
+
+                    memcpy(&m_modComplPartqBarrettMu[l][j][i], val, sizeof(DoubleNativeInt));
                 }
             }
         }
@@ -372,9 +378,15 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             }
         }
 
-        const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+        // Barrett modulo reduction precomputation for q_0
+        const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
+        const BigInteger TwoPower64("18446744073709551616");                            // 2^64
         m_multipartyModq0BarrettMu.resize(1);
-        m_multipartyModq0BarrettMu[0] = (BarrettBase128Bit / BigInteger(moduliQ[0])).ConvertToInt<DoubleNativeInt>();
+        BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[0]);
+        uint64_t val[2];
+        val[0] = (mu % TwoPower64).ConvertToInt();
+        val[1] = mu.RShift(64).ConvertToInt();
+        memcpy(&m_multipartyModq0BarrettMu[0], val, sizeof(DoubleNativeInt));
 
         // Stores \frac{1/q_i}
         m_multipartyQInv.resize(sizeQ - 1);

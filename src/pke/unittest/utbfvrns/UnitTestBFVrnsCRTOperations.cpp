@@ -458,9 +458,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
                      cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
                      cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-    auto tmp{b};
-    tmp.SetFormat(Format::COEFFICIENT);
-    Poly resultExpandedB = tmp.CRTInterpolate();
+    Poly resultExpandedB = b.CRTInterpolate();
 
     BigInteger A0 = bPoly.at(0);
 
@@ -589,9 +587,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
                      cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
                      cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-    auto tmp{b};
-    tmp.SetFormat(Format::COEFFICIENT);
-    Poly resultExpandedB = tmp.CRTInterpolate();
+    Poly resultExpandedB = b.CRTInterpolate();
 
     BigInteger A0 = bPoly.at(0);
 

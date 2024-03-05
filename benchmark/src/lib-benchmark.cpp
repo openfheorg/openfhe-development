@@ -34,14 +34,14 @@
  * BFVrns, CKKSrns, BGVrns. It also contains several performance tests for NTT and INTT transformations.
  */
 
+#define PROFILE
 #define _USE_MATH_DEFINES
-
-#include "benchmark/benchmark.h"
-#include "math/hal/basicint.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
+
+#include "benchmark/benchmark.h"
 
 #include <fstream>
 #include <iostream>
@@ -55,141 +55,212 @@ using namespace lbcrypto;
  * Context setup utility methods
  */
 
-[[maybe_unused]] static void DepthArgs(benchmark::internal::Benchmark* b) {
-    for (uint32_t d : {1, 2, 4, 6, 8, 10, 12})
-        b->ArgName("depth")->Arg(d);
-}
-
-[[maybe_unused]] static CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t mdepth = 1) {
+CryptoContext<DCRTPoly> GenerateBFVrnsContext() {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetScalingModSize(60);
-    parameters.SetMultiplicativeDepth(mdepth);
+
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    // Enable features that you wish to use
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
+
     return cc;
 }
 
-[[maybe_unused]] static CryptoContext<DCRTPoly> GenerateCKKSContext(uint32_t mdepth = 1) {
+CryptoContext<DCRTPoly> GenerateCKKSContext() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetScalingModSize(48);
     parameters.SetBatchSize(8);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetMultiplicativeDepth(mdepth);
-    auto cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    return cc;
-}
 
-[[maybe_unused]] static CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t mdepth = 1) {
-    CCParams<CryptoContextBGVRNS> parameters;
-    parameters.SetPlaintextModulus(65537);
-    parameters.SetMaxRelinSkDeg(1);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetMultiplicativeDepth(mdepth);
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
+
     return cc;
 }
 
-/*
- * Native NTT benchmarks
- */
+CryptoContext<DCRTPoly> GenerateBGVrnsContext() {
+    CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetMaxRelinSkDeg(1);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
 
-[[maybe_unused]] static void RingArgs(benchmark::internal::Benchmark* b) {
-    for (uint32_t r : {1024, 4096, 8192})
-        b->ArgName("ringdm")->Arg(r);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    return cc;
 }
 
-[[maybe_unused]] static void NativeNTT(benchmark::State& state) {
-    uint32_t n = state.range(0);
-    uint32_t m = n << 1;
+void NTTTransform1024(benchmark::State& state) {
+    usint m    = 2048;
+    usint phim = 1024;
 
-    NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
+    NativeInteger modulusQ("288230376151748609");
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
-    NativeVector X(n);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+    NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
-    for (auto _ : state)
+    while (state.KeepRunning()) {
         crtFTT.ForwardTransformToBitReverse(x, rootOfUnity, m, &X);
-
-    state.SetComplexityN(state.range(0));
+    }
 }
 
-[[maybe_unused]] static void NativeINTT(benchmark::State& state) {
-    uint32_t n = state.range(0);
-    uint32_t m = n << 1;
+BENCHMARK(NTTTransform1024)->Unit(benchmark::kMicrosecond);
 
-    NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
+void INTTTransform1024(benchmark::State& state) {
+    usint m    = 2048;
+    usint phim = 1024;
+
+    NativeInteger modulusQ("288230376151748609");
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
-    NativeVector X(n);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+    NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
-    for (auto _ : state)
+    while (state.KeepRunning()) {
         crtFTT.InverseTransformFromBitReverse(x, rootOfUnity, m, &X);
-
-    state.SetComplexityN(state.range(0));
+    }
 }
 
-[[maybe_unused]] static void NativeNTTInPlace(benchmark::State& state) {
-    uint32_t n = state.range(0);
-    uint32_t m = n << 1;
+BENCHMARK(INTTTransform1024)->Unit(benchmark::kMicrosecond);
 
-    NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
+void NTTTransform4096(benchmark::State& state) {
+    usint m    = 8192;
+    usint phim = 4096;
+
+    NativeInteger modulusQ("1152921496017387521");
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+    NativeVector X(phim);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
-    for (auto _ : state)
+    while (state.KeepRunning()) {
+        crtFTT.ForwardTransformToBitReverse(x, rootOfUnity, m, &X);
+    }
+}
+
+BENCHMARK(NTTTransform4096)->Unit(benchmark::kMicrosecond);
+
+void INTTTransform4096(benchmark::State& state) {
+    usint m    = 8192;
+    usint phim = 4096;
+
+    NativeInteger modulusQ("1152921496017387521");
+    NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+    NativeVector X(phim);
+
+    ChineseRemainderTransformFTT<NativeVector> crtFTT;
+    crtFTT.PreCompute(rootOfUnity, m, modulusQ);
+
+    while (state.KeepRunning()) {
+        crtFTT.InverseTransformFromBitReverse(x, rootOfUnity, m, &X);
+    }
+}
+
+BENCHMARK(INTTTransform4096)->Unit(benchmark::kMicrosecond);
+
+void NTTTransformInPlace1024(benchmark::State& state) {
+    usint m    = 2048;
+    usint phim = 1024;
+
+    NativeInteger modulusQ("288230376151748609");
+    NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+
+    ChineseRemainderTransformFTT<NativeVector> crtFTT;
+    crtFTT.PreCompute(rootOfUnity, m, modulusQ);
+
+    while (state.KeepRunning()) {
         crtFTT.ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
-
-    state.SetComplexityN(state.range(0));
+    }
 }
 
-[[maybe_unused]] static void NativeINTTInPlace(benchmark::State& state) {
-    uint32_t n = state.range(0);
-    uint32_t m = n << 1;
+BENCHMARK(NTTTransformInPlace1024)->Unit(benchmark::kMicrosecond);
 
-    NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
+void INTTTransformInPlace1024(benchmark::State& state) {
+    usint m    = 2048;
+    usint phim = 1024;
+
+    NativeInteger modulusQ("288230376151748609");
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
-    for (auto _ : state)
+    while (state.KeepRunning()) {
         crtFTT.InverseTransformFromBitReverseInPlace(rootOfUnity, m, &x);
-
-    state.SetComplexityN(state.range(0));
+    }
 }
 
-// BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 1<<16)->Complexity(benchmark::oAuto);
-BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);          // ->Complexity(benchmark::oAuto);
-BENCHMARK(NativeINTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);         // ->Complexity(benchmark::oAuto);
-BENCHMARK(NativeNTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);   // ->Complexity(benchmark::oAuto);
-BENCHMARK(NativeINTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(INTTTransformInPlace1024)->Unit(benchmark::kMicrosecond);
+
+void NTTTransformInPlace4096(benchmark::State& state) {
+    usint m    = 8192;
+    usint phim = 4096;
+
+    NativeInteger modulusQ("1152921496017387521");
+    NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+
+    ChineseRemainderTransformFTT<NativeVector> crtFTT;
+    crtFTT.PreCompute(rootOfUnity, m, modulusQ);
+
+    while (state.KeepRunning()) {
+        crtFTT.ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
+    }
+}
+
+BENCHMARK(NTTTransformInPlace4096)->Unit(benchmark::kMicrosecond);
+
+void INTTTransformInPlace4096(benchmark::State& state) {
+    usint m    = 8192;
+    usint phim = 4096;
+
+    NativeInteger modulusQ("1152921496017387521");
+    NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    NativeVector x = dug.GenerateVector(phim, modulusQ);
+    NativeVector X(phim);
+
+    ChineseRemainderTransformFTT<NativeVector> crtFTT;
+    crtFTT.PreCompute(rootOfUnity, m, modulusQ);
+
+    while (state.KeepRunning()) {
+        crtFTT.InverseTransformFromBitReverseInPlace(rootOfUnity, m, &x);
+    }
+}
+
+BENCHMARK(INTTTransformInPlace4096)->Unit(benchmark::kMicrosecond);
 
 /*
  * BFVrns benchmarks
@@ -220,7 +291,6 @@ void BFVrns_MultKeyGen(benchmark::State& state) {
 
 BENCHMARK(BFVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
 
-// TODO: revisit this?
 void BFVrns_EvalAtIndexKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
 
@@ -315,7 +385,7 @@ void BFVrns_AddInPlace(benchmark::State& state) {
 BENCHMARK(BFVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 void BFVrns_MultNoRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext(state.range(0));
+    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext();
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
@@ -331,14 +401,12 @@ void BFVrns_MultNoRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
     }
-
-    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond);
 
 void BFVrns_MultRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext(state.range(0));
+    CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext();
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
@@ -355,11 +423,9 @@ void BFVrns_MultRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cryptoContext->EvalMult(ciphertext1, ciphertext2);
     }
-
-    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond);
 
 void BFVrns_EvalAtIndex(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
@@ -534,7 +600,7 @@ void CKKSrns_AddInPlace(benchmark::State& state) {
 BENCHMARK(CKKSrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 void CKKSrns_MultNoRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
+    CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
@@ -554,14 +620,12 @@ void CKKSrns_MultNoRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
     }
-
-    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond);
 
 void CKKSrns_MultRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
+    CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -582,11 +646,9 @@ void CKKSrns_MultRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cc->EvalMult(ciphertext1, ciphertext2);
     }
-
-    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(CKKSrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(CKKSrns_MultRelin)->Unit(benchmark::kMicrosecond);
 
 void CKKSrns_Relin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -863,7 +925,7 @@ void BGVrns_AddInPlace(benchmark::State& state) {
 BENCHMARK(BGVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 void BGVrns_MultNoRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(state.range(0));
+    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
@@ -879,14 +941,12 @@ void BGVrns_MultNoRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
     }
-
-    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond);
 
 void BGVrns_MultRelin(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(state.range(0));
+    CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -903,11 +963,9 @@ void BGVrns_MultRelin(benchmark::State& state) {
     while (state.KeepRunning()) {
         auto ciphertextMul = cc->EvalMult(ciphertext1, ciphertext2);
     }
-
-    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond);
 
 void BGVrns_Relin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();

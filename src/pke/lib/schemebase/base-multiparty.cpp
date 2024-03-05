@@ -70,10 +70,13 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     // Public Key Generation
     Element a(dug, elementParams, Format::EVALUATION);
     Element e(dgg, elementParams, Format::EVALUATION);
-    Element b(ns * e - a * s);
+
+    Element b = ns * e - a * s;
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<Element>{std::move(b), std::move(a)});
+
+    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
+    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
 
     return keyPair;
 }
@@ -125,7 +128,9 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<Element>{std::move(b), std::move(a)});
+
+    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
+    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
 
     return keyPair;
 }
@@ -145,7 +150,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     usint N          = s.GetRingDimension();
 
     if (indexList.size() > N - 1)
-        OPENFHE_THROW("size exceeds the ring dimension");
+        OPENFHE_THROW(math_error, "size exceeds the ring dimension");
 
     const auto cc = privateKey->GetCryptoContext();
 
@@ -165,7 +170,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
         // verify if the key indexList[i] exists in the evalKeyMap
         auto evalKeyIterator = evalKeyMap->find(indexList[i]);
         if (evalKeyIterator == evalKeyMap->end()) {
-            OPENFHE_THROW("EvalKey for index [" + std::to_string(indexList[i]) + "] is not found.");
+            OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(indexList[i]) + "] is not found.");
         }
 
         (*result)[indexList[i]] = MultiKeySwitchGen(privateKey, privateKeyPermuted, evalKeyIterator->second);
@@ -204,10 +209,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     std::vector<usint> indices;
 
     if (batchSize > 1) {
-        int isize = ceil(log2(batchSize)) - 1;
-        indices.reserve(isize + 1);
         usint g = 5;
-        for (int i = 0; i < isize; i++) {
+        for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
             indices.push_back(g);
             g = (g * g) % M;
         }
@@ -290,12 +293,17 @@ DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(const std::vector
 template <class Element>
 PublicKey<Element> MultipartyBase<Element>::MultiAddPubKeys(PublicKey<Element> publicKey1,
                                                             PublicKey<Element> publicKey2) const {
-    PublicKey<Element> publicKeySum = std::make_shared<PublicKeyImpl<Element>>(publicKey1->GetCryptoContext());
+    const auto cc = publicKey1->GetCryptoContext();
+
+    PublicKey<Element> publicKeySum = std::make_shared<PublicKeyImpl<Element>>(cc);
+
+    const Element& a = publicKey1->GetPublicElements()[1];
 
     const Element& b1 = publicKey1->GetPublicElements()[0];
     const Element& b2 = publicKey2->GetPublicElements()[0];
-    const Element& a  = publicKey1->GetPublicElements()[1];
-    publicKeySum->SetPublicElements(std::vector<Element>{(b1 + b2), a});
+
+    publicKeySum->SetPublicElementAtIndex(0, std::move(b1 + b2));
+    publicKeySum->SetPublicElementAtIndex(1, a);
 
     return publicKeySum;
 }
@@ -306,12 +314,12 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalKeys(EvalKey<Element> eval
 
     EvalKey<Element> evalKeySum = std::make_shared<EvalKeyRelinImpl<Element>>(cc);
 
-    const std::vector<Element>& a  = evalKey1->GetAVector();
+    const std::vector<Element>& a = evalKey1->GetAVector();
+
     const std::vector<Element>& b1 = evalKey1->GetBVector();
     const std::vector<Element>& b2 = evalKey2->GetBVector();
 
     std::vector<Element> b;
-    b.reserve(a.size());
 
     for (usint i = 0; i < a.size(); i++) {
         b.push_back(b1[i] + b2[i]);
@@ -332,13 +340,12 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> 
 
     const std::vector<Element>& a1 = evalKey1->GetAVector();
     const std::vector<Element>& a2 = evalKey2->GetAVector();
+
     const std::vector<Element>& b1 = evalKey1->GetBVector();
     const std::vector<Element>& b2 = evalKey2->GetBVector();
 
     std::vector<Element> a;
-    a.reserve(a1.size());
     std::vector<Element> b;
-    b.reserve(a1.size());
 
     for (usint i = 0; i < a1.size(); i++) {
         a.push_back(a1[i] + a2[i]);
@@ -370,13 +377,14 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> p
     const auto ns    = cryptoParams->GetNoiseScale();
 
     std::vector<Element> a;
-    a.reserve(a0.size());
     std::vector<Element> b;
-    b.reserve(a0.size());
 
     for (usint i = 0; i < a0.size(); i++) {
-        a.push_back(a0[i] * s + ns * Element(dgg, elementParams, Format::EVALUATION));
-        b.push_back(b0[i] * s + ns * Element(dgg, elementParams, Format::EVALUATION));
+        Element e1(dgg, elementParams, Format::EVALUATION);
+        Element e2(dgg, elementParams, Format::EVALUATION);
+
+        a.push_back(a0[i] * s + ns * e1);
+        b.push_back(b0[i] * s + ns * e2);
     }
 
     evalKeyResult->SetAVector(std::move(a));
@@ -417,26 +425,26 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
 
 template <class Element>
 Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
 }
 
 template <class Element>
 Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                                        const PublicKey<Element> publicKey) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
 }
 
 template <class Element>
 std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                                            ConstCiphertext<Element> ciphertext,
                                                                            ConstCiphertext<Element> a) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
 }
 
 template <class Element>
 std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootAdd(
     std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
 }
 
 template <class Element>
@@ -444,7 +452,7 @@ Ciphertext<Element> MultipartyBase<Element>::IntMPBootEncrypt(const PublicKey<El
                                                               const std::vector<Ciphertext<Element>>& sharesPair,
                                                               ConstCiphertext<Element> a,
                                                               ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
+    OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
 }
 
 }  // namespace lbcrypto

@@ -58,8 +58,9 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
 
     if (sizeQl != 1) {
         OPENFHE_THROW(
+            math_error,
             "sizeQl " + std::to_string(sizeQl) +
-            "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
+                "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
     }
 
     *plaintext = b.GetElementAtIndex(0);
@@ -83,7 +84,7 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
     const size_t sizeQl = b.GetParams()->GetParams().size();
 
     if (sizeQl == 0)
-        OPENFHE_THROW("Decryption failure: No towers left; consider increasing the depth.");
+        OPENFHE_THROW(math_error, "Decryption failure: No towers left; consider increasing the depth.");
 
     if (sizeQl == 1) {
         *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);

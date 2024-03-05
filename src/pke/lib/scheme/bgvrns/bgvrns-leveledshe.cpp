@@ -61,7 +61,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
     }
     else {
         std::string errMsg = "ERROR: Not enough towers to support ModReduce.";
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);

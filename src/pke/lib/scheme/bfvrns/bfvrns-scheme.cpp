@@ -71,7 +71,8 @@ void SchemeBFVRNS::Enable(PKESchemeFeature feature) {
         default:
             std::stringstream ss;
             ss << feature;
-            OPENFHE_THROW(std::string("This feature [") + ss.str() + "] is not supported for BFVRNS scheme");
+            OPENFHE_THROW(not_implemented_error,
+                          std::string("This feature [") + ss.str() + "] is not supported for BFVRNS scheme");
     }
 }
 
