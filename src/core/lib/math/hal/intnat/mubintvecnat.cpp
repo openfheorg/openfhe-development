@@ -231,7 +231,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddAtIndexEq(size_t i
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVectorT& b) const {
     if (m_modulus != b.m_modulus || m_data.size() != b.m_data.size())
-        OPENFHE_THROW(lbcrypto::math_error, "ModAdd called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModAdd called on NativeVectorT's with different parameters.");
     auto mv{m_modulus};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
@@ -242,7 +242,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVector
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW(lbcrypto::math_error, "ModAddEq called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModAddEq called on NativeVectorT's with different parameters.");
     auto mv{m_modulus};
     for (size_t i = 0; i < m_data.size(); ++i)
         m_data[i].ModAddFastEq(b[i], mv);
@@ -275,7 +275,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const IntegerTy
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW(lbcrypto::math_error, "ModSub called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModSub called on NativeVectorT's with different parameters.");
     auto mv{m_modulus};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
@@ -286,7 +286,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVector
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW(lbcrypto::math_error, "ModSubEq called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModSubEq called on NativeVectorT's with different parameters.");
     for (size_t i = 0; i < m_data.size(); ++i)
         m_data[i].ModSubFastEq(b[i], m_modulus);
     return *this;
@@ -320,7 +320,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const IntegerTy
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW(lbcrypto::math_error, "ModMul called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModMul called on NativeVectorT's with different parameters.");
     auto ans(*this);
     uint32_t size(m_data.size());
     auto mv{m_modulus};
@@ -338,7 +338,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVector
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW(lbcrypto::math_error, "ModMulEq called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModMulEq called on NativeVectorT's with different parameters.");
     auto mv{m_modulus};
     size_t size{m_data.size()};
 #ifdef NATIVEINT_BARRET_MOD
@@ -395,7 +395,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModExpEq(const IntegerTy
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW(lbcrypto::math_error, "ModMul called on NativeVectorT's with different parameters.");
+        OPENFHE_THROW("ModMul called on NativeVectorT's with different parameters.");
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i].m_value = ans[i].m_value * b[i].m_value;

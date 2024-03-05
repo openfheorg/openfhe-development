@@ -67,6 +67,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     usint sizeSOld = sOld.GetNumOfElements();
     usint nWindows = 0;
     std::vector<usint> arrWindows;
+    arrWindows.reserve(sizeSOld);
     if (digitSize > 0) {
         // creates an array of digits up to a certain tower
         for (usint i = 0; i < sizeSOld; i++) {
@@ -96,7 +97,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
                 DCRTPoly a(dug, elementParams, Format::EVALUATION);
                 DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
-                av[k + arrWindows[i]] = a;
+                av[k + arrWindows[i]] = std::move(a);
                 bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
             }
         }
@@ -109,7 +110,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
             DCRTPoly a(dug, elementParams, Format::EVALUATION);
             DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
-            av[i] = a;
+            av[i] = std::move(a);
             bv[i] = filtered - (av[i] * sNew + ns * e);
         }
     }
@@ -142,6 +143,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     usint sizeSOld = sOld.GetNumOfElements();
     usint nWindows = 0;
     std::vector<usint> arrWindows;
+    arrWindows.reserve(sizeSOld);
     if (digitSize > 0) {
         // creates an array of digits up to a certain tower
         for (usint i = 0; i < sizeSOld; i++) {
@@ -170,8 +172,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
                 if (ek == nullptr) {  // single-key HE
                     // Generate a_i vectors
-                    DCRTPoly a(dug, elementParams, Format::EVALUATION);
-                    av[k + arrWindows[i]] = a;
+                    av[k + arrWindows[i]] = DCRTPoly(dug, elementParams, Format::EVALUATION);
                 }
                 else {  // threshold HE
                     av[k + arrWindows[i]] = ek->GetAVector()[k + arrWindows[i]];
@@ -189,8 +190,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
             if (ek == nullptr) {  // single-key HE
                 // Generate a_i vectors
-                DCRTPoly a(dug, elementParams, Format::EVALUATION);
-                av[i] = a;
+                av[i] = DCRTPoly(dug, elementParams, Format::EVALUATION);
             }
             else {  // threshold HE
                 av[i] = ek->GetAVector()[i];
@@ -230,6 +230,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     auto elementParams    = newp0.GetParams();
 
     if (digitSize > 0) {
+        av.reserve(sOld.GetNumOfElements() * digitSize);
+        bv.reserve(sOld.GetNumOfElements() * digitSize);
         for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
             std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
 
@@ -242,17 +244,18 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
                                  DCRTPoly(tug, elementParams, Format::EVALUATION);
 
                 DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-                DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-
                 DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
-                DCRTPoly c1 = newp1 * u + ns * e1;
-
-                av.push_back(std::move(c1));
                 bv.push_back(std::move(c0));
+
+                DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+                DCRTPoly c1 = newp1 * u + ns * e1;
+                av.push_back(std::move(c1));
             }
         }
     }
     else {
+        av.reserve(sOld.GetNumOfElements());
+        bv.reserve(sOld.GetNumOfElements());
         for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
             DCRTPoly filtered(elementParams, Format::EVALUATION, true);
             filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
@@ -262,13 +265,12 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
                              DCRTPoly(tug, elementParams, Format::EVALUATION);
 
             DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-            DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-
             DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
-            DCRTPoly c1 = newp1 * u + ns * e1;
-
-            av.push_back(std::move(c1));
             bv.push_back(std::move(c0));
+
+            DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+            DCRTPoly c1 = newp1 * u + ns * e1;
+            av.push_back(std::move(c1));
         }
     }
 

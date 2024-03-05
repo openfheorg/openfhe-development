@@ -106,7 +106,7 @@ public:
    */
     const PrivateKeyImpl<Element>& operator=(const PrivateKeyImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
-        this->m_sk                     = rhs.m_sk;
+        this->m_sk = rhs.m_sk;
         return *this;
     }
 
@@ -118,7 +118,7 @@ public:
    */
     const PrivateKeyImpl<Element>& operator=(PrivateKeyImpl<Element>&& rhs) {
         CryptoObject<Element>::operator=(rhs);
-        this->m_sk                     = std::move(rhs.m_sk);
+        this->m_sk = std::move(rhs.m_sk);
         return *this;
     }
 
@@ -163,8 +163,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::base_class<Key<Element>>(this));
         ar(::cereal::make_nvp("s", m_sk));

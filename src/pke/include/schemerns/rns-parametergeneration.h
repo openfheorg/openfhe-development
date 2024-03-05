@@ -72,7 +72,7 @@ public:
     bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                          uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
                          uint32_t n) const override {
-        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 
     /**
@@ -90,7 +90,7 @@ public:
     bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
                           usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,
                           COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override {
-        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 
     /**
@@ -111,7 +111,7 @@ public:
     bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                          uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
                          uint32_t numPartQ, usint multihopQBound) const override {
-        OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
+        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 
     /////////////////////////////////////

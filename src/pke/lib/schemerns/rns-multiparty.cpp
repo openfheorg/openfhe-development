@@ -55,8 +55,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
         if (sizeQl < 3) {
-            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
-                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
+            OPENFHE_THROW("sizeQl " + std::to_string(sizeQl) +
+                          " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
         }
         DugType dug;
         auto params                            = cv[0].GetParams();
@@ -129,8 +129,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
         if (sizeQl < 3) {
-            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
-                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
+            OPENFHE_THROW("sizeQl " + std::to_string(sizeQl) +
+                          " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
         }
         DugType dug;
         auto params                         = cv[0].GetParams();
@@ -192,24 +192,24 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
     const std::vector<DCRTPoly>& a0 = evalKey->GetAVector();
     const std::vector<DCRTPoly>& b0 = evalKey->GetBVector();
 
+    const size_t size = a0.size();
+
     std::vector<DCRTPoly> a;
+    a.reserve(size);
     std::vector<DCRTPoly> b;
+    b.reserve(size);
 
     if (cryptoParams->GetKeySwitchTechnique() == BV) {
-        const DCRTPoly& s        = privateKey->GetPrivateElement();
-        const auto elementParams = s.GetParams();
-
-        for (usint i = 0; i < a0.size(); i++) {
-            DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-            DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-            a.push_back(a0[i] * s + ns * e0);
-            b.push_back(b0[i] * s + ns * e1);
+        const DCRTPoly& s         = privateKey->GetPrivateElement();
+        const auto& elementParams = s.GetParams();
+        for (size_t i = 0; i < size; ++i) {
+            a.push_back(a0[i] * s + ns * DCRTPoly(dgg, elementParams, Format::EVALUATION));
+            b.push_back(b0[i] * s + ns * DCRTPoly(dgg, elementParams, Format::EVALUATION));
         }
     }
     else {
-        const auto elementParams                 = cryptoParams->GetElementParams();
-        const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
-        const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+        const auto& paramsQ  = cryptoParams->GetElementParams();
+        const auto& paramsQP = cryptoParams->GetParamsQP();
 
         usint sizeQ  = paramsQ->GetParams().size();
         usint sizeQP = paramsQP->GetParams().size();
@@ -232,12 +232,9 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         }
         sExt.SetFormat(Format::EVALUATION);
 
-        for (usint i = 0; i < a0.size(); i++) {
-            DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
-            DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
-
-            a.push_back(a0[i] * sExt + ns * e0);
-            b.push_back(b0[i] * sExt + ns * e1);
+        for (usint i = 0; i < size; i++) {
+            a.push_back(a0[i] * sExt + ns * DCRTPoly(dgg, paramsQP, Format::EVALUATION));
+            b.push_back(b0[i] * sExt + ns * DCRTPoly(dgg, paramsQP, Format::EVALUATION));
         }
     }
 

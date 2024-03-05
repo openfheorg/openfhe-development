@@ -191,7 +191,7 @@ public:
 
     inline const VecType& GetValues() const final {
         if (m_values == nullptr)
-            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
+            OPENFHE_THROW("No values in PolyImpl");
         return *m_values;
     }
 
@@ -201,13 +201,13 @@ public:
 
     inline Integer& at(usint i) final {
         if (m_values == nullptr)
-            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
+            OPENFHE_THROW("No values in PolyImpl");
         return m_values->at(i);
     }
 
     inline const Integer& at(usint i) const final {
         if (m_values == nullptr)
-            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
+            OPENFHE_THROW("No values in PolyImpl");
         return m_values->at(i);
     }
 
@@ -221,11 +221,11 @@ public:
 
     PolyImpl Plus(const PolyImpl& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW(math_error, "RingDimension missmatch");
+            OPENFHE_THROW("RingDimension missmatch");
         if (m_params->GetModulus() != rhs.m_params->GetModulus())
-            OPENFHE_THROW(math_error, "Modulus missmatch");
+            OPENFHE_THROW("Modulus missmatch");
         if (m_format != rhs.m_format)
-            OPENFHE_THROW(not_implemented_error, "Format missmatch");
+            OPENFHE_THROW("Format missmatch");
         auto tmp(*this);
         tmp.m_values->ModAddNoCheckEq(*rhs.m_values);
         return tmp;
@@ -253,11 +253,11 @@ public:
 
     PolyImpl Times(const PolyImpl& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW(math_error, "RingDimension missmatch");
+            OPENFHE_THROW("RingDimension missmatch");
         if (m_params->GetModulus() != rhs.m_params->GetModulus())
-            OPENFHE_THROW(math_error, "Modulus missmatch");
+            OPENFHE_THROW("Modulus missmatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
-            OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
+            OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
         auto tmp(*this);
         tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
         return tmp;
@@ -269,11 +269,11 @@ public:
     }
     PolyImpl& operator*=(const PolyImpl& rhs) override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW(math_error, "RingDimension missmatch");
+            OPENFHE_THROW("RingDimension missmatch");
         if (m_params->GetModulus() != rhs.m_params->GetModulus())
-            OPENFHE_THROW(math_error, "Modulus missmatch");
+            OPENFHE_THROW("Modulus missmatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
-            OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
+            OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
         if (m_values) {
             m_values->ModMulNoCheckEq(*rhs.m_values);
             return *this;
@@ -334,8 +334,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_values));
         ar(::cereal::make_nvp("f", m_format));

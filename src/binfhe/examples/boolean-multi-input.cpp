@@ -81,13 +81,13 @@ int main() {
     LWEPlaintext result;
     cc.Decrypt(sk, ctAND3, &result, p);
     if (result != 0)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(1, 1, 0) = " << result << std::endl;
 
     cc.Decrypt(sk, ctOR3, &result, p);
     if (result != 1)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 1, 0) = " << result << std::endl;
 
@@ -127,18 +127,18 @@ int main() {
 
     cc.Decrypt(sk, ctMajority, &result);
     if (result != 1)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
 
     std::cout << "Result of encrypted computation of Majority(1, 1, 0) = " << result << std::endl;
 
     cc.Decrypt(sk, ctCMUX1, &result);
     if (result != 1)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
     std::cout << "Result of encrypted computation of CMUX(1, 0, 0) = " << result << std::endl;
 
     cc.Decrypt(sk, ctCMUX0, &result);
     if (result != 0)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
 
     std::cout << "Result of encrypted computation of CMUX(1, 0, 1) = " << result << std::endl;
 
@@ -167,13 +167,13 @@ int main() {
     // Sample Program: Step 5: Decryption
     cc.Decrypt(sk, ctAND4, &result, p);
     if (result != 0)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(1, 0, 0, 0) = " << result << std::endl;
 
     cc.Decrypt(sk, ctOR4, &result, p);
     if (result != 1)
-        OPENFHE_THROW(math_error, "Decryption failure");
+        OPENFHE_THROW("Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 0, 0, 0) = " << result << std::endl;
 

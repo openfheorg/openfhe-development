@@ -104,7 +104,7 @@ public:
                                                     // any members are equal
         }
         catch (const std::bad_cast& e) {
-            OPENFHE_THROW(openfhe_error, "Tried to downcast an object of different class to MetadataTest");
+            OPENFHE_THROW("Tried to downcast an object of different class to MetadataTest");
         }
     }
 
@@ -131,8 +131,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(cereal::base_class<Metadata>(this));
         ar(cereal::make_nvp("str", m_s));
@@ -154,7 +154,7 @@ public:
             return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it)->Clone());
         }
         else {
-            OPENFHE_THROW(openfhe_error, "Attempt to access metadata (MetadataTest) that has not been set.");
+            OPENFHE_THROW("Attempt to access metadata (MetadataTest) that has not been set.");
         }
     }
 
@@ -175,7 +175,7 @@ public:
             return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it));
         }
         else {
-            OPENFHE_THROW(openfhe_error, "Attempt to access metadata (MetadataTest) that has not been set.");
+            OPENFHE_THROW("Attempt to access metadata (MetadataTest) that has not been set.");
         }
     }
 

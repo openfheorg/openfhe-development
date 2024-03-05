@@ -126,16 +126,16 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
                                                         const std::vector<double>& coefficients) const {
     const size_t coefficientsSize = coefficients.size();
     if (coefficientsSize == 0) {
-        OPENFHE_THROW(math_error, "The coefficients vector can not be empty");
+        OPENFHE_THROW("The coefficients vector can not be empty");
     }
 
     uint32_t k = coefficientsSize - 1;
     if (k == 0) {
-        OPENFHE_THROW(math_error, "The coefficients vector should have, at least, 2 elements");
+        OPENFHE_THROW("The coefficients vector should have, at least, 2 elements");
     }
 
     if (coefficients[k] == 0)
-        OPENFHE_THROW(math_error, "EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
+        OPENFHE_THROW("EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
 
     std::vector<int32_t> indices(k, 0);
     // set the indices for the powers of x that need to be computed to 1

@@ -230,9 +230,9 @@ public:
         if (m_elements.size() == 1)
             return m_elements[0];
 
-        OPENFHE_THROW(config_error,
-                      "GetElement should only be used in cases with a "
-                      "Ciphertext with a single element");
+        OPENFHE_THROW(
+            "GetElement should only be used in cases with a "
+            "Ciphertext with a single element");
     }
 
     /**
@@ -245,9 +245,9 @@ public:
         if (m_elements.size() == 1)
             return m_elements[0];
 
-        OPENFHE_THROW(config_error,
-                      "GetElement should only be used in cases with a "
-                      "Ciphertext with a single element");
+        OPENFHE_THROW(
+            "GetElement should only be used in cases with a "
+            "Ciphertext with a single element");
     }
 
     /**
@@ -266,6 +266,10 @@ public:
         return m_elements;
     }
 
+    size_t NumberCiphertextElements() const {
+        return m_elements.size();
+    }
+
     /**
    * SetElement - sets the ring element for the cases that use only one element
    * in the vector this method will throw an exception if it's ever called in
@@ -278,9 +282,9 @@ public:
         else if (m_elements.size() == 1)
             m_elements[0] = element;
         else
-            OPENFHE_THROW(config_error,
-                          "SetElement should only be used in cases with a "
-                          "Ciphertext with a single element");
+            OPENFHE_THROW(
+                "SetElement should only be used in cases with a "
+                "Ciphertext with a single element");
     }
 
     /**
@@ -439,8 +443,8 @@ public:
    */
     std::shared_ptr<Metadata> GetMetadataByKey(const std::string& key) const {
         auto it = m_metadataMap->find(key);
-        if(it == m_metadataMap->end()) {
-            OPENFHE_THROW(openfhe_error, "Metadata element with key [" + key + "] is not found in the Metadata map.");
+        if (it == m_metadataMap->end()) {
+            OPENFHE_THROW("Metadata element with key [" + key + "] is not found in the Metadata map.");
         }
         return std::make_shared<Metadata>(*(it->second));
     }
@@ -561,8 +565,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(cereal::base_class<CryptoObject<Element>>(this));
         ar(cereal::make_nvp("v", m_elements));

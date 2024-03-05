@@ -40,7 +40,7 @@
 
 #include "utils/inttypes.h"
 
-#include <iostream>
+#include <iosfwd>
 #include <map>
 #include <string>
 #include <utility>
@@ -77,35 +77,7 @@ enum SecurityLevel {
 
 SecurityLevel convertToSecurityLevel(const std::string& str);
 SecurityLevel convertToSecurityLevel(uint32_t num);
-inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
-    switch (sl) {
-        case HEStd_128_classic:
-            s << "HEStd_128_classic";
-            break;
-        case HEStd_192_classic:
-            s << "HEStd_192_classic";
-            break;
-        case HEStd_256_classic:
-            s << "HEStd_256_classic";
-            break;
-        case HEStd_128_quantum:
-            s << "HEStd_128_quantum";
-            break;
-        case HEStd_192_quantum:
-            s << "HEStd_192_quantum";
-            break;
-        case HEStd_256_quantum:
-            s << "HEStd_256_quantum";
-            break;
-        case HEStd_NotSet:
-            s << "HEStd_NotSet";
-            break;
-        default:
-            s << "UNKNOWN";
-            break;
-    }
-    return s;
-}
+std::ostream& operator<<(std::ostream& s, SecurityLevel sl);
 
 class StdLatticeParm {
     DistributionType distType;

@@ -297,7 +297,7 @@ void LeveledSHERNS::MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, usin
     monomialDCRT = monomial;
     monomialDCRT.SetFormat(Format::EVALUATION);
 
-    for (usint i = 0; i < ciphertext->GetElements().size(); i++) {
+    for (usint i = 0; i < ciphertext->NumberCiphertextElements(); i++) {
         cv[i] *= monomialDCRT;
     }
 }
@@ -342,7 +342,7 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() == NORESCALE) {
-        OPENFHE_THROW(not_implemented_error, "LevelReduceInPlace is not implemented for NORESCALE rescaling technique");
+        OPENFHE_THROW("LevelReduceInPlace is not implemented for NORESCALE rescaling technique");
     }
 
     if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL && levels > 0) {
@@ -420,7 +420,7 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
         // Get moduli chain to create CRT representation of powP
         std::vector<DCRTPoly::Integer> moduli;
 
-        if (ciphertext1->GetElements().size() == 1) {
+        if (ciphertext1->NumberCiphertextElements() == 1) {
             ptxt      = ciphertext1->GetElements()[0];
             ptxtDepth = ciphertext1->GetNoiseScaleDeg();
             ctxtDepth = ciphertext2->GetNoiseScaleDeg();
@@ -431,7 +431,7 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
             }
             ptxtIndex = 1;
         }
-        else if (ciphertext2->GetElements().size() == 1) {
+        else if (ciphertext2->NumberCiphertextElements() == 1) {
             ptxt      = ciphertext2->GetElements()[0];
             ptxtDepth = ciphertext2->GetNoiseScaleDeg();
             ctxtDepth = ciphertext1->GetNoiseScaleDeg();
@@ -469,10 +469,10 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
             }
         }
         else if (ptxtDepth > ctxtDepth) {
-            OPENFHE_THROW(not_available_error,
-                          "LPAlgorithmSHERNS<DCRTPoly>::AdjustForAddOrSubInPlace "
-                          "- plaintext cannot be encoded at a larger depth than that "
-                          "of the ciphertext.");
+            OPENFHE_THROW(
+                "LPAlgorithmSHERNS<DCRTPoly>::AdjustForAddOrSubInPlace "
+                "- plaintext cannot be encoded at a larger depth than that "
+                "of the ciphertext.");
         }
     }
     else if (cryptoParams->GetScalingTechnique() != NORESCALE) {

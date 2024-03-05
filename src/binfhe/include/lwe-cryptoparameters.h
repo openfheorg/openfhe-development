@@ -68,19 +68,19 @@ public:
                              SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (!m_n)
-            OPENFHE_THROW(config_error, "m_n (lattice parameter) can not be zero");
+            OPENFHE_THROW("m_n (lattice parameter) can not be zero");
         if (!m_N)
-            OPENFHE_THROW(config_error, "m_N (ring dimension) can not be zero");
+            OPENFHE_THROW("m_N (ring dimension) can not be zero");
         if (!m_q)
-            OPENFHE_THROW(config_error, "m_q (modulus for additive LWE) can not be zero");
+            OPENFHE_THROW("m_q (modulus for additive LWE) can not be zero");
         if (!m_Q)
-            OPENFHE_THROW(config_error, "m_Q (modulus for RingGSW/RLWE) can not be zero");
+            OPENFHE_THROW("m_Q (modulus for RingGSW/RLWE) can not be zero");
         if (!q_KS)
-            OPENFHE_THROW(config_error, "q_KS (modulus for key switching) can not be zero");
+            OPENFHE_THROW("q_KS (modulus for key switching) can not be zero");
         if (!m_baseKS)
-            OPENFHE_THROW(config_error, "m_baseKS (the base used for key switching) can not be zero");
+            OPENFHE_THROW("m_baseKS (the base used for key switching) can not be zero");
         if (m_Q.GetMSB() > MAX_MODULUS_SIZE)
-            OPENFHE_THROW(config_error, "Q.GetMSB() > MAX_MODULUS_SIZE");
+            OPENFHE_THROW("Q.GetMSB() > MAX_MODULUS_SIZE");
         m_dgg.SetStd(std);
         m_ks_dgg.SetStd(std);
     }
@@ -193,8 +193,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("n", m_n));

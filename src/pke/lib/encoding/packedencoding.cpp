@@ -65,10 +65,10 @@ bool PackedEncoding::Encode() {
             q    = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
             temp = NativeVector(this->GetElementRingDimension(), q);
             if (q < mod)
-                OPENFHE_THROW(config_error,
-                              "the plaintext modulus size is larger than the size of "
-                              "CRT moduli; either decrease the plaintext modulus or "
-                              "increase the CRT moduli.");
+                OPENFHE_THROW(
+                    "the plaintext modulus size is larger than the size of "
+                    "CRT moduli; either decrease the plaintext modulus or "
+                    "increase the CRT moduli.");
         }
 
         size_t i;
@@ -82,9 +82,8 @@ bool PackedEncoding::Encode() {
             NativeInteger entry;
 
             if ((PlaintextModulus)llabs(value[i]) >= mod)
-                OPENFHE_THROW(math_error, "Cannot encode integer " + std::to_string(value[i]) + " at position " +
-                                              std::to_string(i) + " that is > plaintext modulus " +
-                                              std::to_string(mod));
+                OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
+                              std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
 
             if (value[i] < 0) {
                 // It is more efficient to encode negative numbers using the ciphertext
@@ -141,9 +140,8 @@ bool PackedEncoding::Encode() {
             BigInteger entry;
 
             if ((PlaintextModulus)llabs(value[i]) >= mod)
-                OPENFHE_THROW(math_error, "Cannot encode integer " + std::to_string(value[i]) + " at position " +
-                                              std::to_string(i) + " that is > plaintext modulus " +
-                                              std::to_string(mod));
+                OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
+                              std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
 
             if (value[i] < 0) {
                 // It is more efficient to encode negative numbers using the ciphertext
@@ -175,6 +173,7 @@ bool PackedEncoding::Encode() {
 template <typename T>
 static void fillVec(const T& poly, const PlaintextModulus& mod, std::vector<int64_t>& vec) {
     vec.clear();
+    vec.reserve(poly.GetLength());
 
     int64_t half = int64_t(mod) / 2;
     // const typename T::Integer &q = poly.GetModulus();
@@ -313,7 +312,7 @@ void PackedEncoding::SetParams(usint m, EncodingParams params) {
     }
 
     if (hadEx)
-        OPENFHE_THROW(openfhe_error, exception_message);
+        OPENFHE_THROW(exception_message);
 }
 
 template <typename P>
@@ -447,7 +446,7 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
 
 void PackedEncoding::SetParams_2n(usint m, const NativeInteger& modulusNI) {
     if (!MillerRabinPrimalityTest(modulusNI)) {
-        OPENFHE_THROW(math_error, "The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
+        OPENFHE_THROW("The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
     }
 
     const ModulusM modulusM = {modulusNI, m};
@@ -484,7 +483,7 @@ void PackedEncoding::SetParams_2n(usint m, EncodingParams params) {
     NativeInteger modulusNI(params->GetPlaintextModulus());  // native int modulus
 
     if (!MillerRabinPrimalityTest(modulusNI)) {
-        OPENFHE_THROW(math_error, "The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
+        OPENFHE_THROW("The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
     }
 
     const ModulusM modulusM = {modulusNI, m};

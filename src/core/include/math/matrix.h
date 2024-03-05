@@ -78,6 +78,7 @@ public:
     Matrix(alloc_func allocZero, size_t rows, size_t cols) : data(), rows(rows), cols(cols), allocZero(allocZero) {
         data.resize(rows);
         for (auto row = data.begin(); row != data.end(); ++row) {
+            row->reserve(cols);
             for (size_t col = 0; col < cols; ++col) {
                 row->push_back(allocZero());
             }
@@ -118,7 +119,7 @@ public:
 
     void SetSize(size_t rows, size_t cols) {
         if (this->rows != 0 || this->cols != 0) {
-            OPENFHE_THROW(not_available_error, "You cannot SetSize on a non-empty matrix");
+            OPENFHE_THROW("You cannot SetSize on a non-empty matrix");
         }
 
         this->rows = rows;
@@ -126,6 +127,7 @@ public:
 
         data.resize(rows);
         for (auto row = data.begin(); row != data.end(); ++row) {
+            row->reserve(cols);
             for (size_t col = 0; col < cols; ++col) {
                 row->push_back(allocZero());
             }
@@ -284,7 +286,7 @@ public:
                                           std::is_same<T, int64_t>::value || std::is_same<T, Field2n>::value,
                                       bool>::type = true>
     double Norm() const {
-        OPENFHE_THROW(not_available_error, "Norm not defined for this type");
+        OPENFHE_THROW("Norm not defined for this type");
     }
 
     template <typename T                          = Element,
@@ -445,7 +447,7 @@ public:
    */
     Matrix<Element> Add(Matrix<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
-            OPENFHE_THROW(math_error, "Addition operands have incompatible dimensions");
+            OPENFHE_THROW("Addition operands have incompatible dimensions");
         }
         Matrix<Element> result(*this);
 #pragma omp parallel for
@@ -483,7 +485,7 @@ public:
    */
     Matrix<Element> Sub(Matrix<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
-            OPENFHE_THROW(math_error, "Subtraction operands have incompatible dimensions");
+            OPENFHE_THROW("Subtraction operands have incompatible dimensions");
         }
         Matrix<Element> result(allocZero, rows, other.cols);
 #pragma omp parallel for
@@ -648,10 +650,10 @@ public:
    *
    */
     void SwitchFormat();
-#define NOT_AN_ELEMENT_MATRIX(T)                                        \
-    template <>                                                         \
-    void Matrix<T>::SwitchFormat() {                                    \
-        OPENFHE_THROW(not_available_error, "Not a matrix of Elements"); \
+#define NOT_AN_ELEMENT_MATRIX(T)                   \
+    template <>                                    \
+    void Matrix<T>::SwitchFormat() {               \
+        OPENFHE_THROW("Not a matrix of Elements"); \
     }
 
     /*
@@ -678,8 +680,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", data));
         ar(::cereal::make_nvp("r", rows));

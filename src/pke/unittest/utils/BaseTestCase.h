@@ -108,7 +108,7 @@ public:
     //        break;
     //    default: {
     //        std::string errMsg(std::string("Unknown schemeId ") + std::to_string(scheme));
-    //        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+    //        OPENFHE_THROW(errMsg);
     //    }
     //    }
 
@@ -128,7 +128,7 @@ public:
         catch (...) {
             std::string errMsg("Check the number of parameter overrides in the .csv file. It should be [" +
                                std::to_string(numOverrides) + "]");
-            OPENFHE_THROW(lbcrypto::config_error, errMsg);
+            OPENFHE_THROW(errMsg);
         }
         return numOverrides;
     }

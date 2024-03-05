@@ -62,7 +62,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         std::stringstream s;
         s << "This PRE mode " << PREMode << " is not supported for CKKSRNS";
-        OPENFHE_THROW(not_available_error, s.str());
+        OPENFHE_THROW(s.str());
     }
 
     usint extraModSize = 0;
@@ -102,14 +102,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
             // Check whether particular selection is standards-compliant
             auto he_std_n = nRLWE(qBound);
             if (he_std_n > n) {
-                OPENFHE_THROW(config_error, "The specified ring dimension (" + std::to_string(n) +
-                                                ") does not comply with HE standards recommendation (" +
-                                                std::to_string(he_std_n) + ").");
+                OPENFHE_THROW("The specified ring dimension (" + std::to_string(n) +
+                              ") does not comply with HE standards recommendation (" + std::to_string(he_std_n) + ").");
             }
         }
     }
     else if (n == 0) {
-        OPENFHE_THROW(config_error, "Please specify the ring dimension or desired security level.");
+        OPENFHE_THROW("Please specify the ring dimension or desired security level.");
     }
     //// End HE Standards compliance logic/check
 
@@ -206,13 +205,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
-        if (extraModSize == dcrtBits || extraModSize == firstModSize) {
-            moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
-        }
-        else {
-            moduliQ[numPrimes] = LastPrime<NativeInteger>(extraModSize, cyclOrder);
-        }
-        rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
+        // no need for extra checking as extraModSize is automatically chosen by the library
+        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        rootsQ[numPrimes]  = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
     }
 
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
@@ -221,10 +216,10 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
     if (encodingParams->GetBatchSize() > n / 2)
-        OPENFHE_THROW(config_error, "The batch size cannot be larger than ring dimension / 2.");
+        OPENFHE_THROW("The batch size cannot be larger than ring dimension / 2.");
 
     if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
-        OPENFHE_THROW(config_error, "The batch size can only be set to zero (for full packing) or a power of two.");
+        OPENFHE_THROW("The batch size can only be set to zero (for full packing) or a power of two.");
 
     // if no batch size was specified, we set batchSize = n/2 by default (for full
     // packing)
