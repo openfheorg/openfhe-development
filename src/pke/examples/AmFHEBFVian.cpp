@@ -179,8 +179,6 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> ExtractAndScaleLWE(const CryptoC
                                                                    ConstCiphertext<DCRTPoly> ctxt, uint32_t n,
                                                                    NativeInteger modulus_from,
                                                                    NativeInteger modulus_to);
-std::shared_ptr<LWECiphertextImpl> ExtractLWECiphertextShort(const std::vector<std::vector<NativeInteger>>& aANDb,
-                                                             NativeInteger modulus, uint32_t n, uint32_t index);
 std::vector<std::vector<NativeInteger>> ExtractLWEpacked(ConstCiphertext<DCRTPoly> ct);
 
 EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& bfvSKto, const PrivateKey<DCRTPoly>& bfvSKfrom,
@@ -267,7 +265,7 @@ void NANDthroughBFV() {
         q.ConvertToInt());  // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
     parameters.SetMultiplicativeDepth(18);
     parameters.SetMaxRelinSkDeg(3);
-    parameters.SetFirstModSize(60);
+    parameters.SetScalingModSize(60);
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
@@ -298,7 +296,7 @@ void NANDthroughBFV() {
     parameters_KS.SetMultiplicativeDepth(0);
     parameters_KS.SetMaxRelinSkDeg(3);
     parameters_KS.SetRingDim(ringDim);
-    parameters_KS.SetFirstModSize(27);
+    parameters_KS.SetScalingModSize(27);
     parameters_KS.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters_KS.SetSecurityLevel(HEStd_NotSet);
     parameters_KS.SetMultiplicationTechnique(HPSPOVERQ);  // Don't need HPSPOVERQLEVELED here
@@ -620,7 +618,7 @@ void LUTthroughBFV() {
     parameters.SetMultiplicativeDepth(18);
     parameters.SetMaxRelinSkDeg(maxRelin);
     parameters.SetNumLargeDigits(numDigits);
-    parameters.SetFirstModSize(60);
+    parameters.SetScalingModSize(60);
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
@@ -654,7 +652,7 @@ void LUTthroughBFV() {
     parameters_KS.SetMultiplicativeDepth(0);
     parameters_KS.SetMaxRelinSkDeg(2);
     parameters_KS.SetRingDim(ringDim);
-    parameters_KS.SetFirstModSize(27);
+    parameters_KS.SetScalingModSize(27);
     parameters_KS.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters_KS.SetSecurityLevel(HEStd_NotSet);
     parameters_KS.SetMultiplicationTechnique(HPSPOVERQ);  // Don't need HPSPOVERQLEVELED here
@@ -3091,44 +3089,44 @@ void ModSwitchDown(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS,
 }
 
 std::vector<std::vector<NativeInteger>> ExtractLWEpacked(ConstCiphertext<DCRTPoly> ct) {
-    auto originalA{(ct->GetElements()[0]).GetElementAtIndex(0)};
+    auto originalA{(ct->GetElements()[1]).GetElementAtIndex(0)};
     originalA.SetFormat(Format::COEFFICIENT);
     const auto itA = std::vector<NativeInteger>::const_iterator(&originalA.GetValues()[0]);
 
-    auto originalB{(ct->GetElements()[1]).GetElementAtIndex(0)};
+    auto originalB{(ct->GetElements()[0]).GetElementAtIndex(0)};
     originalB.SetFormat(Format::COEFFICIENT);
     const auto itB = std::vector<NativeInteger>::const_iterator(&originalB.GetValues()[0]);
 
     // create 2 "begin" iterators to work with element values
     size_t N = originalA.GetLength();
-    return std::vector<std::vector<NativeInteger>>{std::vector<NativeInteger>(itA, itA + N),
-                                                   std::vector<NativeInteger>(itB, itB + N)};
+    return std::vector<std::vector<NativeInteger>>{std::vector<NativeInteger>(itB, itB + N),
+                                                   std::vector<NativeInteger>(itA, itA + N)};
 }
 
 std::vector<std::shared_ptr<LWECiphertextImpl>> ExtractAndScaleLWE(const CryptoContextImpl<DCRTPoly>& cc,
                                                                    ConstCiphertext<DCRTPoly> ctxt, uint32_t n,
                                                                    NativeInteger modulus_from,
                                                                    NativeInteger modulus_to) {
-    auto AandB    = ExtractLWEpacked(ctxt);
-    uint32_t size = AandB[0].size();
+    auto BandA    = ExtractLWEpacked(ctxt);
+    uint32_t size = BandA[0].size();
 
     std::vector<std::shared_ptr<LWECiphertextImpl>> LWECiphertexts;
     auto N = cc.GetRingDimension();
     LWECiphertexts.reserve(N);
 
-    // std::cout << "AandB size = " << size << ", N = " << N << std::endl;
+    // std::cout << "BandA size = " << size << ", N = " << N << std::endl;
 
     for (uint32_t i = 0, idx = 0; i < N; ++i, ++idx) {
         NativeVector a(n, modulus_from);
         for (uint32_t j = 0; j < n && j <= idx; ++j)
-            a[j] = modulus_from - AandB[1][idx - j];
+            a[j] = modulus_from - BandA[1][idx - j];
 
         if (n > idx) {
             for (uint32_t k = idx + 1; k < n; ++k) {
-                a[k] = AandB[1][size + idx - k];
+                a[k] = BandA[1][size + idx - k];
             }
         }
-        LWECiphertexts.emplace_back(std::make_shared<LWECiphertextImpl>(std::move(a), NativeInteger(AandB[0][idx])));
+        LWECiphertexts.emplace_back(std::make_shared<LWECiphertextImpl>(std::move(a), NativeInteger(BandA[0][idx])));
     }
 
     // Modulus switch from modulus_from to modulus_to
@@ -3144,26 +3142,6 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> ExtractAndScaleLWE(const CryptoC
         LWECiphertexts[i]     = std::make_shared<LWECiphertextImpl>(std::move(a_round), std::move(b_round));
     }
     return LWECiphertexts;
-}
-
-std::shared_ptr<LWECiphertextImpl> ExtractLWECiphertextShort(const std::vector<std::vector<NativeInteger>>& aANDb,
-                                                             NativeInteger modulus, uint32_t n, uint32_t index) {
-    auto N = aANDb[0].size();
-    NativeVector a(n, modulus);
-    NativeInteger b;
-
-    for (size_t i = 0; i < n && i <= index; ++i) {
-        a[i] = modulus - aANDb[1][index - i];
-    }
-    if (n > index) {
-        for (size_t i = index + 1; i < n; ++i) {
-            a[i] = aANDb[1][N + index - i];
-        }
-    }
-
-    b           = aANDb[0][index];
-    auto result = std::make_shared<LWECiphertextImpl>(std::move(a), std::move(b));
-    return result;
 }
 
 NativeInteger RoundqQAlter(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) {
@@ -3522,7 +3500,7 @@ Ciphertext<DCRTPoly> cEvalLinearWSumBFV(const std::vector<Ciphertext<DCRTPoly>>&
     if (i <= limit) {
         auto cc = ciphertexts[i - 1]->GetCryptoContext();
         Ciphertext<DCRTPoly> weightedSum = cEvalMultConstBFV(ciphertexts[i - 1], constants[i]);
-        for (++i; i <= limit; ++i) {
+        for (++i; i <= limit; ++i) { // Andreea: what does that mean?
             if (constants[i] != 0)
                 cc->EvalAddInPlace(weightedSum, cEvalMultConstBFV(ciphertexts[i - 1], constants[i]));
         }
@@ -3916,7 +3894,7 @@ void cLUTthroughBFV() {
     parameters.SetMultiplicativeDepth(18);
     parameters.SetMaxRelinSkDeg(maxRelin);
     parameters.SetNumLargeDigits(numDigits);
-    parameters.SetFirstModSize(60);
+    parameters.SetScalingModSize(60);
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
@@ -3949,7 +3927,7 @@ void cLUTthroughBFV() {
     parameters_KS.SetMultiplicativeDepth(0);
     parameters_KS.SetMaxRelinSkDeg(2);
     parameters_KS.SetRingDim(ringDim);
-    parameters_KS.SetFirstModSize(27);
+    parameters_KS.SetScalingModSize(27);
     parameters_KS.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters_KS.SetSecurityLevel(HEStd_NotSet);
     parameters_KS.SetMultiplicationTechnique(HPSPOVERQ);  // Don't need HPSPOVERQLEVELED here
