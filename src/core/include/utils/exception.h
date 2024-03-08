@@ -182,7 +182,7 @@ public:
     OpenFHEException(const OpenFHEException& ex) = default;
 
     const char* what() const noexcept {
-        return m_errorDescription.c_str();
+        return m_errorMessage.c_str();
     }
 
     std::vector<std::string> getCallStackAsVector() {
