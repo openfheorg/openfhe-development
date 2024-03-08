@@ -2,7 +2,9 @@
 
 * Fixes a bug affecting the Google C++ Transpiler code generation (#701)
 * Adds serialization backwards compatibility down to 1.0.4 for the JSON encoding (#571)
-* Shows more information when an exception is thrown (#702) 
+* Shows more information when an exception is thrown (#702)
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.1.4%22
 
 03/04/2024: OpenFHE 1.1.3 (stable) is released
 
