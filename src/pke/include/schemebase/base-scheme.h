@@ -1558,8 +1558,16 @@ public:
         // ar(::cereal::make_nvp("pre", m_PRE));
         // ar(::cereal::make_nvp("lvldshe", m_LeveledSHE));
         // ar(::cereal::make_nvp("advshe", m_AdvancedSHE));
-        ar(::cereal::make_nvp("fhe", m_FHE));
-        ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
+        try {
+           ar(::cereal::make_nvp("fhe", m_FHE));
+        } catch (...) {
+        	m_FHE = nullptr;
+        }
+        try {
+           ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
+        } catch (...) {
+        	m_SchemeSwitch = nullptr;
+        }
         uint32_t enabled = 0;
         ar(::cereal::make_nvp("enabled", enabled));
         Enable(enabled);

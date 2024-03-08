@@ -1770,7 +1770,11 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
-        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
+        try {
+            ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
+        } catch (...) {
+        	m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+        }
     }
 
     std::string SerializedObjectName() const override {
