@@ -1,3 +1,9 @@
+03/08/2024: OpenFHE 1.1.4 (stable) is released
+
+* Fixes a bug affecting the Google C++ Transpiler code generation (#701)
+* Adds serialization backwards compatibility down to 1.0.4 for the JSON encoding (#571)
+* Shows more information when an exception is thrown (#702) 
+
 03/04/2024: OpenFHE 1.1.3 (stable) is released
 
 * One internal map is now used for all rotation keys, which reduces memory footprint and key generation time for BGV-like schemes (#546)
