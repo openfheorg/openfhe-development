@@ -351,7 +351,7 @@ in the following way:
        if: inputs.mb2_tcm
        steps:
        - name: Checkout Code
-         uses: actions/checkout@v2
+         uses: actions/checkout@v3
 
        - name: mb2_tcm
          uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci

@@ -25,7 +25,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: mb2_128
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -40,7 +40,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: mb2_clang
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -62,7 +62,7 @@ jobs:
       GIT_SUBMODULE_STRATEGY: recursive
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: build_docs
       run: |
