@@ -1770,9 +1770,11 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        // try-catch is used for backwards compatibility down to 1.0.x
+        // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0
         try {
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
-        } catch (...) {
+        } catch(cereal::Exception&) {
         	m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
         }
     }

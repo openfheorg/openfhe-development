@@ -1558,16 +1558,25 @@ public:
         // ar(::cereal::make_nvp("pre", m_PRE));
         // ar(::cereal::make_nvp("lvldshe", m_LeveledSHE));
         // ar(::cereal::make_nvp("advshe", m_AdvancedSHE));
+
+        // try-catch is used for backwards compatibility down to 1.0.x
+        // only works for JSON encoding
+        // m_FHE was added in v1.1.2
         try {
            ar(::cereal::make_nvp("fhe", m_FHE));
-        } catch (...) {
+        } catch(cereal::Exception&) {
         	m_FHE = nullptr;
         }
+
+        // try-catch is used for backwards compatibility down to 1.0.x
+        // only works for JSON encoding
+        // m_SchemeSwitch was added in v1.1.3
         try {
            ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
-        } catch (...) {
+        } catch(cereal::Exception&) {
         	m_SchemeSwitch = nullptr;
         }
+
         uint32_t enabled = 0;
         ar(::cereal::make_nvp("enabled", enabled));
         Enable(enabled);
