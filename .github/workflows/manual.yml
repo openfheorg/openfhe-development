@@ -86,7 +86,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: default
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -107,7 +107,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb2_debug
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -129,7 +129,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb2_tcm
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -152,7 +152,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb4_noflag
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -174,7 +174,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb4_debug
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -196,7 +196,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb4_tcm
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -219,7 +219,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb6_ntl_noflag
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -241,7 +241,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb6_ntl_tcm
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -264,7 +264,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb6_ntl_debug_tcm
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci

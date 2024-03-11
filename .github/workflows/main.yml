@@ -25,7 +25,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb2_128
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -40,7 +40,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: mb2_clang
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
@@ -62,7 +62,7 @@ jobs:
       GIT_SUBMODULE_STRATEGY: recursive
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: build_docs
       run: |
@@ -74,7 +74,7 @@ jobs:
         popd
 
     - name: deploy_docs
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs

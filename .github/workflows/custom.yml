@@ -87,7 +87,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: default
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
