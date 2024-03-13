@@ -1382,6 +1382,10 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     auto ccCKKS    = ciphertext->GetCryptoContext();
     uint32_t slots = m_numSlotsCKKS;
 
+    if (numCtxts == 0 || numCtxts > slots) {
+        numCtxts = slots;
+    }
+
     // Step 1. Homomorphic decoding
     auto ctxtDecoded = EvalSlotsToCoeffsSwitch(*ccCKKS, ciphertext);
     ccCKKS->GetScheme()->ModReduceInternalInPlace(ctxtDecoded, 1);
@@ -1400,10 +1404,6 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     uint32_t n = m_ccLWE->GetParams()->GetLWEParams()->Getn();  // lattice parameter for additive LWE
     std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts(numCtxts);
     auto AandB = ExtractLWEpacked(ctSwitched);
-
-    if (numCtxts == 0 || numCtxts > slots) {
-        numCtxts = slots;
-    }
 
     uint32_t gap = ccKS->GetRingDimension() / (2 * slots);
 

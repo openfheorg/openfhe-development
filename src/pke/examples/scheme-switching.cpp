@@ -53,14 +53,14 @@ std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 int main() {
     SwitchCKKSToFHEW();
     SwitchFHEWtoCKKS();
-    // FloorViaSchemeSwitching();
-    // FuncViaSchemeSwitching();
-    // PolyViaSchemeSwitching();
+    FloorViaSchemeSwitching();
+    FuncViaSchemeSwitching();
+    PolyViaSchemeSwitching();
     ComparisonViaSchemeSwitching();
     ArgminViaSchemeSwitching();
     ArgminViaSchemeSwitchingAlt();
-    // ArgminViaSchemeSwitchingUnit();
-    // ArgminViaSchemeSwitchingAltUnit();
+    ArgminViaSchemeSwitchingUnit();
+    ArgminViaSchemeSwitchingAltUnit();
 
     return 0;
 }
