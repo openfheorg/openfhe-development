@@ -35,34 +35,30 @@
 #ifndef __ALLOCATOR_H
 #define __ALLOCATOR_H
 
-#include <stddef.h>
 #include <cstdlib>
-
-#include "utils/inttypes.h"
 
 /// See
 /// http://www.codeproject.com/Articles/1083210/An-efficient-Cplusplus-fixed-block-memory-allocato
 class Allocator {
 public:
+    enum AllocatorMode { HEAP_BLOCKS, HEAP_POOL, STATIC_POOL };
+
     /// Constructor
     /// @param[in]  size - size of the fixed blocks
     /// @param[in]  objects - maximum number of object. If 0, new blocks are
     ///    created off the heap as necessary.
-    /// @param[in]  memory - pointer to a block of static memory for
-    /// allocator or nullptr
-    ///    to obtain memory from global heap. If not nullptr, the objects
-    /// argument     defines the size of the memory block (size x objects =
-    /// memory size in bytes).
-    ///  @param[in]  name - optional allocator name string.
-    Allocator(size_t size, usint objects = 0, char* memory = nullptr, const char* name = nullptr);  // NOLINT
+    /// @param[in]  memory - pointer to a block of static memory for allocator or nullptr
+    ///    to obtain memory from global heap. If not nullptr, the objects argument
+    ///    defines the size of the memory block (size x objects = memory size in bytes).
+    /// @param[in]  name - optional allocator name string.
+    Allocator(size_t size, size_t objects = 0, char* memory = nullptr, const char* name = nullptr);
 
     /// Destructor
     ~Allocator();
 
     /// Get a pointer to a memory block.
     /// @param[in]  size - size of the block to allocate
-    /// @return     Returns pointer to the block. Otherwise nullptr if
-    /// unsuccessful.
+    /// @return     Returns pointer to the block. Otherwise nullptr if unsuccessful.
     void* Allocate(size_t size);
 
     /// Return a pointer to the memory pool.
@@ -70,40 +66,43 @@ public:
     void Deallocate(void* pBlock);
 
     /// Get the allocator name string.
-    /// @return    A pointer to the allocator name or nullptr if none was
-    /// assigned.
-    const char* GetName() {
+    /// @return  A pointer to the allocator name or nullptr if none was assigned.
+    const char* GetName() const {
         return m_name;
     }
 
     /// Gets the fixed block memory size, in bytes, handled by the allocator.
-    /// @return    The fixed block size in bytes.
-    size_t GetBlockSize() {
+    /// @return  The fixed block size in bytes.
+    size_t GetBlockSize() const {
         return m_blockSize;
     }
 
     /// Gets the maximum number of blocks created by the allocator.
-    /// @return    The number of fixed memory blocks created.
-    usint GetBlockCount() {
+    /// @return  The number of fixed memory blocks created.
+    size_t GetBlockCount() const {
         return m_blockCnt;
     }
 
     /// Gets the number of blocks in use.
-    /// @return    The number of blocks in use by the application.
-    usint GetBlocksInUse() {
+    /// @return  The number of blocks in use by the application.
+    size_t GetBlocksInUse() const {
         return m_blocksInUse;
     }
 
     /// Gets the total number of allocations for this allocator instance.
-    /// @return    The total number of allocations.
-    usint GetAllocations() {
+    /// @return  The total number of allocations.
+    size_t GetAllocations() const {
         return m_allocations;
     }
 
     /// Gets the total number of deallocations for this allocator instance.
-    /// @return    The total number of deallocations.
-    usint GetDeallocations() {
+    /// @return  The total number of deallocations.
+    size_t GetDeallocations() const {
         return m_deallocations;
+    }
+
+    AllocatorMode GetMode() const {
+        return m_allocatorMode;
     }
 
 private:
@@ -112,32 +111,27 @@ private:
     void Push(void* pMemory);
 
     /// Pop a memory block from head of free-list.
-    /// @return     Returns pointer to the block. Otherwise nullptr if
-    /// unsuccessful.
+    /// @return  Returns pointer to the block. Otherwise nullptr if unsuccessful.
     void* Pop();
 
     struct Block {
         Block* pNext;
     };
 
-    enum AllocatorMode { HEAP_BLOCKS, HEAP_POOL, STATIC_POOL };
-
-    const size_t m_blockSize;
-    const size_t m_objectSize;
-    const usint m_maxObjects;
-    AllocatorMode m_allocatorMode;
-    Block* m_pHead;
-    char* m_pPool;
-    usint m_poolIndex;
-    usint m_blockCnt;
-    usint m_blocksInUse;
-    usint m_allocations;
-    usint m_deallocations;
+    size_t m_blockSize;
+    size_t m_maxObjects;
+    Block* m_pHead{nullptr};
+    char* m_pPool{nullptr};
+    size_t m_blockCnt{0};
+    size_t m_blocksInUse{0};
+    size_t m_allocations{0};
+    size_t m_deallocations{0};
+    AllocatorMode m_allocatorMode{HEAP_BLOCKS};
     const char* m_name;
 };
 
 // Template class to create external memory pool
-template <class T, usint Objects>
+template <class T, size_t Objects>
 class AllocatorPool : public Allocator {
 public:
     AllocatorPool() : Allocator(sizeof(T), Objects, m_memory) {}
@@ -150,13 +144,9 @@ private:
 #define DECLARE_ALLOCATOR                                   \
 public:                                                     \
     void* operator new(size_t size) {                       \
-        OPENFHE_DEBUG_FLAG(false);                          \
-        OPENFHE_DEBUG("allocating   " << size << " bytes"); \
         return _allocator.Allocate(size);                   \
     }                                                       \
     void operator delete(void* pObject) {                   \
-        OPENFHE_DEBUG_FLAG(false);                          \
-        OPENFHE_DEBUG("deallocating  ");                    \
         _allocator.Deallocate(pObject);                     \
     }                                                       \
                                                             \

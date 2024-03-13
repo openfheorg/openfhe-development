@@ -33,22 +33,14 @@
 #define _XALLOCATOR_H
 
 #include <stddef.h>
-#include "utils/inttypes.h"
 
 // See
 // http://www.codeproject.com/Articles/1084801/Replace-malloc-free-with-a-Fast-Fixed-Block-Memory
 
-#ifdef __cplusplus
-    // Define AUTOMATIC_XALLOCATOR_INIT_DESTROY to automatically call
-    // xalloc_init() and xalloc_destroy() when using xallocator in C++
-    // projects. On embedded systems that never exit, you can save 1-byte
-    // of RAM storage per translation unit by undefining
-    // AUTOMATIC_XALLOCATOR_INIT_DESTROY and calling xalloc_init()
-    // manually before the OS starts.
-    #define AUTOMATIC_XALLOCATOR_INIT_DESTROY
-    #ifdef AUTOMATIC_XALLOCATOR_INIT_DESTROY
+#define AUTOMATIC_XALLOCATOR_INIT_DESTROY
+#ifdef AUTOMATIC_XALLOCATOR_INIT_DESTROY
 /// If a C++ translation unit, create a static instance of
-/// XallocInitDestroy. Any C++ file including xallocator.h will have
+/// XallocInitDestroy, any C++ file including xallocator.h will have
 /// the xallocDestroy instance declared first within the translation
 /// unit and thus will be constructed first. Destruction will occur in
 /// the reverse order so xallocInitDestroy is called last. This way,
@@ -60,14 +52,9 @@ public:
     ~XallocInitDestroy();
 
 private:
-    static usint refCount;
+    static uint32_t refCount;
 };
-    #endif  // AUTOMATIC_XALLOCATOR_INIT_DESTROY
-#endif      // __cplusplus
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#endif  // AUTOMATIC_XALLOCATOR_INIT_DESTROY
 
 /// This function must be called exactly one time before the operating
 /// system threading starts. If using xallocator exclusively in C
@@ -114,9 +101,5 @@ public:                                   \
     void operator delete(void* pObject) { \
         xfree(pObject);                   \
     }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
