@@ -322,6 +322,17 @@ NativePoly BinFHEContext::Generateacrs() {
     return m_binfhescheme->Generateacrs(RGSWParams);
 }
 
+std::vector<std::vector<NativePoly>> BinFHEContext::GenerateCRSMatrix(uint32_t m, uint32_t n) {
+    std::vector<std::vector<NativePoly>> acrs0(
+    		std::vector<std::vector<NativePoly>>(m, std::vector<NativePoly>(n)));
+    for (uint32_t i = 0; i < m; i++) {
+            for (uint32_t k = 0; k < n; k++) {
+                acrs0[i][k] = Generateacrs();
+            }
+    }
+    return acrs0;
+}
+
 NativePoly BinFHEContext::RGSWKeyGen() const {
     return m_binfhescheme->RGSWKeyGen(m_params);
 }
@@ -336,6 +347,18 @@ RingGSWEvalKey BinFHEContext::RGSWEncrypt(NativePoly acrs, const NativePoly& skN
 RingGSWEvalKey BinFHEContext::RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b) {
     return m_binfhescheme->RGSWEvalAdd(a, b);
 }
+
+RingGSWACCKey BinFHEContext::RGSWClone(RingGSWEvalKey a, uint32_t n) {
+	// for lmkcdey - 2nd index 0 for btkey, 2nd index 1 for auto key
+    RingGSWACCKey rgswe1 = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
+    for (size_t j = 0; j < 2; j++) {
+        for (size_t i = 0; i < n; i++) {
+            (*rgswe1)[0][j][i] = a;
+        }
+    }
+    return rgswe1;
+}
+
 
 RingGSWEvalKey BinFHEContext::RGSWEvalMultAdd(RingGSWEvalKey a, RingGSWEvalKey b, int32_t si) {
     return m_binfhescheme->RGSWEvalMultAdd(m_params->GetRingGSWParams(), a, b, si);

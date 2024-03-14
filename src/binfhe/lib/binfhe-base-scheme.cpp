@@ -200,7 +200,6 @@ NativePoly BinFHEScheme::RGSWKeyGen(const std::shared_ptr<BinFHECryptoParams> pa
     auto polyParams    = RGSWParams->GetPolyParams();
     NativePoly skNPoly = NativePoly(polyParams);
     skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
-    // skNPoly.SetFormat(Format::EVALUATION);
 
     return skNPoly;
 }

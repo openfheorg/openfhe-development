@@ -272,13 +272,23 @@ public:
     LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const;
 
     NativePoly Generateacrs();
+
+    std::vector<std::vector<NativePoly>> GenerateCRSMatrix(uint32_t m, uint32_t n);
+
     NativePoly RGSWKeyGen() const;
+
+    void RGSWKeySet(NativePoly &key, Format format) const {
+    	key.SetFormat(format);
+    }
+
     // RingGSWCiphertext
     RingGSWEvalKey RGSWEncrypt(NativePoly acrs, const NativePoly& skNTT, const LWEPlaintext& m,
                                bool leadFlag = false) const;
     // RingGSWCiphertext
     RingGSWEvalKey RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b);
     LWEPlaintext RGSWDecrypt(RingGSWEvalKey ct, const NativePoly& skNTT) const;
+
+    RingGSWACCKey RGSWClone(RingGSWEvalKey a, uint32_t n);
 
     // RingGSWCiphertext
     RingGSWEvalKey RGSWEvalMultAdd(RingGSWEvalKey a, RingGSWEvalKey b, int32_t si);
