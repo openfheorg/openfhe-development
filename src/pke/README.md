@@ -1,5 +1,0 @@
-
-
-# Directory Structure
-
-- examples: various 
