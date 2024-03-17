@@ -4,12 +4,11 @@ on:
   push:
     branches:
       - main
-      - github-ci
 
 jobs:
   
   call:
-    uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@718-modify-workflows-github-ci
     with:
       mb2_debug: true
       mb2_tcm: true
@@ -25,10 +24,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb2_128
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb2_128
         native_backend: 128
@@ -40,10 +39,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb2_clang
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder.yml@718-modify-workflows-github-ci
       with:
         module_name: mb4_tcm
         cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
@@ -62,7 +61,7 @@ jobs:
       GIT_SUBMODULE_STRATEGY: recursive
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: build_docs
       run: |

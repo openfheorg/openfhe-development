@@ -86,10 +86,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: default
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: default
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
@@ -107,10 +107,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb2_debug
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb2_debug
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2
@@ -129,10 +129,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb2_tcm
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb2_tcm
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=2
@@ -152,10 +152,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb4_noflag
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb4_noflag
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DMATHBACKEND=4
@@ -174,10 +174,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb4_debug
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb4_debug
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4
@@ -196,10 +196,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb4_tcm
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb4_tcm
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=4
@@ -219,10 +219,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb6_ntl_noflag
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb6_ntl_noflag
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DMATHBACKEND=6
@@ -241,10 +241,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb6_ntl_tcm
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb6_ntl_tcm
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6
@@ -264,10 +264,10 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: mb6_ntl_debug_tcm
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb6_ntl_debug_tcm
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6
