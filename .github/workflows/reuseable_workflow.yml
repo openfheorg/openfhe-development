@@ -3,6 +3,10 @@ name: Reuseable Workflow
 on:
   workflow_call:
     inputs:
+      runner_tag:
+        description: 'Tags for the target instance to run the jobs on'
+        type: array
+        required: true
       cmake_args:
         description: 'Custom cmake arguments'
         type: string
@@ -57,7 +61,7 @@ jobs:
   #
   ###############################################
   default:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -75,7 +79,7 @@ jobs:
   ###############################################
   mb2_tcm:
     needs: [default, mb4_noflag, mb6_ntl_noflag]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb2_tcm
     steps:
     - name: Checkout Code
@@ -97,7 +101,7 @@ jobs:
   ###############################################
   mb2_debug:
     needs: [default, mb4_noflag, mb6_ntl_noflag]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb2_debug
     steps:
     - name: Checkout Code
@@ -119,7 +123,7 @@ jobs:
   ###############################################
   mb4_noflag:
     needs: default
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb4_noflag
     steps:
     - name: Checkout Code
@@ -140,7 +144,7 @@ jobs:
   ###############################################
   mb4_tcm:
     needs: [default, mb4_noflag, mb6_ntl_noflag]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb4_tcm
     steps:
     - name: Checkout Code
@@ -162,7 +166,7 @@ jobs:
   ###############################################
   mb4_debug:
     needs: [default, mb4_noflag, mb6_ntl_noflag]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb4_debug
     steps:
     - name: Checkout Code
@@ -184,7 +188,7 @@ jobs:
   ###############################################
   mb6_ntl_noflag:
     needs: default
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb6_ntl_noflag
     steps:
     - name: Checkout Code
@@ -205,7 +209,7 @@ jobs:
   ###############################################
   mb6_ntl_tcm:
     needs: [default, mb4_noflag, mb6_ntl_noflag]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb6_ntl_tcm
     steps:
     - name: Checkout Code
@@ -227,7 +231,7 @@ jobs:
   ###############################################
   mb6_ntl_debug_tcm:
     needs: [default, mb4_noflag, mb6_ntl_noflag]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     if: inputs.mb6_ntl_debug_tcm
     steps:
     - name: Checkout Code
@@ -249,7 +253,7 @@ jobs:
   ###############################################
   mb2_natopt:
     needs: [default, mb2_debug, mb2_tcm, mb4_noflag, mb4_debug, mb4_tcm, mb6_ntl_noflag, mb6_ntl_debug_tcm, mb6_ntl_tcm]
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ inputs.runner_tag }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
