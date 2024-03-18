@@ -14,7 +14,7 @@ on:
         - 'CLANG-10'
         - 'CLANG-11'
         required: true
-        default: 'GCC-9'
+        default: 'GCC-10'
       native_backend:
         description: 'Size of NativeInteger [32|64|128]'
         type: choice
@@ -113,9 +113,11 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb2_debug
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2
-        run_extras: true
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 2
+        with_debug: true
+        run_extras: true
 
 
   ###############################################
@@ -135,10 +137,11 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb2_tcm
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=2
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+        native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 2
         with_tcm: true
         run_extras: true
-        native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
@@ -158,9 +161,10 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb4_noflag
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DMATHBACKEND=4
-        run_extras: true
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 4
+        run_extras: true
 
 
   ###############################################
@@ -180,9 +184,11 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb4_debug
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4
-        run_extras: true
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 4
+        with_debug: true
+        run_extras: true
 
 
   ###############################################
@@ -202,10 +208,11 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb4_tcm
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=4
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+        native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 4
         with_tcm: true
         run_extras: true
-        native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
@@ -225,9 +232,10 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb6_ntl_noflag
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DMATHBACKEND=6
-        run_extras: true
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 6
+        run_extras: true
 
 
   ###############################################
@@ -247,10 +255,11 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb6_ntl_tcm
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+        native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 6
         with_tcm: true
         run_extras: true
-        native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
@@ -270,7 +279,9 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb6_ntl_debug_tcm
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6
-        with_tcm: true
-        run_extras: true
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 6
+        with_tcm: true
+        with_debug: true
+        run_extras: true
