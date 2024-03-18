@@ -6,13 +6,14 @@ on:
       - main
 
 env:
-  CMAKE_ARGS: "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9"
+  CMAKE_ARGS: "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10"
 
 jobs:
 
   call:
     uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@718-modify-workflows-github-ci
     with:
+      runner_tag: ${{ vars.RUNNER }}
       mb2_debug: true
       mb2_tcm: true
       mb4_noflag: true

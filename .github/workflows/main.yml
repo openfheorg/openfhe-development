@@ -10,6 +10,7 @@ jobs:
   call:
     uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@718-modify-workflows-github-ci
     with:
+      runner_tag: ${{ vars.RUNNER }}
       mb2_debug: true
       mb2_tcm: true
       mb4_noflag: true
@@ -21,7 +22,7 @@ jobs:
 
   mb2_128:
     needs: call
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -36,7 +37,7 @@ jobs:
 
   mb2_clang:
     needs: call
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -45,7 +46,7 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder.yml@718-modify-workflows-github-ci
       with:
         module_name: mb4_tcm
-        cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+        cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11"
         run_extras: true
 
 
@@ -56,7 +57,7 @@ jobs:
   ###############################################
   pages:
     needs: mb2_clang
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     env:
       GIT_SUBMODULE_STRATEGY: recursive
     steps:

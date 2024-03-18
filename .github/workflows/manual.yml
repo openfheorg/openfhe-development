@@ -72,7 +72,7 @@ env:
       "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
       "CLANG-10"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10",
       "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
-      "CLANG-11"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11",
+      "CLANG-11"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11"
     }
 
 jobs:
@@ -83,7 +83,7 @@ jobs:
   #
   ###############################################
   default:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -104,7 +104,7 @@ jobs:
   mb2_debug:
     needs: default
     if: ${{ github.event.inputs.mb2_debug == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -128,7 +128,7 @@ jobs:
   mb2_tcm:
     needs: default
     if: ${{ github.event.inputs.mb2_tcm == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -152,7 +152,7 @@ jobs:
   mb4_noflag:
     needs: default
     if: ${{ github.event.inputs.mb4_noflag == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -175,7 +175,7 @@ jobs:
   mb4_debug:
     needs: default
     if: ${{ github.event.inputs.mb4_debug == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -199,7 +199,7 @@ jobs:
   mb4_tcm:
     needs: default
     if: ${{ github.event.inputs.mb4_tcm == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -223,7 +223,7 @@ jobs:
   mb6_ntl_noflag:
     needs: default
     if: ${{ github.event.inputs.mb6_ntl_noflag == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -246,7 +246,7 @@ jobs:
   mb6_ntl_tcm:
     needs: default
     if: ${{ github.event.inputs.mb6_ntl_tcm == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -270,7 +270,7 @@ jobs:
   mb6_ntl_debug_tcm:
     needs: default
     if: ${{ github.event.inputs.mb6_ntl_debug_tcm == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
