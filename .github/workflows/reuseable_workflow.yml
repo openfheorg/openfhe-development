@@ -259,8 +259,5 @@ jobs:
       with:
         module_name: mb2_natopt
         mathbackend: 2
-        with_debug: false
         with_nativeopts: true
-        with_tcm: false
-        run_extras: false
         run_benchmark: true

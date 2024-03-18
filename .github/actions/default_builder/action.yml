@@ -17,31 +17,32 @@ inputs:
   mathbackend:
     description: 'Multiprecision backend for large-words [2|4|6]'
     required: false
+    default: ''
   with_debug:
     description: 'Compile with debug'
     type: boolean
-    default: false
     required: false
+    default: false
   with_tcm:
     description: 'Run tcm stages'
     type: boolean
-    default: false
     required: false
+    default: false
   run_extras:
     description: 'Run allextras stages'
     type: boolean
-    default: false
     required: false
+    default: false
   with_nativeopts:
     description: 'Enables compiler to use native optimizations'
     type: boolean
-    default: false
     required: false
+    default: false
   run_benchmark:
     description: 'Run Benchmark stages'
     type: boolean
-    default: false
     required: false
+    default: false
 
 runs:
   # 
@@ -57,7 +58,7 @@ runs:
         whoami
         
         # Create the correct cmake arg string
-        cmake_args="${{inputs.cmake_args}} -DNATIVE_SIZE=${{ inputs.native_backend }}"
+        cmake_args="${{inputs.cmake_args}}"
 
         # Debugging use only
         echo "Input values for ${{inputs.module_name}}
@@ -72,12 +73,13 @@ runs:
         "
 
         # Append options based on inputs
+        [[ "${{inputs.native_backend}}" != "" ]] && cmake_args="${cmake_args} -DNATIVE_SIZE=${{ inputs.native_backend }}"
+        [[ "${{inputs.mathbackend}}" != "" ]] && cmake_args="${cmake_args} -DMATHBACKEND=${{ inputs.mathbackend }}"
+        [[ "${{inputs.mathbackend}}" == "6" ]] && cmake_args="${cmake_args} -DWITH_NTL=ON"
+        [[ "${{inputs.with_debug}}" != "false" ]] && cmake_args="${cmake_args} -DCMAKE_BUILD_TYPE=Debug"
         [[ "${{inputs.with_tcm}}" != "false" ]] && cmake_args="${cmake_args} -DWITH_TCM=ON"
         [[ "${{inputs.run_extras}}" != "false" ]] && cmake_args="${cmake_args} -DBUILD_EXTRAS=ON"
         [[ "${{inputs.with_nativeopts}}" != "false" ]] && cmake_args="${cmake_args} -DWITH_NATIVEOPT=ON"
-        [[ "${{inputs.with_debug}}" != "false" ]] && cmake_args="${cmake_args} -DCMAKE_BUILD_TYPE=Debug"
-        [[ "${{inputs.mathbackend}}" != "" ]] && cmake_args="${cmake_args} -DMATHBACKEND=${{ inputs.mathbackend }}"
-        [[ "${{inputs.mathbackend}}" == "6" ]] && cmake_args="${cmake_args} -DWITH_NTL=ON"
 
         # Append manual pushed in cmake args from the input, this needs to be after the inputs
         # So that the input can override defaults
