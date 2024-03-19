@@ -349,7 +349,7 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext& ct1,
-                                        ConstLWECiphertext& ct2) const {
+                                        ConstLWECiphertext& ct2, bool extended) const {
     if (ct1 == ct2)
         OPENFHE_THROW(config_error, "Input ciphertexts should be independant");
 

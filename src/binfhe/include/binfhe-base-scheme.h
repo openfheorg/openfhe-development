@@ -147,7 +147,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
-                              ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
+                              ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
 
     /**
    * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine).
