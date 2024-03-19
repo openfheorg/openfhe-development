@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  CMAKE_ARGS: "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10"
+  CMAKE_ARGS: "-DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_C_COMPILER=/usr/bin/gcc-11"
 
 jobs:
 

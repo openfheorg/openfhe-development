@@ -11,10 +11,14 @@ on:
         options:
         - 'GCC-9'
         - 'GCC-10'
-        - 'CLANG-10'
-        - 'CLANG-11'
+        - 'GCC-11'
+        - 'GCC-12'
+        - 'CLANG-12'
+        - 'CLANG-13'
+        - 'CLANG-14'
+        - 'CLANG-15'
         required: true
-        default: 'GCC-10'
+        default: 'GCC-11'
       native_backend:
         description: 'Size of NativeInteger [32|64|128]'
         type: choice
@@ -24,16 +28,21 @@ on:
         - '128'
         required: true
         default: '64'
+      mb2_default:
+        description: 'Run mb2_default'
+        type: boolean
+        required: true
+        default: true
       mb2_debug:
         description: 'Run mb2_debug'
         type: boolean
         required: true
-        default: true
+        default: false
       mb2_tcm:
         description: 'Run mb2_tcm'
         type: boolean
         required: true
-        default: true
+        default: false
       mb4_noflag:
         description: 'Run mb4_noflag'
         type: boolean
@@ -70,9 +79,13 @@ env:
   COMPILERS_MAP: >-
     {
       "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-      "CLANG-10"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10",
       "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
-      "CLANG-11"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11"
+      "GCC-11"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_C_COMPILER=/usr/bin/gcc-11",
+      "GCC-12"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCMAKE_C_COMPILER=/usr/bin/gcc-12",
+      "CLANG-12"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-12 -DCMAKE_C_COMPILER=/usr/bin/clang-12"
+      "CLANG-13"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-13 -DCMAKE_C_COMPILER=/usr/bin/clang-13"
+      "CLANG-14"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14"
+      "CLANG-15"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 -DCMAKE_C_COMPILER=/usr/bin/clang-15",
     }
 
 jobs:
@@ -94,6 +107,29 @@ jobs:
         module_name: default
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    mb2_default jobs starts here
+  #
+  ###############################################
+  mb2_default:
+    needs: default
+    if: ${{ github.event.inputs.mb2_default == 'true' }}
+    runs-on: ${{ vars.RUNNER }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: mb2_default
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
+      with:
+        module_name: mb2_default
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+        native_backend: ${{ github.event.inputs.native_backend }}
+        mathbackend: 2
+        run_extras: true
 
 
   ###############################################
