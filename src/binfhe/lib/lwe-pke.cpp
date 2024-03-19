@@ -396,6 +396,13 @@ void LWEEncryptionScheme::MultipartyDecryptFusion(const std::vector<LWECiphertex
 
     *plaintext = ((NativeInteger(p) * b) / mod).ConvertToInt();
 
+#if defined(WITH_NOISE_DEBUG)
+    double error =
+        (static_cast<double>(p) * (b.ConvertToDouble() - mod.ConvertToDouble() / (p * 2))) / mod.ConvertToDouble() -
+        static_cast<double>(*plaintext);
+    std::cerr << error * mod.ConvertToDouble() / static_cast<double>(p) << std::endl;
+#endif
+
     return;
 }
 

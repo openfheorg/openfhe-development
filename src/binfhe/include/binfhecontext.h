@@ -271,9 +271,14 @@ public:
    */
     LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const;
 
+    // YSP to be removed
     NativePoly Generateacrs();
 
-    std::vector<std::vector<NativePoly>> GenerateCRSMatrix(uint32_t m, uint32_t n);
+    std::vector<NativePoly> GenerateCRS();
+
+    std::vector<std::vector<NativePoly>> GenerateCRSVector();
+
+    std::vector<std::vector<std::vector<NativePoly>>> GenerateCRSMatrix(uint32_t m, uint32_t n);
 
     NativePoly RGSWKeyGen() const;
 
@@ -282,8 +287,14 @@ public:
     }
 
     // RingGSWCiphertext
+
+    // YSP to be removed
     RingGSWEvalKey RGSWEncrypt(NativePoly acrs, const NativePoly& skNTT, const LWEPlaintext& m,
                                bool leadFlag = false) const;
+
+    RingGSWEvalKey RGSWEncrypt(const std::vector<NativePoly> &acrs, const NativePoly& skNTT, const LWEPlaintext& m,
+                               bool leadFlag = false) const;
+
     // RingGSWCiphertext
     RingGSWEvalKey RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b);
     LWEPlaintext RGSWDecrypt(RingGSWEvalKey ct, const NativePoly& skNTT) const;

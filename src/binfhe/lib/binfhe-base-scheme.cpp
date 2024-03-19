@@ -267,6 +267,62 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
     return result;
 }
 
+// Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
+// skNTT corresponds to the secret key z
+// RingGSWCiphertext
+RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly> &acrs,
+                                         const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag) const {
+    NativeInteger Q = params->GetQ();
+    uint64_t q      = params->Getq().ConvertToInt();
+    // uint32_t N        = params->GetN();
+    uint32_t digitsG  = params->GetDigitsG() - 1;
+    uint32_t digitsG2 = digitsG << 1;
+    auto polyParams   = params->GetPolyParams();
+    auto Gpow         = params->GetGPower();
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
+
+    // Reduce mod q (dealing with negative number as well)
+    int64_t mm = ((m % q) + q) % q;
+
+    // tempA is introduced to minimize the number of NTTs
+    std::vector<NativePoly> tempA(digitsG2);
+
+    for (size_t i = 0; i < digitsG2; ++i) {
+        // populate result[i][0] with uniform random a
+        if (leadFlag)
+            (*result)[i][0] = acrs[i];
+        else
+            (*result)[i][0] = NativePoly(polyParams, Format::COEFFICIENT, true);
+        tempA[i] = acrs[i];
+        // populate result[i][1] with error e
+        (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
+        // (*result)[i][1] = NativePoly(polyParams, Format::COEFFICIENT, true);
+    }
+
+    NativeInteger mmn = NativeInteger(mm);
+    // std::vector<NativeInteger> mv(mm);
+    for (size_t i = 0; i < digitsG; ++i) {
+        if (leadFlag) {
+            // compute mG
+            auto mG = mmn.ModMul(Gpow[i + 1], Q);
+            // Add G Multiple
+            (*result)[2 * i][0][0].ModAddEq(mG, Q);  // (Gpow[i], Q);
+            // [a,as+e] + m*G
+            (*result)[2 * i + 1][1][0].ModAddEq(mG, Q);  // Gpow[i], Q);
+        }
+    }
+
+    // 3*digitsG2 NTTs are called
+    result->SetFormat(Format::EVALUATION);
+    for (size_t i = 0; i < digitsG2; ++i) {
+        tempA[i].SetFormat(Format::EVALUATION);
+        (*result)[i][1] += tempA[i] * skNTT;
+    }
+
+    return result;
+}
+
+
 // RGSW decryption (without rounding) for debugging since noise is now commented out
 LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey ct,
                                        const NativePoly& skNTT) const {

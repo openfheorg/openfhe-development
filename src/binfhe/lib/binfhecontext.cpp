@@ -322,15 +322,39 @@ NativePoly BinFHEContext::Generateacrs() {
     return m_binfhescheme->Generateacrs(RGSWParams);
 }
 
-std::vector<std::vector<NativePoly>> BinFHEContext::GenerateCRSMatrix(uint32_t m, uint32_t n) {
-    std::vector<std::vector<NativePoly>> acrs0(
-    		std::vector<std::vector<NativePoly>>(m, std::vector<NativePoly>(n)));
-    for (uint32_t i = 0; i < m; i++) {
-            for (uint32_t k = 0; k < n; k++) {
-                acrs0[i][k] = Generateacrs();
+std::vector<NativePoly> BinFHEContext::GenerateCRS() {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    uint32_t digitsG2 = (RGSWParams->GetDigitsG()-1)<<1;
+    std::vector<NativePoly> acrs(digitsG2);
+    for (uint32_t i = 0; i < digitsG2; i++) {
+    	acrs[i] = Generateacrs();
+    }
+    return acrs;
+}
+
+std::vector<std::vector<NativePoly>> BinFHEContext::GenerateCRSVector() {
+	auto& RGSWParams = m_params->GetRingGSWParams();
+	uint32_t digitsG = RGSWParams->GetDigitsG()-1;
+	uint32_t w = RGSWParams->GetNumAutoKeys()+1;
+    std::vector<std::vector<NativePoly>> acrs(
+            w, std::vector<NativePoly>(digitsG));
+    for (uint32_t i = 0; i < w; i++) {
+            for (uint32_t k = 0; k < digitsG; k++) {
+                acrs[i][k] = Generateacrs();
             }
     }
-    return acrs0;
+    return acrs;
+}
+
+std::vector<std::vector<std::vector<NativePoly>>> BinFHEContext::GenerateCRSMatrix(uint32_t m, uint32_t n) {
+    std::vector<std::vector<std::vector<NativePoly>>> acrs(
+            m, std::vector<std::vector<NativePoly>>(n));
+    for (uint32_t i = 0; i < m; i++) {
+            for (uint32_t k = 0; k < n; k++) {
+                acrs[i][k] = GenerateCRS();
+            }
+    }
+    return acrs;
 }
 
 NativePoly BinFHEContext::RGSWKeyGen() const {
@@ -338,6 +362,13 @@ NativePoly BinFHEContext::RGSWKeyGen() const {
 }
 // RingGSWCiphertext
 RingGSWEvalKey BinFHEContext::RGSWEncrypt(NativePoly acrs, const NativePoly& skNTT, const LWEPlaintext& m,
+                                          bool leadFlag) const {
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    return m_binfhescheme->RGSWEncrypt(RGSWParams, acrs, skNTT, m, leadFlag);
+}
+
+// RingGSWCiphertext
+RingGSWEvalKey BinFHEContext::RGSWEncrypt(const std::vector<NativePoly> &acrs, const NativePoly& skNTT, const LWEPlaintext& m,
                                           bool leadFlag) const {
     auto& RGSWParams = m_params->GetRingGSWParams();
     return m_binfhescheme->RGSWEncrypt(RGSWParams, acrs, skNTT, m, leadFlag);

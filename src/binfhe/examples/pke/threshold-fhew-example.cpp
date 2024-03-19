@@ -41,7 +41,7 @@ int main() {
 	// Crypto context generation
     auto cc                 = BinFHEContext();
     uint32_t num_of_parties = 2;
-    cc.GenerateBinFHEContext(TOY, LMKCDEY, num_of_parties);  // number of parties is 2
+    cc.GenerateBinFHEContext(STD128_LMKCDEY, LMKCDEY, num_of_parties);  // number of parties is 2
 
     std::cout << "Q = " << cc.GetParams()->GetLWEParams()->GetQ() << std::endl;
 
@@ -84,7 +84,7 @@ int main() {
 
     // distributed generation of RGSW_{z_*}(1)
     // generate a_{crs}
-    auto acrs = cc.Generateacrs();
+    auto acrs = cc.GenerateCRS();
     auto rgsw1_1 = cc.RGSWEncrypt(acrs, z1, 1, true);
     auto rgsw1_2 = cc.RGSWEncrypt(acrs, z2, 1);
 
@@ -120,10 +120,8 @@ int main() {
     }
 
     // generate acrs for rgsw encryptions of 0 for automorphism keygen
-    uint32_t digitsG  = cc.GetParams()->GetRingGSWParams()->GetDigitsG();
-    uint32_t m_window = 10;
     // need to be sure this is the same value as in rgsw-acc-lmkcdey.h
-    auto acrsauto = cc.GenerateCRSMatrix(m_window + 1, digitsG);
+    auto acrsauto = cc.GenerateCRSVector();
 
     // Generate the bootstrapping keys (refresh, switching and public keys)
     cc.MultipartyBTKeyGen(sk1, rgswe1, z1, acrsauto, rgswenc0[0], kskey, true);
@@ -133,27 +131,31 @@ int main() {
 
     // DISTRIBUTED KEY GENERATION ENDS
 
-    // Encryption of data
-    auto ct1 = cc.Encrypt(pk, 1);
-    auto ct2 = cc.Encrypt(pk, 1);
+	LWEPlaintext result;
+    uint32_t iterations = 10;
+    for (uint32_t i = 0; i < iterations; i++) {
 
-    // Evaluation
-    // Compute (1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
-    auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
+		// Encryption of data
+		auto ct1 = cc.Encrypt(pk, 1);
+		auto ct2 = cc.Encrypt(pk, 1);
 
-    LWEPlaintext result;
+		// Evaluation
+		// Compute (1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
+		auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
 
-    // decryption check before computation
-    std::vector<LWECiphertext> pct;
-    auto pct1 = cc.MultipartyDecryptLead(sk1, ctAND1);
-    auto pct2 = cc.MultipartyDecryptMain(sk2, ctAND1);
+		// decryption check before computation
+		std::vector<LWECiphertext> pct;
+		auto pct1 = cc.MultipartyDecryptLead(sk1, ctAND1);
+		auto pct2 = cc.MultipartyDecryptMain(sk2, ctAND1);
 
-    pct.push_back(pct1);
-    pct.push_back(pct2);
+		pct.push_back(pct1);
+		pct.push_back(pct2);
 
-    cc.MultipartyDecryptFusion(pct, &result);
+		cc.MultipartyDecryptFusion(pct, &result);
 
-    std::cout << "Result of encrypted computation of (1 AND 1) mpbtkeygen = " << result << std::endl;
+	    std::cout << "Result of encrypted computation of (1 AND 1) mpbtkeygen = " << result << std::endl;
+
+    }
 
     return 0;
 }

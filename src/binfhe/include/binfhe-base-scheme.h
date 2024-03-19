@@ -82,6 +82,9 @@ public:
     RingGSWEvalKey RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, NativePoly acrs,
                                const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag = false) const;
 
+    RingGSWEvalKey RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly> &acrs,
+                               const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag = false) const;
+
     RingGSWEvalKey RGSWEvalMultAdd(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey a,
                                    RingGSWEvalKey b, int32_t si);
 
