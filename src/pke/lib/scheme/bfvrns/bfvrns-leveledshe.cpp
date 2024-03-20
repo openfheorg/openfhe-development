@@ -52,9 +52,9 @@ void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
     pt.SetFormat(COEFFICIENT);
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ = elementParams->GetParams().size();
-    auto encParams = pt.GetParams();
-    size_t sizeP = encParams->GetParams().size();
+    size_t sizeQ             = elementParams->GetParams().size();
+    auto encParams           = pt.GetParams();
+    size_t sizeP             = encParams->GetParams().size();
     // enables encoding of plaintexts using a smaller number of RNS limbs
     size_t level = sizeQ - sizeP;
 
@@ -75,9 +75,9 @@ void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
     pt.SetFormat(COEFFICIENT);
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ = elementParams->GetParams().size();
-    auto encParams = pt.GetParams();
-    size_t sizeP = encParams->GetParams().size();
+    size_t sizeQ             = elementParams->GetParams().size();
+    auto encParams           = pt.GetParams();
+    size_t sizeP             = encParams->GetParams().size();
     // enables encoding of plaintexts using a smaller number of RNS limbs
     size_t level = sizeQ - sizeP;
 
@@ -921,11 +921,6 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
-    if (towersLeft != 1) {
-        OPENFHE_THROW(
-            "BFV Compress is currently supported only for the case when one RNS tower is left after compression.");
-    }
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetMultiplicationTechnique() == BEHZ) {

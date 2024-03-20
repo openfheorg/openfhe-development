@@ -69,13 +69,13 @@ int main() {
 
     // First plaintext vector is encoded
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1, 1, 2);
+    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1, 1, 1);
     // Second plaintext vector is encoded
     std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2, 1, 2);
+    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2, 1, 1);
     // Third plaintext vector is encoded
     std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3, 1, 2);
+    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3, 1, 1);
 
     std::cerr << "crypto params = " << *cryptoContext->GetCryptoParameters() << std::endl;
     std::cerr << "params = " << *plaintext3->GetElement<DCRTPoly>().GetParams() << std::endl;
@@ -84,7 +84,7 @@ int main() {
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
 
     auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
-    //auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
+    // auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
     auto ciphertext3 = cryptoContext->Encrypt(keyPair.secretKey, plaintext3);
 
     // Sample Program: Step 4: Evaluation
@@ -113,7 +113,7 @@ int main() {
     // Sample Program: Step 5: Decryption
 
     // Decrypt the result of additions
-    ciphertextAddResult = cryptoContext->Compress(ciphertextAddResult);
+    ciphertextAddResult = cryptoContext->Compress(ciphertextAddResult, 2);
     Plaintext plaintextAddResult;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAddResult, &plaintextAddResult);
 
@@ -121,7 +121,7 @@ int main() {
     std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
 
     // Decrypt the result of additions
-    ciphertextptAddResult = cryptoContext->Compress(ciphertextptAddResult);
+    ciphertextptAddResult = cryptoContext->Compress(ciphertextptAddResult, 2);
     Plaintext plaintextptAddResult;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextptAddResult, &plaintextptAddResult);
     std::cout << "(plaintext)#1 + #2 + #2: " << plaintextptAddResult << std::endl;
@@ -130,26 +130,26 @@ int main() {
     //    Plaintext plaintextMultResult;
     //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
     //
-	// Decrypt the result of rotations
-	Plaintext plaintextRot1;
-	cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot1, &plaintextRot1);
-	Plaintext plaintextRot2;
-	cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot2, &plaintextRot2);
-	Plaintext plaintextRot3;
-	cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
-	Plaintext plaintextRot4;
-	cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
+    // Decrypt the result of rotations
+    Plaintext plaintextRot1;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot1, &plaintextRot1);
+    Plaintext plaintextRot2;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot2, &plaintextRot2);
+    Plaintext plaintextRot3;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
+    Plaintext plaintextRot4;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
     //
-	plaintextRot1->SetLength(vectorOfInts1.size());
-	plaintextRot2->SetLength(vectorOfInts1.size());
-	plaintextRot3->SetLength(vectorOfInts1.size());
-	plaintextRot4->SetLength(vectorOfInts1.size());
+    plaintextRot1->SetLength(vectorOfInts1.size());
+    plaintextRot2->SetLength(vectorOfInts1.size());
+    plaintextRot3->SetLength(vectorOfInts1.size());
+    plaintextRot4->SetLength(vectorOfInts1.size());
 
     //    std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
-	std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
-	std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
-	std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
-	std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
+    std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
+    std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
+    std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
+    std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
 
     return 0;
 }
