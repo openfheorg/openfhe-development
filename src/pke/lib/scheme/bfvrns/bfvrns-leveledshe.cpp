@@ -52,11 +52,11 @@ void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
     pt.SetFormat(COEFFICIENT);
 
     const auto elementParams = cryptoParams->GetElementParams();
-    uint32_t sizeQ = elementParams->GetParams().size();
+    size_t sizeQ = elementParams->GetParams().size();
     auto encParams = pt.GetParams();
-    uint32_t sizeP = encParams->GetParams().size();
+    size_t sizeP = encParams->GetParams().size();
     // enables encoding of plaintexts using a smaller number of RNS limbs
-    uint32_t level = sizeQ - sizeP;
+    size_t level = sizeQ - sizeP;
 
     const NativeInteger& NegQModt              = cryptoParams->GetNegQModt(level);
     const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon(level);
@@ -75,11 +75,11 @@ void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
     pt.SetFormat(COEFFICIENT);
 
     const auto elementParams = cryptoParams->GetElementParams();
-    uint32_t sizeQ = elementParams->GetParams().size();
+    size_t sizeQ = elementParams->GetParams().size();
     auto encParams = pt.GetParams();
-    uint32_t sizeP = encParams->GetParams().size();
+    size_t sizeP = encParams->GetParams().size();
     // enables encoding of plaintexts using a smaller number of RNS limbs
-    uint32_t level = sizeQ - sizeP;
+    size_t level = sizeQ - sizeP;
 
     const NativeInteger& NegQModt              = cryptoParams->GetNegQModt(level);
     const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon(level);

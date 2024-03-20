@@ -149,12 +149,14 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
         b += cvi[0];
     }
 
-    b.SetFormat(Format::COEFFICIENT);
-
     size_t sizeQl = b.GetNumOfElements();
 
-    // use RNS procedures only if the number of RNS limbs is larger than 1
-    if (sizeQl > 1) {
+    const auto elementParams = cryptoParams->GetElementParams();
+    size_t sizeQ = elementParams->GetParams().size();
+
+    // use RNS procedures only if the number of RNS limbs is the same as for fresh ciphertexts
+    if (sizeQl == sizeQ) {
+        b.SetFormat(Format::COEFFICIENT);
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
@@ -172,6 +174,16 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
         }
     }
     else {
+    	// for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
+        size_t diffQl = sizeQ - sizeQl;
+        size_t levels = sizeQl - 1;
+        for (size_t l = 0; l < levels; ++l) {
+			b.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
+										  cryptoParams->GetqlInvModq(diffQl + l));
+        }
+
+        b.SetFormat(Format::COEFFICIENT);
+
         const NativeInteger t = cryptoParams->GetPlaintextModulus();
         NativePoly element    = b.GetElementAtIndex(0);
         const NativeInteger q = element.GetModulus();
