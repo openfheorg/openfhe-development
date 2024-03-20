@@ -85,13 +85,13 @@ jobs:
         run: |
           input_value="${{ github.event.inputs.native_backend }}"
           if [ "$input_value" = "32" ]; then
-            echo "::set-output name=matrix_value::['32']"
+            echo "matrix_value=['32']" >> $GITHUB_OUTPUT
           elif [ "$input_value" = "64" ]; then
-            echo "::set-output name=matrix_value::['64']"
+            echo "matrix_value=['64']" >> $GITHUB_OUTPUT
           elif [ "$input_value" = "128" ]; then
-            echo "::set-output name=matrix_value::['128']"
+            echo "matrix_value=['128']" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=matrix_value::['32', '64', '128']"
+            echo "matrix_value=['32', '64', '128']" >> $GITHUB_OUTPUT
           fi
 
 
