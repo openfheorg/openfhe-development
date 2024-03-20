@@ -28,7 +28,7 @@ on:
         - '128'
         - 'all'
         required: true
-        default: '64'
+        default: 'all'
       mb2_jobs:
         description: 'mb2 jobs to run'
         type: choice
@@ -73,15 +73,27 @@ env:
       "CLANG-14"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14",
       "CLANG-15"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 -DCMAKE_C_COMPILER=/usr/bin/clang-15",
     }
-  INTEGER_SIZE_MAP: >-
-    {
-      "32"  : [32],
-      "64"  : [64],
-      "128" : [128],
-      "all" : [32, 64, 128],
-    }
 
 jobs:
+  set_matrix:
+    runs-on: ${{ vars.RUNNER }}
+    outputs:
+      matrix_value: ${{ steps.set_matrix.outputs.matrix_value }}
+    steps:
+      - name: Set integer size matrix value
+        id: set_matrix
+        run: |
+          input_value="${{ github.event.inputs.native_backend }}"
+          if [ "$input_value" = "32" ]; then
+            echo "::set-output name=matrix_value::['32']"
+          elif [ "$input_value" = "64" ]; then
+            echo "::set-output name=matrix_value::['64']"
+          elif [ "$input_value" = "128" ]; then
+            echo "::set-output name=matrix_value::['128']"
+          else
+            echo "::set-output name=matrix_value::['32', '64', '128']"
+          fi
+
 
   ###############################################
   #
@@ -91,9 +103,10 @@ jobs:
   default:
     strategy:
       matrix:
-        integer_size: ${{ fromJson(env.INTEGER_SIZE_MAP)[github.event.inputs.native_backend] }}
+        integer_size: ${{ fromJson(needs.set_matrix.outputs.matrix_value) }}
 
     runs-on: ${{ vars.RUNNER }}
+    needs: set_matrix
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -115,9 +128,9 @@ jobs:
     if: ${{ (github.event.inputs.mb2_jobs == 'mb2_default') || (github.event.inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
-        integer_size: ${{ fromJson(env.INTEGER_SIZE_MAP)[github.event.inputs.native_backend] }}
+        integer_size: ${{ fromJson(needs.set_matrix.outputs.matrix_value) }}
 
-    needs: default ${{ matrix.integer_size }}
+    needs: [set_matrix, default]
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -138,55 +151,55 @@ jobs:
   #    mb2_debug jobs starts here
   #
   ###############################################
-  mb2_debug:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_debug') || (github.event.inputs.mb2_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(env.INTEGER_SIZE_MAP)[github.event.inputs.native_backend] }}
+  # mb2_debug:
+  #   if: ${{ (github.event.inputs.mb2_jobs == 'mb2_debug') || (github.event.inputs.mb2_jobs == 'all') }}
+  #   strategy:
+  #     matrix:
+  #       integer_size: ${{ fromJson(env.INTEGER_SIZE_MAP)[github.event.inputs.native_backend] }}
 
-    needs: default ${{ matrix.integer_size }}
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+  #   needs: default ${{ matrix.integer_size }}
+  #   runs-on: ${{ vars.RUNNER }}
+  #   steps:
+  #   - name: Checkout Code
+  #     uses: actions/checkout@v4
 
-    - name: mb2_debug ${{ matrix.integer_size }}
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
-      with:
-        module_name: mb2_debug
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
-        native_backend: ${{ matrix.integer_size }}
-        mathbackend: 2
-        with_debug: true
-        run_extras: true
+  #   - name: mb2_debug ${{ matrix.integer_size }}
+  #     uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
+  #     with:
+  #       module_name: mb2_debug
+  #       cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+  #       native_backend: ${{ matrix.integer_size }}
+  #       mathbackend: 2
+  #       with_debug: true
+  #       run_extras: true
 
 
-  ###############################################
-  #
-  #    mb2_tcm jobs starts here
-  #
-  ###############################################
-  mb2_tcm:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_tcm') || (github.event.inputs.mb2_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(env.INTEGER_SIZE_MAP)[github.event.inputs.native_backend] }}
+  # ###############################################
+  # #
+  # #    mb2_tcm jobs starts here
+  # #
+  # ###############################################
+  # mb2_tcm:
+  #   if: ${{ (github.event.inputs.mb2_jobs == 'mb2_tcm') || (github.event.inputs.mb2_jobs == 'all') }}
+  #   strategy:
+  #     matrix:
+  #       integer_size: ${{ fromJson(env.INTEGER_SIZE_MAP)[github.event.inputs.native_backend] }}
 
-    needs: default ${{ matrix.integer_size }}
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+  #   needs: default ${{ matrix.integer_size }}
+  #   runs-on: ${{ vars.RUNNER }}
+  #   steps:
+  #   - name: Checkout Code
+  #     uses: actions/checkout@v4
 
-    - name: mb2_tcm ${{ matrix.integer_size }}
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
-      with:
-        module_name: mb2_tcm
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
-        native_backend: ${{ matrix.integer_size }}
-        mathbackend: 2
-        with_tcm: true
-        run_extras: true
+  #   - name: mb2_tcm ${{ matrix.integer_size }}
+  #     uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
+  #     with:
+  #       module_name: mb2_tcm
+  #       cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+  #       native_backend: ${{ matrix.integer_size }}
+  #       mathbackend: 2
+  #       with_tcm: true
+  #       run_extras: true
 
 
   # ###############################################
