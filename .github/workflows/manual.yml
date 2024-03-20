@@ -6,7 +6,7 @@ on:
       # Selelects the compiler to use, this will be used in the COMPILERS_MAP as the key to
       # retrieve the corresponding cmake compiler options to pass to the action
       compiler:
-        description: 'Compiler Type [GCC|CLANG]'
+        description: 'Compiler type'
         type: choice
         options:
         - 'GCC-9'
@@ -20,7 +20,7 @@ on:
         required: true
         default: 'GCC-11'
       native_backend:
-        description: 'Size of NativeInteger [32|64|128]'
+        description: 'Size of NativeInteger'
         type: choice
         options:
         - '32'
@@ -30,7 +30,7 @@ on:
         required: true
         default: 'all'
       mb2_jobs:
-        description: 'mb2 jobs to run'
+        description: 'MATHBACKEND2 jobs'
         type: choice
         options:
         - 'mb2_default'
@@ -40,7 +40,7 @@ on:
         required: true
         default: 'mb2_default'
       mb4_jobs:
-        description: 'mb4 jobs to run'
+        description: 'MATHBACKEND4 jobs'
         type: choice
         options:
         - 'mb4_noflag'
@@ -50,7 +50,7 @@ on:
         required: true
         default: 'all'
       mb6_jobs:
-        description: 'mb6 jobs to run'
+        description: 'MATHBACKEND6 jobs'
         type: choice
         options:
         - 'mb6_ntl_noflag'
@@ -75,25 +75,29 @@ env:
     }
 
 jobs:
-  set_matrix:
+  init:
     runs-on: ${{ vars.RUNNER }}
     outputs:
-      matrix_value: ${{ steps.set_matrix.outputs.matrix_value }}
+      integer_size: ${{ steps.int_size.outputs.integer_size }}
+      compiler: ${{ steps.compiler.outputs.compiler_args }}
     steps:
       - name: Set integer size matrix value
-        id: set_matrix
+        id: int_size
         run: |
           input_value="${{ github.event.inputs.native_backend }}"
           if [ "$input_value" = "32" ]; then
-            echo "matrix_value=['32']" >> $GITHUB_OUTPUT
+            echo "integer_size=['32']" >> $GITHUB_OUTPUT
           elif [ "$input_value" = "64" ]; then
-            echo "matrix_value=['64']" >> $GITHUB_OUTPUT
+            echo "integer_size=['64']" >> $GITHUB_OUTPUT
           elif [ "$input_value" = "128" ]; then
-            echo "matrix_value=['128']" >> $GITHUB_OUTPUT
+            echo "integer_size=['128']" >> $GITHUB_OUTPUT
           else
-            echo "matrix_value=['32', '64', '128']" >> $GITHUB_OUTPUT
+            echo "integer_size=['32', '64', '128']" >> $GITHUB_OUTPUT
           fi
 
+      - name: Get compiler args for cmake
+        id: compiler
+        run: echo "compiler_args=${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}" >> $GITHUB_OUTPUT
 
   ###############################################
   #
@@ -103,10 +107,10 @@ jobs:
   default:
     strategy:
       matrix:
-        integer_size: ${{ fromJson(needs.set_matrix.outputs.matrix_value) }}
+        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
 
     runs-on: ${{ vars.RUNNER }}
-    needs: set_matrix
+    needs: init
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -115,7 +119,7 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: default
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+        cmake_args: ${{ needs.init.outputs.compiler }}
         native_backend: ${{ matrix.integer_size }}
 
 
@@ -128,9 +132,9 @@ jobs:
     if: ${{ (github.event.inputs.mb2_jobs == 'mb2_default') || (github.event.inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
-        integer_size: ${{ fromJson(needs.set_matrix.outputs.matrix_value) }}
+        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
 
-    needs: [set_matrix, default]
+    needs: [init, default]
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -140,7 +144,7 @@ jobs:
       uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
       with:
         module_name: mb2_default
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
+        cmake_args: ${{ needs.init.outputs.compiler }}
         native_backend: ${{ matrix.integer_size }}
         mathbackend: 2
         run_extras: true
