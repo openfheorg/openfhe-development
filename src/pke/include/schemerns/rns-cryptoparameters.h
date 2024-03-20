@@ -625,12 +625,12 @@ public:
     // BFVrns : Encrypt : POverQ
     /////////////////////////////////////
 
-    const NativeInteger GetNegQModt() const {
-        return m_negQModt;
+    const NativeInteger GetNegQModt(uint32_t i = 0) const {
+        return m_negQModt[i];
     }
 
-    const NativeInteger GetNegQModtPrecon() const {
-        return m_negQModtPrecon;
+    const NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {
+        return m_negQModtPrecon[i];
     }
 
     const NativeInteger GetNegQrModt() const {
@@ -1464,8 +1464,8 @@ protected:
     // BFVrns : Encrypt
     /////////////////////////////////////
 
-    NativeInteger m_negQModt;
-    NativeInteger m_negQModtPrecon;
+    std::vector<NativeInteger> m_negQModt;
+    std::vector<NativeInteger> m_negQModtPrecon;
     std::vector<NativeInteger> m_tInvModq;
     std::vector<NativeInteger> m_tInvModqPrecon;
     std::vector<NativeInteger> m_tInvModqr;

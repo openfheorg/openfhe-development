@@ -76,9 +76,18 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     NativeInteger modulusr = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], 2 * n);
     NativeInteger rootr    = RootOfUnity<NativeInteger>(2 * n, modulusr);
 
-    m_negQModt       = modulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
-    m_negQModt       = t.Sub(m_negQModt);
-    m_negQModtPrecon = m_negQModt.PrepModMulConst(t);
+    BigInteger tmpModulusQ = modulusQ;
+
+	m_negQModt.resize(sizeQ);
+	m_negQModtPrecon.resize(sizeQ);
+    for (size_t l = 0; l < sizeQ; l++) {
+        if (l > 0)
+            tmpModulusQ = tmpModulusQ / BigInteger(moduliQ[sizeQ - l]);
+
+		m_negQModt[l]       = tmpModulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
+		m_negQModt[l]       = t.Sub(m_negQModt[l]);
+		m_negQModtPrecon[l] = m_negQModt[l].PrepModMulConst(t);
+    }
 
     // BFVrns : Encrypt : With extra
     if (encTech == EXTENDED) {
@@ -134,7 +143,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // Pre-compute values [Ql/q_i]_{r_j}
         // Pre-compute values [(Ql/q_i)^{-1}]_{q_i}
 
-        BigInteger tmpModulusQ = modulusQ;
+        tmpModulusQ = modulusQ;
 
         if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
             m_QlHatInvModq.resize(sizeQ);
