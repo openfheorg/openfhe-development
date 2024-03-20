@@ -6,8 +6,8 @@ on:
       # Selelects the compiler to use, this will be used in the COMPILERS_MAP as the key to
       # retrieve the corresponding cmake compiler options to pass to the action
       compiler:
-        type: choice
         description: 'Compiler Type [GCC|CLANG]'
+        type: choice
         options:
         - 'GCC-9'
         - 'GCC-10'
@@ -28,51 +28,36 @@ on:
         - '128'
         required: true
         default: '64'
-      mb2_default:
-        description: 'Run mb2_default'
-        type: boolean
+      mb2_jobs:
+        description: 'mb2 jobs to run'
+        type: choice
+        options:
+        - 'mb2_default'
+        - 'mb2_debug'
+        - 'mb2_tcm'
+        - 'all'
         required: true
-        default: true
-      mb2_debug:
-        description: 'Run mb2_debug'
-        type: boolean
+        default: 'mb2_default'
+      mb4_jobs:
+        description: 'mb4 jobs to run'
+        type: choice
+        options:
+        - 'mb4_noflag'
+        - 'mb4_debug'
+        - 'mb4_tcm'
+        - 'all'
         required: true
-        default: false
-      mb2_tcm:
-        description: 'Run mb2_tcm'
-        type: boolean
+        default: 'all'
+      mb6_jobs:
+        description: 'mb6 jobs to run'
+        type: choice
+        options:
+        - 'mb6_ntl_noflag'
+        - 'mb6_ntl_debug_tcm'
+        - 'mb6_ntl_tcm'
+        - 'all'
         required: true
-        default: false
-      mb4_noflag:
-        description: 'Run mb4_noflag'
-        type: boolean
-        required: true
-        default: true
-      mb4_debug:
-        description: 'Run mb4_debug'
-        type: boolean
-        required: true
-        default: true
-      mb4_tcm:
-        description: 'Run mb4_tcm'
-        type: boolean
-        required: true
-        default: true
-      mb6_ntl_noflag:
-        description: 'Run mb6_ntl_noflag'
-        type: boolean
-        required: true
-        default: true
-      mb6_ntl_debug_tcm:
-        description: 'Run mb6_ntl_debug_tcm'
-        type: boolean
-        required: true
-        default: true
-      mb6_ntl_tcm:
-        description: 'Run mb6_ntl_tcm'
-        type: boolean
-        required: true
-        default: true
+        default: 'all'
 
 env:
   # JSON map to convert input Compiler Type to correct cmake args, key is the input.compiler and the value is the cmake string to set the compiler for C and C++
@@ -82,9 +67,9 @@ env:
       "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
       "GCC-11"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_C_COMPILER=/usr/bin/gcc-11",
       "GCC-12"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCMAKE_C_COMPILER=/usr/bin/gcc-12",
-      "CLANG-12"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-12 -DCMAKE_C_COMPILER=/usr/bin/clang-12"
-      "CLANG-13"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-13 -DCMAKE_C_COMPILER=/usr/bin/clang-13"
-      "CLANG-14"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14"
+      "CLANG-12"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-12 -DCMAKE_C_COMPILER=/usr/bin/clang-12",
+      "CLANG-13"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-13 -DCMAKE_C_COMPILER=/usr/bin/clang-13",
+      "CLANG-14"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14",
       "CLANG-15"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 -DCMAKE_C_COMPILER=/usr/bin/clang-15",
     }
 
@@ -115,8 +100,8 @@ jobs:
   #
   ###############################################
   mb2_default:
+    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_default') || (github.event.inputs.mb2_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb2_default == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -138,8 +123,8 @@ jobs:
   #
   ###############################################
   mb2_debug:
+    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_debug') || (github.event.inputs.mb2_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb2_debug == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -162,8 +147,8 @@ jobs:
   #
   ###############################################
   mb2_tcm:
+    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_tcm') || (github.event.inputs.mb2_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb2_tcm == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -186,8 +171,8 @@ jobs:
   #
   ###############################################
   mb4_noflag:
+    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_noflag') || (github.event.inputs.mb4_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb4_noflag == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -209,8 +194,8 @@ jobs:
   #
   ###############################################
   mb4_debug:
+    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_debug') || (github.event.inputs.mb4_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb4_debug == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -233,8 +218,8 @@ jobs:
   #
   ###############################################
   mb4_tcm:
+    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_tcm') || (github.event.inputs.mb4_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb4_tcm == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -257,8 +242,8 @@ jobs:
   #
   ###############################################
   mb6_ntl_noflag:
+    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_noflag') || (github.event.inputs.mb6_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb6_ntl_noflag == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -280,8 +265,8 @@ jobs:
   #
   ###############################################
   mb6_ntl_tcm:
+    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_tcm') || (github.event.inputs.mb6_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb6_ntl_tcm == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
@@ -304,8 +289,8 @@ jobs:
   #
   ###############################################
   mb6_ntl_debug_tcm:
+    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_debug_tcm') || (github.event.inputs.mb6_jobs == 'all') }}
     needs: default
-    if: ${{ github.event.inputs.mb6_ntl_debug_tcm == 'true' }}
     runs-on: ${{ vars.RUNNER }}
     steps:
     - name: Checkout Code
