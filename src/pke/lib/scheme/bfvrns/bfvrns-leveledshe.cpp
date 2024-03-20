@@ -50,8 +50,16 @@ void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
 
     DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
     pt.SetFormat(COEFFICIENT);
-    const NativeInteger& NegQModt              = cryptoParams->GetNegQModt();
-    const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon();
+
+    const auto elementParams = cryptoParams->GetElementParams();
+    uint32_t sizeQ = elementParams->GetParams().size();
+    auto encParams = pt.GetParams();
+    uint32_t sizeP = encParams->GetParams().size();
+    // enables encoding of plaintexts using a smaller number of RNS limbs
+    uint32_t level = sizeQ - sizeP;
+
+    const NativeInteger& NegQModt              = cryptoParams->GetNegQModt(level);
+    const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon(level);
     const std::vector<NativeInteger>& tInvModq = cryptoParams->GettInvModq();
     const NativeInteger t                      = cryptoParams->GetPlaintextModulus();
     pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, t, NegQModt, NegQModtPrecon);
@@ -65,8 +73,16 @@ void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
 
     DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
     pt.SetFormat(COEFFICIENT);
-    const NativeInteger& NegQModt              = cryptoParams->GetNegQModt();
-    const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon();
+
+    const auto elementParams = cryptoParams->GetElementParams();
+    uint32_t sizeQ = elementParams->GetParams().size();
+    auto encParams = pt.GetParams();
+    uint32_t sizeP = encParams->GetParams().size();
+    // enables encoding of plaintexts using a smaller number of RNS limbs
+    uint32_t level = sizeQ - sizeP;
+
+    const NativeInteger& NegQModt              = cryptoParams->GetNegQModt(level);
+    const NativeInteger& NegQModtPrecon        = cryptoParams->GetNegQModtPrecon(level);
     const std::vector<NativeInteger>& tInvModq = cryptoParams->GettInvModq();
     const NativeInteger t                      = cryptoParams->GetPlaintextModulus();
     pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, t, NegQModt, NegQModtPrecon);
