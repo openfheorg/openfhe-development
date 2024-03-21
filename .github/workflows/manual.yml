@@ -34,8 +34,8 @@ on:
         type: choice
         options:
         - 'mb2'
-        - 'mb2_debug'
         - 'mb2_tcm'
+        - 'mb2_debug'
         - 'all'
         required: true
         default: 'mb2'
@@ -44,8 +44,8 @@ on:
         type: choice
         options:
         - 'mb4'
-        - 'mb4_debug'
         - 'mb4_tcm'
+        - 'mb4_debug'
         - 'all'
         required: true
         default: 'all'
@@ -60,6 +60,22 @@ on:
         required: true
         default: 'all'
 
+env:
+  # JSON map to get cmake args by the job name
+  CMAKE_ARGS_MAP: >-
+    {
+      "default"           : "",
+      "mb2"               : "-DMATHBACKEND=2",
+      "mb2_tcm"           : "-DMATHBACKEND=2 -DWITH_TCM=ON",
+      "mb2_debug"         : "-DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+      "mb4"               : "-DMATHBACKEND=4",
+      "mb4_tcm"           : "-DMATHBACKEND=4 -DWITH_TCM=ON",
+      "mb4_debug"         : "-DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+      "mb6_ntl"           : "-DMATHBACKEND=6 -DWITH_NTL=ON",
+      "mb6_ntl_tcm"       : "-DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+      "mb6_ntl_debug_tcm" : "-DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+    }
+
 jobs:
   init:
     runs-on: ${{ vars.RUNNER }}
@@ -67,7 +83,7 @@ jobs:
       integer_size: ${{ steps.int_size.outputs.integer_size }}
       compiler: ${{ steps.compiler.outputs.compiler_args }}
     steps:
-      - name: Set integer size matrix value
+      - name: Get NativeInteger size for matrix
         id: int_size
         run: |
           input_value="${{ github.event.inputs.native_backend }}"
@@ -85,7 +101,7 @@ jobs:
         id: compiler
         run: echo "compiler_args=${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}" >> $GITHUB_OUTPUT
         env:
-          # JSON map to convert input Compiler Type to correct cmake args, key is the input.compiler and the value is the cmake string to set the compiler for C and C++
+          # JSON map to convert input Compiler Type to a string with cmake arguments to set the compiler for C and C++
           COMPILERS_MAP: >-
             {
               "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
@@ -115,12 +131,11 @@ jobs:
       uses: actions/checkout@v4
 
     - name: default ${{ matrix.integer_size }}
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@718-modify-workflows-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
         module_name: default
-        cmake_args: ${{ needs.init.outputs.compiler }}
-        native_backend: ${{ matrix.integer_size }}
-
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['default'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        
 
   ###############################################
   #
