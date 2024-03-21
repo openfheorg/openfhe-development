@@ -18,6 +18,11 @@ inputs:
     type: boolean
     required: false
     default: false
+  compiler_type:
+    description: 'Compiler type (clang/gcc)'
+    type: string
+    required: false
+    default: false
 
 runs:
   # 
@@ -40,6 +45,7 @@ runs:
         cmake_args=${{inputs.cmake_args}}
         run_extras=${{inputs.run_extras}}
         run_benchmark=${{inputs.run_benchmark}}
+        compiler_type=${{inputs.compiler_type}}
         "
 
         # Append options based on inputs
@@ -53,6 +59,12 @@ runs:
 
         cmake -S . -B build ${cmake_args}
 
+        # run only when using the clang compiler 
+        if [[ "${{inputs.compiler_type}}" == "clang" ]]; then
+          echo "running >$ cd build; cmake ..; cd -"
+          cd build; cmake ..; cd -
+        fi
+
     # -- build
     - name: '${{ inputs.module_name }}_build'
       shell: bash
@@ -61,8 +73,9 @@ runs:
 
         cd build
         
-        # run only if with_tcm input is set
-        if [[ "${{inputs.with_tcm}}" == "true" ]]; then
+        # run only if WITH_TCM input is set
+        if [[ "${{inputs.cmake_args}}" == *"WITH_TCM"* ]]; then
+          echo "running >$ make tcm ..."
           make tcm -j $[$(nproc) / 2]
         fi
         
@@ -71,6 +84,7 @@ runs:
 
         # run only if run_extra input is set
         if [[ "${{inputs.run_extras}}" == "true" ]]; then
+          echo "running >$ make allextras ..."
           make -j $[$(nproc) / 2] allextras
         fi
 
