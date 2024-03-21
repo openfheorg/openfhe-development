@@ -5,7 +5,7 @@ on:
     inputs:
       runner_tag:
         description: 'Tags for the target instance to run the jobs on'
-        type: array
+        type: string
         required: true
       cmake_args:
         description: 'Custom cmake arguments'
