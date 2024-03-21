@@ -130,11 +130,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: default ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: default
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['default'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         
 
   ###############################################
@@ -143,7 +143,7 @@ jobs:
   #
   ###############################################
   mb2:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2') || (github.event.inputs.mb2_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb2_jobs == '${{ github.job }}') || (github.event.inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -154,11 +154,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb2 ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb2
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb2'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -168,7 +168,7 @@ jobs:
   #
   ###############################################
   mb2_debug:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_debug') || (github.event.inputs.mb2_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb2_jobs == '${{ github.job }}') || (github.event.inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -179,11 +179,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb2_debug ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb2_debug
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb2_debug'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -193,7 +193,7 @@ jobs:
   #
   ###############################################
   mb2_tcm:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_tcm') || (github.event.inputs.mb2_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb2_jobs == '${{ github.job }}') || (github.event.inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -204,11 +204,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb2_tcm ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb2_tcm
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb2_tcm'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -218,7 +218,7 @@ jobs:
   #
   ###############################################
   mb4:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb4_jobs == '${{ github.job }}') || (github.event.inputs.mb4_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -229,11 +229,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb4 ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb4
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb4'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -243,7 +243,7 @@ jobs:
   #
   ###############################################
   mb4_debug:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_debug') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb4_jobs == '${{ github.job }}') || (github.event.inputs.mb4_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -254,11 +254,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb4_debug ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb4_debug
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb4_debug'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -268,7 +268,7 @@ jobs:
   #
   ###############################################
   mb4_tcm:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_tcm') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb4_jobs == '${{ github.job }}') || (github.event.inputs.mb4_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -279,11 +279,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb4_tcm ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb4_tcm
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb4_tcm'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -293,7 +293,7 @@ jobs:
   #
   ###############################################
   mb6_ntl:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb6_ntl') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb6_jobs == '${{ github.job }}') || (github.event.inputs.mb6_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -304,11 +304,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb6_ntl ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb6_ntl
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb6_ntl'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -318,7 +318,7 @@ jobs:
   #
   ###############################################
   mb6_ntl_tcm:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb6_ntl_tcm') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb6_jobs == '${{ github.job }}') || (github.event.inputs.mb6_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -329,11 +329,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb6_ntl_tcm ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb6_ntl_tcm
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb6_ntl_tcm'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
 
 
@@ -343,7 +343,7 @@ jobs:
   #
   ###############################################
   mb6_ntl_debug_tcm:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb6_ntl_debug_tcm') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (github.event.inputs.mb6_jobs == '${{ github.job }}') || (github.event.inputs.mb6_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -354,9 +354,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: mb6_ntl_debug_tcm ${{ matrix.integer_size }}
+    - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
-        module_name: mb6_ntl_debug_tcm
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['mb6_ntl_debug_tcm'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
+        module_name: ${{ github.job }}
+        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)['${{ github.job }}'] }} -DNATIVE_SIZE=${{ matrix.integer_size }}"
         run_extras: true
