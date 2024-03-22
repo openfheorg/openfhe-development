@@ -44,6 +44,7 @@ int main() {
     parameters.SetMultiplicativeDepth(8);
     parameters.SetKeySwitchTechnique(HYBRID);
     parameters.SetMultiplicationTechnique(HPSPOVERQ);
+    parameters.SetEncryptionTechnique(STANDARD);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(64);
 

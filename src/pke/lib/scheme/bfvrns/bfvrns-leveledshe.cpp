@@ -942,8 +942,14 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
-    if (cryptoParams->GetMultiplicationTechnique() == BEHZ) {
-        OPENFHE_THROW("BFV Compress is not currently supported for BEHZ. Use one of the HPS* methods instead.");
+    if ((cryptoParams->GetMultiplicationTechnique() == BEHZ) || (cryptoParams->GetMultiplicationTechnique() == HPS)) {
+        OPENFHE_THROW(
+            "BFV Compress is not currently supported for BEHZ or HPS. Use one of the HPSPOVERQ* methods instead.");
+    }
+
+    if ((cryptoParams->GetEncryptionTechnique() == EXTENDED)) {
+        OPENFHE_THROW(
+            "BFV Compress is not currently supported for the EXTENDED encryption method. Use the STANDARD encryption method instead.");
     }
 
     Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);

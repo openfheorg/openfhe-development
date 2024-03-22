@@ -213,33 +213,45 @@ class CryptoContextImpl : public Serializable {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
 
         if (level > 0) {
-			size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
-        	if (getSchemeId() != SCHEME::BFVRNS_SCHEME) {
-				// validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-				// readily available. so, what we get is numModuli and use it for calculations
-				uint32_t multiplicativeDepth =
-					(cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-				// we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
-				// so the user can understand the error more easily.
-				if (level >= numModuli) {
-					std::string errorMsg;
-					if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-						errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
-					else
-						errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            if (getSchemeId() != SCHEME::BFVRNS_SCHEME) {
+                // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
+                // readily available. so, what we get is numModuli and use it for calculations
+                uint32_t multiplicativeDepth =
+                    (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+                // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+                // so the user can understand the error more easily.
+                if (level >= numModuli) {
+                    std::string errorMsg;
+                    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                        errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                    else
+                        errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
 
-					errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
-								std::to_string(multiplicativeDepth) + "]";
-					OPENFHE_THROW(errorMsg);
-				}
-        	} else {
-				if (level >= numModuli) {
-					std::string errorMsg = "The level value should be less the current number of RNS limbs in the cryptocontext.";
-					errorMsg += " Currently: level is [" + std::to_string(level) + "] and number of RNS limbs is [" +
-								std::to_string(numModuli) + "]";
-					OPENFHE_THROW(errorMsg);
-				}
-        	}
+                    errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                                std::to_string(multiplicativeDepth) + "]";
+                    OPENFHE_THROW(errorMsg);
+                }
+            }
+            else {
+                if ((cryptoParams->GetMultiplicationTechnique() == BEHZ) ||
+                    (cryptoParams->GetMultiplicationTechnique() == HPS)) {
+                    OPENFHE_THROW(
+                        "BFV: Encoding at level > 0 is not currently supported for BEHZ or HPS. Use one of the HPSPOVERQ* methods instead.");
+                }
+
+                if ((cryptoParams->GetEncryptionTechnique() == EXTENDED)) {
+                    OPENFHE_THROW(
+                        "BFV: Encoding at level > 0 is not currently supported for the EXTENDED encryption method. Use the STANDARD encryption method instead.");
+                }
+                if (level >= numModuli) {
+                    std::string errorMsg =
+                        "The level value should be less the current number of RNS limbs in the cryptocontext.";
+                    errorMsg += " Currently: level is [" + std::to_string(level) + "] and number of RNS limbs is [" +
+                                std::to_string(numModuli) + "]";
+                    OPENFHE_THROW(errorMsg);
+                }
+            }
         }
 
         // uses a parameter set with a reduced number of RNS limbs corresponding to the level
