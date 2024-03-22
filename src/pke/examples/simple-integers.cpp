@@ -107,7 +107,11 @@ int main() {
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
     auto ciphertextRot2 = cryptoContext->EvalRotate(ciphertext1, 2);
     auto ciphertextRot3 = cryptoContext->EvalRotate(ciphertext1, -1);
-    auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
+    // auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
+
+    auto digits         = cryptoContext->EvalFastRotationPrecompute(ciphertext1);
+    const uint32_t M    = cryptoContext->GetCyclotomicOrder();
+    auto ciphertextRot4 = cryptoContext->EvalFastRotation(ciphertext1, -2, M, digits);
 
     std::cout << "Plaintext #1: " << plaintext1 << std::endl;
     std::cout << "Plaintext #2: " << plaintext2 << std::endl;

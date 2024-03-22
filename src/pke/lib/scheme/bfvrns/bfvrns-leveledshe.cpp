@@ -789,13 +789,17 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
     auto algo               = ciphertext->GetCryptoContext()->GetScheme();
 
-    if (cryptoParams->GetMultiplicationTechnique() != HPSPOVERQLEVELED) {
+    size_t sizeQ             = ciphertext->GetElements()[0].GetNumOfElements();
+    const auto elementParams = cryptoParams->GetElementParams();
+    // Maximum number of RNS limbs in the crypto context
+    size_t sizeQM = elementParams->GetParams().size();
+
+    if (!((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM))) {
         return algo->EvalKeySwitchPrecomputeCore(ciphertext->GetElements()[1], ciphertext->GetCryptoParameters());
     }
 
     DCRTPoly c1     = ciphertext->GetElements()[1];
     size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
-    size_t sizeQ    = c1.GetNumOfElements();
     double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
     // how many levels to drop
     uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
@@ -833,26 +837,26 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
-    /* In the HPSOVERQLEVELED mode, we do modulus switching to a smaller modulus before we start key switching.
-    The modulus switching was already done when computing the ciphertext digits using EvalFastRotationPrecompute.
-    The goal of the "if branch" below is to extract the current modulus Ql from the element parameters of one of
-    the digit polynomials (by removing the auxiliary moduli added for hybrid key switching).
-    ATTN: elemParams should not be a shared_ptr because it would modify digits. */
+    // We remove all auxiliary moduli P_i in the case of hybrid key switching
+    // ATTN: elemParams should not be a shared_ptr because it would modify digits.
     // TODO (dsuponit): wrap the lines below in a function to return elemParams as an object
     auto elemParams = *((*digits)[0].GetParams());
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
-            size_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
-            for (size_t i = 0; i < sizeP; ++i) {
-                elemParams.PopLastParam();
-            }
+    if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+        size_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
+        for (size_t i = 0; i < sizeP; ++i) {
+            elemParams.PopLastParam();
         }
     }
 
     std::shared_ptr<std::vector<DCRTPoly>> ba =
         algo->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
 
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+    size_t sizeQ             = ciphertext->GetElements()[0].GetNumOfElements();
+    const auto elementParams = cryptoParams->GetElementParams();
+    // Maximum number of RNS limbs in the crypto context
+    size_t sizeQM = elementParams->GetParams().size();
+
+    if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
         size_t sizeQ = cv[0].GetNumOfElements();
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
         uint32_t l = elemParams.GetParams().size() - 1;
