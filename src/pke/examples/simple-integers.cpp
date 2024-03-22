@@ -41,9 +41,11 @@ int main() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(5);
+    parameters.SetMultiplicativeDepth(8);
     parameters.SetKeySwitchTechnique(HYBRID);
     parameters.SetMultiplicationTechnique(HPSPOVERQ);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(64);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -97,8 +99,8 @@ int main() {
     auto ciphertextptAddResult = cryptoContext->EvalAdd(ciphertextptAdd12, plaintext2);
 
     // Homomorphic multiplications
-    //    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
-    //    auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
+    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+    auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
 
     // Homomorphic rotations
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
@@ -126,9 +128,10 @@ int main() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextptAddResult, &plaintextptAddResult);
     std::cout << "(plaintext)#1 + #2 + #2: " << plaintextptAddResult << std::endl;
 
-    //    // Decrypt the result of multiplications
-    //    Plaintext plaintextMultResult;
-    //    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
+    // Decrypt the result of multiplications
+    Plaintext plaintextMultResult;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
+    std::cout << "#1*#2*#3: " << plaintextMultResult << std::endl;
     //
     // Decrypt the result of rotations
     Plaintext plaintextRot1;

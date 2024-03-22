@@ -78,15 +78,15 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
     BigInteger tmpModulusQ = modulusQ;
 
-	m_negQModt.resize(sizeQ);
-	m_negQModtPrecon.resize(sizeQ);
+    m_negQModt.resize(sizeQ);
+    m_negQModtPrecon.resize(sizeQ);
     for (size_t l = 0; l < sizeQ; l++) {
         if (l > 0)
             tmpModulusQ = tmpModulusQ / BigInteger(moduliQ[sizeQ - l]);
 
-		m_negQModt[l]       = tmpModulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
-		m_negQModt[l]       = t.Sub(m_negQModt[l]);
-		m_negQModtPrecon[l] = m_negQModt[l].PrepModMulConst(t);
+        m_negQModt[l]       = tmpModulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
+        m_negQModt[l]       = t.Sub(m_negQModt[l]);
+        m_negQModtPrecon[l] = m_negQModt[l].PrepModMulConst(t);
     }
 
     // BFVrns : Encrypt : With extra
@@ -486,6 +486,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         /////////////////////////////////////
 
         if (multTech == HPSPOVERQ || multTech == HPSPOVERQLEVELED) {
+            // Scenario when we go from Q to P_l
             m_negRlQHatInvModq.resize(sizeR);
             m_negRlQHatInvModqPrecon.resize(sizeR);
             for (usint l = sizeR; l > 0; l--) {
@@ -498,6 +499,23 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                     m_negRlQHatInvModq[l - 1][i]       = moduliQ[i].Sub(m_negRlQHatInvModq[l - 1][i]);
                     m_negRlQHatInvModqPrecon[l - 1][i] = m_negRlQHatInvModq[l - 1][i].PrepModMulConst(moduliQ[i]);
                 }
+            }
+
+            // Scenario when we go from Q_l to P_l
+            m_negRlQlHatInvModq.resize(sizeR);
+            m_negRlQlHatInvModqPrecon.resize(sizeR);
+            BigInteger modulusQtmp = modulusQ;
+            for (usint l = sizeR; l > 0; l--) {
+                m_negRlQlHatInvModq[l - 1].resize(l);
+                m_negRlQlHatInvModqPrecon[l - 1].resize(l);
+                for (usint i = 0; i < l; i++) {
+                    BigInteger QlHati                   = modulusQtmp / BigInteger(moduliQ[i]);
+                    BigInteger QlHatInvModqi            = QlHati.ModInverse(moduliQ[i]);
+                    m_negRlQlHatInvModq[l - 1][i]       = Rl[l].ModMul(QlHatInvModqi, moduliQ[i]).ConvertToInt();
+                    m_negRlQlHatInvModq[l - 1][i]       = moduliQ[i].Sub(m_negRlQlHatInvModq[l - 1][i]);
+                    m_negRlQlHatInvModqPrecon[l - 1][i] = m_negRlQlHatInvModq[l - 1][i].PrepModMulConst(moduliQ[i]);
+                }
+                modulusQtmp = modulusQtmp / BigInteger(moduliQ[l - 1]);
             }
         }
 
@@ -515,7 +533,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // BFVrns : Mult : ScaleAndRoundP
         /////////////////////////////////////
 
-        if (multTech == HPS || multTech == HPSPOVERQ) {
+        if (multTech == HPS) {
             m_tQlSlHatInvModsDivsFrac.resize(1);
 
             m_tQlSlHatInvModsDivsFrac[0].resize(sizeR);
@@ -542,7 +560,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                 m_tQlSlHatInvModsDivsModq[0][i][sizeR] = tQlSlHatInvModsDivs.Mod(qi).ConvertToInt();
             }
         }
-        else if (multTech == HPSPOVERQLEVELED) {
+        else if ((multTech == HPSPOVERQ) || (multTech == HPSPOVERQLEVELED)) {
             m_tQlSlHatInvModsDivsFrac.resize(sizeQ);
             m_tQlSlHatInvModsDivsModq.resize(sizeQ);
 

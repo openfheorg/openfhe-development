@@ -731,6 +731,14 @@ public:
         return m_negRlQHatInvModqPrecon[l];
     }
 
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModq(usint l = 0) const {
+        return m_negRlQlHatInvModq[l];
+    }
+
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModqPrecon(usint l = 0) const {
+        return m_negRlQlHatInvModqPrecon[l];
+    }
+
     const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
         return m_qInvModr;
     }
@@ -1580,6 +1588,10 @@ protected:
 
     std::vector<std::vector<NativeInteger>> m_negRlQHatInvModqPrecon;
 
+    std::vector<std::vector<NativeInteger>> m_negRlQlHatInvModq;
+
+    std::vector<std::vector<NativeInteger>> m_negRlQlHatInvModqPrecon;
+
     std::vector<std::vector<NativeInteger>> m_qInvModr;
 
     /////////////////////////////////////
@@ -1774,8 +1786,9 @@ public:
         // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0
         try {
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
-        } catch(cereal::Exception&) {
-        	m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+        }
+        catch (cereal::Exception&) {
+            m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
         }
     }
 
