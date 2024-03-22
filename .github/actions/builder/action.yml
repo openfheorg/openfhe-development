@@ -8,19 +8,9 @@ inputs:
   cmake_args:
     description: 'Argument for cmake command'
     required: true
-  run_extras:
-    description: 'Run allextras stages'
-    type: boolean
-    required: false
-    default: false
   run_benchmark:
     description: 'Run Benchmark stages'
     type: boolean
-    required: false
-    default: false
-  compiler_type:
-    description: 'Compiler type (clang/gcc)'
-    type: string
     required: false
     default: false
 
@@ -34,7 +24,6 @@ runs:
       shell: bash
       run: |
         echo "${{ inputs.module_name }}_cmake"
-        
         whoami
         
         # Create the correct cmake arg string
@@ -43,29 +32,12 @@ runs:
         # Debugging use only
         echo "Input values for ${{inputs.module_name}}
         cmake_args=${{inputs.cmake_args}}
-        run_extras=${{inputs.run_extras}}
         run_benchmark=${{inputs.run_benchmark}}
-        compiler_type=${{inputs.compiler_type}}
         "
-
-        # Append options based on inputs
-        [[ "${{inputs.run_extras}}" != "false" ]] && cmake_args="${cmake_args} -DBUILD_EXTRAS=ON"
-
-        # Append manual pushed in cmake args from the input, this needs to be after the inputs
-        # So that the input can override defaults
-        make_args="${cmake_args} ${{ inputs.cmake_args }}"
-        
         echo "CMAKE ARGS: ${cmake_args}"
 
         cmake -S . -B build ${cmake_args}
 
-        # run only when using the clang compiler 
-        if [[ "${{inputs.compiler_type}}" == "clang" ]]; then
-          echo "running >$ cd build; cmake ..; cd -"
-          cd build; cmake ..; cd -
-        fi
-
-    # -- build
     - name: '${{ inputs.module_name }}_build'
       shell: bash
       run: |
@@ -82,13 +54,9 @@ runs:
         # Build the code base
         make -j $[$(nproc) / 2] all
 
-        # run only if run_extra input is set
-        if [[ "${{inputs.run_extras}}" == "true" ]]; then
-          echo "running >$ make allextras ..."
-          make -j $[$(nproc) / 2] allextras
-        fi
+        # Build allextras
+        make -j $[$(nproc) / 2] allextras
 
-    # -- binfhe
     - name: '${{ inputs.module_name }}_test_binfhe'
       shell: bash
       run: |
@@ -97,7 +65,6 @@ runs:
         echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
         build/unittest/binfhe_tests --gtest_output=xml
 
-    # -- test_core
     - name: '${{ inputs.module_name }}_test_core'
       shell: bash
       run: |
@@ -106,7 +73,6 @@ runs:
         echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
         build/unittest/core_tests --gtest_output=xml
 
-    # -- test_pke
     - name: '${{ inputs.module_name }}_test_pke'
       shell: bash
       run: |
@@ -155,20 +121,6 @@ runs:
           poly-benchmark-16k_${{ github.sha }}.csv
         retention-days: 30
 
-    # -- extract
-    - name: '${{ inputs.module_name }}_extras_core'
-      shell: bash
-      if: ${{ inputs.run_extras == 'true' }}
-      run: |
-        echo "${{ inputs.module_name }}_extras_core"
-        # Double guard
-        if [[ "${{ inputs.run_extras }}" == "true" ]]; then
-          ./build/bin/extras/core/dft
-          ./build/bin/extras/core/math
-          ./build/bin/extras/core/ntt1
-          ./build/bin/extras/core/ntt2
-        fi
-    
     # -- cleanup
     - name: '${{ inputs.module_name }}_cleanup'
       shell: bash
