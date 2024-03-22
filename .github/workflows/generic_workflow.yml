@@ -58,36 +58,40 @@ jobs:
       compiler: ${{ steps.compiler.outputs.compiler_args }}
       openmp_flag: ${{ steps.openmp.outputs.openmp_flag }}
     steps:
-      - name: Print values
+      - name: Print input parmeters
         id: print_values
         run: |
           echo "===================== INPUT ======================="
-          echo "runner         = ${{ github.event.inputs.runner }}"
-          echo "compiler       = ${{ github.event.inputs.compiler }}"
-          echo "native_backend = ${{ github.event.inputs.native_backend }}"
-          echo "mb2_jobs       = ${{ github.event.inputs.mb2_jobs }}"
-          echo "mb4_jobs       = ${{ github.event.inputs.mb4_jobs }}"
-          echo "mb6_jobs       = ${{ github.event.inputs.mb6_jobs }}"
-          echo "cmake_args_map = ${{ github.event.inputs.cmake_args_map }}"
+          echo "runner         : ${{ inputs.runner }}"
+          echo "compiler       : ${{ inputs.compiler }}"
+          echo "native_backend : ${{ inputs.native_backend }}"
+          echo "mb2_jobs       : ${{ inputs.mb2_jobs }}"
+          echo "mb4_jobs       : ${{ inputs.mb4_jobs }}"
+          echo "mb6_jobs       : ${{ inputs.mb6_jobs }}"
+          echo "cmake_args_map : ${{ inputs.cmake_args_map }}"
           echo "==================================================="
 
       - name: Get NativeInteger size for matrix
         id: int_size
         run: |
-          input_value="${{ github.event.inputs.native_backend }}"
+          input_value="${{ inputs.native_backend }}"
           if [ "$input_value" == "32" ]; then
+            echo "integer_size=['32']"
             echo "integer_size=['32']" >> $GITHUB_OUTPUT
           elif [ "$input_value" == "64" ]; then
+            echo "integer_size=['64']"
             echo "integer_size=['64']" >> $GITHUB_OUTPUT
           elif [ "$input_value" == "128" ]; then
+            echo "integer_size=['128']"
             echo "integer_size=['128']" >> $GITHUB_OUTPUT
           else
+            echo "integer_size=['32', '64', '128']"
             echo "integer_size=['32', '64', '128']" >> $GITHUB_OUTPUT
           fi
 
       - name: Get compiler as args for cmake
         id: compiler
-        run: echo "compiler_args=${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}" >> $GITHUB_OUTPUT
+        run: echo "compiler_args=${{ fromJson(env.COMPILERS_MAP)[inputs.compiler] }}" >> $GITHUB_OUTPUT
         env:
           # JSON map to convert input Compiler Type to a string with cmake arguments to set the compiler for C and C++
           COMPILERS_MAP: >-
@@ -110,8 +114,8 @@ jobs:
       - name: OpenMP ON/OFF
         id: openmp
         run: |
-          if [[ "${{ github.event.inputs.compiler }}" == *"CLANG"* ]]; then
-            if [ "${{ github.event.inputs.compiler }}" != "CLANG-14" ]; then
+          if [[ "${{ inputs.compiler }}" == *"CLANG"* ]]; then
+            if [ "${{ inputs.compiler }}" != "CLANG-14" ]; then
               echo "openmp_flag=-DWITH_OPENMP=OFF" >> $GITHUB_OUTPUT
             else
               echo "openmp_flag=" >> $GITHUB_OUTPUT
@@ -137,6 +141,12 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    - name: Print parameters passed to .github/actions/builder
+      run: |
+        echo "runs-on:     ${{ inputs.runner }}"
+        echo "module_name: ${{ github.job }}"
+        echo "cmake_args:  ${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
+
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
       with:
@@ -150,7 +160,7 @@ jobs:
   #
   ###############################################
   mb2:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2') || (github.event.inputs.mb2_jobs == 'all') }}
+    if: ${{ (inputs.mb2_jobs == 'mb2') || (inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -174,7 +184,7 @@ jobs:
   #
   ###############################################
   mb2_debug:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_debug') || (github.event.inputs.mb2_jobs == 'all') }}
+    if: ${{ (inputs.mb2_jobs == 'mb2_debug') || (inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}

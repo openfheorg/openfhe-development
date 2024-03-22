@@ -1,10 +1,18 @@
-name: Manual
+name: Manual with reuseable
 
 on:
+  workflow_call:
+    inputs:
+      compiler:
+        description: 'Compiler type'
+        type: string
+        required: true
+        default: 'GCC-11'
+
   workflow_dispatch:
     inputs:
-      # Selects the compiler to use, this choice will be used in the COMPILERS_MAP as the key to
-      # retrieve the corresponding cmake compiler options to pass to the action
+      # # Selects the compiler to use, this choice will be used in the COMPILERS_MAP as the key to
+      # # retrieve the corresponding cmake compiler options to pass to the action
       compiler:
         description: 'Compiler type'
         type: choice
@@ -19,360 +27,127 @@ on:
         - 'CLANG-15'
         required: true
         default: 'GCC-11'
-      native_backend:
-        description: 'Size of NativeInteger'
-        type: choice
-        options:
-        - '32'
-        - '64'
-        - '128'
-        - 'all'
-        required: true
-        default: 'all'
-      mb2_jobs:
-        description: 'MATHBACKEND2 jobs'
-        type: choice
-        options:
-        - 'mb2'
-        - 'mb2_tcm'
-        - 'mb2_debug'
-        - 'all'
-        - 'none'
-        required: true
-        default: 'mb2'
-      mb4_jobs:
-        description: 'MATHBACKEND4 jobs'
-        type: choice
-        options:
-        - 'mb4'
-        - 'mb4_tcm'
-        - 'mb4_debug'
-        - 'all'
-        - 'none'
-        required: true
-        default: 'all'
-      mb6_jobs:
-        description: 'MATHBACKEND6 jobs'
-        type: choice
-        options:
-        - 'mb6_ntl'
-        - 'mb6_ntl_tcm'
-        - 'mb6_ntl_debug_tcm'
-        - 'all'
-        - 'none'
-        required: true
-        default: 'all'
+  
+      # native_backend:
+      #   description: 'Size of NativeInteger'
+      #   type: choice
+      #   options:
+      #   - '32'
+      #   - '64'
+      #   - '128'
+      #   - 'all'
+      #   required: true
+      #   default: 'all'
+      # mb2_jobs:
+      #   description: 'MATHBACKEND2 jobs'
+      #   type: choice
+      #   options:
+      #   - 'mb2'
+      #   - 'mb2_tcm'
+      #   - 'mb2_debug'
+      #   - 'all'
+      #   - 'none'
+      #   required: true
+      #   default: 'mb2'
+      # mb4_jobs:
+      #   description: 'MATHBACKEND4 jobs'
+      #   type: choice
+      #   options:
+      #   - 'mb4'
+      #   - 'mb4_tcm'
+      #   - 'mb4_debug'
+      #   - 'all'
+      #   - 'none'
+      #   required: true
+      #   default: 'all'
+      # mb6_jobs:
+      #   description: 'MATHBACKEND6 jobs'
+      #   type: choice
+      #   options:
+      #   - 'mb6_ntl'
+      #   - 'mb6_ntl_tcm'
+      #   - 'mb6_ntl_debug_tcm'
+      #   - 'all'
+      #   - 'none'
+      #   required: true
+      #   default: 'all'
 
-env:
-  # JSON map to get cmake args by the job name. Some details:
-  # - we link extras (BUILD_EXTRAS=OFF in CMakeLists.txt)
-  # - we always enable NTL for MATHBACKEND=6
-  CMAKE_ARGS_MAP: >-
-    {
-      "default"           : "-DBUILD_EXTRAS=ON",
-      "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
-      "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
-      "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
-      "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
-      "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
-      "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
-      "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
-      "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
-      "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
-    }
+# env:
+#   # JSON map to get cmake args by the job name. Some details:
+#   # - we link extras (BUILD_EXTRAS=OFF in CMakeLists.txt)
+#   # - we always enable NTL for MATHBACKEND=6
+#   CMAKE_ARGS_MAP: >-
+#     {
+#       "default"           : "-DBUILD_EXTRAS=ON",
+#       "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
+#       "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
+#       "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+#       "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
+#       "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
+#       "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+#       "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
+#       "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+#       "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+#     }
 
 jobs:
-  init:
-    runs-on: ${{ vars.RUNNER }}
-    outputs:
-      integer_size: ${{ steps.int_size.outputs.integer_size }}
-      compiler: ${{ steps.compiler.outputs.compiler_args }}
-      openmp_flag: ${{ steps.openmp.outputs.openmp_flag }}
-    steps:
-      - name: Get NativeInteger size for matrix
-        id: int_size
-        run: |
-          input_value="${{ github.event.inputs.native_backend }}"
-          if [ "$input_value" == "32" ]; then
-            echo "integer_size=['32']" >> $GITHUB_OUTPUT
-          elif [ "$input_value" == "64" ]; then
-            echo "integer_size=['64']" >> $GITHUB_OUTPUT
-          elif [ "$input_value" == "128" ]; then
-            echo "integer_size=['128']" >> $GITHUB_OUTPUT
-          else
-            echo "integer_size=['32', '64', '128']" >> $GITHUB_OUTPUT
-          fi
+  # init:
+  #   runs-on: ${{ vars.RUNNER }}
+  #   outputs:
+  #     cmake_args_map: ${{ steps.init.outputs.mapString }}
+  #   steps:
+  #     - name: Prepare input for generic_workflow
+  #       id: init
+  #       run: |
+  #         cmake_args_map=
+  #         {
+  #           "default"           : "-DBUILD_EXTRAS=ON",
+  #           "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
+  #           "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
+  #           "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+  #           "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
+  #           "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
+  #           "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+  #           "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
+  #           "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+  #           "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+  #         }
+  #         # convert cmake_args_map to json string as the map will be passed as an argument to generic_workflow
+  #         mapString=$(echo "$cmake_args_map" | jq -r tostring)
+  #         echo "mapString=$mapString" >> $GITHUB_OUTPUT
+  #         echo "mapString=$mapString"
 
-      - name: Get compiler as args for cmake
-        id: compiler
-        run: echo "compiler_args=${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}" >> $GITHUB_OUTPUT
-        env:
-          # JSON map to convert input Compiler Type to a string with cmake arguments to set the compiler for C and C++
-          COMPILERS_MAP: >-
-            {
-              "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-              "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
-              "GCC-11"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_C_COMPILER=/usr/bin/gcc-11",
-              "GCC-12"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCMAKE_C_COMPILER=/usr/bin/gcc-12",
-              "CLANG-12"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-12 -DCMAKE_C_COMPILER=/usr/bin/clang-12",
-              "CLANG-13"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-13 -DCMAKE_C_COMPILER=/usr/bin/clang-13",
-              "CLANG-14"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14",
-              "CLANG-15"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 -DCMAKE_C_COMPILER=/usr/bin/clang-15",
-            }
+  # call:
+  #   needs: init
+  #   uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@718-modify-workflows-github-ci
+  #   with:
+  #     runner: ${{ vars.RUNNER }}
+  #     compiler: "GCC-11"
+  #     native_backend: "64"
+  #     mb2_jobs: "none"
+  #     mb4_jobs: "none"
+  #     mb6_jobs: "none"
+  #     cmake_args_map: ${{ needs.init.outputs.cmake_args_map }}
+  call:
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@718-modify-workflows-dev-v2
+    with:
+      runner: ${{ vars.RUNNER }}
+      compiler: "${{ github.event.inputs.compiler }}"
+      native_backend: "64"
+      mb2_jobs: "none"
+      mb4_jobs: "none"
+      mb6_jobs: "none"
+      cmake_args_map: '{
+                  "default"           : "-DBUILD_EXTRAS=ON",
+                  "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
+                  "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
+                  "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
+                  "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
+                  "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
+                  "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+                  "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+                }'
+      
 
-      # We can have multiple clang versions installed on Ubuntu, but each clang version works with its corresponding version of OpenMP only.
-      # For example: clang-14 requires libomp-14-dev.
-      # However, installation of a particular openmp version uninstalls all other openmp versions. Thus, OMP is disabled for all clang
-      # versions, but CLANG-14. If another version of clang requires openmp, then the corresponding version of libomp-xx-dev must be installed
-      # on the runner (command: "sudo apt install libomp-xx-dev") and the code below should be updated accordingly. 
-      - name: OpenMP ON/OFF
-        id: openmp
-        run: |
-          if [[ "${{ github.event.inputs.compiler }}" == *"CLANG"* ]]; then
-            if [ "${{ github.event.inputs.compiler }}" != "CLANG-14" ]; then
-              echo "openmp_flag=-DWITH_OPENMP=OFF" >> $GITHUB_OUTPUT
-            else
-              echo "openmp_flag=" >> $GITHUB_OUTPUT
-            fi
-          else
-              echo "openmp_flag=" >> $GITHUB_OUTPUT
-          fi
-
-    
-  ###############################################
-  #
-  #    default jobs starts here
-  #
-  ###############################################
-  default:
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: init
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb2 jobs starts here
-  #
-  ###############################################
-  mb2:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2') || (github.event.inputs.mb2_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb2_debug jobs starts here
-  #
-  ###############################################
-  mb2_debug:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_debug') || (github.event.inputs.mb2_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }}  ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb2_tcm jobs starts here
-  #
-  ###############################################
-  mb2_tcm:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_tcm') || (github.event.inputs.mb2_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb4 jobs starts here
-  #
-  ###############################################
-  mb4:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4') || (github.event.inputs.mb4_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb4_debug jobs starts here
-  #
-  ###############################################
-  mb4_debug:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_debug') || (github.event.inputs.mb4_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb4_tcm jobs starts here
-  #
-  ###############################################
-  mb4_tcm:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_tcm') || (github.event.inputs.mb4_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb6_ntl jobs starts here
-  #
-  ###############################################
-  mb6_ntl:
-    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl') || (github.event.inputs.mb6_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb6_ntl_tcm jobs starts here
-  #
-  ###############################################
-  mb6_ntl_tcm:
-    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_tcm') || (github.event.inputs.mb6_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
-
-
-  ###############################################
-  #
-  #    mb6_ntl_debug_tcm jobs starts here
-  #
-  ###############################################
-  mb6_ntl_debug_tcm:
-    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_debug_tcm') || (github.event.inputs.mb6_jobs == 'all') }}
-    strategy:
-      matrix:
-        integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
-
-    needs: [init, default]
-    runs-on: ${{ vars.RUNNER }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/builder@718-modify-workflows-github-ci
-      with:
-        module_name: ${{ github.job }}
-        cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(env.CMAKE_ARGS_MAP)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
