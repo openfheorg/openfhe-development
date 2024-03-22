@@ -652,8 +652,12 @@ protected:
             EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue()) << failmsg << " EvalMult fails";
 
             if (!((cc->getSchemeId() == SCHEME::BFVRNS_SCHEME) &&
-                  (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
-                       ->GetMultiplicationTechnique() == BEHZ))) {
+                  ((std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == BEHZ) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == HPS) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetEncryptionTechnique() == EXTENDED)))) {
                 cResult = cc->Compress(cResult, 1);
                 cc->Decrypt(kp.secretKey, cResult, &results);
                 results->SetLength(intArrayExpected->GetLength());
@@ -668,8 +672,12 @@ protected:
             EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue()) << failmsg << " operator* fails";
 
             if (!((cc->getSchemeId() == SCHEME::BFVRNS_SCHEME) &&
-                  (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
-                       ->GetMultiplicationTechnique() == BEHZ))) {
+                  ((std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == BEHZ) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == HPS) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetEncryptionTechnique() == EXTENDED)))) {
                 cResult = cc->Compress(cResult, 1);
                 cc->Decrypt(kp.secretKey, cResult, &results);
                 results->SetLength(intArrayExpected->GetLength());

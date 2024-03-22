@@ -41,12 +41,7 @@ int main() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(8);
-    parameters.SetKeySwitchTechnique(HYBRID);
-    parameters.SetMultiplicationTechnique(HPSPOVERQ);
-    parameters.SetEncryptionTechnique(STANDARD);
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(64);
+    parameters.SetMultiplicativeDepth(2);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -72,23 +67,18 @@ int main() {
 
     // First plaintext vector is encoded
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1, 1, 1);
+    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
     // Second plaintext vector is encoded
     std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2, 1, 1);
+    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
     // Third plaintext vector is encoded
     std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3, 1, 1);
-
-    std::cerr << "crypto params = " << *cryptoContext->GetCryptoParameters() << std::endl;
-    std::cerr << "params = " << *plaintext3->GetElement<DCRTPoly>().GetParams() << std::endl;
+    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
 
     // The encoded vectors are encrypted
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
-
     auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
-    // auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
-    auto ciphertext3 = cryptoContext->Encrypt(keyPair.secretKey, plaintext3);
+    auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
 
     // Sample Program: Step 4: Evaluation
 
@@ -96,53 +86,25 @@ int main() {
     auto ciphertextAdd12     = cryptoContext->EvalAdd(ciphertext1, ciphertext2);
     auto ciphertextAddResult = cryptoContext->EvalAdd(ciphertextAdd12, ciphertext3);
 
-    auto ciphertextptAdd12     = cryptoContext->EvalAdd(ciphertext1, plaintext2);
-    auto ciphertextptAddResult = cryptoContext->EvalAdd(ciphertextptAdd12, plaintext2);
-
     // Homomorphic multiplications
-    auto ciphertextMul12        = cryptoContext->EvalMult(ciphertext1, ciphertext2);
-    auto ciphertextMultResult   = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
-    auto ciphertextSquareResult = cryptoContext->EvalSquare(ciphertext1);
+    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+    auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
 
     // Homomorphic rotations
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
     auto ciphertextRot2 = cryptoContext->EvalRotate(ciphertext1, 2);
     auto ciphertextRot3 = cryptoContext->EvalRotate(ciphertext1, -1);
-    // auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
-
-    auto digits         = cryptoContext->EvalFastRotationPrecompute(ciphertext1);
-    const uint32_t M    = cryptoContext->GetCyclotomicOrder();
-    auto ciphertextRot4 = cryptoContext->EvalFastRotation(ciphertext1, -2, M, digits);
-
-    std::cout << "Plaintext #1: " << plaintext1 << std::endl;
-    std::cout << "Plaintext #2: " << plaintext2 << std::endl;
-    std::cout << "Plaintext #3: " << plaintext3 << std::endl;
+    auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
 
     // Sample Program: Step 5: Decryption
 
     // Decrypt the result of additions
-    ciphertextAddResult = cryptoContext->Compress(ciphertextAddResult, 2);
     Plaintext plaintextAddResult;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAddResult, &plaintextAddResult);
-
-    std::cout << "\nResults of homomorphic computations" << std::endl;
-    std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
-
-    // Decrypt the result of additions
-    ciphertextptAddResult = cryptoContext->Compress(ciphertextptAddResult, 2);
-    Plaintext plaintextptAddResult;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextptAddResult, &plaintextptAddResult);
-    std::cout << "(plaintext)#1 + #2 + #2: " << plaintextptAddResult << std::endl;
 
     // Decrypt the result of multiplications
     Plaintext plaintextMultResult;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
-    std::cout << "#1*#2*#3: " << plaintextMultResult << std::endl;
-
-    // Decrypt the result of squaring
-    Plaintext plaintextSquareResult;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextSquareResult, &plaintextSquareResult);
-    std::cout << "#1*#1: " << plaintextSquareResult << std::endl;
 
     // Decrypt the result of rotations
     Plaintext plaintextRot1;
@@ -153,13 +115,20 @@ int main() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
     Plaintext plaintextRot4;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
-    //
+
     plaintextRot1->SetLength(vectorOfInts1.size());
     plaintextRot2->SetLength(vectorOfInts1.size());
     plaintextRot3->SetLength(vectorOfInts1.size());
     plaintextRot4->SetLength(vectorOfInts1.size());
 
-    //    std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
+    std::cout << "Plaintext #1: " << plaintext1 << std::endl;
+    std::cout << "Plaintext #2: " << plaintext2 << std::endl;
+    std::cout << "Plaintext #3: " << plaintext3 << std::endl;
+
+    // Output results
+    std::cout << "\nResults of homomorphic computations" << std::endl;
+    std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
+    std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
     std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
     std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
     std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
