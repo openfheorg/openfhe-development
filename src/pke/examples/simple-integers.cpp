@@ -99,8 +99,9 @@ int main() {
     auto ciphertextptAddResult = cryptoContext->EvalAdd(ciphertextptAdd12, plaintext2);
 
     // Homomorphic multiplications
-    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
-    auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
+    auto ciphertextMul12        = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+    auto ciphertextMultResult   = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
+    auto ciphertextSquareResult = cryptoContext->EvalSquare(ciphertext1);
 
     // Homomorphic rotations
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
@@ -132,7 +133,12 @@ int main() {
     Plaintext plaintextMultResult;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextMultResult, &plaintextMultResult);
     std::cout << "#1*#2*#3: " << plaintextMultResult << std::endl;
-    //
+
+    // Decrypt the result of squaring
+    Plaintext plaintextSquareResult;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextSquareResult, &plaintextSquareResult);
+    std::cout << "#1*#1: " << plaintextSquareResult << std::endl;
+
     // Decrypt the result of rotations
     Plaintext plaintextRot1;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextRot1, &plaintextRot1);
