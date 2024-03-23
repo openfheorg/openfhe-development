@@ -1,3 +1,8 @@
+##############################################################################################
+### NOTE: try not to change this file at all. Everything can be controlled by input parameters
+###       passed to this reuseable workflow from the wrapper workflow.
+###       The only hardcoded value here is the location to the builder.
+##############################################################################################
 name: Reuseable Generic Workflow
 
 on:
@@ -32,24 +37,6 @@ on:
         type: string
         required: true
           
-# env:
-#   # JSON map to get cmake args by the job name. Some details:
-#   # - we link extras (BUILD_EXTRAS=OFF in CMakeLists.txt)
-#   # - we always enable NTL for MATHBACKEND=6
-#   CMAKE_ARGS_MAP: >-
-#     {
-#       "default"           : "-DBUILD_EXTRAS=ON",
-#       "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
-#       "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
-#       "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
-#       "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
-#       "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
-#       "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
-#       "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
-#       "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
-#       "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
-#     }
-
 jobs:
   init:
     runs-on: ${{ inputs.runner }}
@@ -116,12 +103,15 @@ jobs:
         run: |
           if [[ "${{ inputs.compiler }}" == *"CLANG"* ]]; then
             if [ "${{ inputs.compiler }}" != "CLANG-14" ]; then
+              echo "openmp_flag=-DWITH_OPENMP=OFF"
               echo "openmp_flag=-DWITH_OPENMP=OFF" >> $GITHUB_OUTPUT
             else
+              echo "openmp_flag is not set"
               echo "openmp_flag=" >> $GITHUB_OUTPUT
             fi
           else
-              echo "openmp_flag=" >> $GITHUB_OUTPUT
+            echo "openmp_flag is not set"
+            echo "openmp_flag=" >> $GITHUB_OUTPUT
           fi
 
     
@@ -141,7 +131,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Print parameters passed to .github/actions/builder
+    - name: Print parameters passed to .github/actions
       run: |
         echo "runs-on:     ${{ inputs.runner }}"
         echo "module_name: ${{ github.job }}"
@@ -208,7 +198,7 @@ jobs:
   #
   ###############################################
   mb2_tcm:
-    if: ${{ (github.event.inputs.mb2_jobs == 'mb2_tcm') || (github.event.inputs.mb2_jobs == 'all') }}
+    if: ${{ (inputs.mb2_jobs == 'mb2_tcm') || (inputs.mb2_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -232,7 +222,7 @@ jobs:
   #
   ###############################################
   mb4:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (inputs.mb4_jobs == 'mb4') || (inputs.mb4_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -256,7 +246,7 @@ jobs:
   #
   ###############################################
   mb4_debug:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_debug') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (inputs.mb4_jobs == 'mb4_debug') || (inputs.mb4_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -280,7 +270,7 @@ jobs:
   #
   ###############################################
   mb4_tcm:
-    if: ${{ (github.event.inputs.mb4_jobs == 'mb4_tcm') || (github.event.inputs.mb4_jobs == 'all') }}
+    if: ${{ (inputs.mb4_jobs == 'mb4_tcm') || (inputs.mb4_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -304,7 +294,7 @@ jobs:
   #
   ###############################################
   mb6_ntl:
-    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl') || (github.event.inputs.mb6_jobs == 'all') }}
+    if: ${{ (inputs.mb6_jobs == 'mb6_ntl') || (inputs.mb6_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -328,7 +318,7 @@ jobs:
   #
   ###############################################
   mb6_ntl_tcm:
-    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_tcm') || (github.event.inputs.mb6_jobs == 'all') }}
+    if: ${{ (inputs.mb6_jobs == 'mb6_ntl_tcm') || (inputs.mb6_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -352,7 +342,7 @@ jobs:
   #
   ###############################################
   mb6_ntl_debug_tcm:
-    if: ${{ (github.event.inputs.mb6_jobs == 'mb6_ntl_debug_tcm') || (github.event.inputs.mb6_jobs == 'all') }}
+    if: ${{ (inputs.mb6_jobs == 'mb6_ntl_debug_tcm') || (inputs.mb6_jobs == 'all') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
