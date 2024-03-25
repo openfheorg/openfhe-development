@@ -214,14 +214,12 @@ class CryptoContextImpl : public Serializable {
 
         if (level > 0) {
             size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
-            if (getSchemeId() != SCHEME::BFVRNS_SCHEME) {
-                // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-                // readily available. so, what we get is numModuli and use it for calculations
-                uint32_t multiplicativeDepth =
-                    (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-                // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            if (!isBFVRNS(m_schemeId)) {
+                // we throw an exception if level >= numModuli. However, we use multiplicativeDepth in the error message,
                 // so the user can understand the error more easily.
                 if (level >= numModuli) {
+                    uint32_t multiplicativeDepth =
+                        (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
                     std::string errorMsg;
                     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
                         errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
@@ -268,8 +266,8 @@ class CryptoContextImpl : public Serializable {
         }
 
         Plaintext p;
-        if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                                                       cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+        if (isBGVRNS(m_schemeId) && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+                                     cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
             NativeInteger scf;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);

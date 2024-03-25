@@ -78,6 +78,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
     BigInteger tmpModulusQ = modulusQ;
 
+    m_negQModt.clear();
+    m_negQModtPrecon.clear();
     m_negQModt.resize(sizeQ);
     m_negQModtPrecon.resize(sizeQ);
     for (size_t l = 0; l < sizeQ; l++) {
