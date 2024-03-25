@@ -1,0 +1,127 @@
+name: 'Generic Workflow Builder'
+description: 'A custom GitHub actions pipeline that wrappedup build, unit_test, benchmark and extract stages'
+  
+inputs:
+  module_name:
+    description: 'Name of the module'
+    required: true
+  cmake_args:
+    description: 'Argument for cmake command'
+    required: true
+  run_benchmark:
+    description: 'Run Benchmark stages'
+    type: boolean
+    required: false
+    default: false
+
+runs:
+  # 
+  using: "composite"
+  steps:
+
+    # -- cmake configuration
+    - name: '${{ inputs.module_name }}_cmake'
+      shell: bash
+      run: |
+        echo "${{ inputs.module_name }}_cmake"
+        whoami
+        
+        # Create the correct cmake arg string
+        cmake_args="${{inputs.cmake_args}}"
+
+        # Debugging use only
+        echo "Input values for ${{inputs.module_name}}
+        cmake_args=${{inputs.cmake_args}}
+        run_benchmark=${{inputs.run_benchmark}}
+        "
+        echo "CMAKE ARGS: ${cmake_args}"
+
+        cmake -S . -B build ${cmake_args}
+
+    - name: '${{ inputs.module_name }}_build'
+      shell: bash
+      run: |
+        echo "${{ inputs.module_name }}_build"
+
+        cd build
+        
+        # run only if WITH_TCM input is set
+        if [[ "${{inputs.cmake_args}}" == *"WITH_TCM"* ]]; then
+          echo "running >$ make tcm ..."
+          make tcm -j $[$(nproc) / 2]
+        fi
+        
+        # Build the code base
+        make -j $[$(nproc) / 2] all
+
+        # Build allextras
+        make -j $[$(nproc) / 2] allextras
+
+    - name: '${{ inputs.module_name }}_test_binfhe'
+      shell: bash
+      run: |
+        echo "${{ inputs.module_name }}_test_binfhe"
+        pwd
+        echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
+        build/unittest/binfhe_tests --gtest_output=xml
+
+    - name: '${{ inputs.module_name }}_test_core'
+      shell: bash
+      run: |
+        echo "${{ inputs.module_name }}_test_core"
+        pwd
+        echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
+        build/unittest/core_tests --gtest_output=xml
+
+    - name: '${{ inputs.module_name }}_test_pke'
+      shell: bash
+      run: |
+        echo "${{ inputs.module_name }}_test_pke"
+        pwd
+        echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
+        build/unittest/pke_tests --gtest_output=xml
+
+    # -- benchmark
+    - name: ${{ inputs.module_name }}_benchmark
+      shell: bash
+      if: ${{ inputs.run_benchmark == 'true' }}
+      run: |
+        echo "${{ inputs.module_name }}_benchmark"
+        # Double guard
+        if [[ "${{ inputs.run_benchmark }}" == "true" ]]; then
+          export OMP_NUM_THREADS=1
+          build/bin/benchmark/binfhe-ginx         --benchmark_out="binfhe-ginx_${{ github.sha }}.csv"         --benchmark_out_format=csv
+          build/bin/benchmark/lib-benchmark       --benchmark_out="lib-benchmark_${{ github.sha }}.csv"       --benchmark_out_format=csv
+          build/bin/benchmark/poly-benchmark-1k   --benchmark_out="poly-benchmark-1k_${{ github.sha }}.csv"   --benchmark_out_format=csv
+          build/bin/benchmark/poly-benchmark-4k   --benchmark_out="poly-benchmark-4k_${{ github.sha }}.csv"   --benchmark_out_format=csv
+          build/bin/benchmark/poly-benchmark-16k  --benchmark_out="poly-benchmark-16k_${{ github.sha }}.csv"  --benchmark_out_format=csv
+          
+          # Skipping these for time resource reasons.
+          # build/bin/benchmark/binfhe-ap           --benchmark_out="binfhe-ap_${{ github.sha }}.csv"           --benchmark_out_format=csv
+          # build/bin/benchmark/basic_test          --benchmark_out="basic_test_${{ github.sha }}.csv"          --benchmark_out_format=csv
+          # build/bin/benchmark/Encoding            --benchmark_out="Encoding_${{ github.sha }}.csv"            --benchmark_out_format=csv
+          # build/bin/benchmark/IntegerMath         --benchmark_out="IntegerMath_${{ github.sha }}.csv"         --benchmark_out_format=csv
+          # build/bin/benchmark/Lattice             --benchmark_out="Lattice_${{ github.sha }}.csv"             --benchmark_out_format=csv
+          # build/bin/benchmark/NbTheory            --benchmark_out="NbTheory_${{ github.sha }}.csv"            --benchmark_out_format=csv
+          # build/bin/benchmark/VectorMath          --benchmark_out="VectorMath_${{ github.sha }}.csv"          --benchmark_out_format=csv
+          unset OMP_NUM_THREADS
+        fi
+
+    # -- upload benchmark results, NOTE - this list needs to be maintained with the above output files
+    - name: upload_benchmark_artifacts
+      if: ${{ inputs.run_benchmark == 'true' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark_vectormath-artifact
+        path: |
+          binfhe-ginx_${{ github.sha }}.csv
+          lib-benchmark_${{ github.sha }}.csv
+          poly-benchmark-1k_${{ github.sha }}.csv
+          poly-benchmark-4k_${{ github.sha }}.csv
+          poly-benchmark-16k_${{ github.sha }}.csv
+        retention-days: 30
+
+    # -- cleanup
+    - name: '${{ inputs.module_name }}_cleanup'
+      shell: bash
+      run: rm -rf build
