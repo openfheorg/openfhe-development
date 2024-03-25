@@ -81,10 +81,13 @@ int main() {
   cryptoContext->EvalRotateKeyGen(keyPair.secretKey, {1, 2, -1, -2});
 
   // Sample Program: Step 3: Encryption
-  std::vector<int64_t> payload = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  std::vector<int64_t> payload1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   // Second plaintext vector is encoded
   std::vector<int64_t> payload2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   Plaintext ptxt2 = cryptoContext->MakePackedPlaintext(payload2);
+
+  std::vector<int64_t> payload3 = {1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3};
+  Plaintext ptxt3 = cryptoContext->MakePackedPlaintext(payload3);
 
   // High-resolution clock for accurate timing
   std::chrono::high_resolution_clock clock;
@@ -93,15 +96,16 @@ int main() {
   int numIterations = 1000;
 
   // Variables to store total times
-  double totalEncodeTime = 0;
-  double totalMultTime = 0;
+  double totalEncodeTime = 0.0;
+  double totalMultTime = 0.0;
+  double totalAddTime = 0.0;
 
   auto ctxtGT = cryptoContext->Encrypt(keyPair.publicKey, ptxt2);
 
   // Benchmark loop
   for (int i = 0; i < numIterations; ++i) {
     auto t1 = clock.now();
-    Plaintext ptxt1 = cryptoContext->MakePackedPlaintext(payload);
+    Plaintext ptxt1 = cryptoContext->MakePackedPlaintext(payload1);
     auto t2 = clock.now();
     double encodeTime = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000.0;
     totalEncodeTime += encodeTime;
@@ -114,23 +118,32 @@ int main() {
     double multTime = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000.0;
     totalMultTime += multTime;
     ctxtGT = ctxtRes;
+    
+    
+    auto ctxt3 = cryptoContext->Encrypt(keyPair.publicKey, ptxt3);
+    t1 = clock.now();
+    auto ctxtAdd = cryptoContext->EvalAdd(ctxt2, ctxt3);
+    t2 = clock.now();
+    double addTime = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000.0;
+    totalAddTime += addTime;
   }
 
   // Calculate and report average times
-  double avgEncodeTime = totalEncodeTime / numIterations;
-  double avgMultTime = totalMultTime / numIterations;
+  double avgEncodeTime = totalEncodeTime / (double)numIterations;
+  double avgMultTime = totalMultTime / (double)numIterations;
+  double avgAddTime = totalAddTime / (double)numIterations;
 
   // Average time to encode 
   std::cout << "encode took: " << avgEncodeTime << " ms" << std::endl;
   // Average time to compute evalmult(ctxt, ptxt)
   std::cout << "ptxt-ctxt took: " << avgMultTime << " ms" << std::endl;
+  std::cout << "ctxt add  took: " << avgAddTime << " ms" << std::endl;
 
   Plaintext plaintextMult;
   cryptoContext->Decrypt(keyPair.secretKey, ctxtGT, &plaintextMult);
 
-  plaintextMult->SetLength(payload.size());
-
-  // // Output results
+    // // Output results
+  // plaintextMult->SetLength(payload1.size());
   // std::cout << "\nResults of homomorphic computations" << std::endl;
   // std::cout << "plaintextMult: " << plaintextMult << std::endl;
 
