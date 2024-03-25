@@ -625,12 +625,12 @@ public:
     // BFVrns : Encrypt : POverQ
     /////////////////////////////////////
 
-    const NativeInteger GetNegQModt() const {
-        return m_negQModt;
+    const NativeInteger GetNegQModt(uint32_t i = 0) const {
+        return m_negQModt[i];
     }
 
-    const NativeInteger GetNegQModtPrecon() const {
-        return m_negQModtPrecon;
+    const NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {
+        return m_negQModtPrecon[i];
     }
 
     const NativeInteger GetNegQrModt() const {
@@ -729,6 +729,14 @@ public:
 
     const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l = 0) const {
         return m_negRlQHatInvModqPrecon[l];
+    }
+
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModq(usint l = 0) const {
+        return m_negRlQlHatInvModq[l];
+    }
+
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModqPrecon(usint l = 0) const {
+        return m_negRlQlHatInvModqPrecon[l];
     }
 
     const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
@@ -1464,8 +1472,8 @@ protected:
     // BFVrns : Encrypt
     /////////////////////////////////////
 
-    NativeInteger m_negQModt;
-    NativeInteger m_negQModtPrecon;
+    std::vector<NativeInteger> m_negQModt;
+    std::vector<NativeInteger> m_negQModtPrecon;
     std::vector<NativeInteger> m_tInvModq;
     std::vector<NativeInteger> m_tInvModqPrecon;
     std::vector<NativeInteger> m_tInvModqr;
@@ -1579,6 +1587,10 @@ protected:
     std::vector<std::vector<NativeInteger>> m_negRlQHatInvModq;
 
     std::vector<std::vector<NativeInteger>> m_negRlQHatInvModqPrecon;
+
+    std::vector<std::vector<NativeInteger>> m_negRlQlHatInvModq;
+
+    std::vector<std::vector<NativeInteger>> m_negRlQlHatInvModqPrecon;
 
     std::vector<std::vector<NativeInteger>> m_qInvModr;
 
@@ -1774,8 +1786,9 @@ public:
         // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0
         try {
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
-        } catch(cereal::Exception&) {
-        	m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+        }
+        catch (cereal::Exception&) {
+            m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
         }
     }
 
