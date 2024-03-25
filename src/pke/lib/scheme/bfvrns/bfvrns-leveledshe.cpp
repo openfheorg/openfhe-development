@@ -227,7 +227,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     else if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ) ||
              ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ < sizeQM))) {
         for (size_t i = 0; i < cv1Size; i++) {
-            // Expand ciphertext1 from basis Q to PQ (from Q_l P_l*Q_l if manual compress/lower-level-encode was called)
+            // Expand ciphertext1 from basis Q to PQ (from Q_l to P_l*Q_l if manual compress/lower-level-encode was called)
             cv1[i].ExpandCRTBasis(cryptoParams->GetParamsQlRl(sizeQ - 1), cryptoParams->GetParamsRl(sizeQ - 1),
                                   cryptoParams->GetQlHatInvModq(sizeQ - 1),
                                   cryptoParams->GetQlHatInvModqPrecon(sizeQ - 1), cryptoParams->GetQlHatModr(sizeQ - 1),
@@ -794,23 +794,27 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     // Maximum number of RNS limbs in the crypto context
     size_t sizeQM = elementParams->GetParams().size();
 
+    // in the HPSPOVERQLEVELED mode (without manually calling compress-like operations),
+    // an extra step of modulus reduction is needed
+    // otherwise, run the shared implemented of EvalKeySwitchPrecomputeCore for all RNS schemes
     if (!((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM))) {
         return algo->EvalKeySwitchPrecomputeCore(ciphertext->GetElements()[1], ciphertext->GetCryptoParameters());
     }
+    else {
+        DCRTPoly c1     = ciphertext->GetElements()[1];
+        size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
+        double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
+        // how many levels to drop
+        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
+        // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+        uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+        c1.SetFormat(COEFFICIENT);
+        c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+                              cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+        c1.SetFormat(EVALUATION);
 
-    DCRTPoly c1     = ciphertext->GetElements()[1];
-    size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
-    double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
-    // how many levels to drop
-    uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
-    // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
-    uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
-    c1.SetFormat(COEFFICIENT);
-    c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
-                          cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
-    c1.SetFormat(EVALUATION);
-
-    return algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
+        return algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
+    }
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly> ciphertext, const usint index,
@@ -856,6 +860,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     // Maximum number of RNS limbs in the crypto context
     size_t sizeQM = elementParams->GetParams().size();
 
+    // In the HPSPOVERQLEVELED mode, we need to increase the modulus back to Q
     if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
         size_t sizeQ = cv[0].GetNumOfElements();
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
