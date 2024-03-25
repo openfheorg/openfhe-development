@@ -5,19 +5,28 @@ on:
     branches:
       - main
 
-env:
-  CMAKE_ARGS: "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9"
-
 jobs:
-
   call:
-    uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
     with:
-      mb2_debug: true
-      mb2_tcm: true
-      mb4_noflag: true
-      mb4_debug: true
-      mb4_tcm: true
-      mb6_ntl_noflag: true
-      mb6_ntl_debug_tcm: true
-      mb6_ntl_tcm: true
+      runner: ${{ vars.RUNNER }}
+      compiler: "GCC-11"
+      native_backend: "64"
+      mb2_jobs: "all"
+      mb4_jobs: "all"
+      mb6_jobs: "all"
+      # cmake_args_map holds job specific additional cmake options. compiler flags, native_backend flag and
+      # OpenMP flag are set in generic_workflow.yml
+      cmake_args_map: '{
+                  "default"           : "-DBUILD_EXTRAS=ON",
+                  "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
+                  "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
+                  "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
+                  "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
+                  "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
+                  "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+                  "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+                }'
+      
