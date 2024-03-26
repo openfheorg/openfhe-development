@@ -6,7 +6,7 @@ read -p "Enter comma-separated thread settings (e.g., 1,2,4,8,...): " thread_set
 # Split the input into an array
 IFS=',' read -ra threads <<< "$thread_settings"
 
-echo "num_threads   | ringDim   | numLimbs  | encode (ms) | ptxt x ctxt (ms)  | (encode/ptxt-ctxt) % | ctxt Add (ms)"
+echo "num_threads   | ringDim   | numLimbs  | encode (ms) | ptxt x ctxt (ms)  | (encode/ptxtxctxt) % | ctxt Add (ms)"
 
 # Loop through each thread setting
 for num_threads in "${threads[@]}"; do
