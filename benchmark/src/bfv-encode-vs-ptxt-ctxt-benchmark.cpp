@@ -48,7 +48,7 @@ int main() {
   // Sample Program: Step 1: Set CryptoContext
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
-  parameters.SetMultiplicativeDepth(0);
+  parameters.SetMultiplicativeDepth(4); // 0, 1, 2, or 4
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
   parameters.SetKeySwitchTechnique(BV);
