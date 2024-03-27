@@ -52,8 +52,12 @@ public:
     explicit KeyPair(PublicKeyImpl<Element>* a = nullptr, PrivateKeyImpl<Element>* b = nullptr)
         : publicKey(a), secretKey(b) {}
 
-    bool good() {
+    bool is_allocated() const {
         return publicKey && secretKey;
+    }
+
+    bool good() const {
+        return is_allocated();
     }
 };
 
