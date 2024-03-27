@@ -283,7 +283,7 @@ protected:
             // Perform the key generation operation.
             ////////////////////////////////////////////////////////////
             auto keyPair = cryptoContext->KeyGen();
-            ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
+            ASSERT_TRUE(keyPair.is_allocated()) << "Key generation failed!";
             // Create evaluation key vector to be used in keyswitching
             if (INVALID_PRIVATE_KEY == testData.error)
                 cryptoContext->EvalMultKeysGen(nullptr);
@@ -428,7 +428,7 @@ protected:
             // Perform the key generation operation.
             ////////////////////////////////////////////////////////////
             auto keyPair = cryptoContext->KeyGen();
-            ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
+            ASSERT_TRUE(keyPair.is_allocated()) << "Key generation failed!";
             // Create evaluation key vector to be used in keyswitching
             if (INVALID_PRIVATE_KEY == testData.error)
                 cryptoContext->EvalMultKeyGen(nullptr);
@@ -548,7 +548,7 @@ protected:
             // Perform the key generation operation.
             ////////////////////////////////////////////////////////////
             auto keyPair = cryptoContext->KeyGen();
-            ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
+            ASSERT_TRUE(keyPair.is_allocated()) << "Key generation failed!";
             // Create evaluation key vector to be used in keyswitching
             cryptoContext->EvalMultKeysGen(keyPair.secretKey);
 

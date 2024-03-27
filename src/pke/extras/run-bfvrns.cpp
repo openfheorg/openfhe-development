@@ -105,7 +105,7 @@ void SHERun() {
     std::cout << "Key generation time: "
               << "\t" << diff << " ms" << std::endl;
 
-    if (!keyPair.good()) {
+    if (!keyPair.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }

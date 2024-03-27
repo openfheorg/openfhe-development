@@ -162,7 +162,7 @@ protected:
             Plaintext plaintext = cc->MakeStringPlaintext(value);
 
             KeyPair<Element> kp = cc->KeyGen();
-            EXPECT_EQ(kp.good(), true) << failmsg << " key generation for string encrypt/decrypt failed";
+            EXPECT_EQ(kp.is_allocated(), true) << failmsg << " key generation for string encrypt/decrypt failed";
 
             Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
             Plaintext plaintextNew;
@@ -213,7 +213,7 @@ protected:
             Plaintext plaintextSInt = cc->MakeCoefPackedPlaintext(sintvec);
 
             KeyPair<Element> kp = cc->KeyGen();
-            EXPECT_EQ(kp.good(), true) << failmsg << " key generation for coef packed encrypt/decrypt failed";
+            EXPECT_EQ(kp.is_allocated(), true) << failmsg << " key generation for coef packed encrypt/decrypt failed";
 
             Ciphertext<Element> ciphertext4 = cc->Encrypt(kp.publicKey, plaintextInt);
             Plaintext plaintextIntNew;

@@ -163,12 +163,12 @@ protected:
             std::vector<Party> parties(testData.numParties);
             parties[0].id      = 0;
             parties[0].kpShard = cc->KeyGen();
-            if (!parties[0].kpShard.good())
+            if (!parties[0].kpShard.is_allocated())
                 OPENFHE_THROW(std::string("Key generation failed for party ") + std::to_string(0));
             for (usint i = 1; i < parties.size(); i++) {
                 parties[i].id      = i;
                 parties[i].kpShard = cc->MultipartyKeyGen(parties[0].kpShard.publicKey);
-                if (!parties[i].kpShard.good())
+                if (!parties[i].kpShard.is_allocated())
                     OPENFHE_THROW(std::string("Key generation failed for party ") + std::to_string(i));
             }
 
@@ -261,7 +261,7 @@ protected:
             // Key Generation Operation
             ////////////////////////////////////////////////////////////
             kp1 = cc->KeyGen();
-            if (!kp1.good())
+            if (!kp1.is_allocated())
                 OPENFHE_THROW(std::string("Key generation failed"));
             // Generate evalmult key
             auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
@@ -272,7 +272,7 @@ protected:
                 std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
             kp2 = cc->MultipartyKeyGen(kp1.publicKey);
-            if (!kp2.good())
+            if (!kp2.is_allocated())
                 OPENFHE_THROW(std::string("Key generation failed"));
             auto evalMultKey2    = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
             auto evalMultAB      = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
@@ -285,7 +285,7 @@ protected:
             cc->InsertEvalMultKey({evalMultFinal});
 
             kp3 = cc->MultipartyKeyGen(kp2.publicKey);
-            if (!kp3.good())
+            if (!kp3.is_allocated())
                 OPENFHE_THROW(std::string("Key generation failed"));
             auto evalMultKey3   = cc->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultKey);
             auto evalMultABC    = cc->MultiAddEvalKeys(evalMultAB, evalMultKey3, kp3.publicKey->GetKeyTag());

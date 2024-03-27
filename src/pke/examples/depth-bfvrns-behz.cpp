@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     processingTime = TOC(t);
     std::cout << "Key generation time: " << processingTime << "ms" << std::endl;
 
-    if (!keyPair.good()) {
+    if (!keyPair.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }

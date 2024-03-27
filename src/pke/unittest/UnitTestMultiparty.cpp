@@ -420,7 +420,7 @@ protected:
             //====================================================================
             std::vector<PrivateKey<Element>> secretKeys{kp1.secretKey, kp2.secretKey};
             KeyPair<Element> kpMultiparty = cc->MultipartyKeyGen(secretKeys);
-            if (!kpMultiparty.good())
+            if (!kpMultiparty.is_allocated())
                 OPENFHE_THROW("Key generation failed");
 
             ////////////////////////////////////////////////////////////
@@ -682,13 +682,13 @@ protected:
             // Perform Key Generation Operation
             ////////////////////////////////////////////////////////////
             KeyPair<Element> kp1 = cc->KeyGen();
-            ASSERT_TRUE(kp1.good()) << failmsg + "kp1 generation failed!";
+            ASSERT_TRUE(kp1.is_allocated()) << failmsg + "kp1 generation failed!";
 
             KeyPair<Element> kp2 = cc->MultipartyKeyGen(kp1.publicKey, false, true);
-            ASSERT_TRUE(kp2.good()) << failmsg + "kp2 generation failed!";
+            ASSERT_TRUE(kp2.is_allocated()) << failmsg + "kp2 generation failed!";
 
             KeyPair<Element> kp3 = cc->MultipartyKeyGen(kp1.publicKey, false, true);
-            ASSERT_TRUE(kp3.good()) << failmsg + "kp3 generation failed!";
+            ASSERT_TRUE(kp3.is_allocated()) << failmsg + "kp3 generation failed!";
 
             ////////////////////////////////////////////////////////////
             // Perform the second key generation operation.
@@ -699,7 +699,7 @@ protected:
             std::vector<PrivateKey<Element>> secretKeys{kp1.secretKey, kp2.secretKey, kp3.secretKey};
             // This is the same core key generation operation.
             KeyPair<Element> kpMultiparty = cc->MultipartyKeyGen(secretKeys);
-            ASSERT_TRUE(kpMultiparty.good()) << "kpMultiparty generation failed!";
+            ASSERT_TRUE(kpMultiparty.is_allocated()) << "kpMultiparty generation failed!";
 
             ////////////////////////////////////////////////////////////
             // Perform the proxy re-encryption key generation operation.

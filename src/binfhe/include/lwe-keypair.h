@@ -56,7 +56,7 @@ public:
 
     LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) noexcept : publicKey(std::move(Av)), secretKey(std::move(s)) {}
 
-    bool good() {
+    bool is_allocated() {
         return publicKey && secretKey;
     }
 };

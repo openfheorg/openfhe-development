@@ -52,7 +52,7 @@ public:
     explicit KeyPair(PublicKeyImpl<Element>* a = nullptr, PrivateKeyImpl<Element>* b = nullptr)
         : publicKey(a), secretKey(b) {}
 
-    bool good() {
+    bool is_allocated() {
         return publicKey && secretKey;
     }
 };
