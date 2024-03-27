@@ -624,10 +624,10 @@ protected:
             Plaintext plaintextInt = cc->MakePackedPlaintext(intvec);
 
             KeyPair<Element> kp = cc->KeyGen();
-            EXPECT_EQ(kp.good(), true) << failmsg << " key generation for scalar encrypt/decrypt failed";
+            EXPECT_EQ(kp.is_allocated(), true) << failmsg << " key generation for scalar encrypt/decrypt failed";
 
             KeyPair<Element> newKp = cc->KeyGen();
-            EXPECT_EQ(newKp.good(), true) << failmsg << " second key generation for scalar encrypt/decrypt failed";
+            EXPECT_EQ(newKp.is_allocated(), true) << failmsg << " second key generation for scalar encrypt/decrypt failed";
 
             // This generates the keys which are used to perform the key switching.
             EvalKey<Element> evalKey = cc->ReKeyGen(kp.secretKey, newKp.publicKey);

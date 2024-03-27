@@ -227,15 +227,15 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     auto evalSumKeysJoin2 = cryptoContext->MultiAddEvalSumKeys(evalSumKeys, evalSumKeysC, kp3.publicKey->GetKeyTag());
     cryptoContext->InsertEvalSumKey(evalSumKeysJoin2);
 
-    if (!kp1.good()) {
+    if (!kp1.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }
-    if (!kp2.good()) {
+    if (!kp2.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }
-    if (!kp3.good()) {
+    if (!kp3.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }

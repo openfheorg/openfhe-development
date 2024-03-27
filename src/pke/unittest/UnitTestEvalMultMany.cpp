@@ -88,7 +88,7 @@ static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext, std::strin
     OPENFHE_DEBUG("In RunEvalMultManyTest " << msg);
     auto keyPair = cryptoContext->KeyGen();
     OPENFHE_DEBUG("keygen");
-    ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
+    ASSERT_TRUE(keyPair.is_allocated()) << "Key generation failed!";
     OPENFHE_DEBUG("EvalMultKeysGen");
     // Create evaluation key vector to be used in keyswitching
     cryptoContext->EvalMultKeysGen(keyPair.secretKey);

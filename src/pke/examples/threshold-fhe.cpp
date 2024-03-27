@@ -105,15 +105,15 @@ void RunBGVrnsAdditive() {
     // generate the public key for all three secret shares
     kp3 = cc->MultipartyKeyGen(kp2.publicKey);
 
-    if (!kp1.good()) {
+    if (!kp1.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }
-    if (!kp2.good()) {
+    if (!kp2.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }
-    if (!kp3.good()) {
+    if (!kp3.is_allocated()) {
         std::cout << "Key generation failed!" << std::endl;
         exit(1);
     }

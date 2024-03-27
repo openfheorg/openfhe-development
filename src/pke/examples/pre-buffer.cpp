@@ -103,7 +103,7 @@ bool run_demo_pre(void) {
     std::cout << "Key generation time: "
               << "\t" << TOC_MS(t) << " ms" << std::endl;
 
-    if (!keyPair1.good()) {
+    if (!keyPair1.is_allocated()) {
         std::cout << "Alice Key generation failed!" << std::endl;
         return (false);
     }
@@ -157,7 +157,7 @@ bool run_demo_pre(void) {
     std::cout << "Key generation time: "
               << "\t" << TOC_MS(t) << " ms" << std::endl;
 
-    if (!keyPair2.good()) {
+    if (!keyPair2.is_allocated()) {
         std::cout << "Bob Key generation failed!" << std::endl;
         return (false);
     }

@@ -130,7 +130,7 @@ protected:
 
         keyPair1 = cryptoContext->KeyGen();
 
-        if (!keyPair1.good()) {
+        if (!keyPair1.is_allocated()) {
             OPENFHE_THROW("Key generation failed!");
         }
 

@@ -199,7 +199,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Assert everything is good
     for (usint i = 0; i < numParties; i++) {
-        if (!parties[i].kpShard.good()) {
+        if (!parties[i].kpShard.is_allocated()) {
             std::cout << "Key generation failed for party " << i << "!" << std::endl;
             exit(1);
         }
