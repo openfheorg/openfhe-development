@@ -474,7 +474,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto algo                   = cc->GetScheme();
     algo->ModReduceInternalInPlace(raised, raised->GetNoiseScaleDeg() - 1);
 
-    AdjustCiphertext(raised, correction);
+    if (m_correctionFactor == 100) {
+        correction = 1;
+    }
+    else {
+        AdjustCiphertext(raised, correction);
+    }
     auto ctxtDCRT = raised->GetElements();
 
     // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
@@ -722,9 +727,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     }
 
 #if NATIVEINT != 128
-    // 64-bit only: scale back the message to its original scale.
-    uint64_t corFactor = (uint64_t)1 << std::llround(correction);
-    algo->MultByIntegerInPlace(ctxtDec, corFactor);
+    if (correction != 100) {
+        // 64-bit only: scale back the message to its original scale.
+        uint64_t corFactor = (uint64_t)1 << std::llround(correction);
+        algo->MultByIntegerInPlace(ctxtDec, corFactor);
+    }
 #endif
 
 #ifdef BOOTSTRAPTIMING
