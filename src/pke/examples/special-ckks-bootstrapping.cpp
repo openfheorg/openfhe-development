@@ -85,7 +85,8 @@ void SimpleBootstrapExample() {
 
     // the default correction factor will be applied if the last argument is 0
     // if you want to disable the scaling down and use instead firstMod - dcrtBits, the last
-    // argument can be set to 100; YSP I don't think this will be needed
+    // argument can be set to 100 (don't forget to make dcrtBits smaller than fistMod by 10 bits or so);
+    // YSP I don't think setting it to 100 will be needed
     cryptoContext->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots, 0);
 
     auto keyPair = cryptoContext->KeyGen();

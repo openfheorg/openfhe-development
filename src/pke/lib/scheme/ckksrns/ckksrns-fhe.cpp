@@ -727,7 +727,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     }
 
 #if NATIVEINT != 128
-    if (correction != 100) {
+    if (m_correctionFactor != 100) {
         // 64-bit only: scale back the message to its original scale.
         uint64_t corFactor = (uint64_t)1 << std::llround(correction);
         algo->MultByIntegerInPlace(ctxtDec, corFactor);
