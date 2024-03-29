@@ -177,10 +177,10 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
                           uint32_t dcrtBits, bool keySwitch = false);
 
 int main() {
-    NANDthroughBFV();
-#ifdef ITERATIVE
-    schedule.clear();
-#endif
+//     NANDthroughBFV();
+// #ifdef ITERATIVE
+//     schedule.clear();
+// #endif
     LUTthroughBFV();
 
     return 0;
@@ -2211,8 +2211,8 @@ void LUTthroughBFV() {
     auto ccLWE            = BinFHEContext();
     const uint32_t n      = 1024;
     const uint32_t NN     = 1024;  // RSGW ring dim. Not used
-    const uint32_t p      = 512;
-    const NativeInteger q = 65537;
+    const uint32_t p      = 512; // 8192;
+    const NativeInteger q = 65537; // 1179649;
     const NativeInteger Q = 18014398509404161;
 
     ccLWE.BinFHEContext::GenerateBinFHEContext(n, NN, q, Q, 3.19, 32, 32, 32, UNIFORM_TERNARY, GINX, 10);
@@ -2224,11 +2224,10 @@ void LUTthroughBFV() {
     std::cout << "\n--- Time for Step1 = FHEW param generation: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
     std::cout << "    FHEW params: p = " << p << ", n = " << n << ", q = " << q << std::endl;
 
-
     // Step 2. Main BFV cryptocontext generation
-    uint32_t numDigits = 3;
+    uint32_t numDigits = 4;
     uint32_t maxRelin  = 2;
-    uint32_t numValues = 8;
+    uint32_t numValues = 32768;
 
     CCParams<CryptoContextBFVRNS> parameters;
     // The BFV plaintext modulus needs to be the same as the FHEW ciphertext modulus
@@ -2240,7 +2239,7 @@ void LUTthroughBFV() {
     parameters.SetKeySwitchTechnique(HYBRID);  // BV doesn't work for Compress then KeySwitch
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1024);
+    parameters.SetRingDim(32768);
 
     CryptoContext<DCRTPoly> ccBFV = GenCryptoContext(parameters);
     ccBFV->Enable(PKE);
@@ -2255,7 +2254,7 @@ void LUTthroughBFV() {
     uint32_t ringDim = ccBFV->GetRingDimension();
 
     std::cout << "    BFV params: t = " << ccBFV->GetCryptoParameters()->GetPlaintextModulus() << ", N = " << ringDim
-              << ", log2 q = " << log2(ccBFV->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << ", log2 q = " << ccBFV->GetCryptoParameters()->GetElementParams()->GetModulus().GetMSB()
               << std::endl;
 
     std::cout << "    Number of digits for keyswitch: " << numDigits << std::endl;
@@ -2299,6 +2298,7 @@ void LUTthroughBFV() {
 
     std::cout << "\n--- Time for Step3 = inner BFV param generation: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
     std::cout << "    modulus_BFV_from: " << modulus_BFV_from << ", modulus_BFV_to: " << modulus_BFV_to << std::endl;
+    std::cout << "    Number of limbs in ccBFV: " << paramsQ.size() << ", number of limbs in ccBFV_KS: " << paramsQ2.size() << std::endl;
 
     // Step 4. Key generation for switching and precomputations
     TIC(tVar);
@@ -2326,12 +2326,12 @@ void LUTthroughBFV() {
     for (uint32_t i = 0; i < numValues; i++)
         ctxtsLWE1.push_back(ccLWE.Encrypt(lwesk, x1[i], FRESH, p));
 
-    std::vector<LWEPlaintext> LWEptxt(numValues);
-    for (uint32_t i = 0; i < numValues; i++)
-        ccLWE.Decrypt(lwesk, ctxtsLWE1[i], &LWEptxt[i], p);
+    // std::vector<LWEPlaintext> LWEptxt(numValues);
+    // for (uint32_t i = 0; i < numValues; i++)
+    //     ccLWE.Decrypt(lwesk, ctxtsLWE1[i], &LWEptxt[i], p);
 
-    std::cout << "Encrypted LWE message" << std::endl;
-    std::cout << LWEptxt << std::endl;
+    // std::cout << "Encrypted LWE message" << std::endl;
+    // std::cout << LWEptxt << std::endl;
 
     std::cout << "\n--- Time for Step5 = inputs and encryption: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
     std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
@@ -2346,6 +2346,9 @@ void LUTthroughBFV() {
     ptxt->SetLength(numValues);
     std::cout << "B - A*s: " << ptxt << std::endl;
     */
+
+    // Inputs are no longer needed, clear them to release memory
+    ctxtsLWE1.clear();
 
     std::cout << "\n--- Time for Step6 = FHEWtoBFV: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
     std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
@@ -2434,12 +2437,14 @@ void LUTthroughBFV() {
     // Step 9. Translating back to FHEW
     TIC(tVar);
     auto ctxtsFHEW = EvalBFVtoFHEW(*ccBFV, *ccBFV_KS, decoded, ctxtKS, BFVtoFHEWSwk, modulus_BFV_to, QFHEW, n);
-    std::cout << "\nDecrypting switched ciphertexts" << std::endl;
-    vector<LWEPlaintext> ptxtsFHEW(numValues);
-    for (uint32_t i = 0; i < numValues; i++) {
-        ccLWE.Decrypt(lwesk, ctxtsFHEW[i], &ptxtsFHEW[i], p);
-    }
-    std::cout << ptxtsFHEW << std::endl;
+
+    // std::cout << "\nDecrypting switched ciphertexts" << std::endl;
+    // vector<LWEPlaintext> ptxtsFHEW(numValues);
+    // for (uint32_t i = 0; i < numValues; i++) {
+    //     ccLWE.Decrypt(lwesk, ctxtsFHEW[i], &ptxtsFHEW[i], p);
+    // }
+    // std::cout << ptxtsFHEW << std::endl;
+
     std::cout << "\n--- Time for Step9 = BFVtoFHEW & decryption: " << TOC_NS(tVar) / 1000000000.0 << " s\n";
     std::cout << "---Online time so far: " << TOC_NS(tOnline) / 1000000000.0 << " s\n";
 }
