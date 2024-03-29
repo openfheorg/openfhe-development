@@ -14,27 +14,27 @@ on:
         description: 'Compiler type'
         type: string
         required: true
-        default: 'GCC-11'
+        default: 'CLANG-14'
       native_backend:
         description: 'Size of NativeInteger'
         type: string
         required: true
-        default: 'all'
+        default: '64'
       mb2_jobs:
         description: 'MATHBACKEND2 jobs'
         type: string
         required: true
-        default: 'mb2'
+        default: 'none'
       mb4_jobs:
         description: 'MATHBACKEND4 jobs'
         type: string
         required: true
-        default: 'all'
+        default: 'none'
       mb6_jobs:
         description: 'MATHBACKEND6 jobs'
         type: string
         required: true
-        default: 'all'
+        default: 'none'
   
   workflow_dispatch:
     inputs:
@@ -48,12 +48,12 @@ on:
         - 'GCC-10'
         - 'GCC-11'
         - 'GCC-12'
-        - 'CLANG-12'
-        - 'CLANG-13'
+        - 'CLANG-12 (WITH_OPENMP=OFF)'
+        - 'CLANG-13 (WITH_OPENMP=OFF)'
         - 'CLANG-14'
-        - 'CLANG-15'
+        - 'CLANG-15 (WITH_OPENMP=OFF)'
         required: true
-        default: 'GCC-11'
+        default: 'CLANG-14'
       native_backend:
         description: 'Size of NativeInteger'
         type: choice
@@ -63,7 +63,7 @@ on:
         - '128'
         - 'all'
         required: true
-        default: 'all'
+        default: '64'
       mb2_jobs:
         description: 'MATHBACKEND2 jobs'
         type: choice
@@ -74,7 +74,7 @@ on:
         - 'all'
         - 'none'
         required: true
-        default: 'mb2'
+        default: 'none'
       mb4_jobs:
         description: 'MATHBACKEND4 jobs'
         type: choice
@@ -85,7 +85,7 @@ on:
         - 'all'
         - 'none'
         required: true
-        default: 'all'
+        default: 'none'
       mb6_jobs:
         description: 'MATHBACKEND6 jobs'
         type: choice
@@ -96,7 +96,7 @@ on:
         - 'all'
         - 'none'
         required: true
-        default: 'all'
+        default: 'none'
 
 jobs:
   call:
