@@ -242,7 +242,8 @@ public:
                 break;
 
         for (size_t j = 0; j <= i; j++) {
-            out << value[j].real() << ", ";
+            //  out << value[j].real() << ", ";
+            out << " (" << value[j].real() << "," << value[j].imag() << "),";
         }
 
         out << " ... ); ";

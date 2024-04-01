@@ -38,6 +38,7 @@
 #include "openfhe.h"
 
 using namespace lbcrypto;
+using namespace std::literals;
 
 int main() {
     // Step 1: Setup CryptoContext
@@ -166,11 +167,14 @@ int main() {
    */
     cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
+    // Generation of conjugation key
+    cc->EvalAutomorphismKeyGen(keys.secretKey, {2 * cc->GetRingDimension() - 1});
+
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    std::vector<double> x2 = {5.0, 4.0, 3.0, 2.0, 1.0, 0.75, 0.5, 0.25};
+    std::vector<std::complex<double>> x1 = {0.25 + 1i, 0.5 + 0.25i, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
+    std::vector<std::complex<double>> x2 = {5.0 + 1.25i, 4.0, 3.0, 2.0, 1.0, 0.75, 0.5, 0.25};
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
@@ -200,6 +204,9 @@ int main() {
     // Homomorphic rotations
     auto cRot1 = cc->EvalRotate(c1, 1);
     auto cRot2 = cc->EvalRotate(c1, -2);
+
+    auto evalAutomorphismKeys = cc->GetEvalAutomorphismKeyMap(c1->GetKeyTag());
+    auto cConj1               = cc->EvalAutomorphism(c1, 2 * cc->GetRingDimension() - 1, evalAutomorphismKeys);
 
     // Step 5: Decryption and output
     Plaintext result;
@@ -246,6 +253,10 @@ int main() {
     cc->Decrypt(keys.secretKey, cRot2, &result);
     result->SetLength(batchSize);
     std::cout << "x1 rotate by -2 = " << result << std::endl;
+
+    cc->Decrypt(keys.secretKey, cConj1, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 conjugation  = " << result << std::endl;
 
     return 0;
 }
