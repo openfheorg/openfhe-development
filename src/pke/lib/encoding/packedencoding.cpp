@@ -128,6 +128,7 @@ bool PackedEncoding::Encode() {
 
                 this->encodedVectorDCRT.SetElementAtIndex(ii, std::move(temp));
             }
+            this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
     }
     else {
@@ -383,6 +384,7 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
     }
 
     ring->SetValues(std::move(slotValuesRing), Format::COEFFICIENT);
+
     OPENFHE_DEBUG(*ring);
 }
 
