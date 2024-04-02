@@ -6,9 +6,8 @@ on:
       - main
 
 jobs:
-  
-  call_1:
-    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github_ci
+  call_with_gcc:
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
     with:
       runner: ${{ vars.RUNNER }}
       compiler: "GCC-11"
@@ -31,9 +30,9 @@ jobs:
                   "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
                 }'
 
-  call_2:
-    needs: call_1
-    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github_ci
+  call_with_clang:
+    needs: call_with_gcc
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
     with:
       runner: ${{ vars.RUNNER }}
       compiler: "CLANG-14"
@@ -63,7 +62,7 @@ jobs:
   #
   ###############################################
   pages:
-    needs: call_2
+    needs: call_with_clang
     runs-on: ${{ vars.RUNNER }}
     env:
       GIT_SUBMODULE_STRATEGY: recursive
