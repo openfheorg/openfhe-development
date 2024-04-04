@@ -118,9 +118,9 @@ int main() {
 
     plaintextMult->SetLength(payload.size());
 
-    // // Output results
-    // std::cout << "\nResults of homomorphic computations" << std::endl;
-    // std::cout << "plaintextMult: " << plaintextMult << std::endl;
+    // Output results
+    std::cout << "\nResults of homomorphic computations" << std::endl;
+    std::cout << "plaintextMult: " << plaintextMult << std::endl;
 
     return 0;
 }

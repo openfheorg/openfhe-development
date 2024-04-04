@@ -88,6 +88,7 @@ bool CoefPackedEncoding::Encode() {
     if (this->typeFlag == IsDCRTPoly) {
         this->encodedVectorDCRT = this->encodedVector;
         encodedVectorDCRT       = encodedVectorDCRT.Times(scalingFactorInt);
+        this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
     }
 
     this->isEncoded = true;
