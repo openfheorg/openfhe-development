@@ -64,9 +64,10 @@ bool PackedEncoding::Encode() {
         }
 
         for (i = 0; i < value.size(); i++) {
-            if ((PlaintextModulus)llabs(value[i]) >= mod)
+            if ((PlaintextModulus)llabs(value[i]) >= mod) {
                 OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
                               std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
+            }
 
             if (value[i] < 0) {
                 // It is more efficient to encode negative numbers using the ciphertext
@@ -84,28 +85,31 @@ bool PackedEncoding::Encode() {
         }
 
         if (this->typeFlag == IsNativePoly) {
-            // Calls the inverse NTT mod plaintext modulus
-            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                                   this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
             PlaintextModulus q = this->GetElementModulus().ConvertToInt();
-            tempVector.SetModulus(q);
-            if (q < mod)
+            if (q < mod) {
                 OPENFHE_THROW(
                     "the plaintext modulus size is larger than the size of "
                     "NativePoly modulus; increase the NativePoly modulus.");
+            }
+
+            // Calls the inverse NTT mod plaintext modulus
+            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
+                                   this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
+            tempVector.SetModulus(q);
             this->encodedNativeVector.SetValues(std::move(tempVector), Format::COEFFICIENT);
         }
         else {
-            // Calls the inverse NTT mod plaintext modulus
-            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                                   this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
             PlaintextModulus q = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
-            if (q < mod)
+            if (q < mod) {
                 OPENFHE_THROW(
                     "the plaintext modulus size is larger than the size of "
                     "CRT moduli; either decrease the plaintext modulus or "
                     "increase the CRT moduli.");
+            }
 
+            // Calls the inverse NTT mod plaintext modulus
+            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
+                                   this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
             // Switches from plaintext modulus to the modulus of the first RNS limb
             tempVector.SetModulus(q);
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
