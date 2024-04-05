@@ -224,6 +224,9 @@ private:
     template <typename P>
     void Pack(P* ring, const PlaintextModulus& modulus) const;
 
+    // Optimized version of packing designed for DCRTPoly and NativePoly
+    void PackNativeVector(const PlaintextModulus& modulus, uint32_t m, NativeVector* values) const;
+
     /**
    * @brief Unpacks the data from aggregated plaintext to slot values.
    *
