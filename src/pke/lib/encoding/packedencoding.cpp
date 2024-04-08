@@ -54,24 +54,9 @@ bool PackedEncoding::Encode() {
     auto mod = this->encodingParams->GetPlaintextModulus();
 
     if ((this->typeFlag == IsNativePoly) || (this->typeFlag == IsDCRTPoly)) {
-        NativeInteger q;
-
-        NativeVector temp;
-        if (this->typeFlag == IsNativePoly) {
-            q    = this->GetElementModulus().ConvertToInt();
-            temp = NativeVector(this->GetElementRingDimension(), this->GetElementModulus().ConvertToInt());
-        }
-        else {
-            q    = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
-            temp = NativeVector(this->GetElementRingDimension(), q);
-            if (q < mod)
-                OPENFHE_THROW(
-                    "the plaintext modulus size is larger than the size of "
-                    "CRT moduli; either decrease the plaintext modulus or "
-                    "increase the CRT moduli.");
-        }
-
         size_t i;
+
+        NativeVector tempVector = NativeVector(this->GetElementRingDimension(), mod);
 
         NativeInteger originalSF = scalingFactorInt;
         for (size_t j = 1; j < noiseScaleDeg; j++) {
@@ -79,56 +64,74 @@ bool PackedEncoding::Encode() {
         }
 
         for (i = 0; i < value.size(); i++) {
-            NativeInteger entry;
-
-            if ((PlaintextModulus)llabs(value[i]) >= mod)
+            if ((PlaintextModulus)llabs(value[i]) >= mod) {
                 OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
                               std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
+            }
 
             if (value[i] < 0) {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
-                entry = NativeInteger(mod) - NativeInteger((uint64_t)llabs(value[i]));
+                tempVector[i] = NativeInteger(mod) - NativeInteger((uint64_t)llabs(value[i]));
             }
             else {
-                entry = NativeInteger(value[i]);
+                tempVector[i] = NativeInteger(value[i]);
             }
-
-            temp[i] = entry.ModMul(scalingFactorInt, mod);
         }
 
-        for (; i < this->GetElementRingDimension(); i++)
-            temp[i] = NativeInteger(0);
-        this->isEncoded = true;
+        // no need to do extra multiplications for many scenarios when the scaling factor is 1, e.g., in BFV
+        if (scalingFactorInt != 1) {
+            tempVector.ModMulEq(scalingFactorInt);
+        }
 
         if (this->typeFlag == IsNativePoly) {
-            // the input plaintext data is in the evaluation format
-            this->GetElement<NativePoly>().SetValues(std::move(temp), Format::EVALUATION);
-            // ilVector coefficients are packed and resulting ilVector is in
-            // COEFFICIENT form.
-            this->Pack(&this->GetElement<NativePoly>(), this->encodingParams->GetPlaintextModulus());
+            PlaintextModulus q = this->GetElementModulus().ConvertToInt();
+            if (q < mod) {
+                OPENFHE_THROW(
+                    "the plaintext modulus size is larger than the size of "
+                    "NativePoly modulus; increase the NativePoly modulus.");
+            }
+
+            // Calls the inverse NTT mod plaintext modulus
+            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
+                                   this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
+            tempVector.SetModulus(q);
+            this->encodedNativeVector.SetValues(std::move(tempVector), Format::COEFFICIENT);
         }
         else {
+            PlaintextModulus q = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
+            if (q < mod) {
+                OPENFHE_THROW(
+                    "the plaintext modulus size is larger than the size of "
+                    "CRT moduli; either decrease the plaintext modulus or "
+                    "increase the CRT moduli.");
+            }
+
+            // Calls the inverse NTT mod plaintext modulus
+            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
+                                   this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
+            // Switches from plaintext modulus to the modulus of the first RNS limb
+            tempVector.SetModulus(q);
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
-            // the input plaintext data is in the evaluation format
-            firstElement.SetValues(std::move(temp), Format::EVALUATION);
-            // ilVector coefficients are packed and resulting ilVector is in
-            // COEFFICIENT form.
-            this->Pack(&firstElement, this->encodingParams->GetPlaintextModulus());
-            this->encodedVectorDCRT.SetElementAtIndex(0, firstElement);
+            firstElement.SetValues(std::move(tempVector), Format::COEFFICIENT);
 
             const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
             const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
+            // Sets the values for all other RNS limbs
             for (size_t ii = 1; ii < nativeParams.size(); ii++) {
-                NativePoly temp(firstElement);
+                NativePoly tempPoly(firstElement);
 
-                temp.SwitchModulus(nativeParams[ii]->GetModulus(), nativeParams[ii]->GetRootOfUnity(),
-                                   nativeParams[ii]->GetBigModulus(), nativeParams[ii]->GetBigRootOfUnity());
+                tempPoly.SwitchModulus(nativeParams[ii]->GetModulus(), nativeParams[ii]->GetRootOfUnity(),
+                                       nativeParams[ii]->GetBigModulus(), nativeParams[ii]->GetBigRootOfUnity());
 
-                this->encodedVectorDCRT.SetElementAtIndex(ii, std::move(temp));
+                this->encodedVectorDCRT.SetElementAtIndex(ii, std::move(tempPoly));
             }
+            // Setting the first limb at the end make sure firstElement is available during the main loop
+            this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
+            this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
+        this->isEncoded = true;
     }
     else {
         BigVector temp(this->GetElementRingDimension(), BigInteger(this->GetElementModulus()));
@@ -157,7 +160,6 @@ bool PackedEncoding::Encode() {
 
         for (; i < this->GetElementRingDimension(); i++)
             temp[i] = BigInteger(0);
-        this->isEncoded = true;
 
         // the input plaintext data is in the evaluation format
         this->GetElement<Poly>().SetValues(std::move(temp), Format::EVALUATION);
@@ -165,6 +167,8 @@ bool PackedEncoding::Encode() {
         // ilVector coefficients are packed and resulting ilVector is in COEFFICIENT
         // form.
         this->Pack(&this->GetElement<Poly>(), this->encodingParams->GetPlaintextModulus());
+
+        this->isEncoded = true;
     }
 
     return true;
@@ -383,7 +387,49 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
     }
 
     ring->SetValues(std::move(slotValuesRing), Format::COEFFICIENT);
+
     OPENFHE_DEBUG(*ring);
+}
+
+void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t m, NativeVector* values) const {
+    NativeVector& slotValues = *values;
+    NativeInteger modulusNI(modulus);  // native int modulus
+    usint phim = slotValues.GetLength();
+
+    const ModulusM modulusM = {modulusNI, m};
+
+    // Do the precomputation if not initialized
+    if (this->m_initRoot[modulusM].GetMSB() == 0) {
+        SetParams(m, EncodingParams(std::make_shared<EncodingParamsImpl>(modulus)));
+    }
+
+    // Transform Eval to Coeff
+    if (IsPowerOfTwo(m)) {
+        if (m_toCRTPerm[m].size() > 0) {
+            // Permute to CRT Order
+            NativeVector permutedSlots(phim, modulusNI);
+
+            for (usint i = 0; i < phim; i++) {
+                permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
+            }
+            ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
+                permutedSlots, m_initRoot[modulusM], m, &slotValues);
+        }
+        else {
+            ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
+                slotValues, m_initRoot[modulusM], m, &slotValues);
+        }
+    }
+    else {  // Arbitrary cyclotomic
+        // Permute to CRT Order
+        NativeVector permutedSlots(phim, modulusNI);
+        for (usint i = 0; i < phim; i++) {
+            permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
+        }
+
+        slotValues = ChineseRemainderTransformArb<NativeVector>().InverseTransform(
+            permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
+    }
 }
 
 template <typename P>

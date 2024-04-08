@@ -759,40 +759,41 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Elem
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext, Element pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext, const Element& pt) const {
     Ciphertext<Element> result = ciphertext->Clone();
     EvalAddCoreInPlace(result, pt);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element pt) const {
+void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element& pt) const {
     std::vector<Element>& cv = ciphertext->GetElements();
     cv[0] += pt;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element> ciphertext, const Element pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element> ciphertext, const Element& pt) const {
     Ciphertext<Element> result = ciphertext->Clone();
     EvalSubCoreInPlace(result, pt);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext, const Element pt) const {
+void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext, const Element& pt) const {
     std::vector<Element>& cv = ciphertext->GetElements();
     cv[0] -= pt;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext, const Element pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext,
+                                                          const Element& pt) const {
     Ciphertext<Element> result = ciphertext->Clone();
     EvalMultCoreInPlace(result, pt);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element pt) const {
+void LeveledSHEBase<Element>::EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element& pt) const {
     std::vector<Element>& cv = ciphertext->GetElements();
     for (auto& c : cv) {
         c *= pt;

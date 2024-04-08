@@ -838,17 +838,17 @@ protected:
 
     Ciphertext<Element> EvalSquareCore(ConstCiphertext<Element> ciphertext) const;
 
-    virtual Ciphertext<Element> EvalAddCore(ConstCiphertext<Element> ciphertext, const Element plaintext) const;
+    virtual Ciphertext<Element> EvalAddCore(ConstCiphertext<Element> ciphertext, const Element& plaintext) const;
 
-    void EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element plaintext) const;
+    void EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element& plaintext) const;
 
-    virtual Ciphertext<Element> EvalSubCore(ConstCiphertext<Element> ciphertext1, const Element plaintext) const;
+    virtual Ciphertext<Element> EvalSubCore(ConstCiphertext<Element> ciphertext1, const Element& plaintext) const;
 
-    void EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1, const Element plaintext) const;
+    void EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1, const Element& plaintext) const;
 
-    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext, const Element plaintext) const;
+    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext, const Element& plaintext) const;
 
-    void EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element plaintext) const;
+    void EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element& plaintext) const;
 };
 
 }  // namespace lbcrypto
