@@ -630,7 +630,6 @@ void LeveledSHEBase<Element>::VerifyNumOfTowers(const ConstCiphertext<Element>& 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext1,
                                                          ConstCiphertext<Element> ciphertext2) const {
-    VerifyNumOfTowers(ciphertext1, ciphertext2);
     auto result = ciphertext1->Clone();
     EvalAddCoreInPlace(result, ciphertext2);
     return result;
@@ -662,7 +661,6 @@ void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element> ciphertext1,
                                                          ConstCiphertext<Element> ciphertext2) const {
-    VerifyNumOfTowers(ciphertext1, ciphertext2);
     auto result = ciphertext1->Clone();
     EvalSubCoreInPlace(result, ciphertext2);
     return result;
@@ -790,7 +788,6 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Elem
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext, const Element& pt) const {
-    VerifyNumOfTowers(ciphertext, pt);
     Ciphertext<Element> result = ciphertext->Clone();
     EvalAddCoreInPlace(result, pt);
     return result;
@@ -805,7 +802,6 @@ void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element> ciphertext, const Element& pt) const {
-    VerifyNumOfTowers(ciphertext, pt);
     Ciphertext<Element> result = ciphertext->Clone();
     EvalSubCoreInPlace(result, pt);
     return result;
@@ -821,7 +817,6 @@ void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext,
                                                           const Element& pt) const {
-    VerifyNumOfTowers(ciphertext, pt);
     Ciphertext<Element> result = ciphertext->Clone();
     EvalMultCoreInPlace(result, pt);
     return result;
