@@ -1586,7 +1586,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
     const double prescale = (1.0 / LWECiphertexts[0]->GetModulus().ConvertToDouble()) / K;
 
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t i = 0; i < numValues; i++) {
         auto a = LWECiphertexts[i]->GetA();
         A[i]   = std::vector<std::complex<double>>(a.GetLength());
