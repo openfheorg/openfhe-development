@@ -784,6 +784,10 @@ protected:
     /////////////////////////////////////////
     // CORE OPERATIONS
     /////////////////////////////////////////
+    void VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext1, const ConstCiphertext<Element>& ciphertext,
+                           CALLER_INFO_ARGS_HDR) const;
+    void VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext, const Element& plaintext,
+                           CALLER_INFO_ARGS_HDR) const;
 
     /**
    * Internal function for in-place homomorphic addition of ciphertexts.
