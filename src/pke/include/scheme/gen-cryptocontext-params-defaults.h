@@ -54,12 +54,12 @@ constexpr KeySwitchTechnique ksTech   = HYBRID;
 // Backend-specific settings for CKKS
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 constexpr ScalingTechnique scalTech = FIXEDAUTO;
-constexpr usint firstModSize        = 105;
+constexpr usint firstModSize        = 89;
 constexpr usint scalingModSize      = 78;
 #else
 constexpr ScalingTechnique scalTech = FLEXIBLEAUTOEXT;
 constexpr usint firstModSize        = 60;
-constexpr usint scalingModSize      = 59;
+constexpr usint scalingModSize      = 50;
 #endif
 constexpr usint batchSize                                   = 0;
 constexpr uint32_t numLargeDigits                           = 0;
@@ -92,14 +92,10 @@ constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
 constexpr int maxRelinSkDeg           = 2;
 constexpr KeySwitchTechnique ksTech   = BV;
 constexpr ScalingTechnique scalTech   = NORESCALE;
-#if defined(HAVE_INT128) || NATIVEINT != 64
-constexpr usint firstModSize = 60;
-#else
-constexpr usint firstModSize        = 57;
-#endif
-constexpr usint batchSize           = 0;
-constexpr uint32_t numLargeDigits   = 0;
-constexpr usint multiplicativeDepth = 1;
+constexpr usint firstModSize          = 0;
+constexpr usint batchSize             = 0;
+constexpr uint32_t numLargeDigits     = 0;
+constexpr usint multiplicativeDepth   = 1;
 #if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr usint scalingModSize = 60;
 #else
@@ -118,9 +114,9 @@ constexpr ExecutionMode executionMode                       = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode           = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                              = 0;
 constexpr double desiredPrecision                           = 0;
-constexpr uint32_t statisticalSecurity                      = 30;
-constexpr uint32_t numAdversarialQueries                    = 1;
-constexpr uint32_t thresholdNumOfParties                    = 1;
+constexpr uint32_t statisticalSecurity                      = 0;
+constexpr uint32_t numAdversarialQueries                    = 0;
+constexpr uint32_t thresholdNumOfParties                    = 0;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 

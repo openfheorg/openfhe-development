@@ -58,6 +58,38 @@ public:
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
+
+    //================================================================================================================
+    // DISABLE FUNCTIONS that are not applicable to CKKSRNS
+    //================================================================================================================
+    template <typename T = bool>
+    void SetPlaintextModulus(PlaintextModulus ptModulus0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
+    void SetEvalAddCount(usint evalAddCount0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
+    void SetKeySwitchCount(usint keySwitchCount0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
+    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
+    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
+    void SetMultiHopModSize(usint multiHopModSize0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
+    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
+        DISABLED_FOR_CKKSRNS;
+    }
 };
 //====================================================================================================================
 

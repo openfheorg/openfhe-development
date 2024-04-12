@@ -295,7 +295,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     if (numInitialModuli < 1)
         OPENFHE_THROW("numInitialModuli must be greater than 0.");
     const size_t sizeQ = multipartyMode == NOISE_FLOODING_MULTIPARTY ?
-                             numInitialModuli + NOISE_FLOODING::NUM_MODULI_MULTIPARTY :
+                             numInitialModuli + NoiseFlooding::NUM_MODULI_MULTIPARTY :
                              numInitialModuli;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
@@ -308,14 +308,14 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     NativeInteger lastModulus = moduliQ[0];
 
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
-        moduliQ[1] = LastPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, 2 * n);
+        moduliQ[1] = LastPrime<NativeInteger>(NoiseFlooding::MULTIPARTY_MOD_SIZE, 2 * n);
         if (moduliQ[1] == lastModulus) {
             moduliQ[1]  = PreviousPrime<NativeInteger>(moduliQ[1], 2 * n);
             lastModulus = moduliQ[1];
         }
         rootsQ[1] = RootOfUnity<NativeInteger>(2 * n, moduliQ[1]);
 
-        for (size_t i = 2; i < 1 + NOISE_FLOODING::NUM_MODULI_MULTIPARTY; i++) {
+        for (size_t i = 2; i < 1 + NoiseFlooding::NUM_MODULI_MULTIPARTY; i++) {
             moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
             rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
             if (lastModulus != moduliQ[0])

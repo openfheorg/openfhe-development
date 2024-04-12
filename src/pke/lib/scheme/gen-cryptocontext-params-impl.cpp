@@ -95,23 +95,6 @@ void Params::SetToDefaults(SCHEME scheme) {
     }
 }
 //====================================================================================================================
-void Params::ValidateRingDim(usint ringDim) {
-    if (!IsPowerOfTwo(ringDim)) {
-        std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(ringDim) +
-                             "]. Ring dimension must be a power of 2.");
-        OPENFHE_THROW(errorMsg);
-    }
-}
-//====================================================================================================================
-void Params::ValidateMultiplicativeDepth(usint multiplicativeDepth) {
-    constexpr usint maxMultiplicativeDepthValue = 1000;
-    if (multiplicativeDepth > maxMultiplicativeDepthValue) {
-        std::string errorMsg(std::string("The provided multiplicative depth [") + std::to_string(multiplicativeDepth) +
-                             "] is not computationally feasible. Use a smaller value.");
-        OPENFHE_THROW(errorMsg);
-    }
-}
-//====================================================================================================================
 Params::Params(const std::vector<std::string>& vals) {
     if (getAllParamsDataMembers().size() != vals.size()) {
         std::string errMsg(std::string("The number of data members and the number of values do not match: ") +

@@ -40,6 +40,7 @@
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns-params.h"
 #include "scheme/bfvrns/bfvrns-scheme.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+#include "scheme/gen-cryptocontext-params-validation.h"
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 
@@ -58,6 +59,7 @@ public:
     using CryptoParams              = CryptoParametersBFVRNS;
 
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBFVRNS>& parameters) {
+        validateParametersForCryptocontext(parameters);
         return genCryptoContextBFVRNSInternal<CryptoContextBFVRNS, Element>(parameters);
     }
 };

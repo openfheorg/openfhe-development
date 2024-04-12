@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2024, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,42 +28,19 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
+#define __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
 
-/*
-  API to generate BGV crypto context
- */
-
-#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_H__
-#define __GEN_CRYPTOCONTEXT_BGVRNS_H__
-
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-params.h"
-#include "scheme/bgvrns/bgvrns-scheme.h"
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "scheme/gen-cryptocontext-params-validation.h"
-#include "cryptocontext-fwd.h"
-#include "lattice/lat-hal.h"
+#include "scheme/gen-cryptocontext-params.h"
 
 namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextFactory;
-
-class CryptoContextBGVRNS {
-    using Element = DCRTPoly;
-
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
-    using PublicKeyEncryptionScheme = SchemeBGVRNS;
-    using CryptoParams              = CryptoParametersBGVRNS;
-
-    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBGVRNS>& parameters) {
-        validateParametersForCryptocontext(parameters);
-        return genCryptoContextBGVRNSInternal<CryptoContextBGVRNS, Element>(parameters);
-    }
-};
+/**
+ * @brief Validate parameters for generating cryptocontext. Doesn't validate the parameters which set functions
+ *        are disabled as they cannot be set by users
+ * @param parameters scheme-specific parameters to generate cryptocontext
+ */
+void validateParametersForCryptocontext(const Params& parameters);
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_H__
+#endif  // __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
