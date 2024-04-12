@@ -76,10 +76,10 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
 
     // Bound of the Gaussian error polynomial
-    double Berr = sigma * sqrt(alpha);
+    double Berr = sigma * std::sqrt(alpha);
 
     // Bound of the key polynomial
-    double Bkey;
+    double Bkey = 0;
 
     DistributionType distType;
 
@@ -87,7 +87,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
     if (cryptoParamsBFVRNS->GetSecretKeyDist() == GAUSSIAN) {
-        Bkey     = sqrt(thresholdParties) * sigma * sqrt(alpha);
+        Bkey     = std::sqrt(thresholdParties) * sigma * std::sqrt(alpha);
         distType = HEStd_error;
     }
     else {
@@ -98,7 +98,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
     // expansion factor delta
     auto delta = [](uint32_t n) -> double {
-        return (2. * sqrt(n));
+        return (2. * std::sqrt(n));
     };
 
     // norm of fresh ciphertext polynomial (for EXTENDED the noise is reduced to modulus switching noise)
@@ -116,7 +116,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         }
         else {
             return static_cast<double>(
-                StdLatticeParm::FindRingDim(distType, stdLevel, static_cast<usint>(std::ceil(logq / log(2)))));
+                StdLatticeParm::FindRingDim(distType, stdLevel, static_cast<usint>(std::ceil(logq / std::log(2)))));
         }
     };
 
@@ -129,7 +129,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             // of moduli at this point and use an upper bound for numDigits
             return (multiplicativeDepth + 1) * delta(n) * Berr;
         else
-            return delta(n) * (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
+            return delta(n) * (floor(logqPrev / (std::log(2) * dcrtBits)) + 1) * w * Berr;
     };
 
     // initial values
@@ -145,7 +145,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     if ((multiplicativeDepth == 0) && (keySwitchCount == 0)) {
         // Correctness constraint
         auto logqBFV = [&](uint32_t n) -> double {
-            return log(p * (4 * ((evalAddCount + 1) * Vnorm(n) + evalAddCount) + p));
+            return std::log(p * (4 * ((evalAddCount + 1) * Vnorm(n) + evalAddCount) + p));
         };
 
         // initial value
@@ -158,15 +158,15 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
         // this code updates n and q to account for the discrete size of CRT moduli
         // = dcrtBits
-        int32_t k = static_cast<int32_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
+        int32_t k = static_cast<int32_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
 
-        double logqCeil = k * dcrtBits * log(2);
+        double logqCeil = k * dcrtBits * std::log(2);
 
         while (nRLWE(logqCeil) > n) {
             n        = 2 * n;
             logq     = logqBFV(n);
-            k        = static_cast<int32_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
-            logqCeil = k * dcrtBits * log(2);
+            k        = static_cast<int32_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
+            logqCeil = k * dcrtBits * std::log(2);
         }
     }
     else if ((multiplicativeDepth == 0) && (keySwitchCount > 0) && (evalAddCount == 0)) {
@@ -177,11 +177,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
         // Correctness constraint
         auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
-            return log(p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w, false)) + p));
+            return std::log(p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w, false)) + p));
         };
 
         // initial values
-        double logqPrev = 6. * log(10);
+        double logqPrev = 6. * std::log(10);
         logq            = logqBFV(n, logqPrev);
         logqPrev        = logq;
 
@@ -195,23 +195,23 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         logq = logqBFV(n, logqPrev);
 
         // let logq converge with prescribed accuracy
-        while (std::fabs(logq - logqPrev) > log(1.001)) {
+        while (std::fabs(logq - logqPrev) > std::log(1.001)) {
             logqPrev = logq;
             logq     = logqBFV(n, logqPrev);
         }
 
         // this code updates n and q to account for the discrete size of CRT
         // moduli = dcrtBits
-        int32_t k = static_cast<int32_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
+        int32_t k = static_cast<int32_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
 
-        double logqCeil = k * dcrtBits * log(2);
+        double logqCeil = k * dcrtBits * std::log(2);
         logqPrev        = logqCeil;
 
         while (nRLWE(logqCeil) > n) {
             n        = 2 * n;
             logq     = logqBFV(n, logqPrev);
-            k        = static_cast<int32_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
-            logqCeil = k * dcrtBits * log(2);
+            k        = static_cast<int32_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
+            logqCeil = k * dcrtBits * std::log(2);
             logqPrev = logqCeil;
         }
     }
@@ -240,7 +240,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         };
 
         // initial values
-        double logqPrev = 6. * log(10);
+        double logqPrev = 6. * std::log(10);
         logq            = logqBFV(n, logqPrev);
         logqPrev        = logq;
 
@@ -254,7 +254,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         logq = logqBFV(n, logqPrev);
 
         // let logq converge with prescribed accuracy
-        while (std::fabs(logq - logqPrev) > log(1.001)) {
+        while (std::fabs(logq - logqPrev) > std::log(1.001)) {
             logqPrev = logq;
             logq     = logqBFV(n, logqPrev);
         }
@@ -262,16 +262,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         // this code updates n and q to account for the discrete size of CRT
         // moduli = dcrtBits
 
-        int32_t k = static_cast<int32_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
+        int32_t k = static_cast<int32_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
 
-        double logqCeil = k * dcrtBits * log(2);
+        double logqCeil = k * dcrtBits * std::log(2);
         logqPrev        = logqCeil;
 
         while (nRLWE(logqCeil) > n) {
             n        = 2 * n;
             logq     = logqBFV(n, logqPrev);
-            k        = static_cast<int32_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
-            logqCeil = k * dcrtBits * log(2);
+            k        = static_cast<int32_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
+            logqCeil = k * dcrtBits * std::log(2);
             logqPrev = logqCeil;
         }
     }
@@ -291,7 +291,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                       "security requirement. Please increase it to " +
                       std::to_string(n) + ".");
 
-    const size_t numInitialModuli = static_cast<size_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
+    const size_t numInitialModuli = static_cast<size_t>(std::ceil((std::ceil(logq / std::log(2)) + 1.0) / dcrtBits));
     if (numInitialModuli < 1)
         OPENFHE_THROW("numInitialModuli must be greater than 0.");
     const size_t sizeQ = multipartyMode == NOISE_FLOODING_MULTIPARTY ?

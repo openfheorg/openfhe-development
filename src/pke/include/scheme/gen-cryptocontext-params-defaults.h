@@ -49,7 +49,7 @@ constexpr PlaintextModulus ptModulus  = 0;
 constexpr usint digitSize             = 0;
 constexpr float standardDeviation     = 3.19;
 constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
-constexpr int maxRelinSkDeg           = 2;
+constexpr uint32_t maxRelinSkDeg      = 2;
 constexpr KeySwitchTechnique ksTech   = HYBRID;
 // Backend-specific settings for CKKS
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
@@ -89,7 +89,7 @@ constexpr PlaintextModulus ptModulus  = 0;
 constexpr usint digitSize             = 0;
 constexpr float standardDeviation     = 3.19;
 constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
-constexpr int maxRelinSkDeg           = 2;
+constexpr uint32_t maxRelinSkDeg      = 2;
 constexpr KeySwitchTechnique ksTech   = BV;
 constexpr ScalingTechnique scalTech   = NORESCALE;
 constexpr usint firstModSize          = 0;
@@ -116,7 +116,7 @@ constexpr double noiseEstimate                              = 0;
 constexpr double desiredPrecision                           = 0;
 constexpr uint32_t statisticalSecurity                      = 0;
 constexpr uint32_t numAdversarialQueries                    = 0;
-constexpr uint32_t thresholdNumOfParties                    = 0;
+constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
@@ -126,7 +126,7 @@ constexpr PlaintextModulus ptModulus                        = 0;
 constexpr usint digitSize                                   = 0;
 constexpr float standardDeviation                           = 3.19;
 constexpr SecretKeyDist secretKeyDist                       = UNIFORM_TERNARY;
-constexpr int maxRelinSkDeg                                 = 2;
+constexpr uint32_t maxRelinSkDeg                            = 2;
 constexpr KeySwitchTechnique ksTech                         = HYBRID;
 constexpr ScalingTechnique scalTech                         = FLEXIBLEAUTOEXT;
 constexpr usint firstModSize                                = 0;
