@@ -56,6 +56,7 @@ class CCParams<CryptoContextCKKSRNS> : public Params {
 public:
     CCParams() : Params(CKKSRNS_SCHEME) {}
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
+    explicit CCParams(const Params& params) : Params(params) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
 };
