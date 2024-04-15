@@ -49,6 +49,7 @@ void verify(float* foo, uint32_t array_size) {
     for (size_t i = 1; i < array_size; ++i) {
         if ((foo[i] - foo[i - 1]) != 1) {
             goodflag = goodflag & false;
+            break;
         }
     }
     if (goodflag) {
