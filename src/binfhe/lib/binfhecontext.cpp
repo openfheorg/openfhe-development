@@ -301,7 +301,9 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext&
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector) const {
-    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvector);
+    VecLWECiphertext ctvec;
+    ctvec.m_ctvector = std::move(ctvector);
+    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvec);
 }
 
 LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext& ct) const {

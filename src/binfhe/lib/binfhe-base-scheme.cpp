@@ -115,15 +115,12 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                        const RingGSWBTKey& EK, const std::vector<LWECiphertext>& ctvector) const {
+                                        const RingGSWBTKey& EK, const VecLWECiphertext& in_ctvector) const {
     // check if the ciphertexts are all independent
-    for (size_t i = 0; i < ctvector.size(); i++) {
-        for (size_t j = i + 1; j < ctvector.size(); j++) {
-            if (ctvector[j] == ctvector[i]) {
+    if ( !in_ctvector.validate() ) {
                 OPENFHE_THROW("Input ciphertexts should be independent");
-            }
-        }
     }
+    auto& ctvector = in_ctvector.m_ctvector;
 
     NativeInteger p = ctvector[0]->GetptModulus();
 
@@ -448,7 +445,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     while (mod > q) {
         auto ctq = std::make_shared<LWECiphertextImpl>(*cttmp);
         ctq->SetModulus(q);
-        ret.push_back(std::move(ctq));
+        ret.emplace_back(std::move(ctq));
 
         // Floor the input sequentially to obtain the most significant bit
         cttmp = EvalFloor(params, curEK, cttmp, beta);
@@ -603,5 +600,26 @@ LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoPara
     // Modulus switching
     return LWEscheme->ModSwitch(fmod, ctKS);
 }
+
+/// VecLHECipherText
+bool VecLWECiphertext::validate() const {
+    if ( m_independent.has_value() ) {
+        return m_independent.value();
+    }
+
+    m_independent = true;
+    
+    for (size_t i = 0; i < m_ctvector.size(); i++) {
+        for (size_t j = i + 1; j < m_ctvector.size(); j++) {
+            if (m_ctvector[j] == m_ctvector[i]) {
+                m_independent = false;
+                break;
+            }
+        }
+    }
+
+    return m_independent.value();
+}
+
 
 };  // namespace lbcrypto
