@@ -194,15 +194,9 @@ protected:
     // a helper structure to disable setters
     template <typename T>
     struct AlwaysFailure : std::false_type {};
-#define DISABLED_FOR_CKKSRNS               \
-    static_assert(AlwaysFailure<T>::value, \
-                  "This function is disabled as the parameter it sets is not available for CKKSRNS.");
-#define DISABLED_FOR_BGVRNS                \
-    static_assert(AlwaysFailure<T>::value, \
-                  "This function is disabled as the parameter it sets is not available for BGVRNS.");
-#define DISABLED_FOR_BFVRNS                \
-    static_assert(AlwaysFailure<T>::value, \
-                  "This function is disabled as the parameter it sets is not available for BFVRNS.");
+#define DISABLED_FOR_CKKSRNS static_assert(AlwaysFailure<T>::value, "This function is not available for CKKSRNS.");
+#define DISABLED_FOR_BGVRNS  static_assert(AlwaysFailure<T>::value, "This function is not available for BGVRNS.");
+#define DISABLED_FOR_BFVRNS  static_assert(AlwaysFailure<T>::value, "This function is not available for BFVRNS.");
 
 public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
