@@ -75,6 +75,10 @@ public:
         DISABLED_FOR_BGVRNS;
     }
     template <typename T = bool>
+    void SetExecutionMode(ExecutionMode executionMode0) {
+        DISABLED_FOR_BGVRNS;
+    }
+    template <typename T = bool>
     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
         DISABLED_FOR_BGVRNS;
     }

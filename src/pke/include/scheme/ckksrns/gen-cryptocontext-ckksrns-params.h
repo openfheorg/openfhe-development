@@ -87,6 +87,10 @@ public:
         DISABLED_FOR_CKKSRNS;
     }
     template <typename T = bool>
+    void SetMultipartyMode(MultipartyMode multipartyMode0) {
+        DISABLED_FOR_CKKSRNS;
+    }
+    template <typename T = bool>
     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
         DISABLED_FOR_CKKSRNS;
     }

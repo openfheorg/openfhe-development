@@ -113,16 +113,20 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.PREMode)) {
         parameters.SetPREMode(static_cast<ProxyReEncryptionMode>(std::round(params.PREMode)));
     }
-    if (!isDefaultValue(params.multipartyMode)) {
-        parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == false) {
+        if (!isDefaultValue(params.multipartyMode)) {
+            parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
+        }
     }
     if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
         if (!isDefaultValue(params.decryptionNoiseMode)) {
             parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
         }
     }
-    if (!isDefaultValue(params.executionMode)) {
-        parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
+        if (!isDefaultValue(params.executionMode)) {
+            parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+        }
     }
     if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
         if (!isDefaultValue(params.noiseEstimate)) {

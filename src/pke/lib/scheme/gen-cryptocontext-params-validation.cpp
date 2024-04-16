@@ -50,21 +50,24 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
     }
     else if (isBFVRNS(scheme)) {
+        if (0 == parameters.GetPlaintextModulus()) {
+            OPENFHE_THROW("PlaintextModulus can not be zero. It should be set to a non-zero value");
+        }
         if (NOISE_FLOODING_HRA == parameters.GetPREMode()) {
             OPENFHE_THROW("NOISE_FLOODING_HRA is not supported in BFVRNS");
         }
-        if (EXEC_NOISE_ESTIMATION == parameters.GetExecutionMode()) {
-            OPENFHE_THROW("EXEC_NOISE_ESTIMATION is not supported in BFVRNS");
-        }
     }
     else if (isBGVRNS(scheme)) {
+        if (0 == parameters.GetPlaintextModulus()) {
+            OPENFHE_THROW("PlaintextModulus can not be zero. It should be set to a non-zero value");
+        }
+        if (NORESCALE == parameters.GetScalingTechnique()) {
+            OPENFHE_THROW("NORESCALE is not supported in BGVRNS");
+        }
         if (0 != parameters.GetMultiHopModSize()) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
                 OPENFHE_THROW("multiHopModSize can be set only if multipartyMode set to NOISE_FLOODING_MULTIPARTY");
             }
-        }
-        if (EXEC_NOISE_ESTIMATION == parameters.GetExecutionMode()) {
-            OPENFHE_THROW("EXEC_NOISE_ESTIMATION is not supported in BGVRNS");
         }
     }
     else {

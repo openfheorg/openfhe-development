@@ -75,6 +75,10 @@ public:
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>
+    void SetExecutionMode(ExecutionMode executionMode0) {
+        DISABLED_FOR_BGVRNS;
+    }
+    template <typename T = bool>
     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
         DISABLED_FOR_BFVRNS;
     }
@@ -92,10 +96,6 @@ public:
     }
     template <typename T = bool>
     void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
-        DISABLED_FOR_BFVRNS;
-    }
-    template <typename T = bool>
-    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>
