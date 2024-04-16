@@ -68,7 +68,7 @@ class VecLWECiphertext {
     bool validate() const;
 
     private:
-        mutable std::optional<bool> m_independent;
+        mutable std::optional<bool> m_independent = std::nullopt;
 };
 
 
