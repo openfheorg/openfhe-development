@@ -278,7 +278,7 @@ void PrimeFactorize(IntType n, std::set<IntType>& primeFactors);
  * @return the first prime modulus.
  */
 template <typename IntType>
-IntType FirstPrime(uint32_t nBits, uint32_t m);
+IntType FirstPrime(uint32_t nBits, uint64_t m);
 
 /**
  * Finds the max prime q that satisfies q = 1 mod m with at most nBits bits.
@@ -289,7 +289,7 @@ IntType FirstPrime(uint32_t nBits, uint32_t m);
  * @return the last prime modulus
  */
 template <typename IntType>
-IntType LastPrime(uint32_t nBits, uint32_t m);
+IntType LastPrime(uint32_t nBits, uint64_t m);
 
 /**
  * Finds the next prime that satisfies q = 1 mod m
@@ -301,7 +301,7 @@ IntType LastPrime(uint32_t nBits, uint32_t m);
  * @return the next prime modulus.
  */
 template <typename IntType>
-IntType NextPrime(const IntType& q, uint32_t m);
+IntType NextPrime(const IntType& q, uint64_t m);
 
 /**
  * Finds the previous prime that satisfies q = 1 mod m
@@ -313,7 +313,7 @@ IntType NextPrime(const IntType& q, uint32_t m);
  * @return the previous prime modulus.
  */
 template <typename IntType>
-IntType PreviousPrime(const IntType& q, uint32_t m);
+IntType PreviousPrime(const IntType& q, uint64_t m);
 
 /**
  * Multiplicative inverse for primitive unsigned integer data types

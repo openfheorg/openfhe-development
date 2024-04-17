@@ -57,10 +57,10 @@ template M2Integer GreatestCommonDivisor(const M2Integer& a, const M2Integer& b)
 template bool MillerRabinPrimalityTest(const M2Integer& p, const usint niter);
 template const M2Integer PollardRhoFactorization(const M2Integer& n);
 template void PrimeFactorize(M2Integer n, std::set<M2Integer>& primeFactors);
-template M2Integer FirstPrime(uint32_t nBits, uint32_t m);
-template M2Integer LastPrime(uint32_t nBits, uint32_t m);
-template M2Integer NextPrime(const M2Integer& q, uint32_t m);
-template M2Integer PreviousPrime(const M2Integer& q, uint32_t m);
+template M2Integer FirstPrime(uint32_t nBits, uint64_t m);
+template M2Integer LastPrime(uint32_t nBits, uint64_t m);
+template M2Integer NextPrime(const M2Integer& q, uint64_t m);
+template M2Integer PreviousPrime(const M2Integer& q, uint64_t m);
 template std::vector<M2Integer> GetTotientList(const M2Integer& n);
 template M2Vector PolyMod(const M2Vector& dividend, const M2Vector& divisor, const M2Integer& modulus);
 template M2Vector PolynomialMultiplication(const M2Vector& a, const M2Vector& b);

@@ -119,7 +119,7 @@ constexpr usint MAX_RELIN_DEG   = 2;
 constexpr usint DSIZE           = 4;
 constexpr usint PTM             = 65537;
 constexpr usint BATCH           = 16;
-constexpr usint FIRST_MOD_SIZE  = 60;
+constexpr usint FIRST_MOD_SIZE  = 0;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
