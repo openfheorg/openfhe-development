@@ -73,7 +73,6 @@ enum ProxyReEncryptionMode {
     INDCPA,
     FIXED_NOISE_HRA,
     NOISE_FLOODING_HRA,
-    DIVIDE_AND_ROUND_HRA,
 };
 ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str);
 ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num);
@@ -154,7 +153,7 @@ enum {
     BASE_NUM_LEVELS_TO_DROP = 1,
 };
 
-enum NOISE_FLOODING {
+enum NoiseFlooding {
     // noise flooding distribution parameter for distributed decryption in threshold FHE
     MP_SD = 1048576,
     // noise flooding distribution parameter for fixed 20 bits noise multihop PRE
@@ -167,11 +166,11 @@ enum NOISE_FLOODING {
 #else
     MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE,
 #endif
-};  // namespace NOISE_FLOODING
+};
 
 // Defining the level to which the input ciphertext is brought to before
 // interactive multi-party bootstrapping
-enum COMPRESSION_LEVEL {
+enum COMPRESSION_LEVEL {  // TODO (dsuponit): change it to camel case
     // we don't support 0 or 1 compression levels
     // do not change values here
 

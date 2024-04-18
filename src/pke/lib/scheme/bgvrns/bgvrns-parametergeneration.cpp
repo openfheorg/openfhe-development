@@ -306,7 +306,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
     double noise_param = 1;
     if (PREMode == FIXED_NOISE_HRA) {
-        noise_param = NOISE_FLOODING::PRE_SD;
+        noise_param = NoiseFlooding::PRE_SD;
     }
     else if (PREMode == NOISE_FLOODING_HRA) {
         if (ksTech == BV) {
@@ -332,9 +332,6 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 OPENFHE_THROW("Relinwindow value can only  be zero for Hybrid keyswitching");
             }
         }
-    }
-    else if (PREMode == DIVIDE_AND_ROUND_HRA) {
-        OPENFHE_THROW("Noise Flooding not applicable for PRE DIVIDE_AND_ROUND_HRA mode");
     }
     // set the flooding distribution parameter to the distribution.
     dggFlooding.SetStd(noise_param);
@@ -461,11 +458,11 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         }
     }
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
-        NativeInteger extraModulus = LastPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
-        std::vector<NativeInteger> extraModuli(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
-        std::vector<NativeInteger> extraRoots(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
+        NativeInteger extraModulus = LastPrime<NativeInteger>(NoiseFlooding::MULTIPARTY_MOD_SIZE, modulusOrder);
+        std::vector<NativeInteger> extraModuli(NoiseFlooding::NUM_MODULI_MULTIPARTY);
+        std::vector<NativeInteger> extraRoots(NoiseFlooding::NUM_MODULI_MULTIPARTY);
 
-        for (size_t i = 0; i < NOISE_FLOODING::NUM_MODULI_MULTIPARTY; i++) {
+        for (size_t i = 0; i < NoiseFlooding::NUM_MODULI_MULTIPARTY; i++) {
             while (std::find(moduliQ.begin(), moduliQ.end(), extraModulus) != moduliQ.end() ||
                    std::find(extraModuli.begin(), extraModuli.end(), extraModulus) != extraModuli.end()) {
                 extraModulus = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);

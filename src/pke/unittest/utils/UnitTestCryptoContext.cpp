@@ -45,8 +45,10 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.multiplicativeDepth)) {
         parameters.SetMultiplicativeDepth(static_cast<usint>(std::round(params.multiplicativeDepth)));
     }
-    if (!isDefaultValue(params.scalingModSize)) {
-        parameters.SetScalingModSize(static_cast<usint>(std::round(params.scalingModSize)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextBGVRNS>> == false) {
+        if (!isDefaultValue(params.scalingModSize)) {
+            parameters.SetScalingModSize(static_cast<usint>(std::round(params.scalingModSize)));
+        }
     }
     if (!isDefaultValue(params.digitSize)) {
         parameters.SetDigitSize(static_cast<usint>(std::round(params.digitSize)));
@@ -60,8 +62,10 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.maxRelinSkDeg)) {
         parameters.SetMaxRelinSkDeg(static_cast<int>(std::round(params.maxRelinSkDeg)));
     }
-    if (!isDefaultValue(params.firstModSize)) {
-        parameters.SetFirstModSize(static_cast<usint>(std::round(params.firstModSize)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == false) {
+        if (!isDefaultValue(params.firstModSize)) {
+            parameters.SetFirstModSize(static_cast<usint>(std::round(params.firstModSize)));
+        }
     }
     if (!isDefaultValue(params.securityLevel)) {
         parameters.SetSecurityLevel(static_cast<SecurityLevel>(std::round(params.securityLevel)));
@@ -69,45 +73,65 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.ksTech)) {
         parameters.SetKeySwitchTechnique(static_cast<KeySwitchTechnique>(std::round(params.ksTech)));
     }
-    if (!isDefaultValue(params.scalTech)) {
-        parameters.SetScalingTechnique(static_cast<ScalingTechnique>(std::round(params.scalTech)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == false) {
+        if (!isDefaultValue(params.scalTech)) {
+            parameters.SetScalingTechnique(static_cast<ScalingTechnique>(std::round(params.scalTech)));
+        }
     }
     if (!isDefaultValue(params.numLargeDigits)) {
         parameters.SetNumLargeDigits(static_cast<uint32_t>(std::round(params.numLargeDigits)));
     }
-    if (!isDefaultValue(params.plaintextModulus)) {
-        parameters.SetPlaintextModulus(static_cast<PlaintextModulus>(std::round(params.plaintextModulus)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == false) {
+        if (!isDefaultValue(params.plaintextModulus)) {
+            parameters.SetPlaintextModulus(static_cast<PlaintextModulus>(std::round(params.plaintextModulus)));
+        }
     }
     if (!isDefaultValue(params.standardDeviation)) {
         parameters.SetStandardDeviation(params.standardDeviation);
     }
-    if (!isDefaultValue(params.multiplicationTechnique)) {
-        parameters.SetMultiplicationTechnique(
-            static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {
+        if (!isDefaultValue(params.multiplicationTechnique)) {
+            parameters.SetMultiplicationTechnique(
+                static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
+        }
     }
-    if (!isDefaultValue(params.encryptionTechnique)) {
-        parameters.SetEncryptionTechnique(static_cast<EncryptionTechnique>(std::round(params.encryptionTechnique)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {
+        if (!isDefaultValue(params.encryptionTechnique)) {
+            parameters.SetEncryptionTechnique(static_cast<EncryptionTechnique>(std::round(params.encryptionTechnique)));
+        }
     }
-    if (!isDefaultValue(params.evalAddCount)) {
-        parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == false) {
+        if (!isDefaultValue(params.evalAddCount)) {
+            parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
+        }
     }
-    if (!isDefaultValue(params.keySwitchCount)) {
-        parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == false) {
+        if (!isDefaultValue(params.keySwitchCount)) {
+            parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
+        }
     }
     if (!isDefaultValue(params.PREMode)) {
         parameters.SetPREMode(static_cast<ProxyReEncryptionMode>(std::round(params.PREMode)));
     }
-    if (!isDefaultValue(params.multipartyMode)) {
-        parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == false) {
+        if (!isDefaultValue(params.multipartyMode)) {
+            parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
+        }
     }
-    if (!isDefaultValue(params.decryptionNoiseMode)) {
-        parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
+        if (!isDefaultValue(params.decryptionNoiseMode)) {
+            parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
+        }
     }
-    if (!isDefaultValue(params.executionMode)) {
-        parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
+        if (!isDefaultValue(params.executionMode)) {
+            parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+        }
     }
-    if (!isDefaultValue(params.noiseEstimate)) {
-        parameters.SetNoiseEstimate(params.noiseEstimate);
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
+        if (!isDefaultValue(params.noiseEstimate)) {
+            parameters.SetNoiseEstimate(params.noiseEstimate);
+        }
     }
 }
 //===========================================================================================================
