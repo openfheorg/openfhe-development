@@ -73,7 +73,7 @@ protected:
         }
         else if (security_model == 1) {
             ringDimension = 2048;
-            digitSize     = 18;
+            digitSize     = 16;
 
             qmodulus  = 54;
             firstqmod = 54;
@@ -107,6 +107,7 @@ protected:
         parameters.SetFirstModSize(firstqmod);
         parameters.SetDigitSize(digitSize);
         parameters.SetScalingTechnique(FIXEDMANUAL);
+        parameters.SetMultipartyMode(NOISE_FLOODING_MULTIPARTY);
         parameters.SetMultiHopModSize(qmodulus);
 
         CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

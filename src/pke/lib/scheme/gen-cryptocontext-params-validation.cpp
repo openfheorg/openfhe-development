@@ -34,9 +34,6 @@
 namespace lbcrypto {
 
 void validateParametersForCryptocontext(const Params& parameters) {
-    // THE FUNCTION IS TEMPORARILY DISABLED
-    return;
-
     SCHEME scheme = parameters.GetScheme();
     if (isCKKS(scheme)) {
         if (NORESCALE == parameters.GetScalingTechnique()) {
@@ -82,7 +79,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
 
     //====================================================================================================================
     // general validations
-    if (!IsPowerOfTwo(parameters.GetRingDim())) {
+    if (parameters.GetRingDim() && !IsPowerOfTwo(parameters.GetRingDim())) {
         std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(parameters.GetRingDim()) +
                              "]. Ring dimension must be a power of 2.");
         OPENFHE_THROW(errorMsg);
