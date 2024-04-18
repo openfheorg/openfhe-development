@@ -270,8 +270,9 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
 // Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
 // skNTT corresponds to the secret key z
 // RingGSWCiphertext
-RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly> &acrs,
-                                         const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag) const {
+RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params,
+                                         const std::vector<NativePoly>& acrs, const NativePoly& skNTT,
+                                         const LWEPlaintext& m, bool leadFlag) const {
     NativeInteger Q = params->GetQ();
     uint64_t q      = params->Getq().ConvertToInt();
     // uint32_t N        = params->GetN();
@@ -322,7 +323,6 @@ RingGSWEvalKey BinFHEScheme::RGSWEncrypt(const std::shared_ptr<RingGSWCryptoPara
     return result;
 }
 
-
 // RGSW decryption (without rounding) for debugging since noise is now commented out
 LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey ct,
                                        const NativePoly& skNTT) const {
@@ -348,16 +348,16 @@ LWEPlaintext BinFHEScheme::RGSWDecrypt(const std::shared_ptr<RingGSWCryptoParams
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                        const RingGSWBTKey& EK, ConstLWECiphertext& ct1,
-                                        ConstLWECiphertext& ct2, bool extended) const {
+                                        const RingGSWBTKey& EK, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
+                                        bool extended) const {
     if (ct1 == ct2)
         OPENFHE_THROW(config_error, "Input ciphertexts should be independant");
 
     // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT gates
     if ((gate == XOR) || (gate == XNOR)) {
-        const auto& ctAND1 = EvalBinGate(params, AND, EK, ct1, EvalNOT(params, ct2));
-        const auto& ctAND2 = EvalBinGate(params, AND, EK, EvalNOT(params, ct1), ct2);
-        const auto& ctOR   = EvalBinGate(params, OR, EK, ctAND1, ctAND2);
+        const auto& ctAND1 = EvalBinGate(params, AND, EK, ct1, EvalNOT(params, ct2), extended);
+        const auto& ctAND2 = EvalBinGate(params, AND, EK, EvalNOT(params, ct1), ct2, extended);
+        const auto& ctOR   = EvalBinGate(params, OR, EK, ctAND1, ctAND2, extended);
 
         // NOT is free so there is not cost to do it an extra time for XNOR
         return (gate == XOR) ? ctOR : EvalNOT(params, ctOR);
@@ -391,14 +391,19 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     NativeInteger Q{LWEParams->GetQ()};
     NativeInteger b{(Q >> 3) + 1};
     b.ModAddFastEq(accVec[1][0], Q);
-
     auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
-    // Modulus switching to a middle step Q'
-    auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
-    // Key switching
-    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
-    // Modulus switching
-    return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
+
+    if (!extended) {
+        // Modulus switching to a middle step Q'
+        auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
+        // Key switching
+        auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
+        // Modulus switching
+        return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
+    }
+    else {
+        return ctExt;
+    }
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086

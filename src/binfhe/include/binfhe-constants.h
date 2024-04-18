@@ -65,6 +65,9 @@ enum BINFHE_PARAMSET {
     STD128Q_LMKCDEY,    // Optimized for LMKCDEY (using Gaussian secrets) -
                         // more than 128 bits of security for quantum attacks -
                         // optimize runtime by finding a non-power-of-two n
+    STD128Q_LMKCDEY_T,  // Threshold FHE: Optimized for LMKCDEY (using Gaussian secrets) -
+                        // more than 128 bits of security for quantum attacks -
+                        // optimize runtime by finding a non-power-of-two n
     STD192Q,            // more than 192 bits of security for quantum attacks -
                         // optimize runtime by finding a non-power-of-two n
     STD256Q,            // more than 256 bits of security for quantum attacks -

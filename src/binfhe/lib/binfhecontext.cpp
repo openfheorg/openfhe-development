@@ -127,6 +127,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
         { STD256,            { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,    10,  UNIFORM_TERNARY} },
         { STD128Q,           { 25,     2048,         534, 1024, 1 << 14, STD_DEV,     32,    1 <<  7,  32,    10,  UNIFORM_TERNARY} },
         { STD128Q_LMKCDEY,   { 27,     2048,         448, 1024, 1 << 13, STD_DEV,     32,    1 <<  9,  32,    10,  GAUSSIAN       } },
+        { STD128Q_LMKCDEY_T, { 53,     4096,         448, 1024, 1 << 13, STD_DEV,     32,    1 <<  9,  32,    10,  GAUSSIAN       } },
         { STD192Q,           { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32,    10,  UNIFORM_TERNARY} },
         { STD256Q,           { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32,    10,  UNIFORM_TERNARY} },
         { STD128_3,          { 27,     2048,         541, 1024, 1 << 15, STD_DEV,     32,    1 <<  7,  32,    10,  UNIFORM_TERNARY} },
@@ -323,36 +324,34 @@ NativePoly BinFHEContext::Generateacrs() {
 }
 
 std::vector<NativePoly> BinFHEContext::GenerateCRS() {
-    auto& RGSWParams = m_params->GetRingGSWParams();
-    uint32_t digitsG2 = (RGSWParams->GetDigitsG()-1)<<1;
+    auto& RGSWParams  = m_params->GetRingGSWParams();
+    uint32_t digitsG2 = (RGSWParams->GetDigitsG() - 1) << 1;
     std::vector<NativePoly> acrs(digitsG2);
     for (uint32_t i = 0; i < digitsG2; i++) {
-    	acrs[i] = Generateacrs();
+        acrs[i] = Generateacrs();
     }
     return acrs;
 }
 
 std::vector<std::vector<NativePoly>> BinFHEContext::GenerateCRSVector() {
-	auto& RGSWParams = m_params->GetRingGSWParams();
-	uint32_t digitsG = RGSWParams->GetDigitsG()-1;
-	uint32_t w = RGSWParams->GetNumAutoKeys()+1;
-    std::vector<std::vector<NativePoly>> acrs(
-            w, std::vector<NativePoly>(digitsG));
+    auto& RGSWParams = m_params->GetRingGSWParams();
+    uint32_t digitsG = RGSWParams->GetDigitsG() - 1;
+    uint32_t w       = RGSWParams->GetNumAutoKeys() + 1;
+    std::vector<std::vector<NativePoly>> acrs(w, std::vector<NativePoly>(digitsG));
     for (uint32_t i = 0; i < w; i++) {
-            for (uint32_t k = 0; k < digitsG; k++) {
-                acrs[i][k] = Generateacrs();
-            }
+        for (uint32_t k = 0; k < digitsG; k++) {
+            acrs[i][k] = Generateacrs();
+        }
     }
     return acrs;
 }
 
 std::vector<std::vector<std::vector<NativePoly>>> BinFHEContext::GenerateCRSMatrix(uint32_t m, uint32_t n) {
-    std::vector<std::vector<std::vector<NativePoly>>> acrs(
-            m, std::vector<std::vector<NativePoly>>(n));
+    std::vector<std::vector<std::vector<NativePoly>>> acrs(m, std::vector<std::vector<NativePoly>>(n));
     for (uint32_t i = 0; i < m; i++) {
-            for (uint32_t k = 0; k < n; k++) {
-                acrs[i][k] = GenerateCRS();
-            }
+        for (uint32_t k = 0; k < n; k++) {
+            acrs[i][k] = GenerateCRS();
+        }
     }
     return acrs;
 }
@@ -368,8 +367,8 @@ RingGSWEvalKey BinFHEContext::RGSWEncrypt(NativePoly acrs, const NativePoly& skN
 }
 
 // RingGSWCiphertext
-RingGSWEvalKey BinFHEContext::RGSWEncrypt(const std::vector<NativePoly> &acrs, const NativePoly& skNTT, const LWEPlaintext& m,
-                                          bool leadFlag) const {
+RingGSWEvalKey BinFHEContext::RGSWEncrypt(const std::vector<NativePoly>& acrs, const NativePoly& skNTT,
+                                          const LWEPlaintext& m, bool leadFlag) const {
     auto& RGSWParams = m_params->GetRingGSWParams();
     return m_binfhescheme->RGSWEncrypt(RGSWParams, acrs, skNTT, m, leadFlag);
 }
@@ -380,7 +379,7 @@ RingGSWEvalKey BinFHEContext::RGSWEvalAdd(RingGSWEvalKey a, RingGSWEvalKey b) {
 }
 
 RingGSWACCKey BinFHEContext::RGSWClone(RingGSWEvalKey a, uint32_t n) {
-	// for lmkcdey - 2nd index 0 for btkey, 2nd index 1 for auto key
+    // for lmkcdey - 2nd index 0 for btkey, 2nd index 1 for auto key
     RingGSWACCKey rgswe1 = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
     for (size_t j = 0; j < 2; j++) {
         for (size_t i = 0; i < n; i++) {
@@ -389,7 +388,6 @@ RingGSWACCKey BinFHEContext::RGSWClone(RingGSWEvalKey a, uint32_t n) {
     }
     return rgswe1;
 }
-
 
 RingGSWEvalKey BinFHEContext::RGSWEvalMultAdd(RingGSWEvalKey a, RingGSWEvalKey b, int32_t si) {
     return m_binfhescheme->RGSWEvalMultAdd(m_params->GetRingGSWParams(), a, b, si);
@@ -465,7 +463,8 @@ void BinFHEContext::MultipartyBTKeyGen(ConstLWEPrivateKey sk, RingGSWACCKey prev
     return;
 }
 
-LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended) const {
+LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
+                                         bool extended) const {
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, extended);
 }
 
