@@ -282,8 +282,8 @@ public:
 
     NativePoly RGSWKeyGen() const;
 
-    void RGSWKeySet(NativePoly &key, Format format) const {
-    	key.SetFormat(format);
+    void RGSWKeySet(NativePoly& key, Format format) const {
+        key.SetFormat(format);
     }
 
     // RingGSWCiphertext
@@ -292,7 +292,7 @@ public:
     RingGSWEvalKey RGSWEncrypt(NativePoly acrs, const NativePoly& skNTT, const LWEPlaintext& m,
                                bool leadFlag = false) const;
 
-    RingGSWEvalKey RGSWEncrypt(const std::vector<NativePoly> &acrs, const NativePoly& skNTT, const LWEPlaintext& m,
+    RingGSWEvalKey RGSWEncrypt(const std::vector<NativePoly>& acrs, const NativePoly& skNTT, const LWEPlaintext& m,
                                bool leadFlag = false) const;
 
     // RingGSWCiphertext
@@ -363,7 +363,8 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
+    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
+                              bool extended = false) const;
 
     /**
    * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
@@ -475,8 +476,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("params", m_params));
         m_binfhescheme = std::make_shared<BinFHEScheme>(m_params->GetRingGSWParams()->GetMethod());
@@ -511,7 +512,7 @@ private:
     std::shared_ptr<BinFHECryptoParams> m_params{nullptr};
 
     // Shared pointer to the underlying additive LWE scheme
-    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme{nullptr};
+    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme{std::make_shared<LWEEncryptionScheme>()};
 
     // Shared pointer to the underlying RingGSW/RLWE scheme
     std::shared_ptr<BinFHEScheme> m_binfhescheme{nullptr};

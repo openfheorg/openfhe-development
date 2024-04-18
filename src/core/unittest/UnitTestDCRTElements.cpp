@@ -33,15 +33,14 @@
   This code tests the transform feature of the OpenFHE lattice encryption library.
  */
 
-#include <iostream>
-#include <vector>
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
-#include "lattice/elemparamfactory.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
-#include "utils/exception.h"
+#include "utils/debug.h"
+
+#include <iostream>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -53,8 +52,8 @@ void testDCRTPolyConstructorNegative(std::vector<NativePoly>& towers);
 template <typename Element>
 void DCRT_constructors(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    usint m         = 8;
-    usint towersize = 3;
+    uint32_t m         = 8;
+    uint32_t towersize = 3;
 
     std::vector<NativeInteger> moduli(towersize);
     moduli = {NativeInteger("8353"), NativeInteger("8369"), NativeInteger("8513")};
@@ -62,7 +61,7 @@ void DCRT_constructors(const std::string& msg) {
     rootsOfUnity = {NativeInteger("8163"), NativeInteger("6677"), NativeInteger("156")};
 
     typename Element::Integer modulus(1);
-    for (usint i = 0; i < towersize; ++i) {
+    for (uint32_t i = 0; i < towersize; ++i) {
         modulus = modulus * typename Element::Integer(moduli[i].ConvertToInt());
     }
 
@@ -124,7 +123,7 @@ void DCRT_constructors(const std::string& msg) {
         for (size_t ii = 0; ii < ilvector2nVectorInconsistent.size(); ii++) {
             OPENFHE_DEBUG(ii << " item " << ilvector2nVectorInconsistent.at(ii).GetParams().use_count());
         }
-        EXPECT_THROW(testDCRTPolyConstructorNegative(ilvector2nVectorInconsistent), math_error)
+        EXPECT_THROW(testDCRTPolyConstructorNegative(ilvector2nVectorInconsistent), OpenFHEException)
             << msg << " Failure: ilvector2nVectorInconsistent";
     }
 
@@ -143,7 +142,7 @@ void DCRT_constructors(const std::string& msg) {
 
         std::vector<Element> ilvaCopyVector({ilva0Copy, ilva1Copy, ilva2Copy});
 
-        for (usint i = 0; i < 3; ++i) {
+        for (uint32_t i = 0; i < 3; ++i) {
             EXPECT_EQ(ilvaVector[i].GetFormat(), ilvaCopyVector[i].GetFormat())
                 << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetFormat()";
             EXPECT_EQ(ilvaVector[i].GetModulus(), ilvaCopyVector[i].GetModulus())
@@ -156,7 +155,7 @@ void DCRT_constructors(const std::string& msg) {
             // on uninitialized DCRTPoly objects.
             if (i == 0 || i == 1)
                 continue;
-            for (usint j = 0; j < towersize; ++j) {
+            for (uint32_t j = 0; j < towersize; ++j) {
                 EXPECT_EQ(ilvaVector[i].GetElementAtIndex(j), ilvaCopyVector[i].GetElementAtIndex(j))
                     << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetElementAtIndex(" << j << ")";
             }
@@ -195,8 +194,8 @@ TEST(UTDCRTPoly, DCRT_constructors) {
 
 template <typename Element>
 void DCRT_getters_and_ops(const std::string& msg) {
-    usint m         = 8;
-    usint towersize = 3;
+    uint32_t m         = 8;
+    uint32_t towersize = 3;
 
     std::vector<NativeInteger> moduli(towersize);
     moduli = {NativeInteger("8353"), NativeInteger("8369"), NativeInteger("8513")};
@@ -206,7 +205,7 @@ void DCRT_getters_and_ops(const std::string& msg) {
     rootsOfUnity = {NativeInteger("8163"), NativeInteger("6677"), NativeInteger("156")};
 
     typename Element::Integer modulus(1);
-    for (usint i = 0; i < towersize; ++i) {
+    for (uint32_t i = 0; i < towersize; ++i) {
         modulus = modulus * typename Element::Integer(moduli[i].ConvertToInt());
     }
 
@@ -284,8 +283,8 @@ TEST(UTDCRTPoly, DCRT_getters_and_ops) {
 
 template <typename Element>
 void DCRT_arithmetic_ops_element(const std::string& msg) {
-    usint m         = 8;
-    usint towersize = 3;
+    uint32_t m         = 8;
+    uint32_t towersize = 3;
 
     std::vector<NativeInteger> moduli(towersize);
     moduli = {NativeInteger("8353"), NativeInteger("8369"), NativeInteger("8513")};
@@ -293,7 +292,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     rootsOfUnity = {NativeInteger("8163"), NativeInteger("6677"), NativeInteger("156")};
 
     typename Element::Integer modulus(1);
-    for (usint i = 0; i < towersize; ++i) {
+    for (uint32_t i = 0; i < towersize; ++i) {
         modulus = modulus * typename Element::Integer(moduli[i].ConvertToInt());
     }
 
@@ -343,7 +342,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     {
         Element ilvaCopy(ilva.Plus(ilva1));
 
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"4", "5", "5", "2"};
@@ -355,7 +354,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     {
         Element ilvaCopy(ilva + ilva1);
 
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"4", "5", "5", "2"};
@@ -368,7 +367,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         Element ilvaCopy(ilva);
         ilvaCopy += ilva1;
 
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"4", "5", "5", "2"};
@@ -378,7 +377,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
 
     {
         Element ilvaCopy(ilva.Minus(ilva1));
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"0", "3", "1", "2"};
@@ -388,7 +387,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     {
         Element ilvaResult(ilva);
         ilvaResult -= ilva1;
-        for (usint i = 0; i < ilvaResult.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaResult.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaResult.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"0", "3", "1", "2"};
@@ -397,7 +396,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     }
     {
         Element ilvaResult(ilva.Times(ilva1));
-        for (usint i = 0; i < ilvaResult.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaResult.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaResult.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"4", "4", "6", "0"};
@@ -408,7 +407,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         Element ilvaCopy(ilva);
         ilvaCopy.AddILElementOne();
 
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"3", "5", "4", "3"};
@@ -446,7 +445,8 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
             << msg << " Failure: ilvectInv2 MultiplicativeInverse() modulus";
         EXPECT_EQ(NativeInteger("156"), ilvectInv2.GetRootOfUnity())
             << msg << " Failure: ilvectInv2 MultiplicativeInverse() rootOfUnity";
-        EXPECT_THROW(ilva1.MultiplicativeInverse(), math_error) << msg << " Failure: throw MultiplicativeInverse()";
+        EXPECT_THROW(ilva1.MultiplicativeInverse(), OpenFHEException)
+            << msg << " Failure: throw MultiplicativeInverse()";
     }
 
     // DCRTPoly::MakeSparse() Only used by RingSwitching, which is no longer supported
@@ -455,7 +455,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
 
         ilvaCopy.MakeSparse(2);
 
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
 
             EXPECT_EQ(NativeInteger(0), ilv.at(1)) << msg << " Failure MakeSparse() index 1";
@@ -526,7 +526,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         typename Element::Integer rootOfUnity2(lbcrypto::RootOfUnity<typename Element::Integer>(m, modulus2));
         ilvaCopy.SwitchModulusAtIndex(0, modulus2, rootOfUnity2);
 
-        for (usint i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
+        for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);
             NativeVector expected(4, ilv.GetModulus());
             expected = {"2", "4", "3", "2"};
@@ -548,12 +548,11 @@ TEST(UTDCRTPoly, DCRT_arithmetic_ops_element) {
 
 template <typename Element>
 void DCRT_mod_ops_on_two_elements(const std::string& msg) {
-    usint order     = 16;
-    usint nBits     = 24;
-    usint towersize = 3;
+    uint32_t order     = 16;
+    uint32_t nBits     = 24;
+    uint32_t towersize = 3;
 
-    std::shared_ptr<ILDCRTParams<typename Element::Integer>> ildcrtparams =
-        GenerateDCRTParams<typename Element::Integer>(order, towersize, nBits);
+    auto ildcrtparams = std::make_shared<ILDCRTParams<typename Element::Integer>>(order, towersize, nBits);
 
     typename Element::DugType dug;
 
@@ -563,8 +562,8 @@ void DCRT_mod_ops_on_two_elements(const std::string& msg) {
     {
         Element sum = op1 + op2;
 
-        for (usint i = 0; i < towersize; i++) {
-            for (usint j = 0; j < ildcrtparams->GetRingDimension(); j++) {
+        for (uint32_t i = 0; i < towersize; i++) {
+            for (uint32_t j = 0; j < ildcrtparams->GetRingDimension(); j++) {
                 NativeInteger actualResult(sum.GetElementAtIndex(i).at(j));
                 NativeInteger expectedResult((op1.GetElementAtIndex(i).at(j) + op2.GetElementAtIndex(i).at(j))
                                                  .Mod(ildcrtparams->GetParams()[i]->GetModulus()));
@@ -577,8 +576,8 @@ void DCRT_mod_ops_on_two_elements(const std::string& msg) {
     {
         Element prod = op1 * op2;
 
-        for (usint i = 0; i < towersize; i++) {
-            for (usint j = 0; j < ildcrtparams->GetRingDimension(); j++) {
+        for (uint32_t i = 0; i < towersize; i++) {
+            for (uint32_t j = 0; j < ildcrtparams->GetRingDimension(); j++) {
                 NativeInteger actualResult(prod.GetElementAtIndex(i).at(j));
                 NativeInteger expectedResult((op1.GetElementAtIndex(i).at(j) * op2.GetElementAtIndex(i).at(j))
                                                  .Mod(ildcrtparams->GetParams()[i]->GetModulus()));

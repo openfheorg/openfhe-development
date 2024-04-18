@@ -4,50 +4,56 @@ on:
   push:
     branches:
       - main
-      - github-ci
 
 jobs:
-  
-  call:
-    uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@github-ci
+  call_with_gcc:
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
     with:
-      mb2_debug: true
-      mb2_tcm: true
-      mb4_noflag: true
-      mb4_debug: true
-      mb4_tcm: true
-      mb6_ntl_noflag: true
-      mb6_ntl_debug_tcm: true
-      mb6_ntl_tcm: true
+      runner: ${{ vars.RUNNER }}
+      compiler: "GCC-11"
+      native_backend: "all"
+      mb2_jobs: "all"
+      mb4_jobs: "all"
+      mb6_jobs: "all"
+      # cmake_args_map holds job specific additional cmake options. compiler flags, native_backend flag and
+      # OpenMP flag are set in generic_workflow.yml
+      cmake_args_map: '{
+                  "default"           : "-DBUILD_EXTRAS=ON",
+                  "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
+                  "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
+                  "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
+                  "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
+                  "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
+                  "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+                  "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+                }'
 
-  mb2_128:
-    needs: call
-    runs-on: [self-hosted, Linux, X64]
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: mb2_128
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
-      with:
-        module_name: mb2_128
-        native_backend: 128
-        mathbackend: 2
-        run_extras: true
-
-  mb2_clang:
-    needs: call
-    runs-on: [self-hosted, Linux, X64]
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: mb2_clang
-      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
-      with:
-        module_name: mb4_tcm
-        cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-        run_extras: true
+  call_with_clang:
+    needs: call_with_gcc
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
+    with:
+      runner: ${{ vars.RUNNER }}
+      compiler: "CLANG-14"
+      native_backend: "all"
+      mb2_jobs: "all"
+      mb4_jobs: "all"
+      mb6_jobs: "all"
+      # cmake_args_map holds job specific additional cmake options. compiler flags, native_backend flag and
+      # OpenMP flag are set in generic_workflow.yml
+      cmake_args_map: '{
+                  "default"           : "-DBUILD_EXTRAS=ON",
+                  "mb2"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2",
+                  "mb2_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DWITH_TCM=ON",
+                  "mb2_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=2 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb4"               : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4",
+                  "mb4_tcm"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DWITH_TCM=ON",
+                  "mb4_debug"         : "-DBUILD_EXTRAS=ON -DMATHBACKEND=4 -DCMAKE_BUILD_TYPE=Debug",
+                  "mb6_ntl"           : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON",
+                  "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
+                  "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
+                }'
 
 
   ###############################################
@@ -56,13 +62,13 @@ jobs:
   #
   ###############################################
   pages:
-    needs: mb2_clang
-    runs-on: [self-hosted, Linux, X64]
+    needs: call_with_clang
+    runs-on: ${{ vars.RUNNER }}
     env:
       GIT_SUBMODULE_STRATEGY: recursive
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: build_docs
       run: |

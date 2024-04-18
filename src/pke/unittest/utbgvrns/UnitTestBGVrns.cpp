@@ -138,7 +138,7 @@ constexpr usint DSIZE           = 0;
 constexpr usint BV_DSIZE        = 4;
 constexpr usint PTM             = 65537;
 constexpr usint BATCH           = 16;
-constexpr usint FIRST_MOD_SIZE  = 60;
+constexpr usint FIRST_MOD_SIZE  = 0;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 
 // clang-format off
@@ -152,6 +152,10 @@ static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {
     { ADD_PACKED_UTBGVRNS, "06", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { ADD_PACKED_UTBGVRNS, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { ADD_PACKED_UTBGVRNS, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    /// tests the scenario when plaintext modulus * cyclotomic order > 2^32
+    { ADD_PACKED_UTBGVRNS, "09", {BGVRNS_SCHEME,    32768,          3, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { ADD_PACKED_UTBGVRNS, "10", {BGVRNS_SCHEME,    32768,          3, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+
     // ==========================================
     // TestType,           Descr,  Scheme,        RDim,     MultDepth,  SModSize,   DSize,    BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { MULT_PACKED_UTBGVRNS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },

@@ -33,16 +33,14 @@
   This code tests the transform feature of the OpenFHE lattice encryption library.
  */
 
-#include <iostream>
-#include <vector>
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
-#include "lattice/elemparamfactory.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
-#include "utils/inttypes.h"
-#include "utils/parmfactory.h"
+#include "utils/debug.h"
+
+#include <iostream>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -55,33 +53,11 @@ using namespace lbcrypto;
 template <typename Element>
 static void common_basic_ops(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    // using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
-    // using IntType = typename Element::Vector::Integer;
 
-    usint m = 8;
+    uint32_t m    = 8;
+    auto ilparams = std::make_shared<ParmType>(m);
 
-#if 0
-  typename VecType::Integer primeModulus("73");
-  typename VecType::Integer primitiveRootOfUnity("22");
-
-  auto ilparams =
-      std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
-#else
-    usint bits = 20;
-
-    //  std::shared_ptr<ParmType> ilparams =
-    // ElemParamFactory::GenElemParams<ParmType>(m,bits,towersize); //note this
-    // works too.
-
-    std::shared_ptr<ParmType> ilparams = ElemParamFactory::GenElemParams<ParmType>(m, bits);
-
-#endif
-
-    // std::shared_ptr<ParmType> ilparams =
-    // ElemParamFactory::GenElemParams<ParmType>(m,60,2);
-
-    // GenerateDCRTParams<typename Element::Integer>(8, 3, 20) );
     OPENFHE_DEBUGEXP(*ilparams);
     Element ilvector2n1(ilparams);
     ilvector2n1 = {"1", "2", "0", "1"};
@@ -150,18 +126,11 @@ void common_set_format(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
-
-#if 0
-  auto ilparams =
-      std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
-#else
-    std::shared_ptr<ParmType> ilparams =
-        ElemParamFactory::GenElemParams<ParmType>(m, primeModulus, primitiveRootOfUnity);
-#endif
+    auto ilparams = std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
 
     Element ilvector2n(ilparams, Format::COEFFICIENT);
     ilvector2n = {"3", "0", "0", "0"};
@@ -199,7 +168,7 @@ void common_setters_getters(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -242,15 +211,11 @@ void common_binary_ops(const std::string& msg) {
     using ParmType = typename Element::Params;
     using IntType  = typename Element::Vector::Integer;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
-
-    // auto ilparams = std::make_shared<ParmType>(m, primeModulus,
-    // primitiveRootOfUnity);
-    std::shared_ptr<ParmType> ilparams =
-        ElemParamFactory::GenElemParams<ParmType>(m, primeModulus, primitiveRootOfUnity);
+    auto ilparams = std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
 
     Element ilvector2n1(ilparams);
     ilvector2n1 = {"2", "1", "1", "1"};
@@ -334,7 +299,7 @@ void common_clone_ops(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
@@ -384,7 +349,7 @@ void common_arithmetic_ops_element(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
@@ -461,7 +426,7 @@ void common_other_methods(const std::string& msg) {
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
@@ -533,7 +498,7 @@ void common_cyclotomicOrder(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
     auto ilparams0 =
         std::make_shared<ParmType>(m, typename VecType::Integer("1234"), typename VecType::Integer("5678"));
     Element ilv0(ilparams0);

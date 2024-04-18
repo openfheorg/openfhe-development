@@ -48,7 +48,7 @@ SecretKeyDist convertToSecretKeyDist(const std::string& str) {
     //     return BINARY;
 
     std::string errMsg(std::string("Unknown SecretKeyDist ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 SecretKeyDist convertToSecretKeyDist(uint32_t num) {
     auto keyDist = static_cast<SecretKeyDist>(num);
@@ -63,7 +63,7 @@ SecretKeyDist convertToSecretKeyDist(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for SecretKeyDist ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
     switch (m) {

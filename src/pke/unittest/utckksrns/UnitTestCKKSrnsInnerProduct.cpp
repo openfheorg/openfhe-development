@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
 #include <vector>
@@ -89,7 +89,7 @@ double CKKSrnsInnerProduct(const std::vector<double> testVec) {
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    KeyPair keys = cc->KeyGen();
+    KeyPair<DCRTPoly> keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalSumKeyGen(keys.secretKey);
 

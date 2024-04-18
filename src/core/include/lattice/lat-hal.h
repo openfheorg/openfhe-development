@@ -29,37 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This file contains the functionality to switch between lattice backends
- */
-
 #ifndef LBCRYPTO_INC_LATTICE_LAT_HAL_H
 #define LBCRYPTO_INC_LATTICE_LAT_HAL_H
-
-#include "lattice/ilparams.h"
-#include "lattice/ildcrtparams.h"
-
-namespace lbcrypto {
-
-#ifdef WITH_BE2
-using M2Params     = ILParamsImpl<M2Integer>;
-using M2DCRTParams = ILDCRTParams<M2Integer>;
-#endif
-
-#ifdef WITH_BE4
-using M4Params     = ILParamsImpl<M4Integer>;
-using M4DCRTParams = ILDCRTParams<M4Integer>;
-#endif
-
-#ifdef WITH_NTL
-using M6Params     = ILParamsImpl<M6Integer>;
-using M6DCRTParams = ILDCRTParams<M6Integer>;
-#endif
-
-using ILNativeParams = ILParamsImpl<NativeInteger>;
-using ILParams       = ILParamsImpl<BigInteger>;
-
-}  // namespace lbcrypto
 
 #include "lattice/hal/lat-backend.h"
 

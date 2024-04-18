@@ -212,7 +212,7 @@ void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& 
     if (it == precomputedValues.end()) {
         std::string errMsg("DiscreteFourierTransform::Initialize() must be called for cyclOrder = ");
         errMsg += std::to_string(cyclOrder);
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     const uint32_t valsSize = vals.size();
@@ -244,7 +244,7 @@ void DiscreteFourierTransform::FFTSpecial(std::vector<std::complex<double>>& val
     if (it == precomputedValues.end()) {
         std::string errMsg("DiscreteFourierTransform::Initialize() must be called for cyclOrder = ");
         errMsg += std::to_string(cyclOrder);
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     const PrecomputedValues& prepValues = it->second;
 

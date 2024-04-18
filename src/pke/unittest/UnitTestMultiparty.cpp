@@ -421,7 +421,7 @@ protected:
             std::vector<PrivateKey<Element>> secretKeys{kp1.secretKey, kp2.secretKey};
             KeyPair<Element> kpMultiparty = cc->MultipartyKeyGen(secretKeys);
             if (!kpMultiparty.good())
-                OPENFHE_THROW(openfhe_error, "Key generation failed");
+                OPENFHE_THROW("Key generation failed");
 
             ////////////////////////////////////////////////////////////
             // Encode source data

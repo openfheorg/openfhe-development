@@ -34,15 +34,15 @@ The features that need to be enabled are PKE, KEYSWITCH, LEVELEDSHE and SCHEMESW
 The user has to generate a CKKS cryptocontext and keys with the desired parameters, as well as to set up the FHEW cryptocontext and
 private key through `EvalCKKStoFHEWSetup` and the automorphism keys and key switch hints through `EvalCKKStoFHEWKeyGen`. The setup is
 completed by calling `EvalCKKStoFHEWPrecompute` which takes as argument the scale with which to multiply the decoding matrix, which
-in most cases should be chosen by the user to be Q / (scFactor * p), where Q is the CKKS ciphertext modulus on level 0, scFactor is the
-CKKS scaling factor for that level, and p is the desired FHEW plaintext modulus. If the scale is left to be the default value of 1, the
-implicit FHEW plaintext modulus will be Q / scFactor, and the user should take this into account. Finally, the user can also divide
-separately the messages by p, and input plaintexts in the unit circle, then scale only by Q / scFactor and recover the initial message
-in FHEW.
+in most cases should be chosen by the user to be 1 / p, where p is the desired FHEW plaintext modulus; internally, the scale will be
+transformed to Q / (scFactor * p), where Q is the CKKS ciphertext modulus on level 0, scFactor is the CKKS scaling factor for that level.
+If the scale is left to be the default value of 1, the implicit FHEW plaintext modulus will be Q / scFactor, and the user should take this
+into account. Finally, the user can also divide separately the messages by p, and input plaintexts in the unit circle (which translates
+to an internal scaling only by Q / scFactor) and recover the initial message in FHEW.
 
 After the setup and precomputation, the user should call `EvalCKKStoFHEW`. The number of slots to be converted is specified by the user,
 otherwise it defaults to the number of slots specified in the CKKS scheme. Note that FHEW plaintexts are integers, so the messages from
-CKKS will be rounded.
+CKKS will be rounded (and are expected to fit in the FHEW plaintext modulus).
 
 **FHEW->CKKS**
 We can transform a number of FHEW ciphertexts (symmetric key encryption) into a CKKS ciphertext (public key encryption) encrypting in

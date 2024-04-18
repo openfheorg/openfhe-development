@@ -83,9 +83,16 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext
 }
 
 void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
-    AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
-    EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+    // this branch is for BFV
+    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+        EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+    }
+    else {
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
+        AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
+        EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    }
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
@@ -147,9 +154,16 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly> ciphertext
 }
 
 void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
-    AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
-    EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+    // this branch is for BFV
+    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+        EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+    }
+    else {
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
+        AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
+        EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    }
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
@@ -221,19 +235,26 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertex
 }
 
 void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
-    AdjustForMultInPlace(ciphertext, ctmorphed);
-    EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
-    // TODO (Andrey) : This part is only used in CKKS scheme
-    ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
-    // TODO (Andrey) : This part is only used in BGV scheme
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
+    // this branch is for BFV
+    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+        EvalMultCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+    }
+    else {
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
+        AdjustForMultInPlace(ciphertext, ctmorphed);
+        EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+
+        ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
+        // TODO (Andrey) : This part is only used in CKKS scheme
+        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
+        // TODO (Andrey) : This part is only used in BGV scheme
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+            const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+            ciphertext->SetScalingFactorInt(
+                ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
+        }
     }
 }
 
@@ -297,7 +318,7 @@ void LeveledSHERNS::MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, usin
     monomialDCRT = monomial;
     monomialDCRT.SetFormat(Format::EVALUATION);
 
-    for (usint i = 0; i < ciphertext->GetElements().size(); i++) {
+    for (usint i = 0; i < ciphertext->NumberCiphertextElements(); i++) {
         cv[i] *= monomialDCRT;
     }
 }
@@ -342,7 +363,7 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() == NORESCALE) {
-        OPENFHE_THROW(not_implemented_error, "LevelReduceInPlace is not implemented for NORESCALE rescaling technique");
+        OPENFHE_THROW("LevelReduceInPlace is not implemented for NORESCALE rescaling technique");
     }
 
     if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL && levels > 0) {
@@ -404,6 +425,76 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
 
     if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
         AdjustLevelsInPlace(ciphertext1, ciphertext2);
+
+        double scFactor = cryptoParams->GetScalingFactorReal();
+
+        // supported only for CKKS
+        if (scFactor == 0.0)
+            return;
+
+        DCRTPoly ptxt;
+        uint32_t ptxtDepth = 0;
+        uint32_t ctxtDepth = 0;
+        usint sizeQl       = 0;
+        uint32_t ptxtIndex = 0;
+
+        // Get moduli chain to create CRT representation of powP
+        std::vector<DCRTPoly::Integer> moduli;
+
+        if (ciphertext1->NumberCiphertextElements() == 1) {
+            ptxt      = ciphertext1->GetElements()[0];
+            ptxtDepth = ciphertext1->GetNoiseScaleDeg();
+            ctxtDepth = ciphertext2->GetNoiseScaleDeg();
+            sizeQl    = ciphertext2->GetElements()[0].GetNumOfElements();
+            moduli.resize(sizeQl);
+            for (usint i = 0; i < sizeQl; i++) {
+                moduli[i] = ciphertext2->GetElements()[0].GetElementAtIndex(i).GetModulus();
+            }
+            ptxtIndex = 1;
+        }
+        else if (ciphertext2->NumberCiphertextElements() == 1) {
+            ptxt      = ciphertext2->GetElements()[0];
+            ptxtDepth = ciphertext2->GetNoiseScaleDeg();
+            ctxtDepth = ciphertext1->GetNoiseScaleDeg();
+            sizeQl    = ciphertext1->GetElements()[0].GetNumOfElements();
+            moduli.resize(sizeQl);
+            for (usint i = 0; i < sizeQl; i++) {
+                moduli[i] = ciphertext1->GetElements()[0].GetElementAtIndex(i).GetModulus();
+            }
+            ptxtIndex = 2;
+        }
+        else
+            return;
+
+        // Bring to same depth if not already same
+        if (ptxtDepth < ctxtDepth) {
+            // Find out how many levels to scale plaintext up.
+            size_t diffDepth = ctxtDepth - ptxtDepth;
+
+            DCRTPoly::Integer intSF = static_cast<NativeInteger::Integer>(scFactor + 0.5);
+            std::vector<DCRTPoly::Integer> crtSF(sizeQl, intSF);
+            auto crtPowSF = crtSF;
+            for (usint j = 0; j < diffDepth - 1; j++) {
+                crtPowSF = CKKSPackedEncoding::CRTMult(crtPowSF, crtSF, moduli);
+            }
+
+            ptxt = ptxt.Times(crtPowSF);
+
+            if (ptxtIndex == 1) {
+                ciphertext1->SetElements({ptxt});
+                ciphertext1->SetNoiseScaleDeg(ctxtDepth);
+            }
+            else {
+                ciphertext2->SetElements({ptxt});
+                ciphertext2->SetNoiseScaleDeg(ctxtDepth);
+            }
+        }
+        else if (ptxtDepth > ctxtDepth) {
+            OPENFHE_THROW(
+                "LPAlgorithmSHERNS<DCRTPoly>::AdjustForAddOrSubInPlace "
+                "- plaintext cannot be encoded at a larger depth than that "
+                "of the ciphertext.");
+        }
     }
     else if (cryptoParams->GetScalingTechnique() != NORESCALE) {
         AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);

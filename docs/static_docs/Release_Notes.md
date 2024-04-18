@@ -1,3 +1,32 @@
+03/08/2024: OpenFHE 1.1.4 (stable) is released
+
+* Fixes a bug affecting the Google C++ Transpiler code generation (#701)
+* Adds serialization backwards compatibility down to 1.0.4 for the JSON encoding (#571)
+* Shows more information when an exception is thrown (#702)
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.1.4%22
+
+03/04/2024: OpenFHE 1.1.3 (stable) is released
+
+* One internal map is now used for all rotation keys, which reduces memory footprint and key generation time for BGV-like schemes (#546)
+* New mechanism for OpenFHE exceptions is added; the old one is still available, but will be removed in a later major release (#668)
+* Low-level optimizations for polynomial arithmetic (minor efficiency improvements for BGV-like schemes)
+* Scheme switching code improvements; note that the API for scheme switching has changed! (#631)
+* Improves runtime for systems with a large number of threads/cores (#617)
+* Fast rotations are now fully operations in BFV (#569)
+* Includes fixes for 18 bugs
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.1.3%22
+
+12/16/2023: OpenFHE 1.1.2 (stable) is released
+
+* Improves the performance of secret-key encryption and key generation for all schemes (#598)
+* Improves the efficiency of X(N)OR gates for FHEW/TFHE (#578)
+* Adds an article explaining how to configure OpenFHE for best performance (#549)
+* Includes 18 bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.1.2%22
+
 08/23/2023: OpenFHE 1.1.1 (development) is released
 
 * Fixes the CMake files (binfhe module is now a dependency for the pke module) [#525, #538]

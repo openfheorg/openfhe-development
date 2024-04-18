@@ -47,7 +47,7 @@ double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor);
 double CalculateApproximationError(const std::vector<std::complex<double>>& result,
                                    const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
-        OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+        OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
     // using the Euclidean norm
     double avrg = 0;

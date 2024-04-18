@@ -59,7 +59,7 @@ public:
    */
     virtual RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                     ConstLWEPrivateKey& LWEsk) const {
-        OPENFHE_THROW(not_implemented_error, "KeyGenACC operation not supported");
+        OPENFHE_THROW("KeyGenACC operation not supported");
     }
 
     virtual RingGSWACCKey KeyGenAccTest(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
@@ -83,7 +83,7 @@ public:
    */
     virtual void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
                          RLWECiphertext& acc, const NativeVector& a) const {
-        OPENFHE_THROW(not_implemented_error, "ACC operation not supported");
+        OPENFHE_THROW("ACC operation not supported");
     }
 
     /**

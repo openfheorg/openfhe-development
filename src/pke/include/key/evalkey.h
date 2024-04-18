@@ -70,7 +70,7 @@ public:
    */
 
     virtual void SetAVector(const std::vector<Element>& a) {
-        OPENFHE_THROW(not_implemented_error, "SetAVector copy operation not supported");
+        OPENFHE_THROW("SetAVector copy operation not supported");
     }
 
     /**
@@ -81,7 +81,7 @@ public:
    */
 
     virtual void SetAVector(std::vector<Element>&& a) {
-        OPENFHE_THROW(not_implemented_error, "SetAVector move operation not supported");
+        OPENFHE_THROW("SetAVector move operation not supported");
     }
 
     /**
@@ -92,7 +92,7 @@ public:
    */
 
     virtual const std::vector<Element>& GetAVector() const {
-        OPENFHE_THROW(not_implemented_error, "GetAVector operation not supported");
+        OPENFHE_THROW("GetAVector operation not supported");
     }
 
     /**
@@ -103,7 +103,7 @@ public:
    */
 
     virtual void SetBVector(const std::vector<Element>& b) {
-        OPENFHE_THROW(not_implemented_error, "SetBVector copy operation not supported");
+        OPENFHE_THROW("SetBVector copy operation not supported");
     }
 
     /**
@@ -114,7 +114,7 @@ public:
    */
 
     virtual void SetBVector(std::vector<Element>&& b) {
-        OPENFHE_THROW(not_implemented_error, "SetBVector move operation not supported");
+        OPENFHE_THROW("SetBVector move operation not supported");
     }
 
     /**
@@ -125,7 +125,7 @@ public:
    */
 
     virtual const std::vector<Element>& GetBVector() const {
-        OPENFHE_THROW(not_implemented_error, "GetBVector operation not supported");
+        OPENFHE_THROW("GetBVector operation not supported");
     }
 
     /**
@@ -136,7 +136,7 @@ public:
    */
 
     virtual void SetA(const Element& a) {
-        OPENFHE_THROW(not_implemented_error, "SetA copy operation not supported");
+        OPENFHE_THROW("SetA copy operation not supported");
     }
 
     /**
@@ -146,7 +146,7 @@ public:
    * @param &&a is the Element to be moved.
    */
     virtual void SetA(Element&& a) {
-        OPENFHE_THROW(not_implemented_error, "SetA move operation not supported");
+        OPENFHE_THROW("SetA move operation not supported");
     }
 
     /**
@@ -157,7 +157,7 @@ public:
    */
 
     virtual const Element& GetA() const {
-        OPENFHE_THROW(not_implemented_error, "GetA operation not supported");
+        OPENFHE_THROW("GetA operation not supported");
     }
 
     /**
@@ -168,7 +168,7 @@ public:
    */
 
     virtual void SetAinDCRT(const DCRTPoly& a) {
-        OPENFHE_THROW(not_implemented_error, "SetAinDCRT copy operation not supported");
+        OPENFHE_THROW("SetAinDCRT copy operation not supported");
     }
 
     /**
@@ -178,7 +178,7 @@ public:
    * @param &&a is the Element to be moved.
    */
     virtual void SetAinDCRT(DCRTPoly&& a) {
-        OPENFHE_THROW(not_implemented_error, "SetAinDCRT move operation not supported");
+        OPENFHE_THROW("SetAinDCRT move operation not supported");
     }
 
     /**
@@ -189,7 +189,7 @@ public:
    */
 
     virtual const DCRTPoly& GetAinDCRT() const {
-        OPENFHE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
+        OPENFHE_THROW("GetAinDCRT operation not supported");
     }
 
     /**
@@ -200,7 +200,7 @@ public:
    */
 
     virtual void SetBinDCRT(const DCRTPoly& b) {
-        OPENFHE_THROW(not_implemented_error, "SetAinDCRT copy operation not supported");
+        OPENFHE_THROW("SetAinDCRT copy operation not supported");
     }
 
     /**
@@ -210,7 +210,7 @@ public:
    * @param &&b is the Element to be moved.
    */
     virtual void SetBinDCRT(DCRTPoly&& b) {
-        OPENFHE_THROW(not_implemented_error, "SetAinDCRT move operation not supported");
+        OPENFHE_THROW("SetAinDCRT move operation not supported");
     }
 
     /**
@@ -221,11 +221,11 @@ public:
    */
 
     virtual const DCRTPoly& GetBinDCRT() const {
-        OPENFHE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
+        OPENFHE_THROW("GetAinDCRT operation not supported");
     }
 
     virtual void ClearKeys() {
-        OPENFHE_THROW(not_implemented_error, "ClearKeys operation is not supported");
+        OPENFHE_THROW("ClearKeys operation is not supported");
     }
 
     friend bool operator==(const EvalKeyImpl& a, const EvalKeyImpl& b) {

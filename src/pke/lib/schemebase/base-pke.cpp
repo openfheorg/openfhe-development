@@ -49,7 +49,7 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsPK      = cryptoParams->GetParamsPK();
     if (!paramsPK) {
-        OPENFHE_THROW(config_error, "PrecomputeCRTTables() must be called before using precomputed params.");
+        OPENFHE_THROW("PrecomputeCRTTables() must be called before using precomputed params.");
     }
 
     const auto ns      = cryptoParams->GetNoiseScale();
@@ -79,8 +79,7 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
 
     Element a(dug, paramsPK, Format::EVALUATION);
     Element e(dgg, paramsPK, Format::EVALUATION);
-
-    Element b = ns * e - a * s;
+    Element b(ns * e - a * s);
 
     usint sizeQ  = elementParams->GetParams().size();
     usint sizePK = paramsPK->GetParams().size();
@@ -89,8 +88,7 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
-    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetPublicElements(std::vector<Element>{std::move(b), std::move(a)});
     keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
 
     return keyPair;

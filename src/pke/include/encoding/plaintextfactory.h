@@ -68,7 +68,7 @@ public:
             case CKKS_PACKED_ENCODING:
                 return std::make_shared<CKKSPackedEncoding>(vp, ep);
             default:
-                OPENFHE_THROW(type_error, "Unknown plaintext encoding type in MakePlaintext");
+                OPENFHE_THROW("Unknown plaintext encoding type in MakePlaintext");
         }
     }
 
@@ -80,13 +80,17 @@ public:
                                    std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
                                    size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         // Check if plaintext has got enough slots for data (value)
-        usint ringDim = vp->GetRingDimension();
+        usint ringDim    = vp->GetRingDimension();
         size_t valueSize = value.size();
         if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                          "] of the vector with values should not be greater than ringDim/2 [" +
+                          std::to_string(ringDim / 2) + "] if the scheme is CKKS");
         }
         else if (valueSize > ringDim) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "] if the scheme is NOT CKKS");
+            OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                          "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) +
+                          "] if the scheme is NOT CKKS");
         }
         Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
         pt->SetIntVectorValue(value);
@@ -105,13 +109,17 @@ public:
                                    EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
                                    size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         // Check if plaintext has got enough slots for data (value)
-        usint ringDim = vp->GetRingDimension();
+        usint ringDim    = vp->GetRingDimension();
         size_t valueSize = value.size();
         if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                          "] of the vector with values should not be greater than ringDim/2 [" +
+                          std::to_string(ringDim / 2) + "] if the scheme is CKKS");
         }
         else if (valueSize > ringDim) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "] if the scheme is NOT CKKS");
+            OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                          "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) +
+                          "] if the scheme is NOT CKKS");
         }
         Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
         pt->SetStringValue(value);

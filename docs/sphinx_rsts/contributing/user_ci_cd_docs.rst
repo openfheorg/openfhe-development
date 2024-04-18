@@ -4,116 +4,116 @@ OpenFHE CI/CD Users Guide
 Introduction
 ------------
 
-This documentation is about the CI/CD Transition from GitLab pipeline to
-GitHub Actions workflow. It is also intended to improve our CI/CD
-capabilities in the new GitHub environment. Directory structure
+This documentation describes OpenFHE workflows on GitHub.
 
 Repository: https://github.com/openfheorg/openfhe-development
 
 ::
 
    ├── .github
-   │   ├── actions                       <-- Custom GitHub actions
-   │   │   └─ default_builder            <-- Custom GitHub actions to bootstrap the build
-   │   │       └── action.yml            <-- Custom action file, defines the steps for a given configuration, cmake -> build -> unittest -> benchmark -> extras
    │   ├── workflows                     <-- GitHub workflows(pipelines)
-   │       ├── custom.yml                <-- Runs on-demand a single build of a custom configuration (this can turn all the knobs)
-   │       ├── main.yml                  <-- Runs when a branch is merged to main, uses reusable_workflow
-   │       ├── manual.yml                <-- Runs on-demand with parameters
-   │       ├── pull-request.yml          <-- Runs when a pull-request is created, uses reusable_workflow
-   │       └── reusable_workflow.yml     <-- A workflow that handles the default builds and tests the important configurations, uses default_builder/action.yml
+   │       ├── main.yml                  <-- Runs when a branch is merged to main, uses generic_workflow
+   │       ├── manual.yml                <-- Runs on-demand with parameters, uses generic_workflow
+   │       ├── pull-request.yml          <-- Runs when a pull-request to main is created, uses generic_workflow
 
 OpenFHE Workflows
 -----------------
 
-A workflow is a configurable automated process made up of one or more
-jobs. Workflow files use YAML syntax, and must have either a .yml or
-.yaml file extension.
+A workflow is a configurable automated process made up of one or more jobs. Workflow files use YAML syntax,
+and must have either a .yml or .yaml file extension.
 
-Actions are individual tasks that we can combine to create jobs and
-customize our workflow. We created a custom action that wraps up all the
-common functionality on our jobs.
+Actions are individual tasks that we can combine to create jobs and customize our workflow. We created a custom action
+that wraps up all the common functionality on our jobs.
 
 Features
 ~~~~~~~~
 
--  Custom Github Actions (default-builder)
--  Workflows are separated into three YAML files (main.yml manual.yml
-   pull-request.yml)
--  Manual pipeline that can be run with a custom parameters
+-  Custom Github Actions (generic_workflow_builder)
+-  Workflows are separated into three YAML files (main.yml manual.yml pull-request.yml)
+-  Manual pipeline that can be run with custom parameters
 -  Build and deploy docs to Github pages only on main branch
--  Jobs run in parallel
+-  Jobs can run in parallel
 -  The benchmark outputs are exported as artifacts
 -  Runs on a self-hosted runners
+-  All jobs build unittests, benchmarks and extras
+-  All jobs run unittests
+-  If the job name includes _tcm, _debug, _ntl, etc., then the job runs with that option (those options)
+
 
 .. warning: We need to add multiple runners to support concurrent jobs (one self-hosted runner can only run one job at a time)
 
 Pull request Workflow
 ---------------------
 
-This workflow will run whenever a pull request is created against the
-main branch. The pull request will run the default job as well as all
-the build jobs.
+This workflow will run whenever a pull request is created against the main branch. The pull request will run
+the default job as well as all build jobs.
 
-.. figure:: ci_cd_assets/pull_request_workflow_diagram.png
-   :alt: pull_request_workflow_diagram
+The test configurations for all job are shown in the table below:
 
-The test configurations for each job are shown in the table below
-
-+---------+---------+---------+---------+---------+---------+---------+
-| Build   | Build   | Build   | Build   | With    | With    | Backend |
-| name    | U       | Be      | Extras  | TCM     | debug   |         |
-|         | nitTest | nchmark |         |         |         |         |
-+=========+=========+=========+=========+=========+=========+=========+
-| default | ON      | OFF     | OFF     | OFF     | OFF     | Not Set |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb      | ON      | OFF     | ON      | OFF     | ON      | 2       |
-| 2_debug |         |         |         |         |         |         |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb2_tcm | ON      | OFF     | ON      | ON      | OFF     | 2       |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb4     | ON      | OFF     | ON      | OFF     | OFF     | 4       |
-| _noflag |         |         |         |         |         |         |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb      | ON      | OFF     | ON      | OFF     | ON      | 4       |
-| 4_debug |         |         |         |         |         |         |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb4_tcm | ON      | OFF     | ON      | ON      | OFF     | 4       |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb6     | ON      | OFF     | ON      | OFF     | OFF     | 6       |
-| _noflag |         |         |         |         |         |         |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb6_de  | ON      | OFF     | ON      | ON      | ON      | 6       |
-| bug_tcm |         |         |         |         |         |         |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb6_tcm | ON      | OFF     | ON      | ON      | OFF     | 6       |
-+---------+---------+---------+---------+---------+---------+---------+
-| mb2     | ON      | ON      | ON      | ON      | OFF     | 6       |
-| _natopt |         |         |         |         |         |         |
-+---------+---------+---------+---------+---------+---------+---------+
++-------------------+---------+---------------+-----------+
+| Build name        | Backend | NativeInteger | Compiler  |
+|                   |         | size(s)       | type(s)   |
++=========+=========+=========+===============+===========+
+| default           | Not Set | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb2               | 2       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb2_tcm           | 2       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb2_debug         | 2       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb4               | 4       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb4_tcm           | 4       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb4_debug         | 4       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb6_ntl           | 6       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb6_ntl_tcm       | 6       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
+| mb6_ntl_debug_tcm | 6       | 64            | GCC       |
++-------------------+---------+---------------+-----------+
 
 Main User Workflow
 ------------------
 
-The main workflow runs whenever a pull-request is merged to the main
-branch. The build is similar to the pull-request build, but It also runs
-the Pages job which builds and publishes the doxygen apidocs in GitHub
-pages.
+The main workflow runs whenever a pull-request is merged to the main branch. The build is very similar to
+the pull-request build. It runs more tests and also runs the Pages job which builds and publishes
+the doxygen apidocs in GitHub pages.
 
-.. figure:: ci_cd_assets/main_workflow_diagram.png
-   :alt: main_workflow_diagram
+The test configurations for all job are shown in the table below:
+
++-------------------+---------+---------------+-----------+
+| Build name        | Backend | NativeInteger | Compiler  |
+|                   |         | size(s)       | type(s)   |
++=========+=========+=========+===============+===========+
+| default           | Not Set | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb2               | 2       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb2_tcm           | 2       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb2_debug         | 2       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb4               | 4       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb4_tcm           | 4       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb4_debug         | 4       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb6_ntl           | 6       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb6_ntl_tcm       | 6       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
+| mb6_ntl_debug_tcm | 6       | 32/64/128     | GCC/CLANG |
++-------------------+---------+---------------+-----------+
 
 Manual User Workflow
 --------------------
 
-The manual pipeline is a workflow that can be run with custom
-parameters. It also allows running specific selected jobs.
-
-.. figure:: ci_cd_assets/manual_workflow_diagram.png
-   :alt: manual_workflow_diagram
-
-Run manual workflow
-~~~~~~~~~~~~~~~~~~~
+The manual pipeline is a workflow that can be run with custom parameters and allows to select jobs to run.
+To run manual workflow:
 
 1. Go to the openfhe-development repository at this URL:
    https://github.com/openfheorg/openfhe-development

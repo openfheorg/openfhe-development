@@ -158,6 +158,9 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     if (scalTech == FLEXIBLEAUTO) {
         std::cout << std::endl << std::endl << std::endl << " ===== FlexibleAutoDemo ============= " << std::endl;
     }
+    else if (scalTech == FLEXIBLEAUTOEXT) {
+        std::cout << std::endl << std::endl << std::endl << " ===== FlexibleAutoExtDemo ============= " << std::endl;
+    }
     else {
         std::cout << std::endl << std::endl << std::endl << " ===== FixedAutoDemo ============= " << std::endl;
     }

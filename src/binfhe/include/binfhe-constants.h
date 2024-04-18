@@ -131,7 +131,7 @@ std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 /**
  * @brief Type of gates supported, with two, three or four inputs
  */
-enum BINGATE { OR, AND, NOR, NAND, XOR_FAST, XNOR_FAST, MAJORITY, AND3, OR3, AND4, OR4, CMUX, XOR, XNOR };
+enum BINGATE { OR, AND, NOR, NAND, XOR, XNOR, MAJORITY, AND3, OR3, AND4, OR4, XOR_FAST, XNOR_FAST, CMUX };
 std::ostream& operator<<(std::ostream& s, BINGATE f);
 
 /**

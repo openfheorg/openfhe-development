@@ -2,27 +2,42 @@
 # 
 # This script can be used to install all of the requistes for the Linux Platform
 # 
-# https://github.com/openfheorg/openfhe-development/wiki/Instructions-for-building-OpenFHE-in-Linux
 
-# update
-sudo apt-get update
+# run update before installing every package
 
 # install cmake
-sudo apt-get install -y cmake=3.16.3-1ubuntu1
+sudo apt-get update
+sudo apt-get install -y cmake
 
 # install required packages
+sudo apt-get update
 sudo apt-get install -y build-essential
+sudo apt-get update
 sudo apt-get install -y autoconf
-sudo apt-get install -y libntl-dev
-sudo apt-get install -y libgmp-dev
+sudo apt-get update
 sudo apt-get install -y libtool
+sudo apt-get update
+sudo apt-get install -y libgmp-dev
+sudo apt-get update
+sudo apt-get install -y libntl-dev
 
-# install clang
-sudo apt-get install -y clang-10 
-
-# Install optional extra compilers for manual pipeline
-sudo apt-get install -y g++-11 g++-10 clang-9 clang-11
+# install all necessary and additional compilers
+sudo apt-get update
+sudo apt-get install -y g++-9 g++-10 g++-11 g++-12
+sudo apt-get update
+sudo apt-get install -y clang-12 clang-13 clang-14 clang-15
 
 # for documentation
-sudo apt-get install doxygen -y
-sudo apt-get install graphviz -y
+sudo apt-get update
+sudo apt-get install -y doxygen
+sudo apt-get update
+sudo apt-get install -y graphviz
+
+# python packages
+sudo apt-get update
+sudo apt-get install -y python3-pip
+sudo apt-get update
+sudo pip install pybind11[global]
+sudo apt-get update
+sudo apt-get install -y python3-pytest
+# to verify pytest installation: python3 -m pip show pytest

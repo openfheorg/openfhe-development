@@ -30,71 +30,37 @@
 //==================================================================================
 
 /*
-  parameter factory
+  Parameter class to generate BFVRNS crypto context
  */
 
-#ifndef SRC_CORE_INC_UTILS_PARMFACTORY_H_
-#define SRC_CORE_INC_UTILS_PARMFACTORY_H_
+#ifndef __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
 
-// useful for testing
+#include "scheme/gen-cryptocontext-params.h"
 
-// #include "lattice/lat-hal.h"
-#include "lattice/ildcrtparams.h"
-
-// #include "math/math-hal.h"
-#include "math/distrgen.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
-#include <memory>
+#include <string>
 #include <vector>
 
-using namespace lbcrypto;
+namespace lbcrypto {
 
-/**
- * Generate an ILDCRTParams with a given number of parms, with cyphertext moduli
- * of at least a given size
- * @param m - order
- * @param numOfTower - # of polynomials
- * @param pbits - number of bits in the prime, to start with
- * @return
- */
-template <typename I>
-inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfTower, usint pbits) {
-    OPENFHE_DEBUG_FLAG(false);
-    OPENFHE_DEBUG("in GenerateDCRTParams");
-    OPENFHE_DEBUGEXP(m);
-    OPENFHE_DEBUGEXP(numOfTower);
-    OPENFHE_DEBUGEXP(pbits);
-    if (numOfTower == 0) {
-        OPENFHE_THROW(math_error, "Can't make parms with numOfTower == 0");
-    }
+class CryptoContextBFVRNS;
 
-    std::vector<NativeInteger> moduli(numOfTower);
-    std::vector<NativeInteger> rootsOfUnity(numOfTower);
+// every CCParams class should include the following forward declaration as there is
+// no general CCParams class template. This way we may create scheme specific classes
+// derived from Params or have them completely independent.
+template <typename T>
+class CCParams;
+//====================================================================================================================
+template <>
+class CCParams<CryptoContextBFVRNS> : public Params {
+public:
+    CCParams() : Params(BFVRNS_SCHEME) {}
+    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
+    CCParams(const CCParams& obj) = default;
+    CCParams(CCParams&& obj)      = default;
+};
+//====================================================================================================================
 
-    NativeInteger q = FirstPrime<NativeInteger>(pbits, m);
-    I modulus(1);
+}  // namespace lbcrypto
 
-    usint j = 0;
-    OPENFHE_DEBUGEXP(q);
-
-    for (;;) {
-        moduli[j]       = q;
-        rootsOfUnity[j] = RootOfUnity(m, q);
-        modulus         = modulus * I(q.ConvertToInt());
-        OPENFHE_DEBUG("j " << j << " modulus " << q << " rou " << rootsOfUnity[j]);
-        if (++j == numOfTower)
-            break;
-
-        q = NextPrime(q, m);
-    }
-
-    auto params = std::make_shared<ILDCRTParams<I>>(m, moduli, rootsOfUnity);
-
-    return params;
-}
-
-#endif
+#endif  // __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__

@@ -32,10 +32,10 @@
 #define __BASETESTCASE_H__
 
 #include "config_core.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "scheme/cryptocontextparams-base.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
+#include "scheme/gen-cryptocontext-params.h"
 
 #include "utils/exception.h"
 
@@ -108,7 +108,7 @@ public:
     //        break;
     //    default: {
     //        std::string errMsg(std::string("Unknown schemeId ") + std::to_string(scheme));
-    //        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+    //        OPENFHE_THROW(errMsg);
     //    }
     //    }
 
@@ -128,7 +128,7 @@ public:
         catch (...) {
             std::string errMsg("Check the number of parameter overrides in the .csv file. It should be [" +
                                std::to_string(numOverrides) + "]");
-            OPENFHE_THROW(lbcrypto::config_error, errMsg);
+            OPENFHE_THROW(errMsg);
         }
         return numOverrides;
     }

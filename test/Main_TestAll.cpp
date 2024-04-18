@@ -30,10 +30,7 @@
 #include "src/gtest-all.cc"
 
 #include "lattice/lat-hal.h"
-#include "lattice/elemparams.h"
-#include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"
-#include "lattice/ilparams.h"
 #include "math/math-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"

@@ -73,7 +73,7 @@ public:
         else if (method == LMKCDEY)
             ACCscheme = std::make_shared<RingGSWAccumulatorLMKCDEY>();
         else
-            OPENFHE_THROW(config_error, "method is invalid");
+            OPENFHE_THROW("method is invalid");
     }
 
     NativePoly Generateacrs(const std::shared_ptr<RingGSWCryptoParams> params);
@@ -82,7 +82,7 @@ public:
     RingGSWEvalKey RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, NativePoly acrs,
                                const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag = false) const;
 
-    RingGSWEvalKey RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly> &acrs,
+    RingGSWEvalKey RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly>& acrs,
                                const NativePoly& skNTT, const LWEPlaintext& m, bool leadFlag = false) const;
 
     RingGSWEvalKey RGSWEvalMultAdd(const std::shared_ptr<RingGSWCryptoParams> params, RingGSWEvalKey a,
