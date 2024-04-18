@@ -219,8 +219,8 @@ void BinFHEContext::MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly 
     // }
 }
 LWEPublicKey BinFHEContext::MultipartyPubKeyGen(const LWEPrivateKey skN, const LWEPublicKey publicKey) {
-    // auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->MultipartyPubKeyGen(skN, publicKey);
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->MultipartyPubKeyGen(skN, publicKey, LWEParams);
 }
 
 NativePoly BinFHEContext::RGSWKeygen() {

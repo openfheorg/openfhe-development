@@ -116,7 +116,8 @@ LWEKeyPair LWEEncryptionScheme::MultipartyKeyGen(const std::vector<LWEPrivateKey
     return std::make_shared<LWEKeyPairImpl>(lweKeyPair);
 }
 
-LWEPublicKey LWEEncryptionScheme::MultipartyPubKeyGen(const LWEPrivateKey sk, const LWEPublicKey publicKey) {
+LWEPublicKey LWEEncryptionScheme::MultipartyPubKeyGen(const LWEPrivateKey sk, const LWEPublicKey publicKey,
+                                                      const std::shared_ptr<LWECryptoParams> params) {
     LWEKeyPair keyPair;
 
     auto A          = publicKey->GetA();
@@ -124,22 +125,11 @@ LWEPublicKey LWEEncryptionScheme::MultipartyPubKeyGen(const LWEPrivateKey sk, co
     auto dim        = publicKey->GetLength();
     auto modulus    = publicKey->GetModulus();
 
-    // generate error vector e
-    DiscreteGaussianGeneratorImpl<NativeVector> dgg;
-    NativeVector e = dgg.GenerateVector(dim, modulus);
-
-    // auto sk = KeyGen(dim, modulus);
     // compute v = As + e
-    NativeVector v = e;
-
     NativeVector ske = sk->GetElement();
     NativeInteger mu = modulus.ComputeMu();
 
-    // todosara:
-    // NativeVector v (dim, modulus);
-    for (size_t i = 0; i < dim; ++i) {
-        v[i] = 0;
-    }
+    auto v = params->GetDgg().GenerateVector(dim, modulus);
 
     for (size_t j = 0; j < dim; ++j) {
         for (size_t i = 0; i < dim; ++i) {

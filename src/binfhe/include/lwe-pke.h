@@ -89,7 +89,8 @@ public:
 
     LWEKeyPair MultipartyKeyGen(const std::vector<LWEPrivateKey>& privateKeyVec,
                                 const std::shared_ptr<LWECryptoParams> params);
-    LWEPublicKey MultipartyPubKeyGen(const LWEPrivateKey sk, LWEPublicKey publicKey);
+    LWEPublicKey MultipartyPubKeyGen(const LWEPrivateKey sk, LWEPublicKey publicKey,
+                                     const std::shared_ptr<LWECryptoParams> params);
 
     /**
    * Encrypts a bit using a secret key (symmetric key encryption)
