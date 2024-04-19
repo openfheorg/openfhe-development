@@ -1919,7 +1919,27 @@ private:
             uint128_t c{static_cast<uint128_t>(a) * b};
             res.hi = static_cast<uint64_t>(c >> 64);
             res.lo = static_cast<uint64_t>(c);
-#elif defined(__EMSCRIPTEN__)  // web assembly
+#elif defined(__x86_64__)
+            // clang-format off
+            __asm__("mulq %[b]"
+                : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
+                : [ a ] "%[lo]"(a), [ b ] "rm"(b)
+                : "cc");
+                // clang-format on
+#elif defined(__aarch64__)
+            typeD x;
+            x.hi = 0;
+            x.lo = a;
+            uint64_t y(b);
+            res.lo = x.lo * y;
+            asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
+            res.hi += x.hi * y;
+#elif defined(__arm__) || defined(__powerpc__)  // 32 bit processor
+            uint64_t wres(0), wa(a), wb(b);
+            wres   = wa * wb;
+            res.hi = wres >> 32;
+            res.lo = (uint32_t)wres & 0xFFFFFFFF;
+#else
             uint64_t a1 = a >> 32;
             uint64_t a2 = (uint32_t)a;
             uint64_t b1 = b >> 32;
@@ -1942,28 +1962,6 @@ private:
             // if there is an overflow in temp, add 2^32
             if ((temp < p1) || (temp < p2))
                 res.hi += (uint64_t)1 << 32;
-#elif defined(__x86_64__)
-            // clang-format off
-            __asm__("mulq %[b]"
-                : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
-                : [ a ] "%[lo]"(a), [ b ] "rm"(b)
-                : "cc");
-                // clang-format on
-#elif defined(__aarch64__)
-            typeD x;
-            x.hi = 0;
-            x.lo = a;
-            uint64_t y(b);
-            res.lo = x.lo * y;
-            asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
-            res.hi += x.hi * y;
-#elif defined(__arm__) || defined(__powerpc__)  // 32 bit processor
-            uint64_t wres(0), wa(a), wb(b);
-            wres   = wa * wb;
-            res.hi = wres >> 32;
-            res.lo = (uint32_t)wres & 0xFFFFFFFF;
-#else
-    #error Architecture not supported for MultD()
 #endif
         }
 
