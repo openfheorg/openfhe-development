@@ -33,8 +33,6 @@
   This code provides number theory utilities that are not templated by Integer or Vector
  */
 
-#define _USE_MATH_DEFINES
-
 #include "config_core.h"
 
 #include "math/math-hal.h"

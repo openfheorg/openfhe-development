@@ -17,7 +17,7 @@ set(CORE_VERSION_PATCH ${OPENFHE_VERSION_PATCH})
 set(CORE_VERSION ${CORE_VERSION_MAJOR}.${CORE_VERSION_MINOR}.${CORE_VERSION_PATCH})
 
 add_library(coreobj OBJECT ${CORE_SRC_FILES})
-add_dependencies(coreobj third-party)
+target_compile_definitions(coreobj PUBLIC _USE_MATH_DEFINES)
 
 set_property(TARGET coreobj PROPERTY POSITION_INDEPENDENT_CODE 1)
 

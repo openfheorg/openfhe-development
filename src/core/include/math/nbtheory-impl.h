@@ -36,8 +36,6 @@
 #ifndef LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
 #define LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
 
-#define _USE_MATH_DEFINES
-
 #include "math/distributiongenerator.h"
 #include "math/nbtheory.h"
 

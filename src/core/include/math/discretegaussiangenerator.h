@@ -66,10 +66,10 @@
 #ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
 #define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
 
-#define _USE_MATH_DEFINES  // added for Visual Studio support
 
 #include "math/distributiongenerator.h"
 
+#include <math.h>
 #include <memory>
 #include <random>
 #include <vector>
