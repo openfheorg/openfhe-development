@@ -184,6 +184,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,            Descr, Scheme,         RDim,      MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Slots, LowPrec,      HighPrec
     { ADD_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, DFLT,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
     { ADD_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     DFLT,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    // Special cases when mult depth = 0 and FLEXIBLEAUTO* modes are used; checks that the scaling factor set correctly
+    { ADD_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   0},
+    { ADD_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   0},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Slots
@@ -765,13 +768,14 @@ protected:
                           failmsg + " EvalSub Ct and negative double fails");
             approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1AddScalar->GetCKKSPackedValue(),
                                                                             results->GetCKKSPackedValue()));
-
-            // Testing EvalAdd ciphertext + large double
-            cResult = cc->EvalAdd(ciphertext1, factor);
-            cc->Decrypt(kp.secretKey, cResult, &results);
-            results->SetLength(plaintext1AddLargeScalar->GetLength());
-            checkEquality(plaintext1AddLargeScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), factor * eps,
-                          failmsg + " EvalAdd Ct and large double fails");
+            if (testData.params.multiplicativeDepth > 0) {
+                // Testing EvalAdd ciphertext + large double
+                cResult = cc->EvalAdd(ciphertext1, factor);
+                cc->Decrypt(kp.secretKey, cResult, &results);
+                results->SetLength(plaintext1AddLargeScalar->GetLength());
+                checkEquality(plaintext1AddLargeScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(),
+                              factor * eps, failmsg + " EvalAdd Ct and large double fails");
+            }
 
             // Testing EvalNegate
             cResult = cc->EvalNegate(ciphertext1);
