@@ -649,7 +649,8 @@ set(BINDEMODATAPATH ${CMAKE_CURRENT_BINARY_DIR}/demoData)
 
 # copies demoData folder from the root of the repo to build/demoData if the folder does not exist
 add_custom_target(third-party ALL
-    COMMAND [ ! -d ${BINDEMODATAPATH} ] && cp -R ${DEMODATAPATH} ${BINDEMODATAPATH} && echo "-- Copied demoData files" || echo "-- demoData folder already exists" )
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${BINDEMODATAPATH}
+)
 
 # when running "make clean", additionally deletes the demoData folder and CMake cache file
 set(ADDITIONAL_CLEAN_FILES "")
