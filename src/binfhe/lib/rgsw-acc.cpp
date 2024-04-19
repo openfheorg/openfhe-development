@@ -49,6 +49,32 @@
 #include <memory>
 #include <vector>
 
+#ifdef _MSC_VER
+
+#include <intrin.h>
+int trailing_zeros(uint32_t value) {
+    unsigned long index;
+    if (_BitScanForward(&index, value)) {
+        return index;
+    } else {
+        return 32; // No set bit found
+    }
+}
+int trailing_zeros(uint64_t value) {
+    unsigned long index;
+    if (_BitScanForward64(&index, value)) {
+        return index;
+    } else {
+        return 64; // No set bit found
+    }
+}
+#else
+template <typename T>
+int trailing_zeros(T value) {
+    return __builtin_ctz(value);
+}
+#endif
+
 namespace lbcrypto {
 
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
@@ -56,7 +82,7 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
                                               std::vector<NativePoly>& output) const {
     auto QHalf{params->GetQ().ConvertToInt<BasicInteger>() >> 1};
     auto Q_int{params->GetQ().ConvertToInt<NativeInteger::SignedNativeInt>()};
-    auto gBits{static_cast<NativeInteger::SignedNativeInt>(__builtin_ctz(params->GetBaseG()))};
+    auto gBits{static_cast<NativeInteger::SignedNativeInt>(trailing_zeros(params->GetBaseG()))};
     auto gBitsMaxBits{static_cast<NativeInteger::SignedNativeInt>(NativeInteger::MaxBits() - gBits)};
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
@@ -95,7 +121,7 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
                                               const NativePoly& input, std::vector<NativePoly>& output) const {
     auto QHalf{params->GetQ().ConvertToInt<BasicInteger>() >> 1};
     auto Q_int{params->GetQ().ConvertToInt<NativeInteger::SignedNativeInt>()};
-    auto gBits{static_cast<NativeInteger::SignedNativeInt>(__builtin_ctz(params->GetBaseG()))};
+    auto gBits{static_cast<NativeInteger::SignedNativeInt>(trailing_zeros(params->GetBaseG()))};
     auto gBitsMaxBits{static_cast<NativeInteger::SignedNativeInt>(NativeInteger::MaxBits() - gBits)};
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG{params->GetDigitsG() - 1};
