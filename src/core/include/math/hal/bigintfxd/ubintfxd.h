@@ -336,7 +336,7 @@ public:
    *
    * @param val
    */
-    BigIntegerFixedT(double val) __attribute__((deprecated("Cannot construct from a double")));  // NOLINT
+    [[deprecated("Cannot construct from a double")]] BigIntegerFixedT(double val);  // NOLINT
 
     ~BigIntegerFixedT() {}
 

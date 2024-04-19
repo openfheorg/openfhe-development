@@ -2756,9 +2756,8 @@ public:
    * @param newPrivateKey new secret key
    * @return new evaluation key
    */
-    EvalKey<Element> ReKeyGen(const PrivateKey<Element> originalPrivateKey,
-                              const PrivateKey<Element> newPrivateKey) const
-        __attribute__((deprecated("functionality removed from OpenFHE")));
+    [[deprecated("functionality removed from OpenFHE")]] EvalKey<Element> ReKeyGen(const PrivateKey<Element> originalPrivateKey,
+                              const PrivateKey<Element> newPrivateKey) const;
 
     /**
    * ReEncrypt - Proxy Re-Encryption mechanism for OpenFHE

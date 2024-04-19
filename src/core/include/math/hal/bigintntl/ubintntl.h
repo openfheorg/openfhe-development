@@ -177,7 +177,7 @@ public:
    *
    * @param val
    */
-    myZZ(double val) __attribute__((deprecated("Cannot construct from a double")));  // NOLINT
+    [[deprecated("Cannot construct from a double")]] myZZ(double val);  // NOLINT
 
     // ASSIGNMENT OPERATORS
 

@@ -157,8 +157,7 @@ public:
    * @param m the encoding cyclotomic order.
    * @params modulus is the plaintext modulus
    */
-    static void SetParams(usint m, const PlaintextModulus& modulus)
-        __attribute__((deprecated("use SetParams(usint m, EncodingParams p)")));
+    [[deprecated("use SetParams(usint m, EncodingParams p)")]] static void SetParams(usint m, const PlaintextModulus& modulus);
 
     /**
    * SetLength of the plaintext to the given size
