@@ -30,7 +30,7 @@
 //==================================================================================
 #include "utils/get-call-stack.h"
 
-#if defined(__linux__) && defined(__GNUC__)
+#if defined(__linux__) && defined(__GNUC__) && !defined(__ANDROID__)
 // clang-format off
 #include "utils/demangle.h"
 
