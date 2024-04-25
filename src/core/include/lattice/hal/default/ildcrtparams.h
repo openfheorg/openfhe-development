@@ -321,7 +321,8 @@ public:
             if (*m_params[i] != *dcrtParams->m_params[i])
                 return false;
         }
-        return (m_originalModulus == dcrtParams->GetOriginalModulus());
+        // return (m_originalModulus == dcrtParams->GetOriginalModulus());
+        return true;
     }
 
     /**
