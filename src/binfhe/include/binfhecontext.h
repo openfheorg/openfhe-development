@@ -507,6 +507,14 @@ public:
         return NativeInteger(128);
     }
 
+    void SetExtended(bool val) {
+        m_extended = val;
+    }
+
+    bool GetExtended() const {
+        return m_extended;
+    }
+
 private:
     // Shared pointer to Ring GSW + LWE parameters
     std::shared_ptr<BinFHECryptoParams> m_params{nullptr};
@@ -524,6 +532,7 @@ private:
 
     // Whether to optimize time for sign eval
     bool m_timeOptimization{false};
+    bool m_extended{false};
 };
 
 }  // namespace lbcrypto

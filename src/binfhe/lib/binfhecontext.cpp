@@ -168,6 +168,8 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
+    // TODO: captured with serialize/deserialize?
+    m_binfhescheme->set_num_of_parties(num_of_parties);
 }
 
 void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method) {
@@ -463,7 +465,7 @@ void BinFHEContext::MultipartyBTKeyGen(ConstLWEPrivateKey sk, RingGSWACCKey prev
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
                                          bool extended) const {
-    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, extended);
+    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, (m_extended || extended));
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector) const {

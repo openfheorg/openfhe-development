@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Example for the FHEW scheme using the multiparty bootstrapping method with 5 parties
+  Example for the FHEW scheme using the multiparty bootstrapping method with n parties
  */
 
 #include "binfhecontext.h"
@@ -96,13 +96,13 @@ void setup(BinFHEContext& cc, uint32_t parties, LWEPublicKey& pk, std::vector<LW
 }
 
 int main() {
-    auto cc                 = BinFHEContext();
+    auto cc = BinFHEContext();
     auto pk = cc.GetPublicKey();
     std::vector<LWEPrivateKey> zLWEKeys;
 
     // cc.GenerateBinFHEContext(TOY, LMKCDEY, num_of_parties);
     cc.GenerateBinFHEContext(STD128Q_LMKCDEY_T, LMKCDEY, num_of_parties);
-
+    cc.SetExtended(true);
 
     setup(cc, num_of_parties, pk, zLWEKeys);
 
@@ -120,7 +120,8 @@ int main() {
         // When the last boolean flag is set to true, extended parameters are used
         // i.e., no key switching and modulus switching is done,
         // which is required for threshold FHE (to support noise flooding)
-        auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2, true);
+        // ... Note use of cc.SetExtended(true) when generating binfhecontext
+        auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
 
         // decryption check before computation
         pct.clear();
