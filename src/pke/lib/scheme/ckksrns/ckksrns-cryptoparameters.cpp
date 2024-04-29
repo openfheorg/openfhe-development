@@ -100,35 +100,19 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         }
         else {
             m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
-
-            if (extraBits == 0) {
-                for (uint32_t k = 1; k < sizeQ; k++) {
-                    double prevSF           = m_scalingFactorsReal[k - 1];
-                    m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
-                    double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
-
-                    if (ratio <= 0.5 || ratio >= 2.0)
-                        OPENFHE_THROW(
-                            "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                            "- FLEXIBLEAUTO cannot support this "
-                            "number of levels in this parameter setting. Please use "
-                            "FIXEDMANUAL.");
-                }
-            }
-            else {
+            if (extraBits > 0)
                 m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
-                for (uint32_t k = 2; k < sizeQ; k++) {
-                    double prevSF           = m_scalingFactorsReal[k - 1];
-                    m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
-                    double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
+            const double lastPresetFactor = (extraBits == 0) ? m_scalingFactorsReal[0] : m_scalingFactorsReal[1];
+            // number of levels with pre-calculated factors
+            const size_t numPresetFactors = (extraBits == 0) ? 1 : 2;
 
-                    if (ratio <= 0.5 || ratio >= 2.0)
-                        OPENFHE_THROW(
-                            "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                            "- FLEXIBLEAUTO cannot support this "
-                            "number of levels in this parameter setting. Please use "
-                            "FIXEDMANUAL.");
-                }
+            for (size_t k = numPresetFactors; k < sizeQ; k++) {
+                double prevSF           = m_scalingFactorsReal[k - 1];
+                m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
+                double ratio            = m_scalingFactorsReal[k] / lastPresetFactor;
+                if (ratio <= 0.5 || ratio >= 2.0)
+                    OPENFHE_THROW(
+                        "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL.");
             }
         }
 
