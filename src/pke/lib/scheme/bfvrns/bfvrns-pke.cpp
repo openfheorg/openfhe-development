@@ -43,7 +43,7 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) {
+KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) const {
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
@@ -102,10 +102,10 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ = elementParams->GetParams().size();
+    size_t sizeQ             = elementParams->GetParams().size();
 
     auto encParams = ptxt.GetParams();
-    size_t sizeP = encParams->GetParams().size();
+    size_t sizeP   = encParams->GetParams().size();
 
     // enables encoding of plaintexts using a smaller number of RNS limbs
     size_t level = sizeQ - sizeP;
@@ -160,10 +160,10 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(publicKey->GetCryptoParameters());
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ = elementParams->GetParams().size();
+    size_t sizeQ             = elementParams->GetParams().size();
 
     auto encParams = ptxt.GetParams();
-    size_t sizeP = encParams->GetParams().size();
+    size_t sizeP   = encParams->GetParams().size();
 
     // enables encoding of plaintexts using a smaller number of RNS limbs
     size_t level = sizeQ - sizeP;
@@ -222,7 +222,7 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
     size_t sizeQl = b.GetNumOfElements();
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ = elementParams->GetParams().size();
+    size_t sizeQ             = elementParams->GetParams().size();
 
     // use RNS procedures only if the number of RNS limbs is the same as for fresh ciphertexts
     if (sizeQl == sizeQ) {
@@ -244,12 +244,12 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
         }
     }
     else {
-    	// for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
+        // for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
         size_t diffQl = sizeQ - sizeQl;
         size_t levels = sizeQl - 1;
         for (size_t l = 0; l < levels; ++l) {
-			b.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
-										  cryptoParams->GetqlInvModq(diffQl + l));
+            b.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
+                                      cryptoParams->GetqlInvModq(diffQl + l));
         }
 
         b.SetFormat(Format::COEFFICIENT);
