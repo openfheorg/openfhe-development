@@ -73,7 +73,7 @@ public:
     using ILNativeParams = ILParamsImpl<NativeInteger>;
 
     ILDCRTParams(uint32_t corder, const IntType& modulus, const IntType& rootOfUnity = IntType(0))
-        : ElemParams<IntType>(corder, modulus), m_originalModulus(modulus) {
+        : ElemParams<IntType>(corder, modulus) {
         // NOTE params generation uses this constructor to make an empty params that
         // it will later populate during the gen process. For that special case...
         // we don't populate, and we just return
@@ -146,8 +146,8 @@ public:
 
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
                  const std::vector<NativeInteger>& rootsOfUnity, const std::vector<NativeInteger>& moduliBig,
-                 const std::vector<NativeInteger>& rootsOfUnityBig, const IntType& inputOriginalModulus = IntType(0))
-        : ElemParams<IntType>(corder, 0), m_originalModulus(inputOriginalModulus) {
+                 const std::vector<NativeInteger>& rootsOfUnityBig)
+        : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
         if (limbs != rootsOfUnity.size() || limbs != moduliBig.size() || limbs != rootsOfUnityBig.size())
             OPENFHE_THROW("sizes of moduli and roots of unity do not match 2");
@@ -170,9 +170,7 @@ public:
    * @param corder the order of the ciphertext
    * @param &moduli is the tower of moduli
    */
-    ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
-                 const IntType& inputOriginalModulus = IntType(0))
-        : ElemParams<IntType>(corder, 0), m_originalModulus(inputOriginalModulus) {
+    ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli) : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
         m_params.reserve(limbs);
         IntType compositeModulus(1);
@@ -191,19 +189,15 @@ public:
    * @param params the componet parameters.
    * @return
    */
-    ILDCRTParams(uint32_t corder, const std::vector<std::shared_ptr<ILNativeParams>>& params,
-                 const IntType& inputOriginalModulus = IntType(0))
-        : ElemParams<IntType>(corder, 0), m_params(params), m_originalModulus(inputOriginalModulus) {
+    ILDCRTParams(uint32_t corder, const std::vector<std::shared_ptr<ILNativeParams>>& params)
+        : ElemParams<IntType>(corder, 0), m_params(params) {
         RecalculateModulus();
     }
 
-    ILDCRTParams(const ILDCRTParams& rhs)
-        : ElemParams<IntType>(rhs), m_params(rhs.m_params), m_originalModulus(rhs.m_originalModulus) {}
+    ILDCRTParams(const ILDCRTParams& rhs) : ElemParams<IntType>(rhs), m_params(rhs.m_params) {}
 
     ILDCRTParams(ILDCRTParams&& rhs) noexcept
-        : ElemParams<IntType>(rhs),
-          m_params(std::move(rhs.m_params)),
-          m_originalModulus(std::move(rhs.m_originalModulus)) {}
+        : ElemParams<IntType>(std::move(rhs)), m_params(std::move(rhs.m_params)) {}
 
     /**
    * Assignment Operator.
@@ -213,15 +207,13 @@ public:
    */
     ILDCRTParams& operator=(const ILDCRTParams& rhs) {
         ElemParams<IntType>::operator=(rhs);
-        m_params          = rhs.m_params;
-        m_originalModulus = rhs.m_originalModulus;
+        m_params = rhs.m_params;
         return *this;
     }
 
     ILDCRTParams& operator=(ILDCRTParams&& rhs) noexcept {
-        ElemParams<IntType>::operator=(rhs);
-        m_params          = std::move(rhs.m_params);
-        m_originalModulus = std::move(rhs.m_originalModulus);
+        ElemParams<IntType>::operator=(std::move(rhs));
+        m_params = std::move(rhs.m_params);
         return *this;
     }
 
@@ -242,28 +234,12 @@ public:
    * @return A vector of the component polynomial parameters.
    */
     std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(uint32_t start, uint32_t end) const {
-        if (end < start || end > m_params.size())
+        if (end < start || end >= m_params.size())
             OPENFHE_THROW("Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +
                           ", end:" + std::to_string(end) + ")");
         return std::vector<std::shared_ptr<ILNativeParams>>(m_params.begin() + start, m_params.begin() + end + 1);
     }
 
-    /**
-   * @brief Simple getter method for the original modulus, not the ciphertex
-   * modulus.
-   * @return The original  modulus, not the big ciphertext modulus.
-   */
-    const IntType& GetOriginalModulus() const {
-        return m_originalModulus;
-    }
-    /**
-   * @brief Simple setter method for the original modulus, not the ciphertex
-   * modulus.
-   * @return void
-   */
-    void SetOriginalModulus(const IntType& inputOriginalModulus) {
-        m_originalModulus = inputOriginalModulus;
-    }
     /**
    * @brief Getter method for the component parameters of a specific index.
    * @param i the index of the parameters to return.  Note this this call is
@@ -321,7 +297,7 @@ public:
             if (*m_params[i] != *dcrtParams->m_params[i])
                 return false;
         }
-        return (m_originalModulus == dcrtParams->GetOriginalModulus());
+        return true;
     }
 
     /**
@@ -350,7 +326,6 @@ public:
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<ElemParams<IntType>>(this));
         ar(::cereal::make_nvp("p", m_params));
-        ar(::cereal::make_nvp("m", m_originalModulus));
     }
 
     template <class Archive>
@@ -361,7 +336,6 @@ public:
         }
         ar(::cereal::base_class<ElemParams<IntType>>(this));
         ar(::cereal::make_nvp("p", m_params));
-        ar(::cereal::make_nvp("m", m_originalModulus));
     }
 
     std::string SerializedObjectName() const override {
@@ -378,18 +352,11 @@ private:
         out << std::endl << "  m_params:" << std::endl;
         for (size_t i = 0; i < m_params.size(); ++i)
             out << "    " << i << ": " << *m_params[i];
-        return out << "  m_originalModulus: " << m_originalModulus << std::endl;
+        return out << std::endl;
     }
 
     // array of smaller ILParams
     std::vector<std::shared_ptr<ILNativeParams>> m_params;
-
-    // original modulus when being constructed from a Poly or when
-    // ctor is passed that parameter
-    // note orignalModulus will be <= composite modules
-    //   i.e. \Prod_i=0^k-1 m_params[i]->GetModulus()
-    // note not using ElemParams::ciphertextModulus due to object stripping
-    IntType m_originalModulus;
 };
 
 }  // namespace lbcrypto
