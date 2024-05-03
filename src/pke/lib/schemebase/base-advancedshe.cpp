@@ -334,41 +334,35 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
         OPENFHE_THROW("Input evalKeys map is empty");
     if (!evalSumColsKeyMap.size())
         OPENFHE_THROW("Input rightEvalKeys map is empty");
-
     if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
-        OPENFHE_THROW(
-            "Matrix summation of column-vectors is only supported "
-            "for CKKS packed encoding.");
+        OPENFHE_THROW("Matrix summation of column-vectors is only supported for CKKS packed encoding.");
 
     const auto cryptoParams   = ciphertext->GetCryptoParameters();
     const auto encodingParams = cryptoParams->GetEncodingParams();
-
     if ((encodingParams->GetBatchSize() == 0))
         OPENFHE_THROW(
-            "EvalSumCols: Packed encoding parameters 'batch size' is not set; "
-            "Please check the EncodingParams passed to the crypto context.");
+            "Packed encoding parameters 'batch size' is not set. Please check the EncodingParams passed to the crypto context.");
 
     const auto elementParams = cryptoParams->GetElementParams();
     usint m                  = elementParams->GetCyclotomicOrder();
-
     if (!IsPowerOfTwo(m))
-        OPENFHE_THROW(
-            "Matrix summation of column-vectors is not supported "
-            "for arbitrary cyclotomics.");
+        OPENFHE_THROW("Matrix summation of column-vectors is not supported for arbitrary cyclotomics.");
 
-    Ciphertext<Element> newCiphertext = EvalSum2nComplex(ciphertext->Clone(), batchSize, m, evalSumKeyMap);
-
-    std::vector<std::complex<double>> mask(m / 4);
+    if (batchSize < (m / 4)) {
+        std::string errMsg{std::string("batchSize [") + std::to_string(batchSize) +
+                           "] cannot be smaller than m/4 where m is [" + std::to_string(m) + "]"};
+        OPENFHE_THROW(errMsg);
+    }
+    std::vector<std::complex<double>> mask(m / 4, 0);  // create a mask vector and set all its elements to zero
     for (size_t i = 0; i < mask.size(); i++) {
         if (i % batchSize == 0)
             mask[i] = 1;
-        else
-            mask[i] = 0;
     }
-    auto cc   = ciphertext->GetCryptoContext();
-    auto algo = cc->GetScheme();
 
-    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(mask, 1, 0, nullptr, ciphertext->GetSlots());
+    auto cc                           = ciphertext->GetCryptoContext();
+    auto algo                         = cc->GetScheme();
+    Plaintext plaintext               = cc->MakeCKKSPackedPlaintext(mask, 1, 0, nullptr, ciphertext->GetSlots());
+    Ciphertext<Element> newCiphertext = EvalSum2nComplex(ciphertext->Clone(), batchSize, m, evalSumKeyMap);
     algo->EvalMultInPlace(newCiphertext, plaintext);
 
     return EvalSum2nComplexCols(newCiphertext, batchSize, m, evalSumColsKeyMap);
