@@ -38,7 +38,7 @@
 using namespace lbcrypto;
 
 constexpr uint32_t num_of_parties = 5;
-constexpr uint32_t iterations = 25;
+constexpr uint32_t iterations     = 250;
 
 void setup(BinFHEContext& cc, uint32_t parties, LWEPublicKey& pk, std::vector<LWEPrivateKey>& zLWEKeys) {
     std::cout << "Q = " << cc.GetParams()->GetLWEParams()->GetQ() << std::endl;
@@ -72,9 +72,9 @@ void setup(BinFHEContext& cc, uint32_t parties, LWEPublicKey& pk, std::vector<LW
     for (uint32_t i = 1; i < parties; ++i)
         rgsw = cc.RGSWEvalAdd(rgsw, cc.RGSWEncrypt(acrs, zvec[i], 1));
 
-    uint32_t n  = sk[0]->GetElement().GetLength();
-    auto rgswe  = cc.RGSWClone(rgsw, n);
-    auto acrs0  = cc.GenerateCRSMatrix(parties, n);
+    uint32_t n = sk[0]->GetElement().GetLength();
+    auto rgswe = cc.RGSWClone(rgsw, n);
+    auto acrs0 = cc.GenerateCRSMatrix(parties, n);
 
     std::vector<std::vector<RingGSWEvalKey>> rgswenc0(parties);
     for (uint32_t i = 0; i < parties; ++i) {
@@ -105,7 +105,6 @@ int main() {
     cc.SetExtended(true);
 
     setup(cc, num_of_parties, pk, zLWEKeys);
-
 
     LWEPlaintext result;
     std::vector<LWECiphertext> pct;

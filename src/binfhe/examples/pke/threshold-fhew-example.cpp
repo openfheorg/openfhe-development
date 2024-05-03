@@ -135,7 +135,7 @@ int main() {
     // DISTRIBUTED KEY GENERATION ENDS
 
     LWEPlaintext result;
-    uint32_t iterations = 10;
+    uint32_t iterations = 250;
     for (uint32_t i = 0; i < iterations; i++) {
         // Encryption of data
         auto ct1 = cc.Encrypt(pk, 1);
