@@ -360,23 +360,23 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint numRows,
                                                             const std::map<usint, EvalKey<Element>>& evalSumKeys,
                                                             usint subringDim) const {
     ValidateCiphertext(ciphertext);
 
-    auto rv = GetScheme()->EvalSumRows(ciphertext, rowSize, evalSumKeys, subringDim);
+    auto rv = GetScheme()->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
     return rv;
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
-    ConstCiphertext<Element> ciphertext, usint rowSize,
+    ConstCiphertext<Element> ciphertext, usint numCols,
     const std::map<usint, EvalKey<Element>>& evalSumKeysRight) const {
     ValidateCiphertext(ciphertext);
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    auto rv          = GetScheme()->EvalSumCols(ciphertext, rowSize, evalSumKeys, evalSumKeysRight);
+    auto rv          = GetScheme()->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
     return rv;
 }
 
