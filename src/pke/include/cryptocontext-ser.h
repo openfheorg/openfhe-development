@@ -164,6 +164,20 @@ bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, con
     }
     return false;
 }
+
+template <typename T>
+std::string SerializeToString(const CryptoContext<T>& obj) {
+    std::stringstream s;
+    Serial::Serialize(obj, s, SerType::JSON);
+    return s.str();
+}
+
+template <typename T>
+void DeserializeFromString(CryptoContext<T>& obj, const std::string& json) {
+    std::stringstream s;
+    s << json;
+    Serial::Deserialize(obj, s, SerType::JSON);
+}
 }  // namespace Serial
 
 template void Serial::Deserialize(std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream,
