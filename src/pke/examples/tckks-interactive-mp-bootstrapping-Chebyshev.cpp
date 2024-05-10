@@ -223,8 +223,9 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     auto evalMultFinal2 = cryptoContext->MultiAddEvalMultKeys(evalMultABABC, evalMultCABC, evalMultCABC->GetKeyTag());
     cryptoContext->InsertEvalMultKey({evalMultFinal2});
 
-    auto evalSumKeysC     = cryptoContext->MultiEvalSumKeyGen(kp3.secretKey, evalSumKeys, kp3.publicKey->GetKeyTag());
-    auto evalSumKeysJoin2 = cryptoContext->MultiAddEvalSumKeys(evalSumKeys, evalSumKeysC, kp3.publicKey->GetKeyTag());
+    auto evalSumKeysC = cryptoContext->MultiEvalSumKeyGen(kp3.secretKey, evalSumKeys, kp3.publicKey->GetKeyTag());
+    auto evalSumKeysJoin2 =
+        cryptoContext->MultiAddEvalSumKeys(evalSumKeysJoin, evalSumKeysC, kp3.publicKey->GetKeyTag());
     cryptoContext->InsertEvalSumKey(evalSumKeysJoin2);
 
     if (!kp1.good()) {
