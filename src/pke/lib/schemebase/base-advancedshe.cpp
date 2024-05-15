@@ -297,9 +297,9 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
 }
 
 template <class Element>
-Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint numRows,
-                                                          const std::map<usint, EvalKey<Element>>& evalSumKeys,
-                                                          usint subringDim) const {
+Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, uint32_t numRows,
+                                                          const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
+                                                          uint32_t subringDim) const {
     if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
         OPENFHE_THROW("Matrix summation of row-vectors is only supported for CKKS packed encoding.");
 
@@ -309,7 +309,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(ConstCiphertext<Elemen
         OPENFHE_THROW(
             "Packed encoding parameters 'batch size' is not set. Please check the EncodingParams passed to the crypto context.");
 
-    usint m = (subringDim == 0) ? cryptoParams->GetElementParams()->GetCyclotomicOrder() : subringDim;
+    uint32_t m = (subringDim == 0) ? cryptoParams->GetElementParams()->GetCyclotomicOrder() : subringDim;
     if (!IsPowerOfTwo(m))
         OPENFHE_THROW("Matrix summation of row-vectors is not supported for arbitrary cyclotomics.");
 
@@ -318,8 +318,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(ConstCiphertext<Elemen
 
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
-    ConstCiphertext<Element> ciphertext, usint numCols, const std::map<usint, EvalKey<Element>>& evalSumKeyMap,
-    const std::map<usint, EvalKey<Element>>& evalSumColsKeyMap) const {
+    ConstCiphertext<Element> ciphertext, uint32_t numCols, const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
+    const std::map<uint32_t, EvalKey<Element>>& evalSumColsKeyMap) const {
     if (!ciphertext)
         OPENFHE_THROW("Input ciphertext is nullptr");
     if (!evalSumKeyMap.size())
@@ -329,6 +329,10 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
     if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
         OPENFHE_THROW("Matrix summation of column-vectors is only supported for CKKS packed encoding.");
 
+    const uint32_t slots = ciphertext->GetSlots();
+    if (slots < numCols)
+        OPENFHE_THROW("The number of columns ca not be greater than the number of slots.");
+
     const auto cryptoParams   = ciphertext->GetCryptoParameters();
     const auto encodingParams = cryptoParams->GetEncodingParams();
     if ((encodingParams->GetBatchSize() == 0))
@@ -336,20 +340,20 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
             "Packed encoding parameters 'batch size' is not set. Please check the EncodingParams passed to the crypto context.");
 
     const auto elementParams = cryptoParams->GetElementParams();
-    usint m                  = elementParams->GetCyclotomicOrder();
+    uint32_t m               = elementParams->GetCyclotomicOrder();
     if (!IsPowerOfTwo(m))
         OPENFHE_THROW("Matrix summation of column-vectors is not supported for arbitrary cyclotomics.");
 
-    std::vector<std::complex<double>> mask(m / 4, 0);  // create a mask vector and set all its elements to zero
+    std::vector<std::complex<double>> mask(slots, 0);  // create a mask vector and set all its elements to zero
     for (size_t i = 0; i < mask.size(); i++) {
         if (i % numCols == 0)
             mask[i] = 1;
     }
 
+    Ciphertext<Element> newCiphertext = EvalSum2nComplex(ciphertext->Clone(), numCols, m, evalSumKeyMap);
     auto cc                           = ciphertext->GetCryptoContext();
     auto algo                         = cc->GetScheme();
-    Plaintext plaintext               = cc->MakeCKKSPackedPlaintext(mask, 1, 0, nullptr, ciphertext->GetSlots());
-    Ciphertext<Element> newCiphertext = EvalSum2nComplex(ciphertext->Clone(), numCols, m, evalSumKeyMap);
+    Plaintext plaintext               = cc->MakeCKKSPackedPlaintext(mask, 1, 0, nullptr, slots);
     algo->EvalMultInPlace(newCiphertext, plaintext);
 
     return EvalSum2nComplexCols(newCiphertext, numCols, m, evalSumColsKeyMap);
