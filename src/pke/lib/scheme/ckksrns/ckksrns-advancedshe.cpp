@@ -906,7 +906,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
     uint32_t k                 = degs[0];
     uint32_t m                 = degs[1];
 
-    //  std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << endl;
+    // std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << std::endl;
 
     // computes linear transformation y = -1 + 2 (x-a)/(b-a)
     // consumes one level when a <> -1 && b <> 1
@@ -1097,7 +1097,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
             cc->EvalAddInPlace(qu, sum);
         }
         else {
-            qu = T[k - 1];
+            qu = T[k - 1]->Clone();
 
             for (uint32_t i = 1; i < divqr->q.back(); i++) {
                 cc->EvalAddInPlace(qu, T[k - 1]);
