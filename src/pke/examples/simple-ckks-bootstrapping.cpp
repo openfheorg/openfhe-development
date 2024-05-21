@@ -47,6 +47,22 @@ int main(int argc, char* argv[]) {
     SimpleBootstrapExample();
 }
 
+double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                   const std::vector<std::complex<double>>& expectedResult) {
+    if (result.size() != expectedResult.size())
+        OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
+
+    // using the Euclidean norm
+    double avrg = 0;
+    for (size_t i = 0; i < result.size(); ++i) {
+        avrg += std::pow(std::abs(result[i].real() - expectedResult[i].real()), 1);
+    }
+
+    avrg = avrg / result.size();  // get the average
+    // avrg = std::sqrt(avrg) / result.size();  // get the average
+    return std::abs(std::log2(avrg));
+}
+
 void SimpleBootstrapExample() {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
@@ -68,8 +84,8 @@ void SimpleBootstrapExample() {
     * or 256-bit security, respectively. If you choose one of these as your security level,
     * you do not need to set the ring dimension.
     */
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 12);
+    parameters.SetSecurityLevel(HEStd_128_classic);
+    parameters.SetRingDim(1 << 16);
 
     /*  A3) Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values
@@ -82,7 +98,7 @@ void SimpleBootstrapExample() {
     usint firstMod               = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    usint dcrtBits               = 59;
+    usint dcrtBits               = 58;
     usint firstMod               = 60;
 #endif
 
@@ -97,14 +113,17 @@ void SimpleBootstrapExample() {
     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
     * depth. We recommend using the input parameters below to get started.
     */
-    std::vector<uint32_t> levelBudget = {4, 4};
+    std::vector<uint32_t> levelBudget = {3, 3};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping 
+    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
-    uint32_t levelsAvailableAfterBootstrap = 10;
+    uint32_t levelsAvailableAfterBootstrap = 5;
     usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
+
+    parameters.SetNumLargeDigits(7);
+    parameters.SetKeySwitchTechnique(HYBRID);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
@@ -114,10 +133,19 @@ void SimpleBootstrapExample() {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(FHE);
 
+    const auto cryptoParamsCKKS =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
+
     usint ringDim = cryptoContext->GetRingDimension();
     // This is the maximum number of slots that can be used for full packing.
     usint numSlots = ringDim / 2;
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
+    std::cout << "modulus " << cryptoContext->GetModulus().GetMSB() << std::endl << std::endl;
+
+    std::cout << "sizeQ " << cryptoParamsCKKS->GetElementParams()->GetParams().size() << std::endl << std::endl;
+
+    std::cout << "sizeP " << cryptoParamsCKKS->GetParamsP()->GetParams().size() << std::endl << std::endl;
+    std::cout << "large " << cryptoParamsCKKS->GetParamsQP()->GetModulus().GetMSB() << std::endl << std::endl;
 
     cryptoContext->EvalBootstrapSetup(levelBudget);
 
@@ -125,14 +153,21 @@ void SimpleBootstrapExample() {
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
-    std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    size_t encodedLength  = x.size();
+    std::vector<double> x;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(-1.0, 1.0);
+    for (size_t i = 0; i < numSlots; i++) {
+        x.push_back(dis(gen));
+    }
+
+    size_t encodedLength = x.size();
 
     // We start with a depleted ciphertext that has used up all of its levels.
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
 
     ptxt->SetLength(encodedLength);
-    std::cout << "Input: " << ptxt << std::endl;
+    // std::cout << "Input: " << ptxt << std::endl;
 
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
@@ -149,5 +184,11 @@ void SimpleBootstrapExample() {
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(encodedLength);
-    std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+    // std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+
+    double precision = CalculateApproximationError(ptxt->GetCKKSPackedValue(), result->GetCKKSPackedValue());
+
+    std::cerr << "precision = " << precision << std::endl;
+
+    std::cerr << "precision (alt) = " << result->GetLogPrecision() << std::endl;
 }

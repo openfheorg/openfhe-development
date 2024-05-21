@@ -130,6 +130,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             if (bits > maxBits)
                 maxBits = bits;
         }
+        std::cerr << "max bits = " << maxBits << std::endl;
         // Select number of primes in auxiliary CRT basis
         sizeP              = ceil(static_cast<double>(maxBits) / auxBits);
         uint64_t primeStep = FindAuxPrimeStep();

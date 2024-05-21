@@ -76,10 +76,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t auxBits       = AUXMODSIZE;
     uint32_t n             = cyclOrder / 2;
     uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
+    std::cerr << "qBound = " << qBound << std::endl;
     // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
     if (ksTech == HYBRID) {
         qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) * auxBits;
     }
+
+    std::cerr << "qBound+ = " << qBound << std::endl;
 
     // GAUSSIAN security constraint
     DistributionType distType = (cryptoParamsCKKSRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;

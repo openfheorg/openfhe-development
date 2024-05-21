@@ -181,7 +181,7 @@ std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
     StdLatticeParm(HEStd_ternary, 32768, HEStd_128_classic, 881),
     StdLatticeParm(HEStd_ternary, 32768, HEStd_192_classic, 611),
     StdLatticeParm(HEStd_ternary, 32768, HEStd_256_classic, 476),
-    StdLatticeParm(HEStd_ternary, 65536, HEStd_128_classic, 1772),
+    StdLatticeParm(HEStd_ternary, 65536, HEStd_128_classic, 1776),
     StdLatticeParm(HEStd_ternary, 65536, HEStd_192_classic, 1228),
     StdLatticeParm(HEStd_ternary, 65536, HEStd_256_classic, 956),
 

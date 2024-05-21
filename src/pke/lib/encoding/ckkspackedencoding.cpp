@@ -578,6 +578,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // sets an estimate of the approximation error
         m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
 
+        std::cerr << std::log2(stddev * std::sqrt(2 * slots)) << std::endl;
+
         value = realValues;
     }
 
