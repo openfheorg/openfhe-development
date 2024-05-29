@@ -308,6 +308,12 @@ class CryptoContextImpl : public Serializable {
                                                value2);
     }
 
+    /**
+   * Get automorphism keys for a specific secret key tag and GetEvalAutomorphismKeyMapPtran array of specific indices (if provided)
+   */
+    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(
+        const std::string& keyID, const std::vector<uint32_t>& indexList = std::vector<uint32_t>{});
+
     // cached evalmult keys, by secret key UID
     static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
     // cached evalautomorphism keys, by secret key UID
@@ -982,14 +988,12 @@ public:
    */
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
     /**
-   * Get automorphism keys for a specific secret key tag
+   * Get automorphism keys for a specific secret key tag and an array of specific indices (if provided)
    */
-    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
-
-    static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyID) {
-        return *(CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID));
+    static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(
+        const std::string& keyID, const std::vector<uint32_t>& indexList = std::vector<uint32_t>{}) {
+        return *(CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID, indexList));
     }
-
     /**
    * Get a map of summation keys (each is composed of several automorphism keys) for all secret keys
    */

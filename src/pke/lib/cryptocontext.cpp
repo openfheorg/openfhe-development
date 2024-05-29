@@ -145,10 +145,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
         OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
     }
 
-    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
+    std::vector<usint> indices;
+    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys;
+    return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -159,10 +160,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
         OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
     }
 
-    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, publicKey);
+    std::vector<usint> indices;
+    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys;  // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
+    return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -193,15 +195,25 @@ CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
-    const std::string& keyID) {
+    const std::string& keyID, const std::vector<uint32_t>& indexList) {
     auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
     if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
-        std::string errMsg(
-            std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
-            "].");
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyID + "].");
     }
-    return ekv->second;
+    if (indexList.empty())
+        return ekv->second;
+
+    // create a return map if specific indices are provided
+    const auto& keyMap = *(ekv->second);
+    std::map<usint, EvalKey<Element>> retMap;
+    for (uint32_t indx : indexList) {
+        const auto it = keyMap.find(indx);
+        if (it == keyMap.end()) {
+            OPENFHE_THROW("Key is not generated for index [" + std::to_string(indx) + "] and keyID [" + keyID + "]");
+        }
+        retMap.emplace(indx, it->second);
+    }
+    return std::make_shared<std::map<usint, EvalKey<Element>>>(retMap);
 }
 
 template <typename Element>

@@ -82,7 +82,7 @@ public:
         // Check if plaintext has got enough slots for data (value)
         usint ringDim    = vp->GetRingDimension();
         size_t valueSize = value.size();
-        if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
+        if (isCKKS(schemeID) && valueSize > ringDim / 2) {
             OPENFHE_THROW("The size [" + std::to_string(valueSize) +
                           "] of the vector with values should not be greater than ringDim/2 [" +
                           std::to_string(ringDim / 2) + "] if the scheme is CKKS");
@@ -111,7 +111,7 @@ public:
         // Check if plaintext has got enough slots for data (value)
         usint ringDim    = vp->GetRingDimension();
         size_t valueSize = value.size();
-        if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
+        if (isCKKS(schemeID) && valueSize > ringDim / 2) {
             OPENFHE_THROW("The size [" + std::to_string(valueSize) +
                           "] of the vector with values should not be greater than ringDim/2 [" +
                           std::to_string(ringDim / 2) + "] if the scheme is CKKS");

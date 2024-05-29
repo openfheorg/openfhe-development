@@ -184,8 +184,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     if (IsPowerOfTwo(m)) {
         auto ccInst = privateKey->GetCryptoContext();
         // CKKS Packing
-        indices = ccInst->getSchemeId() == SCHEME::CKKSRNS_SCHEME ? GenerateIndices2nComplex(batchSize, m) :
-                                                                    GenerateIndices_2n(batchSize, m);
+        indices =
+            isCKKS(ccInst->getSchemeId()) ? GenerateIndices2nComplex(batchSize, m) : GenerateIndices_2n(batchSize, m);
     }
     else {  // Arbitrary cyclotomics
         int isize = floor(log2(batchSize));
@@ -203,52 +203,41 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) const {
+    const PrivateKey<Element> privateKey, usint rowSize, usint subringDim, std::vector<usint>& indices) const {
     auto cc = privateKey->GetCryptoContext();
 
-    if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
-        OPENFHE_THROW(
-            "Matrix summation of row-vectors is only supported for "
-            "CKKSPackedEncoding.");
+    if (!isCKKS(cc->getSchemeId()))
+        OPENFHE_THROW("Matrix summation of row-vectors is only supported for CKKSPackedEncoding.");
 
     usint m =
         (subringDim == 0) ? privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() : subringDim;
 
     if (!IsPowerOfTwo(m))
-        OPENFHE_THROW(
-            "Matrix summation of row-vectors is not supported for "
-            "arbitrary cyclotomics.");
+        OPENFHE_THROW("Matrix summation of row-vectors is not supported for arbitrary cyclotomics.");
 
-    // stores automorphism indices needed for EvalSum
-    std::vector<usint> indices = GenerateIndices2nComplexRows(rowSize, m);
+    indices = GenerateIndices2nComplexRows(rowSize, m);
 
     auto algo = cc->GetScheme();
-
     return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
+    const PrivateKey<Element> privateKey, std::vector<usint>& indices) const {
     auto cc = privateKey->GetCryptoContext();
 
-    if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
-        OPENFHE_THROW(
-            "Matrix summation of column-vectors is only supported for "
-            "CKKSPackedEncoding.");
+    if (!isCKKS(cc->getSchemeId()))
+        OPENFHE_THROW("Matrix summation of column-vectors is only supported for CKKSPackedEncoding.");
 
     const auto cryptoParams = privateKey->GetCryptoParameters();
     usint M                 = cryptoParams->GetElementParams()->GetCyclotomicOrder();
     if (!IsPowerOfTwo(M))
-        OPENFHE_THROW(
-            "Matrix summation of column-vectors is not supported "
-            "for arbitrary cyclotomics.");
+        OPENFHE_THROW("Matrix summation of column-vectors is not supported for arbitrary cyclotomics.");
 
     usint batchSize            = cryptoParams->GetEncodingParams()->GetBatchSize();
-    std::vector<usint> indices = GenerateIndices2nComplexCols(batchSize, M);
+    indices = GenerateIndices2nComplexCols(batchSize, M);
 
     auto algo = cc->GetScheme();
-
     return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
@@ -261,8 +250,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
     if ((encodingParams->GetBatchSize() == 0))
         OPENFHE_THROW(
             "EvalSum: Packed encoding parameters 'batch size' is not set; "
-            "Please "
-            "check the EncodingParams passed to the crypto context.");
+            "Please check the EncodingParams passed to the crypto context.");
 
     usint m = cryptoParams->GetElementParams()->GetCyclotomicOrder();
 

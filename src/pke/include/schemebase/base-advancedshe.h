@@ -224,8 +224,8 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                                 const PublicKey<Element> publicKey,
-                                                                                 usint rowSize, usint subringDim) const;
+                                                                                 usint rowSize, usint subringDim,
+                                                                                 std::vector<usint>& indices) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumCols; works
@@ -235,8 +235,8 @@ public:
    * @param publicKey public key.
    * @return returns the evaluation keys
    */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
+                                                                                 std::vector<usint>& indices) const;
 
     /**
     * @brief Sums all elements in log (batch size) time - works only with packedvencoding
