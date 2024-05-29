@@ -45,11 +45,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (NOISE_FLOODING_MULTIPARTY == parameters.GetMultipartyMode()) {
             OPENFHE_THROW("NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS");
         }
-#if NATIVEINT == 64
-        if (59 < parameters.GetScalingModSize()) {
-            OPENFHE_THROW("scalingModSize > 59 is not supported in CKKSRNS for NATIVEINT=64");
+        if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize()) {
+            OPENFHE_THROW("scalingModSize should be less than " + std::to_string(MAX_MODULUS_SIZE));
         }
-#endif
     }
     else if (isBFVRNS(scheme)) {
         if (0 == parameters.GetPlaintextModulus()) {
