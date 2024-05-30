@@ -80,7 +80,7 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoP
 
 BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
-    uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
+    uint32_t keySwitchCount, uint32_t auxTowers, usint numPrimes) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     usint digitSize               = cryptoParamsBGVRNS->GetDigitSize();
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
@@ -111,14 +111,14 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         }
         int relinBase       = pow(2.0, digitSize);
         int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
-        int numWindows      = floor(modSizeEstimate / log(relinBase)) + 1;
+        int numWindows      = floor(modSizeEstimate / digitSize) + 1;
         keySwitchingNoise   = numWindows * numPrimes * expansionFactor * relinBase * Berr / 2.0;
     }
     else {
         double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
         int numDigits            = cryptoParamsBGVRNS->GetNumPartQ();
         keySwitchingNoise        = numTowersPerDigit * numDigits * expansionFactor * Berr / 2.0;
-        keySwitchingNoise += auxBits * (1 + expansionFactor * Bkey) / 2.0;
+        keySwitchingNoise += auxTowers * (1 + expansionFactor * Bkey) / 2.0;
     }
 
     // V_ms
@@ -166,7 +166,7 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
 
 std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
-    uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
+    uint32_t keySwitchCount, uint32_t auxTowers, usint numPrimes) const {
     if (numPrimes < 1) {
         OPENFHE_THROW("numPrimes must be at least 1");
     }
@@ -181,7 +181,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     NativeInteger plainModulusInt = NativeInteger(plainModulus);
 
     BGVNoiseEstimates noiseEstimates =
-        computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount, auxBits, numPrimes);
+        computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount, auxTowers, numPrimes);
     uint64_t cyclOrder = getCyclicOrder(ringDimension, plainModulus, scalTech);
 
     double firstModLowerBound = 0;
@@ -293,11 +293,12 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double B_e                = sqrt(alpha) * sigma;
     uint32_t auxBits          = DCRT_MODULUS::MAX_SIZE;
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
-    // bound on the secret key is sigma*sqrt(alpha) if the secret is sampled from discrete gaussian distribution
+    // bound on the secret key is sigma*sqrt(alpha)*sqrt(thresholdParties) if the secret is sampled from discrete gaussian distribution
     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
     // parties is 1 by default but can be set to the number of parties in a threshold application.
     // Bkey set to thresholdParties * 1 for ternary distribution
-    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : thresholdParties;
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) * sqrt(thresholdParties) :
+                                                                         thresholdParties;
 
     double stat_sec_half = cryptoParamsBGVRNS->GetStatisticalSecurity() / 2;
     double num_queries   = cryptoParamsBGVRNS->GetNumAdversarialQueries();
@@ -382,8 +383,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
     usint extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
     uint32_t qBound    = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
-    if (ksTech == HYBRID)
-        qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) * auxBits;
+
+    // Number of RNS limbs in P
+    uint32_t auxTowers = 0;
+    if (ksTech == HYBRID) {
+        auxTowers = ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits);
+        qBound += auxTowers * auxBits;
+    }
 
     // Note this code is not executed if multihopQBound == 0 so it is backwards
     // compatable
@@ -404,13 +410,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     uint64_t modulusOrder = 0;
 
     if ((scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) && (dcrtBitsSet == false)) {
-        auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
+        auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
         moduliQ            = std::get<0>(moduliInfo);
         uint32_t newQBound = std::get<1>(moduliInfo);
         while (qBound < newQBound) {
             qBound          = newQBound;
             n               = computeRingDimension(cryptoParams, newQBound, cyclOrder);
-            auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
+            auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
             moduliQ         = std::get<0>(moduliInfo);
             newQBound       = std::get<1>(moduliInfo);
             if (ksTech == HYBRID)
