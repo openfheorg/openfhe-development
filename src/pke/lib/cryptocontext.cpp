@@ -149,7 +149,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
     auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
+    return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -164,7 +164,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
     auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
+    return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -195,20 +195,25 @@ CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
-    const std::string& keyID, const std::vector<uint32_t>& indexList) {
+    const std::string& keyID) {
     auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
     if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
         OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyID + "].");
     }
-    if (indexList.empty())
-        return ekv->second;
+    return ekv->second;
+}
+
+template <typename Element>
+std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(
+    const std::string& keyID, const std::vector<uint32_t>& indexList) {
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> keyMap =
+        CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID);
 
     // create a return map if specific indices are provided
-    const auto& keyMap = *(ekv->second);
     std::map<usint, EvalKey<Element>> retMap;
     for (uint32_t indx : indexList) {
-        const auto it = keyMap.find(indx);
-        if (it == keyMap.end()) {
+        const auto it = keyMap->find(indx);
+        if (it == keyMap->end()) {
             OPENFHE_THROW("Key is not generated for index [" + std::to_string(indx) + "] and keyID [" + keyID + "]");
         }
         retMap.emplace(indx, it->second);
