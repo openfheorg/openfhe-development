@@ -293,7 +293,8 @@ std::vector<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKey
 
     // get all inidices from the existing automorphism key map
     auto& keyMap = *(keyMapIt->second);
-    std::vector<uint32_t> indices(keyMap.size());
+    std::vector<uint32_t> indices;
+    indices.reserve(keyMap.size());
     for (const auto& [key, _] : keyMap) {
         indices.push_back(key);
     }
