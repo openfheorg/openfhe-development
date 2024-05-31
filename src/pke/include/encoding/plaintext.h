@@ -363,7 +363,7 @@ public:
     virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
         OPENFHE_THROW("not a packed vector of complex numbers");
     }
-    virtual const std::vector<double> GetRealPackedValue() const {
+    virtual std::vector<double> GetRealPackedValue() const {
         OPENFHE_THROW("not a packed vector of real numbers");
     }
     virtual void SetStringValue(const std::string&) {

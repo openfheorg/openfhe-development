@@ -153,7 +153,7 @@ public:
         return value;
     }
 
-    const std::vector<double> GetRealPackedValue() const {
+    std::vector<double> GetRealPackedValue() const {
         std::vector<double> realValue(value.size());
         std::transform(value.begin(), value.end(), realValue.begin(),
                        [](std::complex<double> da) { return da.real(); });
