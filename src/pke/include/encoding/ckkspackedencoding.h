@@ -141,19 +141,19 @@ public:
     CKKSPackedEncoding(CKKSPackedEncoding&& rhs)
         : PlaintextImpl(std::move(rhs)), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
 
-    bool Encode();
+    bool Encode() override;
 
-    bool Decode() {
+    bool Decode() override {
         OPENFHE_THROW("CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
     }
 
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);
 
-    const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
+    const std::vector<std::complex<double>>& GetCKKSPackedValue() const override {
         return value;
     }
 
-    const std::vector<double> GetRealPackedValue() const {
+    std::vector<double> GetRealPackedValue() const override {
         std::vector<double> realValue(value.size());
         std::transform(value.begin(), value.end(), realValue.begin(),
                        [](std::complex<double> da) { return da.real(); });
@@ -179,7 +179,7 @@ public:
    * GetEncodingType
    * @return CKKS_PACKED_ENCODING
    */
-    PlaintextEncodings GetEncodingType() const {
+    PlaintextEncodings GetEncodingType() const override {
         return CKKS_PACKED_ENCODING;
     }
 
@@ -188,7 +188,7 @@ public:
    *
    * @return the length of the plaintext in terms of the number of bits.
    */
-    size_t GetLength() const {
+    size_t GetLength() const override {
         return value.size();
     }
 
@@ -196,14 +196,14 @@ public:
    * Get method to return log2 of estimated standard deviation of approximation
    * error
    */
-    double GetLogError() const {
+    double GetLogError() const override {
         return m_logError;
     }
 
     /**
    * Get method to return log2 of estimated precision
    */
-    double GetLogPrecision() const {
+    double GetLogPrecision() const override {
         return encodingParams->GetPlaintextModulus() - m_logError;
     }
 
@@ -211,7 +211,7 @@ public:
    * SetLength of the plaintext to the given size
    * @param siz
    */
-    void SetLength(size_t siz) {
+    void SetLength(size_t siz) override {
         value.resize(siz);
     }
 
@@ -222,7 +222,7 @@ public:
    * @param other - the other plaintext to compare to.
    * @return whether the two plaintext are equivalent.
    */
-    bool CompareTo(const PlaintextImpl& other) const {
+    bool CompareTo(const PlaintextImpl& other) const override {
         const auto& rv = static_cast<const CKKSPackedEncoding&>(other);
         return this->value == rv.value;
     }
@@ -232,7 +232,7 @@ public:
    */
     static void Destroy();
 
-    void PrintValue(std::ostream& out) const {
+    void PrintValue(std::ostream& out) const override {
         // for sanity's sake, trailing zeros get elided into "..."
         // out.precision(15);
         out << "(";
