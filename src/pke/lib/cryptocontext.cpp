@@ -333,7 +333,8 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
     }
     else {
         // get all indices from mapToInsert
-        std::vector<uint32_t> newIndices(mapToInsert->size());
+        std::vector<uint32_t> newIndices;
+        newIndices.reserve(mapToInsert->size());
         for (const auto& [key, _] : *mapToInsert) {
             newIndices.push_back(key);
         }
