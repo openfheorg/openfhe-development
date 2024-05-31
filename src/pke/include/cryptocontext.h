@@ -313,8 +313,11 @@ class CryptoContextImpl : public Serializable {
    */
     static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
     /**
-   * Get automorphism keys for a specific secret key tag and an array of specific indices
-   * ATTN: this is NOT a STATIC FUNCTION
+   * @brief Get automorphism keys for a specific secret key tag and an array of specific indices
+   *        ATTN: this is NOT a STATIC FUNCTION
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to retrieve key for
+   * @return shared_ptr to std::map where the map key/data pair is index/automorphism key  
    */
     std::shared_ptr<std::map<usint, EvalKey<Element>>> GetPartialEvalAutomorphismKeyMapPtr(
         const std::string& keyID, const std::vector<uint32_t>& indexList);
@@ -819,6 +822,66 @@ public:
             return false;
 
         Serial::Serialize(omap, ser, sertype);
+        return true;
+    }
+
+    /**
+   * @brief Serialize automorphism keys for an array of specific indices within a specific secret key tag
+   * @param ser - stream to serialize to
+   * @param sertype - type of serialization
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to serialize key for
+   * @return true on success
+   */
+    template <typename ST>
+    static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyID,
+                                             const std::vector<uint32_t>& indexList) {
+        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> keyMap = {
+            {keyID, GetPartialEvalAutomorphismKeyMapPtr(keyID, indexList)}
+        };
+
+        Serial::Serialize(keyMap, ser, sertype);
+        return true;
+    }
+
+    /**
+   * @brief Deserialize automorphism keys for an array of specific indices within a specific secret key tag
+   * @param ser - stream to serialize from
+   * @param sertype - type of serialization
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to serialize key for
+   * @return true on success
+   */
+    template <typename ST>
+    static bool DeserializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyID,
+                                               const std::vector<uint32_t>& indexList) {
+        if (!indexList.size())
+            OPENFHE_THROW("indexList may not be empty");
+        if (keyID.empty())
+            OPENFHE_THROW("keyID may not be empty");
+
+        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> allDeserKeys;
+        Serial::Deserialize(allDeserKeys, ser, sertype);
+
+        const auto& keyMapIt = allDeserKeys.find(keyID);
+        if (keyMapIt == allDeserKeys.end()) {
+            OPENFHE_THROW("Deserialized automorphism keys are not generated for ID [" + keyID + "].");
+        }
+
+        // create a new map with evalkeys for the specified indices
+        std::map<usint, EvalKey<Element>> newMap;
+        for (const uint32_t indx : indexList) {
+            const auto& key = keyMapIt->find(indx);
+            if (key == keyMapIt->end()) {
+                OPENFHE_THROW("No automorphism key generated for index [" + std::to_string(indx) + "] within keyID [" +
+                              keyID + "].");
+            }
+            newMap[indx] = key->second;
+        }
+
+        CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
+            std::make_shared<std::map<uint32_t, EvalKey<Element>>>(newMap), keyID);
+
         return true;
     }
 

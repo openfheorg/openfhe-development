@@ -206,6 +206,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::G
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(
     const std::string& keyID, const std::vector<uint32_t>& indexList) {
+    if (!indexList.size())
+        OPENFHE_THROW("indexList is empty");
+
     std::shared_ptr<std::map<usint, EvalKey<Element>>> keyMap =
         CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID);
 
