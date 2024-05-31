@@ -92,12 +92,12 @@ public:
    * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
    * @param numPartQ
-   * @param multihopQBound
+   * @param numHops numbers of hops for HRA-secure PRE
    * @return A boolean.
    */
     bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                          uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
-                         uint32_t numPartQ, usint multihopQBound) const override;
+                         uint32_t numPartQ, usint numHops) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -152,8 +152,10 @@ private:
    *
    * @param cryptoParams contains parameters input by the user
    * @param numPrimes Number of CRT moduli.
+   * @param ringDimension ring dimension.
    */
-    void InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint numPrimes) const;
+    void InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint numPrimes,
+                               uint32_t ringDimension) const;
 };
 
 }  // namespace lbcrypto
