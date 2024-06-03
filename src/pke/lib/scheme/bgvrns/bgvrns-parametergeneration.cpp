@@ -109,10 +109,10 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         if (digitSize == 0) {
             OPENFHE_THROW("digitSize is not allowed to be 0 for BV key switching in BGV when scalingModSize = 0.");
         }
-        int relinBase       = pow(2.0, digitSize);
-        int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
-        int numWindows      = floor(modSizeEstimate / digitSize) + 1;
-        keySwitchingNoise   = numWindows * numPrimes * expansionFactor * relinBase * Berr / 2.0;
+        uint64_t relinBase       = pow(2.0, digitSize);
+        uint32_t modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
+        uint32_t numWindows      = (modSizeEstimate / digitSize) + 1;
+        keySwitchingNoise        = numWindows * numPrimes * expansionFactor * relinBase * Berr / 2.0;
     }
     else {
         double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();

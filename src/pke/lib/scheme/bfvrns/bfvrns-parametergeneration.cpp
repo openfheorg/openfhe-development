@@ -129,7 +129,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
         }
         else {
-            double numDigitsPerTower = digitSize == 0 ? 1 : floor(dcrtBits / digitSize) + 1;
+            double numDigitsPerTower = (digitSize == 0) ? 1 : ((dcrtBits / digitSize) + 1);
             return delta(n) * numDigitsPerTower * (floor(logqPrev / (std::log(2) * dcrtBits)) + 1) * w * Berr / 2.0;
         }
     };
