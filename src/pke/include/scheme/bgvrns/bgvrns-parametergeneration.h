@@ -127,7 +127,7 @@ private:
 
     BGVNoiseEstimates computeNoiseEstimates(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                             uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
-                                            uint32_t auxBits, usint numPrimes) const;
+                                            uint32_t auxTowers, usint numPrimes) const;
 
     uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
                             const ScalingTechnique scalTech) const;
@@ -139,13 +139,13 @@ private:
    * @param ringDimension is the dimension of the ring (n)
    * @param evalAddCount is the maximum number of additions per level.
    * @param keySwitchCount is the maximum number of key switches per level.
-   * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
+   * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
    * @param numPrimes Number of CRT moduli.
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
         std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
-        uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const;
+        uint32_t keySwitchCount, uint32_t auxTowers, usint numPrimes) const;
 
     /*
    * Method that initializes the Discrete Gaussian Generator with flooding for PRE.

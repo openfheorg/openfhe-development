@@ -121,15 +121,17 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     };
 
     auto noiseKS = [&](uint32_t n, double logqPrev, double w, bool mult) -> double {
-        if ((ksTech == HYBRID) && (!mult))
-            return (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2;
-        else if ((ksTech == HYBRID) && (mult))
+        if (ksTech == HYBRID) {
             // conservative estimate for HYBRID to avoid the use of method of
             // iterative approximations; we do not know the number
-            // of moduli at this point and use an upper bound for numDigits
-            return (multiplicativeDepth + 1) * delta(n) * Berr;
-        else
-            return delta(n) * (floor(logqPrev / (std::log(2) * dcrtBits)) + 1) * w * Berr;
+            // of digits and moduli at this point and use upper bounds
+            double numTowers = ceil(static_cast<double>(logqPrev) / dcrtBits);
+            return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
+        }
+        else {
+            double numDigitsPerTower = (digitSize == 0) ? 1 : ((dcrtBits / digitSize) + 1);
+            return delta(n) * numDigitsPerTower * (floor(logqPrev / (std::log(2) * dcrtBits)) + 1) * w * Berr / 2.0;
+        }
     };
 
     // initial values
