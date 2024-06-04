@@ -48,6 +48,8 @@ using namespace lbcrypto;
 enum TEST_CASE_TYPE {
     EVAL_AT_INDX_PACKED_ARRAY = 0,
     EVAL_SUM_PACKED_ARRAY,
+    EVAL_SUM_ROWS,
+    EVAL_SUM_COLS,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -58,6 +60,12 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case EVAL_SUM_PACKED_ARRAY:
             typeName = "EVAL_SUM_PACKED_ARRAY";
+            break;
+        case EVAL_SUM_ROWS:
+            typeName = "EVAL_SUM_ROWS";
+            break;
+        case EVAL_SUM_COLS:
+            typeName = "EVAL_SUM_COLS";
             break;
         default:
             typeName = "UNKNOWN_UTCKKSRNS_AUTOMORPHISM";
@@ -181,6 +189,12 @@ static std::vector<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> testCasesUTCKKSRNS_AUTOMORP
     { EVAL_SUM_PACKED_ARRAY, "34", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DFLT, BATCH,   DFLT,       DFLT,          DFLT,     SEC_LVL, DFLT,   FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   INVALID_BATCH_SIZE },
     { EVAL_SUM_PACKED_ARRAY, "35", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DFLT, BATCH,   DFLT,       DFLT,          DFLT,     SEC_LVL, DFLT,   FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   NO_KEY_GEN_CALL },
 #endif
+    // ==========================================
+    // TestType,    Descr,  Scheme,         RDim,     MultDepth,  SModSize, DSize,BatchSz,    SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,  KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Error,               indexList
+    { EVAL_SUM_ROWS, "01", {CKKSRNS_SCHEME, RING_DIM, DFLT,       DFLT,     DFLT, RING_DIM/2, DFLT,       DFLT,          DFLT,     SEC_LVL, DFLT,   DFLT,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   SUCCESS },
+    // ==========================================
+    // TestType,    Descr,  Scheme,         RDim,     MultDepth,  SModSize, DSize,BatchSz,    SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,  KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Error,               indexList
+    { EVAL_SUM_COLS, "01", {CKKSRNS_SCHEME, RING_DIM, DFLT,       DFLT,     DFLT, RING_DIM/2, DFLT,       DFLT,          DFLT,     SEC_LVL, DFLT,   DFLT,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   SUCCESS },
 };
 // clang-format on
 //===========================================================================================================
@@ -359,6 +373,112 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_EvalSumRows(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                              const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            KeyPair<Element> kp = cc->KeyGen();
+
+            std::vector<double> mat1 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
+            std::vector<double> mat2 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
+            uint32_t rowSize         = 4;
+            uint32_t batchSize       = cc->GetEncodingParams()->GetBatchSize();
+
+            const std::vector<std::complex<double>> outputSumRows = {3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0};
+
+            // Encoding as plaintexts
+            Plaintext ptxtMat1 = cc->MakeCKKSPackedPlaintext(mat1);
+            Plaintext ptxtMat2 = cc->MakeCKKSPackedPlaintext(mat2);
+
+            // Encrypt the encoded vectors
+            auto ctMat1 = cc->Encrypt(kp.publicKey, ptxtMat1);
+            auto ctMat2 = cc->Encrypt(kp.publicKey, ptxtMat2);
+
+            cc->EvalSumKeyGen(kp.secretKey, kp.publicKey);
+            auto evalSumRowKeys = cc->EvalSumRowsKeyGen(kp.secretKey, nullptr, rowSize);
+
+            // Evaluation
+            auto ctRowsSum = cc->EvalSumRows(ctMat1, rowSize, *evalSumRowKeys);
+
+            // Decrypt
+            Plaintext result;
+            cc->Decrypt(kp.secretKey, ctRowsSum, &result);
+            result->SetLength(batchSize);
+            // std::cout << "sum Rows: " << result;
+            checkEquality(result->GetCKKSPackedValue(), outputSumRows, eps,
+                          failmsg + " EvalSumRowsKeyGen()/EvalSumRows fails - result is incorrect");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalSumCols(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                              const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            KeyPair<Element> kp = cc->KeyGen();
+
+            std::vector<double> mat1 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
+            std::vector<double> mat2 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
+            uint32_t rowSize         = 4;
+            uint32_t batchSize       = cc->GetEncodingParams()->GetBatchSize();
+
+            const std::vector<std::complex<double>> outputSumCols = {4.0, 4.0, 4.0, 4.0, 8.0, 8.0, 8.0, 8.0};
+
+            // Encoding as plaintexts
+            Plaintext ptxtMat1 = cc->MakeCKKSPackedPlaintext(mat1);
+            Plaintext ptxtMat2 = cc->MakeCKKSPackedPlaintext(mat2);
+
+            // Encrypt the encoded vectors
+            auto ctMat1 = cc->Encrypt(kp.publicKey, ptxtMat1);
+            auto ctMat2 = cc->Encrypt(kp.publicKey, ptxtMat2);
+
+            cc->EvalSumKeyGen(kp.secretKey, kp.publicKey);
+            auto evalSumColKeys = cc->EvalSumColsKeyGen(kp.secretKey);
+
+            // Evaluation
+            auto ctColsSum = cc->EvalSumCols(ctMat2, rowSize, *evalSumColKeys);
+
+            // Decrypt
+            Plaintext result;
+            cc->Decrypt(kp.secretKey, ctColsSum, &result);
+            result->SetLength(batchSize);
+            // std::cout << "sum Cols: " << result;
+            checkEquality(result->GetCKKSPackedValue(), outputSumCols, eps,
+                          failmsg + " EvalSumColsKeyGen()/EvalSumCols fails - result is incorrect");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 //===========================================================================================================
 TEST_P(UTCKKSRNS_AUTOMORPHISM, Automorphism) {
@@ -371,6 +491,12 @@ TEST_P(UTCKKSRNS_AUTOMORPHISM, Automorphism) {
             break;
         case EVAL_SUM_PACKED_ARRAY:
             UnitTest_EvalSumPackedArray(test, test.buildTestName());
+            break;
+        case EVAL_SUM_ROWS:
+            UnitTest_EvalSumRows(test, test.buildTestName());
+            break;
+        case EVAL_SUM_COLS:
+            UnitTest_EvalSumCols(test, test.buildTestName());
             break;
         default:
             break;
