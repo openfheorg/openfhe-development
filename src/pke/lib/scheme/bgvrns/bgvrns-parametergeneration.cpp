@@ -320,7 +320,8 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 // bounded by freshEncryptionNoise
                 noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) *
                               (2 * freshEncryptionNoise +
-                               numPrimes * (auxBits / r + 1) * expansionFactor * (pow(2, r) - 1) * B_e);
+                               numPrimes * (auxBits / r + 1) * expansionFactor * (pow(2, r) - 1) * B_e) /
+                              2.0;
             }
             else {
                 OPENFHE_THROW("Digit size value cannot be 0 for BV keyswitching");
