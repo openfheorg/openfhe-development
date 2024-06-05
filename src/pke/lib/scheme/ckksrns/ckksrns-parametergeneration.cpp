@@ -65,11 +65,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         OPENFHE_THROW(s.str());
     }
 
-    usint extraModSize = 0;
-    if (scalTech == FLEXIBLEAUTOEXT) {
-        // TODO: Allow the user to specify this?
-        extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
-    }
+    // TODO: Allow the user to specify this?
+    uint32_t extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
 
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
@@ -86,7 +83,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     // GAUSSIAN security constraint
     DistributionType distType = (cryptoParamsCKKSRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
-    auto nRLWE                = [&](usint q) -> uint32_t {
+    auto nRLWE                = [&](uint32_t q) -> uint32_t {
         return StdLatticeParm::FindRingDim(distType, stdLevel, q);
     };
 
@@ -115,7 +112,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     }
     //// End HE Standards compliance logic/check
 
-    usint dcrtBits = scalingModSize;
+    uint32_t dcrtBits = scalingModSize;
 
     uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
     std::vector<NativeInteger> moduliQ(vecSize);
@@ -125,91 +122,111 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     moduliQ[numPrimes - 1] = q;
     rootsQ[numPrimes - 1]  = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);
 
-    NativeInteger qNext = q;
-    NativeInteger qPrev = q;
+    NativeInteger maxPrime{q};
+    NativeInteger minPrime{q};
     if (numPrimes > 1) {
         if (scalTech != FLEXIBLEAUTO && scalTech != FLEXIBLEAUTOEXT) {
-            uint32_t cnt = 0;
-            for (usint i = numPrimes - 2; i >= 1; i--) {
+            NativeInteger qPrev = q;
+            NativeInteger qNext = q;
+            for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
                 if ((cnt % 2) == 0) {
-                    qPrev = PreviousPrime(qPrev, cyclOrder);
-                    q     = qPrev;
+                    qPrev      = PreviousPrime(qPrev, cyclOrder);
+                    moduliQ[i] = qPrev;
                 }
                 else {
-                    qNext = NextPrime(qNext, cyclOrder);
-                    q     = qNext;
+                    qNext      = NextPrime(qNext, cyclOrder);
+                    moduliQ[i] = qNext;
                 }
 
-                moduliQ[i] = q;
+                if(moduliQ[i] > maxPrime)
+                    maxPrime = moduliQ[i];
+                else if (moduliQ[i] < minPrime)
+                    minPrime = moduliQ[i];
+
                 rootsQ[i]  = RootOfUnity(cyclOrder, moduliQ[i]);
-                cnt++;
             }
         }
         else {  // FLEXIBLEAUTO
-            /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
-       * in the sense that once one scaling factor gets far enough from the
-       * original scaling factor, subsequent level scaling factors quickly
-       * diverge to either 0 or infinity. To mitigate this problem to a certain
-       * extend, we have a special prime selection process in place. The goal is
-       * to maintain the scaling factor of all levels as close to the original
-       * scale factor of level 0 as possible.
-       */
-
-            double sf    = moduliQ[numPrimes - 1].ConvertToDouble();
-            uint32_t cnt = 0;
-            for (usint i = numPrimes - 2; i >= 1; i--) {
+           /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
+            * in the sense that once one scaling factor gets far enough from the
+            * original scaling factor, subsequent level scaling factors quickly
+            * diverge to either 0 or infinity. To mitigate this problem to a certain
+            * extend, we have a special prime selection process in place. The goal is
+            * to maintain the scaling factor of all levels as close to the original
+            * scale factor of level 0 as possible.
+            */
+            double sf     = moduliQ[numPrimes - 1].ConvertToDouble();
+            for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
                 sf = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
+                NativeInteger sfInt = std::llround(sf);
+                NativeInteger sfRem = sfInt.Mod(cyclOrder);
+                bool hasSameMod     = true;
                 if ((cnt % 2) == 0) {
-                    NativeInteger sfInt = std::llround(sf);
-                    NativeInteger sfRem = sfInt.Mod(cyclOrder);
                     NativeInteger qPrev = sfInt - NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
-
-                    bool hasSameMod = true;
                     while (hasSameMod) {
                         hasSameMod = false;
                         qPrev      = PreviousPrime(qPrev, cyclOrder);
-                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                        for (size_t j = i + 1; j < numPrimes; j++) {
                             if (qPrev == moduliQ[j]) {
                                 hasSameMod = true;
+                                break;
                             }
                         }
                     }
                     moduliQ[i] = qPrev;
                 }
                 else {
-                    NativeInteger sfInt = std::llround(sf);
-                    NativeInteger sfRem = sfInt.Mod(cyclOrder);
                     NativeInteger qNext = sfInt + NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
-                    bool hasSameMod     = true;
                     while (hasSameMod) {
                         hasSameMod = false;
                         qNext      = NextPrime(qNext, cyclOrder);
-                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                        for (size_t j = i + 1; j < numPrimes; j++) {
                             if (qNext == moduliQ[j]) {
                                 hasSameMod = true;
+                                break;
                             }
                         }
                     }
                     moduliQ[i] = qNext;
                 }
+                if (moduliQ[i] > maxPrime)
+                    maxPrime = moduliQ[i];
+                else if (moduliQ[i] < minPrime)
+                    minPrime = moduliQ[i];
 
                 rootsQ[i] = RootOfUnity(cyclOrder, moduliQ[i]);
-                cnt++;
             }
         }
     }
 
     if (firstModSize == dcrtBits) {  // this requires dcrtBits < 60
-        moduliQ[0] = PreviousPrime<NativeInteger>(qPrev, cyclOrder);
+        moduliQ[0] = PreviousPrime<NativeInteger>(minPrime, cyclOrder);
     }
     else {
         moduliQ[0] = LastPrime<NativeInteger>(firstModSize, cyclOrder);
+    }
+    // find if the value of moduliQ[0] is already in the vector starting with moduliQ[1] and
+    // if there is, then get another prime for moduliQ[0]
+    const auto pos = std::find(moduliQ.begin() + 1, moduliQ.end(), moduliQ[0]);
+    if(pos != moduliQ.end()) {
+        moduliQ[0] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
+        maxPrime = moduliQ[0];
     }
     rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
         // no need for extra checking as extraModSize is automatically chosen by the library
-        moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        NativeInteger temp_moduliQ = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        // find if the value of moduliQ[0] is already in the vector starting with moduliQ[1] and
+        // if there is, then get another prime for moduliQ[0]
+        const auto pos = std::find(moduliQ.begin(), moduliQ.end(), moduliQ[numPrimes]);
+        if (pos == moduliQ.end())
+            moduliQ[numPrimes] = temp_moduliQ;
+        else {
+            moduliQ[numPrimes] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
+            // maxPrime   = moduliQ[numPrimes];
+        }
+
         rootsQ[numPrimes]  = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
     }
 
