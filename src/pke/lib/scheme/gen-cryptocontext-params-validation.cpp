@@ -48,6 +48,16 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize()) {
             OPENFHE_THROW("scalingModSize should be less than " + std::to_string(MAX_MODULUS_SIZE));
         }
+        if (30 != parameters.GetStatisticalSecurity()) {
+            if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
+                OPENFHE_THROW("statisticalSecurity is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
+            }
+        }
+        if (1 != parameters.GetNumAdversarialQueries()) {
+            if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
+                OPENFHE_THROW("numAdversarialQueries is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
+            }
+        }
     }
     else if (isBFVRNS(scheme)) {
         if (0 == parameters.GetPlaintextModulus()) {
@@ -64,14 +74,40 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (NORESCALE == parameters.GetScalingTechnique()) {
             OPENFHE_THROW("NORESCALE is not supported in BGVRNS");
         }
+        if (NOISE_FLOODING_HRA == parameters.GetPREMode()) {
+            if (FIXEDMANUAL != parameters.GetScalingTechnique()) {
+                OPENFHE_THROW("NOISE_FLOODING_HRA is allowed for scalingTechnique == FIXEDMANUAL only");
+            }
+            if (0 == parameters.GetMultiHopModSize()) {
+                OPENFHE_THROW("multiHopModSize should be set to a value > 0 for PREMode == NOISE_FLOODING_HRA");
+            }
+            if (0 != parameters.GetMultiplicativeDepth()) {
+                OPENFHE_THROW("multiplicativeDepth should be set to 0 for PREMode == NOISE_FLOODING_HRA");
+            }
+        }
         if (0 != parameters.GetFirstModSize()) {
             if (FIXEDMANUAL != parameters.GetScalingTechnique()) {
                 OPENFHE_THROW("firstModSize is allowed for scalingTechnique == FIXEDMANUAL only");
             }
         }
+        if (0 != parameters.GetScalingModSize()) {
+            if (FIXEDMANUAL != parameters.GetScalingTechnique()) {
+                OPENFHE_THROW("scalingModSize is allowed for scalingTechnique == FIXEDMANUAL only");
+            }
+        }
         if (0 != parameters.GetPRENumHops()) {
             if (NOISE_FLOODING_HRA != parameters.GetPREMode()) {
                 OPENFHE_THROW("PRENumHops is allowed for PREMode == NOISE_FLOODING_HRA only");
+            }
+        }
+        if (30 != parameters.GetStatisticalSecurity()) {
+            if (NOISE_FLOODING_HRA != parameters.GetPREMode()) {
+                OPENFHE_THROW("statisticalSecurity is allowed for PREMode == NOISE_FLOODING_HRA only");
+            }
+        }
+        if (1 != parameters.GetNumAdversarialQueries()) {
+            if (NOISE_FLOODING_HRA != parameters.GetPREMode()) {
+                OPENFHE_THROW("numAdversarialQueries is allowed for PREMode == NOISE_FLOODING_HRA only");
             }
         }
     }

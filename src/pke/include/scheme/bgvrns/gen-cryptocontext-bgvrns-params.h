@@ -63,10 +63,6 @@ public:
     // DISABLE FUNCTIONS that are not applicable to BGVRNS
     //================================================================================================================
     template <typename T = bool>
-    void SetScalingModSize(usint scalingModSize0) {
-        DISABLED_FOR_BGVRNS;
-    }
-    template <typename T = bool>
     void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
         DISABLED_FOR_BGVRNS;
     }
