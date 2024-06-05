@@ -396,7 +396,6 @@ protected:
             auto ctMat1 = cc->Encrypt(kp.publicKey, ptxtMat1);
             auto ctMat2 = cc->Encrypt(kp.publicKey, ptxtMat2);
 
-            cc->EvalSumKeyGen(kp.secretKey, kp.publicKey);
             auto evalSumRowKeys = cc->EvalSumRowsKeyGen(kp.secretKey, nullptr, rowSize);
 
             // Evaluation
@@ -449,7 +448,6 @@ protected:
             auto ctMat1 = cc->Encrypt(kp.publicKey, ptxtMat1);
             auto ctMat2 = cc->Encrypt(kp.publicKey, ptxtMat2);
 
-            cc->EvalSumKeyGen(kp.secretKey, kp.publicKey);
             auto evalSumColKeys = cc->EvalSumColsKeyGen(kp.secretKey);
 
             // Evaluation
