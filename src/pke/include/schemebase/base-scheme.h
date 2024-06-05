@@ -214,11 +214,11 @@ public:
 
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
-                                 usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
+                                 usint dcrtBits, uint32_t numPartQ, usint PRENumHops) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
         return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
-                                            firstModSize, dcrtBits, numPartQ, multihopQBound);
+                                            firstModSize, dcrtBits, numPartQ, PRENumHops);
     }
 
     /////////////////////////////////////////

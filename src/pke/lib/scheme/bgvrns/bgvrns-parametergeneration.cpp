@@ -457,6 +457,10 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         qBound += auxTowers * auxBits;
     }
 
+    // when the scaling technique is not FIXED_MANUAL, set a small value so that the rest of the logic could go through
+    if (qBound == 0)
+        qBound = 20;
+
     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
     // End HE Standards compliance logic/check
 

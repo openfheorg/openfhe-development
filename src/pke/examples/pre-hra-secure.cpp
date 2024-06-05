@@ -74,12 +74,14 @@ bool run_demo_pre(void) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetPlaintextModulus(plaintextModulus);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetMultiHopModSize(numHops);
+    parameters.SetPRENumHops(numHops);
     parameters.SetStatisticalSecurity(40);
     parameters.SetNumAdversarialQueries(1048576);
     parameters.SetRingDim(32768);
     parameters.SetPREMode(NOISE_FLOODING_HRA);
     parameters.SetKeySwitchTechnique(HYBRID);
+    parameters.SetMultiplicativeDepth(0);
+    // parameters.SetNumLargeDigits(3);
     // parameters.SetKeySwitchTechnique(BV);
     // parameters.SetDigitSize(15);
 

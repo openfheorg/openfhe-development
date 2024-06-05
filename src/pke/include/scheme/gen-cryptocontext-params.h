@@ -153,7 +153,7 @@ class Params {
     usint keySwitchCount;
 
     // size of moduli used for PRE in the provable HRA setting
-    usint multiHopModSize;
+    usint PRENumHops;
 
     // STANDARD or EXTENDED mode for BFV encryption
     // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower
@@ -244,7 +244,7 @@ public:
                 "keySwitchCount",
                 "encryptionTechnique",
                 "multiplicationTechnique",
-                "multiHopModSize",
+                "PRENumHops",
                 "PREMode",
                 "multipartyMode",
                 "executionMode",
@@ -344,8 +344,8 @@ public:
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return multiplicationTechnique;
     }
-    usint GetMultiHopModSize() const {
-        return multiHopModSize;
+    usint GetPRENumHops() const {
+        return PRENumHops;
     }
     COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
         return interactiveBootCompressionLevel;
@@ -434,8 +434,8 @@ public:
     virtual void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
         multiplicationTechnique = multiplicationTechnique0;
     }
-    virtual void SetMultiHopModSize(usint multiHopModSize0) {
-        multiHopModSize = multiHopModSize0;
+    virtual void SetPRENumHops(usint PRENumHops0) {
+        PRENumHops = PRENumHops0;
     }
     virtual void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
         interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
