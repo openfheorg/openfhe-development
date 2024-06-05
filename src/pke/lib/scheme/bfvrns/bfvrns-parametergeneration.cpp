@@ -291,12 +291,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                       "security requirement. Please increase it to " +
                       std::to_string(n) + ".");
 
+    std::cerr << "logq in parameter generation: " << logq / log(2) << std::endl;
+
     const size_t numInitialModuli = static_cast<size_t>(std::ceil((std::ceil(logq / log(2)) + 1.0) / dcrtBits));
+    std::cerr << "init moduli = " << numInitialModuli << std::endl;
     if (numInitialModuli < 1)
         OPENFHE_THROW("numInitialModuli must be greater than 0.");
     const size_t sizeQ = multipartyMode == NOISE_FLOODING_MULTIPARTY ?
                              numInitialModuli + NOISE_FLOODING::NUM_MODULI_MULTIPARTY :
                              numInitialModuli;
+    std::cerr << "sizeQ = " << sizeQ << std::endl;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
