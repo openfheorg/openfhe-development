@@ -51,7 +51,10 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
                                                   usint cyclOrder, usint numPrimes, usint scalingModSize,
                                                   usint firstModSize, uint32_t numPartQ,
                                                   COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
-    const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
+    // the "const" modifier for cryptoParamsCKKSRNS and encodingParams below doesn't mean that the objects those 2 pointers
+    // point to are const (not changeable). it means that the pointers themselves are const only.
+    const auto cryptoParamsCKKSRNS      = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
+    const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
 
     KeySwitchTechnique ksTech        = cryptoParamsCKKSRNS->GetKeySwitchTechnique();
     ScalingTechnique scalTech        = cryptoParamsCKKSRNS->GetScalingTechnique();
@@ -110,6 +113,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     else if (n == 0) {
         OPENFHE_THROW("Please specify the ring dimension or desired security level.");
     }
+
+    if (encodingParams->GetBatchSize() > n / 2)
+        OPENFHE_THROW("The batch size cannot be larger than ring dimension / 2.");
+
+    if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
+        OPENFHE_THROW("The batch size can only be set to zero (for full packing) or a power of two.");
     //// End HE Standards compliance logic/check
 
     uint32_t dcrtBits = scalingModSize;
@@ -138,16 +147,16 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
                     moduliQ[i] = qNext;
                 }
 
-                if(moduliQ[i] > maxPrime)
+                if (moduliQ[i] > maxPrime)
                     maxPrime = moduliQ[i];
                 else if (moduliQ[i] < minPrime)
                     minPrime = moduliQ[i];
 
-                rootsQ[i]  = RootOfUnity(cyclOrder, moduliQ[i]);
+                rootsQ[i] = RootOfUnity(cyclOrder, moduliQ[i]);
             }
         }
         else {  // FLEXIBLEAUTO
-           /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
+            /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
             * in the sense that once one scaling factor gets far enough from the
             * original scaling factor, subsequent level scaling factors quickly
             * diverge to either 0 or infinity. To mitigate this problem to a certain
@@ -155,9 +164,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
             * to maintain the scaling factor of all levels as close to the original
             * scale factor of level 0 as possible.
             */
-            double sf     = moduliQ[numPrimes - 1].ConvertToDouble();
+            double sf = moduliQ[numPrimes - 1].ConvertToDouble();
             for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
-                sf = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
+                sf                  = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
                 NativeInteger sfInt = std::llround(sf);
                 NativeInteger sfRem = sfInt.Mod(cyclOrder);
                 bool hasSameMod     = true;
@@ -208,9 +217,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     // find if the value of moduliQ[0] is already in the vector starting with moduliQ[1] and
     // if there is, then get another prime for moduliQ[0]
     const auto pos = std::find(moduliQ.begin() + 1, moduliQ.end(), moduliQ[0]);
-    if(pos != moduliQ.end()) {
+    if (pos != moduliQ.end()) {
         moduliQ[0] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
-        maxPrime = moduliQ[0];
+        maxPrime   = moduliQ[0];
     }
     rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
@@ -227,22 +236,14 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
             // maxPrime   = moduliQ[numPrimes];
         }
 
-        rootsQ[numPrimes]  = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
+        rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
     }
 
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
     cryptoParamsCKKSRNS->SetElementParams(paramsDCRT);
 
-    const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
-    if (encodingParams->GetBatchSize() > n / 2)
-        OPENFHE_THROW("The batch size cannot be larger than ring dimension / 2.");
-
-    if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
-        OPENFHE_THROW("The batch size can only be set to zero (for full packing) or a power of two.");
-
-    // if no batch size was specified, we set batchSize = n/2 by default (for full
-    // packing)
+    // if no batch size was specified, we set batchSize = n/2 by default (for full packing)
     if (encodingParams->GetBatchSize() == 0) {
         uint32_t batchSize = n / 2;
         EncodingParams encodingParamsNew(
