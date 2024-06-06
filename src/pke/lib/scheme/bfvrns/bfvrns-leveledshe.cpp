@@ -129,10 +129,10 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
 
     auto noiseKS = [&](uint32_t n, double logqPrev, double w) -> double {
         if (scalTechnique == HYBRID)
-            return k * (numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0) / 2;
+            return k * (numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
         else {
             double numDigitsPerTower = (relinWindow == 0) ? 1 : ((dcrtBits / relinWindow) + 1);
-            return delta(n) * numDigitsPerTower * (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
+            return delta(n) * numDigitsPerTower * (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr / 2.0;
         }
     };
 

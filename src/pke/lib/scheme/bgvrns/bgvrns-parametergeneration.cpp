@@ -98,7 +98,6 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     // Bkey set to thresholdParties * 1 for ternary distribution
     double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * sigma * sqrt(alpha) :
                                                                          thresholdParties;
-
     // delta
     auto expansionFactor = 2. * sqrt(ringDimension);
     // Vnorm
@@ -278,7 +277,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 }
 
 void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                      usint numPrimes) const {
+                                                      usint numPrimes, uint32_t ringDimension) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
@@ -286,7 +285,6 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
 
     // compute the flooding distribution parameter based on the security mode for pre
     // get the re-encryption level and set the level after re-encryption
-    usint ringDimension       = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
     double sigma              = cryptoParamsBGVRNS->GetDistributionParameter();
     double alpha              = cryptoParamsBGVRNS->GetAssuranceMeasure();
     usint r                   = cryptoParamsBGVRNS->GetDigitSize();
@@ -310,27 +308,39 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
         noise_param = NoiseFlooding::PRE_SD;
     }
     else if (PREMode == NOISE_FLOODING_HRA) {
+        // expansion factor
+        auto expansionFactor = 2. * sqrt(ringDimension);
+        // re-randomization noise
+        auto freshEncryptionNoise = B_e * (1. + 2. * expansionFactor * Bkey);
+
         if (ksTech == BV) {
             if (r > 0) {
-                // sqrt(12*num_queries) factor required for security analysis
-                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) * (1 + 2 * Bkey) * numPrimes *
-                              (auxBits / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
+                // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
+                // 2*freshEncryptionNoise is done because after modulus switching the noise will be
+                // bounded by freshEncryptionNoise
+                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) *
+                              (2 * freshEncryptionNoise +
+                               numPrimes * (auxBits / r + 1) * expansionFactor * (pow(2, r) - 1) * B_e) /
+                              2.0;
             }
             else {
-                OPENFHE_THROW("Relinwindow value cannot be 0 for BV keyswitching");
+                OPENFHE_THROW("Digit size value cannot be 0 for BV keyswitching");
             }
         }
         else if (ksTech == HYBRID) {
             if (r == 0) {
-                double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
-                int numDigits            = cryptoParamsBGVRNS->GetNumPartQ();
-                noise_param              = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
-                noise_param += auxBits * (1 + sqrt(ringDimension) * Bkey);
-                // sqrt(12*num_queries) factor required for security analysis
+                // 2*freshEncryptionNoise is done because after modulus switching the noise will be
+                // bounded by freshEncryptionNoise
+                noise_param = 2 * freshEncryptionNoise;
+                // we use numPrimes here as an approximation of numDigits * [towers per digit]
+                noise_param += numPrimes * expansionFactor * B_e / 2.0;
+                // we use numPrimes (larger bound) instead of auxPrimes because we do not know auxPrimes yet
+                noise_param += numPrimes * (1 + expansionFactor * Bkey) / 2.0;
+                // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
                 noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) * noise_param;
             }
             else {
-                OPENFHE_THROW("Relinwindow value can only  be zero for Hybrid keyswitching");
+                OPENFHE_THROW("Digit size can only be zero for Hybrid keyswitching");
             }
         }
     }
@@ -343,7 +353,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                 uint32_t evalAddCount, uint32_t keySwitchCount, usint cyclOrder,
                                                 usint numPrimes, usint firstModSize, usint dcrtBits, uint32_t numPartQ,
-                                                usint multihopQBound) const {
+                                                usint numHops) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     uint32_t ptm                     = cryptoParamsBGVRNS->GetPlaintextModulus();
@@ -363,19 +373,69 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         OPENFHE_THROW(s.str());
     }
 
-    bool dcrtBitsSet = (dcrtBits == 0) ? false : true;
+    uint32_t ringDimension = cyclOrder / 2;
+    InitializeFloodingDgg(cryptoParams, numHops, ringDimension);
 
-    // Select the size of moduli according to the plaintext modulus
-    if (dcrtBits == 0) {
-        dcrtBits = 28 + GetMSB64(ptm);
-        if (dcrtBits > DCRT_MODULUS::MAX_SIZE) {
-            dcrtBits = DCRT_MODULUS::MAX_SIZE;
+    if (scalTech == FIXEDMANUAL) {
+        if (PREMode != NOISE_FLOODING_HRA) {
+            // Select the size of moduli according to the plaintext modulus
+            if (dcrtBits == 0) {
+                dcrtBits =
+                    ((28 + GetMSB64(ptm)) > DCRT_MODULUS::MAX_SIZE) ? DCRT_MODULUS::MAX_SIZE : (28 + GetMSB64(ptm));
+            }
+            // Select firstModSize to be dcrtBits if not indicated otherwise
+            if (firstModSize == 0)
+                firstModSize = dcrtBits;
+        }
+        else {
+            // we only support PRE in the HRA-secure mode; no FHE operations are supported yet
+            numPrimes = numHops;
+
+            double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
+            double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
+
+            // Bound of the Gaussian error polynomial
+            double Berr = sigma * sqrt(alpha);
+
+            // Bound of the key polynomial supports both
+            // discrete Gaussian (GAUSSIAN) and ternary uniform distribution (UNIFORM_TERNARY) cases
+            uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
+            // Bkey set to thresholdParties * 1 for ternary distribution
+            double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ?
+                              sqrt(thresholdParties) * sigma * sqrt(alpha) :
+                              thresholdParties;
+            // delta
+            auto expansionFactor = 2. * sqrt(ringDimension);
+            // Vnorm
+            auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);
+
+            // the logic for finding the parameters for NOISE_FLOODING_HRA
+            double floodingBound      = alpha * cryptoParamsBGVRNS->GetFloodingDistributionParameter();
+            double firstModLowerBound = 2.0 * ptm * floodingBound - ptm;
+            firstModSize              = ceil(log2(firstModLowerBound));
+
+            // Use one modulus if the first hop fits in 60 bits
+            // Otherwise use two moduli
+            if (firstModSize > DCRT_MODULUS::MAX_SIZE) {
+                firstModSize = 20;
+                numPrimes++;
+            }
+
+            // selects the size of moduli for individual hops
+            // the noise after modulus swicthing is set to roughly the fresh encryption noise
+            // which is significantly less than fresh encryption noise + key switching noise that is incurred as
+            // part of proxy re-encryption
+            double dcrtBitsNoise = floodingBound / freshEncryptionNoise;
+            dcrtBits             = std::ceil(std::log2(dcrtBitsNoise));
+
+            // check that the mod size needed for each hop fits in 60 bits
+            if (dcrtBits > DCRT_MODULUS::MAX_SIZE) {
+                OPENFHE_THROW("The modulus size for HRA-secure PRE (" + std::to_string(dcrtBits) +
+                              " bits) is above the maximum:" + std::to_string(DCRT_MODULUS::MAX_SIZE) +
+                              ". Try reducing reducing the parameters for noise flooding.");
+            }
         }
     }
-
-    // Select firstModSize to be dcrtBits if no indicated otherwise
-    if (firstModSize == 0)
-        firstModSize = dcrtBits;
 
     // Size of modulus P
     uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
@@ -391,25 +451,19 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         qBound += auxTowers * auxBits;
     }
 
-    // Note this code is not executed if multihopQBound == 0 so it is backwards
-    // compatable
-    if (qBound < multihopQBound) {
-        // need to increase qBound to multihopQBound
-        qBound = multihopQBound;
-
-        // need to increase numPrimes to support new larger qBound
-        numPrimes = static_cast<usint>((qBound - firstModSize) / static_cast<float>(dcrtBits) + 1);
-    }
+    // when the scaling technique is not FIXED_MANUAL, set a small value so that the rest of the logic could go through
+    if (qBound == 0)
+        qBound = 20;
 
     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
-    //// End HE Standards compliance logic/check
+    // End HE Standards compliance logic/check
 
     uint32_t vecSize = (scalTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
     std::vector<NativeInteger> moduliQ(vecSize);
     std::vector<NativeInteger> rootsQ(vecSize);
     uint64_t modulusOrder = 0;
 
-    if ((scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) && (dcrtBitsSet == false)) {
+    if ((dcrtBits == 0) && (scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)) {
         auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
         moduliQ            = std::get<0>(moduliInfo);
         uint32_t newQBound = std::get<1>(moduliInfo);
@@ -431,8 +485,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     }
     else {
         cyclOrder = 2 * n;
-        // For ModulusSwitching to work we need the moduli to be also congruent to 1
-        // modulo ptm
+        // For ModulusSwitching to work we need the moduli to be also congruent to 1 modulo ptm
         usint plaintextModulus = ptm;
         usint pow2ptm          = 1;  // The largest power of 2 dividing ptm (check whether it
                                      // is larger than cyclOrder or not)
@@ -517,13 +570,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             a   = gcd;
         }
 
-        // if ptm and CyclOrder are not coprime we set batchSize = n by default (for
-        // full packing)
+        // if ptm and CyclOrder are not coprime we set batchSize = n by default (for full packing)
         uint32_t batchSize;
         if (gcd != 1) {
             batchSize = n;
         }
-        else {  // set batchsize to the actual batchsize i.e. n/d where d is the
+        else {
+            // set batchsize to the actual batchsize i.e. n/d where d is the
             // order of ptm mod CyclOrder
             a = (uint64_t)ptm % cyclOrder;
             b = 1;
@@ -533,9 +586,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             }
 
             if (n % b != 0)
-                OPENFHE_THROW(
-                    "BGVrns.ParamsGen: something went wrong when computing "
-                    "the batchSize");
+                OPENFHE_THROW("BGVrns.ParamsGen: something went wrong when computing the batchSize");
 
             batchSize = n / b;
         }
@@ -545,7 +596,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
     }
     cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
-    InitializeFloodingDgg(cryptoParams, numPrimes);
     return true;
 }
 

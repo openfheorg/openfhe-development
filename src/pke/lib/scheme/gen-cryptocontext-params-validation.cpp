@@ -69,9 +69,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
                 OPENFHE_THROW("firstModSize is allowed for scalingTechnique == FIXEDMANUAL only");
             }
         }
-        if (0 != parameters.GetMultiHopModSize()) {
-            if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
-                OPENFHE_THROW("multiHopModSize is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
+        if (0 != parameters.GetPRENumHops()) {
+            if (NOISE_FLOODING_HRA != parameters.GetPREMode()) {
+                OPENFHE_THROW("PRENumHops is allowed for PREMode == NOISE_FLOODING_HRA only");
             }
         }
     }

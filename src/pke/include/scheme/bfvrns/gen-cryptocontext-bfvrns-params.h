@@ -71,7 +71,7 @@ public:
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>
-    void SetMultiHopModSize(usint multiHopModSize0) {
+    void SetPRENumHops(usint PRENumHops0) {
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>
