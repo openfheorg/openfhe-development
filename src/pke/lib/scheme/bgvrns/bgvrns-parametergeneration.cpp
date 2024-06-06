@@ -376,18 +376,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     uint32_t ringDimension = cyclOrder / 2;
     InitializeFloodingDgg(cryptoParams, numHops, ringDimension);
 
-    bool dcrtBitsSet = (dcrtBits == 0) ? false : true;
-
     if (scalTech == FIXEDMANUAL) {
         if (PREMode != NOISE_FLOODING_HRA) {
             // Select the size of moduli according to the plaintext modulus
             if (dcrtBits == 0) {
-                dcrtBits = 28 + GetMSB64(ptm);
-                if (dcrtBits > DCRT_MODULUS::MAX_SIZE) {
-                    dcrtBits = DCRT_MODULUS::MAX_SIZE;
-                }
+                dcrtBits =
+                    ((28 + GetMSB64(ptm)) > DCRT_MODULUS::MAX_SIZE) ? DCRT_MODULUS::MAX_SIZE : (28 + GetMSB64(ptm));
             }
-
             // Select firstModSize to be dcrtBits if not indicated otherwise
             if (firstModSize == 0)
                 firstModSize = dcrtBits;
@@ -402,9 +397,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             // Bound of the Gaussian error polynomial
             double Berr = sigma * sqrt(alpha);
 
-            // Bound of the key polynomial
-            // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
-            // (UNIFORM_TERNARY) cases
+            // Bound of the key polynomial supports both
+            // discrete Gaussian (GAUSSIAN) and ternary uniform distribution (UNIFORM_TERNARY) cases
             uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
             // Bkey set to thresholdParties * 1 for ternary distribution
             double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ?
@@ -469,7 +463,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     std::vector<NativeInteger> rootsQ(vecSize);
     uint64_t modulusOrder = 0;
 
-    if ((scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) && (dcrtBitsSet == false)) {
+    if ((dcrtBits == 0) && (scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)) {
         auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
         moduliQ            = std::get<0>(moduliInfo);
         uint32_t newQBound = std::get<1>(moduliInfo);
@@ -491,8 +485,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     }
     else {
         cyclOrder = 2 * n;
-        // For ModulusSwitching to work we need the moduli to be also congruent to 1
-        // modulo ptm
+        // For ModulusSwitching to work we need the moduli to be also congruent to 1 modulo ptm
         usint plaintextModulus = ptm;
         usint pow2ptm          = 1;  // The largest power of 2 dividing ptm (check whether it
                                      // is larger than cyclOrder or not)
@@ -577,13 +570,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             a   = gcd;
         }
 
-        // if ptm and CyclOrder are not coprime we set batchSize = n by default (for
-        // full packing)
+        // if ptm and CyclOrder are not coprime we set batchSize = n by default (for full packing)
         uint32_t batchSize;
         if (gcd != 1) {
             batchSize = n;
         }
-        else {  // set batchsize to the actual batchsize i.e. n/d where d is the
+        else {
+            // set batchsize to the actual batchsize i.e. n/d where d is the
             // order of ptm mod CyclOrder
             a = (uint64_t)ptm % cyclOrder;
             b = 1;
@@ -593,9 +586,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             }
 
             if (n % b != 0)
-                OPENFHE_THROW(
-                    "BGVrns.ParamsGen: something went wrong when computing "
-                    "the batchSize");
+                OPENFHE_THROW("BGVrns.ParamsGen: something went wrong when computing the batchSize");
 
             batchSize = n / b;
         }
