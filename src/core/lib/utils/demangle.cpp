@@ -40,15 +40,25 @@ std::string demangle(const char* const name) noexcept {
     auto output_buffer        = reinterpret_cast<char*>(std::malloc(output_buffer_size));
     int status                = -1;
 
-    const char* ptr = abi::__cxa_demangle(name, output_buffer, &output_buffer_size, &status);
-
-    std::string result{((status == 0) && (ptr != NULL)) ? ptr : (std::string("Can not demangle symbol: ") + name)};
-    free(output_buffer);
+    char* ptr = abi::__cxa_demangle(name, output_buffer, &output_buffer_size, &status);
+    std::string result;
+    if (status == 0 && ptr != nullptr) {
+        result = ptr;
+        // If ptr is different from output_buffer, free ptr as it points to the newly allocated (realloc) buffer
+        if (ptr != output_buffer)
+            std::free(ptr);
+        else
+            std::free(output_buffer);
+    }
+    else {
+        result = "Cannot demangle symbol: " + std::string(name);
+        std::free(output_buffer);
+    }
 
     return result;
 }
 #else
-std::string demangle(const char* const name) {
+std::string demangle(const char* const name) noexcept {
     return name;
 }
 #endif
