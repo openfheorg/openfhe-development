@@ -58,7 +58,7 @@ protected:
 TEST_F(UTGENERAL_CRYPTOCONTEXTS, coexisting_ckks_cryptocontexts) {
     // Setup crypto context 1
     CCParams<CryptoContextCKKSRNS> parameters1;
-    parameters1.SetMultiplicativeDepth(5);
+    parameters1.SetMultiplicativeDepth(4);
     parameters1.SetScalingModSize(40);
     parameters1.SetRingDim(4096 * 4);
     parameters1.SetBatchSize(32);
