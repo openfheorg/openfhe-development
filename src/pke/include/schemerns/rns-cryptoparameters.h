@@ -157,6 +157,13 @@ public:
 
     virtual uint64_t FindAuxPrimeStep() const;
 
+    static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
+                                                    double extraModulusSize, uint32_t numPrimes, uint32_t auxBits);
+
+    double EstimateMultipartyFloodingLogQ() const {
+        return NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::MULTIPARTY_MOD_SIZE;
+    }
+
     /**
    * == operator to compare to this instance of CryptoParametersBase object.
    *

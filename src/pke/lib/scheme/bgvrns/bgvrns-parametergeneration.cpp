@@ -444,11 +444,15 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     usint extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
     uint32_t qBound    = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
 
-    // Number of RNS limbs in P
+    // estimate the extra modulus Q needed for threshold FHE flooding
+    if ((multipartyMode == NOISE_FLOODING_MULTIPARTY))
+        qBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
-        auxTowers = ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits);
-        qBound += auxTowers * auxBits;
+        auto hybridKSInfo =
+            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits);
+        qBound += std::get<0>(hybridKSInfo);
+        auxTowers = std::get<1>(hybridKSInfo);
     }
 
     // when the scaling technique is not FIXED_MANUAL, set a small value so that the rest of the logic could go through
@@ -473,8 +477,16 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
             moduliQ         = std::get<0>(moduliInfo);
             newQBound       = std::get<1>(moduliInfo);
-            if (ksTech == HYBRID)
-                newQBound += ceil(ceil(static_cast<double>(newQBound) / numPartQ) / auxBits) * auxBits;
+            if ((multipartyMode == NOISE_FLOODING_MULTIPARTY))
+                newQBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
+            if (ksTech == HYBRID) {
+                auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(
+                    numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
+                    (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,
+                    (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
+                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits);
+                newQBound += std::get<0>(hybridKSInfo);
+            }
         }
         cyclOrder    = 2 * n;
         modulusOrder = getCyclicOrder(n, ptm, scalTech);

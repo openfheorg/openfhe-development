@@ -388,4 +388,58 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
     return GetElementParams()->GetRingDimension();
 }
 
+std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
+                                                              double dcrtBits, double extraModulusSize,
+                                                              uint32_t numPrimes, uint32_t auxBits) {
+    uint32_t sizeQ = numPrimes;
+    if (extraModulusSize > 0)
+        sizeQ++;
+    // std::cerr << "sizeQ = " << sizeQ << std::endl;
+    // std::cerr << "numPartQ = " << numPartQ << std::endl;
+    // Compute ceil(sizeQ/m_numPartQ), the # of towers per digit
+    uint32_t numPerPartQ = ceil(static_cast<double>(sizeQ) / numPartQ);
+    if ((int32_t)(sizeQ - numPerPartQ * (numPartQ - 1)) <= 0) {
+        auto str =
+            "CryptoParametersRNS::EstimateLogP - HYBRID key "
+            "switching parameters: Can't appropriately distribute " +
+            std::to_string(sizeQ) + " towers into " + std::to_string(numPartQ) +
+            " digits. Please select different number of digits.";
+        OPENFHE_THROW(str);
+    }
+
+    // create a vector with bit sizes
+    std::vector<double> qi(sizeQ);
+    qi[0] = firstModulusSize;
+    for (uint32_t i = 1; i < numPrimes; i++) {
+        qi[i] = dcrtBits;
+    }
+    if (extraModulusSize > 0)
+        qi[sizeQ - 1] = extraModulusSize;
+
+    // std::cerr << "numPerPartQ = " << numPerPartQ << std::endl;
+
+    // Compute partitions of Q into numPartQ digits
+    double maxBits = 0;
+    for (uint32_t j = 0; j < numPartQ; j++) {
+        auto startTower = j * numPerPartQ;
+        auto endTower   = ((j + 1) * numPerPartQ - 1 < sizeQ) ? (j + 1) * numPerPartQ - 1 : sizeQ - 1;
+        double bits     = 0.0;
+        for (uint32_t i = startTower; i <= endTower; i++) {
+            bits += qi[i];
+        }
+        if (bits > maxBits)
+            maxBits = bits;
+    }
+
+    // std::cerr << "maxBits = " << maxBits << std::endl;
+
+    // Select number of primes in auxiliary CRT basis
+    uint32_t sizeP;
+    sizeP = std::ceil(static_cast<double>(maxBits) / auxBits);
+
+    // std::cerr << "log P = " << sizeP * auxBits << std::endl;
+
+    return std::make_pair(sizeP * auxBits, sizeP);
+}
+
 }  // namespace lbcrypto
