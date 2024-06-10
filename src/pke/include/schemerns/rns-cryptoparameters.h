@@ -161,7 +161,7 @@ public:
                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits);
 
     static double EstimateMultipartyFloodingLogQ() {
-        return NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::MULTIPARTY_MOD_SIZE;
+        return NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY;
     }
 
     /**
