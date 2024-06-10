@@ -416,7 +416,7 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     if (extraModulusSize > 0)
         qi[sizeQ - 1] = extraModulusSize;
 
-    // std::cerr << "numPerPartQ = " << numPerPartQ << std::endl;
+    std::cerr << "numPerPartQ = " << numPerPartQ << std::endl;
 
     // Compute partitions of Q into numPartQ digits
     double maxBits = 0;
@@ -431,13 +431,13 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
             maxBits = bits;
     }
 
-    // std::cerr << "maxBits = " << maxBits << std::endl;
+    std::cerr << "maxBits = " << maxBits << std::endl;
 
     // Select number of primes in auxiliary CRT basis
     uint32_t sizeP;
     sizeP = std::ceil(static_cast<double>(maxBits) / auxBits);
 
-    // std::cerr << "log P = " << sizeP * auxBits << std::endl;
+    std::cerr << "log P = " << sizeP * auxBits << std::endl;
 
     return std::make_pair(sizeP * auxBits, sizeP);
 }

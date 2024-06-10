@@ -160,7 +160,7 @@ public:
     static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits);
 
-    double EstimateMultipartyFloodingLogQ() const {
+    static double EstimateMultipartyFloodingLogQ() {
         return NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::MULTIPARTY_MOD_SIZE;
     }
 
