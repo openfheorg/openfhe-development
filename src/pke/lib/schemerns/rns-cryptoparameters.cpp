@@ -394,8 +394,7 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     uint32_t sizeQ = numPrimes;
     if (extraModulusSize > 0)
         sizeQ++;
-    // std::cerr << "sizeQ = " << sizeQ << std::endl;
-    // std::cerr << "numPartQ = " << numPartQ << std::endl;
+
     // Compute ceil(sizeQ/m_numPartQ), the # of towers per digit
     uint32_t numPerPartQ = ceil(static_cast<double>(sizeQ) / numPartQ);
     if ((int32_t)(sizeQ - numPerPartQ * (numPartQ - 1)) <= 0) {
