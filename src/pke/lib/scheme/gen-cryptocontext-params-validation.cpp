@@ -78,8 +78,8 @@ void validateParametersForCryptocontext(const Params& parameters) {
             if (FIXEDMANUAL != parameters.GetScalingTechnique()) {
                 OPENFHE_THROW("NOISE_FLOODING_HRA is allowed for scalingTechnique == FIXEDMANUAL only");
             }
-            if (0 == parameters.GetMultiHopModSize()) {
-                OPENFHE_THROW("multiHopModSize should be set to a value > 0 for PREMode == NOISE_FLOODING_HRA");
+            if (0 == parameters.GetPRENumHops()) {
+                OPENFHE_THROW("PRENumHops should be set to a value > 0 for PREMode == NOISE_FLOODING_HRA");
             }
             if (0 != parameters.GetMultiplicativeDepth()) {
                 OPENFHE_THROW("multiplicativeDepth should be set to 0 for PREMode == NOISE_FLOODING_HRA");
