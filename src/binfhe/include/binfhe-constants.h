@@ -46,59 +46,51 @@ using LWEPlaintextModulus = uint64_t;
  * @brief Security levels for predefined parameter sets
  */
 enum BINFHE_PARAMSET {
-    TOY,                // no security
-    MEDIUM,             // 108 bits of security for classical and 100 bits for quantum
-    STD128_LMKCDEY,     // Optimized for LMKCDEY (using Gaussian secrets) -
-                        // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD128_AP,          // Optimized for AP (has higher failure probability for GINX) -
-                        // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD128,             // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD192,             // more than 192 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD256,             // more than 256 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD128Q,            // more than 128 bits of security for quantum attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD128Q_LMKCDEY,    // Optimized for LMKCDEY (using Gaussian secrets) -
-                        // more than 128 bits of security for quantum attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD192Q,            // more than 192 bits of security for quantum attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD256Q,            // more than 256 bits of security for quantum attacks -
-                        // optimize runtime by finding a non-power-of-two n
-    STD128_3,           // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD128_3_LMKCDEY,   // Optimized for LMKCDEY (using Gaussian secrets) -
-                        // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD128Q_3,          // more than 128 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD128Q_3_LMKCDEY,  // Optimized for LMKCDEY (using Gaussian secrets) -
-                        // more than 128 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD192Q_3,          // more than 192 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD256Q_3,          // more than 256 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD128_4,           // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD128_4_LMKCDEY,   // Optimized for LMKCDEY (using Gaussian secrets) -
-                        // more than 128 bits of security for classical computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD128Q_4,          // more than 128 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD128Q_4_LMKCDEY,  // Optimized for LMKCDEY (using Gaussian secrets) -
-                        // more than 128 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD192Q_4,          // more than 192 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD256Q_4,          // more than 256 bits of security for quantum computer attacks -
-                        // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    SIGNED_MOD_TEST     // special parameter set for confirming the signed modular
-                        // reduction in the accumulator updates works correctly
+    TOY,                  // no security
+    MEDIUM,               // 108 bits of security for classical and 100 bits for quantum
+    STD128_AP,            // more than 128 bits of security for classical computer attacks
+    STD128,               // more than 128 bits of security for classical computer attacks
+    STD128_3,             // STD128 for 3 binary inputs
+    STD128_4,             // STD128 for 4 binary inputs
+    STD128Q,              // more than 128 bits of security for quantum attacks
+    STD128Q_3,            // STD128Q for 3 binary inputs
+    STD128Q_4,            // STD128Q for 4 binary inputs
+    STD192,               // more than 192 bits of security for classical computer attacks
+    STD192_3,             // STD192 for 3 binary inputs
+    STD192_4,             // STD192 for 4 binary inputs
+    STD192Q,              // more than 192 bits of security for quantum attacks
+    STD192Q_3,            // STD192Q for 3 binary inputs
+    STD192Q_4,            // STD192Q for 4 binary inputs
+    STD256,               // more than 256 bits of security for classical computer attacks
+    STD256_3,             // STD256 for 3 binary inputs
+    STD256_4,             // STD256 for 4 binary inputs
+    STD256Q,              // more than 256 bits of security for quantum attacks
+    STD256Q_3,            // STD256Q for 3 binary inputs
+    STD256Q_4,            // STD256Q for 4 binary inputs
+    STD128_LMKCDEY,       // STD128 optimized for LMKCDEY (using Gaussian secrets)
+    STD128_3_LMKCDEY,     // STD128_3 optimized for LMKCDEY (using Gaussian secrets)
+    STD128_4_LMKCDEY,     // STD128_4 optimized for LMKCDEY (using Gaussian secrets)
+    STD128Q_LMKCDEY,      // STD128Q optimized for LMKCDEY (using Gaussian secrets)
+    STD128Q_3_LMKCDEY,    // STD128Q_3 optimized for LMKCDEY (using Gaussian secrets)
+    STD128Q_4_LMKCDEY,    // STD128Q_4 optimized for LMKCDEY (using Gaussian secrets)
+    STD192_LMKCDEY,       // STD192 optimized for LMKCDEY (using Gaussian secrets)
+    STD192_3_LMKCDEY,     // STD192_3 optimized for LMKCDEY (using Gaussian secrets)
+    STD192_4_LMKCDEY,     // STD192_4 optimized for LMKCDEY (using Gaussian secrets)
+    STD192Q_LMKCDEY,      // STD192Q optimized for LMKCDEY (using Gaussian secrets)
+    STD192Q_3_LMKCDEY,    // STD192Q_3 optimized for LMKCDEY (using Gaussian secrets)
+    STD192Q_4_LMKCDEY,    // STD192Q_4 optimized for LMKCDEY (using Gaussian secrets)
+    STD256_LMKCDEY,       // STD256 optimized for LMKCDEY (using Gaussian secrets)
+    STD256_3_LMKCDEY,     // STD256_3 optimized for LMKCDEY (using Gaussian secrets)
+    STD256_4_LMKCDEY,     // STD256_4 optimized for LMKCDEY (using Gaussian secrets)
+    STD256Q_LMKCDEY,      // STD256Q optimized for LMKCDEY (using Gaussian secrets)
+    STD256Q_3_LMKCDEY,    // STD256Q_3 optimized for LMKCDEY (using Gaussian secrets)
+    STD256Q_4_LMKCDEY,    // STD256Q_4 optimized for LMKCDEY (using Gaussian secrets)
+    LPF_STD128,           // STD128 configured with lower probability of failures (at least 2**-100)
+    LPF_STD128Q,          // STD128Q configured with lower probability of failures (at least 2**-100)
+    LPF_STD128_LMKCDEY,   // LPF_STD128 optimized for LMKCDEY (using Gaussian secrets)
+    LPF_STD128Q_LMKCDEY,  // LPF_STD128Q optimized for LMKCDEY (using Gaussian secrets)
+    SIGNED_MOD_TEST       // special parameter set for confirming the signed modular
+                          // reduction in the accumulator updates works correctly
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);
 
