@@ -141,16 +141,16 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
         { STD256_LMKCDEY,      { 30, 4096,  939, 2048,   32768, STD_DEV,  32,      1024, 32, 10,        GAUSSIAN } },
         { STD256Q_LMKCDEY,     { 28, 4096, 1019, 4096,   32768, STD_DEV,  32,      1024, 32, 10,        GAUSSIAN } },
         { LPF_STD128,          { 27, 2048,  556, 1024,   32768, STD_DEV,  32,       128, 32, 10, UNIFORM_TERNARY } },
-        { LPF_STD128Q,         { 50, 4096,  600, 2048,   32768, STD_DEV,  32,    131072, 32, 10, UNIFORM_TERNARY } },
-        { LPF_STD128_LMKCDEY,  { 56, 4096,  485, 4096,   32768, STD_DEV,  32, 268435456, 32, 10,        GAUSSIAN } },
-        { LPF_STD128Q_LMKCDEY, { 52, 4096,  524, 4096,   32768, STD_DEV,  32,  67108864, 32, 10,        GAUSSIAN } },
+        { LPF_STD128Q,         { 25, 2048,  645, 2048,   65536, STD_DEV,  64,       128, 32, 10, UNIFORM_TERNARY } },
+        { LPF_STD128_LMKCDEY,  { 28, 2048,  593, 2048,  131072, STD_DEV,  64,        64, 32, 10,        GAUSSIAN } },
+        { LPF_STD128Q_LMKCDEY, { 27, 2048,  662, 2048,  262144, STD_DEV,  64,        64, 32, 10,        GAUSSIAN } },
         { SIGNED_MOD_TEST,     { 28, 2048,  512, 1024,   PRIME, STD_DEV,  25,       128, 23, 10,  UNIFORM_TERNARY} },
     };
     // clang-format on
 
     auto search = paramsMap.find(set);
     if (paramsMap.end() == search)
-        OPENFHE_THROW("Unknown parameter set");
+        OPENFHE_THROW("unknown parameter set");
     auto& params = search->second;
 
     auto Q         = LastPrime<NativeInteger>(params.numberBits, params.cyclOrder);
@@ -235,7 +235,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
 LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECiphertext& ct) const {
     auto&& LWEParams = m_params->GetLWEParams();
     if ((ct->GetLength() != LWEParams->GetN()) && (ct->GetModulus() != LWEParams->GetQ()))
-        OPENFHE_THROW("Ciphertext dimension and modulus are not large N and Q");
+        OPENFHE_THROW("ciphertext dimension and modulus are not large N and Q");
     return m_LWEscheme->SwitchCTtoqn(LWEParams, ksk, ct);
 }
 
