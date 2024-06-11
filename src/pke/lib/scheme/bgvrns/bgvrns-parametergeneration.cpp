@@ -444,19 +444,26 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     usint extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
     uint32_t qBound    = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
 
-    // Number of RNS limbs in P
+    // estimate the extra modulus Q needed for threshold FHE flooding
+    if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
+        qBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
-        auxTowers = ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits);
-        qBound += auxTowers * auxBits;
+        auto hybridKSInfo =
+            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits);
+        qBound += std::get<0>(hybridKSInfo);
+        auxTowers = std::get<1>(hybridKSInfo);
     }
 
-    // when the scaling technique is not FIXED_MANUAL, set a small value so that the rest of the logic could go through
+    // when the scaling technique is not FIXEDMANUAL (and not FLEXIBLEAUTOEXT),
+    // set a small value so that the rest of the logic could go through (this is a workaround)
+    // TODO we should uncouple the logic of FIXEDMANUAL and all FLEXIBLE MODES; some of the code above should be moved
+    // to the branch for FIXEDMANUAL
     if (qBound == 0)
         qBound = 20;
 
+    // HE Standards compliance logic/check
     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
-    // End HE Standards compliance logic/check
 
     uint32_t vecSize = (scalTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
     std::vector<NativeInteger> moduliQ(vecSize);
@@ -467,15 +474,26 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
         moduliQ            = std::get<0>(moduliInfo);
         uint32_t newQBound = std::get<1>(moduliInfo);
-        while (qBound < newQBound) {
+
+        // the loop must be executed at least once
+        do {
             qBound          = newQBound;
             n               = computeRingDimension(cryptoParams, newQBound, cyclOrder);
             auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
             moduliQ         = std::get<0>(moduliInfo);
             newQBound       = std::get<1>(moduliInfo);
-            if (ksTech == HYBRID)
-                newQBound += ceil(ceil(static_cast<double>(newQBound) / numPartQ) / auxBits) * auxBits;
-        }
+            if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
+                newQBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
+            if (ksTech == HYBRID) {
+                auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(
+                    numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
+                    (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,
+                    (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
+                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits);
+                newQBound += std::get<0>(hybridKSInfo);
+            }
+        } while (qBound < newQBound);
+
         cyclOrder    = 2 * n;
         modulusOrder = getCyclicOrder(n, ptm, scalTech);
 
@@ -484,6 +502,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         }
     }
     else {
+        // FIXEDMANUAL mode
         cyclOrder = 2 * n;
         // For ModulusSwitching to work we need the moduli to be also congruent to 1 modulo ptm
         usint plaintextModulus = ptm;
@@ -596,6 +615,31 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
     }
     cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
+
+    // Validate the ring dimension found using estimated logQ(P) against actual logQ(P)
+    SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
+    if (stdLevel != HEStd_NotSet) {
+        uint32_t logActualQ = 0;
+        if (ksTech == HYBRID) {
+            logActualQ = cryptoParamsBGVRNS->GetParamsQP()->GetModulus().GetMSB();
+        }
+        else {
+            logActualQ = cryptoParamsBGVRNS->GetElementParams()->GetModulus().GetMSB();
+        }
+
+        DistributionType distType = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
+        uint32_t nActual          = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
+
+        if (n < nActual) {
+            std::string errMsg("The ring dimension found using estimated logQ(P) [");
+            errMsg += std::to_string(n) + "] does does not meet security requirements. ";
+            errMsg += "Report this problem to OpenFHE developers and set the ring dimension manually to ";
+            errMsg += std::to_string(nActual) + ".";
+
+            OPENFHE_THROW(errMsg);
+        }
+    }
+
     return true;
 }
 

@@ -76,9 +76,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t auxBits       = AUXMODSIZE;
     uint32_t n             = cyclOrder / 2;
     uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
-    // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
+
+    // Estimate ciphertext modulus Q*P bound (in case of HYBRID P*Q)
     if (ksTech == HYBRID) {
-        qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) * auxBits;
+        auto hybridKSInfo =
+            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize, numPrimes, auxBits);
+        qBound += std::get<0>(hybridKSInfo);
     }
 
     // GAUSSIAN security constraint
@@ -231,6 +234,27 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     }
 
     cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraModSize);
+
+    // Validate the ring dimension found using estimated logQ(P) against actual logQ(P)
+    if (stdLevel != HEStd_NotSet) {
+        uint32_t logActualQ = 0;
+        if (ksTech == HYBRID) {
+            logActualQ = cryptoParamsCKKSRNS->GetParamsQP()->GetModulus().GetMSB();
+        }
+        else {
+            logActualQ = cryptoParamsCKKSRNS->GetElementParams()->GetModulus().GetMSB();
+        }
+
+        uint32_t nActual = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
+        if (n < nActual) {
+            std::string errMsg("The ring dimension found using estimated logQ(P) [");
+            errMsg += std::to_string(n) + "] does does not meet security requirements. ";
+            errMsg += "Report this problem to OpenFHE developers and set the ring dimension manually to ";
+            errMsg += std::to_string(nActual) + ".";
+
+            OPENFHE_THROW(errMsg);
+        }
+    }
 
     return true;
 }
