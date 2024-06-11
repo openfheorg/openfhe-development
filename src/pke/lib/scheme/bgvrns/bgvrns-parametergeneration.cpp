@@ -608,6 +608,31 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
     }
     cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
+
+    // Validate the ring dimension found using estimated logQ(P) against actual logQ(P)
+    SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
+    if (stdLevel != HEStd_NotSet) {
+        uint32_t logActualQ = 0;
+        if (ksTech == HYBRID) {
+            logActualQ = cryptoParamsBGVRNS->GetParamsQP()->GetModulus().GetMSB();
+        }
+        else {
+            logActualQ = cryptoParamsBGVRNS->GetElementParams()->GetModulus().GetMSB();
+        }
+
+        DistributionType distType = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
+        uint32_t nActual          = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
+
+        if (n < nActual) {
+            std::string errMsg("The ring dimension found using estimated logQ(P) [");
+            errMsg += std::to_string(n) + "] does does not meet security requirements. ";
+            errMsg += "Report this problem to OpenFHE developers and set the ring dimension manually to ";
+            errMsg += std::to_string(nActual) + ".";
+
+            OPENFHE_THROW(errMsg);
+        }
+    }
+
     return true;
 }
 

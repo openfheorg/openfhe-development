@@ -395,9 +395,9 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     if (extraModulusSize > 0)
         sizeQ++;
 
-    // Compute ceil(sizeQ/m_numPartQ), the # of towers per digit
+    // Compute ceil(sizeQ/numPartQ), the # of towers per digit
     uint32_t numPerPartQ = ceil(static_cast<double>(sizeQ) / numPartQ);
-    if ((int32_t)(sizeQ - numPerPartQ * (numPartQ - 1)) <= 0) {
+    if ((uint32_t)(sizeQ - numPerPartQ * (numPartQ - 1)) <= 0) {
         auto str =
             "CryptoParametersRNS::EstimateLogP - HYBRID key "
             "switching parameters: Can't appropriately distribute " +
