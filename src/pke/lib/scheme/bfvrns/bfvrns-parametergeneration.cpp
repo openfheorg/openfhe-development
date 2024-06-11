@@ -117,7 +117,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         }
         else {
             // takes into account the noise added during the threshold FHE instantiation of BFV
-            if ((multipartyMode == NOISE_FLOODING_MULTIPARTY))
+            if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
                 logq += cryptoParamsBFVRNS->EstimateMultipartyFloodingLogQ();
             // adds logP in the case of HYBRID key switching
             if (ksTech == HYBRID) {
@@ -129,7 +129,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                 logq += std::get<0>(hybridKSInfo);
             }
             return static_cast<double>(
-                StdLatticeParm::FindRingDim(distType, stdLevel, static_cast<usint>(std::ceil(logq))));
+                StdLatticeParm::FindRingDim(distType, stdLevel, static_cast<uint32_t>(std::ceil(logq))));
         }
     };
 
@@ -138,7 +138,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             // conservative estimate for HYBRID to avoid the use of method of
             // iterative approximations; we do not know the number
             // of digits and moduli at this point and use upper bounds
-            double numTowers = ceil(static_cast<double>(logqPrev) / dcrtBits);
+            double numTowers = ceil(logqPrev / dcrtBits);
             return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
         }
         else {

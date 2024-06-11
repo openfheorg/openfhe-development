@@ -445,7 +445,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     uint32_t qBound    = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
 
     // estimate the extra modulus Q needed for threshold FHE flooding
-    if ((multipartyMode == NOISE_FLOODING_MULTIPARTY))
+    if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
         qBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
@@ -475,15 +475,14 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         moduliQ            = std::get<0>(moduliInfo);
         uint32_t newQBound = std::get<1>(moduliInfo);
 
-        // the counter makes sure the first iteration of the while loop is always run
-        uint32_t counter = 0;
-        while ((counter == 0) || (qBound < newQBound)) {
+        // the loop must be executed at least once
+        do {
             qBound          = newQBound;
             n               = computeRingDimension(cryptoParams, newQBound, cyclOrder);
             auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
             moduliQ         = std::get<0>(moduliInfo);
             newQBound       = std::get<1>(moduliInfo);
-            if ((multipartyMode == NOISE_FLOODING_MULTIPARTY))
+            if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
                 newQBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
             if (ksTech == HYBRID) {
                 auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(
@@ -493,8 +492,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                     (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits);
                 newQBound += std::get<0>(hybridKSInfo);
             }
-            counter++;
-        }
+        } while (qBound < newQBound);
+
         cyclOrder    = 2 * n;
         modulusOrder = getCyclicOrder(n, ptm, scalTech);
 

@@ -177,8 +177,8 @@ public:
    *
    * @return number of extra bits needed for noise flooding
    */
-    static double EstimateMultipartyFloodingLogQ() {
-        return NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY;
+    static constexpr double EstimateMultipartyFloodingLogQ() {
+        return static_cast<double>(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);
     }
 
     /**
