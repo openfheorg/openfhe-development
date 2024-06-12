@@ -45,53 +45,44 @@ using LWEPlaintextModulus = uint64_t;
 /**
  * @brief Security levels for predefined parameter sets
  */
+// clang-format off
 enum BINFHE_PARAMSET {
-    TOY,                  // no security
-    MEDIUM,               // 108 bits of security for classical and 100 bits for quantum
-    STD128_AP,            // more than 128 bits of security for classical computer attacks
-    STD128,               // more than 128 bits of security for classical computer attacks
-    STD128_3,             // STD128 for 3 binary inputs
-    STD128_4,             // STD128 for 4 binary inputs
-    STD128Q,              // more than 128 bits of security for quantum attacks
-    STD128Q_3,            // STD128Q for 3 binary inputs
-    STD128Q_4,            // STD128Q for 4 binary inputs
-    STD192,               // more than 192 bits of security for classical computer attacks
-    STD192_3,             // STD192 for 3 binary inputs
-    STD192_4,             // STD192 for 4 binary inputs
-    STD192Q,              // more than 192 bits of security for quantum attacks
-    STD192Q_3,            // STD192Q for 3 binary inputs
-    STD192Q_4,            // STD192Q for 4 binary inputs
-    STD256,               // more than 256 bits of security for classical computer attacks
-    STD256_3,             // STD256 for 3 binary inputs
-    STD256_4,             // STD256 for 4 binary inputs
-    STD256Q,              // more than 256 bits of security for quantum attacks
-    STD256Q_3,            // STD256Q for 3 binary inputs
-    STD256Q_4,            // STD256Q for 4 binary inputs
-    STD128_LMKCDEY,       // STD128 optimized for LMKCDEY (using Gaussian secrets)
-    STD128_3_LMKCDEY,     // STD128_3 optimized for LMKCDEY (using Gaussian secrets)
-    STD128_4_LMKCDEY,     // STD128_4 optimized for LMKCDEY (using Gaussian secrets)
-    STD128Q_LMKCDEY,      // STD128Q optimized for LMKCDEY (using Gaussian secrets)
-    STD128Q_3_LMKCDEY,    // STD128Q_3 optimized for LMKCDEY (using Gaussian secrets)
-    STD128Q_4_LMKCDEY,    // STD128Q_4 optimized for LMKCDEY (using Gaussian secrets)
-    STD192_LMKCDEY,       // STD192 optimized for LMKCDEY (using Gaussian secrets)
-    STD192_3_LMKCDEY,     // STD192_3 optimized for LMKCDEY (using Gaussian secrets)
-    STD192_4_LMKCDEY,     // STD192_4 optimized for LMKCDEY (using Gaussian secrets)
-    STD192Q_LMKCDEY,      // STD192Q optimized for LMKCDEY (using Gaussian secrets)
-    STD192Q_3_LMKCDEY,    // STD192Q_3 optimized for LMKCDEY (using Gaussian secrets)
-    STD192Q_4_LMKCDEY,    // STD192Q_4 optimized for LMKCDEY (using Gaussian secrets)
-    STD256_LMKCDEY,       // STD256 optimized for LMKCDEY (using Gaussian secrets)
-    STD256_3_LMKCDEY,     // STD256_3 optimized for LMKCDEY (using Gaussian secrets)
-    STD256_4_LMKCDEY,     // STD256_4 optimized for LMKCDEY (using Gaussian secrets)
-    STD256Q_LMKCDEY,      // STD256Q optimized for LMKCDEY (using Gaussian secrets)
-    STD256Q_3_LMKCDEY,    // STD256Q_3 optimized for LMKCDEY (using Gaussian secrets)
-    STD256Q_4_LMKCDEY,    // STD256Q_4 optimized for LMKCDEY (using Gaussian secrets)
-    LPF_STD128,           // STD128 configured with lower probability of failures (at least 2**-100)
-    LPF_STD128Q,          // STD128Q configured with lower probability of failures (at least 2**-100)
-    LPF_STD128_LMKCDEY,   // LPF_STD128 optimized for LMKCDEY (using Gaussian secrets)
-    LPF_STD128Q_LMKCDEY,  // LPF_STD128Q optimized for LMKCDEY (using Gaussian secrets)
-    SIGNED_MOD_TEST       // special parameter set for confirming the signed modular
+//  NAME,                 // Description                                                     : Approximate Probability of Failure
+    TOY,                  // no security                                                     : 2^(-360)
+    MEDIUM,               // 108 bits of security for classical and 100 bits for quantum     : 2^(-70)
+    STD128_AP,            // more than 128 bits of security for classical computer attacks   : 2^(-50)
+    STD128,               // more than 128 bits of security for classical computer attacks   : 2^(-40)
+    STD128_3,             // STD128 for 3 binary inputs                                      : 2^(-50)
+    STD128_4,             // STD128 for 4 binary inputs                                      : 2^(-50)
+    STD128Q,              // more than 128 bits of security for quantum attacks              : 2^(-40)
+    STD128Q_3,            // STD128Q for 3 binary inputs                                     : 2^(-50)
+    STD128Q_4,            // STD128Q for 4 binary inputs                                     : 2^(-50)
+    STD192,               // more than 192 bits of security for classical computer attacks   : 2^(-40)
+    STD192_3,             // STD192 for 3 binary inputs                                      : 2^(-60)
+    STD192_4,             // STD192 for 4 binary inputs                                      : 2^(-70)
+    STD192Q,              // more than 192 bits of security for quantum attacks              : 2^(-80)
+    STD192Q_3,            // STD192Q for 3 binary inputs                                     : 2^(-80)
+    STD192Q_4,            // STD192Q for 4 binary inputs                                     : 2^(-50)
+    STD256,               // more than 256 bits of security for classical computer attacks   : 2^(-80)
+    STD256_3,             // STD256 for 3 binary inputs                                      : 2^(-70)
+    STD256_4,             // STD256 for 4 binary inputs                                      : 2^(-50)
+    STD256Q,              // more than 256 bits of security for quantum attacks              : 2^(-60)
+    STD256Q_3,            // STD256Q for 3 binary inputs                                     : 2^(-80)
+    STD256Q_4,            // STD256Q for 4 binary inputs                                     : 2^(-50)
+    STD128_LMKCDEY,       // STD128 optimized for LMKCDEY (using Gaussian secrets)           : 2^(-50)
+    STD128Q_LMKCDEY,      // STD128Q optimized for LMKCDEY (using Gaussian secrets)          : 2^(-50)
+    STD192_LMKCDEY,       // STD192 optimized for LMKCDEY (using Gaussian secrets)           : 2^(-60)
+    STD192Q_LMKCDEY,      // STD192Q optimized for LMKCDEY (using Gaussian secrets)          : 2^(-70)
+    STD256_LMKCDEY,       // STD256 optimized for LMKCDEY (using Gaussian secrets)           : 2^(-50)
+    STD256Q_LMKCDEY,      // STD256Q optimized for LMKCDEY (using Gaussian secrets)          : 2^(-60)
+    LPF_STD128,           // STD128 configured with lower probability of failures            : 2^(-120)
+    LPF_STD128Q,          // STD128Q configured with lower probability of failures           : 2^(-75)
+    LPF_STD128_LMKCDEY,   // LPF_STD128 optimized for LMKCDEY (using Gaussian secrets)       : 2^(-100)
+    LPF_STD128Q_LMKCDEY,  // LPF_STD128Q optimized for LMKCDEY (using Gaussian secrets)      : 2^(-90)
+    SIGNED_MOD_TEST       // special parameter set for confirming the signed modular         : 2^(-40)
                           // reduction in the accumulator updates works correctly
 };
+// clang-format on
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);
 
 /**
