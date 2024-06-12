@@ -44,6 +44,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <unordered_set>
 
 /**
  * @namespace lbcrypto
@@ -334,13 +335,15 @@ public:
     //------------------------------------------------------------------------------
 
 protected:
-    std::vector<usint> GenerateIndices_2n(usint batchSize, usint m) const;
+    std::unordered_set<uint32_t> GenerateIndices_2n(usint batchSize, usint m) const;
 
-    std::vector<usint> GenerateIndices2nComplex(usint batchSize, usint m) const;
+    std::unordered_set<uint32_t> GenerateIndices2nComplex(usint batchSize, usint m) const;
 
-    std::vector<usint> GenerateIndices2nComplexRows(usint rowSize, usint m) const;
+    std::unordered_set<uint32_t> GenerateIndices2nComplexRows(usint rowSize, usint m) const;
 
-    std::vector<usint> GenerateIndices2nComplexCols(usint batchSize, usint m) const;
+    std::unordered_set<uint32_t> GenerateIndices2nComplexCols(usint batchSize, usint m) const;
+
+    std::unordered_set<uint32_t> GenerateIndexListForEvalSum(const PrivateKey<Element>& privateKey) const;
 
     Ciphertext<Element> EvalSum_2n(ConstCiphertext<Element> ciphertext, usint batchSize, usint m,
                                    const std::map<usint, EvalKey<Element>>& evalKeyMap) const;
