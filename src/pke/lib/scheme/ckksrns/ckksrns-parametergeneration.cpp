@@ -209,28 +209,29 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     }
 
     if (firstModSize == dcrtBits) {  // this requires dcrtBits < 60
-        moduliQ[0] = PreviousPrime<NativeInteger>(minPrime, cyclOrder);
+        moduliQ[0] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
     }
     else {
         moduliQ[0] = LastPrime<NativeInteger>(firstModSize, cyclOrder);
-    }
-    // find if the value of moduliQ[0] is already in the vector starting with moduliQ[1] and
-    // if there is, then get another prime for moduliQ[0]
-    const auto pos = std::find(moduliQ.begin() + 1, moduliQ.end(), moduliQ[0]);
-    if (pos != moduliQ.end()) {
-        moduliQ[0] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
-        maxPrime   = moduliQ[0];
+
+        // find if the value of moduliQ[0] is already in the vector starting with moduliQ[1] and
+        // if there is, then get another prime for moduliQ[0]
+        const auto pos = std::find(moduliQ.begin() + 1, moduliQ.end(), moduliQ[0]);
+        if (pos != moduliQ.end()) {
+            moduliQ[0] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
+            maxPrime   = moduliQ[0];
+        }
     }
     rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
-        // no need for extra checking as extraModSize is automatically chosen by the library
-        NativeInteger temp_moduliQ = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
         // find if the value of moduliQ[0] is already in the vector starting with moduliQ[1] and
         // if there is, then get another prime for moduliQ[0]
         const auto pos = std::find(moduliQ.begin(), moduliQ.end(), moduliQ[numPrimes]);
-        if (pos == moduliQ.end())
-            moduliQ[numPrimes] = temp_moduliQ;
+        if (pos == moduliQ.end()) {
+            // no need for extra checking as extraModSize is automatically chosen by the library
+            moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        }
         else {
             moduliQ[numPrimes] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
             // maxPrime   = moduliQ[numPrimes];
