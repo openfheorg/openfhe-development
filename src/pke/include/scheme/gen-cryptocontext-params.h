@@ -352,7 +352,7 @@ public:
     }
 
     // setters
-    // They all(must be virtual, so any of them can be disabled in the derived class
+    // They all must be virtual, so any of them can be disabled in the derived class
     virtual void SetPlaintextModulus(PlaintextModulus ptModulus0) {
         ptModulus = ptModulus0;
     }
