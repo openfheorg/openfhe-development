@@ -185,7 +185,7 @@ public:
 
     LWEPublicKey MultipartyPubKeyGen(const LWEPrivateKey skN, const LWEPublicKey publicKey);
 
-    void MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly zN, const LWEPublicKey publicKey,
+    void MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly& zN, const LWEPublicKey publicKey,
                           LWESwitchingKey prevkskey, bool leadFlag = true);
     NativePoly RGSWKeygen();
 

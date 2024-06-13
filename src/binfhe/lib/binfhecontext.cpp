@@ -205,7 +205,7 @@ LWEKeyPair BinFHEContext::MultipartyKeyGen(const std::vector<LWEPrivateKey>& pri
     return m_LWEscheme->MultipartyKeyGen(privateKeyVec, LWEParams);
 }
 
-void BinFHEContext::MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly zN, const LWEPublicKey publicKey,
+void BinFHEContext::MultiPartyKeyGen(ConstLWEPrivateKey LWEsk, const NativePoly& zN, const LWEPublicKey publicKey,
                                      LWESwitchingKey prevkskey, bool leadFlag) {
     auto& LWEParams  = m_params->GetLWEParams();
     auto& RGSWParams = m_params->GetRingGSWParams();

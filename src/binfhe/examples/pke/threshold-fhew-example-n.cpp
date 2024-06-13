@@ -38,7 +38,7 @@
 using namespace lbcrypto;
 
 constexpr uint32_t num_of_parties = 5;
-constexpr uint32_t iterations     = 250;
+constexpr uint32_t iterations     = 25;
 
 void setup(BinFHEContext& cc, uint32_t parties, LWEPublicKey& pk, std::vector<LWEPrivateKey>& zLWEKeys) {
     std::cout << "Q = " << cc.GetParams()->GetLWEParams()->GetQ() << std::endl;
@@ -65,16 +65,19 @@ void setup(BinFHEContext& cc, uint32_t parties, LWEPublicKey& pk, std::vector<LW
         kskey = cc.GetSwitchKey();
     }
 
+
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     auto acrs = cc.GenerateCRS();
+
+    auto acrsauto = cc.GenerateCRSVector();
+
+    uint32_t n = cc.GetParams()->GetLWEParams()->Getn();
+    auto acrs0 = cc.GenerateCRSMatrix(parties, n);
+
     auto rgsw = cc.RGSWEncrypt(acrs, zvec[0], 1, true);
     for (uint32_t i = 1; i < parties; ++i)
         rgsw = cc.RGSWEvalAdd(rgsw, cc.RGSWEncrypt(acrs, zvec[i], 1));
-
-    uint32_t n = sk[0]->GetElement().GetLength();
-    auto rgswe = cc.RGSWClone(rgsw, n);
-    auto acrs0 = cc.GenerateCRSMatrix(parties, n);
 
     std::vector<std::vector<RingGSWEvalKey>> rgswenc0(parties);
     for (uint32_t i = 0; i < parties; ++i) {
@@ -85,14 +88,11 @@ void setup(BinFHEContext& cc, uint32_t parties, LWEPublicKey& pk, std::vector<LW
                 rgswenc0[i][j] = cc.RGSWEvalAdd(rgswenc0[i][j], cc.RGSWEncrypt(acrs0[i][j], zvec[k], 0));
             }
         }
+        cc.MultipartyBTKeyGen(sk[i], (i == 0) ? cc.RGSWClone(rgsw, n) : cc.GetRefreshKey(), zvec[i], acrsauto, rgswenc0[i], kskey, (i == 0));
     }
 
-    auto acrsauto = cc.GenerateCRSVector();
-    cc.MultipartyBTKeyGen(sk[0], rgswe, zvec[0], acrsauto, rgswenc0[0], kskey, true);
-    for (uint32_t i = 1; i < parties; ++i)
-        cc.MultipartyBTKeyGen(sk[i], cc.GetRefreshKey(), zvec[i], acrsauto, rgswenc0[i], kskey);
-
     std::cout << "Completed the key generation." << std::endl;
+
 }
 
 int main() {
@@ -110,23 +110,15 @@ int main() {
     std::vector<LWECiphertext> pct;
     pct.reserve(num_of_parties);
     for (uint32_t i = 0; i < iterations; i++) {
-        // Encryption of data
-        auto ct1 = cc.Encrypt(pk, 1);
-        auto ct2 = cc.Encrypt(pk, 1);
 
-        // Evaluation
-        // Compute (1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
-        // When the last boolean flag is set to true, extended parameters are used
-        // i.e., no key switching and modulus switching is done,
-        // which is required for threshold FHE (to support noise flooding)
-        // ... Note use of cc.SetExtended(true) when generating binfhecontext
-        auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
+        // auto ct1 = cc.Encrypt(pk, 1, LARGE_DIM);
+        auto ct1 = cc.EvalBinGate(AND, cc.Encrypt(pk, 1), cc.Encrypt(pk, 1));
 
         // decryption check before computation
         pct.clear();
-        pct.emplace_back(cc.MultipartyDecryptLead(zLWEKeys[0], ctAND1));
+        pct.emplace_back(cc.MultipartyDecryptLead(zLWEKeys[0], ct1));
         for (uint32_t i = 1; i < num_of_parties; ++i)
-            pct.emplace_back(cc.MultipartyDecryptMain(zLWEKeys[i], ctAND1));
+            pct.emplace_back(cc.MultipartyDecryptMain(zLWEKeys[i], ct1));
         cc.MultipartyDecryptFusion(pct, &result);
 
         std::cout << "Result of encrypted computation of (1 AND 1) mpbtkeygen = " << result << std::endl;
