@@ -404,18 +404,18 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
         (existingIndices.empty()) ? indexList :
                                     CryptoContextImpl<Element>::GetUniqueValues(existingIndices, {indexList});
 
-    // TODO pragma omp currently gives concurrent error
-    // #pragma omp parallel for if (indicesToGenerate.size() >= 4)
-    for (usint i = 0; i < indicesToGenerate.size(); i++) {
+    size_t sz = indicesToGenerate.size();
+#pragma omp parallel for if (sz >= 4)
+    for (size_t i = 0; i < sz; ++i) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
         usint index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
         std::vector<usint> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
-        Element sPermuted = s.AutomorphismTransform(index, vec);
-        privateKeyPermuted->SetPrivateElement(sPermuted);
-        (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
+        privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
+#pragma omp critical
+        { (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted); }
     }
 
     return evalKeys;
