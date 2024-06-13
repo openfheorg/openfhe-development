@@ -157,6 +157,30 @@ public:
 
     virtual uint64_t FindAuxPrimeStep() const;
 
+    /*
+   * Estimates the extra modulus bitsize needed for hybrid key swithing (used for finding the minimum secure ring dimension).
+   *
+   * @param numPartQ number of digits in hybrid key switching
+   * @param firstModulusSize bit size of first modulus
+   * @param dcrtBits bit size for other moduli
+   * @param extraModulusSize bit size for extra modulus in FLEXIBLEAUTOEXT (CKKS and BGV only)
+   * @param numPrimes number of moduli witout extraModulus
+   * @param auxBits size of auxiliar moduli used for hybrid key switching
+   *
+   * @return log2 of the modulus and number of RNS limbs.
+   */
+    static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
+                                                    double extraModulusSize, uint32_t numPrimes, uint32_t auxBits);
+
+    /*
+   * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)
+   *
+   * @return number of extra bits needed for noise flooding
+   */
+    static constexpr double EstimateMultipartyFloodingLogQ() {
+        return static_cast<double>(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);
+    }
+
     /**
    * == operator to compare to this instance of CryptoParametersBase object.
    *

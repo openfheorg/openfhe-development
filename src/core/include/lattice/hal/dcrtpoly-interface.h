@@ -234,14 +234,6 @@ public:
     }
 
     /**
-   * @brief returns the element's original modulus, derived from Poly
-   * @return returns the modulus of the element.
-   */
-    const BigIntType& GetOriginalModulus() const {
-        return this->GetDerived().GetParams()->GetOriginalModulus();
-    }
-
-    /**
    * @brief returns the element's root of unity.
    * @return the element's root of unity.
    */

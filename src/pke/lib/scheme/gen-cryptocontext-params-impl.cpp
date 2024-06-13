@@ -65,7 +65,7 @@ namespace lbcrypto {
         SET_TO_SCHEME_DEFAULT(SCHEME, keySwitchCount);                  \
         SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);             \
         SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique);         \
-        SET_TO_SCHEME_DEFAULT(SCHEME, multiHopModSize);                 \
+        SET_TO_SCHEME_DEFAULT(SCHEME, PRENumHops);                      \
         SET_TO_SCHEME_DEFAULT(SCHEME, PREMode);                         \
         SET_TO_SCHEME_DEFAULT(SCHEME, multipartyMode);                  \
         SET_TO_SCHEME_DEFAULT(SCHEME, executionMode);                   \
@@ -92,23 +92,6 @@ void Params::SetToDefaults(SCHEME scheme) {
             std::string errorMsg(std::string("Invalid scheme id: ") + std::to_string(scheme));
             OPENFHE_THROW(errorMsg);
             break;
-    }
-}
-//====================================================================================================================
-void Params::ValidateRingDim(usint ringDim) {
-    if (!IsPowerOfTwo(ringDim)) {
-        std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(ringDim) +
-                             "]. Ring dimension must be a power of 2.");
-        OPENFHE_THROW(errorMsg);
-    }
-}
-//====================================================================================================================
-void Params::ValidateMultiplicativeDepth(usint multiplicativeDepth) {
-    constexpr usint maxMultiplicativeDepthValue = 1000;
-    if (multiplicativeDepth > maxMultiplicativeDepthValue) {
-        std::string errorMsg(std::string("The provided multiplicative depth [") + std::to_string(multiplicativeDepth) +
-                             "] is not computationally feasible. Use a smaller value.");
-        OPENFHE_THROW(errorMsg);
     }
 }
 //====================================================================================================================
@@ -159,7 +142,7 @@ Params::Params(const std::vector<std::string>& vals) {
     if (!(++it)->empty())
         multiplicationTechnique = convertToMultiplicationTechnique(*it);
     if (!(++it)->empty())
-        multiHopModSize = static_cast<usint>(std::stoul(*it));
+        PRENumHops = static_cast<usint>(std::stoul(*it));
     if (!(++it)->empty())
         PREMode = convertToProxyReEncryptionMode(*it);
     if (!(++it)->empty())
@@ -203,7 +186,7 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; keySwitchCount: " << obj.keySwitchCount
         << "; encryptionTechnique: " << obj.encryptionTechnique
         << "; multiplicationTechnique: " << obj.multiplicationTechnique
-        << "; multiHopModSize: " << obj.multiHopModSize
+        << "; PRENumHops: " << obj.PRENumHops
         << "; PREMode: " << obj.PREMode
         << "; multipartyMode: " << obj.multipartyMode
         << "; executionMode: " << obj.executionMode

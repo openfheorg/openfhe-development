@@ -58,6 +58,50 @@ public:
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
+
+    //================================================================================================================
+    // DISABLE FUNCTIONS that are not applicable to BFVRNS
+    //================================================================================================================
+    template <typename T = bool>
+    void SetScalingTechnique(ScalingTechnique scalTech0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetFirstModSize(usint firstModSize0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetPRENumHops(usint PRENumHops0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetExecutionMode(ExecutionMode executionMode0) {
+        DISABLED_FOR_BGVRNS;
+    }
+    template <typename T = bool>
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetNoiseEstimate(double noiseEstimate0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetDesiredPrecision(double desiredPrecision0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetStatisticalSecurity(uint32_t statisticalSecurity0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
+        DISABLED_FOR_BFVRNS;
+    }
+    template <typename T = bool>
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+        DISABLED_FOR_BFVRNS;
+    }
 };
 //====================================================================================================================
 

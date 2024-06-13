@@ -31,6 +31,7 @@ File Listing
 - [function-evaluation.cpp](function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
 - [polynomial-evaluation.cpp](polynomial-evaluation.cpp): demonstrates an evaluation of a polynomial (power series) using CKKS
 - [pre-buffer.cpp](pre-buffer.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
+- [pre-hra-secure.cpp](pre-hra-secure.cpp): shows examples of HRA-secure PRE based on BGV
 - [rotation.cpp](rotation.cpp): demonstrates use of EvalRotate for different schemes
 - [scheme-switching.cpp](scheme-switching.cpp): demonstrates several use cases for switching between CKKS and FHEW ciphertexts
 - [simple-ckks-bootstrapping.cpp](simple-ckks-bootstrapping.cpp): simple example showing CKKS bootstrapping for a ciphertext with full packing
@@ -170,7 +171,7 @@ The default values for all the parameters can be found in [gen-cryptocontext-par
 
 **usint keySwitchCount** - number of key switching operations (used for setting noise in BGV and BFV)
 
-**usint multiHopModSize** - size of moduli used for PRE in the provable HRA setting
+**usint PRENumHops** - number of hops for PRE in the provable HRA setting (BGV only)
 
 **EncryptionTechnique encryptionTechnique** - STANDARD or EXTENDED mode for BFV encryption; EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower (see https://eprint.iacr.org/2022/915 for details)
 

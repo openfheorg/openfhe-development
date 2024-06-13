@@ -113,11 +113,11 @@ public:
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli
    * @param numPartQ number of partitions of Q for HYBRID key switching
-   * @param multihopQBound bound for the HRA-secure mode of PRE
+   * @param PRENumHops bound for the HRA-secure mode of PRE
    */
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
-                                 usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
+                                 usint dcrtBits, uint32_t numPartQ, usint PRENumHops) const {
         OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 

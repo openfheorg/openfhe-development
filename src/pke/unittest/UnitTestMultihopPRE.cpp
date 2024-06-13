@@ -51,14 +51,12 @@ protected:
 
     int run_demo_pre(int security_model) {
         // Generate parameters.
-        int num_of_hops = 2;
+        int num_of_hops = 3;
 
         int plaintextModulus = 2;
         usint ringDimension  = 1024;
         usint digitSize      = 1;
-        usint dcrtbits       = 0;
 
-        usint qmodulus  = 27;
         usint firstqmod = 27;
 
         CCParams<CryptoContextBGVRNS> parameters;
@@ -66,54 +64,48 @@ protected:
         if (security_model == 0) {
             ringDimension = 1024;
             digitSize     = 9;
-            dcrtbits      = 0;
 
-            qmodulus  = 27;
             firstqmod = 27;
             parameters.SetPREMode(INDCPA);
             parameters.SetKeySwitchTechnique(BV);
+            parameters.SetFirstModSize(firstqmod);
         }
         else if (security_model == 1) {
             ringDimension = 2048;
-            digitSize     = 18;
-            dcrtbits      = 0;
+            digitSize     = 16;
 
-            qmodulus  = 54;
             firstqmod = 54;
             parameters.SetPREMode(FIXED_NOISE_HRA);
             parameters.SetKeySwitchTechnique(BV);
+            parameters.SetFirstModSize(firstqmod);
         }
         else if (security_model == 2) {
             ringDimension = 8192;
-            digitSize     = 1;
-            dcrtbits      = 30;
+            digitSize     = 10;
 
-            qmodulus  = 218;
-            firstqmod = 60;
             parameters.SetPREMode(NOISE_FLOODING_HRA);
             parameters.SetKeySwitchTechnique(BV);
+            parameters.SetPRENumHops(num_of_hops);
+            parameters.SetStatisticalSecurity(40);
+            parameters.SetNumAdversarialQueries(1048576);
         }
         else if (security_model == 3) {
             ringDimension = 8192;
             digitSize     = 0;
-            dcrtbits      = 30;
 
-            qmodulus      = 218;
-            firstqmod     = 60;
-            uint32_t dnum = 2;
             parameters.SetPREMode(NOISE_FLOODING_HRA);
             parameters.SetKeySwitchTechnique(HYBRID);
-            parameters.SetNumLargeDigits(dnum);
+            parameters.SetPRENumHops(num_of_hops);
+            parameters.SetStatisticalSecurity(40);
+            parameters.SetNumAdversarialQueries(1048576);
         }
 
         parameters.SetMultiplicativeDepth(0);
         parameters.SetPlaintextModulus(plaintextModulus);
         parameters.SetRingDim(ringDimension);
-        parameters.SetFirstModSize(firstqmod);
-        parameters.SetScalingModSize(dcrtbits);
         parameters.SetDigitSize(digitSize);
         parameters.SetScalingTechnique(FIXEDMANUAL);
-        parameters.SetMultiHopModSize(qmodulus);
+        parameters.SetSecurityLevel(HEStd_NotSet);
 
         CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
         cryptoContext->Enable(PKE);
@@ -169,7 +161,7 @@ protected:
 
         plaintextDec1->SetLength(plaintext->GetLength());
 
-        Ciphertext<DCRTPoly> reEncryptedCT1, reEncryptedCT;
+        Ciphertext<DCRTPoly> reEncryptedCT;
         Plaintext plaintextDec;
 
         // multiple hop
@@ -196,15 +188,15 @@ protected:
                     break;
                 case 2:
                     // Provable HRA secure PRE with noise flooding with BV switching
-                    reEncryptedCT1 =
-                        cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
-                    reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
+                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    if (i < num_of_hops - 1)
+                        reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT);  // mod reduction for noise flooding
                     break;
                 case 3:
                     // Provable HRA secure PRE with noise flooding with Hybrid switching
-                    reEncryptedCT1 =
-                        cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
-                    reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
+                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    if (i < num_of_hops - 1)
+                        reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT);  // mod reduction for noise flooding
                     break;
                 default:
                     OPENFHE_THROW("Not a valid security mode");

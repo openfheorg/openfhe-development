@@ -214,18 +214,18 @@ public:
 
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
-                                 usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
+                                 usint dcrtBits, uint32_t numPartQ, usint PRENumHops) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
         return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
-                                            firstModSize, dcrtBits, numPartQ, multihopQBound);
+                                            firstModSize, dcrtBits, numPartQ, PRENumHops);
     }
 
     /////////////////////////////////////////
     // PKE WRAPPER
     /////////////////////////////////////////
 
-    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse) {
+    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse) const {
         VerifyPKEEnabled(__func__);
         return m_PKE->KeyGenInternal(cc, makeSparse);
     }
@@ -1563,18 +1563,20 @@ public:
         // only works for JSON encoding
         // m_FHE was added in v1.1.2
         try {
-           ar(::cereal::make_nvp("fhe", m_FHE));
-        } catch(cereal::Exception&) {
-        	m_FHE = nullptr;
+            ar(::cereal::make_nvp("fhe", m_FHE));
+        }
+        catch (cereal::Exception&) {
+            m_FHE = nullptr;
         }
 
         // try-catch is used for backwards compatibility down to 1.0.x
         // only works for JSON encoding
         // m_SchemeSwitch was added in v1.1.3
         try {
-           ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
-        } catch(cereal::Exception&) {
-        	m_SchemeSwitch = nullptr;
+            ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
+        }
+        catch (cereal::Exception&) {
+            m_SchemeSwitch = nullptr;
         }
 
         uint32_t enabled = 0;

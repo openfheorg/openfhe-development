@@ -138,8 +138,6 @@ ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str) {
         return FIXED_NOISE_HRA;
     else if (str == "NOISE_FLOODING_HRA")
         return NOISE_FLOODING_HRA;
-    else if (str == "DIVIDE_AND_ROUND_HRA")
-        return DIVIDE_AND_ROUND_HRA;
 
     std::string errMsg(std::string("Unknown ProxyReEncryptionMode ") + str);
     OPENFHE_THROW(errMsg);
@@ -151,7 +149,6 @@ ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num) {
         case INDCPA:
         case FIXED_NOISE_HRA:
         case NOISE_FLOODING_HRA:
-        case DIVIDE_AND_ROUND_HRA:
             return encrMode;
         default:
             break;
@@ -173,9 +170,6 @@ std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
             break;
         case NOISE_FLOODING_HRA:
             s << "NOISE_FLOODING_HRA";
-            break;
-        case DIVIDE_AND_ROUND_HRA:
-            s << "DIVIDE_AND_ROUND_HRA";
             break;
         default:
             s << "UNKNOWN";

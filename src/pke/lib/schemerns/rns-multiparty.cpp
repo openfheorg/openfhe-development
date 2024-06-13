@@ -90,7 +90,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
         noise = std::move(e);
     }
     else {
-        DggType dgg(NOISE_FLOODING::MP_SD);
+        DggType dgg(NoiseFlooding::MP_SD);
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = std::move(e);
     }
@@ -159,7 +159,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
         noise = std::move(e);
     }
     else {
-        DggType dgg(NOISE_FLOODING::MP_SD);
+        DggType dgg(NoiseFlooding::MP_SD);
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = std::move(e);
     }

@@ -1106,7 +1106,7 @@ public:
    * KeyGen generates a key pair using this algorithm's KeyGen method
    * @return a public/secret key pair
    */
-    KeyPair<Element> KeyGen() {
+    KeyPair<Element> KeyGen() const {
         return GetScheme()->KeyGen(GetContextForPointer(this), false);
     }
 
@@ -1116,7 +1116,7 @@ public:
    * entropy, for use in special cases like Ring Reduction
    * @return a public/secret key pair
    */
-    KeyPair<Element> SparseKeyGen() {
+    KeyPair<Element> SparseKeyGen() const {
         return GetScheme()->KeyGen(GetContextForPointer(this), true);
     }
 

@@ -81,38 +81,38 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         }
     }
 
-    // Pre-compute scaling factors for each level (used in EXACT scaling technique)
+    // Pre-compute scaling factors for each level (used in FLEXIBLE* scaling techniques)
     if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
         m_scalingFactorsReal.resize(sizeQ);
-        m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
 
-        if (extraBits == 0) {
-            for (uint32_t k = 1; k < sizeQ; k++) {
-                double prevSF           = m_scalingFactorsReal[k - 1];
-                m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
-                double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
-
-                if (ratio <= 0.5 || ratio >= 2.0)
-                    OPENFHE_THROW(
-                        "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                        "- FLEXIBLEAUTO cannot support this "
-                        "number of levels in this parameter setting. Please use "
-                        "FIXEDMANUAL.");
-            }
+        if ((sizeQ == 1) && (extraBits == 0)) {
+            // mult depth = 0 and FLEXIBLEAUTO
+            // when multiplicative depth = 0, we use the scaling mod size instead of modulus size
+            // Plaintext modulus is used in EncodingParamsImpl to store the exponent p of the scaling factor
+            m_scalingFactorsReal[0] = pow(2, GetPlaintextModulus());
+        }
+        else if ((sizeQ == 2) && (extraBits > 0)) {
+            // mult depth = 0 and FLEXIBLEAUTOEXT
+            // when multiplicative depth = 0, we use the scaling mod size instead of modulus size
+            // Plaintext modulus is used in EncodingParamsImpl to store the exponent p of the scaling factor
+            m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
+            m_scalingFactorsReal[1] = pow(2, GetPlaintextModulus());
         }
         else {
-            m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
-            for (uint32_t k = 2; k < sizeQ; k++) {
+            m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
+            if (extraBits > 0)
+                m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
+            const double lastPresetFactor = (extraBits == 0) ? m_scalingFactorsReal[0] : m_scalingFactorsReal[1];
+            // number of levels with pre-calculated factors
+            const size_t numPresetFactors = (extraBits == 0) ? 1 : 2;
+
+            for (size_t k = numPresetFactors; k < sizeQ; k++) {
                 double prevSF           = m_scalingFactorsReal[k - 1];
                 m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
-                double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
-
+                double ratio            = m_scalingFactorsReal[k] / lastPresetFactor;
                 if (ratio <= 0.5 || ratio >= 2.0)
                     OPENFHE_THROW(
-                        "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                        "- FLEXIBLEAUTO cannot support this "
-                        "number of levels in this parameter setting. Please use "
-                        "FIXEDMANUAL.");
+                        "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL or FIXEDAUTO instead.");
             }
         }
 
