@@ -316,11 +316,10 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
     NativeInteger x{0};
 
     std::vector<NativeInteger> vec(q.ConvertToInt(), q / p);
-    for (auto&& v : vec) {
-        v *= f(x / q, p);
-        if (v >= q)
+    for (size_t i = 0; i < vec.size(); ++i, x += p) {
+        vec[i] *= f(x / q, p);  // x/q = (i*p)/q = i/(q/p)
+        if (vec[i] >= q)        // (f(x/q, p) >= p) --> (f(x/q, p)*(q/p) >= q)
             OPENFHE_THROW("input function should output in Z_{p_output}");
-        x += p;
     }
     return vec;
 }
