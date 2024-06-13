@@ -64,6 +64,7 @@ enum TEST_CASE_TYPE {
     ADD_PACKED_PRECISION,
     MULT_PACKED_PRECISION,
     EVALSQUARE,
+    SMALL_SCALING_MOD_SIZE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -113,6 +114,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case EVALSQUARE:
             typeName = "EVALSQUARE";
+            break;
+        case SMALL_SCALING_MOD_SIZE:
+            typeName = "SMALL_SCALING_MOD_SIZE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -517,6 +521,10 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { EVALSQUARE, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { EVALSQUARE, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 #endif
+    // ==========================================
+    // TestType,              Descr, Scheme,        RDim,   MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,    LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { SMALL_SCALING_MOD_SIZE, "01", {CKKSRNS_SCHEME, 32768, 19,        22,       DFLT,  DFLT,    DFLT,       DFLT,          23,       DFLT,         DFLT,   FIXEDMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { SMALL_SCALING_MOD_SIZE, "02", {CKKSRNS_SCHEME, 32768, 16,        50,       DFLT,  DFLT,    DFLT,       DFLT,          50,       HEStd_NotSet, DFLT,   DFLT,        DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 #endif
     // ==========================================
 };
@@ -2149,6 +2157,28 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_Small_ScalingModSize(const TEST_CASE_UTCKKSRNS& testData,
+                                       const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 
 template <>
@@ -2226,6 +2256,10 @@ TEST_P(UTCKKSRNS, CKKSRNS) {
             break;
         case EVALSQUARE:
             UnitTest_EvalSquare(test, test.buildTestName());
+            break;
+        case SMALL_SCALING_MOD_SIZE:
+            UnitTest_Small_ScalingModSize(test, test.buildTestName());
+            break;
         default:
             break;
     }
