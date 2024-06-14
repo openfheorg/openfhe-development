@@ -227,24 +227,17 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
     if (scalTech == FLEXIBLEAUTOEXT) {
-        // find if the value of moduliQ[numPrimes] is already in the vector.
-        // in this case we must redefine the position of "end()" as "end()-1"
-        // currently "moduliQ[numPrimes] == 0" as it is not set up anywhere in this code yet
-        const auto endPos = moduliQ.end() - 1;
-        auto pos          = std::find(moduliQ.begin(), endPos, moduliQ[numPrimes]);
-        if (pos == endPos) {
-            // no need for extra checking as extraModSize is automatically chosen by the library
-            moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
-        }
-        else {
-            moduliQ[numPrimes] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
-            maxPrime           = moduliQ[numPrimes];
-        }
+        // moduliQ[numPrimes] must still be 0, so it has to be populated now
 
-        pos = std::find(moduliQ.begin(), endPos, moduliQ[numPrimes]);
-        if (pos != endPos) {
-            moduliQ[numPrimes] = NextPrime<NativeInteger>(maxPrime, cyclOrder);
-        }
+        // no need for extra checking as extraModSize is automatically chosen by the library
+        auto tempMod = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
+        if (tempMod > maxPrime)
+            maxPrime = tempMod;
+        // check if tempMod has a duplicate in the vector (exclude moduliQ[numPrimes] from this operation):
+        const auto endPos = moduliQ.end() - 1;
+        auto pos          = std::find(moduliQ.begin(), endPos, tempMod);
+        // if there is a duplicate, then we call NextPrime()
+        moduliQ[numPrimes] = (pos != endPos) ? NextPrime<NativeInteger>(maxPrime, cyclOrder) : tempMod;
 
         rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
     }
