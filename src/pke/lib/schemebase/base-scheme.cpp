@@ -146,12 +146,12 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumK
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) const {
+    const PrivateKey<Element> privateKey, usint rowSize, usint subringDim, std::vector<usint>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW("Input private key is nullptr");
 
-    auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     for (auto& key : *evalKeyMap) {
         key.second->SetKeyTag(privateKey->GetKeyTag());
     }
@@ -160,12 +160,12 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumR
 
 template <typename Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
+    const PrivateKey<Element> privateKey, std::vector<usint>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!privateKey)
         OPENFHE_THROW("Input private key is nullptr");
 
-    auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, publicKey);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, indices);
     for (auto& key : *evalKeyMap) {
         key.second->SetKeyTag(privateKey->GetKeyTag());
     }
