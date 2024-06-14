@@ -381,25 +381,22 @@ protected:
 
             KeyPair<Element> kp = cc->KeyGen();
 
-            std::vector<double> mat1 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
-            std::vector<double> mat2 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
-            uint32_t rowSize         = 4;
-            uint32_t batchSize       = cc->GetEncodingParams()->GetBatchSize();
+            std::vector<double> mat{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+            uint32_t rowSize   = 4;
+            uint32_t batchSize = cc->GetEncodingParams()->GetBatchSize();
 
-            const std::vector<std::complex<double>> outputSumRows = {3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0};
+            const std::vector<std::complex<double>> outputSumRows{6.0, 8.0, 10.0, 12.0, 6.0, 8.0, 10.0, 12.0};
 
             // Encoding as plaintexts
-            Plaintext ptxtMat1 = cc->MakeCKKSPackedPlaintext(mat1);
-            Plaintext ptxtMat2 = cc->MakeCKKSPackedPlaintext(mat2);
+            Plaintext ptxtMat = cc->MakeCKKSPackedPlaintext(mat);
 
             // Encrypt the encoded vectors
-            auto ctMat1 = cc->Encrypt(kp.publicKey, ptxtMat1);
-            auto ctMat2 = cc->Encrypt(kp.publicKey, ptxtMat2);
+            auto ctMat = cc->Encrypt(kp.publicKey, ptxtMat);
 
             auto evalSumRowKeys = cc->EvalSumRowsKeyGen(kp.secretKey, nullptr, rowSize);
 
             // Evaluation
-            auto ctRowsSum = cc->EvalSumRows(ctMat1, rowSize, *evalSumRowKeys);
+            auto ctRowsSum = cc->EvalSumRows(ctMat, rowSize, *evalSumRowKeys);
 
             // Decrypt
             Plaintext result;
@@ -433,25 +430,22 @@ protected:
 
             KeyPair<Element> kp = cc->KeyGen();
 
-            std::vector<double> mat1 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
-            std::vector<double> mat2 = {1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0};
-            uint32_t rowSize         = 4;
-            uint32_t batchSize       = cc->GetEncodingParams()->GetBatchSize();
+            std::vector<double> mat{8.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+            uint32_t colSize   = 4;
+            uint32_t batchSize = cc->GetEncodingParams()->GetBatchSize();
 
-            const std::vector<std::complex<double>> outputSumCols = {4.0, 4.0, 4.0, 4.0, 8.0, 8.0, 8.0, 8.0};
+            const std::vector<std::complex<double>> outputSumCols{14.0, 14.0, 14.0, 14.0, 22.0, 22.0, 22.0, 22.0};
 
             // Encoding as plaintexts
-            Plaintext ptxtMat1 = cc->MakeCKKSPackedPlaintext(mat1);
-            Plaintext ptxtMat2 = cc->MakeCKKSPackedPlaintext(mat2);
+            Plaintext ptxtMat = cc->MakeCKKSPackedPlaintext(mat);
 
             // Encrypt the encoded vectors
-            auto ctMat1 = cc->Encrypt(kp.publicKey, ptxtMat1);
-            auto ctMat2 = cc->Encrypt(kp.publicKey, ptxtMat2);
+            auto ctMat = cc->Encrypt(kp.publicKey, ptxtMat);
 
             auto evalSumColKeys = cc->EvalSumColsKeyGen(kp.secretKey);
 
             // Evaluation
-            auto ctColsSum = cc->EvalSumCols(ctMat2, rowSize, *evalSumColKeys);
+            auto ctColsSum = cc->EvalSumCols(ctMat, colSize, *evalSumColKeys);
 
             // Decrypt
             Plaintext result;
