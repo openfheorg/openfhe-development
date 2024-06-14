@@ -145,10 +145,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
         OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
     }
 
-    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
+    std::vector<usint> indices;
+    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys;
+    return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -159,10 +160,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
         OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
     }
 
-    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, publicKey);
+    std::vector<usint> indices;
+    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys;  // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
+    return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -196,12 +198,30 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::G
     const std::string& keyID) {
     auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
     if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
-        std::string errMsg(
-            std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
-            "].");
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyID + "].");
     }
     return ekv->second;
+}
+
+template <typename Element>
+std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(
+    const std::string& keyID, const std::vector<uint32_t>& indexList) {
+    if (!indexList.size())
+        OPENFHE_THROW("indexList is empty");
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> keyMap =
+        CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID);
+
+    // create a return map if specific indices are provided
+    std::map<usint, EvalKey<Element>> retMap;
+    for (uint32_t indx : indexList) {
+        const auto it = keyMap->find(indx);
+        if (it == keyMap->end()) {
+            OPENFHE_THROW("Key is not generated for index [" + std::to_string(indx) + "] and keyID [" + keyID + "]");
+        }
+        retMap.emplace(indx, it->second);
+    }
+    return std::make_shared<std::map<usint, EvalKey<Element>>>(retMap);
 }
 
 template <typename Element>
@@ -360,23 +380,23 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint numRows,
                                                             const std::map<usint, EvalKey<Element>>& evalSumKeys,
                                                             usint subringDim) const {
     ValidateCiphertext(ciphertext);
 
-    auto rv = GetScheme()->EvalSumRows(ciphertext, rowSize, evalSumKeys, subringDim);
+    auto rv = GetScheme()->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
     return rv;
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
-    ConstCiphertext<Element> ciphertext, usint rowSize,
+    ConstCiphertext<Element> ciphertext, usint numCols,
     const std::map<usint, EvalKey<Element>>& evalSumKeysRight) const {
     ValidateCiphertext(ciphertext);
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    auto rv          = GetScheme()->EvalSumCols(ciphertext, rowSize, evalSumKeys, evalSumKeysRight);
+    auto rv          = GetScheme()->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
     return rv;
 }
 
