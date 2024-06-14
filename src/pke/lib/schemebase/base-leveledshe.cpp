@@ -377,8 +377,8 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 /////////////////////////////////////////
 
 template <class Element>
-std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const {
+std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
+    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     // we already have checks on higher level?
     //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
     //  if (it != indexList.end())
@@ -388,13 +388,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
     auto algo     = cc->GetScheme();
 
     const Element& s = privateKey->GetPrivateElement();
-    usint N          = s.GetRingDimension();
+    uint32_t N       = s.GetRingDimension();
 
     // we already have checks on higher level?
     //  if (indexList.size() > N - 1)
     //    OPENFHE_THROW("size exceeds the ring dimension");
-
-    auto evalKeys = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
     // Do not generate those keys that have been already generated and added to the static storage (map)
     const std::string id{privateKey->GetKeyTag()};
@@ -404,18 +402,24 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
         (existingIndices.empty()) ? indexList :
                                     CryptoContextImpl<Element>::GetUniqueValues(existingIndices, {indexList});
 
+    // create and initialize the key map (key is a value from indicesToGenerate, EvalKey is nullptr). in this case
+    // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
+    // have already been created
+    auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
+    for (auto indx : indicesToGenerate) {
+        (*evalKeys)[indx];
+    }
     size_t sz = indicesToGenerate.size();
 #pragma omp parallel for if (sz >= 4)
     for (size_t i = 0; i < sz; ++i) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        usint index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
-        std::vector<usint> vec(N);
+        uint32_t index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
+        std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-#pragma omp critical
-        { (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted); }
+        (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
