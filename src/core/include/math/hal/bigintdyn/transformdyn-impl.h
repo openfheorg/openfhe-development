@@ -38,8 +38,6 @@
 //            and nowhere else
 
 #include "math/nbtheory.h"
-
-#include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/utilities.h"
 
@@ -47,6 +45,8 @@
 #include <vector>
 
 namespace bigintdyn {
+
+using namespace lbcrypto;
 
 template <typename VecType>
 std::map<typename VecType::Integer, VecType>
@@ -122,22 +122,22 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformIterative(const VecTy
                                                                      const VecType& rootOfUnityTable, VecType* result) {
     usint n = element.GetLength();
     if (result->GetLength() != n) {
-        OPENFHE_THROW(lbcrypto::math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     auto modulus = element.GetModulus();
     IntType mu   = modulus.ComputeMu();
     result->SetModulus(modulus);
 
-    usint msb = lbcrypto::GetMSB64(n - 1);
+    usint msb = GetMSB64(n - 1);
     for (size_t i = 0; i < n; i++) {
-        (*result)[i] = element[lbcrypto::ReverseBits(i, msb)];
+        (*result)[i] = element[ReverseBits(i, msb)];
     }
 
     IntType omega, omegaFactor, oddVal, evenVal;
     usint logm, i, j, indexEven, indexOdd;
 
-    usint logn = lbcrypto::GetMSB64(n - 1);
+    usint logn = GetMSB64(n - 1);
     for (logm = 1; logm <= logn; logm++) {
         // calculate the i indexes into the root table one time per loop
         std::vector<usint> indexes(1 << (logm - 1));
@@ -201,7 +201,7 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformToBitReverseInPlace(c
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
     usint t     = (n >> 1);
-    usint logt1 = lbcrypto::GetMSB64(t);
+    usint logt1 = GetMSB64(t);
     for (m = 1; m < n; m <<= 1) {
         for (i = 0; i < m; ++i) {
             j1         = i << logt1;
@@ -240,7 +240,7 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformToBitReverse(const Ve
                                                                         VecType* result) {
     usint n = element.GetLength();
     if (result->GetLength() != n) {
-        OPENFHE_THROW(lbcrypto::math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     IntType modulus = element.GetModulus();
@@ -255,7 +255,7 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformToBitReverse(const Ve
     }
 
     usint t     = (n >> 1);
-    usint logt1 = lbcrypto::GetMSB64(t);
+    usint logt1 = GetMSB64(t);
     for (m = 1; m < n; m <<= 1) {
         for (i = 0; i < m; ++i) {
             j1         = i << logt1;
@@ -305,7 +305,7 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformToBitReverseInPlace(c
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
     usint t     = (n >> 1);
-    usint logt1 = lbcrypto::GetMSB64(t);
+    usint logt1 = GetMSB64(t);
     for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
         uint32_t j1, j2;
         for (uint32_t i = 0; i < m; ++i) {
@@ -346,7 +346,7 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformToBitReverse(const Ve
     usint n = element.GetLength();
 
     if (result->GetLength() != n) {
-        OPENFHE_THROW(lbcrypto::math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     IntType modulus = element.GetModulus();
@@ -362,7 +362,7 @@ void NumberTheoreticTransformDyn<VecType>::ForwardTransformToBitReverse(const Ve
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
     usint t     = (n >> 1);
-    usint logt1 = lbcrypto::GetMSB64(t);
+    usint logt1 = GetMSB64(t);
     for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
         uint32_t j1, j2;
         for (uint32_t i = 0; i < m; ++i) {
@@ -462,7 +462,7 @@ void NumberTheoreticTransformDyn<VecType>::InverseTransformFromBitReverse(const 
     usint n = element.GetLength();
 
     if (result->GetLength() != n) {
-        OPENFHE_THROW(lbcrypto::math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     result->SetModulus(element.GetModulus());
@@ -534,7 +534,7 @@ void NumberTheoreticTransformDyn<VecType>::InverseTransformFromBitReverse(
     const IntType& cycloOrderInv, const IntType& preconCycloOrderInv, VecType* result) {
     usint n = element.GetLength();
     if (result->GetLength() != n) {
-        OPENFHE_THROW(lbcrypto::math_error, "size of input element and size of output element not of same size");
+        OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     result->SetModulus(element.GetModulus());
@@ -556,13 +556,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::ForwardTransformToBitReverseInPla
         return;
     }
 
-    if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    if (!IsPowerOfTwo(CycloOrder)) {
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (element->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(lbcrypto::math_error, "element size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("element size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element->GetModulus();
@@ -591,13 +591,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::ForwardTransformToBitReverse(cons
         return;
     }
 
-    if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    if (!IsPowerOfTwo(CycloOrder)) {
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (result->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(lbcrypto::math_error, "result size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("result size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element.GetModulus();
@@ -627,13 +627,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::InverseTransformFromBitReverseInP
         return;
     }
 
-    if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    if (!IsPowerOfTwo(CycloOrder)) {
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (element->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(lbcrypto::math_error, "element size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("element size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element->GetModulus();
@@ -643,7 +643,7 @@ void ChineseRemainderTransformFTTDyn<VecType>::InverseTransformFromBitReverseInP
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
 
-    usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
+    usint msb = GetMSB64(CycloOrderHf - 1);
     // if (typeid(IntType) == typeid(NativeInteger)) {
     //   NumberTheoreticTransformDyn<VecType>().InverseTransformFromBitReverseInPlace(
     //           m_rootOfUnityInverseReverseTableByModulus[modulus],
@@ -665,13 +665,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::InverseTransformFromBitReverse(co
         return;
     }
 
-    if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-        OPENFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    if (!IsPowerOfTwo(CycloOrder)) {
+        OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
     usint CycloOrderHf = (CycloOrder >> 1);
     if (result->GetLength() != CycloOrderHf) {
-        OPENFHE_THROW(lbcrypto::math_error, "result size must be equal to CyclotomicOrder / 2");
+        OPENFHE_THROW("result size must be equal to CyclotomicOrder / 2");
     }
 
     IntType modulus = element.GetModulus();
@@ -687,7 +687,7 @@ void ChineseRemainderTransformFTTDyn<VecType>::InverseTransformFromBitReverse(co
         (*result)[i] = element[i];
     }
 
-    usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
+    usint msb = GetMSB64(CycloOrderHf - 1);
     // if (typeid(IntType) == typeid(NativeInteger)) {
     //   NumberTheoreticTransformDyn<VecType>().InverseTransformFromBitReverseInPlace(
     //           m_rootOfUnityInverseReverseTableByModulus[modulus],
@@ -714,14 +714,14 @@ void ChineseRemainderTransformFTTDyn<VecType>::PreCompute(const IntType& rootOfU
 #pragma omp critical
         {
             IntType x(1), xinv(1);
-            usint msb  = lbcrypto::GetMSB64(CycloOrderHf - 1);
+            usint msb  = GetMSB64(CycloOrderHf - 1);
             IntType mu = modulus.ComputeMu();
             VecType Table(CycloOrderHf, modulus);
             VecType TableI(CycloOrderHf, modulus);
             IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);
             usint iinv;
             for (usint i = 0; i < CycloOrderHf; i++) {
-                iinv         = lbcrypto::ReverseBits(i, msb);
+                iinv         = ReverseBits(i, msb);
                 Table[iinv]  = x;
                 TableI[iinv] = xinv;
                 x.ModMulEq(rootOfUnity, modulus, mu);
@@ -777,7 +777,7 @@ void ChineseRemainderTransformFTTDyn<VecType>::PreCompute(std::vector<IntType>& 
     usint numModulii = moduliiChain.size();
 
     if (numOfRootU != numModulii) {
-        OPENFHE_THROW(lbcrypto::math_error, "size of root of unity and size of moduli chain not of same size");
+        OPENFHE_THROW("size of root of unity and size of moduli chain not of same size");
     }
 
     for (usint i = 0; i < numOfRootU; ++i) {
@@ -799,9 +799,9 @@ void ChineseRemainderTransformFTTDyn<VecType>::Reset() {
 
 template <typename VecType>
 void BluesteinFFTDyn<VecType>::PreComputeDefaultNTTModulusRoot(usint cycloOrder, const IntType& modulus) {
-    usint nttDim          = pow(2, ceil(log2(2 * cycloOrder - 1)));
-    const auto nttModulus = lbcrypto::FirstPrime<IntType>(log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
-    const auto nttRoot    = RootOfUnity(nttDim, nttModulus);
+    usint nttDim                              = pow(2, ceil(log2(2 * cycloOrder - 1)));
+    const auto nttModulus                     = LastPrime<IntType>(log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
+    const auto nttRoot                        = RootOfUnity(nttDim, nttModulus);
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
     m_defaultNTTModulusRoot[modulus]          = nttModulusRoot;
 
@@ -898,7 +898,7 @@ template <typename VecType>
 VecType BluesteinFFTDyn<VecType>::ForwardTransform(const VecType& element, const IntType& root, const usint cycloOrder,
                                                    const ModulusRoot<IntType>& nttModulusRoot) {
     if (element.GetLength() != cycloOrder) {
-        OPENFHE_THROW(lbcrypto::math_error, "expected size of element vector should be equal to cyclotomic order");
+        OPENFHE_THROW("expected size of element vector should be equal to cyclotomic order");
     }
 
     const auto& modulus                    = element.GetModulus();
@@ -992,11 +992,7 @@ void ChineseRemainderTransformArbDyn<VecType>::SetPreComputedNTTDivisionModulus(
                                                                                 const IntType& modulus,
                                                                                 const IntType& nttMod,
                                                                                 const IntType& nttRootBig) {
-    OPENFHE_DEBUG_FLAG(false);
-
-    usint n = lbcrypto::GetTotient(cyclotoOrder);
-    OPENFHE_DEBUG("GetTotient(" << cyclotoOrder << ")= " << n);
-
+    usint n                        = GetTotient(cyclotoOrder);
     usint power                    = cyclotoOrder - n;
     m_nttDivisionDim[cyclotoOrder] = 2 * std::pow(2, ceil(log2(power)));
 
@@ -1098,9 +1094,9 @@ template <typename VecType>
 VecType ChineseRemainderTransformArbDyn<VecType>::ForwardTransform(const VecType& element, const IntType& root,
                                                                    const IntType& nttModulus, const IntType& nttRoot,
                                                                    const usint cycloOrder) {
-    usint phim = lbcrypto::GetTotient(cycloOrder);
+    usint phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim) {
-        OPENFHE_THROW(lbcrypto::math_error, "element size should be equal to phim");
+        OPENFHE_THROW("element size should be equal to phim");
     }
 
     const auto& modulus                    = element.GetModulus();
@@ -1136,9 +1132,9 @@ template <typename VecType>
 VecType ChineseRemainderTransformArbDyn<VecType>::InverseTransform(const VecType& element, const IntType& root,
                                                                    const IntType& nttModulus, const IntType& nttRoot,
                                                                    const usint cycloOrder) {
-    usint phim = lbcrypto::GetTotient(cycloOrder);
+    usint phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim) {
-        OPENFHE_THROW(lbcrypto::math_error, "element size should be equal to phim");
+        OPENFHE_THROW("element size should be equal to phim");
     }
 
     const auto& modulus = element.GetModulus();
@@ -1173,7 +1169,7 @@ VecType ChineseRemainderTransformArbDyn<VecType>::InverseTransform(const VecType
 
 template <typename VecType>
 VecType ChineseRemainderTransformArbDyn<VecType>::Pad(const VecType& element, const usint cycloOrder, bool forward) {
-    usint n = lbcrypto::GetTotient(cycloOrder);
+    usint n = GetTotient(cycloOrder);
 
     const auto& modulus = element.GetModulus();
     VecType inputToBluestein(cycloOrder, modulus);
@@ -1184,7 +1180,7 @@ VecType ChineseRemainderTransformArbDyn<VecType>::Pad(const VecType& element, co
         }
     }
     else {  // Inverse transform padding
-        auto tList = lbcrypto::GetTotientList(cycloOrder);
+        auto tList = GetTotientList(cycloOrder);
         usint i    = 0;
         for (auto& coprime : tList) {
             inputToBluestein[coprime] = element[i++];
@@ -1197,13 +1193,13 @@ VecType ChineseRemainderTransformArbDyn<VecType>::Pad(const VecType& element, co
 template <typename VecType>
 VecType ChineseRemainderTransformArbDyn<VecType>::Drop(const VecType& element, const usint cycloOrder, bool forward,
                                                        const IntType& bigMod, const IntType& bigRoot) {
-    usint n = lbcrypto::GetTotient(cycloOrder);
+    usint n = GetTotient(cycloOrder);
 
     const auto& modulus = element.GetModulus();
     VecType output(n, modulus);
 
     if (forward) {  // Forward transform drop
-        auto tList = lbcrypto::GetTotientList(cycloOrder);
+        auto tList = GetTotientList(cycloOrder);
         for (usint i = 0; i < n; i++) {
             output[i] = element[tList[i]];
         }

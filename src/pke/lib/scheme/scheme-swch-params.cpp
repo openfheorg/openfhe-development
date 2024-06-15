@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,40 +28,37 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "scheme/scheme-swch-params.h"
 
-/*
- * API to generate BFVRNS crypto context
- */
-
-#ifndef _CRYPTOCONTEXT_BFVRNS_H_
-#define _CRYPTOCONTEXT_BFVRNS_H_
-
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
-#include "scheme/bfvrns/cryptocontextparams-bfvrns.h"
-#include "scheme/bfvrns/bfvrns-scheme.h"
-#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "cryptocontext-fwd.h"
-#include "lattice/lat-hal.h"
+#include <iostream>
 
 namespace lbcrypto {
 
-template <typename Element>
-class CryptoContextFactory;
+// clang-format off
+std::ostream& operator<<(std::ostream& os, const SchSwchParams& obj) {
+    os  << "securityLevelCKKS: " << obj.securityLevelCKKS
+        << "; securityLevelFHEW: " << obj.securityLevelFHEW
+        << "; numSlotsCKKS: " << obj.numSlotsCKKS
+        << "; numValues: " << obj.numValues
+        << "; ctxtModSizeFHEWLargePrec: " << obj.ctxtModSizeFHEWLargePrec
+        << "; ctxtModSizeFHEWIntermedSwch: " << obj.ctxtModSizeFHEWIntermedSwch
+        << "; bStepLTrCKKStoFHEW: " << obj.bStepLTrCKKStoFHEW
+        << "; bStepLTrFHEWtoCKKS: " << obj.bStepLTrFHEWtoCKKS
+        << "; levelLTrCKKStoFHEW: " << obj.levelLTrCKKStoFHEW
+        << "; levelLTrFHEWtoCKKS: " << obj.levelLTrFHEWtoCKKS
+        << "; arbitraryFunctionEvaluation: " << obj.arbitraryFunctionEvaluation
+        << "; useDynamicModeFHEW:" << obj.useDynamicModeFHEW
+        << "; computeArgmin: " << obj.computeArgmin
+        << "; oneHotEncoding: " << obj.oneHotEncoding
+        << "; useAltArgmin: " << obj.useAltArgmin
+        << "; PARAMS SET UP INTERNALLY FROM CRYPTOCONTEXT:"
+        << "  initialCKKSModulus: " << obj.initialCKKSModulus
+        << "; ringDimension: " << obj.ringDimension
+        << "; scalingModSize: " << obj.scalingModSize
+        << "; batchSize: " << obj.batchSize;
 
-class CryptoContextBFVRNS {
-    using Element = DCRTPoly;
-
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
-    using PublicKeyEncryptionScheme = SchemeBFVRNS;
-    using CryptoParams              = CryptoParametersBFVRNS;
-
-    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBFVRNS>& parameters) {
-        return genCryptoContextBFVRNSInternal<CryptoContextBFVRNS, Element>(parameters);
-    }
-};
+    return os;
+}
+// clang-format on
 
 }  // namespace lbcrypto
-
-#endif  // _CRYPTOCONTEXT_BFVRNS_H_

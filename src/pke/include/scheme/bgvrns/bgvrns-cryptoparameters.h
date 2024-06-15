@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
 
 #include "schemerns/rns-cryptoparameters.h"
+#include "globals.h"
 
 #include <string>
 #include <memory>
@@ -98,12 +99,14 @@ public:
         if (version > SerializedVersion()) {
             std::string errMsg("serialized object version " + std::to_string(version) +
                                " is from a later version of the library");
-            OPENFHE_THROW(deserialize_error, errMsg);
+            OPENFHE_THROW(errMsg);
         }
         ar(cereal::base_class<CryptoParametersRNS>(this));
 
-        PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
-                            m_extraBits);
+        if (PrecomputeCRTTablesAfterDeserializaton()) {
+            PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
+                                m_extraBits);
+        }
     }
 
     std::string SerializedObjectName() const override {

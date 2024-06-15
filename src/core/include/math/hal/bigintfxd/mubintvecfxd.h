@@ -193,14 +193,14 @@ public:
    */
     IntegerType& at(size_t i) {
         if (!this->IndexCheck(i)) {
-            OPENFHE_THROW(lbcrypto::math_error, "BigVector index out of range");
+            OPENFHE_THROW("BigVector index out of range");
         }
         return this->m_data[i];
     }
 
     const IntegerType& at(size_t i) const {
         if (!this->IndexCheck(i)) {
-            OPENFHE_THROW(lbcrypto::math_error, "BigVector index out of range");
+            OPENFHE_THROW("BigVector index out of range");
         }
         return this->m_data[i];
     }
@@ -556,8 +556,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("l", m_length));
@@ -569,8 +569,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("l", m_length));

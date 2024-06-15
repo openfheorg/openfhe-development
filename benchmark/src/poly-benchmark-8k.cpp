@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,37 +30,24 @@
 //==================================================================================
 
 /*
-  Parameter class to generate BGVRNS crypto context
+ * This code benchmarks polynomial operations for ring dimension of 8k.
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_BGVRNS_H_
-#define _CRYPTOCONTEXTPARAMS_BGVRNS_H_
+#include "math/hal/basicint.h"
+#include "poly-benchmark.h"
+#include <iostream>
 
-#include "scheme/cryptocontextparams-base.h"
+constexpr uint32_t RING_DIM_LOG = 13;
+constexpr uint32_t DCRTBITS     = MAX_MODULUS_SIZE;
 
-#include <string>
-#include <vector>
-
-namespace lbcrypto {
-
-class CryptoContextBGVRNS;
-
-// every CCParams class should include the following forward declaration as there is
-// no general CCParams class template. This way we may create scheme specific classes
-// derived from Params or have them completely independent.
-template <typename T>
-class CCParams;
-//====================================================================================================================
-template <>
-class CCParams<CryptoContextBGVRNS> : public Params {
+class Setup {
 public:
-    CCParams() : Params(BGVRNS_SCHEME) {}
-    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj)      = default;
-};
-//====================================================================================================================
+    Setup() {
+        std::cerr << "Generating polynomials for the benchmark..." << std::endl;
+        GeneratePolys((1 << (RING_DIM_LOG + 1)), DCRTBITS, NativepolysEval, NativepolysCoef);
+        GenerateDCRTPolys((1 << (RING_DIM_LOG + 1)), DCRTBITS, DCRTpolysEval, DCRTpolysCoef);
+        std::cerr << "Polynomials for the benchmark are generated" << std::endl;
+    }
+} TestParameters;
 
-}  // namespace lbcrypto
-
-#endif  // _CRYPTOCONTEXTPARAMS_BGVRNS_H_
+BENCHMARK_MAIN();

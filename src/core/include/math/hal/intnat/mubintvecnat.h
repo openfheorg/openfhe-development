@@ -40,6 +40,7 @@
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
 
+#include "utils/blockAllocator/xvector.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
@@ -125,7 +126,7 @@ private:
 #if BLOCK_VECTOR_ALLOCATION != 1
     std::vector<IntegerType> m_data{};
 #else
-    xvector<IntegerType> m_data;
+    xvector<IntegerType> m_data{};
 #endif
 
     // function to check if the index is a valid index.
@@ -160,7 +161,7 @@ public:
     constexpr NativeVectorT(usint length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length) {
         // TODO: better performance if this check is done at poly level
         //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
-        //            OPENFHE_THROW(lbcrypto::not_available_error, std::to_string(modulus.GetMSB()) +
+        //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
         //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
     }
 
@@ -168,7 +169,7 @@ public:
         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {
         // TODO: better performance if this check is done at poly level
         //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
-        //            OPENFHE_THROW(lbcrypto::not_available_error, std::to_string(modulus.GetMSB()) +
+        //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
         //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
     }
 
@@ -278,13 +279,13 @@ public:
    */
     IntegerType& at(size_t i) {
         if (!NativeVectorT::IndexCheck(i))
-            OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+            OPENFHE_THROW("NativeVectorT index out of range");
         return m_data[i];
     }
 
     const IntegerType& at(size_t i) const {
         if (!NativeVectorT::IndexCheck(i))
-            OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+            OPENFHE_THROW("NativeVectorT index out of range");
         return m_data[i];
     }
 
@@ -308,9 +309,11 @@ public:
    * @param value is the modulus value to set.
    */
     void SetModulus(const IntegerType& value) {
-        if (value.GetMSB() > MAX_MODULUS_SIZE)
-            OPENFHE_THROW(lbcrypto::not_available_error,
-                          "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
+        if (value.GetMSB() > MAX_MODULUS_SIZE) {
+            std::string errMsg{"Requested modulus' size " + std::to_string(value.GetMSB()) + " is not supported."};
+            errMsg += " NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE);
+            OPENFHE_THROW(errMsg);
+        }
         m_modulus.m_value = value.m_value;
     }
 
@@ -669,8 +672,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ::cereal::size_type size;
         ar(size);
@@ -690,8 +693,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));

@@ -68,7 +68,6 @@
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 
 #include <memory>
@@ -91,7 +90,7 @@ public:
    * @param modulus The modulus to use to generate discrete values.
    * @param std     The standard deviation for this Gaussian Distribution.
    */
-    explicit DiscreteGaussianGeneratorImpl(double std = 1);
+    explicit DiscreteGaussianGeneratorImpl(double std = 1.0);
 
     /**
    * @brief Destructor
@@ -120,9 +119,6 @@ public:
    */
     void SetStd(double std);
 
-    // BigVector DiscreteGaussianGenerator::GenerateIdentity(usint size, const
-    // BigInteger &modulus);
-
     /**
    * @brief      Returns a generated signed integer. Uses Peikert's Inversion
    * Method
@@ -137,7 +133,7 @@ public:
    * @return     A pointer to an array of integer values generated with the
    * distribution.
    */
-    std::shared_ptr<int64_t> GenerateIntVector(usint size) const;
+    std::shared_ptr<int64_t> GenerateIntVector(uint32_t size) const;
 
     /**
    * @brief  Returns a generated integer. Uses Peikert's inversion method.
@@ -154,7 +150,7 @@ public:
    * @return          The vector of values within this Discrete Gaussian
    * Distribution.
    */
-    VecType GenerateVector(usint size, const typename VecType::Integer& modulus) const;
+    VecType GenerateVector(uint32_t size, const typename VecType::Integer& modulus) const;
 
     /**
    * @brief  Returns a generated integer. Uses rejection method.
@@ -203,7 +199,7 @@ private:
     std::vector<double> m_vals;
     bool peikert{false};
 
-    usint FindInVector(const std::vector<double>& S, double search) const;
+    uint32_t FindInVector(const std::vector<double>& S, double search) const;
 
     static double UnnormalizedGaussianPDF(const double& mean, const double& sigma, int32_t x) {
         return pow(M_E, -pow(x - mean, 2) / (2. * sigma * sigma));

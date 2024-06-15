@@ -33,7 +33,7 @@
 #include "gtest/gtest.h"
 
 #include "scheme/bfvrns/bfvrns-ser.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
 using namespace lbcrypto;

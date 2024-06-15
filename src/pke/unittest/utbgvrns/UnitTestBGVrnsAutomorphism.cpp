@@ -59,7 +59,7 @@ TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
     if (stringToCaseType.end() != search) {
         return search->second;
     }
-    OPENFHE_THROW(config_error, std::string("Can not convert ") + str + "to test case");
+    OPENFHE_THROW(std::string("Can not convert ") + str + "to test case");
 }
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     const std::unordered_map<TEST_CASE_TYPE, std::string> caseTypeToString = {
@@ -70,7 +70,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     if (caseTypeToString.end() != search) {
         return os << search->second;
     }
-    OPENFHE_THROW(config_error, "Unknown test case");
+    OPENFHE_THROW("Unknown test case");
 }
 //===========================================================================================================
 enum TEST_CASE_ERROR {
@@ -100,7 +100,7 @@ TEST_CASE_ERROR convertStringToCaseError(const std::string& str) {
     if (stringToError.end() != search) {
         return search->second;
     }
-    OPENFHE_THROW(config_error, std::string("Can not convert ") + str + "to test case error");
+    OPENFHE_THROW(std::string("Can not convert ") + str + "to test case error");
 }
 //===========================================================================================================
 struct TEST_CASE_UTBGVRNS_AUTOMORPHISM : public BaseTestCase {

@@ -37,7 +37,7 @@
 #define LBCRYPTO_INC_LATTICE_HAL_POLYINTERFACE_H
 
 #include "lattice/ilelement.h"
-#include "lattice/ilparams.h"
+#include "lattice/hal/default/ilparams.h"
 
 #include "math/math-hal.h"
 #include "math/distrgen.h"
@@ -108,9 +108,7 @@ public:
         const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
-            DerivedType ilvec(dgg, params, Format::COEFFICIENT);
-            ilvec.SetFormat(resultFormat);
-            return ilvec;
+            return DerivedType(dgg, params, resultFormat);
         };
     }
 
@@ -125,7 +123,6 @@ public:
                                                                             Format format) {
         return [=]() {
             DugType dug;
-            dug.SetModulus(params->GetModulus());
             return DerivedType(dug, params, format);
         };
     }
@@ -203,7 +200,7 @@ public:
    */
     usint GetLength() const final {
         //        if (this->GetDerived().IsEmpty())
-        //            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
+        //            OPENFHE_THROW("No values in PolyImpl");
         return this->GetDerived().GetValues().GetLength();
     }
 
@@ -442,9 +439,9 @@ public:
    */
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
-            OPENFHE_THROW(not_implemented_error,
-                          "PolyInterface element transposition is currently "
-                          "implemented only in the Evaluation representation.");
+            OPENFHE_THROW(
+                "PolyInterface element transposition is currently "
+                "implemented only in the Evaluation representation.");
         }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }

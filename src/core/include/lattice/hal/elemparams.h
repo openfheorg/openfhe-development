@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -58,6 +58,9 @@ namespace lbcrypto {
 template <typename IntegerType>
 class ElemParams : public Serializable {
 public:
+    constexpr ElemParams() = default;
+    virtual ~ElemParams()  = default;
+
     /**
    * @brief Simple constructor method that takes as input root of unity, big
    * root of unity, cyclotomic order and the ciphertext modulus and big
@@ -70,13 +73,21 @@ public:
    * @param bigRUnity the big root of unity used for bit packing operations.
    */
 
-    constexpr ElemParams() = default;
+    // TODO: uint32_t version of GetTotient
 
-    // uint64_t GetTotient(const uint64_t n) but order/ringdimension are usint?
-    ElemParams(usint order, const IntegerType& ctModulus, const IntegerType& rUnity = IntegerType(0),
-               const IntegerType& bigCtModulus = IntegerType(0), const IntegerType& bigRUnity = IntegerType(0))
-        : m_cyclotomicOrder(order),
-          m_ringDimension(GetTotient(order)),
+    ElemParams(uint32_t order, const IntegerType& ctModulus)
+        : m_ringDimension(GetTotient(order)), m_cyclotomicOrder(order), m_ciphertextModulus(ctModulus) {}
+
+    ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity)
+        : m_ringDimension(GetTotient(order)),
+          m_cyclotomicOrder(order),
+          m_ciphertextModulus(ctModulus),
+          m_rootOfUnity(rUnity) {}
+
+    ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity, const IntegerType& bigCtModulus,
+               const IntegerType& bigRUnity)
+        : m_ringDimension(GetTotient(order)),
+          m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus),
           m_rootOfUnity(rUnity),
           m_bigCiphertextModulus(bigCtModulus),
@@ -88,8 +99,8 @@ public:
    * @return the resulting parameter set with parameters copied.
    */
     ElemParams(const ElemParams& rhs)
-        : m_cyclotomicOrder(rhs.m_cyclotomicOrder),
-          m_ringDimension(rhs.m_ringDimension),
+        : m_ringDimension(rhs.m_ringDimension),
+          m_cyclotomicOrder(rhs.m_cyclotomicOrder),
           m_ciphertextModulus(rhs.m_ciphertextModulus),
           m_rootOfUnity(rhs.m_rootOfUnity),
           m_bigCiphertextModulus(rhs.m_bigCiphertextModulus),
@@ -101,8 +112,8 @@ public:
    * @return the resulting copy of the parameter set.
    */
     ElemParams(ElemParams&& rhs) noexcept
-        : m_cyclotomicOrder(rhs.m_cyclotomicOrder),
-          m_ringDimension(rhs.m_ringDimension),
+        : m_ringDimension(rhs.m_ringDimension),
+          m_cyclotomicOrder(rhs.m_cyclotomicOrder),
           m_ciphertextModulus(std::move(rhs.m_ciphertextModulus)),
           m_rootOfUnity(std::move(rhs.m_rootOfUnity)),
           m_bigCiphertextModulus(std::move(rhs.m_bigCiphertextModulus)),
@@ -113,8 +124,8 @@ public:
    * @param rhs the ElemParams instance to copy.
    */
     ElemParams& operator=(const ElemParams& rhs) {
-        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
         m_ringDimension        = rhs.m_ringDimension;
+        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
         m_ciphertextModulus    = rhs.m_ciphertextModulus;
         m_rootOfUnity          = rhs.m_rootOfUnity;
         m_bigCiphertextModulus = rhs.m_bigCiphertextModulus;
@@ -123,8 +134,8 @@ public:
     }
 
     ElemParams& operator=(ElemParams&& rhs) noexcept {
-        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
         m_ringDimension        = rhs.m_ringDimension;
+        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
         m_ciphertextModulus    = std::move(rhs.m_ciphertextModulus);
         m_rootOfUnity          = std::move(rhs.m_rootOfUnity);
         m_bigCiphertextModulus = std::move(rhs.m_bigCiphertextModulus);
@@ -133,16 +144,10 @@ public:
     }
 
     /**
-   * @brief Simple destructor method.
-   * @return
-   */
-    virtual ~ElemParams() = default;
-
-    /**
    * @brief Simple getter method for cyclotomic order.
    * @return The cyclotomic order.
    */
-    usint GetCyclotomicOrder() const {
+    uint32_t GetCyclotomicOrder() const {
         return m_cyclotomicOrder;
     }
 
@@ -151,7 +156,7 @@ public:
    * evaluation of the totient function of the cyclotomic order.
    * @return the ring dimension.
    */
-    usint GetRingDimension() const {
+    uint32_t GetRingDimension() const {
         return m_ringDimension;
     }
 
@@ -206,7 +211,7 @@ public:
    * @return True if all elements are equal, and False otherwise.
    */
     virtual bool operator==(const ElemParams<IntegerType>& other) const {
-        return m_cyclotomicOrder == other.m_cyclotomicOrder && m_ringDimension == other.m_ringDimension &&
+        return m_ringDimension == other.m_ringDimension && m_cyclotomicOrder == other.m_cyclotomicOrder &&
                m_ciphertextModulus == other.m_ciphertextModulus && m_rootOfUnity == other.m_rootOfUnity &&
                m_bigCiphertextModulus == other.m_bigCiphertextModulus && m_bigRootOfUnity == other.m_bigRootOfUnity;
     }
@@ -232,10 +237,9 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
-        }
+        if (version > SerializedVersion())
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         ar(::cereal::make_nvp("co", m_cyclotomicOrder));
         ar(::cereal::make_nvp("rd", m_ringDimension));
         ar(::cereal::make_nvp("cm", m_ciphertextModulus));
@@ -252,8 +256,8 @@ public:
     }
 
 protected:
-    usint m_cyclotomicOrder{};
-    usint m_ringDimension{};
+    uint32_t m_ringDimension{0};
+    uint32_t m_cyclotomicOrder{0};
     IntegerType m_ciphertextModulus{0};
     IntegerType m_rootOfUnity{0};
     IntegerType m_bigCiphertextModulus{0};  // Used for only some applications.

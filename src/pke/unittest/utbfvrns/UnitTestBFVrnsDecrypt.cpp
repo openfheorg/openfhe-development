@@ -29,19 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "cryptocontext.h"
+#include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
+#include "gtest/gtest.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "utils/debug.h"
 
 #include <iostream>
 #include <vector>
-#include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-
-#include "utils/debug.h"
-#include "utils/parmfactory.h"
 
 using namespace lbcrypto;
 
@@ -95,10 +91,10 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
     std::vector<int64_t> vectorOfInts(8);
     for (usint i = 0; i < vecsize; ++i) {
         if (ptm == 2) {
-            vectorOfInts[i] = rand() % ptm; // NOLINT
+            vectorOfInts[i] = rand() % ptm;  // NOLINT
         }
         else {
-            vectorOfInts[i] = (rand() % ptm) / 2; // NOLINT
+            vectorOfInts[i] = (rand() % ptm) / 2;  // NOLINT
         }
     }
 

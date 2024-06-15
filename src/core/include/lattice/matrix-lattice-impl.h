@@ -112,32 +112,21 @@ Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat) {
 
 template <typename Element>
 void Matrix<Element>::SetFormat(Format format) {
-    if (rows == 1) {
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
-        for (size_t col = 0; col < cols; ++col) {
-            data[0][col].SetFormat(format);
-        }
-    }
-    else {
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(rows))
-        for (size_t row = 0; row < rows; ++row) {
-            for (size_t col = 0; col < cols; ++col) {
-                data[row][col].SetFormat(format);
-            }
-        }
-    }
+    if (data[0][0].GetFormat() != format)
+        this->SwitchFormat();
 }
 
 template <typename Element>
 void Matrix<Element>::SwitchFormat() {
     if (rows == 1) {
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
+        // TODO: figure out why this is causing a segfault with GCC10
+        // #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
         for (size_t col = 0; col < cols; ++col) {
             data[0][col].SwitchFormat();
         }
     }
     else {
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(rows))
+        // #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(rows))
         for (size_t row = 0; row < rows; ++row) {
             for (size_t col = 0; col < cols; ++col) {
                 data[row][col].SwitchFormat();

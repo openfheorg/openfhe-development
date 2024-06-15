@@ -53,9 +53,9 @@ struct longDiv {
 };
 
 /**
- * Gets the degree of a polynomial specified by its coefficients.
- *
- * @param &coefficients vector of coefficients of a polynomial.
+ * @brief Gets the degree of a polynomial specified by its coefficients, which is the index of
+ * the last non-zero element in the coefficients. If all the coefficients are zero, it returns 0.
+ * @param coefficients vector of coefficients of a polynomial (can not be empty)
  * @return the integer degree of the polynomial.
  */
 uint32_t Degree(const std::vector<double>& coefficients);
@@ -219,13 +219,23 @@ uint32_t getRatioBSGSLT(uint32_t slots);
 
 /**
  * Assembles a list of rotation indices necessary to perform the
- * linear transform in SS (needs to be ran once to each LT).
+ * linear transform in scheme switching (needs to be ran once to each LT).
  * @param dim1 baby-step dimension
  * @param m cyclotomic order
  * @param blockdimension dimension related to the linear transform computation matrix
  * @return vector of rotation indices necessary
 */
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension);
+
+/**
+ * Assembles a list of rotation indices necessary to perform all the
+ * linear transforms in argmin.
+ * @param m cyclotomic order
+ * @param blockdimension dimension related to the linear transform computation matrix
+ * @param cols dimension of columns of the linear transform
+ * @return vector of rotation indices necessary
+*/
+std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols);
 
 namespace CKKS_BOOT_PARAMS {
 /**

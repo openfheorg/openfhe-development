@@ -94,7 +94,7 @@ IntType RootOfUnity(usint m, const IntType& modulo);
  * @returns a vector of roots of unity corresponding to each modulus.
  */
 template <typename IntType>
-std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType> moduli);
+std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType>& moduli);
 
 /**
  * Method to reverse bits of num and return an unsigned int, for all bits up to
@@ -151,7 +151,7 @@ inline usint ReverseBits(usint num, usint msb) {
                    shift_trick[msb & 0x7];
         default:
             return -1;
-            // OPENFHE_THROW(math_error, "msbb value not handled:" +
+            // OPENFHE_THROW("msbb value not handled:" +
             // std::to_string(msbb));
     }
 }
@@ -163,7 +163,9 @@ inline usint ReverseBits(usint num, usint msb) {
  *
  * @return the index of the MSB bit location.
  */
-template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>, bool> = true>
 inline constexpr usint GetMSB(T x) {
     if constexpr (sizeof(T) <= 8) {
         if (x == 0)
@@ -187,7 +189,7 @@ inline constexpr usint GetMSB(T x) {
     }
 #endif
     else {
-        OPENFHE_THROW(math_error, "Unsupported int type (GetMSB() supports 32-, 64- and 128-bit integers only)");
+        OPENFHE_THROW("Unsupported int type (GetMSB() supports 32-, 64- and 128-bit integers only)");
         return 0;
     }
 }
@@ -263,43 +265,55 @@ const IntType PollardRhoFactorization(const IntType& n);
  * Recursively factorizes to find the distinct primefactors of a number.
  * @param &n the value to factorize. [note the value of n is destroyed]
  * @param &primeFactors set of factors found [must begin cleared]
- Side effects: n is destroyed.
  */
 template <typename IntType>
 void PrimeFactorize(IntType n, std::set<IntType>& primeFactors);
 
 /**
- * Finds the first prime that satisfies q = 1 mod m
+ * Finds the first prime q that satisfies q = 1 mod m with at least (nBits + 1) bits.
  *
- * @param nBits the number of bits needed to be in q.
- * @param m the the ring parameter.
+ * @param nBits the bit parameter.
+ * @param m the ring parameter (cyclotomic order).
  *
  * @return the first prime modulus.
  */
 template <typename IntType>
-IntType FirstPrime(uint64_t nBits, uint64_t m);
+IntType FirstPrime(uint32_t nBits, uint32_t m);
+
+/**
+ * Finds the max prime q that satisfies q = 1 mod m with at most nBits bits.
+ *
+ * @param nBits the bit parameter.
+ * @param m the ring parameter (cyclotomic order).
+ *
+ * @return the last prime modulus
+ */
+template <typename IntType>
+IntType LastPrime(uint32_t nBits, uint32_t m);
 
 /**
  * Finds the next prime that satisfies q = 1 mod m
  *
  * @param &q is the prime number to start from (the number itself is not
  * included)
+ * @param m the ring parameter (cyclotomic order).
  *
  * @return the next prime modulus.
  */
 template <typename IntType>
-IntType NextPrime(const IntType& q, uint64_t cyclotomicOrder);
+IntType NextPrime(const IntType& q, uint32_t m);
 
 /**
  * Finds the previous prime that satisfies q = 1 mod m
  *
  * @param &q is the prime number to start from (the number itself is not
  * included)
+ * @param m the ring parameter (cyclotomic order).
  *
  * @return the previous prime modulus.
  */
 template <typename IntType>
-IntType PreviousPrime(const IntType& q, uint64_t cyclotomicOrder);
+IntType PreviousPrime(const IntType& q, uint32_t m);
 
 /**
  * Multiplicative inverse for primitive unsigned integer data types

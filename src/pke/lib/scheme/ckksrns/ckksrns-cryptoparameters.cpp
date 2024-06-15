@@ -37,7 +37,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "globals.h"
 
 namespace lbcrypto {
 
@@ -46,10 +45,6 @@ namespace lbcrypto {
 void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                   EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                   uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
-    // Don't run the function if it is not required
-    if (!PrecomputeCRTTablesAfterDeserializaton())
-        return;
-
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ = GetElementParams()->GetParams().size();
@@ -98,11 +93,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
 
                 if (ratio <= 0.5 || ratio >= 2.0)
-                    OPENFHE_THROW(config_error,
-                                  "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                                  "- FLEXIBLEAUTO cannot support this "
-                                  "number of levels in this parameter setting. Please use "
-                                  "FIXEDMANUAL.");
+                    OPENFHE_THROW(
+                        "CryptoParametersCKKSRNS::PrecomputeCRTTables "
+                        "- FLEXIBLEAUTO cannot support this "
+                        "number of levels in this parameter setting. Please use "
+                        "FIXEDMANUAL.");
             }
         }
         else {
@@ -113,11 +108,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
 
                 if (ratio <= 0.5 || ratio >= 2.0)
-                    OPENFHE_THROW(config_error,
-                                  "CryptoParametersCKKSRNS::PrecomputeCRTTables "
-                                  "- FLEXIBLEAUTO cannot support this "
-                                  "number of levels in this parameter setting. Please use "
-                                  "FIXEDMANUAL.");
+                    OPENFHE_THROW(
+                        "CryptoParametersCKKSRNS::PrecomputeCRTTables "
+                        "- FLEXIBLEAUTO cannot support this "
+                        "number of levels in this parameter setting. Please use "
+                        "FIXEDMANUAL.");
             }
         }
 
@@ -146,18 +141,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_approxSF   = pow(2, p);
     }
     if (m_ksTechnique == HYBRID) {
-        // Pre-compute Barrett mu
-        const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
-        const BigInteger TwoPower64("18446744073709551616");                            // 2^64
-
+        const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
         m_modqBarrettMu.resize(sizeQ);
         for (uint32_t i = 0; i < sizeQ; i++) {
-            BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
-            memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
+            m_modqBarrettMu[i] = (BarrettBase128Bit / BigInteger(moduliQ[i])).ConvertToInt<DoubleNativeInt>();
         }
     }
 }

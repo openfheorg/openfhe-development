@@ -38,6 +38,7 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 
+#include <ostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -61,7 +62,7 @@ SecurityLevel convertToSecurityLevel(const std::string& str) {
         return HEStd_NotSet;
 
     std::string errMsg(std::string("Unknown SecurityLevel ") + str);
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
 }
 SecurityLevel convertToSecurityLevel(uint32_t num) {
     auto secLevel = static_cast<SecurityLevel>(num);
@@ -79,7 +80,37 @@ SecurityLevel convertToSecurityLevel(uint32_t num) {
     }
 
     std::string errMsg(std::string("Unknown value for SecurityLevel ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
+    OPENFHE_THROW(errMsg);
+}
+
+std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
+    switch (sl) {
+        case HEStd_128_classic:
+            s << "HEStd_128_classic";
+            break;
+        case HEStd_192_classic:
+            s << "HEStd_192_classic";
+            break;
+        case HEStd_256_classic:
+            s << "HEStd_256_classic";
+            break;
+        case HEStd_128_quantum:
+            s << "HEStd_128_quantum";
+            break;
+        case HEStd_192_quantum:
+            s << "HEStd_192_quantum";
+            break;
+        case HEStd_256_quantum:
+            s << "HEStd_256_quantum";
+            break;
+        case HEStd_NotSet:
+            s << "HEStd_NotSet";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }
 
 std::map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][6];

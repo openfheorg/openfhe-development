@@ -85,7 +85,6 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};
-    dug.SetModulus(Q);
 
     // Reduce mod q (dealing with negative number as well)
     uint64_t q = params->Getq().ConvertToInt();

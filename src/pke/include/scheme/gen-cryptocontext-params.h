@@ -33,8 +33,8 @@
   Scheme parameter default class
  */
 
-#ifndef _CRYPTOCONTEXTPARAMS_BASE_H_
-#define _CRYPTOCONTEXTPARAMS_BASE_H_
+#ifndef __GEN_CRYPTOCONTEXT_PARAMS_H__
+#define __GEN_CRYPTOCONTEXT_PARAMS_H__
 
 // Had to include cryptocontext.h as the includes below give a compiler error.
 // Those headers probably depend on some order/sequence.
@@ -173,6 +173,7 @@ class Params {
     void SetToDefaults(SCHEME scheme);
 
     void ValidateRingDim(usint ringDim);
+    void ValidateMultiplicativeDepth(usint multiplicativeDepth);
 
 public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
@@ -387,6 +388,9 @@ public:
         numLargeDigits = numLargeDigits0;
     }
     void SetMultiplicativeDepth(usint multiplicativeDepth0) {
+        // TODO (dsuponit): move the check below ValidateMultiplicativeDepth() to a separate validating function. see
+        // https://github.com/openfheorg/openfhe-development/issues/400
+        ValidateMultiplicativeDepth(multiplicativeDepth0);
         multiplicativeDepth = multiplicativeDepth0;
     }
     void SetScalingModSize(usint scalingModSize0) {
@@ -426,4 +430,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _CRYPTOCONTEXTPARAMS_BASE_H_
+#endif  // __GEN_CRYPTOCONTEXT_PARAMS_H__

@@ -37,7 +37,6 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "cryptocontext.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "globals.h"
 
 namespace lbcrypto {
 
@@ -46,10 +45,6 @@ namespace lbcrypto {
 void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                  EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                  uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
-    // Don't run the function if it is not required
-    if (!PrecomputeCRTTablesAfterDeserializaton())
-        return;
-
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ = GetElementParams()->GetParams().size();
@@ -141,16 +136,10 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     }
 
     if (m_ksTechnique == HYBRID) {
-        const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
-        const BigInteger TwoPower64("18446744073709551616");                            // 2^64
-
+        const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
         m_modqBarrettMu.resize(sizeQ);
         for (uint32_t i = 0; i < sizeQ; i++) {
-            BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-            memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
+            m_modqBarrettMu[i] = (BarrettBase128Bit / BigInteger(moduliQ[i])).ConvertToInt<DoubleNativeInt>();
         }
     }
 }

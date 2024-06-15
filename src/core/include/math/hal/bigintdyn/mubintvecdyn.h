@@ -238,13 +238,13 @@ public:
    */
     ubint_el_t& at(size_t i) {
         if (!mubintvec::IndexCheck(i))
-            OPENFHE_THROW(lbcrypto::math_error, "index out of range");
+            OPENFHE_THROW("index out of range");
         return m_data[i];
     }
 
     const ubint_el_t& at(size_t i) const {
         if (!mubintvec::IndexCheck(i))
-            OPENFHE_THROW(lbcrypto::math_error, "index out of range");
+            OPENFHE_THROW("index out of range");
         return m_data[i];
     }
 
@@ -323,7 +323,7 @@ public:
    */
     const ubint_el_t& GetModulus() const {
         if (m_modulus_state != State::INITIALIZED)
-            OPENFHE_THROW(lbcrypto::not_available_error, "GetModulus() on uninitialized mubintvec");
+            OPENFHE_THROW("GetModulus() on uninitialized mubintvec");
         return m_modulus;
     }
 
@@ -609,8 +609,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                           " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", m_data));
         ar(::cereal::make_nvp("m", m_modulus));

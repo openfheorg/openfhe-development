@@ -145,7 +145,7 @@ class Blake2Engine {
     if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(result_type),
                  &m_counter, sizeof(m_counter), m_seed.cbegin(),
                  m_seed.size() * sizeof(result_type)) != 0) {
-      OPENFHE_THROW(math_error, "PRNG: blake2xb failed");
+      OPENFHE_THROW("PRNG: blake2xb failed");
     }
     m_counter++;
     return;

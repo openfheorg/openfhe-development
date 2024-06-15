@@ -112,7 +112,7 @@ public:
    */
     virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
                                   NativePoly* plaintext) const {
-        OPENFHE_THROW(config_error, "Decryption to NativePoly is not supported");
+        OPENFHE_THROW("Decryption to NativePoly is not supported");
     }
 
     /**
@@ -125,7 +125,7 @@ public:
    */
     virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
                                   Poly* plaintext) const {
-        OPENFHE_THROW(config_error, "Decryption to Poly is not supported");
+        OPENFHE_THROW("Decryption to Poly is not supported");
     }
 
     /////////////////////////////////////////

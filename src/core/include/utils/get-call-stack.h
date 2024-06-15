@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,39 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-/*
-  Parameter class to generate CKKSRNS crypto context
- */
-
-#ifndef _CRYPTOCONTEXTPARAMS_CKKSRNS_H_
-#define _CRYPTOCONTEXTPARAMS_CKKSRNS_H_
-
-#include "scheme/cryptocontextparams-base.h"
+#ifndef __GET_CALL_STACK_H__
+#define __GET_CALL_STACK_H__
 
 #include <string>
 #include <vector>
 
-namespace lbcrypto {
+/**
+ * @brief get_call_stack() is a function to get the call stack
+ * @return a vector with call stack (demangled function names)
+ */
+std::vector<std::string> get_call_stack();
 
-class CryptoContextCKKSRNS;
-
-// every CCParams class should include the following forward declaration as there is
-// no general CCParams class template. This way we may create scheme specific classes
-// derived from Params or have them completely independent.
-template <typename T>
-class CCParams;
-//====================================================================================================================
-template <>
-class CCParams<CryptoContextCKKSRNS> : public Params {
-public:
-    CCParams() : Params(CKKSRNS_SCHEME) {}
-    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj)      = default;
-};
-//====================================================================================================================
-
-}  // namespace lbcrypto
-
-#endif  // _CRYPTOCONTEXTPARAMS_CKKSRNS_H_
+#endif  // __GET_CALL_STACK_H__

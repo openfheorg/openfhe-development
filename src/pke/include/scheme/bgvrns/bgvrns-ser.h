@@ -37,10 +37,14 @@
 #define LBCRYPTO_CRYPTO_BGVRNSSER_H
 
 #include "scheme/bgvrns/bgvrns-scheme.h"
+#include "scheme/bgvrns/bgvrns-fhe.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "utils/serial.h"
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersBGVRNS);
 CEREAL_REGISTER_TYPE(lbcrypto::SchemeBGVRNS);
+CEREAL_REGISTER_TYPE(lbcrypto::FHEBGVRNS);
 
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHERNS, lbcrypto::FHEBGVRNS);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRNS, lbcrypto::CryptoParametersBGVRNS);
 #endif

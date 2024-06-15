@@ -51,7 +51,7 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
         ek.Pkey             = kpN->publicKey;
     }
     else {
-        OPENFHE_THROW(config_error, "Invalid KeyGen mode");
+        OPENFHE_THROW("Invalid KeyGen mode");
     }
 
     ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
@@ -72,23 +72,14 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
                                         const RingGSWBTKey& EK, ConstLWECiphertext& ct1,
                                         ConstLWECiphertext& ct2) const {
     if (ct1 == ct2)
-        OPENFHE_THROW(config_error, "Input ciphertexts should be independant");
-
-    // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT gates
-    if ((gate == XOR) || (gate == XNOR)) {
-        const auto& ctAND1 = EvalBinGate(params, AND, EK, ct1, EvalNOT(params, ct2));
-        const auto& ctAND2 = EvalBinGate(params, AND, EK, EvalNOT(params, ct1), ct2);
-        const auto& ctOR   = EvalBinGate(params, OR, EK, ctAND1, ctAND2);
-
-        // NOT is free so there is not cost to do it an extra time for XNOR
-        return (gate == XOR) ? ctOR : EvalNOT(params, ctOR);
-    }
+        OPENFHE_THROW("Input ciphertexts should be independant");
 
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
     // the additive homomorphic operation for XOR/NXOR is different from the other gates we compute
-    // 2*(ct1 - ct2) mod 4 for XOR, me map 1,2 -> 1 and 3,0 -> 0
-    if ((gate == XOR_FAST) || (gate == XNOR_FAST)) {
-        LWEscheme->EvalSubEq(ctprep, ct2);
+    // 2*(ct1 + ct2) mod 4 for XOR, 0 -> 0, 2 -> 1
+    // XOR_FAST and XNOR_FAST are included for backwards compatibility; they map to XOR and XNOR
+    if ((gate == XOR) || (gate == XNOR) || (gate == XOR_FAST) || (gate == XNOR_FAST)) {
+        LWEscheme->EvalAddEq(ctprep, ct2);
         LWEscheme->EvalAddEq(ctprep, ctprep);
     }
     else {
@@ -129,7 +120,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     for (size_t i = 0; i < ctvector.size(); i++) {
         for (size_t j = i + 1; j < ctvector.size(); j++) {
             if (ctvector[j] == ctvector[i]) {
-                OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
+                OPENFHE_THROW("Input ciphertexts should be independent");
             }
         }
     }
@@ -168,7 +159,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     }
     else if (gate == CMUX) {
         if (ctvector.size() != 3)
-            OPENFHE_THROW(not_implemented_error, "CMUX gate implemented for ciphertext vectors of size 3");
+            OPENFHE_THROW("CMUX gate implemented for ciphertext vectors of size 3");
 
         auto ccNOT   = EvalNOT(params, ctvector[2]);
         auto ctNAND1 = EvalBinGate(params, NAND, EK, ctvector[0], ccNOT);
@@ -177,7 +168,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
         return ctCMUX;
     }
     else {
-        OPENFHE_THROW(not_implemented_error, "This gate is not implemented for vector of ciphertexts at this time");
+        OPENFHE_THROW("This gate is not implemented for vector of ciphertexts at this time");
     }
 }
 // Full evaluation as described in https://eprint.iacr.org/2020/086
@@ -247,13 +238,15 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
         if (q.ConvertToInt() > N) {  // need q to be at most = N for arbitary function
             std::string errMsg =
                 "ERROR: ciphertext modulus q needs to be <= ring dimension for arbitrary function evaluation";
-            OPENFHE_THROW(not_implemented_error, errMsg);
+            OPENFHE_THROW(errMsg);
         }
 
         // TODO: figure out a way to not do this :(
 
         // repeat the LUT to make it periodic
-        std::vector<NativeInteger> LUT2 = LUT;
+        std::vector<NativeInteger> LUT2;
+        LUT2.reserve(LUT.size() + LUT.size());
+        LUT2.insert(LUT2.end(), LUT.begin(), LUT.end());
         LUT2.insert(LUT2.end(), LUT.begin(), LUT.end());
 
         NativeInteger dq{q << 1};
@@ -362,7 +355,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     if (mod <= q) {
         std::string errMsg =
             "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     const auto& RGSWParams = params->GetRingGSWParams();
@@ -370,7 +363,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     auto search            = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        OPENFHE_THROW(openfhe_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     RingGSWBTKey curEK(search->second);
 
@@ -398,7 +391,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    OPENFHE_THROW(openfhe_error, errMsg);
+                    OPENFHE_THROW(errMsg);
                 }
                 curEK = search->second;
             }
@@ -439,14 +432,14 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     if (mod <= q) {
         std::string errMsg =
             "ERROR: EvalDecomp is only for large precision. For small precision, please use bootstrapping directly";
-        OPENFHE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     const auto curBase = RGSWParams->GetBaseG();
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        OPENFHE_THROW(openfhe_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
     RingGSWBTKey curEK(search->second);
 
@@ -477,7 +470,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    OPENFHE_THROW(openfhe_error, errMsg);
+                    OPENFHE_THROW(errMsg);
                 }
                 curEK = search->second;
             }
@@ -496,7 +489,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
             "before calling bootstrapping.";
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     auto& LWEParams  = params->GetLWEParams();
@@ -555,7 +548,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
     if (ek == nullptr) {
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen before calling bootstrapping.";
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(errMsg);
     }
 
     auto& LWEParams  = params->GetLWEParams();

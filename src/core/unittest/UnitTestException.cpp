@@ -43,7 +43,7 @@
 using namespace lbcrypto;
 
 static void regthrow(const std::string& msg) {
-    OPENFHE_THROW(config_error, msg);
+    OPENFHE_THROW(msg);
 }
 
 static void parthrow(const std::string& msg) {
@@ -77,9 +77,9 @@ static void runthrow(const std::string& msg) {
 
 // instantiate various test for common_set_format()
 TEST(UTException, openfhe_exception) {
-    ASSERT_THROW(regthrow("outside throw"), config_error);
+    ASSERT_THROW(regthrow("outside throw"), OpenFHEException);
 
-    ASSERT_THROW(parthrow("inside throw"), config_error);
+    ASSERT_THROW(parthrow("inside throw"), OpenFHEException);
 
-    ASSERT_THROW(runthrow("using lambda inside throw"), config_error);
+    ASSERT_THROW(runthrow("using lambda inside throw"), OpenFHEException);
 }

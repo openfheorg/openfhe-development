@@ -153,7 +153,6 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 
     const auto ns      = cryptoParams->GetNoiseScale();
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-    DugType dug;
     TugType tug;
 
     auto numPartQ = cryptoParams->GetNumPartQ();
@@ -363,7 +362,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
                 roots[i]  = paramsPartQ->GetParams()[i]->GetRootOfUnity();
             }
 
-            auto params = DCRTPoly::Params(paramsPartQ->GetCyclotomicOrder(), moduli, roots, {}, {}, 0);
+            auto params = DCRTPoly::Params(paramsPartQ->GetCyclotomicOrder(), moduli, roots);
 
             partsCt[part] = DCRTPoly(std::make_shared<ParmType>(params), Format::EVALUATION, true);
         }
@@ -387,11 +386,11 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         uint32_t sizePartQl = partsCt[part].GetNumOfElements();
         partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
-             cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
-             cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
-             cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
-             cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
-             cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+            cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
+            cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
+            cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
+            cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
+            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
 
         partsCtCompl[part].SetFormat(Format::EVALUATION);
 

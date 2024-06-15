@@ -273,8 +273,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
     double sigma  = (base + 1) * SIGMA;
 
     Poly::DggType dgg(sigma);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
+    Poly::DugType dug;
 
     OPENFHE_DEBUG("1");
     Poly u(dug, params, Format::COEFFICIENT);
@@ -313,34 +312,14 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
 // it is not needed for the functionality exposed through the web assembly
 #if !defined(__EMSCRIPTEN__) && !defined(__CYGWIN__)
 TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
-    usint n     = 16;  // cyclotomic order
-    size_t kRes = 51;
-    size_t base = 8;
-
-    size_t size = 4;
-
+    usint n      = 16;  // cyclotomic order
+    size_t kRes  = 51;
+    size_t base  = 8;
+    size_t size  = 4;
     double sigma = SIGMA;
 
-    std::vector<NativeInteger> moduli;
-    std::vector<NativeInteger> roots_Of_Unity;
-
-    NativeInteger q = NativeInteger(1) << (kRes - 1);
-    q               = lbcrypto::FirstPrime<NativeInteger>(kRes, 2 * n);
-    NativeInteger rootOfUnity(RootOfUnity<NativeInteger>(2 * n, q));
-    moduli.push_back(q);
-    roots_Of_Unity.push_back(rootOfUnity);
-
-    NativeInteger nextQ = q;
-    for (size_t i = 1; i < size; i++) {
-        nextQ = lbcrypto::NextPrime<NativeInteger>(nextQ, 2 * n);
-        NativeInteger nextRootOfUnity(RootOfUnity<NativeInteger>(2 * n, nextQ));
-        moduli.push_back(nextQ);
-        roots_Of_Unity.push_back(nextRootOfUnity);
-    }
-
-    auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduli, roots_Of_Unity);
-
-    int64_t digitCount = static_cast<int64_t>(ceil(log2(q.ConvertToDouble()) / log2(base)));
+    auto params        = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, size, kRes);
+    int64_t digitCount = static_cast<int64_t>(ceil(log2((*params)[0]->GetModulus().ConvertToDouble()) / log2(base)));
 
     std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> trapPair =
         RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(params, sigma, base);
@@ -349,10 +328,10 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
     Matrix<DCRTPoly> rHat = trapPair.second.m_r;
 
     DCRTPoly::DggType dgg(sigma);
-    DCRTPoly::DugType dug = DCRTPoly::DugType();
+    DCRTPoly::DugType dug;
     DCRTPoly u(dug, params, Format::COEFFICIENT);
 
-    usint k = moduli.size() * digitCount;
+    usint k = size * digitCount;
 
     double c = (base + 1) * SIGMA;
     double s = SPECTRAL_BOUND(n, k, base);
@@ -396,8 +375,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     double sigma  = (base + 1) * SIGMA;
 
     Poly::DggType dgg(SIGMA);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
+    Poly::DugType dug;
 
     OPENFHE_DEBUG("1");
     Poly u(dug, params, Format::COEFFICIENT);
@@ -491,8 +469,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
     // Format::EVALUATION);
 
     Poly::DggType dgg(sigma);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
+    Poly::DugType dug;
 
     uint32_t base = 2;
     double c      = (base + 1) * SIGMA;
@@ -586,30 +563,13 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatrices) {
 #if !defined(__EMSCRIPTEN__) && !defined(__CYGWIN__)
 // Test of Gaussian Sampling for matrices from 2x2 to 5x5
 TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
-    usint m = 16;
-    usint n = m / 2;
-
-    size_t dcrtBits = 60;
+    usint m         = 16;
+    usint n         = m / 2;
+    size_t dcrtBits = 57;
     size_t size     = 3;
+    double sigma    = SIGMA;
 
-    std::vector<NativeInteger> moduli(size);
-    std::vector<NativeInteger> roots(size);
-
-    // makes sure the first integer is less than 2^60-1 to take advangate of NTL
-    // optimizations
-    NativeInteger firstInteger = FirstPrime<NativeInteger>(dcrtBits, 2 * n);
-    moduli[0]                  = PreviousPrime<NativeInteger>(firstInteger, 2 * n);
-    roots[0]                   = RootOfUnity<NativeInteger>(2 * n, moduli[0]);
-
-    for (size_t i = 1; i < size; i++) {
-        moduli[i] = PreviousPrime<NativeInteger>(moduli[i - 1], 2 * n);
-        roots[i]  = RootOfUnity<NativeInteger>(2 * n, moduli[i]);
-    }
-
-    auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduli, roots);
-    ChineseRemainderTransformFTT<NativeVector>().PreCompute(roots, 2 * n, moduli);
-
-    double sigma = SIGMA;
+    auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, size, dcrtBits);
 
     double val    = params->GetModulus().ConvertToDouble();
     double logTwo = std::ceil(log2(val));
@@ -704,9 +664,6 @@ TEST(UTTrapdoor, TrapDoorPerturbationSamplingTest) {
     Matrix<Poly> rHat = trapPair.second.m_r;
 
     Poly::DggType dgg(sigma);
-    Poly::DugType dug = Poly::DugType();
-    dug.SetModulus(modulus);
-
     Poly::DggType dggLargeSigma(sqrt(s * s - c * c));
 
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);

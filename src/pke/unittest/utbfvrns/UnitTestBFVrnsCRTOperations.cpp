@@ -29,23 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "cryptocontext.h"
+#include "encoding/encodings.h"
+#include "gtest/gtest.h"
 #include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
+#include "utils/debug.h"
 
 #include <iostream>
 #include <vector>
-#include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-
-#include "utils/debug.h"
-#include "utils/parmfactory.h"
-
-#include "UnitTestUtils.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
 
 using namespace lbcrypto;
 
@@ -463,7 +458,9 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
                      cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
                      cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-    Poly resultExpandedB = b.CRTInterpolate();
+    auto tmp{b};
+    tmp.SetFormat(Format::COEFFICIENT);
+    Poly resultExpandedB = tmp.CRTInterpolate();
 
     BigInteger A0 = bPoly.at(0);
 
@@ -592,7 +589,9 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
                      cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
                      cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-    Poly resultExpandedB = b.CRTInterpolate();
+    auto tmp{b};
+    tmp.SetFormat(Format::COEFFICIENT);
+    Poly resultExpandedB = tmp.CRTInterpolate();
 
     BigInteger A0 = bPoly.at(0);
 

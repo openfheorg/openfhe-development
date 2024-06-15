@@ -56,7 +56,7 @@ static TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
     if (stringToCaseType.end() != search) {
         return search->second;
     }
-    OPENFHE_THROW(config_error, std::string("Can not convert ") + str + "to test case");
+    OPENFHE_THROW(std::string("Can not convert ") + str + "to test case");
 }
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     const std::unordered_map<TEST_CASE_TYPE, std::string> caseTypeToString = {
@@ -65,7 +65,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     if (caseTypeToString.end() != search) {
         return os << search->second;
     }
-    OPENFHE_THROW(config_error, "Unknown test case");
+    OPENFHE_THROW("Unknown test case");
 }
 //===========================================================================================================
 struct TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT : public BaseTestCase {
@@ -164,12 +164,12 @@ protected:
             parties[0].id      = 0;
             parties[0].kpShard = cc->KeyGen();
             if (!parties[0].kpShard.good())
-                OPENFHE_THROW(openfhe_error, std::string("Key generation failed for party ") + std::to_string(0));
+                OPENFHE_THROW(std::string("Key generation failed for party ") + std::to_string(0));
             for (usint i = 1; i < parties.size(); i++) {
                 parties[i].id      = i;
                 parties[i].kpShard = cc->MultipartyKeyGen(parties[0].kpShard.publicKey);
                 if (!parties[i].kpShard.good())
-                    OPENFHE_THROW(openfhe_error, std::string("Key generation failed for party ") + std::to_string(i));
+                    OPENFHE_THROW(std::string("Key generation failed for party ") + std::to_string(i));
             }
 
             // Generate the collective public key
@@ -262,7 +262,7 @@ protected:
             ////////////////////////////////////////////////////////////
             kp1 = cc->KeyGen();
             if (!kp1.good())
-                OPENFHE_THROW(openfhe_error, std::string("Key generation failed"));
+                OPENFHE_THROW(std::string("Key generation failed"));
             // Generate evalmult key
             auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
 
@@ -273,7 +273,7 @@ protected:
 
             kp2 = cc->MultipartyKeyGen(kp1.publicKey);
             if (!kp2.good())
-                OPENFHE_THROW(openfhe_error, std::string("Key generation failed"));
+                OPENFHE_THROW(std::string("Key generation failed"));
             auto evalMultKey2    = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
             auto evalMultAB      = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
             auto evalMultBAB     = cc->MultiMultEvalKey(kp2.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
@@ -286,7 +286,7 @@ protected:
 
             kp3 = cc->MultipartyKeyGen(kp2.publicKey);
             if (!kp3.good())
-                OPENFHE_THROW(openfhe_error, std::string("Key generation failed"));
+                OPENFHE_THROW(std::string("Key generation failed"));
             auto evalMultKey3   = cc->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultKey);
             auto evalMultABC    = cc->MultiAddEvalKeys(evalMultAB, evalMultKey3, kp3.publicKey->GetKeyTag());
             auto evalMultBABC   = cc->MultiMultEvalKey(kp2.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());

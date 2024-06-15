@@ -33,16 +33,14 @@
   This code tests the transform feature of the OpenFHE lattice encryption library
  */
 
-#include <iostream>
-#include <vector>
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
-#include "lattice/elemparamfactory.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
-#include "utils/inttypes.h"
-#include "utils/parmfactory.h"
+#include "utils/debug.h"
+
+#include <iostream>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -59,7 +57,7 @@ void rounding_ops(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer q("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -149,7 +147,7 @@ void set_get_values(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -185,14 +183,14 @@ void set_get_values(const std::string& msg) {
 
         EXPECT_EQ(bbv.GetValues(), ilvector2n.GetValues()) << msg << "Failure: GetValues()";
 
-        usint index = 3;
-        bbv[index]  = 11;
-        for (usint i = 0; i < m / 2; ++i) {
+        uint32_t index = 3;
+        bbv[index]     = 11;
+        for (uint32_t i = 0; i < m / 2; ++i) {
             if (i == index) {
-                EXPECT_NE(bbv.at(i), ilvector2n.at(i)) << msg << " Failure: lhs[] at(" << i << ")";
+                EXPECT_NE(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
             }
             else {
-                EXPECT_EQ(bbv.at(i), ilvector2n.at(i)) << msg << " Failure: lhs[] at(" << i << ")";
+                EXPECT_EQ(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
             }
         }
     }
@@ -216,7 +214,7 @@ void at(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -233,19 +231,19 @@ void at(const std::string& msg) {
         // test for bug where length was 0
         EXPECT_EQ(ilvector2n.GetLength(), m / 2) << msg << " Failure: ={init list string}";
 
-        usint index = 3;
-        bbv[index]  = 11;
-        for (usint i = 0; i < m / 2; ++i) {
+        uint32_t index = 3;
+        bbv[index]     = 11;
+        for (uint32_t i = 0; i < m / 2; ++i) {
             if (i == index) {
-                EXPECT_NE(bbv.at(i), ilvector2n.at(i)) << msg << " Failure: lhs[] at(" << i << ")";
+                EXPECT_NE(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
             }
             else {
-                EXPECT_EQ(bbv.at(i), ilvector2n.at(i)) << msg << " Failure: lhs[] at(" << i << ")";
+                EXPECT_EQ(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
             }
         }
         bbv.at(index) = 1;
-        for (usint i = 0; i < m / 2; ++i) {
-            EXPECT_EQ(bbv.at(i), ilvector2n.at(i)) << msg << " Failure: lhs[] at(" << i << ")";
+        for (uint32_t i = 0; i < m / 2; ++i) {
+            EXPECT_EQ(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
         }
     }
 }
@@ -270,7 +268,7 @@ void switch_modulus(const std::string& msg) {
     using ParmType = typename Element::Params;
     // using IntType = typename Element::Vector::Integer;
 
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
@@ -321,15 +319,14 @@ void rn_generators(const std::string& msg) {
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
-    float stdDev = 4.0;
+    float stdDev = 4.0f;
     typename Element::DggType dgg(stdDev);
     typename Element::BugType bug;
     typename Element::DugType dug;
-    dug.SetModulus(primeModulus);
 
     auto ilparams = std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
 
@@ -373,7 +370,7 @@ void poly_other_methods(const std::string& msg) {
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
@@ -419,8 +416,8 @@ void poly_other_methods(const std::string& msg) {
         Element ilvInverse1 = ilv1.MultiplicativeInverse();
         Element ilvProduct1 = ilv1 * ilvInverse1;
 
-        for (usint i = 0; i < m / 2; ++i) {
-            EXPECT_EQ(ilvProduct1.at(i), typename Element::Integer(1))
+        for (uint32_t i = 0; i < m / 2; ++i) {
+            EXPECT_EQ(ilvProduct1[i], typename Element::Integer(1))
                 << msg << " Failure: ilvProduct1.MultiplicativeInverse() @ index " << i;
         }
     }
@@ -452,7 +449,7 @@ void signed_mod(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -498,7 +495,7 @@ void automorphismTransform(const std::string& msg) {
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
-    usint m = 8;
+    uint32_t m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
 
@@ -514,7 +511,7 @@ void automorphismTransform(const std::string& msg) {
         Element ilv(ilparams, Format::COEFFICIENT);
         ilv = {"56", "1", "37", "2"};
 
-        usint index = 3;
+        uint32_t index = 3;
         Element ilvAuto(ilv.AutomorphismTransform(index));
         Element expected(ilparams, Format::COEFFICIENT);
         expected = {"56", "2", "36", "1"};
@@ -538,7 +535,7 @@ void transposition(const std::string& msg) {
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
-    usint m = 8;
+    uint32_t m = 8;
 
     typename VecType::Integer q("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -585,17 +582,13 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    usint order = 8;
-    usint nBits = 7;
+    uint32_t order = 8;
+    uint32_t nBits = 7;
 
-    typename VecType::Integer primeModulus = lbcrypto::FirstPrime<typename VecType::Integer>(nBits, order);
-    typename VecType::Integer primitiveRootOfUnity =
-        lbcrypto::RootOfUnity<typename VecType::Integer>(order, primeModulus);
+    typename VecType::Integer primeModulus = LastPrime<typename VecType::Integer>(nBits, order);
+    auto ilparams                          = std::make_shared<ParmType>(order, primeModulus);
 
-    auto ilparams = std::make_shared<ParmType>(order, primeModulus, primitiveRootOfUnity);
-
-    typename Element::DugType distrUniGen = typename Element::DugType();
-    distrUniGen.SetModulus(primeModulus);
+    typename Element::DugType distrUniGen;
 
     Element ilv1(distrUniGen, ilparams);
     VecType bbv1(ilv1.GetValues());
@@ -607,8 +600,8 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
         Element ilvResult = ilv1 + ilv2;
         VecType bbvResult(ilvResult.GetValues());
 
-        for (usint i = 0; i < order / 2; i++) {
-            EXPECT_EQ(bbvResult.at(i), (bbv1.at(i) + bbv2.at(i)).Mod(primeModulus))
+        for (uint32_t i = 0; i < order / 2; i++) {
+            EXPECT_EQ(bbvResult[i], (bbv1[i] + bbv2[i]).Mod(primeModulus))
                 << msg << " Poly + operation returns incorrect results.";
         }
     }
@@ -617,8 +610,8 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
         Element ilvResult = ilv1 * ilv2;
         VecType bbvResult(ilvResult.GetValues());
 
-        for (usint i = 0; i < order / 2; i++) {
-            EXPECT_EQ(bbvResult.at(i), (bbv1.at(i) * bbv2.at(i)).Mod(primeModulus))
+        for (uint32_t i = 0; i < order / 2; i++) {
+            EXPECT_EQ(bbvResult[i], (bbv1[i] * bbv2[i]).Mod(primeModulus))
                 << msg << " Poly * operation returns incorrect results.";
         }
     }
