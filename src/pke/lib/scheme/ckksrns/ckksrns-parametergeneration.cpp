@@ -231,8 +231,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
         // no need for extra checking as extraModSize is automatically chosen by the library
         auto tempMod = FirstPrime<NativeInteger>(extraModSize - 1, cyclOrder);
-        if (tempMod > maxPrime)
-            maxPrime = tempMod;
         // check if tempMod has a duplicate in the vector (exclude moduliQ[numPrimes] from this operation):
         const auto endPos = moduliQ.end() - 1;
         auto pos          = std::find(moduliQ.begin(), endPos, tempMod);
