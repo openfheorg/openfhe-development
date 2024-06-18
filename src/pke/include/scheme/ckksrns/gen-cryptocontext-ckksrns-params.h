@@ -67,11 +67,11 @@ public:
         DISABLED_FOR_CKKSRNS;
     }
     template <typename T = bool>
-    void SetEvalAddCount(usint evalAddCount0) {
+    void SetEvalAddCount(uint32_t evalAddCount0) {
         DISABLED_FOR_CKKSRNS;
     }
     template <typename T = bool>
-    void SetKeySwitchCount(usint keySwitchCount0) {
+    void SetKeySwitchCount(uint32_t keySwitchCount0) {
         DISABLED_FOR_CKKSRNS;
     }
     template <typename T = bool>
@@ -83,7 +83,7 @@ public:
         DISABLED_FOR_CKKSRNS;
     }
     template <typename T = bool>
-    void SetPRENumHops(usint PRENumHops0) {
+    void SetPRENumHops(uint32_t PRENumHops0) {
         DISABLED_FOR_CKKSRNS;
     }
     template <typename T = bool>
