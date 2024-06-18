@@ -67,11 +67,11 @@ public:
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>
-    void SetFirstModSize(usint firstModSize0) {
+    void SetFirstModSize(uint32_t firstModSize0) {
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>
-    void SetPRENumHops(usint PRENumHops0) {
+    void SetPRENumHops(uint32_t PRENumHops0) {
         DISABLED_FOR_BFVRNS;
     }
     template <typename T = bool>

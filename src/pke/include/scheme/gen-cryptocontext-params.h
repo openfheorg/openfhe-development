@@ -62,7 +62,7 @@ class Params {
     PlaintextModulus ptModulus;
 
     // digitSize is used in BV Key Switching only (KeySwitchTechnique = BV) and impacts noise growth
-    usint digitSize;
+    uint32_t digitSize;
 
     // standardDeviation is used for Gaussian error generation
     float standardDeviation;
@@ -71,7 +71,7 @@ class Params {
     SecretKeyDist secretKeyDist;
 
     // Max relinearization degree of secret key polynomial (used for lazy relinearization)
-    usint maxRelinSkDeg;
+    uint32_t maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
@@ -86,7 +86,7 @@ class Params {
     ScalingTechnique scalTech;
 
     // max batch size of messages to be packed in encoding (number of slots)
-    usint batchSize;
+    uint32_t batchSize;
 
     // PRE security mode
     ProxyReEncryptionMode PREMode;
@@ -113,28 +113,28 @@ class Params {
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
     // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
-    usint statisticalSecurity;
+    uint32_t statisticalSecurity;
 
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
-    usint numAdversarialQueries;
+    uint32_t numAdversarialQueries;
 
     // This is the number of parties in a threshold application, which is used for bound on the joint secret key
-    usint thresholdNumOfParties;
+    uint32_t thresholdNumOfParties;
     // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
     // the prime q' is not explicitly given,
     // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
-    usint firstModSize;
-    usint scalingModSize;
+    uint32_t firstModSize;
+    uint32_t scalingModSize;
 
     // see KeySwitchTechnique - number of digits in HYBRID key switching
-    usint numLargeDigits;
+    uint32_t numLargeDigits;
 
     // multiplicative depth
-    usint multiplicativeDepth;
+    uint32_t multiplicativeDepth;
 
     // security level:
     // We use the values from the security standard  at
@@ -144,16 +144,16 @@ class Params {
     SecurityLevel securityLevel;
 
     // ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
-    usint ringDim;
+    uint32_t ringDim;
 
     // number of additions (used for setting noise in BGV and BFV)
-    usint evalAddCount;
+    uint32_t evalAddCount;
 
     // number of key switching operations (used for setting noise in BGV and BFV)
-    usint keySwitchCount;
+    uint32_t keySwitchCount;
 
     // size of moduli used for PRE in the provable HRA setting
-    usint PRENumHops;
+    uint32_t PRENumHops;
 
     // STANDARD or EXTENDED mode for BFV encryption
     // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower
@@ -264,7 +264,7 @@ public:
     PlaintextModulus GetPlaintextModulus() const {
         return ptModulus;
     }
-    usint GetDigitSize() const {
+    uint32_t GetDigitSize() const {
         return digitSize;
     }
     float GetStandardDeviation() const {
@@ -273,7 +273,7 @@ public:
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
     }
-    usint GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const {
         return maxRelinSkDeg;
     }
     ProxyReEncryptionMode GetPREMode() const {
@@ -301,7 +301,7 @@ public:
         return numAdversarialQueries;
     }
 
-    usint GetThresholdNumOfParties() const {
+    uint32_t GetThresholdNumOfParties() const {
         return thresholdNumOfParties;
     }
 
@@ -311,31 +311,31 @@ public:
     ScalingTechnique GetScalingTechnique() const {
         return scalTech;
     }
-    usint GetBatchSize() const {
+    uint32_t GetBatchSize() const {
         return batchSize;
     }
-    usint GetFirstModSize() const {
+    uint32_t GetFirstModSize() const {
         return firstModSize;
     }
     uint32_t GetNumLargeDigits() const {
         return numLargeDigits;
     }
-    usint GetMultiplicativeDepth() const {
+    uint32_t GetMultiplicativeDepth() const {
         return multiplicativeDepth;
     }
-    usint GetScalingModSize() const {
+    uint32_t GetScalingModSize() const {
         return scalingModSize;
     }
     SecurityLevel GetSecurityLevel() const {
         return securityLevel;
     }
-    usint GetRingDim() const {
+    uint32_t GetRingDim() const {
         return ringDim;
     }
-    usint GetEvalAddCount() const {
+    uint32_t GetEvalAddCount() const {
         return evalAddCount;
     }
-    usint GetKeySwitchCount() const {
+    uint32_t GetKeySwitchCount() const {
         return keySwitchCount;
     }
     EncryptionTechnique GetEncryptionTechnique() const {
@@ -344,7 +344,7 @@ public:
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return multiplicationTechnique;
     }
-    usint GetPRENumHops() const {
+    uint32_t GetPRENumHops() const {
         return PRENumHops;
     }
     COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
@@ -356,7 +356,7 @@ public:
     virtual void SetPlaintextModulus(PlaintextModulus ptModulus0) {
         ptModulus = ptModulus0;
     }
-    virtual void SetDigitSize(usint digitSize0) {
+    virtual void SetDigitSize(uint32_t digitSize0) {
         digitSize = digitSize0;
     }
     virtual void SetStandardDeviation(float standardDeviation0) {
@@ -365,7 +365,7 @@ public:
     virtual void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
     }
-    virtual void SetMaxRelinSkDeg(usint maxRelinSkDeg0) {
+    virtual void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg0) {
         maxRelinSkDeg = maxRelinSkDeg0;
     }
     virtual void SetPREMode(ProxyReEncryptionMode PREMode0) {
@@ -401,31 +401,31 @@ public:
     virtual void SetScalingTechnique(ScalingTechnique scalTech0) {
         scalTech = scalTech0;
     }
-    virtual void SetBatchSize(usint batchSize0) {
+    virtual void SetBatchSize(uint32_t batchSize0) {
         batchSize = batchSize0;
     }
-    virtual void SetFirstModSize(usint firstModSize0) {
+    virtual void SetFirstModSize(uint32_t firstModSize0) {
         firstModSize = firstModSize0;
     }
     virtual void SetNumLargeDigits(uint32_t numLargeDigits0) {
         numLargeDigits = numLargeDigits0;
     }
-    virtual void SetMultiplicativeDepth(usint multiplicativeDepth0) {
+    virtual void SetMultiplicativeDepth(uint32_t multiplicativeDepth0) {
         multiplicativeDepth = multiplicativeDepth0;
     }
-    virtual void SetScalingModSize(usint scalingModSize0) {
+    virtual void SetScalingModSize(uint32_t scalingModSize0) {
         scalingModSize = scalingModSize0;
     }
     virtual void SetSecurityLevel(SecurityLevel securityLevel0) {
         securityLevel = securityLevel0;
     }
-    virtual void SetRingDim(usint ringDim0) {
+    virtual void SetRingDim(uint32_t ringDim0) {
         ringDim = ringDim0;
     }
-    virtual void SetEvalAddCount(usint evalAddCount0) {
+    virtual void SetEvalAddCount(uint32_t evalAddCount0) {
         evalAddCount = evalAddCount0;
     }
-    virtual void SetKeySwitchCount(usint keySwitchCount0) {
+    virtual void SetKeySwitchCount(uint32_t keySwitchCount0) {
         keySwitchCount = keySwitchCount0;
     }
     virtual void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
@@ -434,7 +434,7 @@ public:
     virtual void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
         multiplicationTechnique = multiplicationTechnique0;
     }
-    virtual void SetPRENumHops(usint PRENumHops0) {
+    virtual void SetPRENumHops(uint32_t PRENumHops0) {
         PRENumHops = PRENumHops0;
     }
     virtual void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {

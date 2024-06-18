@@ -118,13 +118,13 @@ The default values for all the parameters can be found in [gen-cryptocontext-par
 
 **PlaintextModulus ptModulus** - plaintext modulus(for BGV/BFV), which impacts noise growth
 
-**usint digitSize** - for BV key switching only (when KeySwitchTechnique = BV). We use digit size in digit decomposition, which impacts noise growth
+**uint32_t digitSize** - for BV key switching only (when KeySwitchTechnique = BV). We use digit size in digit decomposition, which impacts noise growth
 
 **float standardDeviation** - used for Gaussian error generation
 
 **SecretKeyDist secretKeyDist** - secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
 
-**usint maxRelinSkDeg** - max relinearization degree of secret key polynomial (used for lazy relinearization)
+**uint32_t maxRelinSkDeg** - max relinearization degree of secret key polynomial (used for lazy relinearization)
 
 **KeySwitchTechnique ksTech (BV or HYBRID currently)**:
 - For BV we do not have extra modulus, so the security depends on ciphertext modulus Q
@@ -134,7 +134,7 @@ The default values for all the parameters can be found in [gen-cryptocontext-par
 
 **ScalingTechnique scalTech (for CKKS/BGV)** - rescaling/modulus switching technique FLEXIBLEAUTOEXT, FIXEDMANUAL, FLEXIBLEAUTO, etc. see https://eprint.iacr.org/2022/915 for additional details
 
-**usint batchSize** - max batch size of messages to be packed in encoding (number of slots)
+**uint32_t batchSize** - max batch size of messages to be packed in encoding (number of slots)
 
 **ProxyReEncryptionMode PREMode** - PRE security mode IND-CPA, FIXED_NOISE_HRA, etc
 
@@ -154,24 +154,24 @@ The default values for all the parameters can be found in [gen-cryptocontext-par
 
 **uint32_t numAdversarialQueries** - this is the number of adversarial queries a user is expecting for their application, which we use to ensure security of CKKS in NOISE_FLOODING_DECRYPT mode
 
-**usint firstModSize and usint scalingModSize** - are used to calculate ciphertext modulus. The ciphertext modulus should be seen as: Q = q_0 * q_1 * ... * q_n * q':
+**uint32_t firstModSize and uint32_t scalingModSize** - are used to calculate ciphertext modulus. The ciphertext modulus should be seen as: Q = q_0 * q_1 * ... * q_n * q':
 - q_0 is first prime, and it's number of bits is firstModSize
 - q_i have same number of bits and is equal to scalingModSize
 - the prime q' is not explicitly given, but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
 
-**usint numLargeDigits** - number of digits in HYBRID key switching (see KeySwitchTechnique)
+**uint32_t numLargeDigits** - number of digits in HYBRID key switching (see KeySwitchTechnique)
 
-**usint multiplicativeDepth** - the maximum number of multiplication we can perform before bootstrapping
+**uint32_t multiplicativeDepth** - the maximum number of multiplication we can perform before bootstrapping
 
 **SecurityLevel securityLevel** - We use the values from the security standard at http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf. For given ring dimension and security level we have upper bound of possible highest modulus (Q for BV or P*Q for HYBRID)
 
-**usint ringDim** - ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
+**uint32_t ringDim** - ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
 
-**usint evalAddCount** - number of additions (used for setting noise in BGV and BFV)
+**uint32_t evalAddCount** - number of additions (used for setting noise in BGV and BFV)
 
-**usint keySwitchCount** - number of key switching operations (used for setting noise in BGV and BFV)
+**uint32_t keySwitchCount** - number of key switching operations (used for setting noise in BGV and BFV)
 
-**usint PRENumHops** - number of hops for PRE in the provable HRA setting (BGV only)
+**uint32_t PRENumHops** - number of hops for PRE in the provable HRA setting (BGV only)
 
 **EncryptionTechnique encryptionTechnique** - STANDARD or EXTENDED mode for BFV encryption; EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower (see https://eprint.iacr.org/2022/915 for details)
 
