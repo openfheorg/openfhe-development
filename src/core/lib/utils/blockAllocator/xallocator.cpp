@@ -36,54 +36,66 @@
 #include <cassert>
 #include <cstring>  // for memcpy consider changing to copy
 #include <iostream>
+#include <map>
 #include <mutex>
 #include <thread>
 
 #include "utils/blockAllocator/blockAllocator.h"
 #include "utils/blockAllocator/xallocator.h"
-#include "utils/debug.h"
-
-#ifndef CHAR_BIT
-    #define CHAR_BIT 8
-#endif
-
-// static CRITICAL_SECTION _criticalSection;
+#include "utils/exception.h"
 
 static std::mutex xalloc_mutex;
-
 static bool _xallocInitialized = false;
+static std::map<size_t, Allocator*> _allocators;
 
-// Define STATIC_POOLS to switch from heap blocks mode to static pools mode
 // #define STATIC_POOLS
 #ifdef STATIC_POOLS
-    // Update this section as necessary if you want to use static memory pools.
-    // See also xalloc_init() and xalloc_destroy() for additional updates required.
-    #define MAX_ALLOCATORS 14
-    // #define MAX_BLOCKS          2048
-    #define MAX_BLOCKS 18948
+
+// Update this section, xalloc_init() and xalloc_destroy() as needed if you want to use static memory pools.
+// Add add_compile_options(-mcmodel=medium) to CMakeLists.txt to avoid relocation truncated to fit: R_X86_64_PC32 against `.bss' error
+
+#define DEFAULT_BLOCK_COUNT 1024
+using _pool8 = AllocatorPool<char[sizeof(Allocator*) + (1 << 3)], DEFAULT_BLOCK_COUNT>;
+using _pool16 = AllocatorPool<char[sizeof(Allocator*) + (1 << 4)], DEFAULT_BLOCK_COUNT>;
+using _pool32 = AllocatorPool<char[sizeof(Allocator*) + (1 << 5)], DEFAULT_BLOCK_COUNT>;
+using _pool64 = AllocatorPool<char[sizeof(Allocator*) + (1 << 6)], DEFAULT_BLOCK_COUNT>;
+using _pool128 = AllocatorPool<char[sizeof(Allocator*) + (1 << 7)], DEFAULT_BLOCK_COUNT>;
+using _pool256 = AllocatorPool<char[sizeof(Allocator*) + (1 << 8)], DEFAULT_BLOCK_COUNT>;
+using _pool512 = AllocatorPool<char[sizeof(Allocator*) + (1 << 9)], DEFAULT_BLOCK_COUNT>;
+using _pool1k = AllocatorPool<char[sizeof(Allocator*) + (1 << 10)], DEFAULT_BLOCK_COUNT>;
+using _pool2k = AllocatorPool<char[sizeof(Allocator*) + (1 << 11)], DEFAULT_BLOCK_COUNT>;
+using _pool4k = AllocatorPool<char[sizeof(Allocator*) + (1 << 12)], DEFAULT_BLOCK_COUNT>;
+using _pool8k = AllocatorPool<char[sizeof(Allocator*) + (1 << 13)], DEFAULT_BLOCK_COUNT>;
+using _pool16k = AllocatorPool<char[sizeof(Allocator*) + (1 << 14)], DEFAULT_BLOCK_COUNT>;
+using _pool32k = AllocatorPool<char[sizeof(Allocator*) + (1 << 15)], 16000>;
+using _pool64k = AllocatorPool<char[sizeof(Allocator*) + (1 << 16)], 65536>;
+using _pool128k = AllocatorPool<char[sizeof(Allocator*) + (1 << 17)], 65536>;
+using _pool256k = AllocatorPool<char[sizeof(Allocator*) + (1 << 18)], DEFAULT_BLOCK_COUNT>;
+using _pool512k = AllocatorPool<char[sizeof(Allocator*) + (1 << 19)], DEFAULT_BLOCK_COUNT>;
+using _pool1M = AllocatorPool<char[sizeof(Allocator*) + (1 << 20)], DEFAULT_BLOCK_COUNT>;
+using _pool2M = AllocatorPool<char[sizeof(Allocator*) + (1 << 21)], DEFAULT_BLOCK_COUNT>;
 
 // Create static storage for each static allocator instance
-char* _allocator8[sizeof(AllocatorPool<char[8], MAX_BLOCKS>)];
-char* _allocator16[sizeof(AllocatorPool<char[16], MAX_BLOCKS>)];
-char* _allocator32[sizeof(AllocatorPool<char[32], MAX_BLOCKS>)];
-char* _allocator64[sizeof(AllocatorPool<char[64], MAX_BLOCKS>)];
-char* _allocator128[sizeof(AllocatorPool<char[128], MAX_BLOCKS>)];
-char* _allocator256[sizeof(AllocatorPool<char[256], MAX_BLOCKS>)];
-char* _allocator396[sizeof(AllocatorPool<char[396], MAX_BLOCKS>)];
-char* _allocator512[sizeof(AllocatorPool<char[512], MAX_BLOCKS>)];
-char* _allocator768[sizeof(AllocatorPool<char[768], MAX_BLOCKS>)];
-char* _allocator1024[sizeof(AllocatorPool<char[1024], MAX_BLOCKS>)];
-char* _allocator2048[sizeof(AllocatorPool<char[2048], MAX_BLOCKS>)];
-char* _allocator4096[sizeof(AllocatorPool<char[4096], MAX_BLOCKS>)];
-char* _allocator8192[sizeof(AllocatorPool<char[8192], MAX_BLOCKS>)];
-char* _allocator16384[sizeof(AllocatorPool<char[16384], MAX_BLOCKS>)];
+static char* _allocator8[sizeof(_pool8)];
+static char* _allocator16[sizeof(_pool16)];
+static char* _allocator32[sizeof(_pool32)];
+static char* _allocator64[sizeof(_pool64)];
+static char* _allocator128[sizeof(_pool128)];
+static char* _allocator256[sizeof(_pool256)];
+static char* _allocator512[sizeof(_pool512)];
+static char* _allocator1k[sizeof(_pool1k)];
+static char* _allocator2k[sizeof(_pool2k)];
+static char* _allocator4k[sizeof(_pool4k)];
+static char* _allocator8k[sizeof(_pool8k)];
+static char* _allocator16k[sizeof(_pool16k)];
+static char* _allocator32k[sizeof(_pool32k)];
+static char* _allocator64k[sizeof(_pool64k)];
+static char* _allocator128k[sizeof(_pool128k)];
+static char* _allocator256k[sizeof(_pool256k)];
+static char* _allocator512k[sizeof(_pool512k)];
+static char* _allocator1M[sizeof(_pool1M)];
+// static char* _allocator2M[sizeof(_pool2M)];
 
-// Array of pointers to all allocator instances
-static Allocator* _allocators[MAX_ALLOCATORS];
-
-#else
-    #define MAX_ALLOCATORS 15
-static Allocator* _allocators[MAX_ALLOCATORS];
 #endif  // STATIC_POOLS
 
 static XallocInitDestroy xallocInitDestroy;
@@ -102,7 +114,7 @@ static XallocInitDestroy xallocInitDestroy;
 // and xalloc_destroy() before main exits. In all other situations
 // XallocInitDestroy must be used to call xalloc_init() and xalloc_destroy().
 #ifdef AUTOMATIC_XALLOCATOR_INIT_DESTROY
-usint XallocInitDestroy::refCount = 0;
+uint32_t XallocInitDestroy::refCount = 0;
 XallocInitDestroy::XallocInitDestroy() {
     // Track how many static instances of XallocInitDestroy are created
     if (refCount++ == 0)
@@ -116,18 +128,6 @@ XallocInitDestroy::~XallocInitDestroy() {
 }
 #endif  // AUTOMATIC_XALLOCATOR_INIT_DESTROY
 
-/// Returns the next higher powers of two. For instance, pass in 12 and
-/// the value returned would be 16.
-/// @param[in] k - numeric value to compute the next higher power of two.
-/// @return  The next higher power of two based on the input k.
-template <class T>
-T nexthigher(T k) {
-    k--;
-    for (size_t i = 1; i < sizeof(T) * CHAR_BIT; i <<= 1)
-        k |= (k >> i);
-    return k + 1;
-}
-
 /// Create the xallocator lock. Call only one time at startup.
 /// note for C++11 we do not need to control the lock with the lock_* functions.
 /// instead we control the next exection function in the code.
@@ -138,8 +138,8 @@ static void lock_init() {
 /// Destroy the xallocator lock.
 static void lock_destroy() {
 #if 0
-  // DeleteCriticalSection(&_criticalSection);
-  irc = pthread_mutex_destroy(&xalloc_mutex);
+    // DeleteCriticalSection(&_criticalSection);
+    irc = pthread_mutex_destroy(&xalloc_mutex);
 #endif
     _xallocInitialized = false;
 }
@@ -149,9 +149,9 @@ static inline void lock_get() {
     if (_xallocInitialized == false)
         return;
 #if 0
-  // Acquire the mutex to access the shared resource
-  pthread_mutex_lock(&xalloc_mutex);
-  // EnterCriticalSection(&_criticalSection);
+    // Acquire the mutex to access the shared resource
+    pthread_mutex_lock(&xalloc_mutex);
+    // EnterCriticalSection(&_criticalSection);
 #endif
 }
 
@@ -159,156 +159,125 @@ static inline void lock_get() {
 static inline void lock_release() {
     if (_xallocInitialized == false)
         return;
-
 #if 0
-  // Release the mutex  and release the access to shared resource
-  pthread_mutex_unlock(&xalloc_mutex);
-  // LeaveCriticalSection(&_criticalSection);
+    // Release the mutex  and release the access to shared resource
+    pthread_mutex_unlock(&xalloc_mutex);
+    // LeaveCriticalSection(&_criticalSection);
 #endif
 }
 
 /// Stored a pointer to the allocator instance within the block region.
-///  a pointer to the client's area within the block.
-/// @param[in] block - a pointer to the raw memory block.
+///  @param[in] block - a pointer to the raw memory block.
 ///  @param[in] size - the client requested size of the memory block.
-/// @return  A pointer to the client's address within the raw memory block.
+///  @return  A pointer to the client's address within the raw memory block.
 static inline void* set_block_allocator(void* block, Allocator* allocator) {
     // Cast the raw block memory to a Allocator pointer
-    Allocator** pAllocatorInBlock = static_cast<Allocator**>(block);
-
     // Write the size into the memory block
-    *pAllocatorInBlock = allocator;
-
     // Advance the pointer past the Allocator* block size and return a pointer to
     // the client's memory region
+    Allocator** pAllocatorInBlock = static_cast<Allocator**>(block);
+    *pAllocatorInBlock = allocator;
     return ++pAllocatorInBlock;
 }
 
 /// Gets the size of the memory block stored within the block.
-/// @param[in] block - a pointer to the client's memory block.
-/// @return  The original allocator instance stored in the memory block.
+///  @param[in] block - a pointer to the client's memory block.
+///  @return  The original allocator instance stored in the memory block.
 static inline Allocator* get_block_allocator(void* block) {
     // Cast the client memory to a Allocator pointer
-    Allocator** pAllocatorInBlock = static_cast<Allocator**>(block);
-
     // Back up one Allocator* position to get the stored allocator instance
-    pAllocatorInBlock--;
-
     // Return the allocator instance stored within the memory block
+    Allocator** pAllocatorInBlock = static_cast<Allocator**>(block);
+    --pAllocatorInBlock;
     return *pAllocatorInBlock;
 }
 
 /// Returns the raw memory block pointer given a client memory pointer.
-/// @param[in] block - a pointer to the client memory block.
-/// @return  A pointer to the original raw memory block address.
+///  @param[in] block - a pointer to the client memory block.
+///  @return  A pointer to the original raw memory block address.
 static inline void* get_block_ptr(void* block) {
     // Cast the client memory to a Allocator* pointer
-    Allocator** pAllocatorInBlock = static_cast<Allocator**>(block);
-
     // Back up one Allocator* position and return the original raw memory block
     // pointer
+    Allocator** pAllocatorInBlock = static_cast<Allocator**>(block);
     return --pAllocatorInBlock;
 }
 
-/// Returns an allocator instance matching the size provided
-/// @param[in] size - allocator block size
-/// @return Allocator instance handling requested block size or nullptr
-/// if no allocator exists.
-static inline Allocator* find_allocator(size_t size) {
-    OPENFHE_DEBUG_FLAG(false);
-    for (usint i = 0; i < MAX_ALLOCATORS; i++) {
-        OPENFHE_DEBUG("allocator " << i << " " << _allocators[i]);
-
-        if (_allocators[i] == 0)
-            break;
-
-        if (_allocators[i]->GetBlockSize() == size)
-            return _allocators[i];
-    }
-
-    return nullptr;
-}
-
-/// Insert an allocator instance into the array
-/// @param[in] allocator - An allocator instance
-static inline void insert_allocator(Allocator* allocator) {
-    for (usint i = 0; i < MAX_ALLOCATORS; i++) {
-        if (_allocators[i] == 0) {
-            _allocators[i] = allocator;
-            return;
-        }
-    }
-
-    assert(0);
-}
-
 /// This function must be called exactly one time *before* any other xallocator
-/// API is called. XallocInitDestroy constructor calls this function
-/// automatically.
-extern "C" void xalloc_init() {
+/// API is called. XallocInitDestroy constructor calls this function automatically.
+void xalloc_init() {
     lock_init();
 
 #ifdef STATIC_POOLS
     // For STATIC_POOLS mode, the allocators must be initialized before any other
     // static user class constructor is run. Therefore, use placement new to
-    // initialize each allocator into the previously reserved static memory
-    // locations.
-    new (&_allocator8) AllocatorPool<char[8], MAX_BLOCKS>();
-    new (&_allocator16) AllocatorPool<char[16], MAX_BLOCKS>();
-    new (&_allocator32) AllocatorPool<char[32], MAX_BLOCKS>();
-    new (&_allocator64) AllocatorPool<char[64], MAX_BLOCKS>();
-    new (&_allocator128) AllocatorPool<char[128], MAX_BLOCKS>();
-    new (&_allocator256) AllocatorPool<char[256], MAX_BLOCKS>();
-    new (&_allocator396) AllocatorPool<char[396], MAX_BLOCKS>();
-    new (&_allocator512) AllocatorPool<char[512], MAX_BLOCKS>();
-    new (&_allocator768) AllocatorPool<char[768], MAX_BLOCKS>();
-    new (&_allocator1024) AllocatorPool<char[1024], MAX_BLOCKS>();
-    new (&_allocator2048) AllocatorPool<char[2048], MAX_BLOCKS>();
-    new (&_allocator4096) AllocatorPool<char[4096], MAX_BLOCKS>();
-    new (&_allocator8192) AllocatorPool<char[8192], MAX_BLOCKS>();
-    new (&_allocator16384) AllocatorPool<char[16384], MAX_BLOCKS>();
+    // initialize each allocator into the previously reserved static memory locations.
 
-    // Populate allocator array with all instances
-    _allocators[0]  = reinterpret_cast<Allocator*>(&_allocator8);
-    _allocators[1]  = reinterpret_cast<Allocator*>(&_allocator16);
-    _allocators[2]  = reinterpret_cast<Allocator*>(&_allocator32);
-    _allocators[3]  = reinterpret_cast<Allocator*>(&_allocator64);
-    _allocators[4]  = reinterpret_cast<Allocator*>(&_allocator128);
-    _allocators[5]  = reinterpret_cast<Allocator*>(&_allocator256);
-    _allocators[6]  = reinterpret_cast<Allocator*>(&_allocator396);
-    _allocators[7]  = reinterpret_cast<Allocator*>(&_allocator512);
-    _allocators[8]  = reinterpret_cast<Allocator*>(&_allocator768);
-    _allocators[9]  = reinterpret_cast<Allocator*>(&_allocator1024);
-    _allocators[10] = reinterpret_cast<Allocator*>(&_allocator2048);
-    _allocators[11] = reinterpret_cast<Allocator*>(&_allocator4096);
-    _allocators[12] = reinterpret_cast<Allocator*>(&_allocator8192);
-    _allocators[13] = reinterpret_cast<Allocator*>(&_allocator16384);
+    new (&_allocator8) _pool8;
+    new (&_allocator16) _pool16;
+    new (&_allocator32) _pool32;
+    new (&_allocator64) _pool64;
+    new (&_allocator128) _pool128;
+    new (&_allocator256) _pool256;
+    new (&_allocator512) _pool512;
+    new (&_allocator1k) _pool1k;
+    new (&_allocator2k) _pool2k;
+    new (&_allocator4k) _pool4k;
+    new (&_allocator8k) _pool8k;
+    new (&_allocator16k) _pool16k;
+    new (&_allocator32k) _pool32k;
+    new (&_allocator64k) _pool64k;
+    new (&_allocator128k) _pool128k;
+    new (&_allocator256k) _pool256k;
+    new (&_allocator512k) _pool512k;
+    new (&_allocator1M) _pool1M;
+//    new (&_allocator2M) _pool2M;
 
+    _allocators = { {sizeof(Allocator*) + (1 << 3), reinterpret_cast<Allocator*>(&_allocator8)},
+                    {sizeof(Allocator*) + (1 << 4), reinterpret_cast<Allocator*>(&_allocator16)},
+                    {sizeof(Allocator*) + (1 << 5), reinterpret_cast<Allocator*>(&_allocator32)},
+                    {sizeof(Allocator*) + (1 << 6), reinterpret_cast<Allocator*>(&_allocator64)},
+                    {sizeof(Allocator*) + (1 << 7), reinterpret_cast<Allocator*>(&_allocator128)},
+                    {sizeof(Allocator*) + (1 << 8), reinterpret_cast<Allocator*>(&_allocator256)},
+                    {sizeof(Allocator*) + (1 << 9), reinterpret_cast<Allocator*>(&_allocator512)},
+                    {sizeof(Allocator*) + (1 << 10), reinterpret_cast<Allocator*>(&_allocator1k)},
+                    {sizeof(Allocator*) + (1 << 11), reinterpret_cast<Allocator*>(&_allocator2k)},
+                    {sizeof(Allocator*) + (1 << 12), reinterpret_cast<Allocator*>(&_allocator4k)},
+                    {sizeof(Allocator*) + (1 << 13), reinterpret_cast<Allocator*>(&_allocator8k)},
+                    {sizeof(Allocator*) + (1 << 14), reinterpret_cast<Allocator*>(&_allocator16k)},
+                    {sizeof(Allocator*) + (1 << 15), reinterpret_cast<Allocator*>(&_allocator32k)},
+                    {sizeof(Allocator*) + (1 << 16), reinterpret_cast<Allocator*>(&_allocator64k)},
+                    {sizeof(Allocator*) + (1 << 17), reinterpret_cast<Allocator*>(&_allocator128k)},
+                    {sizeof(Allocator*) + (1 << 18), reinterpret_cast<Allocator*>(&_allocator256k)},
+                    {sizeof(Allocator*) + (1 << 19), reinterpret_cast<Allocator*>(&_allocator512k)},
+                    {sizeof(Allocator*) + (1 << 20), reinterpret_cast<Allocator*>(&_allocator1M)}
+//                    {sizeof(Allocator*) + (1 << 21), reinterpret_cast<Allocator*>(&_allocator2M)}
+    };
+#else
+    for (size_t b = 3; b < 21; ++b) {
+        size_t blockSize = sizeof(Allocator*) + (1 << b);
+        _allocators[blockSize] = new Allocator(blockSize);
+    }
 #endif
 }
 
 /// Called one time when the application exits to cleanup any allocated memory.
 /// ~XallocInitDestroy destructor calls this function automatically.
-extern "C" void xalloc_destroy() {
+void xalloc_destroy() {
     lock_get();
     std::unique_lock<std::mutex> lock(xalloc_mutex);
     {
+        for (auto& [k, a] : _allocators) {
 #ifdef STATIC_POOLS
-        for (usint i = 0; i < MAX_ALLOCATORS; i++) {
-            _allocators[i]->~Allocator();
-            _allocators[i] = 0;
-        }
+            a->~Allocator();
 #else
-        for (usint i = 0; i < MAX_ALLOCATORS; i++) {
-            if (_allocators[i] == 0)
-                break;
-            delete _allocators[i];
-            _allocators[i] = 0;
-        }
+            delete a;
 #endif
+            a = nullptr;
+        }
+        _allocators.clear();
     }
     lock_release();
-
     lock_destroy();
 }
 
@@ -316,52 +285,20 @@ extern "C" void xalloc_destroy() {
 /// If a Allocator instance is not currently available to handle the size,
 ///  then a new Allocator instance is create.
 ///  @param[in] size - the client's requested block size.
-///  @return An Allocator instance that handles blocks of the requested
-///  size.
-extern "C" Allocator* xallocator_get_allocator(size_t size) {
-    // Based on the size, find the next higher powers of two value.
-    // Add sizeof(Allocator*) to the requested block size to hold the size
-    // within the block memory region. Most blocks are powers of two,
-    // however some common allocator block sizes can be explicitly defined
-    // to minimize wasted storage. This offers application specific tuning.
-    OPENFHE_DEBUG_FLAG(false);
+///  @return An Allocator instance that handles blocks of the requested size.
+Allocator* xallocator_get_allocator(size_t size) {
     size_t blockSize = size + sizeof(Allocator*);
-    if (blockSize > 256 && blockSize <= 396)
-        blockSize = 396;
-    else if (blockSize > 512 && blockSize <= 768)
-        blockSize = 768;
-    else
-        blockSize = nexthigher<size_t>(blockSize);
-    OPENFHE_DEBUG("finding allocator for blockSize " << blockSize);
-    Allocator* allocator = find_allocator(blockSize);
-
-#ifdef STATIC_POOLS
-
-    if (allocator == nullptr) {
-        std::cerr << "static pool allocator for blockSize " << blockSize << " not found! " << std::endl;
-    }
-    assert(allocator != nullptr);
-#else
-    // If there is not an allocator already created to handle this block size
-    if (allocator == nullptr) {
-        // Create a new allocator to handle blocks of the size required
-        allocator = new Allocator(blockSize, 0, 0, "xallocator");
-
-        // Insert allocator into array
-        insert_allocator(allocator);
-    }
-#endif
-
-    return allocator;
+    auto it = _allocators.lower_bound(blockSize);
+    if (it != _allocators.end())
+        return it->second;
+    OPENFHE_THROW("Exceeded max block size");
 }
 
 /// Allocates a memory block of the requested size. The blocks are created from
-///  the fixed block allocators.
+/// the fixed block allocators.
 ///  @param[in] size - the client requested size of the block.
-/// @return  A pointer to the client's memory block.
-extern "C" void* xmalloc(size_t size) {
-    OPENFHE_DEBUG_FLAG(false);
-
+///  @return  A pointer to the client's memory block.
+void* xmalloc(size_t size) {
     Allocator* allocator;
     void* blockMemoryPtr;
     lock_get();
@@ -370,23 +307,18 @@ extern "C" void* xmalloc(size_t size) {
         // Allocate a raw memory block
         allocator      = xallocator_get_allocator(size);
         blockMemoryPtr = allocator->Allocate(sizeof(Allocator*) + size);
-        OPENFHE_DEBUG("xmalloc " << size);
     }
     lock_release();
 
     // Set the block Allocator* within the raw memory block region
-    void* clientsMemoryPtr = set_block_allocator(blockMemoryPtr, allocator);
-    return clientsMemoryPtr;
+    return set_block_allocator(blockMemoryPtr, allocator);
 }
 
 /// Frees a memory block previously allocated with xalloc. The blocks are
-/// returned
-///  to the fixed block allocator that originally created it.
+/// returned to the fixed block allocator that originally created it.
 ///  @param[in] ptr - a pointer to a block created with xalloc.
-extern "C" void xfree(void* ptr) {
-    OPENFHE_DEBUG_FLAG(false);
-    OPENFHE_DEBUG("xfree ");
-    if (ptr == 0)
+void xfree(void* ptr) {
+    if (!ptr)
         return;
 
     // Extract the original allocator instance from the caller's block pointer
@@ -407,57 +339,63 @@ extern "C" void xfree(void* ptr) {
 /// Reallocates a memory block previously allocated with xalloc.
 ///  @param[in] ptr - a pointer to a block created with xalloc.
 ///  @param[in] size - the client requested block size to create.
-extern "C" void* xrealloc(void* oldMem, size_t size) {
-    if (oldMem == 0)
+void* xrealloc(void* oldMem, size_t size) {
+    if (!oldMem)
         return xmalloc(size);
 
     if (size == 0) {
         xfree(oldMem);
-        return 0;
+        return nullptr;
     }
-    else {
-        // Create a new memory block
-        void* newMem = xmalloc(size);
-        if (newMem != 0) {
-            // Get the original allocator instance from the old memory block
-            Allocator* oldAllocator = get_block_allocator(oldMem);
-            size_t oldSize          = oldAllocator->GetBlockSize() - sizeof(Allocator*);
 
-            // Copy the bytes from the old memory block into the new (as much as will
-            // fit)
-            std::memcpy(newMem, oldMem, (oldSize < size) ? oldSize : size);
+    // Create a new memory block
+    void* newMem = xmalloc(size);
+    if (newMem) {
+        // Get the original allocator instance from the old memory block
+        Allocator* oldAllocator = get_block_allocator(oldMem);
+        size_t oldSize          = oldAllocator->GetBlockSize() - sizeof(Allocator*);
 
-            // Free the old memory block
-            xfree(oldMem);
+        // Copy the bytes from the old memory block into the new (as much as will fit)
+        std::memcpy(newMem, oldMem, (oldSize < size) ? oldSize : size);
 
-            // Return the client pointer to the new memory block
-            return newMem;
-        }
-        return 0;
+        // Free the old memory block
+        xfree(oldMem);
+
+        // Return the client pointer to the new memory block
+        return newMem;
     }
+    return nullptr;
 }
 
 /// Output xallocator usage statistics
-extern "C" void xalloc_stats() {
+void xalloc_stats() {
     lock_get();
     std::unique_lock<std::mutex> lock(xalloc_mutex);
     {
-#ifdef STATIC_POOLS
-        std::cout << " Static Pools " << std::endl;
-#endif
+        std::cout << "\n***********************";
+        if (!_allocators.empty()) {
+            auto mode = _allocators.begin()->second->GetMode();
+            if (mode == Allocator::HEAP_BLOCKS)
+                std::cout << " HEAP_BLOCKS\n";
+            if (mode == Allocator::HEAP_POOL)
+                std::cout << " HEAP_POOL\n";
+            if (mode == Allocator::STATIC_POOL)
+                std::cout << " STATIC_POOL\n";
+        }
 
-        for (usint i = 0; i < MAX_ALLOCATORS; i++) {
-            if (_allocators[i] == 0)
-                break;
-
-            if (_allocators[i]->GetName() != nullptr)
-                std::cout << _allocators[i]->GetName();
-
-            std::cout << " Block Size: " << _allocators[i]->GetBlockSize();
-            std::cout << " Block Count: " << _allocators[i]->GetBlockCount();
-            std::cout << " Blocks In Use: " << _allocators[i]->GetBlocksInUse();
+        for (auto& [k, a] : _allocators) {
+            if (a->GetBlockCount() == 0)
+                continue;
+            if (a->GetName())
+                std::cout << a->GetName();
+            std::cout << " Block Size: " << a->GetBlockSize();
+            std::cout << " Block Count: " << a->GetBlockCount();
+            std::cout << " Block Allocs: " << a->GetAllocations();
+            std::cout << " Block Deallocs: " << a->GetDeallocations();
+            std::cout << " Blocks In Use: " << a->GetBlocksInUse();
             std::cout << std::endl;
         }
+        std::cout << "***********************\n";
     }
     lock_release();
 }

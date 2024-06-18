@@ -33,26 +33,17 @@
   See http://www.codeproject.com/Articles/1089905/A-Custom-STL-std-allocator-Replacement-Improves-Performance-
  */
 
-#include <assert.h>
-#include <new>
 #include "utils/blockAllocator/blockAllocator.h"
+#include "utils/exception.h"
+#include <new>
 
 //------------------------------------------------------------------------------
 // Constructor
 //------------------------------------------------------------------------------
-Allocator::Allocator(size_t size, usint objects, char* memory, const char* name)
-    : m_blockSize(size < sizeof(long*) ? sizeof(long*) : size),  // NOLINT
-      m_objectSize(size),
-      m_maxObjects(objects),
-      m_pHead(nullptr),
-      m_poolIndex(0),
-      m_blockCnt(0),
-      m_blocksInUse(0),
-      m_allocations(0),
-      m_deallocations(0),
-      m_name(name) {
+Allocator::Allocator(size_t size, size_t objects, char* memory, const char* name)
+    : m_blockSize(size), m_maxObjects(objects), m_name(name) {
     // If using a fixed memory pool
-    if (m_maxObjects) {
+    if (m_maxObjects > 0) {
         // If caller provided an external memory pool
         if (memory) {
             m_pPool         = memory;
@@ -62,9 +53,6 @@ Allocator::Allocator(size_t size, usint objects, char* memory, const char* name)
             m_pPool         = new char[m_blockSize * m_maxObjects];
             m_allocatorMode = HEAP_POOL;
         }
-    }
-    else {
-        m_allocatorMode = HEAP_BLOCKS;
     }
 }
 
@@ -87,39 +75,29 @@ Allocator::~Allocator() {
 // Allocate
 //------------------------------------------------------------------------------
 void* Allocator::Allocate(size_t size) {
-    assert(size <= m_objectSize);
+    if (size > m_blockSize)
+        OPENFHE_THROW("Exceeded max block size " + std::to_string(size));
 
-    // If can't obtain existing block then get a new one
     void* pBlock = Pop();
     if (!pBlock) {
         // If using a pool method then get block from pool,
         // otherwise using dynamic so get block from heap
-        if (m_maxObjects) {
+        if (m_maxObjects > 0) {
             // If we have not exceeded the pool maximum
-            if (m_poolIndex < m_maxObjects) {
-                pBlock = reinterpret_cast<void*>(m_pPool + (m_poolIndex++ * m_blockSize));
+            if (m_blockCnt < m_maxObjects) {
+                pBlock = reinterpret_cast<void*>(m_pPool + (m_blockCnt++ * m_blockSize));
             }
             else {
-                // Get the pointer to the new handler
-                std::new_handler handler = std::set_new_handler(0);
-                std::set_new_handler(handler);
-
-                // If a new handler is defined, call it
-                if (handler)
-                    (*handler)();
-                else
-                    assert(0);
+                OPENFHE_THROW("Exceeded max block count " + std::to_string(size));
             }
         }
         else {
-            m_blockCnt++;
+            ++m_blockCnt;
             pBlock = reinterpret_cast<void*>(new char[m_blockSize]);
         }
     }
-
-    m_blocksInUse++;
-    m_allocations++;
-
+    ++m_blocksInUse;
+    ++m_allocations;
     return pBlock;
 }
 
@@ -128,8 +106,8 @@ void* Allocator::Allocate(size_t size) {
 //------------------------------------------------------------------------------
 void Allocator::Deallocate(void* pBlock) {
     Push(pBlock);
-    m_blocksInUse--;
-    m_deallocations++;
+    --m_blocksInUse;
+    ++m_deallocations;
 }
 
 //------------------------------------------------------------------------------
@@ -146,11 +124,9 @@ void Allocator::Push(void* pMemory) {
 //------------------------------------------------------------------------------
 void* Allocator::Pop() {
     Block* pBlock = nullptr;
-
     if (m_pHead) {
         pBlock  = m_pHead;
         m_pHead = m_pHead->pNext;
     }
-
     return reinterpret_cast<void*>(pBlock);
 }
