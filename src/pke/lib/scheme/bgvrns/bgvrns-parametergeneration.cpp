@@ -314,10 +314,9 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
                 // 2*freshEncryptionNoise is done because after modulus switching the noise will be
                 // bounded by freshEncryptionNoise
-                noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half) *
+                noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half - 1) *
                               (2 * freshEncryptionNoise +
-                               numPrimes * (auxBits / r + 1) * expansionFactor * (std::pow(2, r) - 1) * B_e) /
-                              2.0;
+                               numPrimes * (auxBits / r + 1) * expansionFactor * (std::pow(2, r) - 1) * B_e);
             }
             else {
                 OPENFHE_THROW("Digit size value cannot be 0 for BV keyswitching");
