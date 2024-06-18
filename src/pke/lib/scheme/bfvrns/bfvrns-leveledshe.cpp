@@ -561,8 +561,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
         DCRTPoly cvtemp;
 
         if (cryptoParams->GetMultiplicationTechnique() == HPS || cryptoParams->GetMultiplicationTechnique() == BEHZ) {
-            for (size_t i = 0; i < cv.size(); i++) {
-                for (size_t j = i; j < cv.size(); j++) {
+            for (size_t i = 0; i < cvSize; i++) {
+                for (size_t j = i; j < cvSize; j++) {
                     if (isFirstAdd[i + j] == true) {
                         if (j == i) {
                             cvSquare[i + j] = cv[i] * cv[j];
@@ -606,8 +606,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
     DCRTPoly cvtemp;
 
     if (cryptoParams->GetMultiplicationTechnique() == HPS || cryptoParams->GetMultiplicationTechnique() == BEHZ) {
-        for (size_t i = 0; i < cv.size(); i++) {
-            for (size_t j = i; j < cv.size(); j++) {
+        for (size_t i = 0; i < cvSize; i++) {
+            for (size_t j = i; j < cvSize; j++) {
                 if (isFirstAdd[i + j] == true) {
                     if (j == i) {
                         cvSquare[i + j] = cv[i] * cv[j];
@@ -748,36 +748,25 @@ void LeveledSHEBFVRNS::EvalSquareInPlace(Ciphertext<DCRTPoly>& ciphertext, const
 
 void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
-
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    for (uint32_t i = 0; i < cv.size(); ++i) {
-        cv[i] *= constant;
-    }
-    const NativeInteger t(cryptoParams->GetPlaintextModulus());
-
+    for (auto& cvi : ciphertext->GetElements())
+        cvi *= constant;
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalAutomorphism(ConstCiphertext<DCRTPoly> ciphertext, uint32_t i,
                                                         const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap,
                                                         CALLER_INFO_ARGS_CPP) const {
-    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-
-    uint32_t N = cv[0].GetRingDimension();
+    uint32_t N = ciphertext->GetElements()[0].GetRingDimension();
 
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, i, &vec);
 
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
-
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
-
+    auto result = ciphertext->Clone();
     RelinearizeCore(result, evalKeyMap.at(i));
 
-    std::vector<DCRTPoly>& rcv = result->GetElements();
-
-    rcv[0] = rcv[0].AutomorphismTransform(i, vec);
-    rcv[1] = rcv[1].AutomorphismTransform(i, vec);
+    auto& rcv = result->GetElements();
+    rcv[0]    = rcv[0].AutomorphismTransform(i, vec);
+    rcv[1]    = rcv[1].AutomorphismTransform(i, vec);
 
     return result;
 }

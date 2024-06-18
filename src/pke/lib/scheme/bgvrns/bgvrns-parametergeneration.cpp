@@ -315,6 +315,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
                 // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
                 // 2*freshEncryptionNoise is done because after modulus switching the noise will be
                 // bounded by freshEncryptionNoise
+                // Note: std::pow(2, stat_sec_half - 1) == std::pow(2, stat_sec_half) / 2.0
                 noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half - 1) *
                               (2 * freshEncryptionNoise +
                                numPrimes * (auxBits / r + 1) * expansionFactor * (std::pow(2, r) - 1) * B_e);
