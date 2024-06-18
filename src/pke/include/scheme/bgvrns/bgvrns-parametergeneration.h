@@ -57,17 +57,16 @@ namespace lbcrypto {
    * @param noisePerLevel is the noise we wish to maintain at each level
    */
 struct BGVNoiseEstimates {
-    const double Berr;
-    const double Bkey;
-    const double expansionFactor;
-    const double freshEncryptionNoise;
-    const double keySwitchingNoise;
-    const double modSwitchingNoise;
-    const double noisePerLevel;
+    double Berr;
+    double Bkey;
+    double expansionFactor;
+    double freshEncryptionNoise;
+    double keySwitchingNoise;
+    double modSwitchingNoise;
+    double noisePerLevel;
 
-    BGVNoiseEstimates(const double Berr0, const double Bkey0, const double expansionFactor0,
-                      const double freshEncryptionNoise0, const double keySwitchingNoise0,
-                      const double modSwitchingNoise0, double noisePerLevel0)
+    BGVNoiseEstimates(double Berr0, double Bkey0, double expansionFactor0, double freshEncryptionNoise0,
+                      double keySwitchingNoise0, double modSwitchingNoise0, double noisePerLevel0)
         : Berr(Berr0),
           Bkey(Bkey0),
           expansionFactor(expansionFactor0),
@@ -122,10 +121,10 @@ private:
    * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
    * @return The ring dimension.
    */
-    uint32_t computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t qBound,
+    uint32_t computeRingDimension(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t qBound,
                                   uint32_t cyclOrder) const;
 
-    BGVNoiseEstimates computeNoiseEstimates(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+    BGVNoiseEstimates computeNoiseEstimates(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams,
                                             uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
                                             uint32_t auxTowers, uint32_t numPrimes) const;
 
@@ -144,8 +143,8 @@ private:
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
-        std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
-        uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
+        const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
+        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
 
     /*
    * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
@@ -154,7 +153,7 @@ private:
    * @param numPrimes Number of CRT moduli.
    * @param ringDimension ring dimension.
    */
-    void InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t numPrimes,
+    void InitializeFloodingDgg(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t numPrimes,
                                uint32_t ringDimension) const;
 };
 

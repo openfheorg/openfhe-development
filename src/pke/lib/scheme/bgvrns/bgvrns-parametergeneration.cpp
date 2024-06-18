@@ -41,8 +41,8 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                         uint32_t qBound, uint32_t cyclOrder) const {
+uint32_t ParameterGenerationBGVRNS::computeRingDimension(
+    const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t qBound, uint32_t cyclOrder) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     // GAUSSIAN security constraint
@@ -75,7 +75,7 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoP
 }
 
 BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
-    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
+    const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
     uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     uint32_t digitSize            = cryptoParamsBGVRNS->GetDigitSize();
@@ -160,7 +160,7 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
 }
 
 std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
-    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
+    const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
     uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const {
     if (numPrimes < 1) {
         OPENFHE_THROW("numPrimes must be at least 1");
@@ -272,8 +272,9 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     return std::make_pair(moduliQ, composite.GetMSB());
 }
 
-void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                      uint32_t numPrimes, uint32_t ringDimension) const {
+void ParameterGenerationBGVRNS::InitializeFloodingDgg(
+    const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t numPrimes,
+    uint32_t ringDimension) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
