@@ -193,6 +193,7 @@ TEST_P(UTGENERAL_MULTIHOP_PRE, MULTIHOP_PRE_TEST) {
     auto test = GetParam();
     run_demo_pre(test, 1);
     run_demo_pre(test, 3);
+    run_demo_pre(test, 4);
     run_demo_pre(test, 5);
 }
 

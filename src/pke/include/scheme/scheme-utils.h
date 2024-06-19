@@ -45,7 +45,7 @@ inline uint32_t ComputeNumLargeDigits(uint32_t numLargeDigits, uint32_t multDept
 inline uint32_t ComputeNumLargeDigitsPRE(uint32_t numLargeDigits, uint32_t numHops) {
     if (numLargeDigits > 0)
         return numLargeDigits;
-    if (numHops > 3)
+    if (numHops > 4)
         return 3;
     if (numHops > 1)
         return 2;
