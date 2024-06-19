@@ -98,8 +98,8 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
     std::vector<std::complex<double>> B(A);
     usint l = floor(log2(m));
 
-    // static usint maxMCached(131072);
-    static usint LOGM_MAX(17);  // maximum supported is 2^17 = 131072
+    // static usint maxMCached(262144);
+    static usint LOGM_MAX(18);  // maximum supported is 2^18 = 262144
     static std::vector<usint> cachedM(LOGM_MAX + 1, 0);
     static std::vector<std::vector<double>> cosTable(LOGM_MAX + 1);
     static std::vector<std::vector<double>> sinTable(LOGM_MAX + 1);
