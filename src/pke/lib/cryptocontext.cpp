@@ -305,35 +305,30 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
 }
 
 template <typename Element>
-std::vector<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
+std::set<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
     auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
     if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
         // there is no keys for the given id, return empty vector
-        return std::vector<uint32_t>();
+        return std::set<uint32_t>();
 
     // get all inidices from the existing automorphism key map
     auto& keyMap = *(keyMapIt->second);
-    std::vector<uint32_t> indices;
-    indices.reserve(keyMap.size());
+    std::set<uint32_t> indices;
     for (const auto& [key, _] : keyMap) {
-        indices.push_back(key);
+        indices.insert(key);
     }
 
     return indices;
 }
 
 template <typename Element>
-std::vector<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(std::vector<uint32_t> oldValues,
-                                                                  std::vector<uint32_t> newValues) {
-    // sort both vectors
-    std::sort(oldValues.begin(), oldValues.end());
-    std::sort(newValues.begin(), newValues.end());
-
-    std::vector<uint32_t> uniqueValues;
+std::set<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(const std::set<uint32_t>& oldValues,
+                                                               const std::set<uint32_t>& newValues) {
+    std::set<uint32_t> newUniqueValues;
     std::set_difference(newValues.begin(), newValues.end(), oldValues.begin(), oldValues.end(),
-                        std::inserter(uniqueValues, uniqueValues.begin()));
+                        std::inserter(newUniqueValues, newUniqueValues.begin()));
 
-    return uniqueValues;
+    return newUniqueValues;
 }
 
 template <typename Element>
@@ -346,22 +341,21 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
 
     auto mapToInsertIt   = mapToInsert->begin();
     const std::string id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
-    std::vector<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
+    std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
     if (existingIndices.empty()) {
         // there is no keys for the given id, so we insert full mapToInsert
         CryptoContextImpl<Element>::s_evalAutomorphismKeyMap[id] = mapToInsert;
     }
     else {
         // get all indices from mapToInsert
-        std::vector<uint32_t> newIndices;
-        newIndices.reserve(mapToInsert->size());
+        std::set<uint32_t> newIndices;
         for (const auto& [key, _] : *mapToInsert) {
-            newIndices.push_back(key);
+            newIndices.insert(key);
         }
 
         // find all indices in mapToInsert that are not in the exising map and
         // insert those new indices and their corresponding keys to the existing map
-        std::vector<uint32_t> indicesToInsert{CryptoContextImpl<Element>::GetUniqueValues(existingIndices, newIndices)};
+        std::set<uint32_t> indicesToInsert{CryptoContextImpl<Element>::GetUniqueValues(existingIndices, newIndices)};
         auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(id);
         auto& keyMap  = *(keyMapIt->second);
         for (uint32_t indx : indicesToInsert) {

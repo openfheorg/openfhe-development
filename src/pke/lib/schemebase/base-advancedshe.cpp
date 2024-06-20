@@ -173,7 +173,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
    */
 
     // get automorphism indices and convert them to a vector
-    std::unordered_set<uint32_t> indx_set{GenerateIndexListForEvalSum(privateKey)};
+    std::set<uint32_t> indx_set{GenerateIndexListForEvalSum(privateKey)};
     std::vector<uint32_t> indices(indx_set.begin(), indx_set.end());
 
     auto algo = privateKey->GetCryptoContext()->GetScheme();
@@ -194,7 +194,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     if (!IsPowerOfTwo(m))
         OPENFHE_THROW("Matrix summation of row-vectors is not supported for arbitrary cyclotomics.");
 
-    std::unordered_set<uint32_t> rowsIndices{GenerateIndices2nComplexRows(rowSize, m)};
+    std::set<uint32_t> rowsIndices{GenerateIndices2nComplexRows(rowSize, m)};
     indices.reserve(indices.size() + rowsIndices.size());
     indices.insert(indices.end(), rowsIndices.begin(), rowsIndices.end());
 
@@ -218,8 +218,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     usint batchSize = cryptoParams->GetEncodingParams()->GetBatchSize();
 
     // get indices for EvalSumCols() and merge them with the indices for EvalSum()
-    std::unordered_set<uint32_t> evalSumColsIndices = GenerateIndices2nComplexCols(batchSize, M);
-    std::unordered_set<uint32_t> evalSumIndices     = GenerateIndexListForEvalSum(privateKey);
+    std::set<uint32_t> evalSumColsIndices = GenerateIndices2nComplexCols(batchSize, M);
+    std::set<uint32_t> evalSumIndices     = GenerateIndexListForEvalSum(privateKey);
     evalSumColsIndices.merge(evalSumIndices);
     indices.reserve(indices.size() + evalSumColsIndices.size());
     indices.insert(indices.end(), evalSumColsIndices.begin(), evalSumColsIndices.end());
@@ -402,12 +402,11 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(const std::vector<Cipher
 }
 
 template <class Element>
-std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize, usint m) const {
-    std::unordered_set<uint32_t> indices;
+std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize, usint m) const {
+    std::set<uint32_t> indices;
     if (batchSize > 1) {
         auto isize = static_cast<size_t>(std::ceil(std::log2(batchSize)) - 1);
-        indices.reserve(isize + 1);
-        usint g = 5;
+        usint g    = 5;
         for (size_t i = 0; i < isize; ++i) {
             indices.insert(g);
             g = (g * g) % m;
@@ -422,12 +421,10 @@ std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices_2n(usint 
 }
 
 template <class Element>
-std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplex(usint batchSize, usint m) const {
+std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplex(usint batchSize, usint m) const {
     auto isize = static_cast<size_t>(std::ceil(std::log2(batchSize)));
 
-    std::unordered_set<uint32_t> indices;
-    indices.reserve(isize);
-
+    std::set<uint32_t> indices;
     uint32_t g = 5;
     for (size_t i = 0; i < isize; ++i) {
         indices.insert(g);
@@ -438,13 +435,11 @@ std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplex(
 }
 
 template <class Element>
-std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplexRows(usint rowSize, usint m) const {
+std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplexRows(usint rowSize, usint m) const {
     uint32_t colSize = m / (4 * rowSize);
     auto isize       = static_cast<size_t>(std::ceil(std::log2(colSize)));
 
-    std::unordered_set<uint32_t> indices;
-    indices.reserve(isize);
-
+    std::set<uint32_t> indices;
     uint32_t g = (NativeInteger(5).ModExp(rowSize, m)).ConvertToInt<uint32_t>();
     for (size_t i = 0; i < isize; ++i) {
         indices.insert(g);
@@ -455,12 +450,10 @@ std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplexR
 }
 
 template <class Element>
-std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplexCols(usint batchSize, usint m) const {
+std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplexCols(usint batchSize, usint m) const {
     auto isize = static_cast<size_t>(std::ceil(std::log2(batchSize)));
 
-    std::unordered_set<uint32_t> indices;
-    indices.reserve(isize);
-
+    std::set<uint32_t> indices;
     uint32_t g = NativeInteger(5).ModInverse(m).ConvertToInt<uint32_t>();
     for (size_t i = 0; i < isize; ++i) {
         indices.insert(g);
@@ -471,8 +464,7 @@ std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices2nComplexC
 }
 
 template <class Element>
-std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndexListForEvalSum(
-    const PrivateKey<Element>& privateKey) const {
+std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndexListForEvalSum(const PrivateKey<Element>& privateKey) const {
     const auto cryptoParams   = privateKey->GetCryptoParameters();
     const auto encodingParams = cryptoParams->GetEncodingParams();
     const auto elementParams  = cryptoParams->GetElementParams();
@@ -480,7 +472,7 @@ std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndexListForEvalS
     uint32_t batchSize = encodingParams->GetBatchSize();
     uint32_t m         = elementParams->GetCyclotomicOrder();
 
-    std::unordered_set<uint32_t> indices;
+    std::set<uint32_t> indices;
     if (IsPowerOfTwo(m)) {
         auto ccInst = privateKey->GetCryptoContext();
         // CKKS Packing
@@ -490,7 +482,6 @@ std::unordered_set<uint32_t> AdvancedSHEBase<Element>::GenerateIndexListForEvalS
     else {
         // Arbitrary cyclotomics
         auto isize = static_cast<size_t>(std::floor(std::log2(batchSize)));
-        indices.reserve(isize);
         uint32_t g = encodingParams->GetPlaintextGenerator();
         for (size_t i = 0; i < isize; i++) {
             indices.insert(g);

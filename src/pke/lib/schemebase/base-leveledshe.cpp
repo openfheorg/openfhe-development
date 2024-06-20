@@ -394,32 +394,24 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     //  if (indexList.size() > N - 1)
     //    OPENFHE_THROW("size exceeds the ring dimension");
 
-    // Do not generate those keys that have been already generated and added to the static storage (map)
-    const std::string id{privateKey->GetKeyTag()};
-    std::vector<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
-    // if no index found for the given id, then all keys are to be generated
-    std::vector<uint32_t> indicesToGenerate =
-        (existingIndices.empty()) ? indexList :
-                                    CryptoContextImpl<Element>::GetUniqueValues(existingIndices, {indexList});
-
-    // create and initialize the key map (key is a value from indicesToGenerate, EvalKey is nullptr). in this case
+    // create and initialize the key map (key is a value from indexList, EvalKey is nullptr). in this case
     // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
     // have already been created
     auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-    for (auto indx : indicesToGenerate) {
+    for (auto indx : indexList) {
         (*evalKeys)[indx];
     }
-    size_t sz = indicesToGenerate.size();
+    size_t sz = indexList.size();
 #pragma omp parallel for if (sz >= 4)
     for (size_t i = 0; i < sz; ++i) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        uint32_t index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
+        uint32_t index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-        (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
+        (*evalKeys)[indexList[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
