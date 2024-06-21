@@ -62,36 +62,28 @@ public:
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to CKKSRNS
     //================================================================================================================
-    template <typename T = bool>
-    void SetPlaintextModulus(PlaintextModulus ptModulus0) {
+    void SetPlaintextModulus(PlaintextModulus ptModulus0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetEvalAddCount(uint32_t evalAddCount0) {
+    void SetEvalAddCount(uint32_t evalAddCount0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetKeySwitchCount(uint32_t keySwitchCount0) {
+    void SetKeySwitchCount(uint32_t keySwitchCount0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
+    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
+    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetPRENumHops(uint32_t PRENumHops0) {
+    void SetPRENumHops(uint32_t PRENumHops0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetMultipartyMode(MultipartyMode multipartyMode0) {
+    void SetMultipartyMode(MultipartyMode multipartyMode0) override {
         DISABLED_FOR_CKKSRNS;
     }
-    template <typename T = bool>
-    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
+    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) override {
         DISABLED_FOR_CKKSRNS;
     }
 };

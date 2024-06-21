@@ -173,7 +173,7 @@ class Params {
     void SetToDefaults(SCHEME scheme);
 
 protected:
-    // How to disable a particular setter for a particular scheme and get an error at compile time if a user tries to call it:
+    // How to disable a particular setter for a particular scheme and get an exception thrown if a user tries to call it:
     // 1. The set function should be declared virtual in this file
     // 2. The same function should be re-defined in the scheme-specific derived file using macros DISABLED_FOR_xxxxRNS defined below.
     //
@@ -184,19 +184,15 @@ protected:
     //     ptModulus = ptModulus0;
     // }
     //
-    // the setter re-defined and disabled in gen-cryptocontext-ckksrns-params.h (should be a function template):
+    // the setter re-defined and disabled in gen-cryptocontext-ckksrns-params.h:
     //
-    // template <typename T = bool>
-    // void SetPlaintextModulus(PlaintextModulus ptModulus0) {
+    // void SetPlaintextModulus(PlaintextModulus ptModulus0) override {
     //     DISABLED_FOR_CKKS;
     // }
 
-    // a helper structure to disable setters
-    template <typename T>
-    struct AlwaysFailure : std::false_type {};
-#define DISABLED_FOR_CKKSRNS static_assert(AlwaysFailure<T>::value, "This function is not available for CKKSRNS.");
-#define DISABLED_FOR_BGVRNS  static_assert(AlwaysFailure<T>::value, "This function is not available for BGVRNS.");
-#define DISABLED_FOR_BFVRNS  static_assert(AlwaysFailure<T>::value, "This function is not available for BFVRNS.");
+#define DISABLED_FOR_CKKSRNS OPENFHE_THROW("This function is not available for CKKSRNS.");
+#define DISABLED_FOR_BGVRNS  OPENFHE_THROW("This function is not available for BGVRNS.");
+#define DISABLED_FOR_BFVRNS  OPENFHE_THROW("This function is not available for BFVRNS.");
 
 public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
