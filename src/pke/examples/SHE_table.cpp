@@ -38,7 +38,7 @@
 #include "openfhe.h"
 
 using namespace lbcrypto;
-void SHEExample(uint32_t ringDim, usint dcrtBits, usint firstMod, usint depth);
+void SHEExample(uint32_t ringDim, usint dcrtBits, usint firstMod, usint depth, SecurityLevel secLevel);
 
 // CalculateApproximationError() calculates the precision number (or approximation error).
 // The higher the precision, the less the error.
@@ -64,44 +64,44 @@ int main(int argc, char* argv[]) {
     usint dcrtBits   = 38;
     usint firstMod   = 40;
     usint depth      = 7;
-    SHEExample(ringDim, dcrtBits, firstMod, depth);
+    SHEExample(ringDim, dcrtBits, firstMod, depth, HEStd_128_classic);
 
     std::cout << "--------------------COLUMN 2--------------------" << std::endl;
     ringDim  = 1 << 15;
     dcrtBits = 42;
     firstMod = 44;
     depth    = 9;
-    SHEExample(ringDim, dcrtBits, firstMod, depth);
+    SHEExample(ringDim, dcrtBits, firstMod, depth, HEStd_192_classic);
 
     std::cout << "--------------------COLUMN 3--------------------" << std::endl;
     ringDim  = 1 << 15;
     dcrtBits = 39;
     firstMod = 40;
     depth    = 8;
-    SHEExample(ringDim, dcrtBits, firstMod, depth);
+    SHEExample(ringDim, dcrtBits, firstMod, depth, HEStd_256_classic);
 
     std::cout << "--------------------COLUMN 4--------------------" << std::endl;
     ringDim  = 1 << 14;
     dcrtBits = 38;
     firstMod = 40;
     depth    = 6;
-    SHEExample(ringDim, dcrtBits, firstMod, depth);
+    SHEExample(ringDim, dcrtBits, firstMod, depth, HEStd_128_quantum);
 
     std::cout << "--------------------COLUMN 5--------------------" << std::endl;
     ringDim  = 1 << 15;
     dcrtBits = 42;
     firstMod = 44;
     depth    = 8;
-    SHEExample(ringDim, dcrtBits, firstMod, depth);
+    SHEExample(ringDim, dcrtBits, firstMod, depth, HEStd_192_quantum);
 
     std::cout << "--------------------COLUMN 6--------------------" << std::endl;
     ringDim  = 1 << 15;
     dcrtBits = 39;
     firstMod = 40;
     depth    = 7;
-    SHEExample(ringDim, dcrtBits, firstMod, depth);
+    SHEExample(ringDim, dcrtBits, firstMod, depth, HEStd_256_quantum);
 }
-void SHEExample(uint32_t ringDim, usint dcrtBits, usint firstMod, usint depth) {
+void SHEExample(uint32_t ringDim, usint dcrtBits, usint firstMod, usint depth, SecurityLevel secLevel) {
     // Step 1: Setup CryptoContext
 
     // A. Specify main parameters
@@ -115,7 +115,7 @@ void SHEExample(uint32_t ringDim, usint dcrtBits, usint firstMod, usint depth) {
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
-    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetSecurityLevel(secLevel);
     parameters.SetRingDim(ringDim);
 
     /* A2) Bit-length of scaling factor.
