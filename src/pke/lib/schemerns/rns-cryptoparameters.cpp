@@ -396,6 +396,10 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     if (extraModulusSize > 0)
         sizeQ++;
 
+    // handles a BFV-specific situation where the number of digits might be initially higher than number of RNS limbs in Q
+    if (numPartQ > sizeQ)
+        numPartQ = sizeQ;
+
     // Compute ceil(sizeQ/numPartQ), the # of towers per digit
     size_t numPerPartQ = static_cast<size_t>(std::ceil(static_cast<double>(sizeQ) / numPartQ));
     if (sizeQ <= (numPerPartQ * (numPartQ - 1))) {
