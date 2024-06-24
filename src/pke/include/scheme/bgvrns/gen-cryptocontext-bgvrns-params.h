@@ -62,32 +62,25 @@ public:
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to BGVRNS
     //================================================================================================================
-    template <typename T = bool>
-    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
+    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
+    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetExecutionMode(ExecutionMode executionMode0) {
+    void SetExecutionMode(ExecutionMode executionMode0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetNoiseEstimate(double noiseEstimate0) {
+    void SetNoiseEstimate(double noiseEstimate0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetDesiredPrecision(double desiredPrecision0) {
+    void SetDesiredPrecision(double desiredPrecision0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BGVRNS;
     }
 };
