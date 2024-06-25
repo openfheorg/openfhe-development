@@ -121,8 +121,20 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case STD192_LMKCDEY:
             s << "STD192_LMKCDEY";
             break;
+        case STD192_3_LMKCDEY:
+            s << "STD192_3_LMKCDEY";
+            break;
+        case STD192_4_LMKCDEY:
+            s << "STD192_4_LMKCDEY";
+            break;
         case STD192Q_LMKCDEY:
             s << "STD192Q_LMKCDEY";
+            break;
+        case STD192Q_3_LMKCDEY:
+            s << "STD192Q_3_LMKCDEY";
+            break;
+        case STD192Q_4_LMKCDEY:
+            s << "STD192Q_4_LMKCDEY";
             break;
         case STD256_LMKCDEY:
             s << "STD256_LMKCDEY";
