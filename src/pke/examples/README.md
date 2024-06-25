@@ -47,7 +47,7 @@ File Listing
 How To Link Your Own Project After Having OpenFHE Installed
 ===================
 1. Check that you do not get error messages at the time of running "make install" for OpenFHE. You may need the admin rights to install.
-2. Go to a new directory where you will keep “my_own_project.cpp” file.
+2. Go to a new directory where you will keep â€œmy_own_project.cppâ€� file.
 3. Copy openfhe-development/CMakeLists.User.txt to the new directory and rename it to CMakeLists.txt.
 4. Open CMakeLists.txt for editing and add a line to its end as suggested in the comments in CMakeLists.txt. Something like this:
 ```
@@ -111,53 +111,53 @@ Now your code should look like this:
     ...........................................
 ```
 
-## Description of the CryptoContext parameters and their limitations
+## Description of the CryptoContext parameters and their restrictions
 Choosing the CryptoContext parameters is important for obtaining the best performance for your encrypted application, while maintaining the desired level of security. We strongly recommend that you specify the security level and have OpenFHE automatically select the other parameters, unless you are an expert in homomorphic encryption. If you would like to modify the parameters to understand how they affect noise growth and performance, we provide descriptions below.
 
 The default values for all the parameters can be found in [gen-cryptocontext-params-defaults.h](../include/scheme/gen-cryptocontext-params-defaults.h)
 
-If the set function is called for a parameter which is not available for the given scheme then an exception will be thrown at run-time.
+If the set function is called for a parameter which is not available for the given scheme, then an exception will be thrown at run-time.
 
 **PlaintextModulus ptModulus (BGV/BFV only)** - impacts noise growth and has to be set by user as it can not be zero.
 
-**uint32_t digitSize** - used in digit decomposition and impacts noise growth
+**uint32_t digitSize** - used in digit decomposition and impacts noise growth.
 
-**float standardDeviation** - error distribution parameter (recommended for advanced users), used for Gaussian error generation
+**float standardDeviation** - error distribution parameter (recommended for advanced users), used for Gaussian error generation.
 
 **SecretKeyDist secretKeyDist** - secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
 
-**uint32_t maxRelinSkDeg** - max relinearization degree of secret key polynomial (used for lazy relinearization)
+**uint32_t maxRelinSkDeg** - max relinearization degree of secret key polynomial (used for lazy relinearization).
 
 **KeySwitchTechnique ksTech**:  BV or HYBRID currently
 - For BV we do not have extra modulus, so the security depends on ciphertext modulus Q
 - For BV we need digitSize - digit size in digit decomposition
-- For HYBRID we do have extra modulus P, so the security depends on modulus P*Q
+- For HYBRID we do have an extra modulus P, so the security depends on modulus P*Q
 - For HYBRID we need numLargeDigits - number of digits in digit decomposition
 
-**ScalingTechnique scalTech (CKKS/BGV only)** - rescaling/modulus switching technique FLEXIBLEAUTOEXT, FIXEDMANUAL, FLEXIBLEAUTO, etc. NORESCALE is not allowed. see https://eprint.iacr.org/2022/915 for additional details.
+**ScalingTechnique scalTech (CKKS/BGV only)** - rescaling/modulus switching technique: FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT. NORESCALE is not allowed (used for BFV internally). see https://eprint.iacr.org/2022/915 for additional details.
 
-**uint32_t batchSize** - max batch size of messages to be packed in encoding (number of slots)
+**uint32_t batchSize** - max batch size of messages to be packed in encoding (number of slots).
 
-**ProxyReEncryptionMode PREMode** - PRE security mode IND-CPA, FIXED_NOISE_HRA, etc. NOISE_FLOODING_HRA supported only in BGV for scalTech=FIXEDMANUAL
+**ProxyReEncryptionMode PREMode** - PRE security mode IND-CPA, FIXED_NOISE_HRA. NOISE_FLOODING_HRA supported only in BGV for scaleTech=FIXEDMANUAL.
 
-**MultipartyMode multipartyMode (BFV/BGV only)** - multiparty security mode. The NOISE_FLOODING_MULTIPARTY mode adds extra noise and gives enhanced security compared to the FIXED_NOISE_MULTIPARTY mode. Can't set it for CKKS, but FIXED_NOISE_MULTIPARTY is used for CKKS internally
+**MultipartyMode multipartyMode (BFV/BGV only)** - multiparty security mode. The NOISE_FLOODING_MULTIPARTY mode adds extra noise and gives enhanced security compared to the FIXED_NOISE_MULTIPARTY mode. Not available for CKKS, but FIXED_NOISE_MULTIPARTY is used for CKKS internally
 
-**DecryptionNoiseMode decryptionNoiseMode (CKKS only)** - NOISE_FLOODING_DECRYPT mode is more secure than FIXED_NOISE_DECRYPT, but it requires executing all computations twice
+**DecryptionNoiseMode decryptionNoiseMode (CKKS only)** - NOISE_FLOODING_DECRYPT mode is more secure (provable secure) than FIXED_NOISE_DECRYPT, but it requires executing all computations twice.
 
 **ExecutionMode executionMode (CKKS only)** - The execution mode is only used in NOISE_FLOODING_DECRYPT mode:
-- EXEC_NOISE_ESTIMATION - we estimate the noise we need to add to the actual computation to guarantee good security
-- EXEC_EVALUATION - we input our noise estimate and perform the desired secure encrypted computation
-- Can't set it for BGV/BFV, but EXEC_EVALUATION is used for these schemes internally
+- EXEC_NOISE_ESTIMATION - we estimate the noise we need to add to the actual computation to guarantee good security.
+- EXEC_EVALUATION - we input our noise estimate and perform the desired secure encrypted computation.
+- Although not available for BGV/BFV, EXEC_EVALUATION is used for these schemes internally.
 
-**double noiseEstimate (CKKS only)** - This estimate is obtained from running the computation in EXEC_NOISE_ESTIMATION mode. It is only used in NOISE_FLOODING_DECRYPT mode
+**double noiseEstimate (CKKS only)** - This estimate is obtained from running the computation in EXEC_NOISE_ESTIMATION mode. It is only used in the NOISE_FLOODING_DECRYPT mode.
 
-**double desiredPrecision (CKKS only)** - desired precision for 128-bit. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor
+**double desiredPrecision (CKKS only)** - desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor.
 
-**uint32_t statisticalSecurity (BGV/CKKS only)** - statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success that any adversary can have. Specifically, they have a probability of success of at most 2^(-statisticalSecurity). Used for BGV when PREMode=NOISE_FLOODING_HRA and for CKKS when multipartyMode=NOISE_FLOODING_MULTIPARTY
+**uint32_t statisticalSecurity (BGV/CKKS only)** - statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success that any adversary can have. Specifically, they have a probability of success of at most 2^(-statisticalSecurity). Used for BGV when PREMode=NOISE_FLOODING_HRA and for CKKS when multipartyMode=NOISE_FLOODING_MULTIPARTY.
 
-**uint32_t numAdversarialQueries (BGV/CKKS only)** - this is the number of adversarial queries a user is expecting for their application, which we use to ensure security of CKKS in NOISE_FLOODING_DECRYPT mode. Used for BGV when PREMode=NOISE_FLOODING_HRA and for CKKS when multipartyMode=NOISE_FLOODING_MULTIPARTY
+**uint32_t numAdversarialQueries (BGV/CKKS only)** - this is the number of adversarial queries a user is expecting for their application, which we use to ensure security of CKKS in NOISE_FLOODING_DECRYPT mode. Used for BGV when PREMode=NOISE_FLOODING_HRA and for CKKS when multipartyMode=NOISE_FLOODING_MULTIPARTY.
 
-**uint32_t thresholdNumOfParties (BGV/BFV only)** - number of parties in a threshold application, which is used for bound on the joint secret key
+**uint32_t thresholdNumOfParties (BGV/BFV only)** - number of parties in a threshold application, which is used for the bound on the joint secret key.
 
 **uint32_t firstModSize (CKKS/BGV only) and uint32_t scalingModSize** - are used to calculate ciphertext modulus. The ciphertext modulus should be seen as: Q = q_0 * q_1 * ... * q_n * q':
 - q_0 is first prime, and it's number of bits is firstModSize
@@ -166,25 +166,25 @@ If the set function is called for a parameter which is not available for the giv
 - **firstModSize** is allowed for BGV with **scalTech = FIXEDMANUAL** only
 - **scalingModSize** is allowed for BGV with **scalTech = FIXEDMANUAL** and **scalingModSize** must be < 60 for CKKS and NATIVEINT=64.
 
-**uint32_t numLargeDigits** - number of digits in HYBRID key switching (see KeySwitchTechnique)
+**uint32_t numLargeDigits** - number of digits in HYBRID key switching (see KeySwitchTechnique).
 
-**uint32_t multiplicativeDepth** - the maximum number of multiplication we can perform before bootstrapping. Must be 0 for BGV if PREMode=NOISE_FLOODING_HRA
+**uint32_t multiplicativeDepth** - the maximum number of multiplications (in a binary tree manner) we can perform before bootstrapping. Must be 0 for BGV if PREMode=NOISE_FLOODING_HRA.
 
-**SecurityLevel securityLevel** - We use the values from the security standard at http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf. For given ring dimension and security level we have upper bound of possible highest modulus (Q for BV or P*Q for HYBRID)
+**SecurityLevel securityLevel** - We use the values from the security standard at http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf. Given the ring dimension and security level, we have upper bound of possible highest modulus (Q for BV or P*Q for HYBRID).
 
 **uint32_t ringDim** - ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
 
-**uint32_t evalAddCount (BGV/BFV only)** - number of additions (used for setting noise)
+**uint32_t evalAddCount (BGV/BFV only)** - maximum number of additions (used for setting noise). In BGV, it is the maximum number of additions at any level.
 
-**EncryptionTechnique encryptionTechnique (BFV only)** - STANDARD or EXTENDED mode for BFV encryption; EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower (see https://eprint.iacr.org/2022/915 for details). Can't be set up for CKKS/BGV, but STANDARD is used for these 2 schemes internally
+**EncryptionTechnique encryptionTechnique (BFV only)** - STANDARD or EXTENDED mode for BFV encryption; EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower (see https://eprint.iacr.org/2022/915 for details). Although not available for CKKS/BGV, STANDARD is used for these 2 schemes internally
 
-**MultiplicationTechnique multiplicationTechnique (BFV only)** - multiplication method in BFV: BEHZ, HPS, etc. (see https://eprint.iacr.org/2022/915 for details).
+**MultiplicationTechnique multiplicationTechnique (BFV only)** - multiplication method in BFV: BEHZ, HPS, HPSPOVERQ, HPSPOVERLEVELED (see https://eprint.iacr.org/2022/915 for details).
 
-**uint32_t keySwitchCount (BGV/BFV only)** - number of key switching operations (used for setting noise)
+**uint32_t keySwitchCount (BGV/BFV only)** - maximum number of key switching operations (used for setting noise).
 
-**uint32_t PRENumHops (BGV only)** - size of moduli used for PRE in the provable HRA setting:
+**uint32_t PRENumHops (BGV only)** - number of hops supported for PRE in the provable HRA setting:
 - used only with multipartyMode=NOISE_FLOODING_MULTIPARTY
 - if PREMode=NOISE_FLOODING_HRA, then **PRENumHops** must be > 0
 
 **COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression
-level in ciphertext SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient)
+level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient)
