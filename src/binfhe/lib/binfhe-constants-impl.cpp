@@ -103,20 +103,56 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case STD128_LMKCDEY:
             s << "STD128_LMKCDEY";
             break;
+        case STD128_3_LMKCDEY:
+            s << "STD128_3_LMKCDEY";
+            break;
+        case STD128_4_LMKCDEY:
+            s << "STD128_4_LMKCDEY";
+            break;
         case STD128Q_LMKCDEY:
             s << "STD128Q_LMKCDEY";
+            break;
+        case STD128Q_3_LMKCDEY:
+            s << "STD128Q_3_LMKCDEY";
+            break;
+        case STD128Q_4_LMKCDEY:
+            s << "STD128Q_4_LMKCDEY";
             break;
         case STD192_LMKCDEY:
             s << "STD192_LMKCDEY";
             break;
+        case STD192_3_LMKCDEY:
+            s << "STD192_3_LMKCDEY";
+            break;
+        case STD192_4_LMKCDEY:
+            s << "STD192_4_LMKCDEY";
+            break;
         case STD192Q_LMKCDEY:
             s << "STD192Q_LMKCDEY";
+            break;
+        case STD192Q_3_LMKCDEY:
+            s << "STD192Q_3_LMKCDEY";
+            break;
+        case STD192Q_4_LMKCDEY:
+            s << "STD192Q_4_LMKCDEY";
             break;
         case STD256_LMKCDEY:
             s << "STD256_LMKCDEY";
             break;
+        case STD256_3_LMKCDEY:
+            s << "STD256_3_LMKCDEY";
+            break;
+        case STD256_4_LMKCDEY:
+            s << "STD256_4_LMKCDEY";
+            break;
         case STD256Q_LMKCDEY:
             s << "STD256Q_LMKCDEY";
+            break;
+        case STD256Q_3_LMKCDEY:
+            s << "STD256Q_3_LMKCDEY";
+            break;
+        case STD256Q_4_LMKCDEY:
+            s << "STD256Q_4_LMKCDEY";
             break;
         case LPF_STD128:
             s << "LPF_STD128";
