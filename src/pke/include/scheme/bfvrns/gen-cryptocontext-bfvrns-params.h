@@ -58,6 +58,40 @@ public:
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
+
+    //================================================================================================================
+    // DISABLE FUNCTIONS that are not applicable to BFVRNS
+    //================================================================================================================
+    void SetScalingTechnique(ScalingTechnique scalTech0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetFirstModSize(uint32_t firstModSize0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetPRENumHops(uint32_t PRENumHops0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetExecutionMode(ExecutionMode executionMode0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetNoiseEstimate(double noiseEstimate0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetDesiredPrecision(double desiredPrecision0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetStatisticalSecurity(uint32_t statisticalSecurity0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
+        DISABLED_FOR_BFVRNS;
+    }
 };
 //====================================================================================================================
 

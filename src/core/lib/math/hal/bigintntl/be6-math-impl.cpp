@@ -61,10 +61,10 @@ template M6Integer GreatestCommonDivisor(const M6Integer& a, const M6Integer& b)
 template bool MillerRabinPrimalityTest(const M6Integer& p, const usint niter);
 template const M6Integer PollardRhoFactorization(const M6Integer& n);
 template void PrimeFactorize(M6Integer n, std::set<M6Integer>& primeFactors);
-template M6Integer FirstPrime(uint32_t nBits, uint32_t m);
-template M6Integer LastPrime(uint32_t nBits, uint32_t m);
-template M6Integer NextPrime(const M6Integer& q, uint32_t m);
-template M6Integer PreviousPrime(const M6Integer& q, uint32_t m);
+template M6Integer FirstPrime(uint32_t nBits, uint64_t m);
+template M6Integer LastPrime(uint32_t nBits, uint64_t m);
+template M6Integer NextPrime(const M6Integer& q, uint64_t m);
+template M6Integer PreviousPrime(const M6Integer& q, uint64_t m);
 template std::vector<M6Integer> GetTotientList(const M6Integer& n);
 template M6Vector PolyMod(const M6Vector& dividend, const M6Vector& divisor, const M6Integer& modulus);
 template M6Vector PolynomialMultiplication(const M6Vector& a, const M6Vector& b);

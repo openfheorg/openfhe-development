@@ -203,8 +203,8 @@ public:
                                             n, numPartQ);
     }
 
-    virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ,
+    virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t cyclOrder,
+                                  uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t numPartQ,
                                   COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
@@ -213,19 +213,19 @@ public:
     }
 
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                                 uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
-                                 usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
+                                 uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                                 uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
         return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
-                                            firstModSize, dcrtBits, numPartQ, multihopQBound);
+                                            firstModSize, dcrtBits, numPartQ, PRENumHops);
     }
 
     /////////////////////////////////////////
     // PKE WRAPPER
     /////////////////////////////////////////
 
-    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse) {
+    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse) const {
         VerifyPKEEnabled(__func__);
         return m_PKE->KeyGenInternal(cc, makeSparse);
     }
@@ -822,14 +822,14 @@ public:
         return m_LeveledSHE->EvalMultMutable(ciphertext, plaintext);
     }
 
-    virtual Ciphertext<Element> MultByMonomial(ConstCiphertext<Element> ciphertext, usint power) const {
+    virtual Ciphertext<Element> MultByMonomial(ConstCiphertext<Element> ciphertext, uint32_t power) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
         return m_LeveledSHE->MultByMonomial(ciphertext, power);
     }
 
-    virtual void MultByMonomialInPlace(Ciphertext<Element>& ciphertext, usint power) const {
+    virtual void MultByMonomialInPlace(Ciphertext<Element>& ciphertext, uint32_t power) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -871,15 +871,15 @@ public:
     // SHE AUTOMORPHISM Wrapper
     /////////////////////////////////////////
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const;
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<usint>& indexList) const;
+        const std::vector<uint32_t>& indexList) const;
 
-    virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
-                                                 const std::map<usint, EvalKey<Element>>& evalKeyMap,
+    virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, uint32_t i,
+                                                 const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
                                                  CALLER_INFO_ARGS_HDR) const {
         if (m_LeveledSHE) {
             if (!ciphertext)
@@ -893,7 +893,8 @@ public:
         OPENFHE_THROW(errorMsg);
     }
 
-    virtual Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element> ciphertext, const usint index, const usint m,
+    virtual Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element> ciphertext, const uint32_t index,
+                                                 const uint32_t m,
                                                  const std::shared_ptr<std::vector<Element>> digits) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
@@ -920,9 +921,9 @@ public:
    * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
    * @return resulting ciphertext
    */
-    virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
+    virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, uint32_t index,
                                                     const std::shared_ptr<std::vector<Element>> digits, bool addFirst,
-                                                    const std::map<usint, EvalKey<Element>>& evalKeys) const {
+                                                    const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -950,12 +951,12 @@ public:
         return m_KeySwitch->KeySwitchExt(ciphertext, addFirst);
     }
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
         const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
         const std::vector<int32_t>& indexList) const;
 
-    virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, usint i,
-                                            const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
+    virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, uint32_t i,
+                                            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -964,7 +965,7 @@ public:
         return m_LeveledSHE->EvalAtIndex(ciphertext, i, evalKeyMap);
     }
 
-    virtual usint FindAutomorphismIndex(usint index, usint m) {
+    virtual uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) {
         VerifyLeveledSHEEnabled(__func__);
         return m_LeveledSHE->FindAutomorphismIndex(index, m);
     }
@@ -1184,18 +1185,18 @@ public:
     // Advanced SHE EVAL SUM
     /////////////////////////////////////
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                                                             const PublicKey<Element> publicKey) const;
-
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                                 const PublicKey<Element> publicKey,
-                                                                                 usint rowSize, usint subringDim) const;
-
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
         const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
 
-    virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, usint batchSize,
-                                        const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
+        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+        std::vector<uint32_t>& indices) const;
+
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
+        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
+
+    virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
+                                        const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -1204,9 +1205,9 @@ public:
         return m_AdvancedSHE->EvalSum(ciphertext, batchSize, evalKeyMap);
     }
 
-    virtual Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
-                                            const std::map<usint, EvalKey<Element>>& evalKeyMap,
-                                            usint subringDim) const {
+    virtual Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, uint32_t rowSize,
+                                            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
+                                            uint32_t subringDim) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -1215,9 +1216,9 @@ public:
         return m_AdvancedSHE->EvalSumRows(ciphertext, rowSize, evalKeyMap, subringDim);
     }
 
-    virtual Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, usint batchSize,
-                                            const std::map<usint, EvalKey<Element>>& evalKeyMap,
-                                            const std::map<usint, EvalKey<Element>>& rightEvalKeyMap) const {
+    virtual Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
+                                            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
+                                            const std::map<uint32_t, EvalKey<Element>>& rightEvalKeyMap) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!evalKeyMap.size())
             OPENFHE_THROW("Input first evaluation key map is empty");
@@ -1231,13 +1232,13 @@ public:
     /////////////////////////////////////
 
     virtual Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext1,
-                                                 ConstCiphertext<Element> ciphertext2, usint batchSize,
-                                                 const std::map<usint, EvalKey<Element>>& evalSumKeyMap,
+                                                 ConstCiphertext<Element> ciphertext2, uint32_t batchSize,
+                                                 const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
                                                  const EvalKey<Element> evalMultKey) const;
 
     virtual Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext,
-                                                 usint batchSize,
-                                                 const std::map<usint, EvalKey<Element>>& evalSumKeyMap) const {
+                                                 uint32_t batchSize,
+                                                 const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input first ciphertext is nullptr");
@@ -1256,7 +1257,7 @@ public:
     }
 
     virtual Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec,
-                                          const std::map<usint, EvalKey<Element>>& evalKeyMap) const {
+                                          const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW("Input ciphertext vector is empty");
@@ -1302,16 +1303,18 @@ public:
                                                const PrivateKey<Element> newPrivateKey,
                                                const EvalKey<Element> evalKey) const;
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
-        const std::vector<usint>& indexList, const std::string& keyId);
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+        const std::vector<uint32_t>& indexList, const std::string& keyId);
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
         const std::vector<int32_t>& indexList, const std::string& keyId);
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap,
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap,
         const std::string& keyId = "");
 
     virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
@@ -1320,13 +1323,13 @@ public:
     virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
                                               const std::string& keyId);
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
 
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
 
     virtual PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
                                                const std::string& keyId);
@@ -1387,8 +1390,8 @@ public:
         return;
     }
 
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
-                                                                           uint32_t slots) {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
+                                                                              uint32_t slots) {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalBootstrapKeyGen(privateKey, slots);
     }
@@ -1412,8 +1415,8 @@ public:
         return m_SchemeSwitch->EvalCKKStoFHEWSetup(params);
     }
 
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
-                                                                            ConstLWEPrivateKey& lwesk) {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
+                                                                               ConstLWEPrivateKey& lwesk) {
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->EvalCKKStoFHEWKeyGen(keyPair, lwesk);
     }
@@ -1436,11 +1439,11 @@ public:
         return;
     }
 
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
-                                                                            ConstLWEPrivateKey& lwesk,
-                                                                            uint32_t numSlots = 0,
-                                                                            uint32_t numCtxts = 0, uint32_t dim1 = 0,
-                                                                            uint32_t L = 0) {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
+                                                                               ConstLWEPrivateKey& lwesk,
+                                                                               uint32_t numSlots = 0,
+                                                                               uint32_t numCtxts = 0, uint32_t dim1 = 0,
+                                                                               uint32_t L = 0) {
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
     }
@@ -1464,8 +1467,8 @@ public:
         return m_SchemeSwitch->EvalSchemeSwitchingSetup(params);
     }
 
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair,
-                                                                                 ConstLWEPrivateKey& lwesk) {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair,
+                                                                                    ConstLWEPrivateKey& lwesk) {
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
     }
@@ -1563,18 +1566,20 @@ public:
         // only works for JSON encoding
         // m_FHE was added in v1.1.2
         try {
-           ar(::cereal::make_nvp("fhe", m_FHE));
-        } catch(cereal::Exception&) {
-        	m_FHE = nullptr;
+            ar(::cereal::make_nvp("fhe", m_FHE));
+        }
+        catch (cereal::Exception&) {
+            m_FHE = nullptr;
         }
 
         // try-catch is used for backwards compatibility down to 1.0.x
         // only works for JSON encoding
         // m_SchemeSwitch was added in v1.1.3
         try {
-           ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
-        } catch(cereal::Exception&) {
-        	m_SchemeSwitch = nullptr;
+            ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
+        }
+        catch (cereal::Exception&) {
+            m_SchemeSwitch = nullptr;
         }
 
         uint32_t enabled = 0;

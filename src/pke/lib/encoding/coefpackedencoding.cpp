@@ -53,7 +53,7 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, i
         typename P::Integer entry{value[i]};
 
         if (value[i] < 0) {
-            if (schemeID == SCHEME::BFVRNS_SCHEME) {
+            if (isBFVRNS(schemeID)) {
                 // TODO: Investigate why this doesn't work with q instead of t.
                 uint64_t adjustedVal{mod - static_cast<uint64_t>(llabs(value[i]))};
                 entry = typename P::Integer(adjustedVal);
@@ -88,6 +88,7 @@ bool CoefPackedEncoding::Encode() {
     if (this->typeFlag == IsDCRTPoly) {
         this->encodedVectorDCRT = this->encodedVector;
         encodedVectorDCRT       = encodedVectorDCRT.Times(scalingFactorInt);
+        this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
     }
 
     this->isEncoded = true;

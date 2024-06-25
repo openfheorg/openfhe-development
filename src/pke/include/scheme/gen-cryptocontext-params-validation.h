@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2024, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,39 +28,19 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
+#define __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
 
-#ifndef LBCRYPTO_CRYPTO_KEY_KEYPAIR_H
-#define LBCRYPTO_CRYPTO_KEY_KEYPAIR_H
+#include "scheme/gen-cryptocontext-params.h"
 
-#include "key/privatekey.h"
-#include "key/publickey.h"
-
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
 namespace lbcrypto {
-
-template <class Element>
-class KeyPair {
-public:
-    PublicKey<Element> publicKey;
-    PrivateKey<Element> secretKey;
-
-    KeyPair(PublicKey<Element> a, PrivateKey<Element> b) : publicKey(a), secretKey(b) {}
-
-    explicit KeyPair(PublicKeyImpl<Element>* a = nullptr, PrivateKeyImpl<Element>* b = nullptr)
-        : publicKey(a), secretKey(b) {}
-
-    bool good() const {
-        return publicKey && secretKey;
-    }
-
-    bool is_allocated() const {
-        return good();
-    }
-};
+/**
+ * @brief Validate parameters for generating cryptocontext. Doesn't validate the parameters which set functions
+ *        are disabled as they cannot be set by users
+ * @param parameters scheme-specific parameters to generate cryptocontext
+ */
+void validateParametersForCryptocontext(const Params& parameters);
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__

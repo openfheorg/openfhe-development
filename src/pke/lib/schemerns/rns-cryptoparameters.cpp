@@ -70,24 +70,24 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
     DiscreteFourierTransform::Initialize(n * 2, n / 2);
     ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n, moduliQ);
     if (m_ksTechnique == HYBRID) {
-        // Compute ceil(sizeQ/m_numPartQ), the # of towers per digit
-        uint32_t a = ceil(static_cast<double>(sizeQ) / numPartQ);
-        if ((int32_t)(sizeQ - a * (numPartQ - 1)) <= 0) {
-            auto str =
-                "CryptoParametersRNS::PrecomputeCRTTables - HYBRID key "
-                "switching parameters: Can't appropriately distribute " +
-                std::to_string(sizeQ) + " towers into " + std::to_string(numPartQ) +
-                " digits. Please select different number of digits.";
+        // numPartQ can not be zero as there is a division by numPartQ
+        if (numPartQ == 0)
+            OPENFHE_THROW("numPartQ is zero");
+
+        // Compute ceil(sizeQ/numPartQ), the # of towers per digit
+        uint32_t a = static_cast<uint32_t>(std::ceil(static_cast<double>(sizeQ) / numPartQ));
+        if (sizeQ <= (a * (numPartQ - 1))) {
+            auto str = "HYBRID key switching parameters: Can't appropriately distribute " + std::to_string(sizeQ) +
+                       " towers into " + std::to_string(numPartQ) +
+                       " digits. Please select different number of digits.";
             OPENFHE_THROW(str);
         }
 
         m_numPerPartQ = a;
 
         // Compute the composite digits PartQ = Q_j
-        std::vector<BigInteger> moduliPartQ;
-        moduliPartQ.resize(m_numPartQ);
+        std::vector<BigInteger> moduliPartQ(m_numPartQ, 1);
         for (usint j = 0; j < m_numPartQ; j++) {
-            moduliPartQ[j] = BigInteger(1);
             for (usint i = a * j; i < (j + 1) * a; i++) {
                 if (i < moduliQ.size())
                     moduliPartQ[j] *= moduliQ[i];
@@ -95,10 +95,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
 
         // Compute PartQHat_i = Q/Q_j
-        std::vector<BigInteger> PartQHat;
-        PartQHat.resize(m_numPartQ);
+        std::vector<BigInteger> PartQHat(m_numPartQ, 1);
         for (size_t i = 0; i < m_numPartQ; i++) {
-            PartQHat[i] = BigInteger(1);
             for (size_t j = 0; j < m_numPartQ; j++) {
                 if (j != i)
                     PartQHat[i] *= moduliPartQ[j];
@@ -122,16 +120,15 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
         }
 
-        uint32_t sizeP;
         // Find number and size of individual special primes.
         uint32_t maxBits = moduliPartQ[0].GetLengthForBase(2);
-        for (usint j = 1; j < m_numPartQ; j++) {
+        for (uint32_t j = 1; j < m_numPartQ; j++) {
             uint32_t bits = moduliPartQ[j].GetLengthForBase(2);
             if (bits > maxBits)
                 maxBits = bits;
         }
         // Select number of primes in auxiliary CRT basis
-        sizeP              = ceil(static_cast<double>(maxBits) / auxBits);
+        uint32_t sizeP     = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
         uint64_t primeStep = FindAuxPrimeStep();
 
         // Choose special primes in auxiliary basis and compute their roots
@@ -143,7 +140,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         NativeInteger firstP = FirstPrime<NativeInteger>(auxBits, primeStep);
         NativeInteger pPrev  = firstP;
         BigInteger modulusP(1);
-        for (usint i = 0; i < sizeP; i++) {
+        for (uint32_t i = 0; i < sizeP; i++) {
             // The following loop makes sure that moduli in
             // P and Q are different
             bool foundInQ = false;
@@ -234,11 +231,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
 
         // Pre-compute compementary partitions for ModUp
-        uint32_t alpha = ceil(static_cast<double>(sizeQ) / m_numPartQ);
+        uint32_t alpha = static_cast<uint32_t>(std::ceil(static_cast<double>(sizeQ) / m_numPartQ));
         m_paramsComplPartQ.resize(sizeQ);
         m_modComplPartqBarrettMu.resize(sizeQ);
         for (int32_t l = sizeQ - 1; l >= 0; l--) {
-            uint32_t beta = ceil(static_cast<double>(l + 1) / alpha);
+            uint32_t beta = static_cast<uint32_t>(std::ceil(static_cast<double>(l + 1) / alpha));
             m_paramsComplPartQ[l].resize(beta);
             m_modComplPartqBarrettMu[l].resize(beta);
             for (uint32_t j = 0; j < beta; j++) {
@@ -305,8 +302,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // Pre-compute QHat mod complementary partition qi's
         m_PartQlHatModp.resize(sizeQ);
         for (uint32_t l = 0; l < sizeQ; l++) {
-            uint32_t alpha = ceil(static_cast<double>(sizeQ) / m_numPartQ);
-            uint32_t beta  = ceil(static_cast<double>(l + 1) / alpha);
+            uint32_t alpha = static_cast<uint32_t>(std::ceil(static_cast<double>(sizeQ) / m_numPartQ));
+            uint32_t beta  = static_cast<uint32_t>(std::ceil(static_cast<double>(l + 1) / alpha));
             m_PartQlHatModp[l].resize(beta);
             for (uint32_t k = 0; k < beta; k++) {
                 auto paramsPartQ   = GetParamsPartQ(k)->GetParams();
@@ -386,6 +383,53 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
 uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
     return GetElementParams()->GetRingDimension();
+}
+
+std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
+                                                              double dcrtBits, double extraModulusSize,
+                                                              uint32_t numPrimes, uint32_t auxBits) {
+    // numPartQ can not be zero as there is a division by numPartQ
+    if (numPartQ == 0)
+        OPENFHE_THROW("numPartQ is zero");
+
+    size_t sizeQ = numPrimes;
+    if (extraModulusSize > 0)
+        sizeQ++;
+
+    // handles a BFV-specific situation where the number of digits might be initially higher than number of RNS limbs in Q
+    if (numPartQ > sizeQ)
+        numPartQ = sizeQ;
+
+    // Compute ceil(sizeQ/numPartQ), the # of towers per digit
+    size_t numPerPartQ = static_cast<size_t>(std::ceil(static_cast<double>(sizeQ) / numPartQ));
+    if (sizeQ <= (numPerPartQ * (numPartQ - 1))) {
+        auto str = "HYBRID key switching parameters: Can't appropriately distribute " + std::to_string(sizeQ) +
+                   " towers into " + std::to_string(numPartQ) + " digits. Please select different number of digits.";
+        OPENFHE_THROW(str);
+    }
+
+    // create a vector with the same value of bit sizes
+    std::vector<double> qi(sizeQ, dcrtBits);
+    qi[0] = firstModulusSize;
+    if (extraModulusSize > 0)
+        qi[sizeQ - 1] = extraModulusSize;
+
+    // Compute partitions of Q into numPartQ digits
+    double maxBits = 0;
+    for (size_t j = 0; j < numPartQ; ++j) {
+        size_t startTower = j * numPerPartQ;
+        size_t endTower   = ((j + 1) * numPerPartQ - 1 < sizeQ) ? (j + 1) * numPerPartQ - 1 : sizeQ - 1;
+
+        // sum qi elements qi[startTower] + ... + qi[endTower] inclusive. the end element should be qi.begin()+(endTower+1)
+        double bits = std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0);
+        if (bits > maxBits)
+            maxBits = bits;
+    }
+
+    // Select number of primes in auxiliary CRT basis
+    auto sizeP = static_cast<uint32_t>(std::ceil(maxBits / auxBits));
+
+    return std::make_pair(sizeP * auxBits, sizeP);
 }
 
 }  // namespace lbcrypto

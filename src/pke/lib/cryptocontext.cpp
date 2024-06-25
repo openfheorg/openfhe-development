@@ -145,10 +145,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
         OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
     }
 
-    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, publicKey, rowSize, subringDim);
+    std::vector<usint> indices;
+    auto evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys;
+    return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -159,10 +160,11 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::E
         OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
     }
 
-    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, publicKey);
+    std::vector<usint> indices;
+    auto evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
-    return evalKeys;  // TODO (dsuponit): the return statement will stay for some time to ensure backward compatibility
+    return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
 template <typename Element>
@@ -196,12 +198,30 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::G
     const std::string& keyID) {
     auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
     if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
-        std::string errMsg(
-            std::string("Call EvalAutomorphismKeyGen() to have EvalAutomorphismKeys available for ID [") + keyID +
-            "].");
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyID + "].");
     }
     return ekv->second;
+}
+
+template <typename Element>
+std::shared_ptr<std::map<usint, EvalKey<Element>>> CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(
+    const std::string& keyID, const std::vector<uint32_t>& indexList) {
+    if (!indexList.size())
+        OPENFHE_THROW("indexList is empty");
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> keyMap =
+        CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID);
+
+    // create a return map if specific indices are provided
+    std::map<usint, EvalKey<Element>> retMap;
+    for (uint32_t indx : indexList) {
+        const auto it = keyMap->find(indx);
+        if (it == keyMap->end()) {
+            OPENFHE_THROW("Key is not generated for index [" + std::to_string(indx) + "] and keyID [" + keyID + "]");
+        }
+        retMap.emplace(indx, it->second);
+    }
+    return std::make_shared<std::map<usint, EvalKey<Element>>>(retMap);
 }
 
 template <typename Element>
@@ -285,34 +305,30 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
 }
 
 template <typename Element>
-std::vector<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
+std::set<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
     auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
     if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
         // there is no keys for the given id, return empty vector
-        return std::vector<uint32_t>();
+        return std::set<uint32_t>();
 
     // get all inidices from the existing automorphism key map
     auto& keyMap = *(keyMapIt->second);
-    std::vector<uint32_t> indices(keyMap.size());
+    std::set<uint32_t> indices;
     for (const auto& [key, _] : keyMap) {
-        indices.push_back(key);
+        indices.insert(key);
     }
 
     return indices;
 }
 
 template <typename Element>
-std::vector<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(std::vector<uint32_t> oldValues,
-                                                                  std::vector<uint32_t> newValues) {
-    // sort both vectors
-    std::sort(oldValues.begin(), oldValues.end());
-    std::sort(newValues.begin(), newValues.end());
-
-    std::vector<uint32_t> uniqueValues;
+std::set<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(const std::set<uint32_t>& oldValues,
+                                                               const std::set<uint32_t>& newValues) {
+    std::set<uint32_t> newUniqueValues;
     std::set_difference(newValues.begin(), newValues.end(), oldValues.begin(), oldValues.end(),
-                        std::inserter(uniqueValues, uniqueValues.begin()));
+                        std::inserter(newUniqueValues, newUniqueValues.begin()));
 
-    return uniqueValues;
+    return newUniqueValues;
 }
 
 template <typename Element>
@@ -325,21 +341,21 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
 
     auto mapToInsertIt   = mapToInsert->begin();
     const std::string id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
-    std::vector<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
+    std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
     if (existingIndices.empty()) {
         // there is no keys for the given id, so we insert full mapToInsert
         CryptoContextImpl<Element>::s_evalAutomorphismKeyMap[id] = mapToInsert;
     }
     else {
         // get all indices from mapToInsert
-        std::vector<uint32_t> newIndices(mapToInsert->size());
+        std::set<uint32_t> newIndices;
         for (const auto& [key, _] : *mapToInsert) {
-            newIndices.push_back(key);
+            newIndices.insert(key);
         }
 
         // find all indices in mapToInsert that are not in the exising map and
         // insert those new indices and their corresponding keys to the existing map
-        std::vector<uint32_t> indicesToInsert{CryptoContextImpl<Element>::GetUniqueValues(existingIndices, newIndices)};
+        std::set<uint32_t> indicesToInsert{CryptoContextImpl<Element>::GetUniqueValues(existingIndices, newIndices)};
         auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(id);
         auto& keyMap  = *(keyMapIt->second);
         for (uint32_t indx : indicesToInsert) {
@@ -358,23 +374,23 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint numRows,
                                                             const std::map<usint, EvalKey<Element>>& evalSumKeys,
                                                             usint subringDim) const {
     ValidateCiphertext(ciphertext);
 
-    auto rv = GetScheme()->EvalSumRows(ciphertext, rowSize, evalSumKeys, subringDim);
+    auto rv = GetScheme()->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
     return rv;
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
-    ConstCiphertext<Element> ciphertext, usint rowSize,
+    ConstCiphertext<Element> ciphertext, usint numCols,
     const std::map<usint, EvalKey<Element>>& evalSumKeysRight) const {
     ValidateCiphertext(ciphertext);
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    auto rv          = GetScheme()->EvalSumCols(ciphertext, rowSize, evalSumKeys, evalSumKeysRight);
+    auto rv          = GetScheme()->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
     return rv;
 }
 

@@ -743,7 +743,7 @@ std::vector<std::vector<NativeInteger>> ExtractLWEpacked(const Ciphertext<DCRTPo
     auto originalB{(ct->GetElements()[0]).GetElementAtIndex(0)};
     originalB.SetFormat(Format::COEFFICIENT);
     auto* ptrB = &originalB.GetValues()[0];
-    size_t N = originalB.GetLength();
+    size_t N   = originalB.GetLength();
     std::vector<std::vector<NativeInteger>> extracted{std::vector<NativeInteger>(ptrB, ptrB + N),
                                                       std::vector<NativeInteger>(ptrA, ptrA + N)};
     return extracted;
@@ -1382,6 +1382,10 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     auto ccCKKS    = ciphertext->GetCryptoContext();
     uint32_t slots = m_numSlotsCKKS;
 
+    if (numCtxts == 0 || numCtxts > slots) {
+        numCtxts = slots;
+    }
+
     // Step 1. Homomorphic decoding
     auto ctxtDecoded = EvalSlotsToCoeffsSwitch(*ccCKKS, ciphertext);
     ccCKKS->GetScheme()->ModReduceInternalInPlace(ctxtDecoded, 1);
@@ -1400,10 +1404,6 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     uint32_t n = m_ccLWE->GetParams()->GetLWEParams()->Getn();  // lattice parameter for additive LWE
     std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts(numCtxts);
     auto AandB = ExtractLWEpacked(ctSwitched);
-
-    if (numCtxts == 0 || numCtxts > slots) {
-        numCtxts = slots;
-    }
 
     uint32_t gap = ccKS->GetRingDimension() / (2 * slots);
 
@@ -1622,7 +1622,6 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     double b_cheby = 1;  // The division by K was performed before
 
     // double a_cheby = -K; double b_cheby = K; // Alternatively, do this separately to not lose precision when scaling with everything at once
-
     auto BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
 
     if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
@@ -1667,28 +1666,8 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     for (uint32_t i = 0; i < towersToDrop; i++)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
-
-    size_t sizeQP = paramsQ.size() + paramsP.size();
-    std::vector<NativeInteger> moduli;
-    moduli.reserve(sizeQP);
-    std::vector<NativeInteger> roots;
-    roots.reserve(sizeQP);
-    for (const auto& elem : paramsQ) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-    for (const auto& elem : paramsP) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-
-    auto elementParamsPtr  = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
-    auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
-
     // Use full packing here to clear up the junk in the slots after numValues
-    auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, elementParamsPtr2, N / 2);
+    auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);
     auto BminusAdotSres = ccCKKS->EvalMult(BminusAdotS3, postScalePlain);
 
     // Add the plaintext for bias at the correct level and depth

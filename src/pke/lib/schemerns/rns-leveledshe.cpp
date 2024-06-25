@@ -83,9 +83,16 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext
 }
 
 void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
-    AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
-    EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+    // this branch is for BFV
+    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+        EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+    }
+    else {
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
+        AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
+        EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    }
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
@@ -147,9 +154,16 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly> ciphertext
 }
 
 void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
-    AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
-    EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+    // this branch is for BFV
+    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+        EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+    }
+    else {
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
+        AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
+        EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+    }
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
@@ -221,19 +235,26 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertex
 }
 
 void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
-    AdjustForMultInPlace(ciphertext, ctmorphed);
-    EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
-    // TODO (Andrey) : This part is only used in CKKS scheme
-    ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
-    // TODO (Andrey) : This part is only used in BGV scheme
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
+    // this branch is for BFV
+    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+        EvalMultCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+    }
+    else {
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
+        AdjustForMultInPlace(ciphertext, ctmorphed);
+        EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
+
+        ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
+        // TODO (Andrey) : This part is only used in CKKS scheme
+        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
+        // TODO (Andrey) : This part is only used in BGV scheme
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+            const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+            ciphertext->SetScalingFactorInt(
+                ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
+        }
     }
 }
 

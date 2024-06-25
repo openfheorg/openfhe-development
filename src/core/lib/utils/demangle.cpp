@@ -34,14 +34,31 @@
 #if defined(__clang__) || defined(__GNUC__)
     #include <cxxabi.h>
 
-std::string demangle(const char* const name) {
-    int status = -1;
-    std::unique_ptr<char> result{abi::__cxa_demangle(name, NULL, NULL, &status)};
+std::string demangle(const char* const name) noexcept {
+    // output_buffer must be malloc'ed
+    size_t output_buffer_size = 512;
+    auto output_buffer        = reinterpret_cast<char*>(std::malloc(output_buffer_size));
+    int status                = -1;
 
-    return (status == 0) ? result.get() : (std::string("Can not demangle symbol: ") + name);
+    char* ptr = abi::__cxa_demangle(name, output_buffer, &output_buffer_size, &status);
+    std::string result;
+    if (status == 0 && ptr != nullptr) {
+        result = ptr;
+        // If ptr is different from output_buffer, free ptr as it points to the newly allocated (realloc) buffer
+        if (ptr != output_buffer)
+            std::free(ptr);
+        else
+            std::free(output_buffer);
+    }
+    else {
+        result = "Cannot demangle symbol: " + std::string(name);
+        std::free(output_buffer);
+    }
+
+    return result;
 }
 #else
-std::string demangle(const char* const name) {
+std::string demangle(const char* const name) noexcept {
     return name;
 }
 #endif

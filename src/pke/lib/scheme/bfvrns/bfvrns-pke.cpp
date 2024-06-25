@@ -43,7 +43,7 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) {
+KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) const {
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
@@ -102,7 +102,13 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const auto elementParams = cryptoParams->GetElementParams();
-    auto encParams           = elementParams;
+    size_t sizeQ             = elementParams->GetParams().size();
+
+    auto encParams = ptxt.GetParams();
+    size_t sizeP   = encParams->GetParams().size();
+
+    // enables encoding of plaintexts using a smaller number of RNS limbs
+    size_t level = sizeQ - sizeP;
 
     std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -117,8 +123,8 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
 
     std::shared_ptr<std::vector<DCRTPoly>> ba = EncryptZeroCore(privateKey, encParams);
 
-    NativeInteger NegQModt       = cryptoParams->GetNegQModt();
-    NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
+    NativeInteger NegQModt       = cryptoParams->GetNegQModt(level);
+    NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon(level);
 
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
         NegQModt       = cryptoParams->GetNegQrModt();
@@ -154,7 +160,13 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(publicKey->GetCryptoParameters());
 
     const auto elementParams = cryptoParams->GetElementParams();
-    auto encParams           = elementParams;
+    size_t sizeQ             = elementParams->GetParams().size();
+
+    auto encParams = ptxt.GetParams();
+    size_t sizeP   = encParams->GetParams().size();
+
+    // enables encoding of plaintexts using a smaller number of RNS limbs
+    size_t level = sizeQ - sizeP;
 
     std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -169,8 +181,8 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
 
     std::shared_ptr<std::vector<DCRTPoly>> ba = EncryptZeroCore(publicKey, encParams);
 
-    NativeInteger NegQModt       = cryptoParams->GetNegQModt();
-    NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
+    NativeInteger NegQModt       = cryptoParams->GetNegQModt(level);
+    NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon(level);
 
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
         NegQModt       = cryptoParams->GetNegQrModt();
@@ -206,12 +218,15 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b                      = DecryptCore(cv, privateKey);
-    b.SetFormat(Format::COEFFICIENT);
 
     size_t sizeQl = b.GetNumOfElements();
 
-    // use RNS procedures only if the number of RNS limbs is larger than 1
-    if (sizeQl > 1) {
+    const auto elementParams = cryptoParams->GetElementParams();
+    size_t sizeQ             = elementParams->GetParams().size();
+
+    // use RNS procedures only if the number of RNS limbs is the same as for fresh ciphertexts
+    if (sizeQl == sizeQ) {
+        b.SetFormat(Format::COEFFICIENT);
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
@@ -229,6 +244,16 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
         }
     }
     else {
+        // for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
+        size_t diffQl = sizeQ - sizeQl;
+        size_t levels = sizeQl - 1;
+        for (size_t l = 0; l < levels; ++l) {
+            b.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
+                                      cryptoParams->GetqlInvModq(diffQl + l));
+        }
+
+        b.SetFormat(Format::COEFFICIENT);
+
         const NativeInteger t = cryptoParams->GetPlaintextModulus();
         NativePoly element    = b.GetElementAtIndex(0);
         const NativeInteger q = element.GetModulus();

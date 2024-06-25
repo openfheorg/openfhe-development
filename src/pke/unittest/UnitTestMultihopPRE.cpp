@@ -45,119 +45,86 @@
 
 using namespace lbcrypto;
 
-class UTGENERAL_MULTIHOP_PRE : public ::testing::TestWithParam<int> {
+class UTGENERAL_MULTIHOP_PRE : public ::testing::TestWithParam<uint32_t> {
 protected:
-    void SetUp() {}
-
-    int run_demo_pre(int security_model) {
+    int run_demo_pre(uint32_t security_model, uint32_t num_of_hops) {
         // Generate parameters.
-        int num_of_hops = 2;
-
-        int plaintextModulus = 2;
-        usint ringDimension  = 1024;
-        usint digitSize      = 1;
-        usint dcrtbits       = 0;
-
-        usint qmodulus  = 27;
-        usint firstqmod = 27;
-
+        PlaintextModulus plaintextModulus{2};
+        uint32_t ringDimension;
+        uint32_t digitSize;
         CCParams<CryptoContextBGVRNS> parameters;
-        parameters.SetPREMode(INDCPA);
+
         if (security_model == 0) {
             ringDimension = 1024;
             digitSize     = 9;
-            dcrtbits      = 0;
-
-            qmodulus  = 27;
-            firstqmod = 27;
             parameters.SetPREMode(INDCPA);
             parameters.SetKeySwitchTechnique(BV);
+            parameters.SetFirstModSize(27);
         }
         else if (security_model == 1) {
             ringDimension = 2048;
-            digitSize     = 18;
-            dcrtbits      = 0;
-
-            qmodulus  = 54;
-            firstqmod = 54;
+            digitSize     = 16;
             parameters.SetPREMode(FIXED_NOISE_HRA);
             parameters.SetKeySwitchTechnique(BV);
+            parameters.SetFirstModSize(54);
         }
         else if (security_model == 2) {
             ringDimension = 8192;
-            digitSize     = 1;
-            dcrtbits      = 30;
-
-            qmodulus  = 218;
-            firstqmod = 60;
+            digitSize     = 10;
             parameters.SetPREMode(NOISE_FLOODING_HRA);
             parameters.SetKeySwitchTechnique(BV);
+            parameters.SetPRENumHops(num_of_hops);
+            parameters.SetStatisticalSecurity(40);
+            parameters.SetNumAdversarialQueries(1048576);
         }
         else if (security_model == 3) {
             ringDimension = 8192;
             digitSize     = 0;
-            dcrtbits      = 30;
-
-            qmodulus      = 218;
-            firstqmod     = 60;
-            uint32_t dnum = 2;
             parameters.SetPREMode(NOISE_FLOODING_HRA);
             parameters.SetKeySwitchTechnique(HYBRID);
-            parameters.SetNumLargeDigits(dnum);
+            parameters.SetPRENumHops(num_of_hops);
+            parameters.SetStatisticalSecurity(40);
+            parameters.SetNumAdversarialQueries(1048576);
+        }
+        else {
+            OPENFHE_THROW("invalid security model");
         }
 
         parameters.SetMultiplicativeDepth(0);
         parameters.SetPlaintextModulus(plaintextModulus);
         parameters.SetRingDim(ringDimension);
-        parameters.SetFirstModSize(firstqmod);
-        parameters.SetScalingModSize(dcrtbits);
         parameters.SetDigitSize(digitSize);
         parameters.SetScalingTechnique(FIXEDMANUAL);
-        parameters.SetMultiHopModSize(qmodulus);
+        parameters.SetSecurityLevel(HEStd_NotSet);
 
-        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-        cryptoContext->Enable(PKE);
-        cryptoContext->Enable(KEYSWITCH);
-        cryptoContext->Enable(LEVELEDSHE);
-        cryptoContext->Enable(PRE);
+        auto cc = GenCryptoContext(parameters);
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
+        cc->Enable(PRE);
 
         ////////////////////////////////////////////////////////////
         // Perform Key Generation Operation
         ////////////////////////////////////////////////////////////
 
-        // Initialize Key Pair Containers
-        KeyPair<DCRTPoly> keyPair1;
-
-        keyPair1 = cryptoContext->KeyGen();
-
-        if (!keyPair1.good()) {
-            OPENFHE_THROW("Key generation failed!");
-        }
+        auto keyPair1 = cc->KeyGen();
+        if (!keyPair1.good())
+            OPENFHE_THROW("key generation failed!");
 
         ////////////////////////////////////////////////////////////
         // Encode source data
         ////////////////////////////////////////////////////////////
-        std::vector<int64_t> vectorOfInts;
-        unsigned int nShort = 0;
-        int ringsize        = 0;
-        ringsize            = cryptoContext->GetRingDimension();
-        nShort              = ringsize;
 
-        for (size_t i = 0; i < nShort; i++) {
-            if (plaintextModulus == 2) {
-                vectorOfInts.push_back(std::rand() % plaintextModulus);
-            }
-            else {
-                vectorOfInts.push_back((std::rand() % plaintextModulus) - (std::floor(plaintextModulus / 2) - 1));
-            }
-        }
+        std::vector<int64_t> vectorOfInts(ringDimension);
+        for (auto& v : vectorOfInts)
+            v = (std::rand() % plaintextModulus);
+        auto plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
-        Plaintext plaintext = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts);
         ////////////////////////////////////////////////////////////
         // Encryption
         ////////////////////////////////////////////////////////////
 
-        auto ciphertext1 = cryptoContext->Encrypt(keyPair1.publicKey, plaintext);
+        auto ciphertext1 = cc->Encrypt(keyPair1.publicKey, plaintext);
 
         ////////////////////////////////////////////////////////////
         // Decryption of Ciphertext
@@ -165,69 +132,57 @@ protected:
 
         Plaintext plaintextDec1;
 
-        cryptoContext->Decrypt(keyPair1.secretKey, ciphertext1, &plaintextDec1);
+        cc->Decrypt(keyPair1.secretKey, ciphertext1, &plaintextDec1);
 
         plaintextDec1->SetLength(plaintext->GetLength());
 
-        Ciphertext<DCRTPoly> reEncryptedCT1, reEncryptedCT;
+        Ciphertext<DCRTPoly> reEncryptedCT;
         Plaintext plaintextDec;
 
         // multiple hop
-        std::vector<KeyPair<DCRTPoly>> keyPairs;
-        std::vector<Ciphertext<DCRTPoly>> reEncryptedCTs;
+        std::vector<KeyPair<DCRTPoly>> keyPairs{keyPair1};
+        std::vector<Ciphertext<DCRTPoly>> reEncryptedCTs{ciphertext1};
 
-        keyPairs.push_back(keyPair1);
-        reEncryptedCTs.push_back(ciphertext1);
+        for (uint32_t i = 0; i < num_of_hops; ++i) {
+            keyPairs.push_back(cc->KeyGen());
 
-        for (int i = 0; i < num_of_hops; i++) {
-            auto keyPair = cryptoContext->KeyGen();
-            keyPairs.push_back(keyPair);
-
-            auto reencryptionKey = cryptoContext->ReKeyGen(keyPairs[i].secretKey, keyPairs[i + 1].publicKey);
+            auto reencryptionKey = cc->ReKeyGen(keyPairs[i].secretKey, keyPairs[i + 1].publicKey);
 
             switch (security_model) {
                 case 0:
                     // CPA secure PRE
-                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey);  // IND-CPA secure
+                    reEncryptedCT = cc->ReEncrypt(reEncryptedCTs[i], reencryptionKey);  // IND-CPA secure
                     break;
                 case 1:
                     // Fixed noise (20 bits) practically secure PRE
-                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    reEncryptedCT = cc->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
                     break;
                 case 2:
                     // Provable HRA secure PRE with noise flooding with BV switching
-                    reEncryptedCT1 =
-                        cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
-                    reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
+                    reEncryptedCT = cc->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    if (i < num_of_hops - 1)
+                        reEncryptedCT = cc->ModReduce(reEncryptedCT);  // mod reduction for noise flooding
                     break;
                 case 3:
                     // Provable HRA secure PRE with noise flooding with Hybrid switching
-                    reEncryptedCT1 =
-                        cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
-                    reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
+                    reEncryptedCT = cc->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    if (i < num_of_hops - 1)
+                        reEncryptedCT = cc->ModReduce(reEncryptedCT);  // mod reduction for noise flooding
                     break;
                 default:
                     OPENFHE_THROW("Not a valid security mode");
             }
-
             reEncryptedCTs.push_back(reEncryptedCT);
         }
 
-        int kp_size_vec, ct_size_vec;
-        kp_size_vec = keyPairs.size();
-        ct_size_vec = reEncryptedCTs.size();
-
-        cryptoContext->Decrypt(keyPairs[kp_size_vec - 1].secretKey, reEncryptedCTs[ct_size_vec - 1], &plaintextDec);
+        cc->Decrypt(keyPairs.back().secretKey, reEncryptedCTs.back(), &plaintextDec);
 
         // verification
-        std::vector<int64_t> unpackedPT, unpackedDecPT;
-        unpackedPT    = plaintextDec1->GetCoefPackedValue();
-        unpackedDecPT = plaintextDec->GetCoefPackedValue();
-        for (unsigned int j = 0; j < unpackedPT.size(); j++) {
+        auto& unpackedPT    = plaintextDec1->GetCoefPackedValue();
+        auto& unpackedDecPT = plaintextDec->GetCoefPackedValue();
+        EXPECT_EQ(unpackedPT.size(), unpackedDecPT.size());
+        for (size_t j = 0; j < unpackedPT.size(); ++j) {
             EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]);
-            if (unpackedPT[j] != unpackedDecPT[j]) {
-                OPENFHE_THROW("Decryption failure");
-            }
         }
 
         return 0;
@@ -236,14 +191,12 @@ protected:
 
 TEST_P(UTGENERAL_MULTIHOP_PRE, MULTIHOP_PRE_TEST) {
     auto test = GetParam();
-    run_demo_pre(test);
+    run_demo_pre(test, 1);
+    run_demo_pre(test, 3);
+    run_demo_pre(test, 4);
+    run_demo_pre(test, 5);
 }
 
-int Security_Model_Options[4] = {0, 1, 2, 3};
+uint32_t Security_Model_Options[4] = {0, 1, 2, 3};
 
 INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTGENERAL_MULTIHOP_PRE, ::testing::ValuesIn(Security_Model_Options));
-
-/*
-run_demo_pre(0); // IND CPA secure
-run_demo_pre(1); // Fixed 20 bits Noise HRA
-run_demo_pre(2); // provably secure HRA */

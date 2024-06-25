@@ -35,7 +35,7 @@
 
 /*
 * HOW TO GENERATE CRYPTOCONTEXT BY CALLING GenCryptoContext()
-* 
+*
 * 1. Pick the scheme you want to use. I choose CKKS for our tutorial example.
 * 2. Your code must include this header file and the header with the scheme-specific
 *    context generator (scheme/<scheme>/cryptocontext-<scheme>.h):
@@ -53,7 +53,7 @@
 * 4. Adjust the parameters' values with set functions for CCParams<CryptoContextCKKS<Element>> as
 *    the object is created using default values from scheme/cryptocontextparams-defaults.h.
 * 5. Call GenCryptoContext() to generate cryptocontext.
-* 
+*
 * Now your code should look like this:
 *       #include "scheme/ckks/cryptocontext-ckks.h"
 *       #include "gen-cryptocontext.h"
@@ -64,14 +64,14 @@
 *       parameters.SetBatchSize(8);
 *       parameters.SetSecurityLevel(HEStd_NotSet);
 *       parameters.SetRingDim(16);
-* 
+*
 *       auto cryptoContext = GenCryptoContext(parameters);
-* 
+*
 *       cryptoContext->Enable(ENCRYPTION);
 *       cryptoContext->Enable(KEYSWITCH);
 *       cryptoContext->Enable(LEVELEDSHE);
 *       ...........................................
-* 
+*
 * More examples can be found in src/pke/unittest/UnitTestAutomorphism.cpp or in
 * src/pke/unittest/UnitTestEvalMult.cpp.
 */

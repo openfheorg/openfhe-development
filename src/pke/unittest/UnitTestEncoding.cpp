@@ -165,6 +165,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     PackedEncoding se(paramsDCRT, ep, vectorOfInts1);
 
     se.Encode();
+    se.GetElement<DCRTPoly>().SetFormat(Format::COEFFICIENT);
 
     se.GetElement<DCRTPoly>().SwitchFormat();
     se.GetElement<DCRTPoly>().SwitchFormat();
@@ -225,6 +226,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     PackedEncoding se(paramsDCRT, ep, vectorOfInts1);
 
     se.Encode();
+    se.GetElement<DCRTPoly>().SetFormat(Format::COEFFICIENT);
 
     se.GetElement<DCRTPoly>().SwitchFormat();
     se.GetElement<DCRTPoly>().SwitchFormat();

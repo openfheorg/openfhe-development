@@ -377,8 +377,8 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 /////////////////////////////////////////
 
 template <class Element>
-std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const {
+std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
+    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     // we already have checks on higher level?
     //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
     //  if (it != indexList.end())
@@ -388,34 +388,30 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
     auto algo     = cc->GetScheme();
 
     const Element& s = privateKey->GetPrivateElement();
-    usint N          = s.GetRingDimension();
+    uint32_t N       = s.GetRingDimension();
 
     // we already have checks on higher level?
     //  if (indexList.size() > N - 1)
     //    OPENFHE_THROW("size exceeds the ring dimension");
 
-    auto evalKeys = std::make_shared<std::map<usint, EvalKey<Element>>>();
-
-    // Do not generate those keys that have been already generated and added to the static storage (map)
-    const std::string id{privateKey->GetKeyTag()};
-    std::vector<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
-    // if no index found for the given id, then all keys are to be generated
-    std::vector<uint32_t> indicesToGenerate =
-        (existingIndices.empty()) ? indexList :
-                                    CryptoContextImpl<Element>::GetUniqueValues(existingIndices, {indexList});
-
-    // TODO pragma omp currently gives concurrent error
-    // #pragma omp parallel for if (indicesToGenerate.size() >= 4)
-    for (usint i = 0; i < indicesToGenerate.size(); i++) {
+    // create and initialize the key map (key is a value from indexList, EvalKey is nullptr). in this case
+    // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
+    // have already been created
+    auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
+    for (auto indx : indexList) {
+        (*evalKeys)[indx];
+    }
+    size_t sz = indexList.size();
+#pragma omp parallel for if (sz >= 4)
+    for (size_t i = 0; i < sz; ++i) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        usint index = NativeInteger(indicesToGenerate[i]).ModInverse(2 * N).ConvertToInt();
-        std::vector<usint> vec(N);
+        uint32_t index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
+        std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
-        Element sPermuted = s.AutomorphismTransform(index, vec);
-        privateKeyPermuted->SetPrivateElement(sPermuted);
-        (*evalKeys)[indicesToGenerate[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
+        privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
+        (*evalKeys)[indexList[i]] = algo->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
@@ -601,6 +597,31 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plain
 /////////////////////////////////////////
 // CORE OPERATION
 /////////////////////////////////////////
+template <class Element>
+void LeveledSHEBase<Element>::VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext1,
+                                                const ConstCiphertext<Element>& ciphertext2,
+                                                CALLER_INFO_ARGS_CPP) const {
+    uint32_t numTowers1 = ciphertext1->GetElements()[0].GetNumOfElements();
+    uint32_t numTowers2 = ciphertext2->GetElements()[0].GetNumOfElements();
+    if (numTowers1 != numTowers2) {
+        std::string errorMsg(std::string("Number of towers is not the same for ciphertext1 [") +
+                             std::to_string(numTowers1) + "] and for ciphertext2 [" + std::to_string(numTowers2) +
+                             "] " + CALLER_INFO);
+        OPENFHE_THROW(errorMsg);
+    }
+}
+template <class Element>
+void LeveledSHEBase<Element>::VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext, const Element& plaintext,
+                                                CALLER_INFO_ARGS_CPP) const {
+    uint32_t numTowersCtxt = ciphertext->GetElements()[0].GetNumOfElements();
+    uint32_t numTowersPtxt = plaintext.GetNumOfElements();
+    if (numTowersCtxt != numTowersPtxt) {
+        std::string errorMsg(std::string("Number of towers is not the same for ciphertext[") +
+                             std::to_string(numTowersCtxt) + "] and for plaintext[" + std::to_string(numTowersPtxt) +
+                             "]" + CALLER_INFO);
+        OPENFHE_THROW(errorMsg);
+    }
+}
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext1,
@@ -613,6 +634,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element
 template <class Element>
 void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext1,
                                                  ConstCiphertext<Element> ciphertext2) const {
+    VerifyNumOfTowers(ciphertext1, ciphertext2);
     std::vector<Element>& cv1       = ciphertext1->GetElements();
     const std::vector<Element>& cv2 = ciphertext2->GetElements();
 
@@ -643,6 +665,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element
 template <class Element>
 void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1,
                                                  ConstCiphertext<Element> ciphertext2) const {
+    VerifyNumOfTowers(ciphertext1, ciphertext2);
     std::vector<Element>& cv1       = ciphertext1->GetElements();
     const std::vector<Element>& cv2 = ciphertext2->GetElements();
 
@@ -665,6 +688,7 @@ void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext1,
                                                           ConstCiphertext<Element> ciphertext2) const {
+    VerifyNumOfTowers(ciphertext1, ciphertext2);
     Ciphertext<Element> result = ciphertext1->CloneZero();
 
     std::vector<Element> cv1        = ciphertext1->GetElements();
@@ -759,40 +783,44 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Elem
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext, Element pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element> ciphertext, const Element& pt) const {
     Ciphertext<Element> result = ciphertext->Clone();
     EvalAddCoreInPlace(result, pt);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element pt) const {
+void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element& pt) const {
+    VerifyNumOfTowers(ciphertext, pt);
     std::vector<Element>& cv = ciphertext->GetElements();
     cv[0] += pt;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element> ciphertext, const Element pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element> ciphertext, const Element& pt) const {
     Ciphertext<Element> result = ciphertext->Clone();
     EvalSubCoreInPlace(result, pt);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext, const Element pt) const {
+void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext, const Element& pt) const {
+    VerifyNumOfTowers(ciphertext, pt);
     std::vector<Element>& cv = ciphertext->GetElements();
     cv[0] -= pt;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext, const Element pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext,
+                                                          const Element& pt) const {
     Ciphertext<Element> result = ciphertext->Clone();
     EvalMultCoreInPlace(result, pt);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element pt) const {
+void LeveledSHEBase<Element>::EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element& pt) const {
+    VerifyNumOfTowers(ciphertext, pt);
     std::vector<Element>& cv = ciphertext->GetElements();
     for (auto& c : cv) {
         c *= pt;

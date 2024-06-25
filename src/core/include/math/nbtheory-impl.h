@@ -326,7 +326,7 @@ void PrimeFactorize(IntType n, std::set<IntType>& primeFactors) {
 }
 
 template <typename IntType>
-IntType FirstPrime(uint32_t nBits, uint32_t m) {
+IntType FirstPrime(uint32_t nBits, uint64_t m) {
     if constexpr (std::is_same_v<IntType, NativeInteger>) {
         if (nBits > MAX_MODULUS_SIZE)
             OPENFHE_THROW(std::string(__func__) + ": Requested bit length " + std::to_string(nBits) +
@@ -347,7 +347,7 @@ IntType FirstPrime(uint32_t nBits, uint32_t m) {
 }
 
 template <typename IntType>
-IntType LastPrime(uint32_t nBits, uint32_t m) {
+IntType LastPrime(uint32_t nBits, uint64_t m) {
     if constexpr (std::is_same_v<IntType, NativeInteger>) {
         if (nBits > MAX_MODULUS_SIZE)
             OPENFHE_THROW(std::string(__func__) + ": Requested bit length " + std::to_string(nBits) +
@@ -373,7 +373,7 @@ IntType LastPrime(uint32_t nBits, uint32_t m) {
 }
 
 template <typename IntType>
-IntType NextPrime(const IntType& q, uint32_t m) {
+IntType NextPrime(const IntType& q, uint64_t m) {
     IntType M(m), qNew(q + M);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew += M) < q)
@@ -383,7 +383,7 @@ IntType NextPrime(const IntType& q, uint32_t m) {
 }
 
 template <typename IntType>
-IntType PreviousPrime(const IntType& q, uint32_t m) {
+IntType PreviousPrime(const IntType& q, uint64_t m) {
     IntType M(m), qNew(q - M);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew -= M) > q)

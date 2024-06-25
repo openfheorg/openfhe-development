@@ -95,8 +95,8 @@ public:
    * @param firstModSize the bit-size of the first modulus
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
-    virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ,
+    virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t cyclOrder,
+                                  uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t numPartQ,
                                   COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
         OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
@@ -113,11 +113,11 @@ public:
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli
    * @param numPartQ number of partitions of Q for HYBRID key switching
-   * @param multihopQBound bound for the HRA-secure mode of PRE
+   * @param PRENumHops bound for the HRA-secure mode of PRE
    */
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                                 uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
-                                 usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
+                                 uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                                 uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const {
         OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 

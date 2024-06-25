@@ -157,6 +157,30 @@ public:
 
     virtual uint64_t FindAuxPrimeStep() const;
 
+    /*
+   * Estimates the extra modulus bitsize needed for hybrid key swithing (used for finding the minimum secure ring dimension).
+   *
+   * @param numPartQ number of digits in hybrid key switching
+   * @param firstModulusSize bit size of first modulus
+   * @param dcrtBits bit size for other moduli
+   * @param extraModulusSize bit size for extra modulus in FLEXIBLEAUTOEXT (CKKS and BGV only)
+   * @param numPrimes number of moduli witout extraModulus
+   * @param auxBits size of auxiliar moduli used for hybrid key switching
+   *
+   * @return log2 of the modulus and number of RNS limbs.
+   */
+    static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
+                                                    double extraModulusSize, uint32_t numPrimes, uint32_t auxBits);
+
+    /*
+   * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)
+   *
+   * @return number of extra bits needed for noise flooding
+   */
+    static constexpr double EstimateMultipartyFloodingLogQ() {
+        return static_cast<double>(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);
+    }
+
     /**
    * == operator to compare to this instance of CryptoParametersBase object.
    *
@@ -625,12 +649,12 @@ public:
     // BFVrns : Encrypt : POverQ
     /////////////////////////////////////
 
-    const NativeInteger GetNegQModt() const {
-        return m_negQModt;
+    const NativeInteger GetNegQModt(uint32_t i = 0) const {
+        return m_negQModt[i];
     }
 
-    const NativeInteger GetNegQModtPrecon() const {
-        return m_negQModtPrecon;
+    const NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {
+        return m_negQModtPrecon[i];
     }
 
     const NativeInteger GetNegQrModt() const {
@@ -729,6 +753,14 @@ public:
 
     const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l = 0) const {
         return m_negRlQHatInvModqPrecon[l];
+    }
+
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModq(usint l = 0) const {
+        return m_negRlQlHatInvModq[l];
+    }
+
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModqPrecon(usint l = 0) const {
+        return m_negRlQlHatInvModqPrecon[l];
     }
 
     const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
@@ -1464,8 +1496,8 @@ protected:
     // BFVrns : Encrypt
     /////////////////////////////////////
 
-    NativeInteger m_negQModt;
-    NativeInteger m_negQModtPrecon;
+    std::vector<NativeInteger> m_negQModt;
+    std::vector<NativeInteger> m_negQModtPrecon;
     std::vector<NativeInteger> m_tInvModq;
     std::vector<NativeInteger> m_tInvModqPrecon;
     std::vector<NativeInteger> m_tInvModqr;
@@ -1579,6 +1611,10 @@ protected:
     std::vector<std::vector<NativeInteger>> m_negRlQHatInvModq;
 
     std::vector<std::vector<NativeInteger>> m_negRlQHatInvModqPrecon;
+
+    std::vector<std::vector<NativeInteger>> m_negRlQlHatInvModq;
+
+    std::vector<std::vector<NativeInteger>> m_negRlQlHatInvModqPrecon;
 
     std::vector<std::vector<NativeInteger>> m_qInvModr;
 
@@ -1774,8 +1810,9 @@ public:
         // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0
         try {
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
-        } catch(cereal::Exception&) {
-        	m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+        }
+        catch (cereal::Exception&) {
+            m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
         }
     }
 

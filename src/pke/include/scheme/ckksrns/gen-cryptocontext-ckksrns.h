@@ -41,6 +41,7 @@
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns-params.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-scheme.h"
+#include "scheme/gen-cryptocontext-params-validation.h"
 #include "cryptocontextfactory.h"
 
 namespace lbcrypto {
@@ -55,6 +56,7 @@ public:
     using CryptoParams              = CryptoParametersCKKSRNS;
 
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextCKKSRNS>& parameters) {
+        validateParametersForCryptocontext(parameters);
         return genCryptoContextCKKSRNSInternal<CryptoContextCKKSRNS, Element>(parameters);
     }
 };

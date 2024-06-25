@@ -62,7 +62,7 @@ class Params {
     PlaintextModulus ptModulus;
 
     // digitSize is used in BV Key Switching only (KeySwitchTechnique = BV) and impacts noise growth
-    usint digitSize;
+    uint32_t digitSize;
 
     // standardDeviation is used for Gaussian error generation
     float standardDeviation;
@@ -71,7 +71,7 @@ class Params {
     SecretKeyDist secretKeyDist;
 
     // Max relinearization degree of secret key polynomial (used for lazy relinearization)
-    usint maxRelinSkDeg;
+    uint32_t maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
@@ -86,7 +86,7 @@ class Params {
     ScalingTechnique scalTech;
 
     // max batch size of messages to be packed in encoding (number of slots)
-    usint batchSize;
+    uint32_t batchSize;
 
     // PRE security mode
     ProxyReEncryptionMode PREMode;
@@ -113,28 +113,28 @@ class Params {
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
     // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
-    usint statisticalSecurity;
+    uint32_t statisticalSecurity;
 
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
-    usint numAdversarialQueries;
+    uint32_t numAdversarialQueries;
 
     // This is the number of parties in a threshold application, which is used for bound on the joint secret key
-    usint thresholdNumOfParties;
+    uint32_t thresholdNumOfParties;
     // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
     // the prime q' is not explicitly given,
     // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
-    usint firstModSize;
-    usint scalingModSize;
+    uint32_t firstModSize;
+    uint32_t scalingModSize;
 
     // see KeySwitchTechnique - number of digits in HYBRID key switching
-    usint numLargeDigits;
+    uint32_t numLargeDigits;
 
     // multiplicative depth
-    usint multiplicativeDepth;
+    uint32_t multiplicativeDepth;
 
     // security level:
     // We use the values from the security standard  at
@@ -144,16 +144,16 @@ class Params {
     SecurityLevel securityLevel;
 
     // ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
-    usint ringDim;
+    uint32_t ringDim;
 
     // number of additions (used for setting noise in BGV and BFV)
-    usint evalAddCount;
+    uint32_t evalAddCount;
 
     // number of key switching operations (used for setting noise in BGV and BFV)
-    usint keySwitchCount;
+    uint32_t keySwitchCount;
 
     // size of moduli used for PRE in the provable HRA setting
-    usint multiHopModSize;
+    uint32_t PRENumHops;
 
     // STANDARD or EXTENDED mode for BFV encryption
     // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower
@@ -172,8 +172,27 @@ class Params {
 
     void SetToDefaults(SCHEME scheme);
 
-    void ValidateRingDim(usint ringDim);
-    void ValidateMultiplicativeDepth(usint multiplicativeDepth);
+protected:
+    // How to disable a particular setter for a particular scheme and get an exception thrown if a user tries to call it:
+    // 1. The set function should be declared virtual in this file
+    // 2. The same function should be re-defined in the scheme-specific derived file using macros DISABLED_FOR_xxxxRNS defined below.
+    //
+    // Example:
+    // the original setter defined in gen-cryptocontext-params.h:
+    //
+    // virtual void SetPlaintextModulus(PlaintextModulus ptModulus0) {
+    //     ptModulus = ptModulus0;
+    // }
+    //
+    // the setter re-defined and disabled in gen-cryptocontext-ckksrns-params.h:
+    //
+    // void SetPlaintextModulus(PlaintextModulus ptModulus0) override {
+    //     DISABLED_FOR_CKKS;
+    // }
+
+#define DISABLED_FOR_CKKSRNS OPENFHE_THROW("This function is not available for CKKSRNS.");
+#define DISABLED_FOR_BGVRNS  OPENFHE_THROW("This function is not available for BGVRNS.");
+#define DISABLED_FOR_BFVRNS  OPENFHE_THROW("This function is not available for BFVRNS.");
 
 public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
@@ -221,7 +240,7 @@ public:
                 "keySwitchCount",
                 "encryptionTechnique",
                 "multiplicationTechnique",
-                "multiHopModSize",
+                "PRENumHops",
                 "PREMode",
                 "multipartyMode",
                 "executionMode",
@@ -241,7 +260,7 @@ public:
     PlaintextModulus GetPlaintextModulus() const {
         return ptModulus;
     }
-    usint GetDigitSize() const {
+    uint32_t GetDigitSize() const {
         return digitSize;
     }
     float GetStandardDeviation() const {
@@ -250,7 +269,7 @@ public:
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
     }
-    usint GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const {
         return maxRelinSkDeg;
     }
     ProxyReEncryptionMode GetPREMode() const {
@@ -278,7 +297,7 @@ public:
         return numAdversarialQueries;
     }
 
-    usint GetThresholdNumOfParties() const {
+    uint32_t GetThresholdNumOfParties() const {
         return thresholdNumOfParties;
     }
 
@@ -288,31 +307,31 @@ public:
     ScalingTechnique GetScalingTechnique() const {
         return scalTech;
     }
-    usint GetBatchSize() const {
+    uint32_t GetBatchSize() const {
         return batchSize;
     }
-    usint GetFirstModSize() const {
+    uint32_t GetFirstModSize() const {
         return firstModSize;
     }
     uint32_t GetNumLargeDigits() const {
         return numLargeDigits;
     }
-    usint GetMultiplicativeDepth() const {
+    uint32_t GetMultiplicativeDepth() const {
         return multiplicativeDepth;
     }
-    usint GetScalingModSize() const {
+    uint32_t GetScalingModSize() const {
         return scalingModSize;
     }
     SecurityLevel GetSecurityLevel() const {
         return securityLevel;
     }
-    usint GetRingDim() const {
+    uint32_t GetRingDim() const {
         return ringDim;
     }
-    usint GetEvalAddCount() const {
+    uint32_t GetEvalAddCount() const {
         return evalAddCount;
     }
-    usint GetKeySwitchCount() const {
+    uint32_t GetKeySwitchCount() const {
         return keySwitchCount;
     }
     EncryptionTechnique GetEncryptionTechnique() const {
@@ -321,106 +340,100 @@ public:
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return multiplicationTechnique;
     }
-    usint GetMultiHopModSize() const {
-        return multiHopModSize;
+    uint32_t GetPRENumHops() const {
+        return PRENumHops;
     }
     COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
         return interactiveBootCompressionLevel;
     }
 
     // setters
-    void SetPlaintextModulus(PlaintextModulus ptModulus0) {
+    // They all must be virtual, so any of them can be disabled in the derived class
+    virtual void SetPlaintextModulus(PlaintextModulus ptModulus0) {
         ptModulus = ptModulus0;
     }
-    void SetDigitSize(usint digitSize0) {
+    virtual void SetDigitSize(uint32_t digitSize0) {
         digitSize = digitSize0;
     }
-    void SetStandardDeviation(float standardDeviation0) {
+    virtual void SetStandardDeviation(float standardDeviation0) {
         standardDeviation = standardDeviation0;
     }
-    void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
+    virtual void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
     }
-    void SetMaxRelinSkDeg(usint maxRelinSkDeg0) {
+    virtual void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg0) {
         maxRelinSkDeg = maxRelinSkDeg0;
     }
-    void SetPREMode(ProxyReEncryptionMode PREMode0) {
+    virtual void SetPREMode(ProxyReEncryptionMode PREMode0) {
         PREMode = PREMode0;
     }
-    void SetMultipartyMode(MultipartyMode multipartyMode0) {
+    virtual void SetMultipartyMode(MultipartyMode multipartyMode0) {
         multipartyMode = multipartyMode0;
     }
-    void SetExecutionMode(ExecutionMode executionMode0) {
+    virtual void SetExecutionMode(ExecutionMode executionMode0) {
         executionMode = executionMode0;
     }
-    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+    virtual void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
         decryptionNoiseMode = decryptionNoiseMode0;
     }
-    void SetNoiseEstimate(double noiseEstimate0) {
+    virtual void SetNoiseEstimate(double noiseEstimate0) {
         noiseEstimate = noiseEstimate0;
     }
-    void SetDesiredPrecision(double desiredPrecision0) {
+    virtual void SetDesiredPrecision(double desiredPrecision0) {
         desiredPrecision = desiredPrecision0;
     }
-    void SetStatisticalSecurity(uint32_t statisticalSecurity0) {
+    virtual void SetStatisticalSecurity(uint32_t statisticalSecurity0) {
         statisticalSecurity = statisticalSecurity0;
     }
-    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
+    virtual void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
         numAdversarialQueries = numAdversarialQueries0;
     }
-
-    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
+    virtual void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
         thresholdNumOfParties = thresholdNumOfParties0;
     }
-    void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
+    virtual void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;
     }
-    void SetScalingTechnique(ScalingTechnique scalTech0) {
+    virtual void SetScalingTechnique(ScalingTechnique scalTech0) {
         scalTech = scalTech0;
     }
-    void SetBatchSize(usint batchSize0) {
+    virtual void SetBatchSize(uint32_t batchSize0) {
         batchSize = batchSize0;
     }
-    void SetFirstModSize(usint firstModSize0) {
+    virtual void SetFirstModSize(uint32_t firstModSize0) {
         firstModSize = firstModSize0;
     }
-    void SetNumLargeDigits(uint32_t numLargeDigits0) {
+    virtual void SetNumLargeDigits(uint32_t numLargeDigits0) {
         numLargeDigits = numLargeDigits0;
     }
-    void SetMultiplicativeDepth(usint multiplicativeDepth0) {
-        // TODO (dsuponit): move the check below ValidateMultiplicativeDepth() to a separate validating function. see
-        // https://github.com/openfheorg/openfhe-development/issues/400
-        ValidateMultiplicativeDepth(multiplicativeDepth0);
+    virtual void SetMultiplicativeDepth(uint32_t multiplicativeDepth0) {
         multiplicativeDepth = multiplicativeDepth0;
     }
-    void SetScalingModSize(usint scalingModSize0) {
+    virtual void SetScalingModSize(uint32_t scalingModSize0) {
         scalingModSize = scalingModSize0;
     }
-    void SetSecurityLevel(SecurityLevel securityLevel0) {
+    virtual void SetSecurityLevel(SecurityLevel securityLevel0) {
         securityLevel = securityLevel0;
     }
-    void SetRingDim(usint ringDim0) {
-        // TODO (dsuponit): move the check below ValidateRingDim() to a separate validating function. see
-        // https://github.com/openfheorg/openfhe-development/issues/400
-        ValidateRingDim(ringDim0);
+    virtual void SetRingDim(uint32_t ringDim0) {
         ringDim = ringDim0;
     }
-    void SetEvalAddCount(usint evalAddCount0) {
+    virtual void SetEvalAddCount(uint32_t evalAddCount0) {
         evalAddCount = evalAddCount0;
     }
-    void SetKeySwitchCount(usint keySwitchCount0) {
+    virtual void SetKeySwitchCount(uint32_t keySwitchCount0) {
         keySwitchCount = keySwitchCount0;
     }
-    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
+    virtual void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
         encryptionTechnique = encryptionTechnique0;
     }
-    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
+    virtual void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
         multiplicationTechnique = multiplicationTechnique0;
     }
-    void SetMultiHopModSize(usint multiHopModSize0) {
-        multiHopModSize = multiHopModSize0;
+    virtual void SetPRENumHops(uint32_t PRENumHops0) {
+        PRENumHops = PRENumHops0;
     }
-    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+    virtual void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
         interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
     }
 

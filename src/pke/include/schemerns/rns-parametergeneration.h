@@ -87,8 +87,8 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    *
    */
-    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-                          usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,
+    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t cyclOrder,
+                          uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t mulPartQ,
                           COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override {
         OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
@@ -109,8 +109,8 @@ public:
    * @param dcrtBits the bit-width of moduli.
    */
     bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                         uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
-                         uint32_t numPartQ, usint multihopQBound) const override {
+                         uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                         uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const override {
         OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 

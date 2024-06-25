@@ -58,6 +58,31 @@ public:
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
+
+    //================================================================================================================
+    // DISABLE FUNCTIONS that are not applicable to BGVRNS
+    //================================================================================================================
+    void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetExecutionMode(ExecutionMode executionMode0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetNoiseEstimate(double noiseEstimate0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetDesiredPrecision(double desiredPrecision0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
+        DISABLED_FOR_BGVRNS;
+    }
 };
 //====================================================================================================================
 

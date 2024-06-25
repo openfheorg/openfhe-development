@@ -773,7 +773,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
                 cc->ModReduceInPlace(cu);
             }
             else {
-                cu = T.front();
+                cu = T.front()->Clone();
             }
         }
         else {
@@ -820,14 +820,14 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
             qu = cc->EvalLinearWSumMutable(ctxs, weights);
             // the highest order coefficient will always be a power of two up to 2^{m-1} because q is "monic" but the Chebyshev rule adds a factor of 2
             // we don't need to increase the depth by multiplying the highest order coefficient, but instead checking and summing, since we work with m <= 4.
-            Ciphertext<DCRTPoly> sum = T[k - 1];
+            Ciphertext<DCRTPoly> sum = T[k - 1]->Clone();
             for (uint32_t i = 0; i < log2(divqr->q.back()); i++) {
                 sum = cc->EvalAdd(sum, sum);
             }
             cc->EvalAddInPlace(qu, sum);
         }
         else {
-            Ciphertext<DCRTPoly> sum = T[k - 1];
+            Ciphertext<DCRTPoly> sum = T[k - 1]->Clone();
             for (uint32_t i = 0; i < log2(divqr->q.back()); i++) {
                 sum = cc->EvalAdd(sum, sum);
             }
@@ -864,7 +864,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
             cc->EvalAddInPlace(su, T[k - 1]);
         }
         else {
-            su = T[k - 1];
+            su = T[k - 1]->Clone();
         }
 
         // adds the free term (at x^0)
@@ -906,7 +906,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
     uint32_t k                 = degs[0];
     uint32_t m                 = degs[1];
 
-    //  std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << endl;
+    // std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << std::endl;
 
     // computes linear transformation y = -1 + 2 (x-a)/(b-a)
     // consumes one level when a <> -1 && b <> 1
@@ -981,7 +981,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
     }
 
     std::vector<Ciphertext<DCRTPoly>> T2(m);
-    // Compute the Chebyshev polynomials T_{2k}(y), T_{4k}(y), ... , T_{2^{m-1}k}(y)
+    // Compute the Chebyshev polynomials T_k(y), T_{2k}(y), T_{4k}(y), ... , T_{2^{m-1}k}(y)
+    // T2[0] is used as a placeholder
     T2.front() = T.back();
     for (uint32_t i = 1; i < m; i++) {
         auto square = cc->EvalSquare(T2[i - 1]);
@@ -1046,7 +1047,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
                 cc->ModReduceInPlace(cu);
             }
             else {
-                cu = T.front();
+                cu = T.front()->Clone();
             }
         }
         else {
@@ -1097,7 +1098,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
             cc->EvalAddInPlace(qu, sum);
         }
         else {
-            qu = T[k - 1];
+            qu = T[k - 1]->Clone();
 
             for (uint32_t i = 1; i < divqr->q.back(); i++) {
                 cc->EvalAddInPlace(qu, T[k - 1]);
