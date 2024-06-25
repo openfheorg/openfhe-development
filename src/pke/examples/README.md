@@ -47,7 +47,7 @@ File Listing
 How To Link Your Own Project After Having OpenFHE Installed
 ===================
 1. Check that you do not get error messages at the time of running "make install" for OpenFHE. You may need the admin rights to install.
-2. Go to a new directory where you will keep â€œmy_own_project.cppâ€� file.
+2. Go to a new directory where you will keep "my_own_project.cpp" file.
 3. Copy openfhe-development/CMakeLists.User.txt to the new directory and rename it to CMakeLists.txt.
 4. Open CMakeLists.txt for editing and add a line to its end as suggested in the comments in CMakeLists.txt. Something like this:
 ```
