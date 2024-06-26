@@ -82,6 +82,7 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
 ## Main API
 
 - [PKE CryptoContext API (BGV/BFV/CKKS)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1CryptoContextImpl.html)
+- [Description of CryptoContext Parameters for BGV, BFV, and CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples#description-of-the-cryptocontext-parameters-and-their-restrictions)
 
 - [BinFHE Context API (FHEW/TFHE)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1BinFHEContext.html)
 
@@ -110,19 +111,19 @@ We welcome all contributions including but not limited to:
 
 ## How to Cite OpenFHE
 
-To cite OpenFHE in academic papers, please use the following BibTeX entry
+To cite OpenFHE in academic papers, please use the following BibTeX entry (updated version)
 
 ```
 @misc{OpenFHE,
-      author = {Ahmad Al Badawi and Jack Bates and Flavio Bergamaschi and David Bruce Cousins and Saroja Erabelli and Nicholas Genise and Shai Halevi and Hamish Hunt and Andrey Kim and Yongwoo Lee and Zeyu Liu and Daniele Micciancio and Ian Quah and Yuriy Polyakov and Saraswathy R.V. and Kurt Rohloff and Jonathan Saylor and Dmitriy Suponitsky and Matthew Triplett and Vinod Vaikuntanathan and Vincent Zucca},
-      title = {OpenFHE: Open-Source Fully Homomorphic Encryption Library},
+      author = {Ahmad Al Badawi and Andreea Alexandru and Jack Bates and Flavio Bergamaschi and David Bruce Cousins and Saroja Erabelli and Nicholas Genise and Shai Halevi and Hamish Hunt and Andrey Kim and Yongwoo Lee and Zeyu Liu and Daniele Micciancio and Carlo Pascoe and Yuriy Polyakov and Ian Quah and Saraswathy R.V. and Kurt Rohloff and Jonathan Saylor and Dmitriy Suponitsky and Matthew Triplett and Vinod Vaikuntanathan and Vincent Zucca},
+      title = {{OpenFHE}: Open-Source Fully Homomorphic Encryption Library},
       howpublished = {Cryptology ePrint Archive, Paper 2022/915},
       year = {2022},
       note = {\url{https://eprint.iacr.org/2022/915}},
       url = {https://eprint.iacr.org/2022/915}
 }
 ```
-or, alternatively (WAHC@CCS'22 version),
+or, alternatively (original WAHC@CCS'22 version),
 ```
 @inproceedings{10.1145/3560827.3563379,
       author = {Al Badawi, Ahmad and Bates, Jack and Bergamaschi, Flavio and Cousins, David Bruce and Erabelli, Saroja and Genise, Nicholas and Halevi, Shai and Hunt, Hamish and Kim, Andrey and Lee, Yongwoo and Liu, Zeyu and Micciancio, Daniele and Quah, Ian and Polyakov, Yuriy and R.V., Saraswathy and Rohloff, Kurt and Saylor, Jonathan and Suponitsky, Dmitriy and Triplett, Matthew and Vaikuntanathan, Vinod and Zucca, Vincent},

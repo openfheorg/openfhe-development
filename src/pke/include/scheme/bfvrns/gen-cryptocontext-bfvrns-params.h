@@ -62,44 +62,34 @@ public:
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to BFVRNS
     //================================================================================================================
-    template <typename T = bool>
-    void SetScalingTechnique(ScalingTechnique scalTech0) {
+    void SetScalingTechnique(ScalingTechnique scalTech0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetFirstModSize(usint firstModSize0) {
+    void SetFirstModSize(uint32_t firstModSize0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetPRENumHops(usint PRENumHops0) {
+    void SetPRENumHops(uint32_t PRENumHops0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetExecutionMode(ExecutionMode executionMode0) {
+    void SetExecutionMode(ExecutionMode executionMode0) override {
         DISABLED_FOR_BGVRNS;
     }
-    template <typename T = bool>
-    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetNoiseEstimate(double noiseEstimate0) {
+    void SetNoiseEstimate(double noiseEstimate0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetDesiredPrecision(double desiredPrecision0) {
+    void SetDesiredPrecision(double desiredPrecision0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetStatisticalSecurity(uint32_t statisticalSecurity0) {
+    void SetStatisticalSecurity(uint32_t statisticalSecurity0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) override {
         DISABLED_FOR_BFVRNS;
     }
-    template <typename T = bool>
-    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BFVRNS;
     }
 };

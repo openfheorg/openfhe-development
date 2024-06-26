@@ -31,7 +31,7 @@
 #include "utils/get-call-stack.h"
 
 #if defined(__linux__) && defined(__GNUC__)
-    // clang-format off
+// clang-format off
 #include "utils/demangle.h"
 
 #include <execinfo.h>
@@ -91,7 +91,7 @@ std::vector<std::string> get_call_stack() noexcept {
     return retVec;
 }
 #else
-std::vector<std::string> get_call_stack() {
+std::vector<std::string> get_call_stack() noexcept {
     return std::vector<std::string>();
 }
 #endif

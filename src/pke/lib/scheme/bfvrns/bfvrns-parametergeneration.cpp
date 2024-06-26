@@ -88,7 +88,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
     if (cryptoParamsBFVRNS->GetSecretKeyDist() == GAUSSIAN) {
-        Bkey     = std::sqrt(thresholdParties) * sigma * std::sqrt(alpha);
+        Bkey     = std::sqrt(thresholdParties) * Berr;
         distType = HEStd_error;
     }
     else {
@@ -138,7 +138,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             // conservative estimate for HYBRID to avoid the use of method of
             // iterative approximations; we do not know the number
             // of digits and moduli at this point and use upper bounds
-            double numTowers = ceil(logqPrev / dcrtBits);
+            double numTowers = std::ceil(logqPrev / dcrtBits);
             return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
         }
         else {
@@ -188,7 +188,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         // this case supports automorphism w/o any other operations
         // base for relinearization
 
-        double w = digitSize == 0 ? pow(2, dcrtBits) : pow(2, digitSize);
+        double w = std::pow(2, (digitSize == 0 ? dcrtBits : digitSize));
 
         // Correctness constraint
         auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
@@ -236,7 +236,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         // is used
 
         // base for relinearization
-        double w = digitSize == 0 ? pow(2, dcrtBits) : pow(2, digitSize);
+        double w = std::pow(2, (digitSize == 0 ? dcrtBits : digitSize));
 
         // function used in the EvalMult constraint
         auto C1 = [&](uint32_t n) -> double {

@@ -1,1 +1,5 @@
-set (CMAKE_GENERATOR "Unix Makefiles" CACHE INTERNAL "" FORCE)
+# if(WIN32)
+if($ENV{MSYSTEM} MATCHES "MINGW")
+    # message(WARNING "======================= Linking for MINGW")
+    set(CMAKE_GENERATOR "Unix Makefiles" CACHE INTERNAL "" FORCE)
+endif()
