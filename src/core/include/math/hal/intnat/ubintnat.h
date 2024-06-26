@@ -1143,7 +1143,7 @@ public:
         MultD(av.m_value, bv.m_value, tmp);
         auto rv = GetD(tmp);
         MultD(RShiftD(tmp, n), mu.m_value, tmp);
-        rv -= DNativeInt(mv) * (GetD(tmp) >> n + 7);
+        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
         NativeIntegerT r(rv);
         if (r.m_value >= mv)
             r.m_value -= mv;
@@ -1211,7 +1211,7 @@ public:
         MultD(av.m_value, bv.m_value, tmp);
         auto rv = GetD(tmp);
         MultD(RShiftD(tmp, n), muv, tmp);
-        rv -= DNativeInt(mv) * (GetD(tmp) >> n + 7);
+        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
         m_value = static_cast<NativeInt>(rv);
         if (m_value >= mv)
             m_value -= mv;
@@ -1358,7 +1358,7 @@ public:
         MultD(m_value, b.m_value, tmp);
         auto rv = GetD(tmp);
         MultD(RShiftD(tmp, n), mu.m_value, tmp);
-        rv -= DNativeInt(mv) * (GetD(tmp) >> n + 7);
+        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
         NativeIntegerT r(rv);
         if (r.m_value >= mv)
             r.m_value -= mv;
@@ -1399,7 +1399,7 @@ public:
         int64_t n{modulus.GetMSB() - 2};
         MultD(RShiftD(tmp, n), mu.m_value, tmp);
         auto& mv{modulus.m_value};
-        rv -= DNativeInt(mv) * (GetD(tmp) >> n + 7);
+        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
         m_value = NativeInt(rv);
         if (m_value >= mv)
             m_value -= mv;
@@ -2051,7 +2051,7 @@ private:
                       typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
         prod = {0, a.m_value};
         MultD(RShiftD(prod, n), mu, prod);
-        a.m_value -= static_cast<NativeInt>((GetD(prod) >> n + 7) * mv);
+        a.m_value -= static_cast<NativeInt>((GetD(prod) >> (n + 7)) * mv);
         if (a.m_value >= mv)
             a.m_value -= mv;
     }
