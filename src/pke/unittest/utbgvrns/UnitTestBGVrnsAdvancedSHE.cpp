@@ -119,8 +119,7 @@ static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED
 // clang-format on
 //===========================================================================================================
 class UTBGVRNS_SHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SHEADVANCED> {
-    using Element    = DCRTPoly;
-    const double eps = EPSILON;
+    using Element = DCRTPoly;
 
 protected:
     void SetUp() {}

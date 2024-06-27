@@ -154,10 +154,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message (STATUS "BUILTIN_INFO_AVAILABLE is defined")
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(IGNORE_WARNINGS "${IGNORE_WARNINGS} -Wno-unused-private-field -Wno-shift-op-parentheses")
-endif()
-
 if( WITH_NATIVEOPT )
     set (NATIVE_OPT "-march=native")
 else()
