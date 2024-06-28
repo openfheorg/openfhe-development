@@ -212,7 +212,7 @@ public:
     Params& operator=(const Params& obj) = default;
     Params& operator=(Params&& obj)      = default;
 
-    ~Params() = default;
+    virtual ~Params() = default;
 
     /**
      * getAllParamsDataMembers() returns names of all data members of Params and the scheme enum ALWAYS goes first.
