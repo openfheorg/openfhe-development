@@ -50,27 +50,27 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, i
             OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " + std::to_string(i) +
                           " because it is out of range of plaintext modulus " + std::to_string(mod));
 
-        typename P::Integer entry{value[i]};
-
         if (value[i] < 0) {
             if (isBFVRNS(schemeID)) {
                 // TODO: Investigate why this doesn't work with q instead of t.
                 uint64_t adjustedVal{mod - static_cast<uint64_t>(llabs(value[i]))};
-                entry = typename P::Integer(adjustedVal);
+                poly[i] = typename P::Integer(adjustedVal);
             }
             else {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
-                entry = poly.GetModulus() - typename P::Integer(static_cast<uint64_t>(llabs(value[i])));
+                poly[i] = poly.GetModulus() - typename P::Integer(static_cast<uint64_t>(llabs(value[i])));
             }
         }
-        poly[i] = entry;
+        else
+            poly[i] = value[i];
     }
 }
 
 bool CoefPackedEncoding::Encode() {
     if (this->isEncoded)
         return true;
+
     PlaintextModulus mod     = this->encodingParams->GetPlaintextModulus();
     NativeInteger originalSF = scalingFactorInt;
     for (size_t j = 1; j < noiseScaleDeg; j++) {
@@ -83,12 +83,12 @@ bool CoefPackedEncoding::Encode() {
     }
     else {
         encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
-    }
 
-    if (this->typeFlag == IsDCRTPoly) {
-        this->encodedVectorDCRT = this->encodedVector;
-        encodedVectorDCRT       = encodedVectorDCRT.Times(scalingFactorInt);
-        this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+        if (this->typeFlag == IsDCRTPoly) {
+            this->encodedVectorDCRT = this->encodedVector;
+            encodedVectorDCRT       = encodedVectorDCRT.Times(scalingFactorInt);
+            this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+        }
     }
 
     this->isEncoded = true;
