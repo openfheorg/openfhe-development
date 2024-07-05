@@ -75,8 +75,8 @@ bool run_demo_pre(void) {
     parameters.SetPlaintextModulus(plaintextModulus);
     parameters.SetScalingTechnique(FIXEDMANUAL);
     parameters.SetPRENumHops(numHops);
-    parameters.SetStatisticalSecurity(40);
-    parameters.SetNumAdversarialQueries(1048576);
+    parameters.SetStatisticalSecurity(48);
+    parameters.SetNumAdversarialQueries(1 << 18);
     parameters.SetRingDim(32768);
     parameters.SetPREMode(NOISE_FLOODING_HRA);
     parameters.SetKeySwitchTechnique(HYBRID);
