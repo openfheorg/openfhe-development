@@ -192,7 +192,11 @@ bool run_demo_pre(void) {
         // This generates the keys which are used to perform the key switching.
         ////////////////////////////////////////////////////////////
         if (i == 0) {
+            TIC(t);
             reencryptionKeyVector[i] = cc->ReKeyGen(keyPair1.secretKey, keyPairVector[i].publicKey);
+            t1                       = TOC_US(t);
+            std::cout << "Re-encryption key generation time: "
+                      << "\t" << t1 / 1000.0 << " ms" << std::endl;
         }
         else {
             TIC(t);
