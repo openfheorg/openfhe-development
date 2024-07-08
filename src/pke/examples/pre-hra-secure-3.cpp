@@ -82,16 +82,17 @@ bool run_demo_pre(void) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetPlaintextModulus(plaintextModulus);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetPRENumHops(numHops);
-    parameters.SetStatisticalSecurity(48);
-    parameters.SetNumAdversarialQueries(1 << 18);
-    parameters.SetRingDim(32768);
-    parameters.SetPREMode(NOISE_FLOODING_HRA);
-    parameters.SetKeySwitchTechnique(HYBRID);
+    //    parameters.SetPRENumHops(numHops);
+    //    parameters.SetStatisticalSecurity(48);
+    //    parameters.SetNumAdversarialQueries(1 << 18);
+    parameters.SetRingDim(2048);
+    parameters.SetPREMode(FIXED_NOISE_HRA);
+    parameters.SetKeySwitchTechnique(BV);
     parameters.SetMultiplicativeDepth(0);
+    parameters.SetFirstModSize(54);
     // parameters.SetNumLargeDigits(3);
-    // parameters.SetKeySwitchTechnique(BV);
-    // parameters.SetDigitSize(15);
+    parameters.SetKeySwitchTechnique(BV);
+    parameters.SetDigitSize(18);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     std::cout << "\nParam generation time: "
@@ -108,7 +109,7 @@ bool run_demo_pre(void) {
               << std::endl;
     // std::cout << "crypto parameters = " << *cc->GetCryptoParameters() << std::endl;
     const auto cryptoParamsBGV = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cc->GetCryptoParameters());
-    std::cout << "log QP = " << cryptoParamsBGV->GetParamsQP()->GetModulus().GetMSB() << std::endl;
+    // std::cout << "log QP = " << cryptoParamsBGV->GetParamsQP()->GetModulus().GetMSB() << std::endl;
     // std::cout << "RNS parameters = " << *cryptoParamsBGV->GetParamsQP() << std::endl;
 
     auto ringsize = cc->GetRingDimension();
@@ -249,8 +250,8 @@ bool run_demo_pre(void) {
             std::cout << "The first ciphertext has been serialized." << std::endl;
         }
 
-        if (i < numHops - 1)
-            cc->ModReduceInPlace(ct1);
+        // if (i < numHops - 1)
+        //   cc->ModReduceInPlace(ct1);
 
         ////////////////////////////////////////////////////////////
         // Decryption of Ciphertext
