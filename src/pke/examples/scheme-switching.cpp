@@ -238,7 +238,7 @@ void SwitchFHEWtoCKKS() {
     // Step 1: Setup CryptoContext for CKKS to be switched into
 
     // A. Specify main parameters
-    ScalingTechnique scTech = FIXEDAUTO;
+    ScalingTechnique scTech = FLEXIBLEAUTO;
     // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling
     uint32_t multDepth = 3 + 9 + 1;
     if (scTech == FLEXIBLEAUTOEXT)
@@ -247,7 +247,7 @@ void SwitchFHEWtoCKKS() {
     if (highPrec) {
         multDepth += 5;
     }
-    uint32_t scaleModSize = 55;
+    uint32_t scaleModSize = 50;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;  // If this is not HEStd_NotSet, ensure ringDim is compatible
     uint32_t logQ_ccLWE   = 28;
@@ -302,15 +302,13 @@ void SwitchFHEWtoCKKS() {
     // For correct CKKS decryption, the messages have to be much smaller than the FHEW plaintext modulus!
 
     auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
-    uint32_t pLWE2   = 512;                                           // Medium precision
+    uint32_t pLWE2   = 256;                                           // Medium precision
     auto modulus_LWE = 1 << logQ_ccLWE;
     auto beta        = ccLWE->GetBeta().ConvertToInt();
     auto pLWE3       = modulus_LWE / (2 * beta);  // Large precision
     // Inputs
     std::vector<int> x1 = {1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
-    // std::vector<int> x2 = {0, 15, 31, 47, 63, 79, 95, 112, 128, 144, 160, 176, 192, 208, 224, 240, 255};
-    // std::vector<int> x2 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    std::vector<int> x2 = {16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+    std::vector<int> x2 = {0, 8, 16, 24, 32, 40, 48, 56, 63, 71, 79, 87, 95, 103, 111, 119};
     if (x1.size() < slots) {
         std::vector<int> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -344,6 +342,12 @@ void SwitchFHEWtoCKKS() {
             ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE3,
                            modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
     }
+
+    std::cout
+        << "The conversion from FHEW to CKKS works when m << p (roughly m < p/16), due to the approximation"
+        << "of the modular reduction via a sine function. For a larger cost (depth higher by 5), one can homomorphically compose with an arcsine"
+        << "in order to improve the conversion precision (up to m < p/4). The latter can be turned on by setting highPrec to true.\n"
+        << std::endl;
 
     // Step 5. Perform the scheme switching
     auto cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE1, slots, slots);
@@ -391,21 +395,6 @@ void SwitchFHEWtoCKKS() {
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
     plaintextDec2->SetLength(slots);
     std::cout << "Switched CKKS decryption 4: " << plaintextDec2 << std::endl;
-
-    // double a = -128;
-    // double b = 128;
-    // int degree = 167;
-    // auto coefficients = EvalChebyshevCoefficients([](double x) -> double { return std::cos((2*Pi/8)*(x-0.25)); }, a, b, degree);
-    // std::cout.precision(16);
-    // std::cout << "\n";
-    // std::cout << "coefficients of size " << coefficients.size() << ": " << std::endl;
-    // for (uint32_t i = 0; i < coefficients.size(); i++) {
-    //     std::cout << coefficients[i] << ", ";
-    //     if ((i+1) % 4 == 0){
-    //         std::cout << "\n";
-    //     }
-    // }
-    // std::cout << std::endl << std::endl;
 }
 
 void FloorViaSchemeSwitching() {
