@@ -1457,9 +1457,9 @@ public:
 
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
-                                       double pmax = 2.0, uint32_t dim1 = 0) const {
+                                       double pmax = 2.0, uint32_t dim1 = 0, bool highPrec = false) const {
         VerifySchemeSwitchEnabled(__func__);
-        return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
+        return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1, highPrec);
     }
 
     LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) {

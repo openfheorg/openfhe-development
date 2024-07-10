@@ -45,8 +45,8 @@
 
 #include <iterator>
 
-// K = 16
-static constexpr std::initializer_list<double> g_coefficientsFHEW16{
+// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-16, 16]
+static constexpr std::initializer_list<double> g_coefficients_sin2pi_16{
     0.2455457340168511,     -0.04791906488334782,   0.2838870204084082,     -0.02994453873551349,
     0.3557652261903648,     0.01510656188507299,    0.2953294667450001,     0.07120360233373937,
     -0.1034734733966807,    0.04499759051255525,    -0.4275071243192574,    -0.09034212972909554,
@@ -78,8 +78,41 @@ static constexpr std::initializer_list<double> g_coefficientsFHEW16{
     -2.850826919164597e-16, -8.958229638315484e-16, -5.02893395476395e-16,  1.096110020074837e-16,
     -6.975352498995555e-16, -8.743006318923108e-16};
 
-// K = 128
-static constexpr std::initializer_list<double> g_coefficientsFHEW128_9{
+// Coefficients for the function std::cos((2*Pi/8)*(x-0.25)) in [-16, 16]
+static constexpr std::initializer_list<double> g_coefficients_sin_16{
+    0.3089618642023512,     -0.06029493314747044,   0.3572054037078626,     -0.03767819688436892,
+    0.4476473107637168,     0.01900807415933388,    0.3716030456190274,     0.08959307643050014,
+    -0.1301971600693213,    0.05661894109070181,    -0.5379177065254969,    -0.1136744359614747,
+    0.4625747961408903,     0.0620552488251422,     -0.1829013822914142,    -0.01900854801980488,
+    0.04523710036341177,    0.003905227810159522,   -0.007882358256818644,  -0.0005864706461828454,
+    0.001033398804492749,   6.783379527371902e-05,  -0.0001063883457082761, -6.262868564438644e-06,
+    8.866575712296132e-06,  4.738605785311168e-07,  -6.121276942916985e-07, -2.998481738609274e-08,
+    3.56463088274733e-08,   1.612813613357654e-09,  -1.776854714211309e-09, -7.472998491206746e-11,
+    7.67445918490844e-11,   3.016634023557514e-12,  -2.90172217704093e-12,  -1.073642116830728e-13,
+    9.678886694003313e-14,  4.314815924517769e-15,  -2.781202763383019e-15, 7.715109154174817e-17,
+    2.822600910063957e-17,  9.389852360812764e-16,  5.645201820127915e-18,  1.157266373126222e-15,
+    -5.325307050320666e-16, -6.755424844753071e-16, 2.822600910063957e-17,  -6.717790165952218e-16,
+    1.524204491434537e-16,  3.462390449678454e-16,  3.048408982869074e-16,  -7.621022457172685e-16,
+    -5.475845765524077e-16, 3.161313019271632e-16,  1.806464582440933e-16,  4.817238886509154e-16,
+    -1.825281921841359e-16, -1.957003297644344e-16, 2.483888800856282e-16,  8.091455942183344e-17,
+    -8.411350711990593e-16, 3.819919898286556e-16,  -8.16672529978505e-16,  1.336031097430273e-16,
+    -2.427436782655003e-16, 2.352167425053298e-16,  1.337912831370316e-15,  1.106459556745071e-15,
+    2.258080728051166e-17,  -2.634427516059693e-16, -1.659689335117607e-15, 2.276898067451592e-16,
+    -2.841418249464384e-16, 9.879103185223851e-16,  -6.454347414346249e-16, -4.478526777301479e-16,
+    -2.276898067451592e-16, 5.061864298714697e-16,  -4.280944713597002e-16, 1.571247839935603e-16,
+    9.87910318522385e-17,   4.205675355995297e-16,  -4.290353383297215e-16, 2.747331552462252e-16,
+    -6.322626038543264e-16, -3.622337834582079e-16, 6.698972826551792e-16,  -4.883099574410646e-16,
+    -2.163994031049034e-16, 7.69629181477439e-16,   -3.349486413275896e-16, 2.013455315845623e-16,
+    -5.795740535331326e-16, -1.608882518736456e-16, 4.469118107601266e-16,  9.992007221626409e-16,
+    -2.83200957976417e-16,  1.11304562553522e-15,   -2.935504946466516e-16, 1.140330767665839e-15,
+    -2.455662791755643e-16, 3.349486413275896e-16,  1.294632950749335e-15,  -4.417370424250093e-16,
+    -2.065202999196795e-16, -7.051797940309786e-16, -8.576002431744323e-16, 2.784966231263105e-16,
+    -4.939551592611925e-16, -1.124336029175476e-16, 4.833704058484527e-16,  1.086701350374624e-16,
+    1.042480602783622e-15,  -4.290353383297215e-16, -4.657291501605529e-17, -1.058475341273984e-17,
+    3.377712422376535e-16,  6.104462509869571e-16};
+
+// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
+static constexpr std::initializer_list<double> g_coefficients_sin2pi_128_9{
     0.08761193238226354,    -0.01738402917379392,   0.08935060894767313,    -0.01667686631436392,
     0.09435445639097996,    -0.01518333497826596,   0.1019473189108075,     -0.01276275748916528,
     0.110882655474149,      -0.009252446966171999,  0.1192111685574758,     -0.004534979909938953,
@@ -121,6 +154,77 @@ static constexpr std::initializer_list<double> g_coefficientsFHEW128_9{
     -1.620799477984723e-15, 4.003965342611375e-16,  -5.245330582249314e-16, 1.754761547401069e-15,
     -5.0481471966847e-16,   -4.722624632690369e-16, 1.628901569091919e-16,  -1.219903204684612e-15};
 
+// Coefficients for the function std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
+static constexpr std::initializer_list<double> g_coefficients_sin_128_9{
+    0.1102391212927243,     -0.02187373395994211,   0.1124268390107458,     -0.02098393493240529,
+    0.1187230104366467,     -0.01910467513710662,   0.1282768516717666,     -0.01605894462798644,
+    0.1395198824372532,     -0.01164204002381859,   0.1499993678111768,     -0.005706211320285595,
+    0.1562771883214419,     0.001714896917823413,   0.1540474713960449,     0.01024932730954704,
+    0.1386710603585185,     0.0190293926918098,     0.1063160004619134,     0.02660230741479622,
+    0.05576366000710765,    0.03101570646459531,    -0.009379576377249907,  0.03019912816230817,
+    -0.0788485047742673,    0.02271059711528932,    -0.1356339349470137,    0.008755475026793986,
+    -0.1592774387394754,    -0.008892879750792294,  -0.1334840278710031,    -0.02473971302072592,
+    -0.05677884497841732,   -0.03192970594284224,   0.04860577097972316,    -0.02538999302174102,
+    0.137484735099641,      -0.005803850388491444,  0.1589623618726244,     0.01810010856669365,
+    0.0883608265792938,     0.0320866936658363,     -0.04321532604907647,   0.02490413775604496,
+    -0.1503199754606444,    -0.001269332222692847,  -0.1446070813135923,    -0.02759257099359443,
+    -0.01490158346516776,   -0.03042308682260403,   0.1341950080829786,     -0.00387102222149273,
+    0.1539403291028232,     0.02780624332141282,    0.006544040990494398,   0.02920464424364483,
+    -0.1541067869730827,    -0.004946221963887387,  -0.1259088837478489,    -0.03384478831852274,
+    0.07380680032154047,    -0.01632053350635859,   0.1733777260479963,     0.02621745239749425,
+    0.008181775969439571,   0.02828959427825565,    -0.1757295323993279,    -0.01760701686610414,
+    -0.05774394980002619,   -0.03314545384636128,   0.1709956827712282,     0.01422146294463732,
+    0.07000740145088874,    0.03416804027493538,    -0.1794585556766005,    -0.0183837866729736,
+    -0.04155845171244884,   -0.03088248777772008,   0.1962741363357263,     0.02970034946980074,
+    -0.03839555883186283,   0.01754512702970762,    -0.18053345867049,      -0.04103677736631641,
+    0.160125409323275,      0.01219015900976136,    0.05649274713125461,    0.03141589951629922,
+    -0.2168686026455679,    -0.04410571819658609,   0.1757340805264673,     0.01848218954858542,
+    0.00751968059011856,    0.02121984728783968,    -0.1898559638811217,    -0.04940280576755492,
+    0.2795445692461527,     0.05679467720658034,    -0.2714505200535607,    -0.04847630731782693,
+    0.2085404675461939,     0.03404807336268925,    -0.1353992056319448,    -0.02060419837768083,
+    0.07685744445448736,    0.01102667692475582,    -0.03894088860353211,   -0.005307740649665444,
+    0.0178608763033159,     0.002325666882698234,   -0.007492883113111434,  -0.0009359547117391121,
+    0.002897849571021361,   0.0003484023880784909,  -0.001039717142728983,  -0.0001206398860581598,
+    0.000347859935854049,   3.904151432138334e-05,  -0.0001089976859280163, -1.185537215132209e-05,
+    3.210345039948186e-05,  3.389538688656318e-06,  -8.91642379620879e-06,  -9.151570842604238e-07,
+    2.341780247951186e-06,  2.339480232858121e-07,  -5.830303637602153e-07, -5.675774787529067e-08,
+    1.379064824815915e-07,  1.309549815214123e-08,  -3.105203846302873e-08, -2.878932963716673e-09,
+    6.667918740964141e-09,  6.040889210814254e-10,  -1.36772558358343e-09,  -1.211755127456236e-10,
+    2.683934899724452e-10,  2.327193993068022e-11,  -5.045808942629631e-11, -4.282885554144197e-12,
+    9.098278347650196e-12,  7.554707520938225e-13,  -1.574942887745612e-12, -1.29096799388117e-13,
+    2.611816186606642e-13,  2.112959278443598e-14,  -4.08360514715325e-14,  -2.949690756199039e-15,
+    7.987327730435687e-15,  1.228514644510813e-15,  -2.193020897153918e-15, -5.501551595240731e-16,
+    8.888392667385925e-17,  6.410216273133344e-17,  1.12310954187527e-15,   7.282534363910253e-16,
+    -1.135996059125383e-15, -1.475836648657221e-15, -8.90326172575144e-16,  -2.060190642421979e-16,
+    -7.310620363045115e-16, -1.418342956310561e-15, 7.624522706317109e-17,  4.922484377783711e-16,
+    -1.033977797561985e-15, 2.03321982266453e-15,   8.301890920746148e-18,  1.186798675207561e-15};
+
+// Coefficients for the function asin(x) in [-1, 1]
+static constexpr std::initializer_list<double> g_coefficients_asin128_4{0,
+                                                                        0.2022153197342351,
+                                                                        0,
+                                                                        0.02207344731293696,
+                                                                        1.189524669241239e-17,
+                                                                        0.007630979223066646,
+                                                                        1.586032892321652e-17,
+                                                                        0.003607687659115019,
+                                                                        2.775557561562891e-17,
+                                                                        0.001893074937614354,
+                                                                        2.577303450022685e-17,
+                                                                        0.0009457107877224491,
+                                                                        2.091580876749179e-16,
+                                                                        0.0002892497106016072};
+
+// Coefficients for the function asin(x) in [-1, 1]
+static constexpr std::initializer_list<double> g_coefficients_asin128_5{
+    -3.96508223080413e-18, 0.2025359576197256,    3.568574007723717e-17, 0.02240846705512652,   1.784287003861859e-17,
+    0.007996434161484033,  1.784287003861859e-17, 0.004023369936095595,  1.982541115402065e-17, 0.002385540438718644,
+    1.189524669241239e-17, 0.001553268161876657,  1.586032892321652e-17, 0.001070986648967223,  -1.050746791163095e-16,
+    0.0007643516298389452, 2.577303450022685e-17, 0.0005548468469477894, 3.172065784643304e-17, 0.0004027254950256024,
+    2.874684617332994e-17, 0.0002859320976835662, 3.667701063493821e-17, 0.0001912069597735833, 2.478176394252581e-17,
+    0.0001099118932402826, 9.764014993355171e-17, 3.587199157578286e-05};
+
+// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-16, 16]
 static constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
     0.08761193238226343,    -0.01738402917379268,  0.08935060894767202,   -0.0166768663143651,   0.09435445639098095,
     -0.01518333497826714,   0.1019473189108076,    -0.01276275748916462,  0.1108826554741475,    -0.009252446966171845,
@@ -1538,11 +1642,11 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                    uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
-                                                   double pmax, uint32_t dim1) const {
+                                                   double pmax, uint32_t dim1, bool highPrec) const {
     if (!LWECiphertexts.size())
         OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
-    // This is the number of CKKS slots to use in eg_coefficientsFHEW128_9ncoding
+    // This is the number of CKKS slots to use in eg_coefficients_sin2pi_128_9ncoding
     const uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     uint32_t numLWECtxts = LWECiphertexts.size();
@@ -1563,7 +1667,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     std::vector<double> coefficientsFHEW;  // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
     if (n == 32) {
         K = 16.0;
-        coefficientsFHEW.assign(g_coefficientsFHEW16);
+        if (highPrec) {
+            coefficientsFHEW.assign(g_coefficients_sin_16);
+        }
+        else {
+            coefficientsFHEW.assign(g_coefficients_sin2pi_16);
+        }
     }
     else {
         K = 128.0;  // Failure probability of 2^{-49}
@@ -1572,7 +1681,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
             coefficientsFHEW.assign(g_coefficientsFHEW128_8);
         }
         else {
-            coefficientsFHEW.assign(g_coefficientsFHEW128_9);
+            if (highPrec) {
+                coefficientsFHEW.assign(g_coefficients_sin_128_9);
+            }
+            else {
+                coefficientsFHEW.assign(g_coefficients_sin2pi_128_9);
+            }
         }
     }
 
@@ -1632,7 +1746,10 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     for (int32_t j = 1; j < BT_ITER + 1; j++) {
         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
         ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
-        double scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
+        double scalar = 1.0;
+        if (!highPrec) {
+            scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
+        }
         ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
         if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
             ccCKKS->ModReduceInPlace(BminusAdotS3);
@@ -1640,6 +1757,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
         else {
             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
         }
+    }
+
+    // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
+    if (highPrec) {
+        coefficientsFHEW.assign(g_coefficients_asin128_5);
+        BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS3, coefficientsFHEW, a_cheby, b_cheby);
     }
 
     /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
@@ -1663,8 +1786,9 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
 
     uint32_t towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
-    for (uint32_t i = 0; i < towersToDrop; i++)
+    for (uint32_t i = 0; i < towersToDrop; i++) {
         elementParams.PopLastParam();
+    }
 
     // Use full packing here to clear up the junk in the slots after numValues
     auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);
@@ -1914,7 +2038,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
         cSigns[i] = m_ccLWE->EvalSign(LWECiphertexts[i], true);
     }
 
-    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0);
+    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0, false);
 }
 
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
@@ -1964,7 +2088,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
@@ -2052,7 +2176,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
 
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
-        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1);
+        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false);
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
@@ -2124,7 +2248,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
 
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
@@ -2213,7 +2337,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
 
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
-        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1);
+        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false);
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);

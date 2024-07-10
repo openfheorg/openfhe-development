@@ -82,7 +82,7 @@ public:
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                         uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
-                                        uint32_t dim1) const override;
+                                        uint32_t dim1, bool highPrec) const override;
 
     LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) override;
 
