@@ -244,9 +244,9 @@ void SwitchFHEWtoCKKS() {
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     bool highPrec = false;
-    if (highPrec) {
-        multDepth += 5;
-    }
+    bool clean    = false;
+    // Increase by 2 for binary inputs or by 5 for larger inputs based on the requirements. It is not recommended to apply both arcsine and cleaning functionality.
+    multDepth += std::max(highPrec * 5, clean * 2);
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;  // If this is not HEStd_NotSet, ensure ringDim is compatible
@@ -282,7 +282,7 @@ void SwitchFHEWtoCKKS() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     auto ccLWE = std::make_shared<BinFHEContext>();
-    ccLWE->BinFHEContext::GenerateBinFHEContext(STD128, false, logQ_ccLWE, 0, GINX, false);
+    ccLWE->BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
 
     // LWE private key
     LWEPrivateKey lwesk;
@@ -343,14 +343,13 @@ void SwitchFHEWtoCKKS() {
                            modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
     }
 
-    std::cout
-        << "The conversion from FHEW to CKKS works when m << p (roughly m < p/16), due to the approximation"
-        << "of the modular reduction via a sine function. For a larger cost (depth higher by 5), one can homomorphically compose with an arcsine"
-        << "in order to improve the conversion precision (up to m < p/4). The latter can be turned on by setting highPrec to true.\n"
-        << std::endl;
+    std::cout << "\nThe precision of the conversion from FHEW to CKKS for binary inputs can be improved by a "
+              << "cleaning functionality. This consumes two more levels and can be turned on by setting clean "
+              << "to true.\n"
+              << std::endl;
 
     // Step 5. Perform the scheme switching
-    auto cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE1, slots, slots);
+    auto cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE1, slots, slots, 4, 0, 4, 0, clean, false);
 
     std::cout << "\n---Input x1: " << x1 << " encrypted under p = " << 4 << " and Q = " << ctxtsLWE1[0]->GetModulus()
               << "---" << std::endl;
@@ -362,7 +361,7 @@ void SwitchFHEWtoCKKS() {
     std::cout << "Switched CKKS decryption 1: " << plaintextDec << std::endl;
 
     // Step 5'. Perform the scheme switching
-    cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, slots, slots, pLWE1, 0, pLWE1, 0, highPrec);
+    cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, slots, slots, pLWE1, 0, pLWE1, 0, clean, false);
 
     std::cout << "\n---Input x1: " << x1 << " encrypted under p = " << NativeInteger(pLWE1)
               << " and Q = " << ctxtsLWE2[0]->GetModulus() << "---" << std::endl;
@@ -372,8 +371,14 @@ void SwitchFHEWtoCKKS() {
     plaintextDec->SetLength(slots);
     std::cout << "Switched CKKS decryption 2: " << plaintextDec << std::endl;
 
+    std::cout
+        << "\nThe conversion from FHEW to CKKS works when m << p (roughly m < p/16), due to the approximation "
+        << "of the modular reduction via a sine function. For a larger cost (depth higher by 5), one can homomorphically compose with an arcsine "
+        << "in order to improve the conversion precision (up to m < p/4). The latter can be turned on by setting highPrec to true.\n"
+        << std::endl;
+
     // Step 5''. Perform the scheme switching
-    cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE3, slots, slots, pLWE2, 0, pLWE2, 0, highPrec);
+    cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE3, slots, slots, pLWE2, 0, pLWE2, 0, false, highPrec);
 
     std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << pLWE2
               << " and Q = " << ctxtsLWE3[0]->GetModulus() << "---" << std::endl;
@@ -385,7 +390,7 @@ void SwitchFHEWtoCKKS() {
 
     // Step 5'''. Perform the scheme switching
     std::setprecision(logQ_ccLWE + 10);
-    auto cTemp2 = cc->EvalFHEWtoCKKS(ctxtsLWE4, slots, slots, pLWE3, 0, pLWE3, 0, highPrec);
+    auto cTemp2 = cc->EvalFHEWtoCKKS(ctxtsLWE4, slots, slots, pLWE3, 0, pLWE3, 0, false, highPrec);
 
     std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << NativeInteger(pLWE3)
               << " and Q = " << ctxtsLWE4[0]->GetModulus() << "---" << std::endl;

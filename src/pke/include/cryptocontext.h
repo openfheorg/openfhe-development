@@ -3458,14 +3458,16 @@ public:
    * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
    * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
    * @param dim1 baby-step for the linear transform, necessary only for argmin
+   * @param clean cleaning functionality for binary inputs to increase precision
    * @param highPrec higher precision (up to p/4 inputs) for the FHEW to CKKS conversion
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
    */
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
-                                       double pmax = 2.0, uint32_t dim1 = 0, bool highPrec = false) const {
+                                       double pmax = 2.0, uint32_t dim1 = 0, bool clean = false,
+                                       bool highPrec = false) const {
         VerifyCKKSScheme(__func__);
-        return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1, highPrec);
+        return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1, clean, highPrec);
     }
 
     /**

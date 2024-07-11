@@ -1642,7 +1642,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                    uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
-                                                   double pmax, uint32_t dim1, bool highPrec) const {
+                                                   double pmax, uint32_t dim1, bool clean, bool highPrec) const {
     if (!LWECiphertexts.size())
         OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
@@ -1760,7 +1760,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     }
 
     // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
-    if (highPrec) {
+    if (highPrec && (p > 4)) {
         coefficientsFHEW.assign(g_coefficients_asin128_5);
         BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS3, coefficientsFHEW, a_cheby, b_cheby);
     }
@@ -1799,6 +1799,22 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
                                                          BminusAdotSres->GetLevel(), nullptr, N / 2);
 
     ccCKKS->EvalAddInPlace(BminusAdotSres, postBiasPlain);
+
+    // Additional cleaning for binary messages
+    if (clean) {
+        auto square = ccCKKS->EvalSquare(BminusAdotSres);
+        auto cube   = ccCKKS->EvalMult(square, BminusAdotSres);
+        ccCKKS->EvalAddInPlace(square, ccCKKS->EvalAdd(square, square));
+        ccCKKS->EvalAddInPlace(cube, cube);
+        BminusAdotSres = ccCKKS->EvalAdd(ccCKKS->EvalNegate(cube), square);
+
+        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+            ccCKKS->ModReduceInPlace(BminusAdotSres);
+        }
+        else {
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotSres, BASE_NUM_LEVELS_TO_DROP);
+        }
+    }
 
     // Go back to the sparse encoding if needed
     if (isSparse) {
@@ -2038,7 +2054,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
         cSigns[i] = m_ccLWE->EvalSign(LWECiphertexts[i], true);
     }
 
-    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0, false);
+    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0, false, false);  // Andreea: add the clean option
 }
 
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
@@ -2088,7 +2104,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false, false);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
@@ -2176,7 +2192,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
 
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
-        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false);
+        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false, false);
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
@@ -2248,7 +2264,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
 
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false, false);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
@@ -2337,7 +2353,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
 
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
-        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false);
+        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false, false);
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);

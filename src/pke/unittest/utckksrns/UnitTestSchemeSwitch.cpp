@@ -409,6 +409,7 @@ protected:
                           failmsg + "FHEW to CKKS fails for binary messages.");
 
             cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, testData.numValues, testData.slots, pLWE, 0, pLWE);
+            // Andreea: TODO add unit tests for the clean and high prec
 
             cc->Decrypt(keyPair.secretKey, cTemp, &plaintextDec);
             plaintextDec->SetLength(testData.numValues);
