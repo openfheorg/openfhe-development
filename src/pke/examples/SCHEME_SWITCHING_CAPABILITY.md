@@ -64,7 +64,11 @@ Importantly, for correct CKKS decryption, the messages have to be much smaller t
 FHEW. The reason for this is that the modular reduction approximation implemented works well around zero, so m/p should be very small.
 (If this does not happen, only small messages will be converted correctly.) Moreover, since the postprocessing implies multiplying
 by the FHEW plaintext modulus used, which can be large depending on the target application, some loss of precision is expected when the
-message space is large.
+message space is large. There are two ways to improve precision of the conversion. First, for binary messages, one can apply a
+cleaning functionality (specified by the argument clean in `EvalFHEWtoCKKS`), which improves the precision by 6-9 bits, at the cost of
+two extra multiplicative levels in CKKS. Second, for larger plaintext spaces, one can homomorphically compose with the arcsine
+function (specified by the argument highPrec in `EvalFHEWtoCKKS`), which improves the precision of the messages up to p/4, at the cost
+of five extra multiplicative levels in CKKS.
 
 **CKKS->FHEW->operation->CKKS**
 With the previous two modules in place, we can also work with CKKS ciphertexts, convert them to FHEW, perform operations on them, and
@@ -84,7 +88,8 @@ be specified (e.g., 4 for the output of comparison).
 
 Recall that FHEW supports integers, while CKKS encodes real values. Therefore, a rounding is done during the conversion. For instance, to
 correctly compare numbers that are very close to each other, the user has to scale the inputs with the desired precision. The example
-`ComparisonViaSchemeSwitching()` shows how to do this via `EvalCompareSwitchPrecompute`.
+`ComparisonViaSchemeSwitching()` shows how to do this via `EvalCompareSwitchPrecompute`. One can also apply the cleaning functionality
+to `ComparisonViaSchemeSwitching()` by setting the argument clean to true, in order to improve the precision of the binary outputs.
 
 Currently, the code does not support an arbitrary function to be applied to the intermediate FHEW ciphertexts if they have to be converted
 back to CKKS. The reason is that (1) the current implementation of `GenerateLUTviaFunction` works only for the small decryption ciphertext
@@ -93,7 +98,9 @@ bootstrapping to convert FHEW ciphertexts to a CKKS ciphertext approximates corr
 the messagee m << p. Instead of specifying directly the larger plaintext modulus in `EvalFHEWtoCKKS`, which is required to postprocess
 the ciphertext obtained after the Chebyshev evaluation, one can supply the plaintext modulus as 4, which returns a ciphertext
 encrypting $y=sin(2pi*x/p)$. Then, one can apply $arcsin(y)*p/(2pi)$. However, this also does not cover the whole initial message space,
-since arcsin has codomain $[-pi/2, pi/2]$. This issue is exemplified in the example `FloorViaSchemeSwitching()`.
+since arcsin has codomain $[-pi/2, pi/2]$. This issue is exemplified in the example `FuncViaSchemeSwitching()`. As mentioned before,
+one can also set the argument highPrec to true in `EvalFHEWtoCKKS` to apply the arcsine homomorphically when the messages are larger
+than one bit.
 
 **FHEW->CKKS->operation->FHEW**
 This functionality is the mirror of the above. The user should call `EvalSchemeSwitchingSetup`, `EvalSchemeSwitchingKeyGen`,
@@ -127,7 +134,9 @@ the difference of values is between [-1, 1]) in which case the precomputation do
 exemplified in `ArgminViaSchemeSwitchingUnit()` and `ArgminViaSchemeSwitchingUnitAlt()`.
 
 Finally, the user should call `EvalMinSchemeSwitching` or `EvalMinSchemeSwitchingAlt` to obtain the minimum value and the argmin, and
-respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain the maximum value and the argmax.
+respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain the maximum value and the argmax. As mentioned
+before, one can improve the precision of output by applying a cleaning functionality, at the cost of two extra
+multiplicative levels, which is done by setting clean to true in these four methods.
 
 **Current limitations**
 - Scheme switching is currently supported only for CKKS and FHEW/TFHE.

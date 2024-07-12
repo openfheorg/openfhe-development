@@ -94,28 +94,28 @@ public:
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
                                                     ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
-                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign,
-                                                    bool unit) override;
+                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign, bool unit,
+                                                    bool clean) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, uint32_t pLWE,
-                                                             double scaleSign) override;
+                                                             uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                             bool clean) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                 PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, uint32_t pLWE,
-                                                                double scaleSign) override;
+                                                                uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                                bool clean) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, uint32_t pLWE,
-                                                             double scaleSign) override;
+                                                             uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                             bool clean) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                 PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, uint32_t pLWE,
-                                                                double scaleSign) override;
+                                                                uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                                bool clean) override;
 
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
         return m_ccLWE;

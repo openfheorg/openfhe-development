@@ -224,7 +224,7 @@ static constexpr std::initializer_list<double> g_coefficients_asin128_5{
     2.874684617332994e-17, 0.0002859320976835662, 3.667701063493821e-17, 0.0001912069597735833, 2.478176394252581e-17,
     0.0001099118932402826, 9.764014993355171e-17, 3.587199157578286e-05};
 
-// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-16, 16]
+// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
 static constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
     0.08761193238226343,    -0.01738402917379268,  0.08935060894767202,   -0.0166768663143651,   0.09435445639098095,
     -0.01518333497826714,   0.1019473189108076,    -0.01276275748916462,  0.1108826554741475,    -0.009252446966171845,
@@ -1646,6 +1646,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     if (!LWECiphertexts.size())
         OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
+    if (highPrec && clean) {
+        std::string errorMsg(std::string("It is not recommended to set both clean and highPrec"));
+        OPENFHE_THROW(errorMsg);
+    }
+
     // This is the number of CKKS slots to use in eg_coefficients_sin2pi_128_9ncoding
     const uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
@@ -2020,7 +2025,7 @@ void SWITCHCKKSRNS::EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
                                                                ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
                                                                uint32_t numSlots, uint32_t pLWE, double scaleSign,
-                                                               bool unit) {
+                                                               bool unit, bool clean) {
     auto ccCKKS             = ciphertext1->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS->GetCryptoParameters());
 
@@ -2054,13 +2059,13 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
         cSigns[i] = m_ccLWE->EvalSign(LWECiphertexts[i], true);
     }
 
-    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0, false, false);  // Andreea: add the clean option
+    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0, clean, false);
 }
 
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                                         PublicKey<DCRTPoly> publicKey,
                                                                         uint32_t numValues, uint32_t numSlots,
-                                                                        uint32_t pLWE, double scaleSign) {
+                                                                        uint32_t pLWE, double scaleSign, bool clean) {
     auto cc                 = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
@@ -2071,7 +2076,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
 
-    uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS
+    uint32_t towersToDrop = 12 + clean * 2;  // How many levels are consumed in the EvalFHEWtoCKKS
     uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
@@ -2104,7 +2109,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false, false);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, clean, false);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
@@ -2142,7 +2147,8 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                            PublicKey<DCRTPoly> publicKey,
                                                                            uint32_t numValues, uint32_t numSlots,
-                                                                           uint32_t pLWE, double scaleSign) {
+                                                                           uint32_t pLWE, double scaleSign,
+                                                                           bool clean) {
     auto cc                 = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
@@ -2153,8 +2159,9 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
 
-    uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output.
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+    uint32_t towersToDrop =
+        12 + clean * 2;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output.
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -2192,7 +2199,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
 
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
-        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false, false);
+        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, clean, false);
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
@@ -2220,7 +2227,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                                         PublicKey<DCRTPoly> publicKey,
                                                                         uint32_t numValues, uint32_t numSlots,
-                                                                        uint32_t pLWE, double scaleSign) {
+                                                                        uint32_t pLWE, double scaleSign, bool clean) {
     auto cc                 = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
@@ -2231,8 +2238,9 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
 
-    uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output.
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+    uint32_t towersToDrop =
+        12 + clean * 2;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output.
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -2264,7 +2272,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
 
         // Scheme switching from FHEW to CKKS
         auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, false, false);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1, clean, false);
 
         std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
@@ -2303,7 +2311,8 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                            PublicKey<DCRTPoly> publicKey,
                                                                            uint32_t numValues, uint32_t numSlots,
-                                                                           uint32_t pLWE, double scaleSign) {
+                                                                           uint32_t pLWE, double scaleSign,
+                                                                           bool clean) {
     auto cc                 = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
@@ -2314,8 +2323,9 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
         EvalCKKStoFHEWPrecompute(*cc, scaleCF);
     }
 
-    uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+    uint32_t towersToDrop =
+        12 + clean * 2;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -2353,7 +2363,7 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
 
         // Scheme switching from FHEW to CKKS
         auto dim1          = getRatioBSGSLT(numValues);
-        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, false, false);
+        auto cExpandSelect = EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0, dim1, clean, false);
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);

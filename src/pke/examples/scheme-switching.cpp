@@ -37,7 +37,7 @@
 #include "binfhecontext.h"
 #include "math/chebyshev.h"  // To compute coefficients
 #include <lattice/stdlatticeparms.h>
-// #define Pi 3.14159265358979323846
+#define Pi 3.14159265358979323846
 
 using namespace lbcrypto;
 
@@ -54,16 +54,16 @@ void ArgminViaSchemeSwitchingAltUnit();
 std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 
 int main() {
-    // SwitchCKKSToFHEW();
+    SwitchCKKSToFHEW();
     SwitchFHEWtoCKKS();
-    // FloorViaSchemeSwitching();
-    // FuncViaSchemeSwitching();
-    // PolyViaSchemeSwitching();
-    // ComparisonViaSchemeSwitching();
-    // ArgminViaSchemeSwitching();
-    // ArgminViaSchemeSwitchingAlt();
-    // ArgminViaSchemeSwitchingUnit();
-    // ArgminViaSchemeSwitchingAltUnit();
+    FloorViaSchemeSwitching();
+    FuncViaSchemeSwitching();
+    PolyViaSchemeSwitching();
+    ComparisonViaSchemeSwitching();
+    ArgminViaSchemeSwitching();
+    ArgminViaSchemeSwitchingAlt();
+    ArgminViaSchemeSwitchingUnit();
+    ArgminViaSchemeSwitchingAltUnit();
 
     return 0;
 }
@@ -522,8 +522,10 @@ void FuncViaSchemeSwitching() {
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
     // Step 1: Setup CryptoContext for CKKS
+    bool highPrec = true;
     // 1 for CKKS to FHEW, 14 for FHEW to CKKS
-    uint32_t multDepth    = 9 + 3 + 2;
+    uint32_t multDepth = 9 + 3 + 2;
+    multDepth += 5 * highPrec;
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 2048;
     SecurityLevel sl      = HEStd_NotSet;
@@ -643,17 +645,25 @@ void FuncViaSchemeSwitching() {
     std::cout << "\nSwitched decryption modulus_LWE mod " << NativeInteger(pLWE)
               << " works only for messages << p: " << plaintextDec2 << std::endl;
 
-    // Transform through arcsine
-    cTemp2 = cc->EvalFHEWtoCKKS(cFunc, slots, slots, 4, 0, 2);
+    // Transform through homomorphic arcsine
+    cTemp2 = cc->EvalFHEWtoCKKS(cFunc, slots, slots, pLWE, 0, pLWE, 0, false, highPrec);
 
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
     plaintextDec2->SetLength(slots);
-    std::cout << "Arcsin(switched result) * p/2pi gives the correct result if messages are < p/4: ";
+    std::cout << "Homomorphic arcsin(switched result) * p/2pi gives the correct result if messages are < p/4: ";
+    std::cout << plaintextDec2 << std::endl;
+
+    // Transform through plaintext arcsine
+    cTemp2 = cc->EvalFHEWtoCKKS(cFunc, slots, slots, 4, 0, 4);
+
+    cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
+    plaintextDec2->SetLength(slots);
+    std::cout << "Plaintext arcsin(switched result) * p/2pi gives the correct result if messages are < p/4: ";
     for (uint32_t i = 0; i < slots; i++) {
         double x = std::max(std::min(plaintextDec2->GetRealPackedValue()[i], 1.0), -1.0);
         std::cout << std::asin(x) * pLWE / (2 * Pi) << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 }
 
 void ComparisonViaSchemeSwitching() {
@@ -665,6 +675,8 @@ void ComparisonViaSchemeSwitching() {
     uint32_t multDepth      = 17;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
+    bool clean = false;
+    multDepth += clean * 2;
 
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
@@ -790,7 +802,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\n";
 
     // Step 5: Direct comparison via CKKS->FHEW->CKKS
-    auto cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots);
+    auto cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, 0, 1.0, false, clean);
 
     Plaintext plaintextDec3;
     cc->Decrypt(keys.secretKey, cResult, &plaintextDec3);
@@ -829,7 +841,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\n";
 
     // Step 5': Direct comparison via CKKS->FHEW->CKKS
-    cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots);
+    cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, 0, 1.0, false, clean);
 
     cc->Decrypt(keys.secretKey, cResult, &plaintextDec3);
     plaintextDec3->SetLength(slots);
@@ -869,7 +881,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\n";
 
     // Step 5'': Direct comparison via CKKS->FHEW->CKKS
-    cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, 0, scaleSignFHEW);
+    cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, 0, scaleSignFHEW, false, clean);
 
     cc->Decrypt(keys.secretKey, cResult, &plaintextDec3);
     plaintextDec3->SetLength(slots);
@@ -883,11 +895,12 @@ void ArgminViaSchemeSwitching() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
-    BINFHE_PARAMSET slBin = TOY;
+    // uint32_t ringDim      = 8192;
+    SecurityLevel sl      = HEStd_128_classic;
+    BINFHE_PARAMSET slBin = STD128;
     uint32_t logQ_ccLWE   = 25;
     bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
+    bool clean            = true;
 
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
@@ -897,6 +910,7 @@ void ArgminViaSchemeSwitching() {
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
+    multDepth += 2 * clean;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -904,7 +918,7 @@ void ArgminViaSchemeSwitching() {
     parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingTechnique(scTech);
     parameters.SetSecurityLevel(sl);
-    parameters.SetRingDim(ringDim);
+    // parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -973,7 +987,7 @@ void ArgminViaSchemeSwitching() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -989,7 +1003,7 @@ void ArgminViaSchemeSwitching() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1013,11 +1027,12 @@ void ArgminViaSchemeSwitchingAlt() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
-    BINFHE_PARAMSET slBin = TOY;
+    // uint32_t ringDim      = 8192;
+    SecurityLevel sl      = HEStd_128_classic;
+    BINFHE_PARAMSET slBin = STD128;
     uint32_t logQ_ccLWE   = 25;
     bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
+    bool clean            = true;
 
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
@@ -1027,6 +1042,7 @@ void ArgminViaSchemeSwitchingAlt() {
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
+    multDepth += 2 * clean;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -1034,7 +1050,7 @@ void ArgminViaSchemeSwitchingAlt() {
     parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingTechnique(scTech);
     parameters.SetSecurityLevel(sl);
-    parameters.SetRingDim(ringDim);
+    // parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -1105,7 +1121,7 @@ void ArgminViaSchemeSwitchingAlt() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1121,7 +1137,7 @@ void ArgminViaSchemeSwitchingAlt() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1145,11 +1161,12 @@ void ArgminViaSchemeSwitchingUnit() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
-    BINFHE_PARAMSET slBin = TOY;
+    // uint32_t ringDim      = 8192;
+    SecurityLevel sl      = HEStd_128_classic;
+    BINFHE_PARAMSET slBin = STD128;
     uint32_t logQ_ccLWE   = 25;
     bool oneHot           = true;
+    bool clean            = true;
 
     uint32_t slots          = 32;  // sparsely-packed
     uint32_t batchSize      = slots;
@@ -1159,6 +1176,7 @@ void ArgminViaSchemeSwitchingUnit() {
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
+    multDepth += 2 * clean;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -1166,7 +1184,7 @@ void ArgminViaSchemeSwitchingUnit() {
     parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingTechnique(scTech);
     parameters.SetSecurityLevel(sl);
-    parameters.SetRingDim(ringDim);
+    // parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -1239,7 +1257,7 @@ void ArgminViaSchemeSwitchingUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1255,7 +1273,7 @@ void ArgminViaSchemeSwitchingUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1279,11 +1297,12 @@ void ArgminViaSchemeSwitchingAltUnit() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
-    BINFHE_PARAMSET slBin = TOY;
+    // uint32_t ringDim      = 8192;
+    SecurityLevel sl      = HEStd_128_classic;
+    BINFHE_PARAMSET slBin = STD128;
     uint32_t logQ_ccLWE   = 25;
     bool oneHot           = true;
+    bool clean            = true;
 
     uint32_t slots          = 32;  // sparsely-packed
     uint32_t batchSize      = slots;
@@ -1293,6 +1312,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
+    multDepth += 2 * clean;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -1300,7 +1320,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingTechnique(scTech);
     parameters.SetSecurityLevel(sl);
-    parameters.SetRingDim(ringDim);
+    // parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -1374,7 +1394,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
+    auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1390,7 +1410,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, 0, 1.0, clean);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);

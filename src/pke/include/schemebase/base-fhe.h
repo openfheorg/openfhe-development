@@ -281,12 +281,13 @@ public:
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * @param unit whether the input messages are normalized to the unit circle
+   * @param clean cleaning functionality to increase precision of outputs
    * @return a CKKS ciphertext encrypting in its slots the sign of  messages in the LWE ciphertexts
    */
     virtual Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                            ConstCiphertext<Element> ciphertext2, uint32_t numCtxts,
                                                            uint32_t numSlots, uint32_t pLWE, double scaleSign,
-                                                           bool unit) {
+                                                           bool unit, bool clean) {
         OPENFHE_THROW("EvalCompareSchemeSwitching is not supported for this scheme");
     }
 
@@ -302,14 +303,15 @@ public:
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * pLWE and scaleSign are given here only if the homomorphic decoding matrix is not scaled with the desired values
+   * @param clean cleaning functionality to increase precision of intermediate comparison results
    * @return a vector of two CKKS ciphertexts where the first encrypts the minimum value and the second encrypts the
    * index (in the representation specified by oneHot). The ciphertexts have junk after the first slot in the first ciphertext
    * and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
    */
     virtual std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                                     PublicKey<Element> publicKey, uint32_t numValues,
-                                                                    uint32_t numSlots, uint32_t pLWE,
-                                                                    double scaleSign) {
+                                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                                    bool clean) {
         OPENFHE_THROW("EvalMinSchemeSwitching is not supported for this scheme");
     }
 
@@ -319,7 +321,7 @@ public:
     virtual std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                        PublicKey<Element> publicKey, uint32_t numValues,
                                                                        uint32_t numSlots, uint32_t pLWE,
-                                                                       double scaleSign) {
+                                                                       double scaleSign, bool clean) {
         OPENFHE_THROW("EvalMinSchemeSwitchingAlt is not supported for this scheme");
     }
 
@@ -335,14 +337,15 @@ public:
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * pLWE and scaleSign are given here only if the homomorphic decoding matrix is not scaled with the desired values
+   * @param clean cleaning functionality to increase precision of intermediate comparison results
    * @return a vector of two CKKS ciphertexts where the first encrypts the maximum value and the second encrypts the
    * index (in the representation specified by oneHot). The ciphertexts have junk after the first slot in the first ciphertext
    * and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
    */
     virtual std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                                     PublicKey<Element> publicKey, uint32_t numValues,
-                                                                    uint32_t numSlots, uint32_t pLWE,
-                                                                    double scaleSign) {
+                                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                                    bool clean) {
         OPENFHE_THROW("EvalMaxSchemeSwitching is not supported for this scheme");
     }
 
@@ -352,7 +355,7 @@ public:
     virtual std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                        PublicKey<Element> publicKey, uint32_t numValues,
                                                                        uint32_t numSlots, uint32_t pLWE,
-                                                                       double scaleSign) {
+                                                                       double scaleSign, bool clean) {
         OPENFHE_THROW("EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
 
