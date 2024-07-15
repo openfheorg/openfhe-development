@@ -164,7 +164,8 @@ If the set function is called for a parameter which is not available for the giv
 - q_i have same number of bits and is equal to scalingModSize
 - the prime q' is not explicitly given, but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
 - **firstModSize** is allowed for BGV with **scalTech = FIXEDMANUAL** only
-- **scalingModSize** is allowed for BGV with **scalTech = FIXEDMANUAL** and **scalingModSize** must be < 60 for CKKS and NATIVEINT=64.
+- **scalingModSize** is allowed for BGV with **scalTech = FIXEDMANUAL** and **scalingModSize** must be < 60 for CKKS and NATIVEINT=64
+- **firstModSize and scalingModSize** are not available for BGV if PREMode=NOISE_FLOODING_HRA.
 
 **uint32_t numLargeDigits** - number of digits in HYBRID key switching (see KeySwitchTechnique).
 
@@ -172,7 +173,7 @@ If the set function is called for a parameter which is not available for the giv
 
 **SecurityLevel securityLevel** - We use the values from the security standard at http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf. Given the ring dimension and security level, we have upper bound of possible highest modulus (Q for BV or P*Q for HYBRID).
 
-**uint32_t ringDim** - ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
+**uint32_t ringDim** - ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1). Must be > 0 for BGV if PREMode=NOISE_FLOODING_HRA.
 
 **uint32_t evalAddCount (BGV/BFV only)** - maximum number of additions (used for setting noise). In BGV, it is the maximum number of additions at any level.
 

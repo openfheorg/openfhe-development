@@ -84,6 +84,15 @@ void validateParametersForCryptocontext(const Params& parameters) {
             if (0 != parameters.GetMultiplicativeDepth()) {
                 OPENFHE_THROW("multiplicativeDepth should be set to 0 for PREMode == NOISE_FLOODING_HRA");
             }
+            if (0 != parameters.GetFirstModSize()) {
+                OPENFHE_THROW("firstModSize is not supported for PREMode == NOISE_FLOODING_HRA");
+            }
+            if (0 != parameters.GetScalingModSize()) {
+                OPENFHE_THROW("scalingModSize is not supported for PREMode == NOISE_FLOODING_HRA");
+            }
+            if (0 == parameters.GetRingDim()) {
+                OPENFHE_THROW("ringDim should be set to a value > 0 for PREMode == NOISE_FLOODING_HRA");
+            }
         }
         if (0 != parameters.GetFirstModSize()) {
             if (FIXEDMANUAL != parameters.GetScalingTechnique()) {
