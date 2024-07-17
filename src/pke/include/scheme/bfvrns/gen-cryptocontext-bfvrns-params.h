@@ -74,7 +74,7 @@ public:
         DISABLED_FOR_BFVRNS;
     }
     void SetExecutionMode(ExecutionMode executionMode0) override {
-        DISABLED_FOR_BGVRNS;
+        DISABLED_FOR_BFVRNS;
     }
     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
         DISABLED_FOR_BFVRNS;
