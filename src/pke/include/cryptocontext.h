@@ -686,15 +686,15 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        Serial::Deserialize(CryptoContextImpl<Element>::GetAllEvalMultKeys(), ser, sertype);
+        std::map<std::string, std::vector<EvalKey<Element>>> omap;
 
-        // TODO (dsuponit): should we keep the code below?
-        // // The deserialize call created any contexts that needed to be created....
-        // // so all we need to do is put the keys into the maps for their context
+        Serial::Deserialize(omap, ser, sertype);
 
-        // for (auto k : CryptoContextImpl<Element>::s_evalMultKeyMap) {
-        //     CryptoContextImpl<Element>::s_evalMultKeyMap[k.first] = k.second;
-        // }
+        // The deserialize call creates all contexts that need to be created...
+        // so, all we need to do is to insert the keys into the maps for their context(s)
+        for (auto& [key, vec] : omap) {
+            CryptoContextImpl<Element>::s_evalMultKeyMap[key] = vec;
+        }
         return true;
     }
 
