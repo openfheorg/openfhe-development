@@ -117,8 +117,19 @@ void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element> 
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert) {
-    CryptoContextImpl<Element>::GetAllEvalMultKeys()[vectorToInsert[0]->GetKeyTag()] = vectorToInsert;
+void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert,
+                                                   const std::string& keyTag) {
+    const std::string tag = (keyTag.empty()) ? vectorToInsert[0]->GetKeyTag() : keyTag;
+
+    CryptoContextImpl<Element>::GetAllEvalMultKeys()[tag] = vectorToInsert;
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::InsertEvalMultKey(std::vector<EvalKey<Element>>&& vectorToInsert,
+                                                   const std::string& keyTag) {
+    const std::string tag = (keyTag.empty()) ? vectorToInsert[0]->GetKeyTag() : keyTag;
+
+    CryptoContextImpl<Element>::GetAllEvalMultKeys()[tag] = std::move(vectorToInsert);
 }
 
 /////////////////////////////////////////
