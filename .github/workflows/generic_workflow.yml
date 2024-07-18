@@ -83,14 +83,17 @@ jobs:
           # JSON map to convert input Compiler Type to a string with cmake arguments to set the compiler for C and C++
           COMPILERS_MAP: >-
             {
-              "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-              "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
-              "GCC-11"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_C_COMPILER=/usr/bin/gcc-11",
-              "GCC-12"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCMAKE_C_COMPILER=/usr/bin/gcc-12",
-              "CLANG-12"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-12 -DCMAKE_C_COMPILER=/usr/bin/clang-12",
-              "CLANG-13"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-13 -DCMAKE_C_COMPILER=/usr/bin/clang-13",
-              "CLANG-14"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14",
-              "CLANG-15"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 -DCMAKE_C_COMPILER=/usr/bin/clang-15",
+              "GCC-9"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+              "GCC-10"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
+              "GCC-11"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_C_COMPILER=/usr/bin/gcc-11",
+              "GCC-12"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCMAKE_C_COMPILER=/usr/bin/gcc-12",
+              "GCC-13"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-13 -DCMAKE_C_COMPILER=/usr/bin/gcc-13",
+              "GCC-14"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-14 -DCMAKE_C_COMPILER=/usr/bin/gcc-14",
+              "CLANG-14" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-14 -DCMAKE_C_COMPILER=/usr/bin/clang-14",
+              "CLANG-15" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 -DCMAKE_C_COMPILER=/usr/bin/clang-15",
+              "CLANG-16" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-16 -DCMAKE_C_COMPILER=/usr/bin/clang-16",
+              "CLANG-17" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-17 -DCMAKE_C_COMPILER=/usr/bin/clang-17",
+              "CLANG-18" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-18 -DCMAKE_C_COMPILER=/usr/bin/clang-18",
             }
 
       # We can have multiple clang versions installed on Ubuntu, but each clang version works with its corresponding version of OpenMP only.
@@ -102,7 +105,7 @@ jobs:
         id: openmp
         run: |
           if [[ "${{ inputs.compiler }}" == *"CLANG"* ]]; then
-            if [ "${{ inputs.compiler }}" != "CLANG-14" ]; then
+            if [ "${{ inputs.compiler }}" != "CLANG-18" ]; then
               echo "openmp_flag=-DWITH_OPENMP=OFF"
               echo "openmp_flag=-DWITH_OPENMP=OFF" >> $GITHUB_OUTPUT
             else
