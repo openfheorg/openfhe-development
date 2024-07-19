@@ -692,8 +692,8 @@ public:
 
         // The deserialize call creates all contexts that need to be created...
         // so, all we need to do is to insert the keys into the maps for their context(s)
-        for (auto& [key, vec] : omap) {
-            CryptoContextImpl<Element>::s_evalMultKeyMap[key] = vec;
+        for (auto& [tag, vec] : omap) {
+            CryptoContextImpl<Element>::InsertEvalMultKey(vec, tag);
         }
         return true;
     }
@@ -716,10 +716,14 @@ public:
 
     /**
    * InsertEvalMultKey - add the given vector of keys to the map, replacing the
-   * existing vector if there
+   * existing vector if it is there
    * @param evalKeyVec vector of keys
+   * @param keyTag key identifier, unique for every cryptocontext
    */
-    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec);
+    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec,
+                                  const std::string& keyTag = std::string());
+    static void InsertEvalMultKey(std::vector<EvalKey<Element>>&& evalKeyVec,
+                                  const std::string& keyTag = std::string());
 
     /**
    * SerializeEvalSumKey for a single EvalSum key or all of the EvalSum keys
