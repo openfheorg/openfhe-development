@@ -103,6 +103,8 @@ void MatrixMatrixProduct(std::vector<std::vector<Ciphertext<DCRTPoly>>>& matrix1
                          std::vector<std::vector<Ciphertext<DCRTPoly>>>& product,
                          struct MatrixMatrixProductPrecomputations precomp);
 
+std::vector<int32_t> GenerateMatMulRotationIndices(uint32_t rowSize);
+
 void printMinAndMax(std::vector<double> arr) {
     double min = -1;
     double max = 1;
@@ -159,16 +161,9 @@ int RunMatrixBlockExample() {
     std::cout << "Generating Keys" << std::endl;
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
-    std::set<int32_t> indices;
-    for (size_t i = 1; i < rowSize; i++) {
-        indices.insert(i);
-        indices.insert(-i);
-        indices.insert(i * rowSize);
-        indices.insert(i - rowSize);
-    }
-    std::cout << "matrix rotation keys: " << indices.size() << std::endl;
 
-    std::vector<int32_t> indicesList(indices.begin(), indices.end());
+    std::vector<int32_t> indicesList = GenerateMatMulRotationIndices(rowSize); 
+    std::cout << "matrix rotation keys: " << indicesList.size() << std::endl;
     cc->EvalAtIndexKeyGen(keys.secretKey, indicesList);
 
     std::cout << "Finished generating keys" << std::endl;
@@ -242,16 +237,9 @@ int RunMatrixExample() {
     std::cout << "Generating Keys" << std::endl;
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
-    std::set<int32_t> indices;
-    for (size_t i = 1; i < rowSize; i++) {
-        indices.insert(i);
-        indices.insert(-i);
-        indices.insert(i * rowSize);
-        indices.insert(i - rowSize);
-    }
-    std::cout << "matrix rotation keys: " << indices.size() << std::endl;
-
-    std::vector<int32_t> indicesList(indices.begin(), indices.end());
+    
+    std::vector<int32_t> indicesList = GenerateMatMulRotationIndices(rowSize); 
+    std::cout << "matrix rotation keys: " << indicesList.size() << std::endl;
     cc->EvalAtIndexKeyGen(keys.secretKey, indicesList);
 
     std::cout << "Finished generating keys" << std::endl;
@@ -725,4 +713,17 @@ std::vector<std::vector<std::vector<double>>> DecryptMatrix(
         }
     }
     return ptMatrix;
+}
+
+std::vector<int32_t> GenerateMatMulRotationIndices(uint32_t rowSize)
+{
+    std::set<int32_t> indices;
+    for (size_t i = 1; i < rowSize; i++) {
+        indices.insert(i);
+        indices.insert(-i);
+        indices.insert(i * rowSize);
+        indices.insert(i - rowSize);
+    }
+    std::vector<int32_t> indicesList(indices.begin(), indices.end());
+    return indicesList;
 }
