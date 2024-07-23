@@ -123,19 +123,22 @@ std::vector<double> flatten(const std::vector<std::vector<double>>& matrix2D);
 
 std::vector<std::vector<double>> unflatten(const std::vector<double>& linearMatrix, size_t rowSize);
 
+std::vector<std::vector<double>> convertToLargeMatrix(
+    const std::vector<std::vector<std::vector<double>>>& blockedMatrix, size_t rowSize);
+
 // Function to print a vector nicely
 void printVector(const std::vector<double> &vec, size_t print_size, const std::string &label);
 
-// Function to print a matrix nicely
+// Function to print a matrix nicely - or print the entire matrix if fullPrint is true
 void printMatrix(const std::vector<std::vector<double>> &matrix,
-                 uint32_t horizontalPrintSize, uint32_t verticalPrintSize, const std::string &label);
+                 uint32_t horizontalPrintSize, uint32_t verticalPrintSize, const std::string &label, bool fullPrint = false);
 
 int RunMatrixBlockExample();
 int RunMatrixExample();
 
 int main() {
     RunMatrixBlockExample();
-    // RunMatrixExample();
+    RunMatrixExample();
 }
 
 int RunMatrixBlockExample() {
@@ -232,7 +235,7 @@ int RunMatrixExample() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecurityLevel(HEStd_NotSet);
     // This is the size of a row in a single matrix ciphertext block. Note that rowSize * rowSize = numSlots.
-    size_t rowSize = 32;
+    size_t rowSize = 4;
 
     parameters.SetScalingModSize(50);
     parameters.SetFirstModSize(60);
@@ -242,8 +245,8 @@ int RunMatrixExample() {
 
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
-    parameters.SetRingDim(1 << 11);
-    parameters.SetBatchSize(1 << 10);
+    parameters.SetRingDim(1 << 5);
+    parameters.SetBatchSize(1 << 4);
     uint32_t depth = 5;
     std::cout << "depth: " << depth << std::endl;
     parameters.SetMultiplicativeDepth(depth);
@@ -271,14 +274,23 @@ int RunMatrixExample() {
     struct MatrixMatrixProductPrecomputations precomp = getMatrixMatrixProductPrecomputations(cc, rowSize);
 
     size_t rows  = rowSize * 2 + 3;
-    size_t cols1 = rowSize * 2 + 5;
-    size_t cols2 = rowSize * 2 + 5;
+    size_t cols1 = rowSize * 2 + 1;
+    size_t cols2 = rowSize * 2 + 2;
 
-    auto matrix1 = generateRandomMatrix(rows, cols1);
-    auto matrix2 = generateRandomMatrix(cols1, cols2);
+    uint32_t fixed_seed_mat1 = 4, fixed_seed_mat2 = 7;
+    auto matrix1 = generateRandomMatrix(rows, cols1, fixed_seed_mat1);
+    auto matrix2 = generateRandomMatrix(cols1, cols2, fixed_seed_mat2);
 
     auto matrixProduct = naiveMatrixMatrixMultiply<double>(matrix1, matrix2);
     auto vecProduct    = extractAndLinearizeMatrix(matrixProduct, numSlots, rowSize);
+
+    // print out for debugging
+    uint32_t horiz_print_size = 3;
+    uint32_t verti_print_size = 3;
+    printMatrix(matrix1, horiz_print_size, verti_print_size, "A", true);
+    printMatrix(matrix2, horiz_print_size, verti_print_size, "B", true);
+    auto mat2DProductGT = convertToLargeMatrix(vecProduct, rowSize);
+    printMatrix(mat2DProductGT, horiz_print_size, verti_print_size, "A.B (GT)", true);
 
     auto mat1 = extractAndLinearizeMatrix(matrix1, numSlots, rowSize);
 
@@ -292,6 +304,9 @@ int RunMatrixExample() {
     MatrixMatrixProduct(ctxt1, ctxt2, rowSize, cResult, precomp);
 
     auto dResult = DecryptMatrix(cResult, keys.secretKey);
+
+    auto mat2DProductComputed = convertToLargeMatrix(dResult, rowSize);
+    printMatrix(mat2DProductComputed, horiz_print_size, verti_print_size, "A.B (CT)", true);
 
     getMaxErrorMatrix(vecProduct, dResult);
 
@@ -793,6 +808,44 @@ std::vector<std::vector<double>> unflatten(const std::vector<double>& linearMatr
     return matrix2D;
 }
 
+// Function to convert blocked matrix (given in 3D std vector structure)
+// into a 2D large matrix (in human-readable format) 
+std::vector<std::vector<double>> convertToLargeMatrix(
+    const std::vector<std::vector<std::vector<double>>>& blockedMatrix, size_t rowSize) {
+    if (blockedMatrix.empty() || blockedMatrix[0].empty()) {
+        return {};
+    }
+
+    // Calculate the dimensions of the large matrix
+    size_t numBlockRows    = blockedMatrix.size();
+    size_t numBlockCols    = blockedMatrix[0].size();
+    size_t largeMatrixSize = numBlockRows * rowSize;
+
+    // Initialize the large matrix
+    std::vector<std::vector<double>> largeMatrix(largeMatrixSize, std::vector<double>(largeMatrixSize, 0.0));
+
+    // Fill the large matrix with data from the blocked matrix
+    for (size_t blockRow = 0; blockRow < numBlockRows; ++blockRow) {
+        for (size_t blockCol = 0; blockCol < numBlockCols; ++blockCol) {
+            const auto& block = blockedMatrix[blockRow][blockCol];
+
+            // Ensure each block is a square matrix of the correct size
+            if (block.size() != rowSize * rowSize) {
+                throw std::invalid_argument("Inconsistent block size detected");
+            }
+
+            // Copy data from the linearized block to the large matrix
+            for (size_t i = 0; i < rowSize; ++i) {
+                for (size_t j = 0; j < rowSize; ++j) {
+                    largeMatrix[blockRow * rowSize + i][blockCol * rowSize + j] = block[i * rowSize + j];
+                }
+            }
+        }
+    }
+
+    return largeMatrix;
+}
+
 // Function to print a vector nicely
 void printVector(const std::vector<double> &vec, size_t print_size, const std::string &label)
 {
@@ -835,59 +888,59 @@ void printVector(const std::vector<double> &vec, size_t print_size, const std::s
 }
 
 // Function to print a matrix nicely
-void printMatrix(const std::vector<std::vector<double>> &matrix,
-                 uint32_t horizontalPrintSize, uint32_t verticalPrintSize, const std::string &label)
-{
-  uint32_t numRows = matrix.size();
-  uint32_t numCols = matrix[0].size();
+void printMatrix(const std::vector<std::vector<double>>& matrix, uint32_t horizontalPrintSize,
+                 uint32_t verticalPrintSize, const std::string& label, bool fullPrint) {
+    uint32_t numRows = matrix.size();
+    uint32_t numCols = matrix[0].size();
 
-  std::cout << label << " of Dim(" << numRows << "x" << numCols << "): [\n";
+    std::cout << label << " of Dim(" << numRows << "x" << numCols << "): [\n";
 
-  // Set precision for double output
-  std::cout << std::fixed << std::setprecision(15);
+    // Set precision for double output
+    std::cout << std::fixed << std::setprecision(15);
 
-  // Print first verticalPrintSize rows
-  for (uint32_t i = 0; i < verticalPrintSize; i++)
-  {
-    for (uint32_t j = 0; j < numCols; j++)
-    {
-      if (j < horizontalPrintSize || j >= numCols - horizontalPrintSize)
-      {
-        // Align entries with setw
-        std::cout << std::setw(20) << matrix[i][j] << " ";
-      }
-      else if (j == horizontalPrintSize)
-      {
-        std::cout << "   ... ";
-      }
+    if (fullPrint) {
+        // Print the entire matrix
+        for (uint32_t i = 0; i < numRows; i++) {
+            for (uint32_t j = 0; j < numCols; j++) {
+                std::cout << std::setw(20) << matrix[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
     }
-    std::cout << std::endl;
-  }
+    else {
+        // Print first verticalPrintSize rows
+        for (uint32_t i = 0; i < verticalPrintSize; i++) {
+            for (uint32_t j = 0; j < numCols; j++) {
+                if (j < horizontalPrintSize || j >= numCols - horizontalPrintSize) {
+                    // Align entries with setw
+                    std::cout << std::setw(20) << matrix[i][j] << " ";
+                }
+                else if (j == horizontalPrintSize) {
+                    std::cout << "   ... ";
+                }
+            }
+            std::cout << std::endl;
+        }
 
-  // Print ... if there are more rows
-  if (numRows > verticalPrintSize * 2)
-  {
-    std::cout << "     ...     " << std::endl;
-    std::cout << "     ...     " << std::endl;
-    std::cout << "     ...     " << std::endl;
-  }
+        // Print ... if there are more rows
+        if (numRows > verticalPrintSize * 2) {
+            std::cout << "     ...     " << std::endl;
+            std::cout << "     ...     " << std::endl;
+            std::cout << "     ...     " << std::endl;
+        }
 
-  // Print last verticalPrintSize rows
-  for (uint32_t i = numRows - verticalPrintSize; i < numRows; i++)
-  {
-    for (uint32_t j = 0; j < numCols; j++)
-    {
-      if (j < horizontalPrintSize || j >= numCols - horizontalPrintSize)
-      {
-        std::cout << std::setw(20) << matrix[i][j] << " ";
-      }
-      else if (j == horizontalPrintSize)
-      {
-        std::cout << "   ... ";
-      }
+        // Print last verticalPrintSize rows
+        for (uint32_t i = numRows - verticalPrintSize; i < numRows; i++) {
+            for (uint32_t j = 0; j < numCols; j++) {
+                if (j < horizontalPrintSize || j >= numCols - horizontalPrintSize) {
+                    std::cout << std::setw(20) << matrix[i][j] << " ";
+                }
+                else if (j == horizontalPrintSize) {
+                    std::cout << "   ... ";
+                }
+            }
+            std::cout << std::endl;
+        }
     }
-    std::cout << std::endl;
-  }
-  std::cout << "]" << std::endl;
+    std::cout << "]" << std::endl;
 }
-
