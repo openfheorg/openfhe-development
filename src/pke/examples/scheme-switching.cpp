@@ -35,9 +35,9 @@
 
 #include "openfhe.h"
 #include "binfhecontext.h"
-#include "math/chebyshev.h"  // To compute coefficients
 #include <lattice/stdlatticeparms.h>
-#define Pi 3.14159265358979323846
+// #include "math/chebyshev.h"  // To compute coefficients
+// #define Pi 3.14159265358979323846
 
 using namespace lbcrypto;
 
@@ -54,16 +54,16 @@ void ArgminViaSchemeSwitchingAltUnit();
 std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 
 int main() {
-    SwitchCKKSToFHEW();
+    // SwitchCKKSToFHEW();
     SwitchFHEWtoCKKS();
-    FloorViaSchemeSwitching();
-    FuncViaSchemeSwitching();
-    PolyViaSchemeSwitching();
-    ComparisonViaSchemeSwitching();
-    ArgminViaSchemeSwitching();
-    ArgminViaSchemeSwitchingAlt();
-    ArgminViaSchemeSwitchingUnit();
-    ArgminViaSchemeSwitchingAltUnit();
+    // FloorViaSchemeSwitching();
+    // FuncViaSchemeSwitching();
+    // PolyViaSchemeSwitching();
+    // ComparisonViaSchemeSwitching();
+    // ArgminViaSchemeSwitching();
+    // ArgminViaSchemeSwitchingAlt();
+    // ArgminViaSchemeSwitchingUnit();
+    // ArgminViaSchemeSwitchingAltUnit();
 
     return 0;
 }
@@ -243,14 +243,14 @@ void SwitchFHEWtoCKKS() {
     uint32_t multDepth = 3 + 9 + 1;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
-    bool highPrec = false;
+    bool highPrec = true;
     bool clean    = false;
-    // Increase by 2 for binary inputs or by 5 for larger inputs based on the requirements. It is not recommended to apply both arcsine and cleaning functionality.
-    multDepth += std::max(highPrec * 5, clean * 2);
+    // Increase by 2 for binary inputs or by 3/5 for larger inputs based on the requirements. It is not recommended to apply both arcsine and cleaning functionality.
+    multDepth += std::max(highPrec * 3, clean * 2);
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;  // If this is not HEStd_NotSet, ensure ringDim is compatible
-    uint32_t logQ_ccLWE   = 28;
+    // uint32_t ringDim      = 8192;
+    SecurityLevel sl    = HEStd_128_classic;  // If this is not HEStd_NotSet, ensure ringDim is compatible
+    uint32_t logQ_ccLWE = 28;
 
     // uint32_t slots = ringDim/2; // Uncomment for fully-packed
     uint32_t slots     = 16;  // sparsely-packed
@@ -261,7 +261,7 @@ void SwitchFHEWtoCKKS() {
     parameters.SetScalingModSize(scaleModSize);
     parameters.SetScalingTechnique(scTech);
     parameters.SetSecurityLevel(sl);
-    parameters.SetRingDim(ringDim);
+    // parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -282,7 +282,7 @@ void SwitchFHEWtoCKKS() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     auto ccLWE = std::make_shared<BinFHEContext>();
-    ccLWE->BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
+    ccLWE->BinFHEContext::GenerateBinFHEContext(STD128, false, logQ_ccLWE, 0, GINX, false);
 
     // LWE private key
     LWEPrivateKey lwesk;
@@ -378,7 +378,10 @@ void SwitchFHEWtoCKKS() {
         << std::endl;
 
     // Step 5''. Perform the scheme switching
+    TimeVar t;
+    TIC(t);
     cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE3, slots, slots, pLWE2, 0, pLWE2, 0, false, highPrec);
+    std::cout << "EvalFHEWtoCKKS time: " << TOC_NS(t) / 1000000000.0 << " s" << std::endl;
 
     std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << pLWE2
               << " and Q = " << ctxtsLWE3[0]->GetModulus() << "---" << std::endl;
@@ -387,10 +390,17 @@ void SwitchFHEWtoCKKS() {
     cc->Decrypt(keys.secretKey, cTemp, &plaintextDec);
     plaintextDec->SetLength(slots);
     std::cout << "Switched CKKS decryption 3: " << plaintextDec << std::endl;
+    std::cout << "Absolute error: ";
+    for (size_t i = 0; i < slots; ++i) {
+        std::cout << std::abs(x2[i] - plaintextDec->GetCKKSPackedValue()[i].real()) << ", ";
+    }
+    std::cout << std::endl << std::endl;
 
     // Step 5'''. Perform the scheme switching
     std::setprecision(logQ_ccLWE + 10);
+    TIC(t);
     auto cTemp2 = cc->EvalFHEWtoCKKS(ctxtsLWE4, slots, slots, pLWE3, 0, pLWE3, 0, false, highPrec);
+    std::cout << "EvalFHEWtoCKKS time: " << TOC_NS(t) / 1000000000.0 << " s" << std::endl;
 
     std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << NativeInteger(pLWE3)
               << " and Q = " << ctxtsLWE4[0]->GetModulus() << "---" << std::endl;
@@ -400,6 +410,11 @@ void SwitchFHEWtoCKKS() {
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
     plaintextDec2->SetLength(slots);
     std::cout << "Switched CKKS decryption 4: " << plaintextDec2 << std::endl;
+    std::cout << "Absolute error: ";
+    for (size_t i = 0; i < slots; ++i) {
+        std::cout << std::abs(x2[i] - plaintextDec2->GetCKKSPackedValue()[i].real()) << ", ";
+    }
+    std::cout << std::endl;
 }
 
 void FloorViaSchemeSwitching() {

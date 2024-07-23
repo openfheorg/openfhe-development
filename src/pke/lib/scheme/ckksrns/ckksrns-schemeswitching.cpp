@@ -111,7 +111,7 @@ static constexpr std::initializer_list<double> g_coefficients_sin_16{
     1.042480602783622e-15,  -4.290353383297215e-16, -4.657291501605529e-17, -1.058475341273984e-17,
     3.377712422376535e-16,  6.104462509869571e-16};
 
-// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
+// Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8.0)*(x-0.25)) in [-128, 128]
 static constexpr std::initializer_list<double> g_coefficients_sin2pi_128_9{
     0.08761193238226354,    -0.01738402917379392,   0.08935060894767313,    -0.01667686631436392,
     0.09435445639097996,    -0.01518333497826596,   0.1019473189108075,     -0.01276275748916528,
@@ -154,7 +154,7 @@ static constexpr std::initializer_list<double> g_coefficients_sin2pi_128_9{
     -1.620799477984723e-15, 4.003965342611375e-16,  -5.245330582249314e-16, 1.754761547401069e-15,
     -5.0481471966847e-16,   -4.722624632690369e-16, 1.628901569091919e-16,  -1.219903204684612e-15};
 
-// Coefficients for the function std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
+// Coefficients for the function std::cos((2*Pi/8.0)*(x-0.25)) in [-128, 128]
 static constexpr std::initializer_list<double> g_coefficients_sin_128_9{
     0.1102391212927243,     -0.02187373395994211,   0.1124268390107458,     -0.02098393493240529,
     0.1187230104366467,     -0.01910467513710662,   0.1282768516717666,     -0.01605894462798644,
@@ -226,30 +226,218 @@ static constexpr std::initializer_list<double> g_coefficients_asin128_5{
 
 // Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
 static constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
-    0.08761193238226343,    -0.01738402917379268,  0.08935060894767202,   -0.0166768663143651,   0.09435445639098095,
-    -0.01518333497826714,   0.1019473189108076,    -0.01276275748916462,  0.1108826554741475,    -0.009252446966171845,
-    0.1192111685574773,     -0.004534979909938402, 0.1242004317120066,    0.001362904847616587,  0.1224283765086535,
-    0.008145596233693802,   0.1102080588183083,    0.0151235046709367,    0.08449405378412395,   0.02114203679334948,
-    0.04431786059830203,    0.02464956129638117,   -0.007454366487155707, 0.02400059020367158,   -0.06266441339261287,
-    0.01804912154136392,    -0.107794320182978,    0.006958365388138488,  -0.1265848641500738,   -0.007067567033133184,
-    -0.1060856934163389,    -0.01966175019277399,  -0.0451246732435682,   -0.02537595733026211,  0.0386291678537217,
-    -0.02017855662963969,   0.1092652333753532,    -0.004612578019767425, 0.1263344585514991,    0.01438496124843117,
-    0.07022427857484087,    0.02550072245548053,   -0.03434514153678073,  0.01979242584243296,   -0.1194659697149702,
-    -0.00100879476868968,   -0.1149256786653952,   -0.02192904329965062,  -0.01184295110147335,  -0.02417858011117619,
-    0.1066507410103884,     -0.003076473516322021, 0.1223432257632692,    0.02209885820126752,   0.005200840409853516,
-    0.02321022960558683,    -0.1224755172356849,   -0.003930982569218244, -0.1000653894904628,   -0.02689795846413568,
-    0.05865754664309823,    -0.01297065380451253,  0.1377909895596233,    0.02083617539534807,   0.006502421233004046,
-    0.02248299870285591,    -0.1396600746594754,   -0.01399307934458444,  -0.04589168496663817,  -0.02634216625743798,
-    0.1358978738303917,     0.0113024290766429,    0.05563799538901171,   0.02715486116995986,   -0.1426236952996744,
-    -0.01461041285557423,   -0.03302834981489241,  -0.02454368648125667,  0.155987785092838,     0.02360418859443058,
-    -0.03051465817859778,   0.01394389273915945,   -0.1434779685133346,   -0.03261375201147241,  0.1272587840850196,
-    0.009688061500927738,   0.04489729856072736,   0.02496761251245433,   -0.1723551233719191,   -0.03505277577503064,
-    0.1396636892583768,     0.01468861799712161,   0.005976224589562133,  0.01686435635499993,   -0.1508869780064481,
-    -0.03926260684622985,   0.2221665014339838,    0.04513725581879824,   -0.2157338005780147,   -0.03852627732053739,
-    0.1657363840693943,     0.02705951811098469,   -0.1076077705704247,   -0.0163750726899083,   0.06108203029457551,
-    0.008763390064061401,   -0.03094806130001855,  -0.00421829525869962,  0.01419485740772663,   0.001848300494047458,
-    -0.005955037043195616,  -0.000743799726455706, 0.002303513291010024,  0.0002767049434914361, -0.0008281705698254814,
-    -9.515056665793518e-05, 0.0002835460400168608, 2.833421059257267e-05, -0.0001121393482639905};
+    0.08761193238226316,   -0.01738402917379336,  0.08935060894767244,    -0.01667686631436463,
+    0.09435445639098111,   -0.01518333497826755,  0.1019473189108072,     -0.01276275748916431,
+    0.1108826554741485,    -0.009252446966171965, 0.1192111685574766,     -0.004534979909938414,
+    0.1242004317120063,    0.001362904847616531,  0.1224283765086542,     0.008145596233693597,
+    0.1102080588183091,    0.01512350467093634,   0.08449405378412286,    0.0211420367933498,
+    0.04431786059830236,   0.02464956129638197,   -0.007454366487154326,  0.02400059020367153,
+    -0.06266441339261325,  0.01804912154136471,   -0.1077943201829785,    0.006958365388139742,
+    -0.1265848641500741,   -0.0070675670331342,   -0.106085693416339,     -0.01966175019277442,
+    -0.04512467324356784,  -0.02537595733026223,  0.03862916785372085,    -0.02017855662963871,
+    0.1092652333753524,    -0.004612578019766759, 0.1263344585514993,     0.01438496124843019,
+    0.07022427857484083,   0.0255007224554796,    -0.03434514153678157,   0.01979242584243292,
+    -0.11946596971497,     -0.001008794768691392, -0.1149256786653934,    -0.02192904329965151,
+    -0.01184295110147355,  -0.02417858011117523,  0.1066507410103885,     -0.003076473516322313,
+    0.1223432257632692,    0.02209885820126595,   0.005200840409852346,   0.02321022960558804,
+    -0.1224755172356859,   -0.003930982569218327, -0.1000653894904625,    -0.02689795846413656,
+    0.05865754664309863,   -0.01297065380451128,  0.1377909895596229,     0.02083617539534959,
+    0.006502421233002613,  0.02248299870285587,   -0.1396600746594754,    -0.01399307934458612,
+    -0.04589168496663812,  -0.02634216625743773,  0.1358978738303924,     0.01130242907664427,
+    0.05563799538901153,   0.02715486116995834,   -0.1426236952996738,    -0.01461041285557356,
+    -0.03302834981489244,  -0.02454368648125503,  0.1559877850928393,     0.02360418859443086,
+    -0.03051465817859546,  0.01394389273915786,   -0.1434779685133353,    -0.03261375201147693,
+    0.1272587840850199,    0.009688061500928326,  0.04489729856072647,    0.02496761251245012,
+    -0.1723551233719205,   -0.03505277577503201,  0.1396636892583779,     0.01468861799712274,
+    0.00597622458956165,   0.01686435635499905,   -0.1508869780064468,    -0.03926260684622877,
+    0.2221665014339846,    0.04513725581879454,   -0.2157338005780159,    -0.03852627732054279,
+    0.1657363840693942,    0.02705951811098896,   -0.1076077705704244,    -0.01637507268990577,
+    0.06108203029457434,   0.008763390064060851,  -0.0309480613000186,    -0.004218295258698306,
+    0.01419485740772727,   0.001848300494048352,  -0.005955037043198769,  -0.0007437997264540409,
+    0.002303513291012029,  0.0002767049434903019, -0.0008281705698266399, -9.515056665995515e-05,
+    0.0002835460400132129, 2.833421059389586e-05, -0.000112139348265277};
+
+// Coefficients for the function std::pow(2/(5*Pi),1.0/8.0)*std::cos((2*Pi/8.0)*(x-0.25)) in [-16, 16]
+static constexpr std::initializer_list<double> g_coefficients_sin2pi_4th_16{
+    0.2387913779775442,     -0.04660092988666914,   0.2760779903779993,     -0.02912083851175566,
+    0.3459790044353196,     0.0146910177180763,     0.2872056833069317,     0.06924496728202924,
+    -0.1006271739781907,    0.04375981805257116,    -0.4157474603260956,    -0.08785704110809819,
+    0.3575162043812014,     0.04796144797983876,    -0.1413613722979084,    -0.01469138395678731,
+    0.03496298664359673,    0.003018284254957298,   -0.006092140836597429,  -0.0004532732028495985,
+    0.0007986963865661707,  5.242758839728183e-05,  -8.222574568551596e-05, -4.840464755928963e-06,
+    6.852825793735406e-06,  3.662387939227203e-07,  -4.731030996097217e-07, -2.317475614423819e-08,
+    2.755042674786728e-08,  1.246516249918465e-09,  -1.373300845922932e-09, -5.775755015500921e-11,
+    5.931458337676173e-11,  2.33150222292375e-12,   -2.242695671357377e-12, -8.298823022376043e-14,
+    7.478763371305461e-14,  3.332550807815512e-15,  -2.141413223768522e-15, 4.704334850106595e-17,
+    2.44625412205543e-17,   7.225858329763731e-16,  -7.526935760170553e-18, 8.862966857600826e-16,
+    -4.102179989292951e-16, -5.268855032119387e-16, 1.129040364025583e-17,  -5.09949897751555e-16,
+    1.129040364025583e-16,  2.766148891862678e-16,  2.333350085652872e-16,  -5.92746191113431e-16,
+    -4.196266686295083e-16, 2.465071461455856e-16,  1.411300455031979e-16,  3.594111825481439e-16,
+    -1.3548484368307e-16,   -1.543021830834963e-16, 1.881733940042638e-16,  5.645201820127914e-17,
+    -6.548434111348381e-16, 3.029591643468647e-16,  -6.172087323339854e-16, 1.09140568522473e-16,
+    -1.797055912740719e-16, 1.74060389453944e-16,   1.032131066113387e-15,  8.58070676659443e-16,
+    1.97582063704477e-17,   -1.966411967344557e-16, -1.285224281049122e-15, 1.618291188436669e-16,
+    -2.229854718950526e-16, 7.611613787472471e-16,  -5.005412280513418e-16, -3.565885816380799e-16,
+    -1.608882518736456e-16, 3.942232604389327e-16,  -3.30244306477483e-16,  1.185492382226862e-16,
+    7.338762366166289e-17,  3.264808385973977e-16,  -3.434164440577815e-16, 2.107542012847755e-16,
+    -4.83605622590958e-16,  -2.709696873661399e-16, 5.221811683618321e-16,  -3.754059210385063e-16,
+    -1.693560546038374e-16, 5.89923590203367e-16,   -2.577975497858414e-16, 1.552430500535177e-16,
+    -4.403257419699773e-16, -1.209014056477395e-16, 3.53765980728016e-16,   7.752743832975669e-16,
+    -2.135768021948394e-16, 8.496028739292511e-16,  -2.361576094753511e-16, 8.853558187900612e-16,
+    -1.919368618843491e-16, 2.540340819057562e-16,  9.96378121252577e-16,   -3.340077743575683e-16,
+    -1.613586853586562e-16, -5.541706453425569e-16, -6.658985980325886e-16, 2.145176691648608e-16,
+    -3.805806893736236e-16, -8.420759381690806e-17, 3.561181481530693e-16,  8.37371603318974e-17,
+    8.017362668294165e-16,  -3.255399716273764e-16, -3.928119599839007e-17, -4.527922293227598e-18,
+    2.550925572470302e-16,  4.757846659026558e-16};
+
+// Coefficients for the function std::pow(1/(std::pow(14,1.0/3.0)),1.0/8.0)*std::cos((2*Pi/8.0)*x) in [-16, 16]
+static constexpr std::initializer_list<double> g_coefficients_cos2pi_4th_16{
+    0.2822120819835678,     1.623351313317456e-16,
+    0.3262787170721946,     2.369719733233527e-16,
+    0.4088902036214871,     -2.033853944271295e-16,
+    0.3394298174835472,     -1.100893419376206e-16,
+    -0.1189247472543938,    1.306144734853125e-16,
+    -0.4913450282490588,    4.664802624475448e-16,
+    0.4225252738847615,     -4.235640783023706e-16,
+    -0.1670658611132877,    2.985473679664286e-16,
+    0.04132049212422154,    8.396644724055806e-17,
+    -0.007199907148217225,  -5.411171044391519e-17,
+    0.000943927590831574,   0,
+    -9.717728956184613e-05, 5.485807886383127e-16,
+    8.09891148976675e-06,   2.966814469166385e-16,
+    -5.591299472867075e-07, 1.492736839832143e-16,
+    3.256006740230257e-08,  6.605360516257234e-16,
+    -1.62301512099231e-09,  -4.664802624475448e-17,
+    7.009983443391079e-11,  -4.739439466467055e-16,
+    -2.650695722674082e-12, -1.735306576304867e-16,
+    8.845958512845281e-14,  3.54524999460134e-17,
+    -2.552579996112965e-15, -3.172065784643304e-17,
+    1.474077629334241e-16,  1.940557891781786e-16,
+    -9.329605248950895e-17, -3.172065784643304e-16,
+    9.702789458908931e-17,  4.59016578248384e-16,
+    -7.799549988122948e-16, -1.45541841883634e-16,
+    -3.078769732153795e-16, -3.209384205639108e-16,
+    -4.38491446700692e-16,  1.679328944811161e-17,
+    5.485807886383127e-16,  3.153406574145402e-16,
+    -4.179663151530001e-16, -3.918434204559376e-17,
+    1.884580260288081e-16,  -2.630948680204152e-16,
+    -4.216981572525804e-16, -5.970947359328573e-17,
+    7.389047357169108e-16,  1.865921049790179e-18,
+    5.84033288584326e-16,   -3.713182889082456e-16,
+    1.474077629334241e-16,  -1.679328944811161e-16,
+    -1.100893419376206e-16, 1.369586050545991e-15,
+    6.344131569286608e-17,  -1.192323550815924e-15,
+    -6.791952621236251e-16, 3.02279210066009e-16,
+    1.865921049790179e-17,  1.050513551031871e-15,
+    -5.336534202399912e-16, 5.63508157036634e-16,
+    1.725976971055916e-16,  2.649607890702054e-16,
+    5.970947359328573e-17,  8.116756566587278e-17,
+    1.884580260288081e-16,  -2.546982232963594e-16,
+    -5.00066841343768e-16,  -1.949887497030737e-16,
+    -1.324803945351027e-16, 4.179663151530001e-16,
+    2.798881574685269e-18,  3.200054600390157e-16,
+    -1.763295392051719e-15, -5.7377072281048e-16,
+    -1.45728433988613e-15,  -2.052513154769197e-16,
+    2.612289469706251e-17,  6.241505911548148e-16,
+    -3.825138152069867e-17, -8.545918408039019e-16,
+    -9.236309196461385e-16, -8.769828934013841e-17,
+    -1.681194865860951e-15, 2.504999009343315e-16,
+    3.601227626095046e-16,  9.18033156496768e-16,
+    -3.815808546820916e-16, -3.727177296955883e-16,
+    -5.910304925210392e-16, 4.445556901125102e-16,
+    1.548714471325849e-16,  8.662538473650906e-16,
+    -2.239105259748215e-16, -5.740039629417038e-16,
+    -9.310946038452994e-16, -1.29285004737337e-15,
+    2.085166773140525e-16,  -8.294019066317346e-16,
+    -1.160369652838268e-16, 2.230941855155383e-16,
+    3.20705180432687e-16,   -3.113172651509302e-16,
+    6.099229431501648e-16};
+
+// Coefficients for the function std::pow(2/(5*Pi),1.0/8.0)*std::cos((2*Pi/8.0)*(x-0.25)) in [-128, 128]
+static constexpr std::initializer_list<double> g_coefficients_sin2pi_4th_128{
+    0.08520194473995882,    -0.01690583751264507,   0.08689279461187063,    -0.01621812695504147,
+    0.09175899858385685,    -0.01476567897329543,   0.09914300022885908,    -0.0124116855861232,
+    0.1078325477756587,     -0.008997935026493499,  0.1159319640560289,     -0.004410233825199796,
+    0.1207839849169627,     0.001325414704994628,   0.1190606745709097,     0.007921531021013823,
+    0.1071765076059041,     0.01470749444979182,    0.08216983127320282,    0.02056047163413337,
+    0.04309878582764927,    0.02397151281032227,    -0.007249315295761088,  0.02334039330781212,
+    -0.06094067031581758,   0.01755263483360108,    -0.1048291649525454,    0.006766957960633938,
+    -0.1231028275140888,    -0.006873155738370976,  -0.1031675382837332,    -0.01912090405798084,
+    -0.04388340505186061,   -0.02467792748530058,   0.03756657495537189,    -0.0196234944275546,
+    0.1062596169597792,     -0.004485697402885735,  0.1228593099544102,     0.01398926653081452,
+    0.06829258229839368,    0.02479926063040009,    -0.03340039161030193,   0.01924798514360855,
+    -0.1161797562636682,    -0.0009810453188144608, -0.111764357395152,     -0.02132582953729271,
+    -0.01151718079796623,   -0.02351348715303619,   0.1037170428155329,     -0.002991847336365573,
+    0.1189778661119961,     0.02149097325082592,    0.005057778149080381,   0.0225717735756438,
+    -0.1191065185730931,    -0.00382285095796087,   -0.09731283803386059,   -0.02615806213107871,
+    0.05704402256373863,    -0.01261386318785076,   0.1340007001203862,     0.02026302372696072,
+    0.006323555701897402,   0.02186454699699144,    -0.1358183713103895,    -0.01360816432922946,
+    -0.04462931817884049,   -0.02561755839380733,   0.1321596593242011,     0.01099152719761845,
+    0.05410753169891494,    0.02640789807864553,    -0.1387004700742267,    -0.01420851652166819,
+    -0.03211982157295917,   -0.0238685503495879,    0.1516969467994425,     0.02295489572675706,
+    -0.02967527537856118,   0.01356033072570588,    -0.139531244343943,     -0.03171662833003609,
+    0.1237582095778672,     0.009421566882441029,   0.04366228488436898,    0.0242808152238103,
+    -0.1676140600701548,    -0.03408856058025991,   0.1358218864806182,     0.01428457043312785,
+    0.00581183342708307,    0.01640045960823701,    -0.1467364503042214,    -0.03818258960745419,
+    0.2160552502774548,     0.04389564151213867,    -0.2097994971115848,    -0.03746651468967793,
+    0.1611773858822353,     0.02631517768947721,    -0.1046477466511574,    -0.01592463502067195,
+    0.05940181360732563,    0.008522331337473182,   -0.03009675149816534,   -0.004102262610802264,
+    0.01380436797715023,    0.001797468438606644,   -0.005791122112186926,  -0.000723383502098092,
+    0.002239698721466993,   0.0002692742890921959,  -0.0008035797228899071, -9.324051919666621e-05,
+    0.0002688550369797087,  3.017452340668692e-05,  -8.424246043025955e-05, -9.162815805371927e-06,
+    2.48122116268408e-05,   2.619716890779611e-06,  -6.891352530381118e-06, -7.073093679914322e-07,
+    1.809922184001916e-06,  1.808144558052005e-07,  -4.506142692796422e-07, -4.386709783997522e-08,
+    1.065855796587856e-07,  1.012128859195771e-08,  -2.39995937307419e-08,  -2.225078935685909e-09,
+    5.153521035611286e-09,  4.668898691273515e-10,  -1.057091301992497e-09, -9.365468990607528e-11,
+    2.074364693904762e-10,  1.798624062188115e-11,  -3.899639604287852e-11, -3.309168911114213e-12,
+    7.032018023434006e-12,  5.846004236254032e-13,  -1.218182152373792e-12, -9.835431080684743e-14,
+    2.02726550824206e-13,   1.541648753100588e-14,  -3.38000460953225e-14,  -3.605796217165391e-15,
+    4.644028217537511e-15,  3.481590016285452e-16,  -1.663773285809356e-15, -1.567496132892643e-15,
+    -1.322726650432315e-16, 8.829742492721949e-17,  -1.823974998815814e-15, 3.507610868425104e-16,
+    7.038640503775895e-17,  -3.253473879194502e-16, 1.829677902243087e-15,  -1.439365120148306e-15};
+
+// Coefficients for the function std::pow(1/(std::pow(14,1.0/3.0)),1.0/8.0)*std::cos((2*Pi/8.0)*x) in [-128, 128]
+static constexpr std::initializer_list<double> g_coefficients_cos2pi_4th_128{
+    0.1006946666909125,     -5.412337245047639e-17, 0.1026929727717912,     2.928213227448851e-16,
+    0.1084440244467815,     1.262878690511116e-16,  0.1171706983127122,     -6.800116025829084e-17,
+    0.1274403124229349,     6.716849298982198e-16,  0.137012488565534,      4.538036613155328e-16,
+    0.1427467781390898,     -9.658940314238863e-16, 0.1407101091237231,     -4.48252546192407e-16,
+    0.1266649809861818,     6.855627177060342e-16,  0.09711120793494375,    2.914335439641036e-17,
+    0.0509356668670367,     -3.469446951953614e-17, -0.008567496782754491,  -7.632783294297951e-17,
+    -0.07202183593462265,   -3.719247132494275e-16, -0.1238908085560728,    -2.081668171172169e-17,
+    -0.1454872681964345,    5.356826093816381e-16,  -0.1219270394884608,    6.106226635438361e-16,
+    -0.05186295757034622,   -1.942890293094024e-17, 0.04439750472123118,    8.881784197001253e-17,
+    0.1255813672460815,     5.648259637780484e-16,  0.1451994705460388,     1.429412144204889e-16,
+    0.08071058510444212,    -4.815592369311617e-16, -0.03947376214017342,   5.870304242705516e-16,
+    -0.1373053381458204,    6.619704784327496e-16,  -0.132087063859598,     7.632783294297951e-17,
+    -0.01361141092741158,   2.775557561562891e-16,  0.1225764633466078,     -6.411537967210279e-16,
+    0.1406122431630936,     -1.344757638577221e-15, 0.005977460801776657,   1.136590821460004e-15,
+    -0.1407642891842101,    -3.747002708109904e-17, -0.115007748009428,     -1.465494392505207e-15,
+    0.06741664003439933,    1.103284130721249e-15,  0.1583667588357652,     9.68669588985449e-16,
+    0.007473401407060676,   -1.4585554986013e-15,   -0.1605149468283018,    7.591149930874508e-16,
+    -0.0527445040412726,    1.364186541508161e-15,  0.1561909518174869,     8.0629947163402e-16,
+    0.06394619144573492,    -5.231926003546051e-16, -0.1639211129114878,    -6.591949208711867e-16,
+    -0.03796033925436743,   8.729128531115294e-16,  0.1792808079982134,     3.140543380908412e-15,
+    -0.03507128824729686,   -8.049116928532385e-16, -0.1649029512772654,    -2.116362640691705e-15,
+    0.1462618218603065,     1.387778780781446e-18,  0.05160162994886772,    1.579292252529285e-15,
+    -0.1980922144792243,    1.068589661201713e-15,  0.1605191011805943,     4.413136522884997e-16,
+    0.006868629954273281,   -3.413935800722357e-16, -0.1734183180898892,    -2.334243909274392e-15,
+    0.2553417234771984,     -2.600697435184429e-15, -0.2479484535012555,    -2.176037128265307e-15,
+    0.1904851256512787,     -1.364880430898552e-15, -0.1236764020017902,    3.150257832373882e-16,
+    0.07020316074100338,    -9.96425164601078e-16,  -0.03556940360735206,   -2.671474153004283e-16,
+    0.01631448949411136,    1.061650767297806e-15,  -0.006844152591033337,  -1.41067713066434e-15,
+    0.002646955030597904,   -1.984523656517467e-16, -0.0009496988901237874, 3.441691376337985e-16,
+    0.0003177423757115862,  -3.011479954295738e-16, -9.956071425488572e-05, -5.620504062164855e-17,
+    2.932394779497569e-05,  4.503342143635792e-16,  -8.144443747677699e-06, 4.600486658290492e-16,
+    2.13902994387824e-06,   2.29399832463173e-15,   -5.325518543708441e-07, 1.106753577673203e-15,
+    1.259666010701432e-07,  4.544975507059235e-16,  -2.836356811503071e-08, -8.486267244478541e-16,
+    6.090612767947757e-09,  -5.273559366969494e-16, -1.249307911982411e-09, -4.926614671774132e-16,
+    2.451552374299615e-10,  1.85268467234323e-15,   -4.608747862511198e-11, 1.611905053877649e-15,
+    8.310445387404998e-12,  -5.159067617555025e-16, -1.43939513086444e-12,  1.454392162258955e-15,
+    2.402598953121782e-13,  -6.553785292240377e-16, -3.975014761792295e-14, -1.63948715714568e-15,
+    5.732393726365359e-15,  -4.246603069191224e-16, -1.701416785238053e-15, -1.352563894219117e-15,
+    6.505213034913027e-16,  1.775489477662262e-16,  -1.63948715714568e-15,  2.998469528225911e-16,
+    -6.713379852030244e-17, -1.389513504257423e-16, 1.85793221085806e-15,   -1.453828377129263e-15};
 
 namespace lbcrypto {
 
@@ -1643,6 +1831,201 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                    uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                                    double pmax, uint32_t dim1, bool clean, bool highPrec) const {
+    // // High precision with arcsin
+    //     if (!LWECiphertexts.size())
+    //         OPENFHE_THROW("Empty input FHEW ciphertext vector");
+
+    //     if (highPrec && clean) {
+    //         std::string errorMsg(std::string("It is not recommended to set both clean and highPrec"));
+    //         OPENFHE_THROW(errorMsg);
+    //     }
+
+    //     // This is the number of CKKS slots to use in eg_coefficients_sin2pi_128_9ncoding
+    //     const uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+
+    //     uint32_t numLWECtxts = LWECiphertexts.size();
+    //     uint32_t numValues   = (numCtxts == 0) ? numLWECtxts : std::min(numCtxts, numLWECtxts);
+    //     numValues = std::min(numValues, slots);  // This is the number of LWE ciphertexts to pack into the CKKS ciphertext
+
+    //     uint32_t n = LWECiphertexts[0]->GetA().GetLength();
+
+    //     auto ccCKKS                 = m_FHEWtoCKKSswk->GetCryptoContext();
+    //     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS->GetCryptoParameters());
+
+    //     uint32_t m    = 4 * slots;
+    //     uint32_t M    = ccCKKS->GetCyclotomicOrder();
+    //     uint32_t N    = ccCKKS->GetRingDimension();
+    //     bool isSparse = (M != m) ? true : false;
+
+    //     double K = 0.0;
+    //     std::vector<double> coefficientsFHEW;  // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
+    //     if (n == 32) {
+    //         K = 16.0;
+    //         if (highPrec) {
+    //             coefficientsFHEW.assign(g_coefficients_sin_16);
+    //         }
+    //         else {
+    //             coefficientsFHEW.assign(g_coefficients_sin2pi_16);
+    //         }
+    //     }
+    //     else {
+    //         K = 128.0;  // Failure probability of 2^{-49}
+    //         if (p <= 4) {
+    //             // If the output messages are bits, we could use a lower degree polynomial
+    //             coefficientsFHEW.assign(g_coefficientsFHEW128_8);
+    //         }
+    //         else {
+    //             if (highPrec) {
+    //                 coefficientsFHEW.assign(g_coefficients_sin_128_9);
+    //             }
+    //             else {
+    //                 coefficientsFHEW.assign(g_coefficients_sin2pi_128_9);
+    //             }
+    //         }
+    //     }
+
+    //     // Step 1. Form matrix A and vector b from the LWE ciphertexts, but only extract the first necessary number of them
+    //     std::vector<std::vector<std::complex<double>>> A(numValues);
+
+    //     // To have the same encoding as A*s, create b with the appropriate number of elements
+    //     const uint32_t b_size = ((numValues % n) != 0) ? (numValues + n - (numValues % n)) : numValues;
+    //     std::vector<std::complex<double>> b(b_size);
+
+    //     // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
+    //     const double prescale = (1.0 / LWECiphertexts[0]->GetModulus().ConvertToDouble()) / K;
+
+    // #pragma omp parallel for
+    //     for (uint32_t i = 0; i < numValues; i++) {
+    //         auto a = LWECiphertexts[i]->GetA();
+    //         A[i]   = std::vector<std::complex<double>>(a.GetLength());
+    //         for (uint32_t j = 0; j < a.GetLength(); j++) {
+    //             A[i][j] = std::complex<double>(a[j].ConvertToDouble(), 0);
+    //         }
+    //         b[i] = std::complex<double>(prescale * LWECiphertexts[i]->GetB().ConvertToDouble(), 0);
+    //     }
+
+    //     // Step 2. Perform the homomorphic linear transformation of A*skLWE
+    //     if (dim1 == 0) {
+    //         dim1 = m_dim1FC;
+    //     }
+    //     Ciphertext<DCRTPoly> AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1, prescale, 0);
+
+    //     // Step 3. Get the ciphertext of B - A*s
+    //     Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, AdotS->GetNoiseScaleDeg(), AdotS->GetLevel(), nullptr, N / 2);
+
+    //     auto BminusAdotS = ccCKKS->EvalAdd(ccCKKS->EvalNegate(AdotS), BPlain);
+
+    //     if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    //         ccCKKS->ModReduceInPlace(BminusAdotS);
+    //     }
+    //     else {
+    //         if (BminusAdotS->GetNoiseScaleDeg() == 2)
+    //             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
+    //     }
+
+    //     // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
+    //     // auto BminusAdotS2 = BminusAdotS;  // Instead of zeroing out slots which are not of interest as done above
+
+    //     double a_cheby = -1;
+    //     double b_cheby = 1;  // The division by K was performed before
+
+    //     // double a_cheby = -K; double b_cheby = K; // Alternatively, do this separately to not lose precision when scaling with everything at once
+    //     auto BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
+
+    //     if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
+    //         ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
+    //     }
+
+    //     enum { BT_ITER = 3 };
+    //     for (int32_t j = 1; j < BT_ITER + 1; j++) {
+    //         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
+    //         ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
+    //         double scalar = 1.0;
+    //         if (!highPrec) {
+    //             scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
+    //         }
+    //         ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
+    //         if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    //             ccCKKS->ModReduceInPlace(BminusAdotS3);
+    //         }
+    //         else {
+    //             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
+    //         }
+    //     }
+
+    //     // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
+    //     if (highPrec && (p > 4)) {
+    //         coefficientsFHEW.assign(g_coefficients_asin128_5);
+    //         BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS3, coefficientsFHEW, a_cheby, b_cheby);
+    //     }
+
+    //     /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
+    //      * we can directly use sin(0) for 0 and sin(pi/2) for 1.
+    //      * Here pmax is actually the plaintext modulus, not the maximum value of the messages that we
+    //      * consider. For plaintext modulus > 4, even if we only care about encrypting bits, 2pi is not
+    //      * the correct post-scaling factor.
+    //      * Moreover, we have to account for the different encoding the end ciphertext should have.
+    //      */
+    //     double postScale = (p >= 1 && p <= 4) ? (static_cast<double>(2) * Pi) : static_cast<double>(p);
+    //     double postBias  = 0.0;
+    //     if (pmin != 0) {
+    //         postScale *= (pmax - pmin) / 4.0;
+    //         postBias = (pmax - pmin) / 4.0;
+    //     }
+
+    //     // numValues are set; the rest of values up to N/2 are made zero when creating the plaintext
+    //     std::vector<std::complex<double>> postScaleVec(numValues, std::complex<double>(postScale, 0));
+    //     std::vector<std::complex<double>> postBiasVec(numValues, std::complex<double>(postBias, 0));
+
+    //     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+
+    //     uint32_t towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
+    //     for (uint32_t i = 0; i < towersToDrop; i++) {
+    //         elementParams.PopLastParam();
+    //     }
+
+    //     // Use full packing here to clear up the junk in the slots after numValues
+    //     auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);
+    //     auto BminusAdotSres = ccCKKS->EvalMult(BminusAdotS3, postScalePlain);
+
+    //     // Add the plaintext for bias at the correct level and depth
+    //     auto postBiasPlain = ccCKKS->MakeCKKSPackedPlaintext(postBiasVec, BminusAdotSres->GetNoiseScaleDeg(),
+    //                                                          BminusAdotSres->GetLevel(), nullptr, N / 2);
+
+    //     ccCKKS->EvalAddInPlace(BminusAdotSres, postBiasPlain);
+
+    //     // Additional cleaning for binary messages
+    //     if (clean) {
+    //         auto square = ccCKKS->EvalSquare(BminusAdotSres);
+    //         auto cube   = ccCKKS->EvalMult(square, BminusAdotSres);
+    //         ccCKKS->EvalAddInPlace(square, ccCKKS->EvalAdd(square, square));
+    //         ccCKKS->EvalAddInPlace(cube, cube);
+    //         BminusAdotSres = ccCKKS->EvalAdd(ccCKKS->EvalNegate(cube), square);
+
+    //         if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    //             ccCKKS->ModReduceInPlace(BminusAdotSres);
+    //         }
+    //         else {
+    //             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotSres, BASE_NUM_LEVELS_TO_DROP);
+    //         }
+    //     }
+
+    //     // Go back to the sparse encoding if needed
+    //     if (isSparse) {
+    //         for (uint32_t j = 1; j < N / (2 * slots); j <<= 1) {
+    //             auto temp = ccCKKS->EvalAtIndex(BminusAdotSres, j * slots);
+    //             ccCKKS->EvalAddInPlace(BminusAdotSres, temp);
+    //         }
+    //         BminusAdotSres->SetSlots(slots);
+    //     }
+
+    //     if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    //         ccCKKS->ModReduceInPlace(BminusAdotSres);
+    //     }
+
+    //     return BminusAdotSres;
+
+    // High precision with sine series of the 4th order
     if (!LWECiphertexts.size())
         OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
@@ -1673,7 +2056,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     if (n == 32) {
         K = 16.0;
         if (highPrec) {
-            coefficientsFHEW.assign(g_coefficients_sin_16);
+            coefficientsFHEW.assign(g_coefficients_sin2pi_4th_16);
         }
         else {
             coefficientsFHEW.assign(g_coefficients_sin2pi_16);
@@ -1687,7 +2070,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
         }
         else {
             if (highPrec) {
-                coefficientsFHEW.assign(g_coefficients_sin_128_9);
+                coefficientsFHEW.assign(g_coefficients_sin2pi_4th_128);
             }
             else {
                 coefficientsFHEW.assign(g_coefficients_sin2pi_128_9);
@@ -1751,10 +2134,8 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     for (int32_t j = 1; j < BT_ITER + 1; j++) {
         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
         ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
-        double scalar = 1.0;
-        if (!highPrec) {
-            scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
-        }
+        double scalar = (highPrec) ? std::pow(2.0 / (5.0 * Pi), std::pow(2.0, j - BT_ITER)) :
+                                     1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
         ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
         if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
             ccCKKS->ModReduceInPlace(BminusAdotS3);
@@ -1766,8 +2147,38 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 
     // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
     if (highPrec && (p > 4)) {
-        coefficientsFHEW.assign(g_coefficients_asin128_5);
-        BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS3, coefficientsFHEW, a_cheby, b_cheby);
+        if (n == 32) {
+            coefficientsFHEW.assign(g_coefficients_cos2pi_4th_16);
+        }
+        else {
+            coefficientsFHEW.assign(g_coefficients_cos2pi_4th_128);
+        }
+        auto BminusAdotS4 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
+
+        if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS4, BASE_NUM_LEVELS_TO_DROP);
+        }
+
+        for (int32_t j = 1; j < BT_ITER + 1; j++) {
+            BminusAdotS4 = ccCKKS->EvalMult(BminusAdotS4, BminusAdotS4);
+            ccCKKS->EvalAddInPlace(BminusAdotS4, BminusAdotS4);
+            double scalar = std::pow(1.0 / std::pow(14.0, 1.0 / 3.0), std::pow(2.0, j - BT_ITER));
+            ccCKKS->EvalSubInPlace(BminusAdotS4, scalar);
+            if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+                ccCKKS->ModReduceInPlace(BminusAdotS4);
+            }
+            else {
+                ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS4, BASE_NUM_LEVELS_TO_DROP);
+            }
+        }
+
+        // Combine the sine and cosine approximations
+        auto pow2    = ccCKKS->EvalSquare(BminusAdotS4);
+        auto pow3    = ccCKKS->EvalMult(pow2, BminusAdotS4);
+        pow2         = ccCKKS->EvalAdd(ccCKKS->EvalMult(pow2, 8.0 / 21.0 * std::pow(14, 2.0 / 3.0)), 40.0 / 21.0);
+        BminusAdotS4 = ccCKKS->EvalAdd(ccCKKS->EvalMult(BminusAdotS4, 27.0 / 28.0 * std::pow(14, 1.0 / 3.0)), pow3);
+        ccCKKS->EvalSubInPlace(pow2, BminusAdotS4);
+        BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, pow2);
     }
 
     /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
