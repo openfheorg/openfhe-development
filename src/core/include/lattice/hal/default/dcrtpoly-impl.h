@@ -349,8 +349,33 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::AutomorphismTransform(uint32_t i, c
     result.m_params = m_params;
     result.m_format = m_format;
     result.m_vectors.reserve(m_vectors.size());
-    for (const auto& v : m_vectors)
+    uint32_t kk = 0;
+    for (const auto& v : m_vectors) {
+        if (0 == kk) {
+            std::cout << "NativeVec [0] b4 auto: [";
+            /////////////
+            std::ios_base::fmtflags flags = std::cout.flags();
+            for (uint32_t j = 0; j < v.GetLength(); j++) {
+                std::cout << std::setw(20) << v[j] << " ";
+            }
+            std::cout.flags(flags);
+            std::cout << "]" << std::endl;
+            /////////////
+        }
         result.m_vectors.emplace_back(v.AutomorphismTransform(i, vec));
+        if (0 == kk) {
+            std::cout << "NativeVec [0] af auto: [";
+            /////////////
+            std::ios_base::fmtflags flags = std::cout.flags();
+            for (uint32_t j = 0; j < result.m_vectors[0].GetLength(); j++) {
+                std::cout << std::setw(20) << result.m_vectors[0][j] << " ";
+            }
+            std::cout.flags(flags);
+            std::cout << "]" << std::endl;
+            /////////////
+        }
+        kk++;
+    }
     return result;
 }
 

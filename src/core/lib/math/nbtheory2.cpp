@@ -278,7 +278,8 @@ void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {
     uint32_t logn = std::round(log2(n));
     for (uint32_t j = 0; j < n; j++) {
         uint32_t jTmp    = ((j << 1) + 1);
-        usint idx        = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
+        // usint idx        = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
+        usint idx        = ((jTmp * k) % m) >> 1;
         usint jrev       = ReverseBits(j, logn);
         usint idxrev     = ReverseBits(idx, logn);
         (*precomp)[jrev] = idxrev;

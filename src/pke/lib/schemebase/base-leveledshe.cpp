@@ -454,6 +454,26 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
     std::vector<usint> vec(N);
     PrecomputeAutoMap(N, i, &vec);
 
+    auto printVector = [](const std::vector<usint>& vec) {
+      std::ios_base::fmtflags flags = std::cout.flags();
+      for (const auto& element : vec) {
+        std::cout << std::setw(5) << element << " ";
+      }
+      std::cout.flags(flags);
+      std::cout << "]" << std::endl;
+    };
+
+    std::vector<usint> dummyVector(N);
+    for (usint i = 0; i < N; ++i) {
+      dummyVector[i] = i;
+    }
+    
+    std::cout << "The map for auto-index " << i << " is as follows: \n";
+    std::cout << "src index: [";
+    printVector(dummyVector);
+    std::cout << "dst index: [";
+    printVector(vec);
+
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
     Ciphertext<Element> result = ciphertext->Clone();
@@ -462,7 +482,9 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
 
     std::vector<Element>& rcv = result->GetElements();
 
+    std::cout << "calling auto for 1st ctxt element DCRTPoly[0]\n";
     rcv[0] = rcv[0].AutomorphismTransform(i, vec);
+    std::cout << "calling auto for 2nd ctxt element DCRTPoly[1]\n";
     rcv[1] = rcv[1].AutomorphismTransform(i, vec);
 
     return result;
@@ -545,6 +567,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAtIndex(ConstCiphertext<Element
     usint M = ciphertext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
     uint32_t autoIndex = FindAutomorphismIndex(index, M);
+    std::cout << "autoIndex: " << autoIndex << "\n";
 
     return EvalAutomorphism(ciphertext, autoIndex, evalKeyMap);
 }
