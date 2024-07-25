@@ -38,6 +38,7 @@
 #define _USE_MATH_DEFINES
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
+#include "cryptocontext.h"
 
 #include "benchmark/benchmark.h"
 

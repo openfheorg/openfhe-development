@@ -31,6 +31,7 @@
 
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
+#include "cryptocontext.h"
 
 #include <vector>
 #include "gtest/gtest.h"

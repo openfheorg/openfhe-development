@@ -37,7 +37,6 @@
 #define __UNITTESTSER_H__
 
 #include "cryptocontext-ser.h"
-//#include "cryptocontext.h"  // NOLINT: clang-format nad cpplint disagree on alphabetical sort
 #include "gtest/gtest.h"
 #include <string>
 #include <iostream>

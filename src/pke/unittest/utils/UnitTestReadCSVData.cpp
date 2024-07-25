@@ -32,7 +32,9 @@
 
 #include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
+#include "utils/demangle.h"
 
+#include <cxxabi.h>
 #include <fstream>
 #include <sstream>
 #include <utility>
