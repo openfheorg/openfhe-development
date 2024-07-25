@@ -38,8 +38,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <cxxabi.h>
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -175,17 +173,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-// TODO (dsuponit): demangle separately for linux, MacOS and Windows. see some links below
-// https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive
-// https://docs.microsoft.com/en-us/windows/win32/debug/retrieving-undecorated-symbol-names
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -233,14 +221,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 };

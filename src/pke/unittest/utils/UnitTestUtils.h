@@ -37,6 +37,7 @@
 #define _UNIT_TEST_UTILS_H_
 
 #include "gtest/gtest.h"
+#include "UnitTestException.h"
 #include <vector>
 #include <string>
 #include <algorithm>
