@@ -722,8 +722,6 @@ public:
    */
     static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec,
                                   const std::string& keyTag = std::string());
-    static void InsertEvalMultKey(std::vector<EvalKey<Element>>&& evalKeyVec,
-                                  const std::string& keyTag = std::string());
 
     /**
    * SerializeEvalSumKey for a single EvalSum key or all of the EvalSum keys
