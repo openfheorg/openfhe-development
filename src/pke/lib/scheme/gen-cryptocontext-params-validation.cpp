@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "scheme/gen-cryptocontext-params-validation.h"
+#include "utils/exception.h"
 #include "utils/utilities.h"
 
 namespace lbcrypto {

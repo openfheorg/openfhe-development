@@ -37,13 +37,11 @@
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
-#include <cxxabi.h>
 
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "globals.h"  // for SERIALIZE_PRECOMPUTE
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -371,14 +369,7 @@ protected:
         }
         catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
     void UnitTestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData,
@@ -456,14 +447,7 @@ protected:
         }
         catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
     void UnitTestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData,
