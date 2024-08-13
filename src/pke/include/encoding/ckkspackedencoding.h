@@ -249,6 +249,30 @@ public:
         out << "Estimated precision: " << encodingParams->GetPlaintextModulus() - m_logError << " bits" << std::endl;
     }
 
+    std::string GetFormattedValues(int64_t precision) const override {
+        std::stringstream ss;
+        ss << "(";
+
+        // for sanity's sake: get rid of all trailing zeroes and print "..." instead
+        size_t i       = value.size();
+        bool allZeroes = true;
+        while (i > 0) {
+            --i;
+            if (value[i] != std::complex<double>(0, 0)) {
+                allZeroes = false;
+                break;
+            }
+        }
+
+        if (allZeroes == false) {
+            for (size_t j = 0; j <= i; ++j)
+                ss << std::setprecision(precision) << value[j].real() << ", ";
+        }
+        ss << "... ); Estimated precision: " << GetLogPrecision() << " bits";
+
+        return ss.str();
+    }
+
 private:
     std::vector<std::complex<double>> value;
 
