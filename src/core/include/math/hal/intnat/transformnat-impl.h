@@ -302,6 +302,16 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
+
+std::cout << " \n\n********* Forward " << element->GetLength() << " *********\n\n";
+std::cout << "X = [" << (*element)[0];
+for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
+std::cout << "]\n";
+std::cout << "modulus = " << element->GetModulus() << "\n";
+std::cout << "twiddles = [" << rootOfUnityTable[0];
+for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << rootOfUnityTable[i]; }
+std::cout << "]\n";
+
     auto modulus{element->GetModulus()};
     uint32_t n(element->GetLength() >> 1), t{n}, logt{GetMSB(t)};
     for (uint32_t m{1}; m < n; m <<= 1, t >>= 1, --logt) {
@@ -353,6 +363,11 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         (*element)[i + t] = loVal - omegaFactor;
 #endif
     }
+
+std::cout << "Y_truth = [" << (*element)[0];
+for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
+std::cout << "]\n";
+
 }
 
 template <typename VecType>
@@ -494,6 +509,18 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
+
+
+std::cout << "\n\n********* Inverse " << element->GetLength() << " *********\n\n";
+std::cout << "X = [" << (*element)[0];
+for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
+std::cout << "]\n";
+std::cout << "modulus = " << element->GetModulus() << "\n";
+std::cout << "cyclo = " << cycloOrderInv << "\n";
+std::cout << "twiddles = [" << rootOfUnityInverseTable[0];
+for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << rootOfUnityInverseTable[i]; }
+std::cout << "]\n";
+
     auto modulus{element->GetModulus()};
     uint32_t n(element->GetLength());
     for (uint32_t i{0}; i < n; i += 2) {
@@ -551,6 +578,11 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             }
         }
     }
+
+std::cout << "Y_truth = [" << (*element)[0];
+for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
+std::cout << "]\n";
+
 }
 
 template <typename VecType>
