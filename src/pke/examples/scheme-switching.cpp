@@ -36,11 +36,12 @@
 #include "openfhe.h"
 #include "binfhecontext.h"
 #include <lattice/stdlatticeparms.h>
-// #include "math/chebyshev.h"  // To compute coefficients
-// #define Pi 3.14159265358979323846
+#include "math/chebyshev.h"  // To compute coefficients
+#define Pi 3.14159265358979323846
 
 using namespace lbcrypto;
 
+void HighPrecSwitchFHEWtoCKKS();
 void SwitchCKKSToFHEW();
 void SwitchFHEWtoCKKS();
 void FloorViaSchemeSwitching();
@@ -55,7 +56,8 @@ std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 
 int main() {
     // SwitchCKKSToFHEW();
-    SwitchFHEWtoCKKS();
+    // SwitchFHEWtoCKKS();
+    HighPrecSwitchFHEWtoCKKS();
     // FloorViaSchemeSwitching();
     // FuncViaSchemeSwitching();
     // PolyViaSchemeSwitching();
@@ -415,6 +417,304 @@ void SwitchFHEWtoCKKS() {
         std::cout << std::abs(x2[i] - plaintextDec2->GetCKKSPackedValue()[i].real()) << ", ";
     }
     std::cout << std::endl;
+}
+
+void HighPrecSwitchFHEWtoCKKS() {
+    std::cout << "\n-----HighPrecSwitchFHEWtoCKKS-----\n" << std::endl;
+    std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
+
+    // Step 1: Setup CryptoContext for CKKS to be switched into
+
+    // A. Specify main parameters
+    ScalingTechnique scTech = FLEXIBLEAUTO;
+    // for r = 3 in FHEWtoCKKS, Chebyshev max depth allowed is 9, 1 more level for postscaling
+    uint32_t multDepth = 3 + 9 + 1;
+    if (scTech == FLEXIBLEAUTOEXT)
+        multDepth += 1;
+    bool highPrec = true;
+    bool clean    = false;
+    // Increase by 2 for binary inputs or by 3/5 for larger inputs based on the requirements. It is not recommended to apply both arcsine and cleaning functionality.
+    multDepth += std::max(highPrec * 6, clean * 2);
+    uint32_t scaleModSize = 50;
+    // uint32_t ringDim      = 8192;
+    SecurityLevel sl    = HEStd_128_classic;  // If this is not HEStd_NotSet, ensure ringDim is compatible
+    uint32_t logQ_ccLWE = 28;
+
+    // uint32_t slots = ringDim/2; // Uncomment for fully-packed
+    uint32_t slots     = 256;  // sparsely-packed
+    uint32_t batchSize = slots;
+
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetScalingModSize(scaleModSize);
+    parameters.SetScalingTechnique(scTech);
+    parameters.SetSecurityLevel(sl);
+    // parameters.SetRingDim(ringDim);
+    parameters.SetBatchSize(batchSize);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+
+    // Enable the features that you wish to use
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(SCHEMESWITCH);
+
+    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension();
+    std::cout << ", number of slots " << slots << ", and supports a multiplicative depth of " << multDepth << std::endl
+              << std::endl;
+
+    // Generate encryption keys.
+    auto keys = cc->KeyGen();
+
+    // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
+    auto ccLWE = std::make_shared<BinFHEContext>();
+    ccLWE->BinFHEContext::GenerateBinFHEContext(STD128, false, logQ_ccLWE, 0, GINX, false);
+
+    // LWE private key
+    LWEPrivateKey lwesk;
+    lwesk = ccLWE->KeyGen();
+
+    std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
+    std::cout << ", logQ " << logQ_ccLWE;
+    std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
+
+    // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS
+    cc->EvalFHEWtoCKKSSetup(ccLWE, slots, logQ_ccLWE);
+    cc->SetBinCCForSchemeSwitch(ccLWE);
+
+    cc->EvalFHEWtoCKKSKeyGen(keys, lwesk);
+
+    // Step 4: Encoding and encryption of inputs
+    // For correct CKKS decryption, the messages have to be much smaller than the FHEW plaintext modulus!
+
+    uint32_t pLWE1   = 128;
+    uint32_t pLWE2   = 256;
+    uint32_t pLWE3   = 512;
+    auto modulus_LWE = 1 << logQ_ccLWE;
+    auto beta        = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE4       = modulus_LWE / (2 * beta);  // Large precision
+    // Inputs
+    std::vector<int> x1(pLWE1);
+    std::iota(x1.begin(), x1.end(), 0);
+
+    std::vector<int> x2(pLWE2);
+    std::iota(x2.begin(), x2.end(), 0);
+
+    std::vector<int> x3(pLWE3);
+    std::iota(x3.begin(), x3.end(), 0);
+
+    // Encrypt
+    std::vector<LWECiphertext> ctxtsLWE1(pLWE1);
+    for (uint32_t i = 0; i < pLWE1; i++) {
+        ctxtsLWE1[i] =
+            ccLWE->Encrypt(lwesk, x1[i], FRESH, pLWE1,
+                           modulus_LWE);  // encrypted under larger plaintext modulus and large ciphertext modulus
+    }
+
+    std::vector<LWECiphertext> ctxtsLWE2(pLWE2);
+    for (uint32_t i = 0; i < pLWE2; i++) {
+        ctxtsLWE2[i] =
+            ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE2,
+                           modulus_LWE);  // encrypted under larger plaintext modulus and large ciphertext modulus
+    }
+
+    std::vector<LWECiphertext> ctxtsLWE3(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        ctxtsLWE3[i] =
+            ccLWE->Encrypt(lwesk, x3[i], FRESH, pLWE3,
+                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+    }
+
+    std::vector<LWECiphertext> ctxtsLWE4(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        ctxtsLWE4[i] =
+            ccLWE->Encrypt(lwesk, x3[i], FRESH, pLWE4,
+                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+    }
+
+    std::cout
+        << "\nThe conversion from FHEW to CKKS works when m << p (roughly m < p/16), due to the approximation "
+        << "of the modular reduction via a sine function. For a larger cost (depth higher by 5), one can homomorphically compose with an arcsine "
+        << "in order to improve the conversion precision (up to m < p/4). The latter can be turned on by setting highPrec to true.\n"
+        << std::endl;
+
+    // Step 5''. Perform the scheme switching
+    TimeVar t;
+    TIC(t);
+    auto cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE1, pLWE1, pLWE1, pLWE1, 0, pLWE1, 0, false, highPrec);
+    std::cout << "EvalFHEWtoCKKS time: " << TOC_NS(t) / 1000000000.0 << " s" << std::endl;
+
+    // std::cout << "\n---Input x1: " << x1 << " encrypted under p = " << pLWE1
+    //           << " and Q = " << ctxtsLWE1[0]->GetModulus() << "---" << std::endl;
+
+    std::cout << "\n---Input is 1 to " << pLWE1 << " encrypted under p = " << pLWE1
+              << " and Q = " << ctxtsLWE1[0]->GetModulus() << "---" << std::endl;
+
+    // Step 6''. Decrypt
+    Plaintext plaintextDec;
+    cc->Decrypt(keys.secretKey, cTemp, &plaintextDec);
+    plaintextDec->SetLength(pLWE1);
+    // std::cout << "Switched CKKS decryption 1: " << plaintextDec << std::endl;
+    std::vector<double> error(plaintextDec->GetRealPackedValue());
+    std::transform(x1.begin(), x1.end(), error.begin(), error.begin(), std::minus<double>());
+    std::transform(error.begin(), error.end(), error.begin(), [&](const double& elem) { return std::abs(elem); });
+    std::cout << "Absolute error: " << error << std::endl;
+    double mean_error = std::accumulate(error.begin(), error.end(), 0.0) / pLWE1;
+    std::cout << "Average absolute error: " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE1 / 2.0, 0.0) / (pLWE1 / 2.0);
+    std::cout << "Average absolute error up to " << pLWE1 / 2.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE1 / 4.0, 0.0) / (pLWE1 / 4.0);
+    std::cout << "Average absolute error up to " << pLWE1 / 4.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE1 / 8.0, 0.0) / (pLWE1 / 8.0);
+    std::cout << "Average absolute error up to " << pLWE1 / 8.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE1 / 16.0, 0.0) / (pLWE1 / 16.0);
+    std::cout << "Average absolute error up to " << pLWE1 / 16.0 << ": " << mean_error << std::endl;
+    std::cout << "Absolute error in value " << pLWE1 / 4.0 - 1 << ": " << error[pLWE1 / 4.0 - 1] << std::endl;
+    auto max_error_it = std::max_element(error.begin(), error.begin() + pLWE1 / 2.0);
+    std::cout << "Max absolute error up to " << pLWE1 / 2.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE1 / 4.0);
+    std::cout << "Max absolute error up to " << pLWE1 / 4.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE1 / 8.0);
+    std::cout << "Max absolute error up to " << pLWE1 / 8.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE1 / 16.0);
+    std::cout << "Max absolute error up to " << pLWE1 / 16.0 - 1 << ": " << *max_error_it << std::endl << std::endl;
+
+    // Step 5''. Perform the scheme switching
+    TIC(t);
+    cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, slots, slots, pLWE2, 0, pLWE2, 0, false, highPrec);
+    std::cout << "EvalFHEWtoCKKS time: " << TOC_NS(t) / 1000000000.0 << " s" << std::endl;
+
+    // std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << pLWE2
+    //           << " and Q = " << ctxtsLWE2[0]->GetModulus() << "---" << std::endl;
+
+    std::cout << "\n---Input is 1 to " << pLWE2 << " encrypted under p = " << pLWE2
+              << " and Q = " << ctxtsLWE2[0]->GetModulus() << "---" << std::endl;
+
+    // Step 6''. Decrypt
+    cc->Decrypt(keys.secretKey, cTemp, &plaintextDec);
+    plaintextDec->SetLength(pLWE2);
+    // std::cout << "Switched CKKS decryption 2: " << plaintextDec << std::endl;
+    error = plaintextDec->GetRealPackedValue();
+    std::transform(x2.begin(), x2.end(), error.begin(), error.begin(), std::minus<double>());
+    std::transform(error.begin(), error.end(), error.begin(), [&](const double& elem) { return std::abs(elem); });
+    std::cout << "Absolute error: " << error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.end(), 0.0) / pLWE2;
+    std::cout << "Average absolute error: " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE2 / 2.0, 0.0) / (pLWE2 / 2.0);
+    std::cout << "Average absolute error up to " << pLWE2 / 2.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE2 / 4.0, 0.0) / (pLWE2 / 4.0);
+    std::cout << "Average absolute error up to " << pLWE2 / 4.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE2 / 8.0, 0.0) / (pLWE2 / 8.0);
+    std::cout << "Average absolute error up to " << pLWE2 / 8.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + pLWE2 / 16.0, 0.0) / (pLWE2 / 16.0);
+    std::cout << "Average absolute error up to " << pLWE2 / 16.0 << ": " << mean_error << std::endl;
+    std::cout << "Absolute error in value " << pLWE2 / 4.0 - 1 << ": " << error[pLWE2 / 4.0 - 1] << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE2 / 2.0);
+    std::cout << "Max absolute error up to " << pLWE2 / 2.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE2 / 4.0);
+    std::cout << "Max absolute error up to " << pLWE2 / 4.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE2 / 8.0);
+    std::cout << "Max absolute error up to " << pLWE2 / 8.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + pLWE2 / 16.0);
+    std::cout << "Max absolute error up to " << pLWE2 / 16.0 - 1 << ": " << *max_error_it << std::endl << std::endl;
+
+    // Step 5'''. Perform the scheme switching
+    std::setprecision(logQ_ccLWE + 10);
+    TIC(t);
+    auto cTemp2 = cc->EvalFHEWtoCKKS(ctxtsLWE3, slots, slots, pLWE3, 0, pLWE3, 0, false, highPrec);
+    std::cout << "EvalFHEWtoCKKS time: " << TOC_NS(t) / 1000000000.0 << " s" << std::endl;
+
+    // std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << NativeInteger(pLWE3)
+    //           << " and Q = " << ctxtsLWE3[0]->GetModulus() << "---" << std::endl;
+
+    std::cout << "\n---Input is 1 to " << slots << " encrypted under p = " << pLWE3
+              << " and Q = " << ctxtsLWE3[0]->GetModulus() << "---" << std::endl;
+
+    // Step 6'''. Decrypt
+    Plaintext plaintextDec2;
+    cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
+    plaintextDec2->SetLength(slots);
+    // std::cout << "Switched CKKS decryption 3: " << plaintextDec2 << std::endl;
+    error = plaintextDec2->GetRealPackedValue();
+    std::transform(x3.begin(), x3.end(), error.begin(), error.begin(), std::minus<double>());
+    std::transform(error.begin(), error.end(), error.begin(), [&](const double& elem) { return std::abs(elem); });
+    std::cout << "Absolute error: " << error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.end(), 0.0) / slots;
+    std::cout << "Average absolute error: " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 2.0, 0.0) / (slots / 2.0);
+    std::cout << "Average absolute error up to " << slots / 2.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 4.0, 0.0) / (slots / 4.0);
+    std::cout << "Average absolute error up to " << slots / 4.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 8.0, 0.0) / (slots / 8.0);
+    std::cout << "Average absolute error up to " << slots / 8.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 16.0, 0.0) / (slots / 16.0);
+    std::cout << "Average absolute error up to " << slots / 16.0 << ": " << mean_error << std::endl;
+    std::cout << "Absolute error in value " << slots / 4.0 - 1 << ": " << error[slots / 4.0 - 1] << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 2.0);
+    std::cout << "Max absolute error up to " << slots / 2.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 4.0);
+    std::cout << "Max absolute error up to " << slots / 4.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 8.0);
+    std::cout << "Max absolute error up to " << slots / 8.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 16.0);
+    std::cout << "Max absolute error up to " << slots / 16.0 - 1 << ": " << *max_error_it << std::endl << std::endl;
+
+    // Step 5'''. Perform the scheme switching
+    std::setprecision(logQ_ccLWE + 10);
+    TIC(t);
+    cTemp2 = cc->EvalFHEWtoCKKS(ctxtsLWE4, slots, slots, pLWE4, 0, pLWE4, 0, false, highPrec);
+    std::cout << "EvalFHEWtoCKKS time: " << TOC_NS(t) / 1000000000.0 << " s" << std::endl;
+
+    // std::cout << "\n---Input x2: " << x2 << " encrypted under p = " << NativeInteger(pLWE3)
+    //           << " and Q = " << ctxtsLWE5[0]->GetModulus() << "---" << std::endl;
+
+    std::cout << "\n---Input is 1 to " << slots << " encrypted under p = " << pLWE4
+              << " and Q = " << ctxtsLWE4[0]->GetModulus() << "---" << std::endl;
+
+    // Step 6'''. Decrypt
+    cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
+    plaintextDec2->SetLength(slots);
+    // std::cout << "Switched CKKS decryption 4: " << plaintextDec2 << std::endl;
+    error = plaintextDec2->GetRealPackedValue();
+    std::transform(x3.begin(), x3.end(), error.begin(), error.begin(), std::minus<double>());
+    std::transform(error.begin(), error.end(), error.begin(), [&](const double& elem) { return std::abs(elem); });
+    std::cout << "Absolute error: " << error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.end(), 0.0) / slots;
+    std::cout << "Average absolute error: " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 2.0, 0.0) / (slots / 2.0);
+    std::cout << "Average absolute error up to " << slots / 2.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 4.0, 0.0) / (slots / 4.0);
+    std::cout << "Average absolute error up to " << slots / 4.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 8.0, 0.0) / (slots / 8.0);
+    std::cout << "Average absolute error up to " << slots / 8.0 - 1 << ": " << mean_error << std::endl;
+    mean_error = std::accumulate(error.begin(), error.begin() + slots / 16.0, 0.0) / (slots / 16.0);
+    std::cout << "Average absolute error up to " << slots / 16.0 << ": " << mean_error << std::endl;
+    std::cout << "Absolute error in value " << slots / 4.0 - 1 << ": " << error[slots / 4.0 - 1] << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 2.0);
+    std::cout << "Max absolute error up to " << slots / 2.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 4.0);
+    std::cout << "Max absolute error up to " << slots / 4.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 8.0);
+    std::cout << "Max absolute error up to " << slots / 8.0 - 1 << ": " << *max_error_it << std::endl;
+    max_error_it = std::max_element(error.begin(), error.begin() + slots / 16.0);
+    std::cout << "Max absolute error up to " << slots / 16.0 - 1 << ": " << *max_error_it << std::endl << std::endl;
+
+    // double a = -1;
+    // double b = 1;
+    // int degree = 118;
+    // auto coefficients = EvalChebyshevCoefficients([](double x) -> double { return 1.0/(2*Pi) * std::asin(x); }, a, b, degree);
+    // std::cout.precision(16);
+    // std::cout << "\n";
+    // std::cout << "coefficients of size " << coefficients.size() << ": " << std::endl;
+    // for (uint32_t i = 0; i < coefficients.size(); i++) {
+    //     std::cout << coefficients[i] << ", ";
+    //     if ((i+1) % 4 == 0){
+    //         std::cout << "\n";
+    //     }
+    // }
+    // std::cout << std::endl << std::endl;
 }
 
 void FloorViaSchemeSwitching() {

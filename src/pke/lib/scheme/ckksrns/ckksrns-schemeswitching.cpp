@@ -199,7 +199,7 @@ static constexpr std::initializer_list<double> g_coefficients_sin_128_9{
     -7.310620363045115e-16, -1.418342956310561e-15, 7.624522706317109e-17,  4.922484377783711e-16,
     -1.033977797561985e-15, 2.03321982266453e-15,   8.301890920746148e-18,  1.186798675207561e-15};
 
-// Coefficients for the function asin(x) in [-1, 1]
+// Coefficients for the function 1.0/(2*Pi) * std::asin(x) in [-1, 1]
 static constexpr std::initializer_list<double> g_coefficients_asin128_4{0,
                                                                         0.2022153197342351,
                                                                         0,
@@ -215,7 +215,7 @@ static constexpr std::initializer_list<double> g_coefficients_asin128_4{0,
                                                                         2.091580876749179e-16,
                                                                         0.0002892497106016072};
 
-// Coefficients for the function asin(x) in [-1, 1]
+// Coefficients for the function 1.0/(2*Pi) * std::asin(x) in [-1, 1]
 static constexpr std::initializer_list<double> g_coefficients_asin128_5{
     -3.96508223080413e-18, 0.2025359576197256,    3.568574007723717e-17, 0.02240846705512652,   1.784287003861859e-17,
     0.007996434161484033,  1.784287003861859e-17, 0.004023369936095595,  1.982541115402065e-17, 0.002385540438718644,
@@ -223,6 +223,57 @@ static constexpr std::initializer_list<double> g_coefficients_asin128_5{
     0.0007643516298389452, 2.577303450022685e-17, 0.0005548468469477894, 3.172065784643304e-17, 0.0004027254950256024,
     2.874684617332994e-17, 0.0002859320976835662, 3.667701063493821e-17, 0.0001912069597735833, 2.478176394252581e-17,
     0.0001099118932402826, 9.764014993355171e-17, 3.587199157578286e-05};
+
+// Coefficients for the function 1.0/(2*Pi) * std::asin(x) in [-1, 1]
+static constexpr std::initializer_list<double> g_coefficients_asin128_6{
+    7.809195851176949e-17,  0.2026184218638728,    4.986594941112992e-17,  0.0224918255945774,
+    4.139814668093804e-17,  0.008081606270068029,  7.715109154174817e-17,  0.00411132623539181,
+    1.006727657922811e-16,  0.002477332180945152,  3.198947698072485e-17,  0.001650061233373242,
+    8.938236215202531e-17,  0.001174102579804449,  5.739288517130046e-17,  0.0008753186442488583,
+    8.750062821198268e-17,  0.0006754651354034092, 4.986594941112992e-17,  0.000535152640229793,
+    -4.986594941112992e-17, 0.0004327972897600613, 9.408669700213191e-18,  0.0003557668769256981,
+    5.551115123125783e-17,  0.0002962679199527954, -6.86832888115563e-17,  0.0002492796115681422,
+    -9.408669700213191e-19, 0.0002114480885665469, 7.809195851176949e-17,  0.0001804627775172313,
+    8.561889427194003e-17,  0.0001546887355846373, 6.774242184153498e-17,  0.0001329415465672372,
+    1.401891785331765e-16,  0.0001143448988646915, 9.408669700213191e-19,  9.82378389617415e-05,
+    -5.174768335117255e-18, 8.411280229260206e-05, 7.762152502675883e-17,  7.157323410699735e-05,
+    -9.690929791219587e-17, 6.030397788667019e-05, -7.573979108671618e-17, 5.005015767993566e-05,
+    9.926146533724916e-17,  4.060181048657926e-05, -4.845464895609793e-17, 3.178246542345446e-05,
+    1.390130948206499e-16,  2.344045682367051e-05, 1.51950015658443e-16,   1.544213523008295e-05,
+    -1.679447541488055e-16, 7.666383254400478e-06, 2.249260100207216e-16};
+
+// Coefficients for the function 1.0/(2*Pi) * std::asin(x) in [-1, 1]
+static constexpr std::initializer_list<double> g_coefficients_asin128_7{
+    2.239105259748215e-17,  0.2026364822189692,    7.463684199160716e-18,  0.02250993064963043,
+    9.329605248950895e-18,  0.008099801005908795,  -7.930164461608261e-18, 0.00412965619808073,
+    1.35279276109788e-17,   0.002495843773157369,  -3.312009863377568e-17, 0.001668802016514955,
+    4.198322362027903e-18,  0.001193121590789431,  -2.70558552219576e-17,  0.0008946667311769855,
+    3.312009863377568e-17,  0.000695195316799491,  2.145809207258706e-17,  0.0005553204930218876,
+    -7.836868409118751e-17, 0.0004534613718350683, -9.329605248950895e-19, 0.0003769891909034637,
+    -1.399440787342634e-17, 0.0003181144258131887, -4.291618414517411e-17, 0.0002718207969699351,
+    -2.425697364727233e-17, 0.0002347596071776246, 5.224578939412501e-17,  0.0002046261674687382,
+    3.778490125825113e-17,  0.0001797922323697754, 2.052513154769197e-17,  0.0001590810073977708,
+    2.845529600930023e-17,  0.0001416248588176257, 7.930164461608261e-18,  0.0001267727233394742,
+    -6.530723674265627e-18, 0.0001140283246895791, 4.198322362027903e-17,  0.0001030080159918424,
+    -9.842733537643194e-17, 9.341143340327574e-05, -2.005865128524442e-17, 8.500069730830155e-05,
+    6.997203936713171e-18,  7.758542977355614e-05, 1.56737368182375e-16,   7.101180100084866e-05,
+    -1.278155919106273e-16, 6.515441243449882e-05, 4.991338808188729e-17,  5.991020694605188e-05,
+    5.457819070636273e-17,  5.519384747323171e-05, -2.798881574685269e-18, 5.093417288295739e-05,
+    -2.724244732693661e-16, 4.707145330183195e-05, -6.484075648020871e-17, 4.355524519673544e-05,
+    -1.446088813587389e-17, 4.034270090295978e-05, 1.259496708608371e-17,  3.739722573868889e-05,
+    3.032121705909041e-17,  3.468740327729588e-05, 2.518993417216742e-17,  3.218612921317831e-05,
+    -1.026256577384598e-17, 2.986990871687795e-05, 5.457819070636273e-17,  2.771828285255987e-05,
+    -1.072904603629353e-17, 2.571335756964666e-05, -1.520725655578996e-16, 2.383941473169699e-05,
+    2.332401312237724e-17,  2.208258914511768e-05, -4.394244072255871e-16, 2.043059898769869e-05,
+    5.714383214982423e-17,  1.887251966046226e-05, -1.446088813587389e-17, 1.73985931269035e-05,
+    5.131282886922992e-17,  1.600006637994906e-05, 1.989538319338778e-16,  1.466905392172126e-05,
+    -7.34706413354883e-17,  1.339842010396902e-05, 6.554047687388004e-17,  1.21816779561429e-05,
+    1.851926641916753e-16,  1.10129017298731e-05,  4.699788644159014e-16,  9.886650892736334e-06,
+    -2.024524339022344e-16, 8.79790367215746e-06,  3.043783712470229e-17,  7.741998588598783e-06,
+    2.798881574685269e-18,  6.714582646392252e-06, -1.391277382749802e-16, 5.711565084590095e-06,
+    -2.460683384410799e-17, 4.729075718934625e-06, -2.59246405855223e-16,  3.763427071072657e-06,
+    -1.52713975918765e-16,  2.811079569647704e-06, 1.621018912005218e-17,  1.868609192616074e-06,
+    6.355793575847797e-17,  9.32676993197407e-07,  1.151258710212339e-16};
 
 // Coefficients for the function (1.0/std::pow(2*Pi,1.0/8.0))*std::cos((2*Pi/8)*(x-0.25)) in [-128, 128]
 static constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
@@ -1831,7 +1882,201 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                    uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                                    double pmax, uint32_t dim1, bool clean, bool highPrec) const {
-    // // High precision with arcsin
+    // High precision with arcsin
+    if (!LWECiphertexts.size())
+        OPENFHE_THROW("Empty input FHEW ciphertext vector");
+
+    if (highPrec && clean) {
+        std::string errorMsg(std::string("It is not recommended to set both clean and highPrec"));
+        OPENFHE_THROW(errorMsg);
+    }
+
+    // This is the number of CKKS slots to use in encoding
+    const uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+
+    uint32_t numLWECtxts = LWECiphertexts.size();
+    uint32_t numValues   = (numCtxts == 0) ? numLWECtxts : std::min(numCtxts, numLWECtxts);
+    numValues = std::min(numValues, slots);  // This is the number of LWE ciphertexts to pack into the CKKS ciphertext
+
+    uint32_t n = LWECiphertexts[0]->GetA().GetLength();
+
+    auto ccCKKS                 = m_FHEWtoCKKSswk->GetCryptoContext();
+    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS->GetCryptoParameters());
+
+    uint32_t m    = 4 * slots;
+    uint32_t M    = ccCKKS->GetCyclotomicOrder();
+    uint32_t N    = ccCKKS->GetRingDimension();
+    bool isSparse = (M != m) ? true : false;
+
+    double K = 0.0;
+    std::vector<double> coefficientsFHEW;  // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
+    if (n == 32) {
+        K = 16.0;
+        if (highPrec) {
+            coefficientsFHEW.assign(g_coefficients_sin_16);
+        }
+        else {
+            coefficientsFHEW.assign(g_coefficients_sin2pi_16);
+        }
+    }
+    else {
+        K = 128.0;  // Failure probability of 2^{-49}
+        if (p <= 4) {
+            // If the output messages are bits, we could use a lower degree polynomial
+            coefficientsFHEW.assign(g_coefficientsFHEW128_8);
+        }
+        else {
+            if (highPrec) {
+                coefficientsFHEW.assign(g_coefficients_sin_128_9);
+            }
+            else {
+                coefficientsFHEW.assign(g_coefficients_sin2pi_128_9);
+            }
+        }
+    }
+
+    // Step 1. Form matrix A and vector b from the LWE ciphertexts, but only extract the first necessary number of them
+    std::vector<std::vector<std::complex<double>>> A(numValues);
+
+    // To have the same encoding as A*s, create b with the appropriate number of elements
+    const uint32_t b_size = ((numValues % n) != 0) ? (numValues + n - (numValues % n)) : numValues;
+    std::vector<std::complex<double>> b(b_size);
+
+    // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
+    const double prescale = (1.0 / LWECiphertexts[0]->GetModulus().ConvertToDouble()) / K;
+
+#pragma omp parallel for
+    for (uint32_t i = 0; i < numValues; i++) {
+        auto a = LWECiphertexts[i]->GetA();
+        A[i]   = std::vector<std::complex<double>>(a.GetLength());
+        for (uint32_t j = 0; j < a.GetLength(); j++) {
+            A[i][j] = std::complex<double>(a[j].ConvertToDouble(), 0);
+        }
+        b[i] = std::complex<double>(prescale * LWECiphertexts[i]->GetB().ConvertToDouble(), 0);
+    }
+
+    // Step 2. Perform the homomorphic linear transformation of A*skLWE
+    if (dim1 == 0) {
+        dim1 = m_dim1FC;
+    }
+    Ciphertext<DCRTPoly> AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1, prescale, 0);
+
+    // Step 3. Get the ciphertext of B - A*s
+    Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, AdotS->GetNoiseScaleDeg(), AdotS->GetLevel(), nullptr, N / 2);
+
+    auto BminusAdotS = ccCKKS->EvalAdd(ccCKKS->EvalNegate(AdotS), BPlain);
+
+    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+        ccCKKS->ModReduceInPlace(BminusAdotS);
+    }
+    else {
+        if (BminusAdotS->GetNoiseScaleDeg() == 2)
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
+    }
+
+    // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
+    // auto BminusAdotS2 = BminusAdotS;  // Instead of zeroing out slots which are not of interest as done above
+
+    double a_cheby = -1;
+    double b_cheby = 1;  // The division by K was performed before
+
+    // double a_cheby = -K; double b_cheby = K; // Alternatively, do this separately to not lose precision when scaling with everything at once
+    auto BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
+
+    if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
+        ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
+    }
+
+    enum { BT_ITER = 3 };
+    for (int32_t j = 1; j < BT_ITER + 1; j++) {
+        ccCKKS->EvalSquareInPlace(BminusAdotS3);  // BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
+        ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
+        double scalar = 1.0;
+        if (!highPrec) {
+            scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
+        }
+        ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
+        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+            ccCKKS->ModReduceInPlace(BminusAdotS3);
+        }
+        else {
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
+        }
+    }
+
+    // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
+    if (highPrec && (p > 4)) {
+        coefficientsFHEW.assign(g_coefficients_asin128_6);
+        BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS3, coefficientsFHEW, a_cheby, b_cheby);
+    }
+
+    /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
+         * we can directly use sin(0) for 0 and sin(pi/2) for 1.
+         * Here pmax is actually the plaintext modulus, not the maximum value of the messages that we
+         * consider. For plaintext modulus > 4, even if we only care about encrypting bits, 2pi is not
+         * the correct post-scaling factor.
+         * Moreover, we have to account for the different encoding the end ciphertext should have.
+         */
+    double postScale = (p >= 1 && p <= 4) ? (static_cast<double>(2) * Pi) : static_cast<double>(p);
+    double postBias  = 0.0;
+    if (pmin != 0) {
+        postScale *= (pmax - pmin) / 4.0;
+        postBias = (pmax - pmin) / 4.0;
+    }
+
+    // numValues are set; the rest of values up to N/2 are made zero when creating the plaintext
+    std::vector<std::complex<double>> postScaleVec(numValues, std::complex<double>(postScale, 0));
+    std::vector<std::complex<double>> postBiasVec(numValues, std::complex<double>(postBias, 0));
+
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+
+    uint32_t towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
+    for (uint32_t i = 0; i < towersToDrop; i++) {
+        elementParams.PopLastParam();
+    }
+
+    // Use full packing here to clear up the junk in the slots after numValues
+    auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);
+    auto BminusAdotSres = ccCKKS->EvalMult(BminusAdotS3, postScalePlain);
+
+    // Add the plaintext for bias at the correct level and depth
+    auto postBiasPlain = ccCKKS->MakeCKKSPackedPlaintext(postBiasVec, BminusAdotSres->GetNoiseScaleDeg(),
+                                                         BminusAdotSres->GetLevel(), nullptr, N / 2);
+
+    ccCKKS->EvalAddInPlace(BminusAdotSres, postBiasPlain);
+
+    // Additional cleaning for binary messages
+    if (clean) {
+        auto square = ccCKKS->EvalSquare(BminusAdotSres);
+        auto cube   = ccCKKS->EvalMult(square, BminusAdotSres);
+        ccCKKS->EvalAddInPlace(square, ccCKKS->EvalAdd(square, square));
+        ccCKKS->EvalAddInPlace(cube, cube);
+        BminusAdotSres = ccCKKS->EvalAdd(ccCKKS->EvalNegate(cube), square);
+
+        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+            ccCKKS->ModReduceInPlace(BminusAdotSres);
+        }
+        else {
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotSres, BASE_NUM_LEVELS_TO_DROP);
+        }
+    }
+
+    // Go back to the sparse encoding if needed
+    if (isSparse) {
+        for (uint32_t j = 1; j < N / (2 * slots); j <<= 1) {
+            auto temp = ccCKKS->EvalAtIndex(BminusAdotSres, j * slots);
+            ccCKKS->EvalAddInPlace(BminusAdotSres, temp);
+        }
+        BminusAdotSres->SetSlots(slots);
+    }
+
+    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+        ccCKKS->ModReduceInPlace(BminusAdotSres);
+    }
+
+    return BminusAdotSres;
+
+    //     // High precision with sine series of the 4th order
     //     if (!LWECiphertexts.size())
     //         OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
@@ -1862,7 +2107,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     //     if (n == 32) {
     //         K = 16.0;
     //         if (highPrec) {
-    //             coefficientsFHEW.assign(g_coefficients_sin_16);
+    //             coefficientsFHEW.assign(g_coefficients_sin2pi_4th_16);
     //         }
     //         else {
     //             coefficientsFHEW.assign(g_coefficients_sin2pi_16);
@@ -1876,7 +2121,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     //         }
     //         else {
     //             if (highPrec) {
-    //                 coefficientsFHEW.assign(g_coefficients_sin_128_9);
+    //                 coefficientsFHEW.assign(g_coefficients_sin2pi_4th_128);
     //             }
     //             else {
     //                 coefficientsFHEW.assign(g_coefficients_sin2pi_128_9);
@@ -1938,12 +2183,10 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 
     //     enum { BT_ITER = 3 };
     //     for (int32_t j = 1; j < BT_ITER + 1; j++) {
-    //         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
+    //         ccCKKS->EvalSquareInPlace(BminusAdotS3); // BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
     //         ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
-    //         double scalar = 1.0;
-    //         if (!highPrec) {
-    //             scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
-    //         }
+    //         double scalar = (highPrec) ? std::pow(2.0 / (5.0 * Pi), std::pow(2.0, j - BT_ITER)) :
+    //                                      1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
     //         ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
     //         if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
     //             ccCKKS->ModReduceInPlace(BminusAdotS3);
@@ -1955,8 +2198,38 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 
     //     // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
     //     if (highPrec && (p > 4)) {
-    //         coefficientsFHEW.assign(g_coefficients_asin128_5);
-    //         BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS3, coefficientsFHEW, a_cheby, b_cheby);
+    //         if (n == 32) {
+    //             coefficientsFHEW.assign(g_coefficients_cos2pi_4th_16);
+    //         }
+    //         else {
+    //             coefficientsFHEW.assign(g_coefficients_cos2pi_4th_128);
+    //         }
+    //         auto BminusAdotS4 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
+
+    //         if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
+    //             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS4, BASE_NUM_LEVELS_TO_DROP);
+    //         }
+
+    //         for (int32_t j = 1; j < BT_ITER + 1; j++) {
+    //             BminusAdotS4 = ccCKKS->EvalMult(BminusAdotS4, BminusAdotS4);
+    //             ccCKKS->EvalAddInPlace(BminusAdotS4, BminusAdotS4);
+    //             double scalar = std::pow(1.0 / std::pow(14.0, 1.0 / 3.0), std::pow(2.0, j - BT_ITER));
+    //             ccCKKS->EvalSubInPlace(BminusAdotS4, scalar);
+    //             if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    //                 ccCKKS->ModReduceInPlace(BminusAdotS4);
+    //             }
+    //             else {
+    //                 ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS4, BASE_NUM_LEVELS_TO_DROP);
+    //             }
+    //         }
+
+    //         // Combine the sine and cosine approximations
+    //         auto pow2    = ccCKKS->EvalSquare(BminusAdotS4);
+    //         auto pow3    = ccCKKS->EvalMult(pow2, BminusAdotS4);
+    //         pow2         = ccCKKS->EvalAdd(ccCKKS->EvalMult(pow2, 8.0 / 21.0 * std::pow(14, 2.0 / 3.0)), 40.0 / 21.0);
+    //         BminusAdotS4 = ccCKKS->EvalAdd(ccCKKS->EvalMult(BminusAdotS4, 27.0 / 28.0 * std::pow(14, 1.0 / 3.0)), pow3);
+    //         ccCKKS->EvalSubInPlace(pow2, BminusAdotS4);
+    //         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, pow2);
     //     }
 
     //     /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
@@ -2024,228 +2297,6 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     //     }
 
     //     return BminusAdotSres;
-
-    // High precision with sine series of the 4th order
-    if (!LWECiphertexts.size())
-        OPENFHE_THROW("Empty input FHEW ciphertext vector");
-
-    if (highPrec && clean) {
-        std::string errorMsg(std::string("It is not recommended to set both clean and highPrec"));
-        OPENFHE_THROW(errorMsg);
-    }
-
-    // This is the number of CKKS slots to use in eg_coefficients_sin2pi_128_9ncoding
-    const uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
-
-    uint32_t numLWECtxts = LWECiphertexts.size();
-    uint32_t numValues   = (numCtxts == 0) ? numLWECtxts : std::min(numCtxts, numLWECtxts);
-    numValues = std::min(numValues, slots);  // This is the number of LWE ciphertexts to pack into the CKKS ciphertext
-
-    uint32_t n = LWECiphertexts[0]->GetA().GetLength();
-
-    auto ccCKKS                 = m_FHEWtoCKKSswk->GetCryptoContext();
-    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS->GetCryptoParameters());
-
-    uint32_t m    = 4 * slots;
-    uint32_t M    = ccCKKS->GetCyclotomicOrder();
-    uint32_t N    = ccCKKS->GetRingDimension();
-    bool isSparse = (M != m) ? true : false;
-
-    double K = 0.0;
-    std::vector<double> coefficientsFHEW;  // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
-    if (n == 32) {
-        K = 16.0;
-        if (highPrec) {
-            coefficientsFHEW.assign(g_coefficients_sin2pi_4th_16);
-        }
-        else {
-            coefficientsFHEW.assign(g_coefficients_sin2pi_16);
-        }
-    }
-    else {
-        K = 128.0;  // Failure probability of 2^{-49}
-        if (p <= 4) {
-            // If the output messages are bits, we could use a lower degree polynomial
-            coefficientsFHEW.assign(g_coefficientsFHEW128_8);
-        }
-        else {
-            if (highPrec) {
-                coefficientsFHEW.assign(g_coefficients_sin2pi_4th_128);
-            }
-            else {
-                coefficientsFHEW.assign(g_coefficients_sin2pi_128_9);
-            }
-        }
-    }
-
-    // Step 1. Form matrix A and vector b from the LWE ciphertexts, but only extract the first necessary number of them
-    std::vector<std::vector<std::complex<double>>> A(numValues);
-
-    // To have the same encoding as A*s, create b with the appropriate number of elements
-    const uint32_t b_size = ((numValues % n) != 0) ? (numValues + n - (numValues % n)) : numValues;
-    std::vector<std::complex<double>> b(b_size);
-
-    // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
-    const double prescale = (1.0 / LWECiphertexts[0]->GetModulus().ConvertToDouble()) / K;
-
-#pragma omp parallel for
-    for (uint32_t i = 0; i < numValues; i++) {
-        auto a = LWECiphertexts[i]->GetA();
-        A[i]   = std::vector<std::complex<double>>(a.GetLength());
-        for (uint32_t j = 0; j < a.GetLength(); j++) {
-            A[i][j] = std::complex<double>(a[j].ConvertToDouble(), 0);
-        }
-        b[i] = std::complex<double>(prescale * LWECiphertexts[i]->GetB().ConvertToDouble(), 0);
-    }
-
-    // Step 2. Perform the homomorphic linear transformation of A*skLWE
-    if (dim1 == 0) {
-        dim1 = m_dim1FC;
-    }
-    Ciphertext<DCRTPoly> AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1, prescale, 0);
-
-    // Step 3. Get the ciphertext of B - A*s
-    Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, AdotS->GetNoiseScaleDeg(), AdotS->GetLevel(), nullptr, N / 2);
-
-    auto BminusAdotS = ccCKKS->EvalAdd(ccCKKS->EvalNegate(AdotS), BPlain);
-
-    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-        ccCKKS->ModReduceInPlace(BminusAdotS);
-    }
-    else {
-        if (BminusAdotS->GetNoiseScaleDeg() == 2)
-            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
-    }
-
-    // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
-    // auto BminusAdotS2 = BminusAdotS;  // Instead of zeroing out slots which are not of interest as done above
-
-    double a_cheby = -1;
-    double b_cheby = 1;  // The division by K was performed before
-
-    // double a_cheby = -K; double b_cheby = K; // Alternatively, do this separately to not lose precision when scaling with everything at once
-    auto BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
-
-    if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
-        ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
-    }
-
-    enum { BT_ITER = 3 };
-    for (int32_t j = 1; j < BT_ITER + 1; j++) {
-        BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
-        ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
-        double scalar = (highPrec) ? std::pow(2.0 / (5.0 * Pi), std::pow(2.0, j - BT_ITER)) :
-                                     1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - BT_ITER));
-        ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
-        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-            ccCKKS->ModReduceInPlace(BminusAdotS3);
-        }
-        else {
-            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
-        }
-    }
-
-    // Apply also the arcsin approximation if larger precision (for messages up to p/4) is desired
-    if (highPrec && (p > 4)) {
-        if (n == 32) {
-            coefficientsFHEW.assign(g_coefficients_cos2pi_4th_16);
-        }
-        else {
-            coefficientsFHEW.assign(g_coefficients_cos2pi_4th_128);
-        }
-        auto BminusAdotS4 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
-
-        if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
-            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS4, BASE_NUM_LEVELS_TO_DROP);
-        }
-
-        for (int32_t j = 1; j < BT_ITER + 1; j++) {
-            BminusAdotS4 = ccCKKS->EvalMult(BminusAdotS4, BminusAdotS4);
-            ccCKKS->EvalAddInPlace(BminusAdotS4, BminusAdotS4);
-            double scalar = std::pow(1.0 / std::pow(14.0, 1.0 / 3.0), std::pow(2.0, j - BT_ITER));
-            ccCKKS->EvalSubInPlace(BminusAdotS4, scalar);
-            if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-                ccCKKS->ModReduceInPlace(BminusAdotS4);
-            }
-            else {
-                ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS4, BASE_NUM_LEVELS_TO_DROP);
-            }
-        }
-
-        // Combine the sine and cosine approximations
-        auto pow2    = ccCKKS->EvalSquare(BminusAdotS4);
-        auto pow3    = ccCKKS->EvalMult(pow2, BminusAdotS4);
-        pow2         = ccCKKS->EvalAdd(ccCKKS->EvalMult(pow2, 8.0 / 21.0 * std::pow(14, 2.0 / 3.0)), 40.0 / 21.0);
-        BminusAdotS4 = ccCKKS->EvalAdd(ccCKKS->EvalMult(BminusAdotS4, 27.0 / 28.0 * std::pow(14, 1.0 / 3.0)), pow3);
-        ccCKKS->EvalSubInPlace(pow2, BminusAdotS4);
-        BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, pow2);
-    }
-
-    /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
-     * we can directly use sin(0) for 0 and sin(pi/2) for 1.
-     * Here pmax is actually the plaintext modulus, not the maximum value of the messages that we
-     * consider. For plaintext modulus > 4, even if we only care about encrypting bits, 2pi is not
-     * the correct post-scaling factor.
-     * Moreover, we have to account for the different encoding the end ciphertext should have.
-     */
-    double postScale = (p >= 1 && p <= 4) ? (static_cast<double>(2) * Pi) : static_cast<double>(p);
-    double postBias  = 0.0;
-    if (pmin != 0) {
-        postScale *= (pmax - pmin) / 4.0;
-        postBias = (pmax - pmin) / 4.0;
-    }
-
-    // numValues are set; the rest of values up to N/2 are made zero when creating the plaintext
-    std::vector<std::complex<double>> postScaleVec(numValues, std::complex<double>(postScale, 0));
-    std::vector<std::complex<double>> postBiasVec(numValues, std::complex<double>(postBias, 0));
-
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
-
-    uint32_t towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
-    for (uint32_t i = 0; i < towersToDrop; i++) {
-        elementParams.PopLastParam();
-    }
-
-    // Use full packing here to clear up the junk in the slots after numValues
-    auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);
-    auto BminusAdotSres = ccCKKS->EvalMult(BminusAdotS3, postScalePlain);
-
-    // Add the plaintext for bias at the correct level and depth
-    auto postBiasPlain = ccCKKS->MakeCKKSPackedPlaintext(postBiasVec, BminusAdotSres->GetNoiseScaleDeg(),
-                                                         BminusAdotSres->GetLevel(), nullptr, N / 2);
-
-    ccCKKS->EvalAddInPlace(BminusAdotSres, postBiasPlain);
-
-    // Additional cleaning for binary messages
-    if (clean) {
-        auto square = ccCKKS->EvalSquare(BminusAdotSres);
-        auto cube   = ccCKKS->EvalMult(square, BminusAdotSres);
-        ccCKKS->EvalAddInPlace(square, ccCKKS->EvalAdd(square, square));
-        ccCKKS->EvalAddInPlace(cube, cube);
-        BminusAdotSres = ccCKKS->EvalAdd(ccCKKS->EvalNegate(cube), square);
-
-        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-            ccCKKS->ModReduceInPlace(BminusAdotSres);
-        }
-        else {
-            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotSres, BASE_NUM_LEVELS_TO_DROP);
-        }
-    }
-
-    // Go back to the sparse encoding if needed
-    if (isSparse) {
-        for (uint32_t j = 1; j < N / (2 * slots); j <<= 1) {
-            auto temp = ccCKKS->EvalAtIndex(BminusAdotSres, j * slots);
-            ccCKKS->EvalAddInPlace(BminusAdotSres, temp);
-        }
-        BminusAdotSres->SetSlots(slots);
-    }
-
-    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-        ccCKKS->ModReduceInPlace(BminusAdotSres);
-    }
-
-    return BminusAdotSres;
 }
 
 LWEPrivateKey SWITCHCKKSRNS::EvalSchemeSwitchingSetup(const SchSwchParams& params) {
