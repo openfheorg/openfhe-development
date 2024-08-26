@@ -130,6 +130,10 @@ public:
         return m_sk;
     }
 
+    Element& GetPrivateElementMutable() {
+        return m_sk;
+    }
+
     /**
    * Set accessor for private element.
    * @private &x private element to set to.

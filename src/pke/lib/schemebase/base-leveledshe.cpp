@@ -462,8 +462,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
 
     std::vector<Element>& rcv = result->GetElements();
 
+    rcv[0].SetFormat(Format::COEFFICIENT);
+    rcv[1].SetFormat(Format::COEFFICIENT);
+
     rcv[0] = rcv[0].AutomorphismTransform(i, vec);
     rcv[1] = rcv[1].AutomorphismTransform(i, vec);
+
+    rcv[0].SetFormat(Format::EVALUATION);
+    rcv[1].SetFormat(Format::EVALUATION);
 
     return result;
 }

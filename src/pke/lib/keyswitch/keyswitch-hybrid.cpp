@@ -115,12 +115,23 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
             auto sNewi = sNewExt.GetElementAtIndex(i);
 
             if (i < startPartIdx || i >= endPartIdx) {
+                if(sNewi.GetFormat() == Format::COEFFICIENT)
+                    sNewi.SetFormat(Format::EVALUATION);
                 b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
+                // sNewi.SetFormat(Format::COEFFICIENT);
             }
             else {
                 // P * sOld is only applied for the current part
                 auto sOldi = sOld.GetElementAtIndex(i);
+                if(sNewi.GetFormat() == Format::COEFFICIENT)
+                  sNewi.SetFormat(Format::EVALUATION);
+
+                if(sOldi.GetFormat() == Format::COEFFICIENT)
+                  sOldi.SetFormat(Format::EVALUATION);
                 b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
+                
+                // sNewi.SetFormat(Format::COEFFICIENT);
+                // sOldi.SetFormat(Format::COEFFICIENT);
             }
         }
 

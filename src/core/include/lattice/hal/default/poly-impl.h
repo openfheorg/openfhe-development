@@ -362,16 +362,47 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k) const {
     return result;
 }
 
+// template <typename VecType>
+// PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k, const std::vector<uint32_t>& precomp) const {
+//     // if ((m_format != Format::EVALUATION) || (m_params->GetRingDimension() != (m_params->GetCyclotomicOrder() >> 1)))
+//     //     OPENFHE_THROW("Automorphism Poly Format not EVALUATION or not power-of-two");
+//     if (k % 2 == 0)
+//         OPENFHE_THROW("Automorphism index not odd\n");
+//     PolyImpl<VecType> tmp(m_params, m_format, true);
+//     uint32_t n = m_params->GetRingDimension();
+//     for (uint32_t j = 0; j < n; ++j) {
+//         (*tmp.m_values)[j] = (*m_values)[precomp[j]];
+
+//     }
+//     return tmp;
+// }
+
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k, const std::vector<uint32_t>& precomp) const {
-    if ((m_format != Format::EVALUATION) || (m_params->GetRingDimension() != (m_params->GetCyclotomicOrder() >> 1)))
-        OPENFHE_THROW("Automorphism Poly Format not EVALUATION or not power-of-two");
+    // if ((m_format != Format::EVALUATION) || (m_params->GetRingDimension() != (m_params->GetCyclotomicOrder() >> 1)))
+    //     OPENFHE_THROW("Automorphism Poly Format not EVALUATION or not power-of-two");
+    // uint32_t kappa = 5;
+
     if (k % 2 == 0)
         OPENFHE_THROW("Automorphism index not odd\n");
     PolyImpl<VecType> tmp(m_params, m_format, true);
     uint32_t n = m_params->GetRingDimension();
-    for (uint32_t j = 0; j < n; ++j)
-        (*tmp.m_values)[j] = (*m_values)[precomp[j]];
+    uint32_t logn = GetMSB(n-1);
+    auto q_i{m_params->GetModulus()};
+
+    for (uint32_t j = 0; j < n; ++j) {
+        uint32_t index_raw = (j * (uint32_t)k);
+        uint32_t index = index_raw % n;
+        // (*tmp.m_values)[index] = (*m_values)[j];
+        auto result = (*m_values)[j];
+
+        if ( ((index_raw >> logn) & 1) && (result != 0) )
+        {
+          (*tmp.m_values)[index] =  (q_i - result);
+        }
+        else
+          (*tmp.m_values)[index] =  result;      
+    }
     return tmp;
 }
 
