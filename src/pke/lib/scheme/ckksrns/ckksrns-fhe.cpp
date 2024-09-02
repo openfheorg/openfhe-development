@@ -937,7 +937,7 @@ std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots
     // Computing all indices for baby-step giant-step procedure for encoding and decoding
     indexList.reserve(b + g - 2 + bRem + gRem - 2 + 1 + M);
 
-    for (int32_t s = 0; s < int32_t(levelBudget); s++) {
+    for (int32_t s = 0; s < int32_t(levelBudget) - 1; s++) {
         for (int32_t j = 0; j < g; j++) {
             indexList.emplace_back(
                 ReduceRotation((j - (numRotations + 1) / 2 + 1) * (1 << (s * layersCollapse)), M / 4));
