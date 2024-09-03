@@ -472,7 +472,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
         DCRTPoly psiC0       = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         auto cMult           = ciphertext->GetElements()[0].TimesNoCheck(cryptoParams->GetPModq());
         for (usint i = 0; i < sizeQl; i++) {
-            psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
+            psiC0.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
         }
         (*cTilda)[0] += psiC0;
     }

@@ -2264,8 +2264,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         NativeVector nativeVec(N, nativeParams[i]->GetModulus());
         FitToNativeVector(N, temp, Max128BitValue(), &nativeVec);
         NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(nativeVec, Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, element);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, std::move(element));
     }
 
     usint numTowers = nativeParams.size();
@@ -2407,8 +2407,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         NativeVector nativeVec(N, nativeParams[i]->GetModulus());
         FitToNativeVector(N, temp, Max64BitValue(), &nativeVec);
         NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(nativeVec, Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, element);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, std::move(element));
     }
 
     usint numTowers = nativeParams.size();

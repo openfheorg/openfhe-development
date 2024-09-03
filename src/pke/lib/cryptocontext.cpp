@@ -788,7 +788,6 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                 for (size_t k = 0; k < vecSize; k++) {
                     auto modq_k = elementParams->GetParams()[k]->GetModulus();
 
-                    NativeVector powtempvec(ring_dimension, modq_k);
                     NativePoly powtemppoly(elementParams->GetParams()[k], Format::COEFFICIENT);
                     NativePoly fevalpoly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
 
@@ -796,22 +795,24 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                     for (size_t t = 1; t < threshold; t++) {
                         powtemp = powtemp.ModMul(i, modq_k);
 
-                        for (size_t d = 0; d < ring_dimension; d++) {
-                            powtempvec.at(d) = powtemp;
+                        NativeVector powtempvec(ring_dimension, modq_k);
+                        for (size_t i = 0; i < powtempvec.GetLength(); ++i) {
+                            // TODO (dsuponit): should we have a contructor to get a value for all m_data elements in NativeVector
+                            powtempvec[i] = powtemp;
                         }
 
-                        powtemppoly.SetValues(powtempvec, Format::COEFFICIENT);
+                        powtemppoly.SetValues(std::move(powtempvec), Format::COEFFICIENT);
 
                         auto fst = fs[t].GetElementAtIndex(k);
 
-                        for (size_t l = 0; l < ring_dimension; l++) {
-                            fevalpoly.at(l) += powtemppoly.at(l).ModMul(fst.at(l), modq_k);
+                        for (size_t i = 0; i < ring_dimension; ++i) {
+                            fevalpoly.at(i) += powtemppoly.at(i).ModMul(fst.at(i), modq_k);
                         }
                     }
                     fevalpoly += fs[0].GetElementAtIndex(k);
 
                     fevalpoly.SetFormat(Format::COEFFICIENT);
-                    feval.SetElementAtIndex(k, fevalpoly);
+                    feval.SetElementAtIndex(k, std::move(fevalpoly));
                 }
                 // assign fi
                 SecretShares[i] = feval;
@@ -888,7 +889,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                     }
                 }
                 multpoly.SetFormat(Format::EVALUATION);
-                Lagrange_coeffs[j].SetElementAtIndex(k, multpoly);
+                Lagrange_coeffs[j].SetElementAtIndex(k, std::move(multpoly));
             }
             Lagrange_coeffs[j].SetFormat(Format::COEFFICIENT);
         }
@@ -901,7 +902,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                 const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
                 lagrange_sum_of_elems_poly += coeff.TimesNoCheck(share);
             }
-            lagrange_sum_of_elems.SetElementAtIndex(k, lagrange_sum_of_elems_poly);
+            lagrange_sum_of_elems.SetElementAtIndex(k, std::move(lagrange_sum_of_elems_poly));
         }
         lagrange_sum_of_elems.SetFormat(Format::EVALUATION);
         sk->SetPrivateElement(lagrange_sum_of_elems);

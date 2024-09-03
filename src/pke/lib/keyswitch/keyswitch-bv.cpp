@@ -237,7 +237,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
             for (size_t k = 0; k < sOldDecomposed.size(); k++) {
                 DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-                filtered.SetElementAtIndex(i, sOldDecomposed[k]);
+                filtered.SetElementAtIndex(i, std::move(sOldDecomposed[k]));
 
                 DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
                                  DCRTPoly(dgg, elementParams, Format::EVALUATION) :
