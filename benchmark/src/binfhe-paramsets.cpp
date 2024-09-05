@@ -96,6 +96,9 @@ using namespace lbcrypto;
 }
 
 // clang-format off
+#if NATIVEINT >= 64
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128Q_2_LMKCDEY_OR_T, STD128Q_LMKCDEY_T, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
+#endif
 BENCHMARK_CAPTURE(FHEW_BINGATE2, TOY_2_GINX_OR, TOY, GINX, OR)->Unit(benchmark::kMillisecond);
 BENCHMARK_CAPTURE(FHEW_BINGATE2, MEDIUM_2_GINX_OR, MEDIUM, GINX, OR)->Unit(benchmark::kMillisecond);
 BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_AP_OR, STD128_AP, AP, OR)->Unit(benchmark::kMillisecond);

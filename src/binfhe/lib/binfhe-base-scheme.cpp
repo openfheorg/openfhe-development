@@ -353,48 +353,43 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     if (ct1 == ct2)
         OPENFHE_THROW("Input ciphertexts should be independant");
 
-    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
+    const auto& LWEParams = params->GetLWEParams();
+    NativeInteger Q{LWEParams->GetQ()};
+
+    // input cts expected with SMALL_DIM
+    auto cct1 = (Q == ct1->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ct1) : std::make_shared<LWECiphertextImpl>(*ct1);
+    const auto cct2 = (Q == ct2->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ct2) : ct2;
+
     // the additive homomorphic operation for XOR/NXOR is different from the other gates we compute
     // 2*(ct1 + ct2) mod 4 for XOR, 0 -> 0, 2 -> 1
     // XOR_FAST and XNOR_FAST are included for backwards compatibility; they map to XOR and XNOR
     if ((gate == XOR) || (gate == XNOR) || (gate == XOR_FAST) || (gate == XNOR_FAST)) {
-        LWEscheme->EvalAddEq(ctprep, ct2);
-        LWEscheme->EvalAddEq(ctprep, ctprep);
+        LWEscheme->EvalAddEq(cct1, cct2);
+        LWEscheme->EvalAddEq(cct1, cct1);
     }
     else {
         // for all other gates, we simply compute (ct1 + ct2) mod 4
         // for AND: 0,1 -> 0 and 2,3 -> 1
         // for OR: 1,2 -> 1 and 3,0 -> 0
-        LWEscheme->EvalAddEq(ctprep, ct2);
+        LWEscheme->EvalAddEq(cct1, cct2);
     }
-
-    auto acc{BootstrapGateCore(params, gate, EK.BSkey, ctprep)};
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    std::vector<NativePoly>& accVec{acc->GetElements()};
+    auto accVec{BootstrapGateCore(params, gate, EK.BSkey, cct1)->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
 
     // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
-    const auto& LWEParams = params->GetLWEParams();
-    NativeInteger Q{LWEParams->GetQ()};
     NativeInteger b{(Q >> 3) + 1};
     b.ModAddFastEq(accVec[1][0], Q);
-    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
 
-    if (!extended) {
-        // Modulus switching to a middle step Q'
-        auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
-        // Key switching
-        auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
-        // Modulus switching
-        return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
-    }
-    else {
+    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), b);
+
+    if (extended)
         return ctExt;
-    }
+    return LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ctExt);
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
