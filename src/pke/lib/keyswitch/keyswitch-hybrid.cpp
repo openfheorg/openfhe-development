@@ -250,7 +250,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
     }
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-    result->SetElements(resultElements);
+    result->SetElements(std::move(resultElements));
     return result;
 }
 
@@ -287,7 +287,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
                                            cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-    result->SetElements({ct0, ct1});
+    result->SetElements(std::vector<DCRTPoly>{std::move(ct0), std::move(ct1)});
     return result;
 }
 

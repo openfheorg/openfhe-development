@@ -854,7 +854,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         for (uint32_t i = 0; i < threshold; ++i) {
             sum_of_elems += sk_shares[client_indexes[i]];
         }
-        sk->SetPrivateElement(sum_of_elems);
+        sk->SetPrivateElement(std::move(sum_of_elems));
     }
     else if (shareType == "shamir") {
         // use lagrange interpolation to recover the secret
