@@ -457,6 +457,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
             curValues[i] = cur;
         }
+
+        // clears the values containing information about the noise
+        GetElement<NativePoly>().SetValuesToZero();
     }
     else {
         powP = pow(2, -p);
@@ -486,6 +489,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
             curValues[i] = cur;
         }
+
+        // clears the values containing information about the noise
+        GetElement<Poly>().SetValuesToZero();
     }
 
     // the code below adds a Gaussian noise to the decrypted result
