@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "scheme/gen-cryptocontext-params-validation.h"
+#include "utils/exception.h"
 #include "utils/utilities.h"
 
 namespace lbcrypto {
@@ -83,6 +84,15 @@ void validateParametersForCryptocontext(const Params& parameters) {
             }
             if (0 != parameters.GetMultiplicativeDepth()) {
                 OPENFHE_THROW("multiplicativeDepth should be set to 0 for PREMode == NOISE_FLOODING_HRA");
+            }
+            if (0 != parameters.GetFirstModSize()) {
+                OPENFHE_THROW("firstModSize is not supported for PREMode == NOISE_FLOODING_HRA");
+            }
+            if (0 != parameters.GetScalingModSize()) {
+                OPENFHE_THROW("scalingModSize is not supported for PREMode == NOISE_FLOODING_HRA");
+            }
+            if (0 == parameters.GetRingDim()) {
+                OPENFHE_THROW("ringDim should be set to a value > 0 for PREMode == NOISE_FLOODING_HRA");
             }
         }
         if (0 != parameters.GetFirstModSize()) {

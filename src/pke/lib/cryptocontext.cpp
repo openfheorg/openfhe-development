@@ -117,8 +117,15 @@ void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element> 
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert) {
-    CryptoContextImpl<Element>::GetAllEvalMultKeys()[vectorToInsert[0]->GetKeyTag()] = vectorToInsert;
+void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert,
+                                                   const std::string& keyTag) {
+    const std::string tag = (keyTag.empty()) ? vectorToInsert[0]->GetKeyTag() : keyTag;
+    if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(tag) != CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        // we do not allow to override the existing key vector if its keyTag is identical to the keyTag of the new keys
+        OPENFHE_THROW("Can not save a EvalMultKeys vector as there is a key vector for the given keyTag");
+    }
+
+    CryptoContextImpl<Element>::s_evalMultKeyMap[tag] = vectorToInsert;
 }
 
 /////////////////////////////////////////

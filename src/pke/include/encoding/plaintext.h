@@ -410,6 +410,15 @@ public:
    * @param out
    */
     virtual void PrintValue(std::ostream& out) const = 0;
+
+    /**
+   * GetFormattedValues() has a logic similar to PrintValue(), but requires a precision as an argument
+   * @param precision number of decimal digits of precision to print
+   * @return string with all values and "estimated precision"
+   */
+    virtual std::string GetFormattedValues(int64_t precision) const {
+        OPENFHE_THROW("not implemented");
+    }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {

@@ -36,13 +36,11 @@
 #ifndef __UNITTESTSER_H__
 #define __UNITTESTSER_H__
 
+#include "UnitTestException.h"
 #include "cryptocontext-ser.h"
-//#include "cryptocontext.h"  // NOLINT: clang-format nad cpplint disagree on alphabetical sort
 #include "gtest/gtest.h"
 #include <string>
 #include <iostream>
-#include <cxxabi.h>
-#include "utils/demangle.h"
 #include "globals.h"  // for SERIALIZE_PRECOMPUTE
 
 using namespace lbcrypto;
@@ -92,20 +90,15 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
     }
     catch (std::exception& e) {
         EnablePrecomputeCRTTablesAfterDeserializaton();
+
         std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
     }
     catch (...) {
         EnablePrecomputeCRTTablesAfterDeserializaton();
-#if defined EMSCRIPTEN
-        std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-        std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-        std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-        // make it fail
-        EXPECT_TRUE(0 == 1) << failmsg;
+
+        UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
     }
 }
 

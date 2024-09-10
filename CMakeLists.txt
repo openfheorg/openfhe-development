@@ -27,7 +27,7 @@ project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
 set(OPENFHE_VERSION_MINOR 2)
-set(OPENFHE_VERSION_PATCH 0)
+set(OPENFHE_VERSION_PATCH 1)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -152,10 +152,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # we can use GNU built-in functions provided by GCC for debugging. ex: __builtin_LINE (), __builtin_FUNCTION (), __builtin_FILE ()
     add_definitions(-DBUILTIN_INFO_AVAILABLE)
     message (STATUS "BUILTIN_INFO_AVAILABLE is defined")
-endif()
-
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(IGNORE_WARNINGS "${IGNORE_WARNINGS} -Wno-unused-private-field -Wno-shift-op-parentheses")
 endif()
 
 if( WITH_NATIVEOPT )

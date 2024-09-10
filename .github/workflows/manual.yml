@@ -14,7 +14,7 @@ on:
         description: 'Compiler type'
         type: string
         required: true
-        default: 'CLANG-14'
+        default: 'CLANG-18'
       native_backend:
         description: 'Size of NativeInteger'
         type: string
@@ -35,11 +35,11 @@ on:
         type: string
         required: true
         default: 'none'
-  
+
   workflow_dispatch:
     inputs:
-      # # Selects the compiler to use, this choice will be used in the COMPILERS_MAP as the key to
-      # # retrieve the corresponding cmake compiler options to pass to the action
+      # Selects the compiler to use, this choice will be used in the COMPILERS_MAP as the key to
+      # retrieve the corresponding cmake compiler options to pass to the action
       compiler:
         description: 'Compiler type'
         type: choice
@@ -48,12 +48,15 @@ on:
         - 'GCC-10'
         - 'GCC-11'
         - 'GCC-12'
-        - 'CLANG-12 (WITH_OPENMP=OFF)'
-        - 'CLANG-13 (WITH_OPENMP=OFF)'
-        - 'CLANG-14'
+        - 'GCC-13'
+        - 'GCC-14'
+        - 'CLANG-14 (WITH_OPENMP=OFF)'
         - 'CLANG-15 (WITH_OPENMP=OFF)'
+        - 'CLANG-16 (WITH_OPENMP=OFF)'
+        - 'CLANG-17 (WITH_OPENMP=OFF)'
+        - 'CLANG-18'
         required: true
-        default: 'CLANG-14'
+        default: 'CLANG-18'
       native_backend:
         description: 'Size of NativeInteger'
         type: choice
@@ -122,5 +125,3 @@ jobs:
                   "mb6_ntl_tcm"       : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON",
                   "mb6_ntl_debug_tcm" : "-DBUILD_EXTRAS=ON -DMATHBACKEND=6 -DWITH_NTL=ON -DWITH_TCM=ON -DCMAKE_BUILD_TYPE=Debug",
                 }'
-      
-

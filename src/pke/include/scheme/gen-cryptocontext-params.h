@@ -36,13 +36,10 @@
 #ifndef __GEN_CRYPTOCONTEXT_PARAMS_H__
 #define __GEN_CRYPTOCONTEXT_PARAMS_H__
 
-// Had to include cryptocontext.h as the includes below give a compiler error.
-// Those headers probably depend on some order/sequence.
-// TODO (dsuponit): fix the problem with header described above
-#include "cryptocontext.h"
-#include "scheme/scheme-id.h"  // SCHEME
+#include "scheme/scheme-id.h"
 #include "utils/inttypes.h"
 #include "constants.h"
+#include "lattice/stdlatticeparms.h"
 
 #include <iosfwd>
 #include <string>
@@ -212,7 +209,7 @@ public:
     Params& operator=(const Params& obj) = default;
     Params& operator=(Params&& obj)      = default;
 
-    ~Params() = default;
+    virtual ~Params() = default;
 
     /**
      * getAllParamsDataMembers() returns names of all data members of Params and the scheme enum ALWAYS goes first.

@@ -150,10 +150,10 @@ inline usint ReverseBits(usint num, usint msb) {
                     reverse_byte((num >> 16) & 0xff) << 8 | reverse_byte((num >> 24) & 0xff)) >>
                    shift_trick[msb & 0x7];
         default:
-            return -1;
-            // OPENFHE_THROW("msbb value not handled:" +
-            // std::to_string(msbb));
+            // ERROR
+            break;
     }
+    OPENFHE_THROW("msbb value not handled:" + std::to_string(msbb));
 }
 
 /**

@@ -58,6 +58,7 @@ public:
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
+    ~CCParams()                   = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to BGVRNS

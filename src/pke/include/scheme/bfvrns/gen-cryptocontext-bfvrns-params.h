@@ -45,6 +45,7 @@ namespace lbcrypto {
 
 class CryptoContextBFVRNS;
 
+// TODO (dsuponit): review class CCParams<> as we may need to add a class template CCParams<> (see the comments below)
 // every CCParams class should include the following forward declaration as there is
 // no general CCParams class template. This way we may create scheme specific classes
 // derived from Params or have them completely independent.
@@ -58,6 +59,7 @@ public:
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
+    ~CCParams()                   = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to BFVRNS
@@ -72,7 +74,7 @@ public:
         DISABLED_FOR_BFVRNS;
     }
     void SetExecutionMode(ExecutionMode executionMode0) override {
-        DISABLED_FOR_BGVRNS;
+        DISABLED_FOR_BFVRNS;
     }
     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
         DISABLED_FOR_BFVRNS;

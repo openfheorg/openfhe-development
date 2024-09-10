@@ -116,91 +116,6 @@ class CryptoContextImpl : public Serializable {
         OPENFHE_THROW("Cannot find context for the given pointer to CryptoContextImpl");
     }
 
-    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
-                                                      size_t noiseScaleDeg, uint32_t level,
-                                                      const std::shared_ptr<ParmType> params, usint slots) const {
-        VerifyCKKSScheme(__func__);
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        if (level > 0) {
-            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-            // readily available. so, what we get is numModuli and use it for calculations
-            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
-            uint32_t multiplicativeDepth =
-                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
-            // so the user can understand the error more easily.
-            if (level >= numModuli) {
-                std::string errorMsg;
-                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
-                else
-                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
-
-                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
-                            std::to_string(multiplicativeDepth) + "]";
-                OPENFHE_THROW(errorMsg);
-            }
-        }
-
-        double scFact = 0;
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            scFact = cryptoParams->GetScalingFactorRealBig(level);
-            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
-            // in our encoding function, so we set it to 1 to make sure it
-            // has no effect on the encoding.
-            noiseScaleDeg = 1;
-        }
-        else {
-            scFact = cryptoParams->GetScalingFactorReal(level);
-        }
-
-        Plaintext p;
-        if (params == nullptr) {
-            std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
-            if (level != 0) {
-                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
-                for (uint32_t i = 0; i < level; i++) {
-                    elemParams.PopLastParam();
-                }
-                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
-            }
-            else {
-                elemParamsPtr = cryptoParams->GetElementParams();
-            }
-            // Check if plaintext has got enough slots for data (value)
-            usint ringDim    = elemParamsPtr->GetRingDimension();
-            size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
-                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
-                              "] of the vector with values should not be greater than ringDim/2 [" +
-                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
-            }
-            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
-                                                               noiseScaleDeg, level, scFact, slots));
-        }
-        else {
-            // Check if plaintext has got enough slots for data (value)
-            usint ringDim    = params->GetRingDimension();
-            size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
-                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
-                              "] of the vector with values should not be greater than ringDim/2 [" +
-                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
-            }
-            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
-                                                               level, scFact, slots));
-        }
-        p->Encode();
-
-        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has noiseScaleDeg 2.
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            p->SetNoiseScaleDeg(2);
-        }
-        return p;
-    }
-
     /**
     * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
     * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
@@ -440,6 +355,91 @@ protected:
                                  CALLER_INFO);
             OPENFHE_THROW(errorMsg);
         }
+    }
+
+    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
+                                                      size_t noiseScaleDeg, uint32_t level,
+                                                      const std::shared_ptr<ParmType> params, usint slots) const {
+        VerifyCKKSScheme(__func__);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        if (level > 0) {
+            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
+            // readily available. so, what we get is numModuli and use it for calculations
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            uint32_t multiplicativeDepth =
+                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
+                OPENFHE_THROW(errorMsg);
+            }
+        }
+
+        double scFact = 0;
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+            scFact = cryptoParams->GetScalingFactorRealBig(level);
+            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
+            // in our encoding function, so we set it to 1 to make sure it
+            // has no effect on the encoding.
+            noiseScaleDeg = 1;
+        }
+        else {
+            scFact = cryptoParams->GetScalingFactorReal(level);
+        }
+
+        Plaintext p;
+        if (params == nullptr) {
+            std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
+            if (level != 0) {
+                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
+                for (uint32_t i = 0; i < level; i++) {
+                    elemParams.PopLastParam();
+                }
+                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+            }
+            else {
+                elemParamsPtr = cryptoParams->GetElementParams();
+            }
+            // Check if plaintext has got enough slots for data (value)
+            usint ringDim    = elemParamsPtr->GetRingDimension();
+            size_t valueSize = value.size();
+            if (valueSize > ringDim / 2) {
+                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                              "] of the vector with values should not be greater than ringDim/2 [" +
+                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            }
+            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
+                                                               noiseScaleDeg, level, scFact, slots));
+        }
+        else {
+            // Check if plaintext has got enough slots for data (value)
+            usint ringDim    = params->GetRingDimension();
+            size_t valueSize = value.size();
+            if (valueSize > ringDim / 2) {
+                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                              "] of the vector with values should not be greater than ringDim/2 [" +
+                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            }
+            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
+                                                               level, scFact, slots));
+        }
+        p->Encode();
+
+        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has noiseScaleDeg 2.
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+            p->SetNoiseScaleDeg(2);
+        }
+        return p;
     }
 
     PrivateKey<Element> privateKey;
@@ -686,15 +686,15 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        Serial::Deserialize(CryptoContextImpl<Element>::GetAllEvalMultKeys(), ser, sertype);
+        std::map<std::string, std::vector<EvalKey<Element>>> omap;
 
-        // TODO (dsuponit): should we keep the code below?
-        // // The deserialize call created any contexts that needed to be created....
-        // // so all we need to do is put the keys into the maps for their context
+        Serial::Deserialize(omap, ser, sertype);
 
-        // for (auto k : CryptoContextImpl<Element>::s_evalMultKeyMap) {
-        //     CryptoContextImpl<Element>::s_evalMultKeyMap[k.first] = k.second;
-        // }
+        // The deserialize call creates all contexts that need to be created...
+        // so, all we need to do is to insert the keys into the maps for their context(s)
+        for (auto& [tag, vec] : omap) {
+            CryptoContextImpl<Element>::InsertEvalMultKey(vec, tag);
+        }
         return true;
     }
 
@@ -716,10 +716,12 @@ public:
 
     /**
    * InsertEvalMultKey - add the given vector of keys to the map, replacing the
-   * existing vector if there
+   * existing vector if it is there
    * @param evalKeyVec vector of keys
+   * @param keyTag key identifier, unique for every cryptocontext
    */
-    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec);
+    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec,
+                                  const std::string& keyTag = std::string());
 
     /**
    * SerializeEvalSumKey for a single EvalSum key or all of the EvalSum keys

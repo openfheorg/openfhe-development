@@ -1,3 +1,11 @@
+09/10/2024: OpenFHE 1.2.1 (stable) is released
+
+* Fixes compilation issues with g++ 14 and clang++ 18 (#822, #835)
+* Fixes the parameter estimation bug for HRA-secure PRE when ring dimension is not set by the user (#827)
+* Includes several other bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.1%22
+
 06/25/2024: OpenFHE 1.2.0 (stable) is released
 
 * Updates the lattice parameters tables to support the ring dimension of 2^{16} and 2^{17} for ternary and Gaussian secrets (#806)
