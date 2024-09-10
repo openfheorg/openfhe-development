@@ -164,7 +164,7 @@ runs:
     # -- upload benchmark results, NOTE - this list needs to be maintained with the above output files
     - name: upload_benchmark_artifacts
       if: ${{ inputs.run_benchmark == 'true' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark_vectormath-artifact
         path: |
