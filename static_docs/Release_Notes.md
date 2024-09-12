@@ -1,3 +1,25 @@
+09/10/2024: OpenFHE 1.2.1 (stable) is released
+
+* Fixes compilation issues with g++ 14 and clang++ 18 (#822, #835)
+* Fixes the parameter estimation bug for HRA-secure PRE when ring dimension is not set by the user (#827)
+* Includes several other bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.1%22
+
+06/25/2024: OpenFHE 1.2.0 (stable) is released
+
+* Updates the lattice parameters tables to support the ring dimension of 2^{16} and 2^{17} for ternary and Gaussian secrets (#806)
+* Adds application specifications validator for BGV, BFV, and CKKS (#710)
+* Updates the parameter sets for CGGI/DM/LMKCDEY; adds low-probability-of-failure parameter sets (below 2^{-120}) (#673)
+* Adds several optimizations for BFV, including support for modulus switching during computation (#682, #715, #731)
+* Fixes parameter estimation bugs for BGV, BFV, and CKKS (insecure configurations were possible for scenarios with hybrid key switching) (#785, #786)
+* Includes several fixes related to handling the map of automorphism keys for various EvalSum*KeyGen operations (#756, #773, #783, #797)
+* Add support for selective serialization/deserialization of automorphism/rotation keys (#775)
+* Updates the HRA-Secure BGV PRE implementation based on https://eprint.iacr.org/2024/681 (#767)
+* Includes many other bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.0%22
+
 03/08/2024: OpenFHE 1.1.4 (stable) is released
 
 * Fixes a bug affecting the Google C++ Transpiler code generation (#701)
