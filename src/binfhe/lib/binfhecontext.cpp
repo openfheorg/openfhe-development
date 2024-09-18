@@ -435,8 +435,10 @@ void BinFHEContext::MultipartyBTKeyGen(ConstLWEPrivateKey sk, RingGSWACCKey prev
     //    m_BTKey = m_BTKey_map[temp];
     // }
     // else {
+    auto pk           = m_BTKey.Pkey;
     m_BTKey           = m_binfhescheme->MultipartyBTKeyGen(m_params, sk, prevbtkey, zkey, acrsauto, rgswenc0, prevkskey,
                                                            m_binfhescheme->get_num_of_parties(), leadFlag);
+    m_BTKey.Pkey      = pk;
     m_BTKey_map[temp] = m_BTKey;
     // }
     return;
