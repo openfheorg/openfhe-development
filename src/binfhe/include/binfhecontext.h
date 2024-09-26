@@ -302,7 +302,7 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
+    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
 
     /**
    * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
@@ -319,7 +319,7 @@ public:
    * @param ct ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext Bootstrap(ConstLWECiphertext& ct) const;
+    LWECiphertext Bootstrap(ConstLWECiphertext& ct, bool extended = false) const;
 
     /**
    * Evaluate an arbitrary function

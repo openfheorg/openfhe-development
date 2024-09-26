@@ -59,7 +59,7 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
     const auto& RGSWParams = params->GetRingGSWParams();
     const auto& polyParams = RGSWParams->GetPolyParams();
     NativePoly skNPoly(polyParams);
-    skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
+    skNPoly.SetValues(std::move(skN->GetElement()), Format::COEFFICIENT);
     skNPoly.SetFormat(Format::EVALUATION);
 
     ek.BSkey = ACCscheme->KeyGenAcc(RGSWParams, skNPoly, LWEsk);
@@ -70,47 +70,47 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext& ct1,
-                                        ConstLWECiphertext& ct2) const {
+                                        ConstLWECiphertext& ct2, bool extended) const {
     if (ct1 == ct2)
         OPENFHE_THROW("Input ciphertexts should be independant");
 
-    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
+    const auto& LWEParams = params->GetLWEParams();
+    NativeInteger Q{LWEParams->GetQ()};
+
+    // input cts expected with SMALL_DIM
+    auto cct1       = (Q == ct1->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ct1) : std::make_shared<LWECiphertextImpl>(*ct1);
+    const auto cct2 = (Q == ct2->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ct2) : ct2;
+
     // the additive homomorphic operation for XOR/NXOR is different from the other gates we compute
     // 2*(ct1 + ct2) mod 4 for XOR, 0 -> 0, 2 -> 1
     // XOR_FAST and XNOR_FAST are included for backwards compatibility; they map to XOR and XNOR
     if ((gate == XOR) || (gate == XNOR) || (gate == XOR_FAST) || (gate == XNOR_FAST)) {
-        LWEscheme->EvalAddEq(ctprep, ct2);
-        LWEscheme->EvalAddEq(ctprep, ctprep);
+        LWEscheme->EvalAddEq(cct1, cct2);
+        LWEscheme->EvalAddEq(cct1, cct1);
     }
     else {
         // for all other gates, we simply compute (ct1 + ct2) mod 4
         // for AND: 0,1 -> 0 and 2,3 -> 1
         // for OR: 1,2 -> 1 and 3,0 -> 0
-        LWEscheme->EvalAddEq(ctprep, ct2);
+        LWEscheme->EvalAddEq(cct1, cct2);
     }
-
-    auto acc{BootstrapGateCore(params, gate, EK.BSkey, ctprep)};
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    std::vector<NativePoly>& accVec{acc->GetElements()};
+    auto accVec{BootstrapGateCore(params, gate, EK.BSkey, cct1)->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
 
     // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
-    const auto& LWEParams = params->GetLWEParams();
-    NativeInteger Q{LWEParams->GetQ()};
     NativeInteger b{(Q >> 3) + 1};
     b.ModAddFastEq(accVec[1][0], Q);
 
-    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
-    // Modulus switching to a middle step Q'
-    auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
-    // Key switching
-    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
-    // Modulus switching
-    return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
+    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), b);
+
+    if (extended)
+        return ctExt;
+    return LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ctExt);
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
@@ -134,11 +134,10 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
         for (size_t i = 1; i < ctvector.size(); i++) {
             LWEscheme->EvalAddEq(ctprep, ctvector[i]);
         }
-        auto acc = BootstrapGateCore(params, gate, EK.BSkey, ctprep);
 
-        std::vector<NativePoly>& accVec = acc->GetElements();
         // the accumulator result is encrypted w.r.t. the transposed secret key
         // we can transpose "a" to get an encryption under the original secret key
+        auto accVec{BootstrapGateCore(params, gate, EK.BSkey, ctprep)->GetElements()};
         accVec[0] = accVec[0].Transpose();
         accVec[0].SetFormat(Format::COEFFICIENT);
         accVec[1].SetFormat(Format::COEFFICIENT);
@@ -149,7 +148,9 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
         NativeInteger b = Q / NativeInteger(2 * p) + 1;
         b.ModAddFastEq(accVec[1][0], Q);
 
-        auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
+        auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), b);
+        // ctExt->SetptModulus(p);
+
         // Modulus switching to a middle step Q'
         auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
         // Key switching
@@ -173,17 +174,14 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 }
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext& ct) const {
-    NativeInteger p = ct->GetptModulus();
+                                      ConstLWECiphertext& ct, bool extended) const {
     LWECiphertext ctprep{std::make_shared<LWECiphertextImpl>(*ct)};
     // ctprep = ct + q/4
     LWEscheme->EvalAddConstEq(ctprep, (ct->GetModulus() >> 2));
 
-    auto acc{BootstrapGateCore(params, AND, EK.BSkey, ctprep)};
-
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    std::vector<NativePoly>& accVec{acc->GetElements()};
+    auto accVec{BootstrapGateCore(params, AND, EK.BSkey, ctprep)->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
@@ -191,16 +189,15 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>&
     // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
     const auto& LWEParams = params->GetLWEParams();
     NativeInteger Q{LWEParams->GetQ()};
-    NativeInteger b = Q / NativeInteger(2 * p) + 1;
+    NativeInteger b{Q / NativeInteger(2 * ct->GetptModulus()) + 1};
     b.ModAddFastEq(accVec[1][0], Q);
 
-    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
-    // Modulus switching to a middle step Q'
-    auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
-    // Key switching
-    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
-    // Modulus switching
-    return LWEscheme->ModSwitch(ct->GetModulus(), ctKS);
+    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), b);
+    // ctExt->SetptModulus(ct->GetptModulus());
+
+    if (extended)
+        return ctExt;
+    return LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ctExt);
 }
 
 // Evaluation of the NOT operation; no key material is needed
@@ -418,8 +415,6 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     return cttmp;
 }
 
-//////
-
 // Evaluate Ciphertext Decomposition
 std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHECryptoParams>& params,
                                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
@@ -492,38 +487,43 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
         OPENFHE_THROW(errMsg);
     }
 
-    auto& LWEParams  = params->GetLWEParams();
-    auto& RGSWParams = params->GetRingGSWParams();
-    auto polyParams  = RGSWParams->GetPolyParams();
-
-    // Specifies the range [q1,q2) that will be used for mapping
-    NativeInteger p  = ct->GetptModulus();
+    // Specifies the range [lb, ub) that will be used for mapping
     NativeInteger q  = ct->GetModulus();
-    uint32_t qHalf   = q.ConvertToInt() >> 1;
+    auto qHalf       = q.ConvertToInt<uint32_t>() >> 1;
+    auto& RGSWParams = params->GetRingGSWParams();
     NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<size_t>(gate)];
     NativeInteger q2 = q1.ModAddFast(NativeInteger(qHalf), q);
 
+    bool swap = q1 >= q2;
+    auto lb = swap? q2 : q1;
+    auto ub = swap? q1 : q2;
+
     // depending on whether the value is the range, it will be set
     // to either Q/8 or -Q/8 to match binary arithmetic
+    auto& LWEParams      = params->GetLWEParams();
     NativeInteger Q      = LWEParams->GetQ();
-    NativeInteger Q2p    = Q / NativeInteger(2 * p) + 1;
+    NativeInteger Q2p    = Q / (ct->GetptModulus() * 2) + 1;
     NativeInteger Q2pNeg = Q - Q2p;
 
-    uint32_t N = LWEParams->GetN();
+    auto lv = swap? Q2p : Q2pNeg;
+    auto uv = swap? Q2pNeg : Q2p;
+
+    const uint32_t N = LWEParams->GetN();
     NativeVector m(N, Q);
     // Since q | (2*N), we deal with a sparse embedding of Z_Q[x]/(X^{q/2}+1) to
     // Z_Q[x]/(X^N+1)
-    uint32_t factor = (2 * N / q.ConvertToInt());
 
-    const NativeInteger& b = ct->GetB();
-    for (size_t j = 0; j < qHalf; ++j) {
-        NativeInteger temp = b.ModSub(j, q);
-        if (q1 < q2)
-            m[j * factor] = ((temp >= q1) && (temp < q2)) ? Q2pNeg : Q2p;
-        else
-            m[j * factor] = ((temp >= q2) && (temp < q1)) ? Q2p : Q2pNeg;
+    const uint32_t factor = (N / qHalf);
+
+    NativeInteger b = ct->GetB();
+
+    for (uint32_t i = 0; i < N; i += factor) {
+        m[i] = ((b >= lb) && (b < ub)) ? lv : uv;
+        b.ModSubEq(1, q);
     }
+
     std::vector<NativePoly> res(2);
+    auto& polyParams = RGSWParams->GetPolyParams();
     // no need to do NTT as all coefficients of this poly are zero
     res[0] = NativePoly(polyParams, Format::EVALUATION, true);
     res[1] = NativePoly(polyParams, Format::COEFFICIENT, false);
@@ -585,23 +585,15 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
 template <typename Func>
 LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                           ConstLWECiphertext& ct, const Func f, const NativeInteger& fmod) const {
-    auto acc = BootstrapFuncCore(params, EK.BSkey, ct, f, fmod);
-
-    std::vector<NativePoly>& accVec = acc->GetElements();
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
+    auto accVec{BootstrapFuncCore(params, EK.BSkey, ct, f, fmod)->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
 
-    auto ctExt      = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(accVec[1][0]));
-    auto& LWEParams = params->GetLWEParams();
-    // Modulus switching to a middle step Q'
-    auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
-    // Key switching
-    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
-    // Modulus switching
-    return LWEscheme->ModSwitch(fmod, ctKS);
+    auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), accVec[1][0]);
+    return LWEscheme->SwitchCTtoqn(params->GetLWEParams(), EK.KSkey, ctExt);
 }
 
 };  // namespace lbcrypto
