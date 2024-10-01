@@ -250,9 +250,9 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
         NativeInteger dq{q << 1};
         // raise the modulus of ct1 : q -> 2q
         ct1->GetA().SetModulus(dq);
-
         auto ct2 = std::make_shared<LWECiphertextImpl>(*ct1);
         LWEscheme->EvalAddConstEq(ct2, beta);
+
         // this is 1/4q_small or -1/4q_small mod q
         auto f0 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
             if (x < (q >> 1))
@@ -594,7 +594,14 @@ LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoPara
     accVec[1].SetFormat(Format::COEFFICIENT);
 
     auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), accVec[1][0]);
-    return LWEscheme->SwitchCTtoqn(params->GetLWEParams(), EK.KSkey, ctExt);
+
+    auto& LWEParams = params->GetLWEParams();
+    // Modulus switching to a middle step Q'
+    auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
+    // Key switching
+    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
+    // Modulus switching
+    return LWEscheme->ModSwitch(fmod, ctKS);
 }
 
 };  // namespace lbcrypto
