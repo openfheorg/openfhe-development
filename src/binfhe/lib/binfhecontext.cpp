@@ -232,8 +232,10 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
     // Switch from ct of modulus Q and dimension N to smaller q and n
     // This is done by default while calling Encrypt but the output could
     // be set to LARGE_DIM to skip this switching
-    if (output == SMALL_DIM)
-        return SwitchCTtoqn(m_BTKey.KSkey, ct);
+    if (output == SMALL_DIM) {
+        ct = SwitchCTtoqn(m_BTKey.KSkey, ct);
+        ct->SetptModulus(p);
+    }
     return ct;
 }
 
@@ -279,8 +281,8 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext&
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, extended);
 }
 
-LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector) const {
-    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvector);
+LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended) const {
+    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvector, extended);
 }
 
 LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext& ct, bool extended) const {

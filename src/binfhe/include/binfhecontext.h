@@ -311,7 +311,7 @@ public:
    * @param ctvector vector of ciphertexts
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector) const;
+    LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)

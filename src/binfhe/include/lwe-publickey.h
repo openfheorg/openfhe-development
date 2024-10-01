@@ -49,7 +49,9 @@ class LWEPublicKeyImpl : public Serializable {
 public:
     LWEPublicKeyImpl() = default;
 
-    explicit LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
+    LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
+
+    LWEPublicKeyImpl(std::vector<NativeVector>&& A, NativeVector&& v) noexcept : m_A(std::move(A)), m_v(std::move(v)) {}
 
     LWEPublicKeyImpl(LWEPublicKeyImpl&& rhs) noexcept : m_A(std::move(rhs.m_A)), m_v(std::move(rhs.m_v)) {}
 
