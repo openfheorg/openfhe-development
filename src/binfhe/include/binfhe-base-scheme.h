@@ -112,7 +112,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
-                              const std::vector<LWECiphertext>& ctvector) const;
+                              const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
 
     /**
    * Evaluates NOT gate
