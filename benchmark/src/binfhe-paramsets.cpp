@@ -68,7 +68,7 @@ using namespace lbcrypto;
     cc.BTKeyGen(sk);
     auto x = std::bind(std::uniform_int_distribution<LWEPlaintext>(0, 1), std::default_random_engine());
     for (auto _ : state)
-        auto ct = cc.EvalBinGate(g, cc.Encrypt(sk, x(), SMALL_DIM, 4), cc.Encrypt(sk, x(), SMALL_DIM, 4));
+        auto ct = cc.EvalBinGate(g, cc.Encrypt(sk, x(), FRESH, 4), cc.Encrypt(sk, x(), FRESH, 4));
 }
 
 [[maybe_unused]] static void FHEW_BINGATE3(benchmark::State& state, BINFHE_PARAMSET s, BINFHE_METHOD m, BINGATE g) {
@@ -79,8 +79,8 @@ using namespace lbcrypto;
     auto x = std::bind(std::uniform_int_distribution<LWEPlaintext>(0, 1), std::default_random_engine());
     for (auto _ : state)
         auto ct = cc.EvalBinGate(
-            g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), SMALL_DIM, 6), cc.Encrypt(sk, x(), SMALL_DIM, 6),
-                                          cc.Encrypt(sk, x(), SMALL_DIM, 6)});
+            g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), FRESH, 6), cc.Encrypt(sk, x(), FRESH, 6),
+                                          cc.Encrypt(sk, x(), FRESH, 6)});
 }
 
 [[maybe_unused]] static void FHEW_BINGATE4(benchmark::State& state, BINFHE_PARAMSET s, BINFHE_METHOD m, BINGATE g) {
@@ -91,58 +91,58 @@ using namespace lbcrypto;
     auto x = std::bind(std::uniform_int_distribution<LWEPlaintext>(0, 1), std::default_random_engine());
     for (auto _ : state)
         auto ct = cc.EvalBinGate(
-            g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), SMALL_DIM, 8), cc.Encrypt(sk, x(), SMALL_DIM, 8),
-                                          cc.Encrypt(sk, x(), SMALL_DIM, 8), cc.Encrypt(sk, x(), SMALL_DIM, 8)});
+            g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), FRESH, 8), cc.Encrypt(sk, x(), FRESH, 8),
+                                          cc.Encrypt(sk, x(), FRESH, 8), cc.Encrypt(sk, x(), FRESH, 8)});
 }
 
 // clang-format off
-BENCHMARK_CAPTURE(FHEW_BINGATE2, TOY_2_GINX_OR, TOY, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, MEDIUM_2_GINX_OR, MEDIUM, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_AP_OR, STD128_AP, AP, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_GINX_OR, STD128, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128_3_GINX_OR, STD128_3, GINX, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128_4_GINX_OR, STD128_4, GINX, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128Q_2_GINX_OR, STD128Q, GINX, OR)->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, TOY_2_GINX_OR, TOY, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, MEDIUM_2_GINX_OR, MEDIUM, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_AP_OR, STD128_AP, AP, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_GINX_OR, STD128, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128_3_GINX_OR, STD128_3, GINX, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128_4_GINX_OR, STD128_4, GINX, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128Q_2_GINX_OR, STD128Q, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
 #if NATIVEINT >= 64
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128Q_3_GINX_OR, STD128Q_3, GINX, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128Q_4_GINX_OR, STD128Q_4, GINX, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192_2_GINX_OR, STD192, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192_3_GINX_OR, STD192_3, GINX, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192_4_GINX_OR, STD192_4, GINX, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192Q_2_GINX_OR, STD192Q, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192Q_3_GINX_OR, STD192Q_3, GINX, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192Q_4_GINX_OR, STD192Q_4, GINX, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256_2_GINX_OR, STD256, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256_3_GINX_OR, STD256_3, GINX, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256_4_GINX_OR, STD256_4, GINX, OR4)->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128Q_3_GINX_OR, STD128Q_3, GINX, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128Q_4_GINX_OR, STD128Q_4, GINX, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192_2_GINX_OR, STD192, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192_3_GINX_OR, STD192_3, GINX, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192_4_GINX_OR, STD192_4, GINX, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192Q_2_GINX_OR, STD192Q, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192Q_3_GINX_OR, STD192Q_3, GINX, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192Q_4_GINX_OR, STD192Q_4, GINX, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256_2_GINX_OR, STD256, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256_3_GINX_OR, STD256_3, GINX, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256_4_GINX_OR, STD256_4, GINX, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
 #endif
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256Q_2_GINX_OR, STD256Q, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256Q_3_GINX_OR, STD256Q_3, GINX, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256Q_4_GINX_OR, STD256Q_4, GINX, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_LMKCDEY_OR, STD128_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128_3_LMKCDEY_OR, STD128_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128_4_LMKCDEY_OR, STD128_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128Q_2_LMKCDEY_OR, STD128Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128Q_3_LMKCDEY_OR, STD128Q_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256Q_2_GINX_OR, STD256Q, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256Q_3_GINX_OR, STD256Q_3, GINX, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256Q_4_GINX_OR, STD256Q_4, GINX, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128_2_LMKCDEY_OR, STD128_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128_3_LMKCDEY_OR, STD128_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128_4_LMKCDEY_OR, STD128_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD128Q_2_LMKCDEY_OR, STD128Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD128Q_3_LMKCDEY_OR, STD128Q_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
 #if NATIVEINT >= 64
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128Q_4_LMKCDEY_OR, STD128Q_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192_2_LMKCDEY_OR, STD192_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192_3_LMKCDEY_OR, STD192_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192_4_LMKCDEY_OR, STD192_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192Q_2_LMKCDEY_OR, STD192Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192Q_3_LMKCDEY_OR, STD192Q_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192Q_4_LMKCDEY_OR, STD192Q_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256_2_LMKCDEY_OR, STD256_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256_3_LMKCDEY_OR, STD256_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256_4_LMKCDEY_OR, STD256_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256Q_2_LMKCDEY_OR, STD256Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256Q_3_LMKCDEY_OR, STD256Q_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256Q_4_LMKCDEY_OR, STD256Q_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD128Q_4_LMKCDEY_OR, STD128Q_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192_2_LMKCDEY_OR, STD192_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192_3_LMKCDEY_OR, STD192_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192_4_LMKCDEY_OR, STD192_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD192Q_2_LMKCDEY_OR, STD192Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD192Q_3_LMKCDEY_OR, STD192Q_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD192Q_4_LMKCDEY_OR, STD192Q_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256_2_LMKCDEY_OR, STD256_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256_3_LMKCDEY_OR, STD256_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256_4_LMKCDEY_OR, STD256_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, STD256Q_2_LMKCDEY_OR, STD256Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE3, STD256Q_3_LMKCDEY_OR, STD256Q_3_LMKCDEY, LMKCDEY, OR3)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE4, STD256Q_4_LMKCDEY_OR, STD256Q_4_LMKCDEY, LMKCDEY, OR4)->Unit(benchmark::kMillisecond)->MinTime(5.0);
 #endif
-BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128_2_GINX_OR, LPF_STD128, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128Q_2_GINX_OR, LPF_STD128Q, GINX, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128_2_LMKCDEY_OR, LPF_STD128_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128Q_2_LMKCDEY_OR, LPF_STD128Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128_2_GINX_OR, LPF_STD128, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128Q_2_GINX_OR, LPF_STD128Q, GINX, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128_2_LMKCDEY_OR, LPF_STD128_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE2, LPF_STD128Q_2_LMKCDEY_OR, LPF_STD128Q_LMKCDEY, LMKCDEY, OR)->Unit(benchmark::kMillisecond)->MinTime(5.0);
 // clang-format on
 
 BENCHMARK_MAIN();
