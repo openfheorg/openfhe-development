@@ -539,6 +539,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googlet
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/core/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/binfhe/include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/prng_libs )
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/src/core )
 

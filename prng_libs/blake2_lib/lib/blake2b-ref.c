@@ -18,8 +18,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "utils/prng/blake2.h"
-#include "utils/prng/blake2-impl.h"
+#include "blake2.h"
+#include "blake2-impl.h"
 
 static const uint64_t blake2b_IV[8] = {
     0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL,

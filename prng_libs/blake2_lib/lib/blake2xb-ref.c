@@ -21,8 +21,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "utils/prng/blake2.h"
-#include "utils/prng/blake2-impl.h"
+#include "blake2.h"
+#include "blake2-impl.h"
 
 int blake2xb_init(blake2xb_state *S, const size_t outlen) {
   return blake2xb_init_key(S, outlen, NULL, 0);
