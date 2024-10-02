@@ -37,18 +37,17 @@
 #ifndef _SRC_LIB_UTILS_BLAKE2ENGINE_H
 #define _SRC_LIB_UTILS_BLAKE2ENGINE_H
 
-#include "prng.h"
-#include "blake2.h"
-
-#include <stdexcept>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <array>
 #include <limits>
-#include <memory>
-#include <cstdint>
-#include <chrono>
-#include <thread>
-#include <random>
 
+#include "blake2.h"
+
+#include "utils/exception.h"
+
+namespace lbcrypto {
 
 // the buffer stores 1024 samples of 32-bit integers
 const uint32_t PRNG_BUFFER_SIZE = 1024;
@@ -57,38 +56,56 @@ const uint32_t PRNG_BUFFER_SIZE = 1024;
  * @brief Defines the PRNG engine used by OpenFHE. It is based on BLAKE2. Use
  * this as a template for adding other PRNG engines to OpenFHE.
  */
-class Blake2Engine : public PRNG {
+class Blake2Engine {
  public:
-  enum {MAX_SEED_GENS = 16};
+  // all C++11 distributions used in OpenFHE work by default with uint32_t
+  // a different data type can be specified if needed for a particular
+  // architecture
+  using result_type = uint32_t;
 
   /**
    * @brief Constructor using a small seed - used for generating a large seed
    */
-  explicit Blake2Engine(PRNG::result_type seed)
-      : PRNG(seed), m_counter(0), m_buffer({}), m_bufferIndex(0) {
+  explicit Blake2Engine(result_type seed)
+      : m_counter(0), m_buffer({}), m_bufferIndex(0) {
     m_seed[0] = seed;
   }
 
-  // TODO (dsuponit): commented the constructor below and added a default paramter value to the next contructor
-  // /**
-  //  * @brief Main constructor taking a vector of MAX_SEED_GENS integers as a seed
-  //  */
-  // explicit Blake2Engine(const std::array<PRNG::result_type, MAX_SEED_GENS>& seed)
-  //     : m_counter(0), m_seed(seed), m_buffer({}), m_bufferIndex(0) {}
+  /**
+   * @brief Main constructor taking a vector of 16 integers as a seed
+   */
+  explicit Blake2Engine(const std::array<result_type, 16>& seed)
+      : m_counter(0), m_seed(seed), m_buffer({}), m_bufferIndex(0) {}
 
   /**
-   * @brief Main constructor taking a vector of MAX_SEED_GENS integers as a seed and a
+   * @brief Main constructor taking a vector of 16 integers as a seed and a
    * counter
    */
-  explicit Blake2Engine(const std::array<PRNG::result_type, MAX_SEED_GENS>& seed,
-                        PRNG::result_type counter = 0)
+  explicit Blake2Engine(const std::array<result_type, 16>& seed,
+                        result_type counter)
       : m_counter(counter), m_seed(seed), m_buffer({}), m_bufferIndex(0) {}
+
+  /**
+   * @brief minimum value used by C+11 distribution generators when no lower
+   * bound is explicitly specified by the user
+   */
+  static constexpr result_type min() {
+    return std::numeric_limits<result_type>::min();
+  }
+
+  /**
+   * @brief maximum value used by C+11 distribution generators when no upper
+   * bound is explicitly specified by the user
+   */
+  static constexpr result_type max() {
+    return std::numeric_limits<result_type>::max();
+  }
 
   /**
    * @brief main call to the PRNG
    */
-  PRNG::result_type operator()() override {
-    PRNG::result_type result;
+  result_type operator()() {
+    result_type result;
 
     if (m_bufferIndex == PRNG_BUFFER_SIZE) m_bufferIndex = 0;
 
@@ -125,10 +142,10 @@ class Blake2Engine : public PRNG {
   void Generate() {
     // m_counter is the input to the hash function
     // m_buffer is the output
-    if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(PRNG::result_type),
+    if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(result_type),
                  &m_counter, sizeof(m_counter), m_seed.cbegin(),
-                 m_seed.size() * sizeof(PRNG::result_type)) != 0) {
-      throw std::runtime_error("PRNG: blake2xb failed");
+                 m_seed.size() * sizeof(result_type)) != 0) {
+      OPENFHE_THROW("PRNG: blake2xb failed");
     }
     m_counter++;
     return;
@@ -139,64 +156,16 @@ class Blake2Engine : public PRNG {
   uint64_t m_counter = 0;
 
   // the seed for the BLAKE2 hash function
-  std::array<PRNG::result_type, MAX_SEED_GENS> m_seed{};
+  std::array<result_type, 16> m_seed{};
 
   // The vector that stores random samples generated using the hash function
-  std::array<PRNG::result_type, PRNG_BUFFER_SIZE> m_buffer{};
+  std::array<result_type, PRNG_BUFFER_SIZE> m_buffer{};
 
   // Index in m_buffer corresponding to the current PRNG sample
   uint16_t m_bufferIndex = 0;
 };
 
-// the code calling createEngineInstance() should clean the memory allocated by createEngineInstance()
-// TODO (dsuponit): check with Jack if createEngineInstance() can return an object instead of a pointer. We can do it
-// for Blake2Engine
-extern "C" {
-  Blake2Engine* createEngineInstance();
-}
-// extern "C" Blake2Engine* createEngineInstance() {
-// // initialization of PRNGs
-// constexpr size_t maxGens = Blake2Engine::MAX_SEED_GENS;
-// #pragma omp critical
-//         std::array<uint32_t, maxGens> initKey{};
-//         initKey[0] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//         initKey[1] = std::hash<std::thread::id>{}(std::this_thread::get_id());
-// #if !defined(__arm__) && !defined(__EMSCRIPTEN__)
-//         if (sizeof(size_t) == 8)
-//             initKey[2] = (std::hash<std::thread::id>{}(std::this_thread::get_id()) >> 32);
-// #endif
-//         void* mem        = malloc(1);
-//         uint32_t counter = reinterpret_cast<long long>(mem);  // NOLINT
-//         free(mem);
-
-//         Blake2Engine gen(initKey, counter);
-
-//         std::uniform_int_distribution<uint32_t> distribution(0);
-//         std::array<uint32_t, maxGens> seed{};
-//         for (uint32_t i = 0; i < maxGens; i++) {
-//             seed[i] = distribution(gen);
-//         }
-
-//         std::array<uint32_t, maxGens> rdseed{};
-//         size_t attempts  = 3;
-//         bool rdGenPassed = false;
-//         for(size_t i = 0; i < attempts && !rdGenPassed; ++i) {
-//             try {
-//                 std::random_device genR;
-//                 for (uint32_t i = 0; i < maxGens; i++) {
-//                     rdseed[i] = distribution(genR);
-//                 }
-//                 rdGenPassed = true;
-//             }
-//             catch (std::exception& e) {
-//             }
-//         }
-//         for (uint32_t i = 0; i < maxGens; i++) {
-//             seed[i] += rdseed[i];
-//         }
-
-//         return new Blake2Engine(seed);
-// }
+}  // namespace lbcrypto
 
 #endif
 // clang-format on

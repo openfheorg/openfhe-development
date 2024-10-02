@@ -41,11 +41,6 @@
 
 namespace lbcrypto {
 
-
-// Static members initialization
-std::unique_ptr<PseudoRandomNumberGenerator> PseudoRandomNumberGenerator::instance = nullptr;
-std::once_flag PseudoRandomNumberGenerator::initInstanceFlag;
-PRNG* PseudoRandomNumberGenerator::engine = nullptr;
-void* PseudoRandomNumberGenerator::singletonHandle = nullptr;
+std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng = nullptr;
 
 }  // namespace lbcrypto
