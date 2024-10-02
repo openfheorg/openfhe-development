@@ -44,6 +44,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <optional>
 
 namespace lbcrypto {
 
@@ -56,6 +57,20 @@ typedef struct {
     // public key
     LWEPublicKey Pkey;
 } RingGSWBTKey;
+
+class VecLWECiphertext {
+    public:
+    std::vector<LWECiphertext> m_ctvector;
+    
+    VecLWECiphertext() = default;
+    ~VecLWECiphertext() = default;
+
+    bool validate() const;
+
+    private:
+        mutable std::optional<bool> m_independent = std::nullopt;
+};
+
 
 /**
  * @brief Ring GSW accumulator schemes described in
@@ -112,8 +127,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
-                              const std::vector<LWECiphertext>& ctvector) const;
-
+                              const VecLWECiphertext& ctvector) const;
     /**
    * Evaluates NOT gate
    *
