@@ -390,7 +390,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
-    if (large_abs > bound) {
+    if (large_abs >= bound) {
         for (usint i = 0; i < numTowers; i++) {
             DoubleInteger reduced = large % moduli[i].ConvertToInt();
 
