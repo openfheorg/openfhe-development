@@ -1,3 +1,8 @@
+HPDIC MOD
+=========
+* VS Code setup:
+    * On ChameleonCloud, if VS Code complains about missing header files, then open C/C++ configuration and set the compiler to '/usr/bin/g++-11'
+
 OpenFHE - Open-Source Fully Homomorphic Encryption Library
 =====================================
 
