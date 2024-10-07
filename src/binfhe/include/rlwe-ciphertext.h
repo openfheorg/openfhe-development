@@ -65,6 +65,8 @@ public:
 
     explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
+    explicit RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
+
     RLWECiphertextImpl(const RLWECiphertextImpl& rhs) : m_elements(rhs.m_elements) {}
 
     RLWECiphertextImpl(RLWECiphertextImpl&& rhs) noexcept : m_elements(std::move(rhs.m_elements)) {}
