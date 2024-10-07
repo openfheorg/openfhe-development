@@ -269,8 +269,8 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
         NativeVector nativeVec(N, nativeParams[i]->GetModulus());
         FitToNativeVector(N, temp, Max128BitValue(), &nativeVec);
         NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(nativeVec, Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, element);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, std::move(element));
     }
 
     usint numTowers = nativeParams.size();
@@ -415,8 +415,8 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
         NativeVector nativeVec(N, nativeParams[i]->GetModulus());
         FitToNativeVector(N, temp, Max64BitValue(), &nativeVec);
         NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(nativeVec, Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, element);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, std::move(element));
     }
 
     usint numTowers = nativeParams.size();
@@ -511,7 +511,7 @@ EvalKey<DCRTPoly> SWITCHCKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> priv
 
     DCRTPoly sPermuted = s.AutomorphismTransform(index, vec);
 
-    privateKeyPermuted->SetPrivateElement(sPermuted);
+    privateKeyPermuted->SetPrivateElement(std::move(sPermuted));
     privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
 
     return algo->KeySwitchGen(privateKey, privateKeyPermuted);
@@ -615,7 +615,7 @@ EvalKey<DCRTPoly> switchingKeyGenRLWE(
                     skelementsPlain[j] = skelementsPlain.GetModulus() - 1;
             }
         }
-        skelements.SetElementAtIndex(i, skelementsPlain);
+        skelements.SetElementAtIndex(i, std::move(skelementsPlain));
     }
 
     skelements.SetFormat(Format::EVALUATION);
@@ -648,7 +648,7 @@ void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, Nat
         ref.SetFormat(Format::EVALUATION);
     }
 
-    ctxtKS->SetElements(resultElements);
+    ctxtKS->SetElements(std::move(resultElements));
 }
 
 EvalKey<DCRTPoly> switchingKeyGen(const PrivateKey<DCRTPoly>& ckksSKto, const PrivateKey<DCRTPoly>& ckksSKfrom) {
@@ -670,7 +670,7 @@ EvalKey<DCRTPoly> switchingKeyGen(const PrivateKey<DCRTPoly>& ckksSKto, const Pr
             else
                 skElementsPlain[j] = skElementsPlain.GetModulus() - 1;
         }
-        skElements.SetElementAtIndex(i, skElementsPlain);
+        skElements.SetElementAtIndex(i, std::move(skElementsPlain));
     }
 
     skElements.SetFormat(Format::EVALUATION);
@@ -720,8 +720,8 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& ckksSKto, co
                     skElementsPlainLWE[j] = skElementsPlain.GetModulus() - 1;
             }
         }
-        skElements.SetElementAtIndex(i, skElementsPlain);
-        skElements2.SetElementAtIndex(i, skElementsPlainLWE);
+        skElements.SetElementAtIndex(i, std::move(skElementsPlain));
+        skElements2.SetElementAtIndex(i, std::move(skElementsPlainLWE));
     }
 
     skElements.SetFormat(Format::EVALUATION);
@@ -998,7 +998,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoConte
             first         = cc.KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
-            inner->SetElements(elements);
+            inner->SetElements(std::move(elements));
             result = inner;
         }
         else {
@@ -1018,7 +1018,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoConte
     result        = cc.KeySwitchDown(result);
     auto elements = result->GetElements();
     elements[0] += first;
-    result->SetElements(elements);
+    result->SetElements(std::move(elements));
 
     return result;
 }
@@ -1104,7 +1104,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
             first         = cc.KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
-            inner->SetElements(elements);
+            inner->SetElements(std::move(elements));
             result = inner;
         }
         else {
@@ -1123,7 +1123,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     result        = cc.KeySwitchDown(result);
     auto elements = result->GetElements();
     elements[0] += first;
-    result->SetElements(elements);
+    result->SetElements(std::move(elements));
 
     // A represents the diagonals, which lose the information whether the initial matrix is tall or wide
     if (wide) {

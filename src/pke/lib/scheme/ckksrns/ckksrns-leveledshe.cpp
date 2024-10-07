@@ -472,7 +472,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
         DCRTPoly psiC0       = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         auto cMult           = ciphertext->GetElements()[0].TimesNoCheck(cryptoParams->GetPModq());
         for (usint i = 0; i < sizeQl; i++) {
-            psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
+            psiC0.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
         }
         (*cTilda)[0] += psiC0;
     }
@@ -493,12 +493,13 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
-    std::vector<DCRTPoly> resultDCRT(cv.size());
-    for (usint i = 0; i < cv.size(); i++)
-        resultDCRT[i] = cv[i].Times(NativeInteger(integer));
+    std::vector<DCRTPoly> resultDCRT;
+    resultDCRT.reserve(cv.size());
+    for (const auto& elem : cv)
+        resultDCRT.push_back(elem.Times(NativeInteger(integer)));
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-    result->SetElements(resultDCRT);
+    result->SetElements(std::move(resultDCRT));
     return result;
 }
 
