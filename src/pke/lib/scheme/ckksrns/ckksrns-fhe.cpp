@@ -133,6 +133,9 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget[0], dim1[0]);
     precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
 
+    std::cerr << "Encoding: " << precom->m_paramsEnc << std::endl;
+    std::cerr << "Decoding: " << precom->m_paramsDec << std::endl;
+
     if (precompute) {
         uint32_t m    = 4 * slots;
         bool isSparse = (M != m) ? true : false;
@@ -234,6 +237,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     auto conjKey       = ConjugateKeyGen(privateKey);
     (*evalKeys)[M - 1] = conjKey;
 
+    std::cerr << "number of keys" << evalKeys->size() << std::endl;
+
     return evalKeys;
 }
 
@@ -259,6 +264,9 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
 
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget[0], dim1[0]);
     precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
+
+    std::cerr << "Encoding: " << precom->m_paramsEnc << std::endl;
+    std::cerr << "Decoding: " << precom->m_paramsDec << std::endl;
 
     uint32_t m    = 4 * slots;
     bool isSparse = (M != m) ? true : false;
