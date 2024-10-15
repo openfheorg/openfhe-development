@@ -34,78 +34,85 @@
   all other distribution generators
  */
 
-#ifndef LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
-#define LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
+#ifndef __DISTRIBUTIONGENERATOR_H__
+#define __DISTRIBUTIONGENERATOR_H__
 
-// #include "math/math-hal.h"
-
-#include "utils/parallel.h"
+#include "config_core.h"
+#include "utils/prng/prng.h"
 #include "utils/prng/blake2engine.h"
+#include "utils/exception.h"
 
 #include <chrono>
+#include <dlfcn.h>
 #include <memory>
-// #include <mutex>
 #include <random>
+#include <string>
+#include <stdlib.h>
 #include <thread>
-
-// #define FIXED_SEED // if defined, then uses a fixed seed number for
-// reproducible results during debug. Use only one OMP thread to ensure
-// reproducibility
+#include <iostream> // TODO (dsuponit): delete after testing
 
 namespace lbcrypto {
+// if FIXED_SEED is defined, then PRNG uses a fixed seed number for reproducible results during debug.
+// Use only one OMP thread to ensure reproducibility
+// #define FIXED_SEED
 
-// Defines the PRNG implementation used by OpenFHE.
-// The cryptographically secure PRNG used by OpenFHE is based on BLAKE2 hash
-// functions. A user can replace it with a different PRNG if desired by defining
-// the same methods as for the Blake2Engine class.
-typedef Blake2Engine PRNG;
 
 /**
- * @brief The class providing the PRNG capability to all random distribution
- * generators in OpenFHE. THe security of Ring Learning With Errors (used for
- * all crypto capabilities in OpenFHE) depends on the randomness of uniform,
- * ternary, and Gaussian distributions, which derive their randomness from the
- * PRNG.
+ * @brief PseudoRandomNumberGenerator provides the PRNG capability to all random distribution generators in OpenFHE.
+ * The security of Ring Learning With Errors (used for all crypto capabilities in OpenFHE) depends on
+ * the randomness of uniform, ternary, and Gaussian distributions, which derive their randomness from the PRNG.
  */
 class PseudoRandomNumberGenerator {
 public:
     /**
    * @brief  Returns a reference to the PRNG engine
    */
-
-    // TODO: there may be an issue here
-    static void InitPRNG() {
-        int threads = OpenFHEParallelControls.GetNumThreads();
-        if (threads == 0) {
-            threads = 1;
-        }
-#pragma omp parallel for num_threads(threads)
-        for (int i = 0; i < threads; ++i) {
-            GetPRNG();
-        }
-    }
-
     static PRNG& GetPRNG() {
         // initialization of PRNGs
         if (m_prng == nullptr) {
 #pragma omp critical
             {
+    #ifdef EXTERNAL_PRNG_LIB
+                // prepare to get the engine from the engine's shared library
+                std::cerr << "PRNG library call" << std::endl;
+                const std::string engineLibName{std::string("lib") + PRNG::PRNGLibName + ".so"};
+                void* libraryHandle             = dlopen(engineLibName.c_str(), RTLD_LAZY);
+                if (!libraryHandle)
+                    OPENFHE_THROW("Cannot open " + engineLibName);
+
+                CreateEngineFuncPtrType createEngine = (CreateEngineFuncPtrType)dlsym(libraryHandle, PRNG::engineFuncName);
+    #else
+                std::cerr << "PRNG default call" << std::endl;
+                CreateEngineFuncPtrType createEngine = default_prng::createEngineInstance;
+    #endif
+                if (!createEngine) {
+                    std::string errMsg{std::string("Cannot load symbol ") + PRNG::engineFuncName};
+    #ifdef EXTERNAL_PRNG_LIB
+                    const char* dlsym_error = dlerror();
+                    if (dlsym_error) {
+                        errMsg += ": ";
+                        errMsg += dlsym_error;
+                    }
+                    dlclose(libraryHandle);
+    #endif
+                    OPENFHE_THROW(errMsg);
+                }
+
+                std::array<uint32_t, PRNG::MAX_SEED_GENS> seed{};
 #if defined(FIXED_SEED)
                 // Only used for debugging in the single-threaded mode.
-                std::cerr << "**FOR DEBUGGING ONLY!!!!  Using fixed initializer for "
-                             "PRNG. Use a single thread only, e.g., OMP_NUM_THREADS=1!"
+                std::cerr << "**FOR DEBUGGING ONLY!!!!  Using fixed initializer for PRNG. "
+                             "Use a single thread only, e.g., OMP_NUM_THREADS=1!"
                           << std::endl;
 
-                std::array<uint32_t, 16> seed{};
                 seed[0] = 1;
-                m_prng  = std::make_shared<PRNG>(seed);
 #else
                 // A 512-bit seed is generated for each thread (this roughly corresponds
                 // to 256 bits of security). The seed is the sum of a random sample
                 // generated using std::random_device (typically works correctly in
-                // Linux, MacOS X, and MinGW starting with GCC 9.2) and a BLAKE2 sample
+                // Linux, MacOS X, and MinGW starting with GCC 9.2) and a PRNG sample
                 // seeded from current time stamp, a hash of the current thread, and a
-                // memory location of a heap variable. The BLAKE2 sample is added in
+                // memory location of a heap variable. The PRNG sample is added in
                 // case random_device is deterministic (happens on MinGW with GCC
                 // below 9.2). All future calls to PRNG use the seed generated here.
 
@@ -113,7 +120,7 @@ public:
                 // location of a heap variable. This seed is relevant only if the
                 // implementation of random_device is deterministic (as in older
                 // versions of GCC in MinGW)
-                std::array<uint32_t, 16> initKey{};
+                std::array<uint32_t, PRNG::MAX_SEED_GENS> initKey{};
                 // high-resolution clock typically has a nanosecond tick period
                 // Arguably this may give up to 32 bits of entropy as the clock gets
                 // recycled every 4.3 seconds
@@ -128,28 +135,27 @@ public:
     #endif
 
                 // heap variable; we are going to use the least 32 bits of its memory
-                // location as the counter for BLAKE2 This will increase the entropy of
-                // the BLAKE2 sample
+                // location as the counter. This will increase the entropy of the PRNG sample
                 void* mem        = malloc(1);
                 uint32_t counter = reinterpret_cast<long long>(mem);  // NOLINT
                 free(mem);
 
-                PRNG gen(initKey, counter);
-
                 std::uniform_int_distribution<uint32_t> distribution(0);
-                std::array<uint32_t, 16> seed{};
-                for (uint32_t i = 0; i < 16; i++) {
-                    seed[i] = distribution(gen);
+                // the code below is wrapped in to {} as we want to get rid of gen immediately after the loop
+                {
+                    // "PRNG* gen" points at a dynamically allocated (using c++'s new()) memory!!!
+                    std::unique_ptr<PRNG> gen(createEngine(initKey, counter));
+                    for (auto& s : seed)
+                        s = distribution(*gen);
                 }
 
-                std::array<uint32_t, 16> rdseed{};
+                std::array<uint32_t, PRNG::MAX_SEED_GENS> rdseed{};
                 size_t attempts  = 3;
                 bool rdGenPassed = false;
-                size_t idx       = 0;
-                while (!rdGenPassed && idx < attempts) {
+                for (size_t i = 0; i < attempts && !rdGenPassed; ++i) {
                     try {
                         std::random_device genR;
-                        for (uint32_t i = 0; i < 16; i++) {
+                        for (auto& rds : rdseed) {
                             // we use the fact that there is no overflow for unsigned integers
                             // (from C++ standard) i.e., arithmetic mod 2^32 is performed. For
                             // the seed to be random, it is sufficient for one of the two
@@ -157,22 +163,25 @@ public:
                             // distribution(genR) is random. We add distribution(gen) just in
                             // case there is an implementation issue with random_device (as in
                             // older MinGW systems).
-                            rdseed[i] = distribution(genR);
+                            rds = distribution(genR);
                         }
                         rdGenPassed = true;
                     }
                     catch (std::exception& e) {
                     }
-                    idx++;
                 }
-
-                for (uint32_t i = 0; i < 16; i++) {
+                for (uint32_t i = 0; i < PRNG::MAX_SEED_GENS; ++i)
                     seed[i] += rdseed[i];
-                }
+#endif // FIXED_SEED
+                m_prng.reset(createEngine(seed, 0));
+                // cleanup: close the shared library
+    #ifdef EXTERNAL_PRNG_LIB
+                dlclose(libraryHandle);
+    #endif
 
-                m_prng = std::make_shared<PRNG>(seed);
-#endif
-            }
+                if (!m_prng)
+                    OPENFHE_THROW("Cannot create a PRNG engine");
+            } // pragma omp critical
         }
         return *m_prng;
     }
@@ -180,14 +189,15 @@ public:
 private:
     // shared pointer to a thread-specific PRNG engine
     static std::shared_ptr<PRNG> m_prng;
+    using CreateEngineFuncPtrType = PRNG* (*)(const std::array<PRNG::result_type, PRNG::MAX_SEED_GENS>&,
+                                              PRNG::result_type counter);
 
 #if !defined(FIXED_SEED)
-        // avoid contention on m_prng
-        // local copies of m_prng are created for each thread
+    // avoid contention on m_prng: local copies of m_prng are created for each thread
     #pragma omp threadprivate(m_prng)
 #endif
 };
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
+#endif  // __DISTRIBUTIONGENERATOR_H__
