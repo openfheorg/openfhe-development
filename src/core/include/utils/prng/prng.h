@@ -114,8 +114,6 @@ protected:
 
     // the seed for the hash function
     std::array<PRNG::result_type, PRNG::MAX_SEED_GENS> m_seed{};
-
-
 };
 #endif // __PRNG_H__
 
