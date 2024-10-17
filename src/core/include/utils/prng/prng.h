@@ -54,20 +54,11 @@
 #include <array>
 
 
+// ATTENTION (VERY IMPORTANT):
+//    for any engine class derived from the PRNG class there must be a C function named "createEngineInstance"
+//    returning a dynamically allocated object of that derived class (see how it is done in blake2engine.h) 
 class PRNG {
 public:
-    // ATTENTION (VERY IMPORTANT):
-    // 1. any PRNG library will be assigned the name specified in the string PRNGLibName, as
-    //    the code opening this library will search for it by that name only.
-    // 2. for any engine class derived from the PRNG class there must be implemented a C function
-    //    generating a dynamically allocated engine object of that derived class. The name of
-    //    the C function is specified by engineFuncName.
-    // ========== NEVER(!) CHANGE the values of PRNGLibName and engineFuncName ==========
-    // the C++ code will construct the full library name out of PRNGLibName ("libPRNGengine.so")
-    constexpr static const char* PRNGLibName = "PRNGengine";
-    constexpr static const char* engineFuncName = "createEngineInstance";
-    // ========== NEVER(!) CHANGE the values of PRNGLibName and engineFuncName ==========
-
     enum {
       MAX_SEED_GENS = 16,
       // the buffer stores 1024 samples of 32-bit integers
