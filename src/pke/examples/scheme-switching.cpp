@@ -311,29 +311,26 @@ void SwitchFHEWtoCKKS() {
     // Encrypt
     std::vector<LWECiphertext> ctxtsLWE1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE1[i] =
-            ccLWE->Encrypt(lwesk, x1[i]);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
+        // encrypted under small plantext modulus p = 4 and ciphertext modulus
+        ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i]);
     }
 
     std::vector<LWECiphertext> ctxtsLWE2(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE2[i] =
-            ccLWE->Encrypt(lwesk, x1[i], FRESH,
-                           pLWE1);  // encrypted under larger plaintext modulus p = 16 but small ciphertext modulus
+        // encrypted under larger plaintext modulus p = 16 but small ciphertext modulus
+        ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, pLWE1);
     }
 
     std::vector<LWECiphertext> ctxtsLWE3(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE3[i] =
-            ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE2,
-                           modulus_LWE);  // encrypted under larger plaintext modulus and large ciphertext modulus
+        // encrypted under larger plaintext modulus and large ciphertext modulus
+        ctxtsLWE3[i] = ccLWE->Encrypt(lwesk, x2[i], LARGE_DIM, pLWE2, modulus_LWE);
     }
 
     std::vector<LWECiphertext> ctxtsLWE4(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE4[i] =
-            ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE3,
-                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+        // encrypted under large plaintext modulus and large ciphertext modulus
+        ctxtsLWE4[i] = ccLWE->Encrypt(lwesk, x2[i], LARGE_DIM, pLWE3, modulus_LWE);
     }
 
     // Step 5. Perform the scheme switching
@@ -1485,15 +1482,14 @@ void PolyViaSchemeSwitching() {
     // Encrypt
     std::vector<LWECiphertext> ctxtsLWE1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE1[i] = ccLWE->Encrypt(privateKeyFHEW,
-                                      x1[i]);  // encrypted under small plantext modulus p = 4 and ciphertext modulus
+        // encrypted under small plantext modulus p = 4 and ciphertext modulus
+        ctxtsLWE1[i] = ccLWE->Encrypt(privateKeyFHEW, x1[i]);
     }
 
     std::vector<LWECiphertext> ctxtsLWE2(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE2[i] =
-            ccLWE->Encrypt(privateKeyFHEW, x2[i], FRESH, pLWE2,
-                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+        // encrypted under large plaintext modulus and large ciphertext modulus
+        ctxtsLWE2[i] = ccLWE->Encrypt(privateKeyFHEW, x2[i], LARGE_DIM, pLWE2, modulus_LWE);
     }
 
     // Step 5. Perform the scheme switching

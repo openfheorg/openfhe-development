@@ -57,7 +57,7 @@ TEST(UnitTestFHEWGINX, EvalArbFunc) {
     auto lut = cc.GenerateLUTviaFunction(fp, p);
 
     for (int i = 0; i < p; i++) {
-        auto ct1 = cc.Encrypt(sk, i % p, FRESH, p);
+        auto ct1 = cc.Encrypt(sk, i % p, LARGE_DIM, p);
 
         auto ct_cube = cc.EvalFunc(ct1, lut);
 
@@ -82,7 +82,7 @@ TEST(UnitTestFHEWGINX, EvalFloorFunc) {
     int p = cc.GetMaxPlaintextSpace().ConvertToInt();  // Obtain the maximum plaintext space
 
     for (int i = p / 2 - 3; i < p / 2 + 5; i++) {
-        auto ct1 = cc.Encrypt(sk, i % p, FRESH, p);
+        auto ct1 = cc.Encrypt(sk, i % p, LARGE_DIM, p);
 
         // round by one bit.
         auto ctRounded = cc.EvalFloor(ct1, 1);
@@ -111,7 +111,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
     std::string failed = "Large Precision Sign Evalution failed";
 
     for (int i = 0; i < 8; i++) {
-        auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, FRESH, p * factor, Q);
+        auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, LARGE_DIM, p * factor, Q);
         ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
@@ -135,7 +135,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
     std::string failed = "Large Precision Sign Evalution failed";
 
     for (int i = 0; i < 8; i++) {
-        auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, FRESH, p * factor, Q);
+        auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, LARGE_DIM, p * factor, Q);
         ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
@@ -161,7 +161,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
 
     // digit decomposes values starting with st upto st + 7 and checks every digit of each decomposition
     for (uint64_t i = st; i < st + 8; i++) {
-        auto ct1 = cc.Encrypt(sk, i, FRESH, p_basic * factor, Q);
+        auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p_basic * factor, Q);
 
         auto decomp = cc.EvalDecomp(ct1);
         EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
@@ -221,7 +221,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
     std::string failed = "Large Precision Ciphertext Decomposition failed";
 
     for (uint64_t i = st; i < st + 8; i++) {
-        auto ct1 = cc.Encrypt(sk, i, FRESH, p_basic * factor, Q);
+        auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p_basic * factor, Q);
 
         auto decomp = cc.EvalDecomp(ct1);
         EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;

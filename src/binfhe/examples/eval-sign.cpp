@@ -73,7 +73,7 @@ int main() {
     // Note that we check for 8 different numbers
     for (int i = 0; i < 8; i++) {
         // We first encrypt with large Q
-        auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, FRESH, p, Q);
+        auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, LARGE_DIM, p, Q);
 
         // Get the MSB
         ct1 = cc.EvalSign(ct1);

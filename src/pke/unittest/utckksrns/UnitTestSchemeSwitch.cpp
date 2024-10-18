@@ -379,12 +379,12 @@ protected:
             // TODO: Andreea: number of slots is 32 here
             for (uint32_t i = 0; i < testData.slots; i++) {
                 // encrypted under small plantext modulus p = 4 and ciphertext modulus
-                ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i], FRESH, 4, modulus_LWE);
+                ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, 4, modulus_LWE);
             }
             std::vector<LWECiphertext> ctxtsLWE2(testData.slots);
             for (uint32_t i = 0; i < testData.slots; i++) {
                 // encrypted under larger plaintext modulus and large ciphertext modulus
-                ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE, modulus_LWE);
+                ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x2[i], LARGE_DIM, pLWE, modulus_LWE);
             }
 
             cc->EvalFHEWtoCKKSSetup(ccLWE, testData.slots, testData.logQ);
