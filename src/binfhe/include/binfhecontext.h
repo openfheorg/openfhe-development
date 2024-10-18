@@ -206,13 +206,13 @@ public:
    *
    * @param sk the secret key
    * @param m the plaintext
-   * @param output SMALL_DIM to generate fresh ciphertext, LARGE_DIM to
-   * generate a refreshed ciphertext (default)
+   * @param output SMALL_DIM to generate fresh ciphertext (default), LARGE_DIM to
+   * generate a refreshed ciphertext
    * @param p plaintext modulus
    * @param mod the ciphertext modulus to encrypt with; by default m_q in params
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = LARGE_DIM,
+    LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
                           LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
