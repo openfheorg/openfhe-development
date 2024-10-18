@@ -66,7 +66,7 @@ int main() {
     uint32_t input = 6;
     std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
 
-    auto ct1 = cc.Encrypt(sk, input % p, FRESH, p);
+    auto ct1 = cc.Encrypt(sk, input % p, LARGE_DIM, p);
 
     // Sample Program: Step 4: Evaluation
     auto ctRounded = cc.EvalFloor(ct1, bits);

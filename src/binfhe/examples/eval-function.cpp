@@ -72,7 +72,7 @@ int main() {
     // Sample Program: Step 4: evalute f(x) homomorphically and decrypt
     // Note that we check for all the possible plaintexts.
     for (int i = 0; i < p; i++) {
-        auto ct1 = cc.Encrypt(sk, i % p, FRESH, p);
+        auto ct1 = cc.Encrypt(sk, i % p, LARGE_DIM, p);
 
         auto ct_cube = cc.EvalFunc(ct1, lut);
 

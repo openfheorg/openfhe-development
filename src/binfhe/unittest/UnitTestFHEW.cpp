@@ -243,8 +243,8 @@ protected:
             auto sk  = cc.KeyGen();
             auto skN = cc.KeyGenN();
 
-            auto ctQN1 = cc.Encrypt(skN, 1, FRESH, 4, Q);
-            auto ctQN0 = cc.Encrypt(skN, 0, FRESH, 4, Q);
+            auto ctQN1 = cc.Encrypt(skN, 1, SMALL_DIM, 4, Q);
+            auto ctQN0 = cc.Encrypt(skN, 0, SMALL_DIM, 4, Q);
 
             NativeVector newSK = sk->GetElement();
             newSK.SwitchModulus(Q);
@@ -297,8 +297,8 @@ protected:
             newSK.SwitchModulus(Q);
             auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
 
-            auto ctQ1 = cc.Encrypt(skQ, 1, FRESH, 4, Q);
-            auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
+            auto ctQ1 = cc.Encrypt(skQ, 1, SMALL_DIM, 4, Q);
+            auto ctQ0 = cc.Encrypt(skQ, 0, SMALL_DIM, 4, Q);
 
             // switches the modulus from Q to q
             auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
@@ -339,8 +339,8 @@ protected:
 
             auto sk = cc.KeyGen();
 
-            auto ct1 = cc.Encrypt(sk, 1, FRESH);
-            auto ct0 = cc.Encrypt(sk, 0, FRESH);
+            auto ct1 = cc.Encrypt(sk, 1);
+            auto ct0 = cc.Encrypt(sk, 0);
 
             auto ct1Not = cc.EvalNOT(ct1);
             auto ct0Not = cc.EvalNOT(ct0);

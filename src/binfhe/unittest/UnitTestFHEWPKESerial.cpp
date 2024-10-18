@@ -127,7 +127,7 @@ void UnitTestFHEWPKESerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_M
 // They are left in this file for debugging purposes only.
 // TEST(UnitTestFHEWSerialAP, JSON) {
 //     std::string msg = "UnitTestFHEWSerialAP.JSON serialization test failed: ";
-//     UnitTestFHEWSerial(SerType::JSON, TOY, AP, FRESH, msg);
+//     UnitTestFHEWSerial(SerType::JSON, TOY, AP, SMALL_DIM, msg);
 // }
 
 TEST(UnitTestFHEWPKESerialAP, BINARY) {
@@ -137,7 +137,7 @@ TEST(UnitTestFHEWPKESerialAP, BINARY) {
 
 // TEST(UnitTestFHEWSerialGINX, JSON) {
 //     std::string msg = "UnitTestFHEWSerialGINX.JSON serialization test failed: ";
-//     UnitTestFHEWSerial(SerType::JSON, TOY, GINX, FRESH, msg);
+//     UnitTestFHEWSerial(SerType::JSON, TOY, GINX, SMALL_DIM, msg);
 // }
 
 TEST(UnitTestFHEWPKESerialGINX, BINARY) {

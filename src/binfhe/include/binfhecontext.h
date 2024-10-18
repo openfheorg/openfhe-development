@@ -206,13 +206,13 @@ public:
    *
    * @param sk the secret key
    * @param m the plaintext
-   * @param output FRESH to generate fresh ciphertext, BOOTSTRAPPED to
-   * generate a refreshed ciphertext (default)
+   * @param output SMALL_DIM to generate fresh ciphertext (default), LARGE_DIM to
+   * generate a refreshed ciphertext
    * @param p plaintext modulus
    * @param mod the ciphertext modulus to encrypt with; by default m_q in params
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = BOOTSTRAPPED,
+    LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
                           LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
@@ -302,7 +302,7 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
+    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
 
     /**
    * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
@@ -311,7 +311,7 @@ public:
    * @param ctvector vector of ciphertexts
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector) const;
+    LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)
@@ -319,7 +319,7 @@ public:
    * @param ct ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext Bootstrap(ConstLWECiphertext& ct) const;
+    LWECiphertext Bootstrap(ConstLWECiphertext& ct, bool extended = false) const;
 
     /**
    * Evaluate an arbitrary function

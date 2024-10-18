@@ -50,9 +50,13 @@ class LWESwitchingKeyImpl : public Serializable {
 public:
     LWESwitchingKeyImpl() = default;
 
-    explicit LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
-                                 const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
+    LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
+                        const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
         : m_keyA(keyA), m_keyB(keyB) {}
+
+    LWESwitchingKeyImpl(std::vector<std::vector<std::vector<NativeVector>>>&& keyA,
+                        std::vector<std::vector<std::vector<NativeInteger>>>&& keyB)
+        : m_keyA(std::move(keyA)), m_keyB(std::move(keyB)) {}
 
     LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) : m_keyA(rhs.m_keyA), m_keyB(rhs.m_keyB) {}
 

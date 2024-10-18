@@ -290,9 +290,8 @@ void SwitchFHEWtoCKKS(uint32_t depth, uint32_t slots, uint32_t numValues) {
     // Encrypt
     std::vector<LWECiphertext> ctxtsLWE(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        ctxtsLWE[i] =
-            ccLWE->Encrypt(lwesk, x[i], FRESH, pLWE,
-                           modulus_LWE);  // encrypted under large plaintext modulus and large ciphertext modulus
+        // encrypted under large plaintext modulus and large ciphertext modulus
+        ctxtsLWE[i] = ccLWE->Encrypt(lwesk, x[i], LARGE_DIM, pLWE, modulus_LWE);
     }
 
     // Step 5. Perform the scheme switching
