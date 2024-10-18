@@ -38,7 +38,7 @@
 
 #include "utils/prng/prng.h"
 
-#include <array>
+#include <cstddef>
 
 namespace default_prng {
 /**
@@ -51,15 +51,14 @@ class Blake2Engine : public PRNG {
    * @brief Main constructor taking a vector of MAX_SEED_GENS integers as a seed and a counter.
    *        If there is no value for the counter, then pass zero as the counter value
    */
-  explicit Blake2Engine(const std::array<PRNG::result_type, PRNG::MAX_SEED_GENS>& seed,
-                        PRNG::result_type counter)
+  explicit Blake2Engine(const PRNG::seed_array_t& seed, uint64_t counter)
       : PRNG(seed, counter), m_buffer({}), m_bufferIndex(0) {}
 
   /**
    * @brief main call to the PRNG
    */
   PRNG::result_type operator()() override {
-      if (m_bufferIndex == static_cast<uint16_t>(PRNG::PRNG_BUFFER_SIZE)) 
+      if (m_bufferIndex == static_cast<size_t>(PRNG::PRNG_BUFFER_SIZE)) 
           m_bufferIndex = 0;
 
       // makes a call to the BLAKE2 generator only when the currently buffered values are all consumed precomputations and
@@ -73,9 +72,6 @@ class Blake2Engine : public PRNG {
       return result;
   }
 
-  Blake2Engine(const Blake2Engine& other)
-    : PRNG(other), m_buffer(other.m_buffer), m_bufferIndex(other.m_bufferIndex) {}
-
  private:
     /**
      * @brief The main call to blake2xb function
@@ -86,7 +82,7 @@ class Blake2Engine : public PRNG {
     std::array<PRNG::result_type, PRNG::PRNG_BUFFER_SIZE> m_buffer{};
 
     // Index in m_buffer corresponding to the current PRNG sample
-    uint16_t m_bufferIndex = 0;
+    size_t m_bufferIndex = 0;
 };
 
 /**
@@ -95,8 +91,7 @@ class Blake2Engine : public PRNG {
  * @attention the caller is responsible for freeing the memory allocated by this function 
  **/
 extern "C" {
-    PRNG* createEngineInstance(const std::array<PRNG::result_type, PRNG::MAX_SEED_GENS>& seed,
-                               PRNG::result_type counter);
+    PRNG* createEngineInstance(const PRNG::seed_array_t& seed, uint64_t counter);
 }
 
 }  // namespace default_prng

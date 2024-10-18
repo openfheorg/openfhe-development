@@ -41,6 +41,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <cstddef>
 
 namespace lbcrypto {
 
@@ -78,6 +79,8 @@ void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
         src.clear();
     }
 }
+
+void secure_memset(void* mem, uint8_t c, size_t len);
 
 }  // namespace lbcrypto
 

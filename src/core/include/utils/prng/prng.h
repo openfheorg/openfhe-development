@@ -32,11 +32,10 @@
 /**
  * DISCLAIMER: IMPORTANT NOTICE ABOUT FILE MODIFICATIONS
  * 
- * This file is used in OpenFHE and ANY PRNG (pseudorandom number generator) OpenFHE uses. 
- * The file is critical to the functionality of the library.
+ * This file is used in OpenFHE's built-in PRNG and ANY EXTERNAL PRNG. 
+ * The file is critical to the functionality and the security of the library.
  * 
- * Modifications should only be performed by authorized personnel who understand the potential impacts.
- * Unauthorized changes may lead to library failure.
+ * Modifications should only be performed by personnel who understand the potential impacts.
  * 
  * By proceeding with changes to this file, you acknowledge that you understand the risks involved and
  * accept full responsibility for any resulting issues.
@@ -67,7 +66,8 @@ public:
 
     // all C++11 distributions used in OpenFHE work with uint32_t by default.
     // a different data type can be specified if needed for a particular architecture
-    using result_type = uint32_t;
+    using result_type  = uint32_t;
+    using seed_array_t = std::array<result_type, MAX_SEED_GENS>;
 
     /**
      * @brief minimum value used by C++11 distribution generators when no lower
@@ -90,21 +90,13 @@ public:
 
 protected:
     PRNG() = default;
-    PRNG(const std::array<PRNG::result_type, MAX_SEED_GENS> &seed, PRNG::result_type counter)
-        : m_counter(counter), m_seed(seed) {}
-
-    PRNG(const PRNG& other) {
-        m_counter = other.m_counter;
-        m_seed = other.m_seed;
-    }
+    PRNG(const seed_array_t &seed, uint64_t counter) : m_counter(counter), m_seed(seed) {}
 
     // counter used as input to the hash function; gets incremented after each call
-    // TODO (dsuponit): do we need uint64_t as the m_counter type as we have
-    // PRNG::result_type for all other "counters"
     uint64_t m_counter = 0;
 
     // the seed for the hash function
-    std::array<PRNG::result_type, PRNG::MAX_SEED_GENS> m_seed{};
+    seed_array_t m_seed{};
 };
 #endif // __PRNG_H__
 

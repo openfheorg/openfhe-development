@@ -36,6 +36,7 @@
 
 #include "math/distributiongenerator.h"
 #include "utils/prng/blake2engine.h"
+#include "utils/memory.h"
 #include "utils/exception.h"
 
 #include <chrono>
@@ -43,7 +44,7 @@
 #include <dlfcn.h>
 #include <random>
 #include <thread>
-// #include <iostream>
+#include <iostream>
 
 namespace lbcrypto {
 
@@ -62,24 +63,28 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
         // std::cerr << "InitPRNGEngine: using local PRNG" << std::endl;
     }
     else {
-        // do not close libraryHandle, your application will crash if you do
-        void* libraryHandle = dlopen(libPath.c_str(), RTLD_LAZY);
-        if (!libraryHandle) {
-            std::string errMsg{std::string("Cannot open ") + libPath + ": "};
-            const char* dlsym_error = dlerror();
-            errMsg += dlsym_error;
-            OPENFHE_THROW(errMsg);
-        }
-        genPRNGEngine = (GenPRNGEngineFuncPtr)dlsym(libraryHandle, "createEngineInstance");
-        if (!genPRNGEngine) {
-            std::string errMsg{std::string("Cannot load symbol createEngineInstance() from ") + libPath};
-            const char* dlsym_error = dlerror();
-            errMsg += ": ";
-            errMsg += dlsym_error;
-            dlclose(libraryHandle);
-            OPENFHE_THROW(errMsg);
-        }
-        // std::cerr << "InitPRNGEngine: using external PRNG" << std::endl;
+        #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__)
+            // do not close libraryHandle, your application will crash if you do
+            void* libraryHandle = dlopen(libPath.c_str(), RTLD_LAZY);
+            if (!libraryHandle) {
+                std::string errMsg{std::string("Cannot open ") + libPath + ": "};
+                const char* dlsym_error = dlerror();
+                errMsg += dlsym_error;
+                OPENFHE_THROW(errMsg);
+            }
+            genPRNGEngine = (GenPRNGEngineFuncPtr)dlsym(libraryHandle, "createEngineInstance");
+            if (!genPRNGEngine) {
+                std::string errMsg{std::string("Cannot load symbol createEngineInstance() from ") + libPath};
+                const char* dlsym_error = dlerror();
+                errMsg += ": ";
+                errMsg += dlsym_error;
+                dlclose(libraryHandle);
+                OPENFHE_THROW(errMsg);
+            }
+            std::cerr << __FUNCTION__ << ": using external PRNG" << std::endl;
+        #else
+            OPENFHE_THROW("OpenFHE may use an external PRNG library linked with g++ on Linux only");
+        #endif
     }
 } 
 
@@ -88,10 +93,13 @@ PRNG& PseudoRandomNumberGenerator::GetPRNG() {
     if (m_prng == nullptr) {
 #pragma omp critical
         {
+            // we would like to believe that the block of code below is a good defense line 
             if (!genPRNGEngine)
                 InitPRNGEngine();
+            if (!genPRNGEngine)
+                OPENFHE_THROW("Failure to initialize the PRNG engine");
 
-            std::array<uint32_t, PRNG::MAX_SEED_GENS> seed{};
+            PRNG::seed_array_t seed{};
   #if defined(FIXED_SEED)
             // Only used for debugging in the single-threaded mode.
             std::cerr << "**FOR DEBUGGING ONLY!!!!  Using fixed initializer for PRNG. "
@@ -113,7 +121,7 @@ PRNG& PseudoRandomNumberGenerator::GetPRNG() {
             // location of a heap variable. This seed is relevant only if the
             // implementation of random_device is deterministic (as in older
             // versions of GCC in MinGW)
-            std::array<uint32_t, PRNG::MAX_SEED_GENS> initKey{};
+            PRNG::seed_array_t initKey{};
             // high-resolution clock typically has a nanosecond tick period
             // Arguably this may give up to 32 bits of entropy as the clock gets
             // recycled every 4.3 seconds
@@ -129,7 +137,7 @@ PRNG& PseudoRandomNumberGenerator::GetPRNG() {
             // heap variable; we are going to use the least 32 bits of its memory
             // location as the counter. This will increase the entropy of the PRNG sample
             void* mem        = malloc(1);
-            uint32_t counter = reinterpret_cast<long long>(mem);  // NOLINT
+            uint64_t counter = reinterpret_cast<uint64_t>(mem);
             free(mem);
 
             std::uniform_int_distribution<uint32_t> distribution(0);
@@ -141,7 +149,7 @@ PRNG& PseudoRandomNumberGenerator::GetPRNG() {
                     s = distribution(*gen);
             }
 
-            std::array<uint32_t, PRNG::MAX_SEED_GENS> rdseed{};
+            PRNG::seed_array_t rdseed{};
             size_t attempts  = 3;
             bool rdGenPassed = false;
             for (size_t i = 0; i < attempts && !rdGenPassed; ++i) {
@@ -164,8 +172,14 @@ PRNG& PseudoRandomNumberGenerator::GetPRNG() {
             }
             for (uint32_t i = 0; i < PRNG::MAX_SEED_GENS; ++i)
                 seed[i] += rdseed[i];
+
+            // re-init rdseed for security reasons
+            const size_t bytes_to_clear = (rdseed.size()*sizeof(rdseed[0]));
+            secure_memset(rdseed.data(), 0, bytes_to_clear);
   #endif  // FIXED_SEED
             m_prng = std::shared_ptr<PRNG>(genPRNGEngine(seed, 0));
+            // re-init seed for security reasons
+            secure_memset(seed.data(), 0, bytes_to_clear);
             if (!m_prng)
                 OPENFHE_THROW("Cannot create a PRNG engine");
         } // pragma omp critical

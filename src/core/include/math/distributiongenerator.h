@@ -39,7 +39,6 @@
 
 #include "utils/prng/prng.h"
 
-#include <array>
 #include <memory>
 #include <string>
 
@@ -70,8 +69,7 @@ public:
     static PRNG& GetPRNG();
 
 private:
-    using GenPRNGEngineFuncPtr = PRNG* (*)(const std::array<PRNG::result_type, PRNG::MAX_SEED_GENS>&,
-                                           PRNG::result_type counter);
+    using GenPRNGEngineFuncPtr = PRNG* (*)(const PRNG::seed_array_t&, uint64_t counter);
 
     // shared pointer to a thread-specific PRNG engine
     static std::shared_ptr<PRNG> m_prng;

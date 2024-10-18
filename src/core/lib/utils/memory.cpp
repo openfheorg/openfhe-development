@@ -28,24 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "utils/prng/blake2engine.h"
-#include "utils/prng/blake2.h"
-#include "utils/exception.h"
+#include "utils/memory.h"
 
-namespace default_prng {
+namespace lbcrypto {
 
-void Blake2Engine::Generate() {
-    // m_counter is the input to the hash function
-    // m_buffer is the output
-    if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(PRNG::result_type), &m_counter, sizeof(m_counter),
-                 m_seed.cbegin(), m_seed.size() * sizeof(PRNG::result_type)) != 0) {
-        OPENFHE_THROW("PRNG: blake2xb failed");
-    }
-    m_counter++;
+void secure_memset(void* mem, uint8_t c, size_t len) {
+    volatile uint8_t* volatile ptr = (volatile uint8_t* volatile)mem;
+    for(size_t i = 0; i< len; ++i)
+        *(ptr+i) = c;
 }
 
-PRNG* createEngineInstance(const PRNG::seed_array_t& seed, uint64_t counter) {
-    return new Blake2Engine(seed, counter);
-}
-
-}  // namespace default_prng
+}  // namespace lbcrypto
