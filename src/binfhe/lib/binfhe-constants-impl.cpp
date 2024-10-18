@@ -184,6 +184,12 @@ std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f) {
         case BOOTSTRAPPED:
             s << "BOOTSTRAPPED";
             break;
+        case LARGE_DIM:
+            s << "LARGE_DIM";
+            break;
+        case SMALL_DIM:
+            s << "SMALL_DIM";
+            break;
         default:
             s << "UNKNOWN";
             break;
