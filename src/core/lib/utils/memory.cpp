@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2024, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,60 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-/*
-  Memory utlities
- */
-
-#ifndef LBCRYPTO_UTILS_MEMORY_H
-#define LBCRYPTO_UTILS_MEMORY_H
-
-#include <algorithm>
-#include <iterator>
-#include <memory>
-#include <utility>
-#include <vector>
-#include <cstddef>
+#include "utils/memory.h"
 
 namespace lbcrypto {
 
-//  make_unique was left out of c++11, these are the accepted implementation
-#if _MSC_VER == 1700
-
-    //  MSVC11 does not support variadic templates
-    #define _MAKE_UNIQUE(TEMPLATE_LIST, PADDING_LIST, LIST, COMMA, X1, X2, X3, X4) \
-                                                                                   \
-        template <class T COMMA LIST(_CLASS_TYPE)>                                 \
-        inline std::unique_ptr<T> make_unique(LIST(_TYPE_REFREF_ARG)) {            \
-            return std::unique_ptr<T>(new T(LIST(_FORWARD_ARG)));                  \
-        }
-_VARIADIC_EXPAND_0X(_MAKE_UNIQUE, , , , )
-    #undef _MAKE_UNIQUE
-
-#else
-
-//  *nix implementation
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+void secure_memset(void* mem, uint8_t c, size_t len) {
+    volatile uint8_t* volatile ptr = (volatile uint8_t* volatile)mem;
+    for(size_t i = 0; i< len; ++i)
+        *(ptr+i) = c;
 }
-
-#endif
-
-template <class X>
-void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
-    if (dst.empty()) {
-        dst = std::move(src);
-    }
-    else {
-        dst.reserve(dst.size() + src.size());
-        std::move(std::begin(src), std::end(src), std::back_inserter(dst));
-        src.clear();
-    }
-}
-
-void secure_memset(void* mem, uint8_t c, size_t len);
 
 }  // namespace lbcrypto
-
-#endif  // LBCRYPTO_UTILS_MEMORY_H

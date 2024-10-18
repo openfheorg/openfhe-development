@@ -185,6 +185,12 @@ if(WITH_COVTEST)
     set( COVDIR ${BUILDDIR}coverage/)
 endif()
 
+if(UNIX AND NOT APPLE AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # OpenFHE may use an external shared object provided by user for PRNG and linked with g++ on Linux.
+    # In order to ensure that OpenFHE can dynamically load shared objects at runtime, add an additional compiler flag:
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ldl")
+endif()
+
 if(BUILD_STATIC)
     set(OpenFHE_STATIC_LIBS OPENFHEcore_static OPENFHEpke_static OPENFHEbinfhe_static)
 endif()

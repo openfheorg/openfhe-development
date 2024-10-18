@@ -280,11 +280,9 @@ void CRT_CHECK_big_ring(const std::string& msg) {
     ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
     V input(n, modulus);
-    PRNG gen(1);
-
     std::uniform_int_distribution<> dis(0, 100);  // generates a number in [0,100]
     for (usint i = 0; i < n; i++) {
-        input.at(i) = typename V::Integer(dis(gen));
+        input.at(i) = typename V::Integer(dis(PseudoRandomNumberGenerator::GetPRNG()));
     }
 
     auto output = ChineseRemainderTransformArb<V>().ForwardTransform(input, squareRootOfRoot, bigModulus, bigRoot, m);
