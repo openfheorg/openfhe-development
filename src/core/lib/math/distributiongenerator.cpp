@@ -63,7 +63,8 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
         // std::cerr << "InitPRNGEngine: using local PRNG" << std::endl;
     }
     else {
-        #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__)
+        #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
+            // enable this code for g++ on Linux only
             // do not close libraryHandle, your application will crash if you do
             void* libraryHandle = dlopen(libPath.c_str(), RTLD_LAZY);
             if (!libraryHandle) {

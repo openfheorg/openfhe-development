@@ -31,7 +31,7 @@
 
 // ATTENTION: enable this example for g++ on Linux only
 //==================================================================================
-#if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && !defined(__clang__)
+#if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
 //==================================================================================
 #pragma GCC push_options
 #pragma GCC optimize("O0")  // Disable optimizations for this file
