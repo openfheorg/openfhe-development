@@ -81,7 +81,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate3) {
     auto ct_large = cc.Encrypt(pk, 1, LARGE_DIM, 6);
     EXPECT_EQ(Q, ct_large->GetModulus());
 
-    std::vector<LWECiphertext> v{ct_small, ct_large, cc.Encrypt(pk, 0, FRESH, 6)};
+    std::vector<LWECiphertext> v{ct_small, ct_large, cc.Encrypt(pk, 0, SMALL_DIM, 6)};
 
     auto ct11 = cc.EvalBinGate(OR3, v, true);
     EXPECT_EQ(Q, ct11->GetModulus());
@@ -116,7 +116,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate4) {
     auto ct_large = cc.Encrypt(pk, 1, LARGE_DIM, 8);
     EXPECT_EQ(Q, ct_large->GetModulus());
 
-    std::vector<LWECiphertext> v{ct_small, ct_large, cc.Encrypt(pk, 0, FRESH, 8), cc.Encrypt(pk, 1, FRESH, 8)};
+    std::vector<LWECiphertext> v{ct_small, ct_large, cc.Encrypt(pk, 0, SMALL_DIM, 8), cc.Encrypt(pk, 1, LARGE_DIM, 8)};
 
     auto ct11 = cc.EvalBinGate(OR4, v, true);
     EXPECT_EQ(Q, ct11->GetModulus());
