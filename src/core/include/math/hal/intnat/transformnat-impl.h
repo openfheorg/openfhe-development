@@ -496,8 +496,11 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     const IntType& preconCycloOrderInv, VecType* element) {
     auto modulus{element->GetModulus()};
     uint32_t n(element->GetLength());
+
+    // precomputed omega(bitreversed(1)) * (n inverse). used in final stage of intt.
     auto omega1Inv{rootOfUnityInverseTable[n]};
     auto preconOmega1Inv{preconRootOfUnityInverseTable[n]};
+
     for (uint32_t i{0}; i < n; i += 2) {
         auto omega{rootOfUnityInverseTable[(i + n) >> 1]};
         auto preconOmega{preconRootOfUnityInverseTable[(i + n) >> 1]};
@@ -549,6 +552,9 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             }
         }
     }
+
+    // peeled off final stage to implement optimization where n/2 scalar multiplies
+    // are incorporated into the omegaFactor calculation
     const uint32_t j2 = n >> 1;
     for (uint32_t j1{0}; j1 < j2; ++j1) {
         auto loVal{(*element)[j1]};
@@ -571,6 +577,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         (*element)[j1 + j2] = omegaFactor;
 #endif
     }
+    // perform remaining n/2 scalar multiplies
     for (uint32_t i = 0; i < j2; ++i)
         (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
 }
