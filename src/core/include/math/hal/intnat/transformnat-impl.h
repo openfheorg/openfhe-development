@@ -302,9 +302,25 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
-    auto modulus{element->GetModulus()};
-    uint32_t n(element->GetLength() >> 1), t{n}, logt{GetMSB(t)};
-    for (uint32_t m{1}; m < n; m <<= 1, t >>= 1, --logt) {
+    //
+    // NTT based on the Cooley-Tukey (CT) butterfly
+    // Inputs: element (vector of size n in standard ordering)
+    //         rootOfUnityTable (precomputed roots of unity in bit-reversed ordering)
+    // Output: NTT(element) in bit-reversed ordering
+    //
+    // for (m = 1, t = n, logt = log(t); m < n; m=2*m, t=t/2, --logt) do
+    //     for (i = 0; i < m; ++i) do
+    //         omega = rootOfUnityInverseTable[i + m]
+    //         for (j1 = (i << logt), j2 = (j1 + t); j1 < j2; ++j1) do
+    //             loVal = element[j1 + 0]
+    //             hiVal = element[j1 + t]*omega
+    //             element[j1 + 0] = (loVal + hiVal) mod modulus
+    //             element[j1 + t] = (loVal - hiVal) mod modulus
+    //
+
+    const auto modulus{element->GetModulus()};
+    const uint32_t n(element->GetLength() >> 1);
+    for (uint32_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
         for (uint32_t i{0}; i < m; ++i) {
             auto omega{rootOfUnityTable[i + m]};
             auto preconOmega{preconRootOfUnityTable[i + m]};
@@ -331,6 +347,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
             }
         }
     }
+    // peeled off last ntt stage for performance
     for (uint32_t i{0}; i < (n << 1); i += 2) {
         auto omegaFactor{(*element)[i + 1]};
         auto omega{rootOfUnityTable[(i >> 1) + n]};
@@ -494,13 +511,33 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
-    auto modulus{element->GetModulus()};
-    uint32_t n(element->GetLength());
+    //
+    // INTT based on the Gentleman-Sande (GS) butterfly
+    // Inputs: element (vector of size n in bit-reversed ordering)
+    //         rootOfUnityInverseTable (precomputed roots of unity in bit-reversed ordering)
+    //         cycloOrderInv (n inverse)
+    // Output: INTT(element) in standard ordering
+    //
+    // for (m = n/2, t = 1, logt = 1; m >= 1; m=m/2, t=2*t, ++logt) do
+    //     for (i = 0; i < m; ++i) do
+    //         omega = rootOfUnityInverseTable[i + m]
+    //         for (j1 = (i << logt), j2 = (j1 + t); j1 < j2; ++j1) do
+    //             loVal = element[j1 + 0]
+    //             hiVal = element[j1 + t]
+    //             element[j1 + 0] = (loVal + hiVal) mod modulus
+    //             element[j1 + t] = (loVal - hiVal)*omega mod modulus
+    // for (i = 0; i < n; ++i) do
+    //     element[i] = element[i]*cycloOrderInv mod modulus
+    //
 
-    // precomputed omega(bitreversed(1)) * (n inverse). used in final stage of intt.
-    auto omega1Inv{rootOfUnityInverseTable[n]};
-    auto preconOmega1Inv{preconRootOfUnityInverseTable[n]};
+    const auto modulus{element->GetModulus()};
+    const uint32_t n(element->GetLength());
 
+    // precomputed omega[bitreversed(1)] * (n inverse). used in final stage of intt.
+    const auto omega1Inv{rootOfUnityInverseTable[n]};
+    const auto preconOmega1Inv{preconRootOfUnityInverseTable[n]};
+
+    // peeled off first stage for performance
     for (uint32_t i{0}; i < n; i += 2) {
         auto omega{rootOfUnityInverseTable[(i + n) >> 1]};
         auto preconOmega{preconRootOfUnityInverseTable[(i + n) >> 1]};
@@ -525,6 +562,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         (*element)[i + 1] = omegaFactor;
 #endif
     }
+    // inner stages
     for (uint32_t m{n >> 2}, t{2}, logt{2}; m > 1; m >>= 1, t <<= 1, ++logt) {
         for (uint32_t i{0}; i < m; ++i) {
             auto omega{rootOfUnityInverseTable[i + m]};
@@ -552,9 +590,8 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             }
         }
     }
-
     // peeled off final stage to implement optimization where n/2 scalar multiplies
-    // are incorporated into the omegaFactor calculation
+    // by (n inverse) are incorporated into the omegaFactor calculation
     const uint32_t j2 = n >> 1;
     for (uint32_t j1{0}; j1 < j2; ++j1) {
         auto loVal{(*element)[j1]};
@@ -577,7 +614,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         (*element)[j1 + j2] = omegaFactor;
 #endif
     }
-    // perform remaining n/2 scalar multiplies
+    // perform remaining n/2 scalar multiplies by (n inverse)
     for (uint32_t i = 0; i < j2; ++i)
         (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
 }
