@@ -37,11 +37,41 @@
 
 using namespace lbcrypto;
 
+void LowLevel();
+void fhe();
+
 int main() {
+    // LowLevel();
+    fhe();
+
+    return 0;
+}
+
+void LowLevel() {
+    uint32_t m                         = 32;
+    NativeInteger primeModulus         = FirstPrime<NativeInteger>(20, m);
+    NativeInteger primitiveRootOfUnity = RootOfUnity<NativeInteger>(m, primeModulus);
+    auto ilparams                      = std::make_shared<ILNativeParams>(m, primeModulus, primitiveRootOfUnity);
+    uint32_t index                     = 3;
+    NativePoly ilv(ilparams, Format::COEFFICIENT);
+    ilv = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    std::cout << "before: " << ilv << std::endl;
+    NativePoly ilvAuto(ilv.AutomorphismTransform(index));
+    std::cerr << "after: " << ilvAuto << std::endl;
+
+    ilv.SetFormat(Format::EVALUATION);
+    NativePoly ilvAuto2(ilv.AutomorphismTransform(index));
+    ilvAuto2.SetFormat(Format::COEFFICIENT);
+    std::cerr << "after via NTT: " << ilvAuto2 << std::endl;
+}
+
+void fhe() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetMultiplicativeDepth(2);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(16);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -66,14 +96,14 @@ int main() {
     // Sample Program: Step 3: Encryption
 
     // First plaintext vector is encoded
-    std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    Plaintext plaintext1               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
     // Second plaintext vector is encoded
-    std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    Plaintext plaintext2               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
     // Third plaintext vector is encoded
     std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
+    Plaintext plaintext3               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts3);
 
     // The encoded vectors are encrypted
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
@@ -89,6 +119,11 @@ int main() {
     // Homomorphic multiplications
     auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
     auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
+
+    //    auto elements = ciphertext1->GetElements();
+    //    elements[0].SetFormat(Format::COEFFICIENT);
+    //    elements[1].SetFormat(Format::COEFFICIENT);
+    //    ciphertext1->SetElements(elements);
 
     // Homomorphic rotations
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
@@ -133,6 +168,4 @@ int main() {
     std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
     std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
     std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
-
-    return 0;
 }

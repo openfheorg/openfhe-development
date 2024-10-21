@@ -97,7 +97,7 @@ void SimpleBootstrapExample() {
     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
     * depth. We recommend using the input parameters below to get started.
     */
-    std::vector<uint32_t> levelBudget = {5, 5};
+    std::vector<uint32_t> levelBudget = {4, 4};
 
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
@@ -119,7 +119,7 @@ void SimpleBootstrapExample() {
     usint numSlots = ringDim / 2;
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
-    cryptoContext->EvalBootstrapSetup(levelBudget, {4, 4});
+    cryptoContext->EvalBootstrapSetup(levelBudget, {8, 8});
 
     auto keyPair = cryptoContext->KeyGen();
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
