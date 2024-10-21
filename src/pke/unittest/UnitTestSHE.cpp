@@ -143,7 +143,7 @@ constexpr usint BATCH     = 16;
 constexpr usint BATCH_LRG = 1 << 12;
 constexpr usint PTM       = 64;
 constexpr usint PTM_LRG   = 65537;
-// checks BFV for a 45-bit plaintext modulus
+// checks BFV for a 46-bit plaintext modulus
 constexpr uint64_t PTM_XTR_LRG = 35184372744193;
 constexpr usint BV_DSIZE       = 4;
 // clang-format off
