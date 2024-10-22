@@ -387,7 +387,7 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
 
 std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
                                                               double dcrtBits, double extraModulusSize,
-                                                              uint32_t numPrimes, uint32_t auxBits) {
+                                                              uint32_t numPrimes, uint32_t auxBits, bool addOne) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -425,6 +425,10 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
         if (bits > maxBits)
             maxBits = bits;
     }
+
+    // we add an extra bit to account for for the special moduli selection logic in BGV and CKKS
+    if (addOne)
+        maxBits++;
 
     // Select number of primes in auxiliary CRT basis
     auto sizeP = static_cast<uint32_t>(std::ceil(maxBits / auxBits));
