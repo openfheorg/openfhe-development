@@ -530,12 +530,12 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     //     element[i] = element[i]*cycloOrderInv mod modulus
     //
 
-    const auto modulus{element->GetModulus()};
-    const uint32_t n(element->GetLength());
+    auto modulus{element->GetModulus()};
+    uint32_t n(element->GetLength());
 
     // precomputed omega[bitreversed(1)] * (n inverse). used in final stage of intt.
-    const auto omega1Inv{rootOfUnityInverseTable[n]};
-    const auto preconOmega1Inv{preconRootOfUnityInverseTable[n]};
+    auto omega1Inv{rootOfUnityInverseTable[1].ModMulFastConst(cycloOrderInv, modulus, preconCycloOrderInv)};
+    auto preconOmega1Inv{omega1Inv.PrepModMulConst(modulus)};
 
     // peeled off first stage for performance
     for (uint32_t i{0}; i < n; i += 2) {
@@ -590,9 +590,11 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             }
         }
     }
+
     // peeled off final stage to implement optimization where n/2 scalar multiplies
-    // by (n inverse) are incorporated into the omegaFactor calculation
-    const uint32_t j2 = n >> 1;
+    // by (n inverse) are incorporated into the omegaFactor calculation.
+    // Please see https://github.com/openfheorg/openfhe-development/issues/872 for details.
+    uint32_t j2{n >> 1};
     for (uint32_t j1{0}; j1 < j2; ++j1) {
         auto loVal{(*element)[j1]};
         auto hiVal{(*element)[j1 + j2]};
@@ -782,7 +784,7 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(const IntType& rootOfU
             usint msb  = GetMSB(CycloOrderHf - 1);
             IntType mu = modulus.ComputeMu();
             VecType Table(CycloOrderHf, modulus);
-            VecType TableI(CycloOrderHf + 1, modulus);
+            VecType TableI(CycloOrderHf, modulus);
             IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);
             usint iinv;
             for (usint i = 0; i < CycloOrderHf; i++) {
@@ -804,7 +806,7 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(const IntType& rootOfU
 
             NativeInteger nativeModulus = modulus.ConvertToInt();
             VecType preconTable(CycloOrderHf, nativeModulus);
-            VecType preconTableI(CycloOrderHf + 1, nativeModulus);
+            VecType preconTableI(CycloOrderHf, nativeModulus);
 
             for (usint i = 0; i < CycloOrderHf; i++) {
                 preconTable[i] = NativeInteger(m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
@@ -822,14 +824,6 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(const IntType& rootOfU
             m_rootOfUnityPreconReverseTableByModulus[modulus]        = preconTable;
             m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
             m_cycloOrderInversePreconTableByModulus[modulus]         = preconTableCOI;
-
-            // optimization: precompute omega * cycloOrderInverse
-            m_rootOfUnityInverseReverseTableByModulus[modulus][CycloOrderHf] =
-                m_rootOfUnityInverseReverseTableByModulus[modulus][1].ModMul(
-                    m_cycloOrderInverseTableByModulus[modulus][msb], modulus);
-            m_rootOfUnityInversePreconReverseTableByModulus[modulus][CycloOrderHf] =
-                NativeInteger(m_rootOfUnityInverseReverseTableByModulus[modulus][CycloOrderHf].ConvertToInt())
-                    .PrepModMulConst(nativeModulus);
         }
     }
 }
