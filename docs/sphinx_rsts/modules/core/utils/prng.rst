@@ -1,5 +1,6 @@
 Pseudorandom Number Generator (PRNG)
 =====================================
+.. note:: OpenFHE uses a default built-in blake2-based PRNG. In addition to that, you can provide your own PRNG as a shared library. There are instructions (see below) how to implement and use one.
 
 Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_. Additionally, we refer users to :ref:`our sampling documentation<sampling>`
 
@@ -15,11 +16,7 @@ Implemented PRNG hash function
 Building and testing external PRNG engine (existing example)
 -------------------------------------------------------------
 
-External PRNG engines are an experimental feature currently available only on Linux, and g++ is the required compiler for linking them.
-
-There is `an external blake2 PRNG <https://github.com/openfheorg/openfhe-prng-blake2>`_ that you can test and use as an example to build your own one.
-
-.. note:: Installation and Testing of External PRNG on Ubuntu
+.. note:: External PRNG engines are an experimental feature currently available only on Linux, and g++ is the required compiler for linking them. There is `an external blake2 PRNG <https://github.com/openfheorg/openfhe-prng-blake2>`_ that you can test and use as an example to build your own one.
 
 1. Build OpenFHE 1.2.2+ by following `these instructions <https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/linux.html>`_ and set g++ as the default compiler.
 
@@ -32,16 +29,20 @@ There is `an external blake2 PRNG <https://github.com/openfheorg/openfhe-prng-bl
       cmake ..
       make
 
-4. Optionally install the built shared object ``libPRNGengine.so``:
-   - if you chose the default location: ``sudo make install``
-   - if you provided an install location (by running ``cmake -DCMAKE_INSTALL_PREFIX=/your/path``): ``make install``
+4. Optionally install the shared object **libPRNGengine.so** you have just built:
+   * if you chose the default location:
+     ``sudo make install``
+   * if you provided an install location (by running **cmake -DCMAKE_INSTALL_PREFIX=/your/path**):
+     ``make install``
    
-5. Run an example from the OpenFHE ./build directory (without arguments): ``./bin/examples/core/external-prng``. It calls PseudoRandomNumberGenerator::InitPRNGEngine() which initializes PRNG either with the built-in engine or a custom one.
+5. Run an example from the OpenFHE ./build directory (without arguments):
+   ``./bin/examples/core/external-prng``.
+   It calls PseudoRandomNumberGenerator::InitPRNGEngine() which initializes PRNG either with the built-in engine or a custom one.
    Without arguments it should producegets the path toib/libPRNGengine.so``. In this case PseudoRandomNumberGenerator::InitPRNGEngine() initializes PRNG with the custom engine.
    It should produce
    ::
-   ==== Using external PRNG
-   InitPRNGEngine: using external PRNG
+      ==== Using external PRNG
+      InitPRNGEngine: using external PRNG
 
 
 Creating custom external PRNG engine using the existing example
@@ -55,13 +56,13 @@ You can create your own PRNG engine and use it with OpenFHE follwing the steps b
 
 3. Delete all source files from src/include and src/lib except:
 ::
-src/prng.h
-src/include/blake2engine.h
-src/lib/blake2engine.cpp
+   src/prng.h
+   src/include/blake2engine.h
+   src/lib/blake2engine.cpp
 
 4. Create a new class similar to Blake2Engine (use the code in blake2engine.h/blake2engine.cpp as an example), following the requirements below:
-- the class PRNG defined in prng.h must be used as the base class for the new class. the file prng.h is not allowed to be changed.
-- only two public member functions should be in the new class: a trivial constructor with 2 input parameters (seed array and counter) and operator() providing similar functionality as Blake2Engine does, which is generating numbers.
-- create extern "C" function "createEngineInstance" returning a dynamically allocated object of the new class. OpenFHE finds this function by name using dlsym(), so you may not change the name.
+* the class PRNG defined in prng.h must be used as the base class for the new class. the file prng.h is not allowed to be changed.
+* only two public member functions should be in the new class: a trivial constructor with 2 input parameters (seed array and counter) and operator() providing similar functionality as Blake2Engine does, which is generating numbers.
+* create extern "C" function "createEngineInstance" returning a dynamically allocated object of the new class. OpenFHE finds this function by name using dlsym(), so you may not change the name.
 
 5. Follow the instructions above to build and test your new PRNG
