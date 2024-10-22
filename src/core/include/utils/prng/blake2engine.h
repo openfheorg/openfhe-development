@@ -51,8 +51,7 @@ class Blake2Engine : public PRNG {
    * @brief Main constructor taking a vector of MAX_SEED_GENS integers as a seed and a counter.
    *        If there is no value for the counter, then pass zero as the counter value
    */
-  explicit Blake2Engine(const PRNG::seed_array_t& seed, uint64_t counter)
-      : PRNG(seed, counter), m_buffer({}), m_bufferIndex(0) {}
+  explicit Blake2Engine(const PRNG::seed_array_t& seed, uint64_t counter) : PRNG(seed, counter) {}
 
   /**
    * @brief main call to the PRNG
