@@ -123,9 +123,13 @@ bool CoefPackedEncoding::Decode() {
         NativeInteger scfInv = scalingFactorInt.ModInverse(mod);
         NativePoly temp      = encodedNativeVector.Times(scfInv).Mod(mod);
         fillVec(temp, mod, this->value);
+        // clears the values containing information about the noise
+        encodedNativeVector.SetValuesToZero();
     }
     else {
         fillVec(this->encodedVector, mod, this->value);
+        // clears the values containing information about the noise
+        this->encodedVector.SetValuesToZero();
     }
 
     return true;

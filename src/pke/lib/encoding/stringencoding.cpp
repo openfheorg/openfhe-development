@@ -92,10 +92,16 @@ static void fillPlaintext(const P& poly, std::string& str, const PlaintextModulu
 bool StringEncoding::Decode() {
     auto mod = this->encodingParams->GetPlaintextModulus();
 
-    if (this->typeFlag == IsNativePoly)
+    if (this->typeFlag == IsNativePoly) {
         fillPlaintext(this->encodedNativeVector, this->ptx, mod);
-    else
+        // clears the values containing information about the noise
+        this->encodedNativeVector.SetValuesToZero();
+    }
+    else {
         fillPlaintext(this->encodedVector, this->ptx, mod);
+        // clears the values containing information about the noise
+        this->encodedVector.SetValuesToZero();
+    }
 
     return true;
 }

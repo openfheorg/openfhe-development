@@ -206,6 +206,8 @@ bool PackedEncoding::Decode() {
             firstElement            = firstElement.Times(scfInv);
             firstElement            = firstElement.Mod(ptm);
             fillVec(firstElement, ptm, this->value);
+            // clears the values containing information about the noise
+            this->GetElement<NativePoly>().SetValuesToZero();
         }
         else {
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
@@ -213,11 +215,15 @@ bool PackedEncoding::Decode() {
             firstElement = firstElement.Times(scfInv);
             firstElement = firstElement.Mod(ptm);
             fillVec(firstElement, ptm, this->value);
+            // clears the values containing information about the noise
+            this->GetElement<DCRTPoly>().SetValuesToZero();
         }
     }
     else {
         this->Unpack(&this->GetElement<Poly>(), ptm);
         fillVec(this->encodedVector, ptm, this->value);
+        // clears the values containing information about the noise
+        this->GetElement<Poly>().SetValuesToZero();
     }
 
     return true;
