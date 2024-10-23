@@ -28,7 +28,7 @@ foreach (app ${BMARK_SRC_FILES})
 	target_include_directories( ${exe} PUBLIC ../third-party/google-benchmark/include )
 	set_target_properties( ${exe} PROPERTIES COMPILE_FLAGS
 		"${REGEX_FLAG} -DHAVE_STEADY_CLOCK -DNDEBUG ${WARNING_FLAG}" )
-	target_link_libraries ( ${exe} ${BMLIBS} )
+	target_link_libraries ( ${exe} ${BMLIBS} ${ADDITIONAL_LIBS})
 	set (BMAPPS ${BMAPPS} ${exe})
 endforeach()
 
