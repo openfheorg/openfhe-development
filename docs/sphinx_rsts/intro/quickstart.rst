@@ -129,7 +129,7 @@ Additionally, we include the variants detailing how to do serialization-deserial
 - `BFV-rns with Serialization/Deserialization (simple-integers-serial.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial.cpp>`_
 
 
-- `Standard CKKS-rns (simple-real-numbers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers>`__:
+- `Standard CKKS-rns (simple-real-numbers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers.cpp>`__:
 
 - `CKKS-rns with Serialization/Deserialization (simple-real-numbers-serial.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers-serial.cpp>`_
 
