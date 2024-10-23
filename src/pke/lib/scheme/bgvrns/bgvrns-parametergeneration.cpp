@@ -455,13 +455,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         auxTowers = std::get<1>(hybridKSInfo);
     }
 
-    // when the scaling technique is not FIXEDMANUAL (and not FLEXIBLEAUTOEXT),
-    // set a small value so that the rest of the logic could go through (this is a workaround)
-    // TODO we should uncouple the logic of FIXEDMANUAL and all FLEXIBLE MODES; some of the code above should be moved
-    // to the branch for FIXEDMANUAL
-    if (qBound == 0)
-        qBound = 20;
-
     // HE Standards compliance logic/check
     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
 
