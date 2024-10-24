@@ -1,6 +1,6 @@
 Pseudorandom Number Generator (PRNG)
 =====================================
-.. note:: OpenFHE uses a default built-in blake2-based PRNG. In addition to that, you can provide your own PRNG as a shared library. There are instructions (see below) how to implement and use one.
+.. note:: By default, OpenFHE uses a built-in blake2-based PRNG, but provides the ability to integrate a cutom PRNG engine as a shared library. See below for instructions on how to implement and use a custom PRNG shared library.
 
 Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_. Additionally, we refer users to :ref:`our sampling documentation<sampling>`
 
@@ -11,18 +11,18 @@ Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfh
 Implemented PRNG hash function
 -------------------------------
 
-- Our cryptographic hash function is based off of `Blake2b <https://blake2.net>`_, which allows fast hashing.
+- The default cryptographic hash function in OpenFHE is based off of `Blake2b <https://blake2.net>`_, which allows fast hashing.
 
 .. _for_existing_example:
 
-Building and testing external PRNG engine (existing example)
+Building and testing an external PRNG engine (existing example)
 -------------------------------------------------------------
 
-.. note:: External PRNG engines are an experimental feature currently available only on Linux, and g++ is the required compiler for linking them. There is `an external blake2 PRNG <https://github.com/openfheorg/openfhe-prng-blake2>`_ that you can test and use as an example to build your own one.
+.. note:: Integration of an external PRNG engine is an experimental feature currently available only on Linux using the g++ compiler. We provide `an external blake2 PRNG example <https://github.com/openfheorg/openfhe-prng-blake2>`_ as a refernece. See below for instructions on how to build your own custom PRNG engine.
 
 1. Build **OpenFHE 1.2.2+** by following `these instructions <https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/linux.html>`_ and set **g++** as the default compiler.
 
-2. Clone `the external PRNG repo <https://github.com/openfheorg/openfhe-prng-blake2>`_. All required pre-requisites for the next steps should have been installed in the previous directive.
+2. Clone `the external PRNG repo <https://github.com/openfheorg/openfhe-prng-blake2>`_.
 
 3. Create a directory where the binaries will be built. The typical choice is a subfolder "build". In this case, the commands are:
    ::
@@ -73,7 +73,7 @@ Building and testing external PRNG engine (existing example)
 Creating custom external PRNG engine using the existing example
 ----------------------------------------------------------------
 
-You can create your own PRNG engine and use it with OpenFHE following the steps below:
+You can create your own PRNG engine and use it with OpenFHE by following the steps below:
 
 1. Create a separate repo for your own engine and copy everything from `the example of external PRNG <https://github.com/openfheorg/openfhe-prng-blake2>`_ to the new repo.
 
@@ -89,7 +89,7 @@ You can create your own PRNG engine and use it with OpenFHE following the steps 
    
    * the class PRNG defined in prng.h must be used as the base class for the new class. The file prng.h is not allowed to be changed.
 
-   * rename blake2engine.h and blake2engine.cpp as, most likely, your new class is not Blake2Engine.
+   * rename blake2engine.h and blake2engine.cpp with the name of your engine.
 
    * **only two public member functions** should be in the new class: a trivial **constructor with 2 input parameters** (seed array and counter) and **operator()** providing similar functionality as Blake2Engine does, which is generating numbers.
    
