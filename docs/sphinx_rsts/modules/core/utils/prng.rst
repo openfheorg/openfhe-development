@@ -1,8 +1,6 @@
 Pseudorandom Number Generator (PRNG)
 =====================================
-.. note:: By default, OpenFHE uses a built-in blake2-based PRNG, but provides the ability to integrate a cutom PRNG engine as a shared library. See below for instructions on how to implement and use a custom PRNG shared library.
-
-Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_. Additionally, we refer users to :ref:`our sampling documentation<sampling>`
+.. note:: By default, OpenFHE uses a `built-in blake2-based PRNG <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_, but provides the ability to integrate a cutom PRNG engine as a shared library. See below for instructions on how to implement and use a custom PRNG shared library.
 
 .. contents:: Page Contents
    :local:
