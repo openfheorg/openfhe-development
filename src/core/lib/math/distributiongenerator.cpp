@@ -41,10 +41,12 @@
 
 #include <chrono>
 #include <cstdint>
-#include <dlfcn.h>
 #include <random>
 #include <thread>
 #include <iostream>
+#if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
+    #include <dlfcn.h>
+#endif
 
 namespace lbcrypto {
 
