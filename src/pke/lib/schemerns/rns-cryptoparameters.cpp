@@ -426,8 +426,9 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
             maxBits = bits;
     }
 
-    // we add an extra bit to account for for the special moduli selection logic in BGV and CKKS
-    if (addOne)
+    // we add an extra bit to account for the special moduli selection logic in BGV and CKKS
+    // ignore the case when there is only one max size modulus
+    if ((addOne) && (maxBits != static_cast<double>(auxBits)))
         maxBits++;
 
     // Select number of primes in auxiliary CRT basis
