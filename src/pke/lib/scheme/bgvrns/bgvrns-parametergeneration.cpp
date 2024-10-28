@@ -446,7 +446,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
 
     // we add an extra bit to account for the special logic of selecting the RNS moduli in BGV
     // ignore the case when there is only one max size modulus
-    if (qBound != static_cast<double>(auxBits))
+    if (qBound != auxBits)
         qBound++;
 
     uint32_t auxTowers = 0;

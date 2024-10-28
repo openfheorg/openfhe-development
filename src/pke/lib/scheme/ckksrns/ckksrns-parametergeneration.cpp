@@ -79,7 +79,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     // we add an extra bit to account for the alternating logic of selecting the RNS moduli in CKKS
     // ignore the case when there is only one max size modulus
-    if (qBound != static_cast<double>(auxBits))
+    if (qBound != auxBits)
         qBound++;
 
     // Estimate ciphertext modulus Q*P bound (in case of HYBRID P*Q)
