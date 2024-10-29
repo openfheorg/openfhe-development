@@ -1,3 +1,11 @@
+10/28/2024: OpenFHE 1.2.2 (stable) is released
+
+* Improves the runtime of inverse NTT (for clang++; #872)
+* Extends the support of extended (RLWE) parameters in DM/CGGI (#867)
+* Includes several bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.2%22
+
 09/10/2024: OpenFHE 1.2.1 (stable) is released
 
 * Fixes compilation issues with g++ 14 and clang++ 18 (#822, #835)
