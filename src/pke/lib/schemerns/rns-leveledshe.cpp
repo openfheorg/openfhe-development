@@ -478,22 +478,17 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                 crtPowSF = CKKSPackedEncoding::CRTMult(crtPowSF, crtSF, moduli);
             }
 
-            ptxt = ptxt.Times(crtPowSF);
-
             if (ptxtIndex == 1) {
-                ciphertext1->SetElements({ptxt});
+                ciphertext1->SetElements(std::vector<DCRTPoly>{ptxt.Times(crtPowSF)});
                 ciphertext1->SetNoiseScaleDeg(ctxtDepth);
             }
             else {
-                ciphertext2->SetElements({ptxt});
+                ciphertext2->SetElements(std::vector<DCRTPoly>{ptxt.Times(crtPowSF)});
                 ciphertext2->SetNoiseScaleDeg(ctxtDepth);
             }
         }
         else if (ptxtDepth > ctxtDepth) {
-            OPENFHE_THROW(
-                "LPAlgorithmSHERNS<DCRTPoly>::AdjustForAddOrSubInPlace "
-                "- plaintext cannot be encoded at a larger depth than that "
-                "of the ciphertext.");
+            OPENFHE_THROW("plaintext cannot be encoded at a larger depth than that of the ciphertext.");
         }
     }
     else if (cryptoParams->GetScalingTechnique() != NORESCALE) {

@@ -444,20 +444,18 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
         qBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
 
+    // we add an extra bit to account for the special logic of selecting the RNS moduli in BGV
+    // ignore the case when there is only one max size modulus
+    if (qBound != auxBits)
+        qBound++;
+
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
         auto hybridKSInfo =
-            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits);
+            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits, true);
         qBound += std::get<0>(hybridKSInfo);
         auxTowers = std::get<1>(hybridKSInfo);
     }
-
-    // when the scaling technique is not FIXEDMANUAL (and not FLEXIBLEAUTOEXT),
-    // set a small value so that the rest of the logic could go through (this is a workaround)
-    // TODO we should uncouple the logic of FIXEDMANUAL and all FLEXIBLE MODES; some of the code above should be moved
-    // to the branch for FIXEDMANUAL
-    if (qBound == 0)
-        qBound = 20;
 
     // HE Standards compliance logic/check
     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
@@ -486,7 +484,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                     numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
                     (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,
                     (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
-                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits);
+                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, false);
                 newQBound += std::get<0>(hybridKSInfo);
             }
         } while (qBound < newQBound);

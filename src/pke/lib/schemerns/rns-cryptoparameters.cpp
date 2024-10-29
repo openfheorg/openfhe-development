@@ -387,7 +387,7 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
 
 std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
                                                               double dcrtBits, double extraModulusSize,
-                                                              uint32_t numPrimes, uint32_t auxBits) {
+                                                              uint32_t numPrimes, uint32_t auxBits, bool addOne) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -415,19 +415,24 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
         qi[sizeQ - 1] = extraModulusSize;
 
     // Compute partitions of Q into numPartQ digits
-    double maxBits = 0;
+    uint32_t maxBits = 0;
     for (size_t j = 0; j < numPartQ; ++j) {
         size_t startTower = j * numPerPartQ;
         size_t endTower   = ((j + 1) * numPerPartQ - 1 < sizeQ) ? (j + 1) * numPerPartQ - 1 : sizeQ - 1;
 
         // sum qi elements qi[startTower] + ... + qi[endTower] inclusive. the end element should be qi.begin()+(endTower+1)
-        double bits = std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0);
+        uint32_t bits = static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
         if (bits > maxBits)
             maxBits = bits;
     }
 
+    // we add an extra bit to account for the special moduli selection logic in BGV and CKKS
+    // ignore the case when there is only one max size modulus
+    if (addOne && (maxBits != auxBits))
+        maxBits++;
+
     // Select number of primes in auxiliary CRT basis
-    auto sizeP = static_cast<uint32_t>(std::ceil(maxBits / auxBits));
+    auto sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
 
     return std::make_pair(sizeP * auxBits, sizeP);
 }

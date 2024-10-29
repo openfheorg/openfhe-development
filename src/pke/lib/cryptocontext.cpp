@@ -376,8 +376,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>
     ValidateCiphertext(ciphertext);
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    auto rv          = GetScheme()->EvalSum(ciphertext, batchSize, evalSumKeys);
-    return rv;
+    return GetScheme()->EvalSum(ciphertext, batchSize, evalSumKeys);
 }
 
 template <typename Element>
@@ -386,8 +385,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Elem
                                                             usint subringDim) const {
     ValidateCiphertext(ciphertext);
 
-    auto rv = GetScheme()->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
-    return rv;
+    return GetScheme()->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
 }
 
 template <typename Element>
@@ -397,8 +395,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
     ValidateCiphertext(ciphertext);
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    auto rv          = GetScheme()->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
-    return rv;
+    return GetScheme()->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
 }
 
 template <typename Element>
@@ -406,17 +403,13 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Elem
     ValidateCiphertext(ciphertext);
 
     // If the index is zero, no rotation is needed, copy the ciphertext and return
-    // This is done after the keyMap so that it is protected if there's not a
-    // valid key.
+    // This is done after the keyMap so that it is protected if there's not a valid key.
     if (0 == index) {
-        auto rv = ciphertext->Clone();
-        return rv;
+        return ciphertext->Clone();
     }
 
     auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-
-    auto rv = GetScheme()->EvalAtIndex(ciphertext, index, evalAutomorphismKeys);
-    return rv;
+    return GetScheme()->EvalAtIndex(ciphertext, index, evalAutomorphismKeys);
 }
 
 template <typename Element>
@@ -425,10 +418,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalMerge(
     ValidateCiphertext(ciphertextVector[0]);
 
     auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertextVector[0]->GetKeyTag());
-
-    auto rv = GetScheme()->EvalMerge(ciphertextVector, evalAutomorphismKeys);
-
-    return rv;
+    return GetScheme()->EvalMerge(ciphertextVector, evalAutomorphismKeys);
 }
 
 template <typename Element>
@@ -436,15 +426,11 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
                                                                  ConstCiphertext<Element> ct2, usint batchSize) const {
     ValidateCiphertext(ct1);
     if (ct2 == nullptr || ct1->GetKeyTag() != ct2->GetKeyTag())
-        OPENFHE_THROW(
-            "Information passed to EvalInnerProduct was not generated "
-            "with this crypto context");
+        OPENFHE_THROW("Information was not generated with this crypto context");
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
     auto ek          = CryptoContextImpl<Element>::GetEvalMultKeyVector(ct1->GetKeyTag());
-
-    auto rv = GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys, ek[0]);
-    return rv;
+    return GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys, ek[0]);
 }
 
 template <typename Element>
@@ -452,14 +438,10 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
                                                                  usint batchSize) const {
     ValidateCiphertext(ct1);
     if (ct2 == nullptr)
-        OPENFHE_THROW(
-            "Information passed to EvalInnerProduct was not generated "
-            "with this crypto context");
+        OPENFHE_THROW("Information was not generated with this crypto context");
 
     auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
-
-    auto rv = GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys);
-    return rv;
+    return GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys);
 }
 
 template <typename Element>
@@ -477,9 +459,9 @@ template <typename Element>
 DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphertext,
                                                   const PrivateKey<Element> privateKey, Plaintext* plaintext) {
     if (ciphertext == nullptr)
-        OPENFHE_THROW("ciphertext passed to Decrypt is empty");
+        OPENFHE_THROW("ciphertext is empty");
     if (plaintext == nullptr)
-        OPENFHE_THROW("plaintext passed to Decrypt is empty");
+        OPENFHE_THROW("plaintext is empty");
     ValidateKey(privateKey);
 
     // determine which type of plaintext that you need to decrypt into
@@ -582,13 +564,11 @@ template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
                                                    const PrivateKey<DCRTPoly> privateKey, Plaintext* plaintext) {
     if (ciphertext == nullptr)
-        OPENFHE_THROW("ciphertext passed to Decrypt is empty");
+        OPENFHE_THROW("ciphertext is empty");
     if (plaintext == nullptr)
-        OPENFHE_THROW("plaintext passed to Decrypt is empty");
+        OPENFHE_THROW("plaintext is empty");
     if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
-        OPENFHE_THROW(
-            "Information passed to Decrypt was not generated with "
-            "this crypto context");
+        OPENFHE_THROW("Information was not generated with this crypto context");
 
     // determine which type of plaintext that you need to decrypt into
     // Plaintext decrypted =
@@ -643,9 +623,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     for (size_t i = 0; i < last_ciphertext; i++) {
         ValidateCiphertext(partialCiphertextVec[i]);
         if (partialCiphertextVec[i]->GetEncodingType() != partialCiphertextVec[0]->GetEncodingType())
-            OPENFHE_THROW(
-                "Ciphertexts passed to MultipartyDecryptFusion have "
-                "mismatched encoding types");
+            OPENFHE_THROW("Ciphertexts have mismatched encoding types");
     }
 
     // determine which type of plaintext that you need to decrypt into
@@ -730,14 +708,13 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
     auto ring_dimension     = elementParams->GetRingDimension();
 
     // condition for inverse in lagrange coeff to exist.
-    for (usint k = 0; k < vecSize; k++) {
-        auto modq_k = elementParams->GetParams()[k]->GetModulus();
+    for (size_t i = 0; i < vecSize; ++i) {
+        auto modq_k = elementParams->GetParams()[i]->GetModulus();
         if (N >= modq_k)
             OPENFHE_THROW("Number of parties N needs to be less than DCRTPoly moduli");
     }
 
     // secret sharing
-    const usint num_of_shares = N - 1;
     std::unordered_map<uint32_t, DCRTPoly> SecretShares;
 
     if (shareType == "additive") {
@@ -745,6 +722,7 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
         typename DCRTPoly::DugType dug;
         DCRTPoly rsum(dug, elementParams, Format::EVALUATION);
 
+        const uint32_t num_of_shares = N - 1;
         std::vector<DCRTPoly> SecretSharesVec;
         SecretSharesVec.reserve(num_of_shares);
         SecretSharesVec.push_back(rsum);
@@ -755,66 +733,54 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
         }
         SecretSharesVec.push_back(sk->GetPrivateElement() - rsum);
 
-        usint ctr = 0;
-        for (size_t i = 1; i <= N; i++) {
+        for (size_t i = 1, ctr = 0; i <= N; ++i) {
             if (i != index) {
-                SecretShares[i] = SecretSharesVec[ctr];
-                ctr++;
+                SecretShares[i] = SecretSharesVec[ctr++];
             }
         }
     }
     else if (shareType == "shamir") {
         // vector to store columnwise randomly generated coefficients for polynomial f from Z_q for every secret key entry
-        std::vector<DCRTPoly> fs;
-        fs.reserve(threshold);
-
         // set constant term of polynomial f_i to s_i
-        DCRTPoly ske = sk->GetPrivateElement();
-        // set the secret element in coefficient format
-        ske.SetFormat(Format::COEFFICIENT);
+        std::vector<DCRTPoly> fs{sk->GetPrivateElement()};
+        fs.back().SetFormat(Format::COEFFICIENT);
 
-        fs.push_back(std::move(ske));
         // generate random coefficients
+        fs.reserve(threshold);
         typename DCRTPoly::DugType dug;
-        for (size_t i = 1; i < threshold; i++) {
-            fs.push_back(DCRTPoly(dug, elementParams, Format::COEFFICIENT));
+        for (size_t i = 1; i < threshold; ++i) {
+            fs.emplace_back(dug, elementParams, Format::COEFFICIENT);
         }
 
         // evaluate the polynomial at the index of the parties 1 to N
-
-        for (size_t i = 1; i <= N; i++) {
+        for (size_t i = 1; i <= N; ++i) {
             if (i != index) {
                 DCRTPoly feval(elementParams, Format::COEFFICIENT, true);
                 for (size_t k = 0; k < vecSize; k++) {
                     auto modq_k = elementParams->GetParams()[k]->GetModulus();
 
-                    NativeVector powtempvec(ring_dimension, modq_k);
                     NativePoly powtemppoly(elementParams->GetParams()[k], Format::COEFFICIENT);
                     NativePoly fevalpoly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
 
                     NativeInteger powtemp(1);
                     for (size_t t = 1; t < threshold; t++) {
-                        powtemp = powtemp.ModMul(i, modq_k);
+                        NativeVector powtempvec(ring_dimension, modq_k, (powtemp = powtemp.ModMul(i, modq_k)));
 
-                        for (size_t d = 0; d < ring_dimension; d++) {
-                            powtempvec.at(d) = powtemp;
-                        }
+                        powtemppoly.SetValues(std::move(powtempvec), Format::COEFFICIENT);
 
-                        powtemppoly.SetValues(powtempvec, Format::COEFFICIENT);
+                        auto& fst = fs[t].GetElementAtIndex(k);
 
-                        auto fst = fs[t].GetElementAtIndex(k);
-
-                        for (size_t l = 0; l < ring_dimension; l++) {
-                            fevalpoly.at(l) += powtemppoly.at(l).ModMul(fst.at(l), modq_k);
+                        for (size_t i = 0; i < ring_dimension; ++i) {
+                            fevalpoly[i] += powtemppoly[i].ModMul(fst[i], modq_k);
                         }
                     }
                     fevalpoly += fs[0].GetElementAtIndex(k);
 
                     fevalpoly.SetFormat(Format::COEFFICIENT);
-                    feval.SetElementAtIndex(k, fevalpoly);
+                    feval.SetElementAtIndex(k, std::move(fevalpoly));
                 }
                 // assign fi
-                SecretShares[i] = feval;
+                SecretShares.emplace(i, std::move(feval));
             }
         }
     }
@@ -864,7 +830,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         for (uint32_t i = 0; i < threshold; ++i) {
             sum_of_elems += sk_shares[client_indexes[i]];
         }
-        sk->SetPrivateElement(sum_of_elems);
+        sk->SetPrivateElement(std::move(sum_of_elems));
     }
     else if (shareType == "shamir") {
         // use lagrange interpolation to recover the secret
@@ -888,7 +854,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                     }
                 }
                 multpoly.SetFormat(Format::EVALUATION);
-                Lagrange_coeffs[j].SetElementAtIndex(k, multpoly);
+                Lagrange_coeffs[j].SetElementAtIndex(k, std::move(multpoly));
             }
             Lagrange_coeffs[j].SetFormat(Format::COEFFICIENT);
         }
@@ -901,10 +867,10 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                 const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
                 lagrange_sum_of_elems_poly += coeff.TimesNoCheck(share);
             }
-            lagrange_sum_of_elems.SetElementAtIndex(k, lagrange_sum_of_elems_poly);
+            lagrange_sum_of_elems.SetElementAtIndex(k, std::move(lagrange_sum_of_elems_poly));
         }
         lagrange_sum_of_elems.SetFormat(Format::EVALUATION);
-        sk->SetPrivateElement(lagrange_sum_of_elems);
+        sk->SetPrivateElement(std::move(lagrange_sum_of_elems));
     }
 }
 

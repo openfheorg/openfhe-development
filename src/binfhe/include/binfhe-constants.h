@@ -102,8 +102,8 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);
  */
 enum BINFHE_OUTPUT {
     INVALID_OUTPUT = 0,
-    FRESH,         // a fresh encryption
-    BOOTSTRAPPED,  // a freshly encrypted ciphertext is bootstrapped
+    FRESH,         // a fresh encryption (deprecated)
+    BOOTSTRAPPED,  // a freshly encrypted ciphertext is bootstrapped (deprecated)
     LARGE_DIM,     // a fresh encryption with dimension N
     SMALL_DIM,     // a freshly encrypted ciphertext of dimension N and modulus Q switched to n and q
 };

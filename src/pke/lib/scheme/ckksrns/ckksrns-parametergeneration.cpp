@@ -77,10 +77,15 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t n             = cyclOrder / 2;
     uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
 
+    // we add an extra bit to account for the alternating logic of selecting the RNS moduli in CKKS
+    // ignore the case when there is only one max size modulus
+    if (qBound != auxBits)
+        qBound++;
+
     // Estimate ciphertext modulus Q*P bound (in case of HYBRID P*Q)
     if (ksTech == HYBRID) {
-        auto hybridKSInfo =
-            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize, numPrimes, auxBits);
+        auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
+                                                              numPrimes, auxBits, true);
         qBound += std::get<0>(hybridKSInfo);
     }
 

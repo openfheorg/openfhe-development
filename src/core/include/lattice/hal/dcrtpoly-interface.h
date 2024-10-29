@@ -326,7 +326,7 @@ public:
    * @param element The element to store
    */
     void SetElementAtIndex(usint index, TowerType&& element) {
-        return this->GetDerived().SetElementAtIndex(index, element);
+        return this->GetDerived().SetElementAtIndex(index, std::move(element));
     }
 
     /***********************************************************************
