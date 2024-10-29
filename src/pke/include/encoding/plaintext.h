@@ -43,7 +43,6 @@
 #include "scheme/scheme-id.h"
 
 #include <initializer_list>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>

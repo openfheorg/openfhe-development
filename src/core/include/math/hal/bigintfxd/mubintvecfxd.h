@@ -39,7 +39,6 @@
     #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
         #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
 
-        #include <iostream>
         #include <string>
 
         #include "utils/inttypes.h"

@@ -68,7 +68,7 @@
     #pragma clang diagnostic pop
 #endif
 
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 

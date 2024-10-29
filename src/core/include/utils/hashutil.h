@@ -37,7 +37,6 @@
 #define _SRC_LIB_UTILS_HASHUTIL_H
 
 #include <utils/exception.h>
-#include <iostream>
 #include <string>
 #include <vector>
 

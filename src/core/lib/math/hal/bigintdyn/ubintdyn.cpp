@@ -1008,6 +1008,23 @@ uschar ubint<limb_t>::GetBitAtIndex(usint index) const {
 
 template class bigintdyn::ubint<expdtype>;
 
+template <typename limb_t>
+void ubint<limb_t>::PrintIntegerConstants() {
+    std::cout << "sizeof UINT8_C  " << sizeof(UINT8_C(1)) << std::endl;
+    std::cout << "sizeof UINT16_C " << sizeof(UINT16_C(1)) << std::endl;
+    std::cout << "sizeof UINT32_C " << sizeof(UINT32_C(1)) << std::endl;
+    std::cout << "sizeof UINT64_C " << sizeof(UINT64_C(1)) << std::endl;
+    std::cout << "sizeof uint8_t  " << sizeof(uint8_t) << std::endl;
+    std::cout << "sizeof uint16_t " << sizeof(uint16_t) << std::endl;
+    std::cout << "sizeof uint32_t " << sizeof(uint32_t) << std::endl;
+    std::cout << "sizeof uint64_t " << sizeof(uint64_t) << std::endl;
+    #if defined(HAVE_INT128)
+    // std::cout << "sizeof UINT128_C "<< sizeof (UINT128_C(1)) << std::endl;
+    // dbc commented out  unsupported on some machines
+    std::cout << "sizeof uint128_t " << sizeof(uint128_t) << std::endl;
+    #endif
+}
+
     #if 0
 // to stream internal representation
 template std::ostream& operator<<<expdtype>(std::ostream& os, const std::vector<expdtype>& v);

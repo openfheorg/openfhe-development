@@ -47,7 +47,6 @@
         #include "utils/serializable.h"
 
         #include <initializer_list>
-        #include <iostream>
         #include <string>
         #include <utility>
         #include <vector>

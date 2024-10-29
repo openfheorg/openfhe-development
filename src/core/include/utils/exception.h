@@ -38,7 +38,6 @@
 
 #include "utils/get-call-stack.h"
 #include <exception>
-#include <iostream>
 #include <mutex>
 #include <stdexcept>
 #include <string>
@@ -185,12 +184,12 @@ public:
         return m_errorMessage.c_str();
     }
 
-    std::vector<std::string> getCallStackAsVector() {
+    std::vector<std::string> getCallStackAsVector() const {
         return m_callStack;
     }
 
     // getCallStackAsString() was added to be used by JSON logger. the implementtion will follow
-    std::string getCallStackAsString() {
+    std::string getCallStackAsString() const {
         return std::string();
     }
 };
