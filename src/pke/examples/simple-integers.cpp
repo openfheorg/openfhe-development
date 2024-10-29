@@ -41,13 +41,17 @@ int main() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(2);
+    parameters.SetMultiplicativeDepth(5);
+    parameters.SetSecurityLevel(HEStd_128_quantum);
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
     cryptoContext->Enable(PKE);
     cryptoContext->Enable(KEYSWITCH);
     cryptoContext->Enable(LEVELEDSHE);
+
+    std::cerr << "Crypto parameters: " << *cryptoContext->GetCryptoParameters() << std::endl;
 
     // Sample Program: Step 2: Key Generation
 
