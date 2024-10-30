@@ -43,10 +43,6 @@
 #include <string>
 
 namespace lbcrypto {
-// if FIXED_SEED is defined, then PRNG uses a fixed seed number for reproducible results during debug.
-// Use only one OMP thread to ensure reproducibility
-// #define FIXED_SEED
-
 
 /**
  * @brief PseudoRandomNumberGenerator provides the PRNG capability to all random distribution generators in OpenFHE.
@@ -69,7 +65,7 @@ public:
     static PRNG& GetPRNG();
 
 private:
-    using GenPRNGEngineFuncPtr = PRNG* (*)(const PRNG::seed_array_t&, uint64_t counter);
+    using GenPRNGEngineFuncPtr = PRNG* (*)();
 
     // shared pointer to a thread-specific PRNG engine
     static std::shared_ptr<PRNG> m_prng;

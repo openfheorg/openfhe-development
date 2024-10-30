@@ -39,6 +39,7 @@
 #include "utils/prng/prng.h"
 
 #include <cstddef>
+#include <array>
 
 namespace default_prng {
 /**
@@ -47,17 +48,24 @@ namespace default_prng {
  */
 class Blake2Engine : public PRNG {
  public:
+    enum {
+        MAX_SEED_GENS = 16,
+        // the buffer stores 1024 samples of 32-bit integers
+        PRNG_BUFFER_SIZE = 1024
+    };
+    using blake2_seed_array_t = std::array<PRNG::result_type, MAX_SEED_GENS>;
+
   /**
    * @brief Main constructor taking a vector of MAX_SEED_GENS integers as a seed and a counter.
    *        If there is no value for the counter, then pass zero as the counter value
    */
-  explicit Blake2Engine(const PRNG::seed_array_t& seed, uint64_t counter) : PRNG(seed, counter) {}
+  explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed(seed), m_counter(counter) {}
 
   /**
    * @brief main call to the PRNG
    */
   PRNG::result_type operator()() override {
-      if (m_bufferIndex == static_cast<size_t>(PRNG::PRNG_BUFFER_SIZE)) 
+      if (m_bufferIndex == static_cast<size_t>(PRNG_BUFFER_SIZE))
           m_bufferIndex = 0;
 
       // makes a call to the BLAKE2 generator only when the currently buffered values are all consumed precomputations and
@@ -78,19 +86,25 @@ class Blake2Engine : public PRNG {
     void Generate();
 
     // The vector that stores random samples generated using the hash function
-    std::array<PRNG::result_type, PRNG::PRNG_BUFFER_SIZE> m_buffer{};
+    std::array<PRNG::result_type, PRNG_BUFFER_SIZE> m_buffer{};
 
     // Index in m_buffer corresponding to the current PRNG sample
     size_t m_bufferIndex = 0;
+
+    // the seed for the hash function
+    blake2_seed_array_t m_seed{};
+
+    // counter used as input to the hash function; gets incremented after each call
+    uint64_t m_counter = 0;
 };
 
 /**
  * @brief createEngineInstance() generates a Blake2Engine object which is dynamically allocated
  * @return pointer to the generated Blake2Engine object
- * @attention the caller is responsible for freeing the memory allocated by this function 
+ * @attention the caller is responsible for freeing the memory allocated by this function
  **/
 extern "C" {
-    PRNG* createEngineInstance(const PRNG::seed_array_t& seed, uint64_t counter);
+    PRNG* createEngineInstance();
 }
 
 }  // namespace default_prng
