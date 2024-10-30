@@ -39,6 +39,12 @@
 
 namespace default_prng {
 
+Blake2Engine::~Blake2Engine() {
+    // IMPORTANT: re-init seed for security reasons
+    const size_t bytes_to_clear = (m_seed.size() * sizeof(m_seed[0]));
+    lbcrypto::secure_memset(m_seed.data(), 0, bytes_to_clear);
+}
+
 void Blake2Engine::Generate() {
     // m_counter is the input to the hash function
     // m_buffer is the output
@@ -93,8 +99,8 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
     if (sizeof(size_t) == 8)
         initKey[2] = (std::hash<std::thread::id>{}(std::this_thread::get_id()) >> 32);
     #endif
-    // heap variable; we are going to use the least 32 bits of its memory
-    // location as the counter. This will increase the entropy of the PRNG sample
+    // heap variable; we are going to use up to 64 bits of its memory location as the counter.
+    // This will increase the entropy of the PRNG sample
     void* mem        = malloc(1);
     uint64_t counter = reinterpret_cast<uint64_t>(mem);
     free(mem);

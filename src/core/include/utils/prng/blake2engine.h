@@ -55,29 +55,31 @@ class Blake2Engine : public PRNG {
     };
     using blake2_seed_array_t = std::array<PRNG::result_type, MAX_SEED_GENS>;
 
-  /**
-   * @brief Main constructor taking an array of integers as a seed and a counter.
-   *        If there is no value for the counter, then pass zero as the counter value
-   */
-  explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed(seed), m_counter(counter) {}
+    /**
+     * @brief Main constructor taking an array of integers as a seed and a counter.
+     *        If there is no value for the counter, then pass zero as the counter value
+     */
+    explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed(seed), m_counter(counter) {}
 
-  /**
-   * @brief main call to the PRNG
-   */
-  PRNG::result_type operator()() override {
-      if (m_bufferIndex == static_cast<size_t>(PRNG_BUFFER_SIZE))
-          m_bufferIndex = 0;
+    ~Blake2Engine();
 
-      // makes a call to the BLAKE2 generator only when the currently buffered values are all consumed precomputations and
-      // done only once for the current buffer
-      if (m_bufferIndex == 0)
-          Generate();
+    /**
+     * @brief main call to the PRNG
+     */
+    PRNG::result_type operator()() override {
+        if (m_bufferIndex == static_cast<size_t>(PRNG_BUFFER_SIZE))
+            m_bufferIndex = 0;
 
-      PRNG::result_type result = m_buffer[m_bufferIndex];
-      m_bufferIndex++;
+        // makes a call to the BLAKE2 generator only when the currently buffered values are all consumed precomputations and
+        // done only once for the current buffer
+        if (m_bufferIndex == 0)
+            Generate();
 
-      return result;
-  }
+        PRNG::result_type result = m_buffer[m_bufferIndex];
+        m_bufferIndex++;
+
+        return result;
+    }
 
  private:
     /**
