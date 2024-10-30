@@ -126,6 +126,9 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
         catch (std::exception& e) {
         }
     }
+    if (!rdGenPassed)
+        OPENFHE_THROW("std::random_device failed");
+
     for (uint32_t i = 0; i < Blake2Engine::MAX_SEED_GENS; ++i)
         seed[i] += rdseed[i];
 
