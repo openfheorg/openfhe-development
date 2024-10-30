@@ -32,10 +32,10 @@
 
 namespace lbcrypto {
 
-void secure_memset(void* mem, uint8_t c, size_t len) {
-    volatile uint8_t* volatile ptr = (volatile uint8_t* volatile)mem;
-    for(size_t i = 0; i< len; ++i)
-        *(ptr+i) = c;
+void secure_memset(volatile void* mem, uint8_t c, size_t len) {
+    volatile uint8_t* ptr = (volatile uint8_t*)mem;
+    for (size_t i = 0; i < len; ++i)
+        *(ptr + i) = c;
 }
 
 }  // namespace lbcrypto

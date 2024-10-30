@@ -31,12 +31,12 @@
 
 /**
  * DISCLAIMER: IMPORTANT NOTICE ABOUT FILE MODIFICATIONS
- * 
- * This file is used in OpenFHE's built-in PRNG and ANY EXTERNAL PRNG. 
+ *
+ * This file is used in OpenFHE's built-in PRNG and ANY EXTERNAL PRNG.
  * The file is critical to the functionality and the security of the library.
- * 
+ *
  * Modifications should only be performed by personnel who understand the potential impacts.
- * 
+ *
  * By proceeding with changes to this file, you acknowledge that you understand the risks involved and
  * accept full responsibility for any resulting issues.
  */
@@ -50,31 +50,22 @@
 
 #include <cstdint>
 #include <limits>
-#include <array>
-
 
 // ATTENTION (VERY IMPORTANT):
 //    for any engine class derived from the PRNG class there must be a C function named "createEngineInstance"
-//    returning a dynamically allocated object of that derived class (see how it is done in blake2engine.h) 
+//    returning a dynamically allocated object of that derived class (see how it is done in blake2engine.h)
 class PRNG {
 public:
-    enum {
-      MAX_SEED_GENS = 16,
-      // the buffer stores 1024 samples of 32-bit integers
-      PRNG_BUFFER_SIZE = 1024
-    };
-
     // all C++11 distributions used in OpenFHE work with uint32_t by default.
     // a different data type can be specified if needed for a particular architecture
-    using result_type  = uint32_t;
-    using seed_array_t = std::array<result_type, MAX_SEED_GENS>;
+    using result_type = uint32_t;
 
     /**
      * @brief minimum value used by C++11 distribution generators when no lower
      * bound is explicitly specified by the user
      */
     static constexpr result_type min() {
-      return std::numeric_limits<result_type>::min();
+        return std::numeric_limits<result_type>::min();
     }
 
     /**
@@ -82,21 +73,13 @@ public:
      * bound is explicitly specified by the user
      */
     static constexpr result_type max() {
-      return std::numeric_limits<result_type>::max();
+        return std::numeric_limits<result_type>::max();
     }
 
     virtual result_type operator()() = 0;
-    virtual ~PRNG() = default;
+    virtual ~PRNG()                  = default;
 
 protected:
     PRNG() = default;
-    PRNG(const seed_array_t &seed, uint64_t counter) : m_counter(counter), m_seed(seed) {}
-
-    // counter used as input to the hash function; gets incremented after each call
-    uint64_t m_counter = 0;
-
-    // the seed for the hash function
-    seed_array_t m_seed{};
 };
-#endif // __PRNG_H__
-
+#endif  // __PRNG_H__
