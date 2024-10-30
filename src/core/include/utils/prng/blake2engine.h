@@ -56,7 +56,7 @@ class Blake2Engine : public PRNG {
     using blake2_seed_array_t = std::array<PRNG::result_type, MAX_SEED_GENS>;
 
   /**
-   * @brief Main constructor taking a vector of MAX_SEED_GENS integers as a seed and a counter.
+   * @brief Main constructor taking an array of integers as a seed and a counter.
    *        If there is no value for the counter, then pass zero as the counter value
    */
   explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed(seed), m_counter(counter) {}
@@ -85,7 +85,7 @@ class Blake2Engine : public PRNG {
      */
     void Generate();
 
-    // The vector that stores random samples generated using the hash function
+    // The vector to store random samples generated using the hash function
     std::array<PRNG::result_type, PRNG_BUFFER_SIZE> m_buffer{};
 
     // Index in m_buffer corresponding to the current PRNG sample

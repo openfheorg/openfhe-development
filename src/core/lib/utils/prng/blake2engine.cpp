@@ -34,7 +34,6 @@
 #include "utils/memory.h"
 
 #include <chrono>
-// #include <cstdint>
 #include <random>
 #include <thread>
 
@@ -132,7 +131,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
     for (uint32_t i = 0; i < Blake2Engine::MAX_SEED_GENS; ++i)
         seed[i] += rdseed[i];
 
-    // re-init rdseed for security reasons
+    // IMPORTANT: re-init rdseed for security reasons
     const size_t bytes_to_clear = (rdseed.size() * sizeof(rdseed[0]));
     lbcrypto::secure_memset(rdseed.data(), 0, bytes_to_clear);
 #endif  // FIXED_SEED
@@ -144,7 +143,7 @@ PRNG* createEngineInstance() {
     Blake2SeedGenerator(seed);
     PRNG* ptr = new Blake2Engine(seed, 0);
 
-    // re-init seed for security reasons
+    // IMPORTANT: re-init seed for security reasons
     const size_t bytes_to_clear = (seed.size() * sizeof(seed[0]));
     lbcrypto::secure_memset(seed.data(), 0, bytes_to_clear);
 
