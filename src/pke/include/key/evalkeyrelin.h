@@ -175,7 +175,7 @@ public:
    * @param &a is the Element to be copied.
    */
 
-    virtual void SetAinDCRT(const DCRTPoly& a) {
+    virtual void SetAinDCRT(const Element& a) {
         m_dcrtKeys.insert(m_dcrtKeys.begin() + 0, a);
     }
 
@@ -185,7 +185,7 @@ public:
    *
    * @param &&a is the Element to be moved.
    */
-    virtual void SetAinDCRT(DCRTPoly&& a) {
+    virtual void SetAinDCRT(Element&& a) {
         m_dcrtKeys.insert(m_dcrtKeys.begin() + 0, std::move(a));
     }
 
@@ -196,7 +196,7 @@ public:
    * @return  Element.
    */
 
-    virtual const DCRTPoly& GetAinDCRT() const {
+    virtual const Element& GetAinDCRT() const {
         return m_dcrtKeys.at(0);
     }
 
@@ -207,7 +207,7 @@ public:
    * @param &b is the Element to be copied.
    */
 
-    virtual void SetBinDCRT(const DCRTPoly& b) {
+    virtual void SetBinDCRT(const Element& b) {
         m_dcrtKeys.insert(m_dcrtKeys.begin() + 1, b);
     }
 
@@ -217,7 +217,7 @@ public:
    *
    * @param &&b is the Element to be moved.
    */
-    virtual void SetBinDCRT(DCRTPoly&& b) {
+    virtual void SetBinDCRT(Element&& b) {
         m_dcrtKeys.insert(m_dcrtKeys.begin() + 1, std::move(b));
     }
 
@@ -228,7 +228,7 @@ public:
    * @return  Element.
    */
 
-    virtual const DCRTPoly& GetBinDCRT() const {
+    virtual const Element& GetBinDCRT() const {
         return m_dcrtKeys.at(1);
     }
 
