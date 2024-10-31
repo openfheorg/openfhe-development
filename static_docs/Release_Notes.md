@@ -1,3 +1,9 @@
+10/30/2024: OpenFHE 1.2.3 (stable) is released
+
+* Adds support for a custom PRNG implemented in an external library
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.3%22
+
 10/28/2024: OpenFHE 1.2.2 (stable) is released
 
 * Improves the runtime of inverse NTT (for clang++; #872)
