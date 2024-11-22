@@ -42,12 +42,13 @@
 #include "constants.h"
 #include "scheme/scheme-id.h"
 
+#include <algorithm>
 #include <initializer_list>
 #include <memory>
+#include <ostream>
 #include <string>
-#include <vector>
-#include <algorithm>
 #include <utility>
+#include <vector>
 
 namespace lbcrypto {
 

@@ -47,6 +47,7 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
