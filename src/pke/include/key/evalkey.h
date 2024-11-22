@@ -167,7 +167,7 @@ public:
    * @param &a is the Element to be copied.
    */
 
-    virtual void SetAinDCRT(const DCRTPoly& a) {
+    virtual void SetAinDCRT(const Element& a) {
         OPENFHE_THROW("SetAinDCRT copy operation not supported");
     }
 
@@ -177,7 +177,7 @@ public:
    *
    * @param &&a is the Element to be moved.
    */
-    virtual void SetAinDCRT(DCRTPoly&& a) {
+    virtual void SetAinDCRT(Element&& a) {
         OPENFHE_THROW("SetAinDCRT move operation not supported");
     }
 
@@ -188,7 +188,7 @@ public:
    * @return  Element.
    */
 
-    virtual const DCRTPoly& GetAinDCRT() const {
+    virtual const Element& GetAinDCRT() const {
         OPENFHE_THROW("GetAinDCRT operation not supported");
     }
 
@@ -199,7 +199,7 @@ public:
    * @param &b is the Element to be copied.
    */
 
-    virtual void SetBinDCRT(const DCRTPoly& b) {
+    virtual void SetBinDCRT(const Element& b) {
         OPENFHE_THROW("SetAinDCRT copy operation not supported");
     }
 
@@ -209,7 +209,7 @@ public:
    *
    * @param &&b is the Element to be moved.
    */
-    virtual void SetBinDCRT(DCRTPoly&& b) {
+    virtual void SetBinDCRT(Element&& b) {
         OPENFHE_THROW("SetAinDCRT move operation not supported");
     }
 
@@ -220,7 +220,7 @@ public:
    * @return  Element.
    */
 
-    virtual const DCRTPoly& GetBinDCRT() const {
+    virtual const Element& GetBinDCRT() const {
         OPENFHE_THROW("GetAinDCRT operation not supported");
     }
 
