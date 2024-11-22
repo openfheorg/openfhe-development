@@ -41,10 +41,9 @@
 #include "utils/exception.h"
 #include "utils/parallel.h"
 
-// #include <cmath>
 #include <functional>
-// #include <iostream>
 #include <memory>
+#include <ostream>
 #include <utility>
 #include <vector>
 

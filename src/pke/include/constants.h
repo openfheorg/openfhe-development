@@ -34,8 +34,7 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
-#include "constants-defs.h"             // all enum definitions
-#include "lattice/constants-lattice.h"  // additional definitions
+#include "constants-defs.h"  // all enum definitions
 
 #include <iosfwd>
 #include <string>

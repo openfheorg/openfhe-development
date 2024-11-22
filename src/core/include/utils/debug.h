@@ -37,9 +37,6 @@
 #ifndef __dbg_h__
 #define __dbg_h__
 
-// include <iostream>
-// include <cstdlib.h>
-
 /* defining NDEBUG in the compile line turns everything off.
    unless PROFILE is defined in the file before all includes,'
    in which case TIC/TOC will still work and PROFILELOG() can be

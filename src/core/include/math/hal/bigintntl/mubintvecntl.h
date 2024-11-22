@@ -47,15 +47,15 @@
         #include <NTL/vec_ZZ.h>
         #include <NTL/vector.h>
 
-        #include <initializer_list>
-        #include <iostream>
-        #include <string>
-        #include <vector>
-
         #include "math/hal/bigintntl/ubintntl.h"
         #include "utils/exception.h"
         #include "utils/inttypes.h"
         #include "utils/serializable.h"
+
+        #include <initializer_list>
+        #include <ostream>
+        #include <string>
+        #include <vector>
 
 // defining this forces modulo when you write to the vector (except with at())
 // this is becuase NTL required inputs to modmath to be < modulus but BU does

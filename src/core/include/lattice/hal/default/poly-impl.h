@@ -43,9 +43,9 @@
 #include "utils/inttypes.h"
 
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
