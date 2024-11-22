@@ -51,6 +51,7 @@
 #include <cmath>
 #include <functional>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
