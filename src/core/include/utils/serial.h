@@ -38,7 +38,7 @@
 
 #include "utils/sertype.h"
 
-#include <ostream>
+#include <iostream>
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
