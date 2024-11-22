@@ -39,6 +39,7 @@
 #include "scheme/scheme-id.h"
 #include "utils/inttypes.h"
 #include "constants.h"
+#include "lattice/constants-lattice.h"
 #include "lattice/stdlatticeparms.h"
 
 #include <iosfwd>

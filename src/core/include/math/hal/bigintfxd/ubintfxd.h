@@ -44,18 +44,6 @@
     #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
         #define LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
 
-        #include <cstdlib>
-        #include <cstring>
-        #include <fstream>
-        #include <functional>
-        #include <iostream>
-        #include <limits>
-        #include <memory>
-        #include <string>
-        #include <type_traits>
-        #include <typeinfo>
-        #include <vector>
-
         #include "math/hal/basicint.h"
         #include "math/hal/integer.h"
 
@@ -65,6 +53,17 @@
         #include "utils/openfhebase64.h"
         #include "utils/serializable.h"
         #include "utils/utilities.h"
+
+        #include <cstdlib>
+        #include <cstring>
+        #include <fstream>
+        #include <functional>
+        #include <limits>
+        #include <memory>
+        #include <ostream>
+        #include <string>
+        #include <type_traits>
+        #include <typeinfo>
 
 ////////// bigintfxd code
 typedef uint32_t integral_dtype;

@@ -54,8 +54,6 @@ bool PackedEncoding::Encode() {
     auto mod = this->encodingParams->GetPlaintextModulus();
 
     if ((this->typeFlag == IsNativePoly) || (this->typeFlag == IsDCRTPoly)) {
-        size_t i;
-
         NativeVector tempVector = NativeVector(this->GetElementRingDimension(), mod);
 
         NativeInteger originalSF = scalingFactorInt;
@@ -63,7 +61,7 @@ bool PackedEncoding::Encode() {
             scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
         }
 
-        for (i = 0; i < value.size(); i++) {
+        for (size_t i = 0; i < value.size(); i++) {
             if ((PlaintextModulus)llabs(value[i]) >= mod) {
                 OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
                               std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
@@ -119,13 +117,13 @@ bool PackedEncoding::Encode() {
             const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
             // Sets the values for all other RNS limbs
-            for (size_t ii = 1; ii < nativeParams.size(); ii++) {
+            for (size_t j = 1; j < nativeParams.size(); j++) {
                 NativePoly tempPoly(firstElement);
 
-                tempPoly.SwitchModulus(nativeParams[ii]->GetModulus(), nativeParams[ii]->GetRootOfUnity(),
-                                       nativeParams[ii]->GetBigModulus(), nativeParams[ii]->GetBigRootOfUnity());
+                tempPoly.SwitchModulus(nativeParams[j]->GetModulus(), nativeParams[j]->GetRootOfUnity(),
+                                       nativeParams[j]->GetBigModulus(), nativeParams[j]->GetBigRootOfUnity());
 
-                this->encodedVectorDCRT.SetElementAtIndex(ii, std::move(tempPoly));
+                this->encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
             }
             // Setting the first limb at the end make sure firstElement is available during the main loop
             this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
@@ -138,8 +136,7 @@ bool PackedEncoding::Encode() {
 
         BigInteger q = this->GetElementModulus();
 
-        size_t i;
-        for (i = 0; i < value.size(); i++) {
+        for (size_t i = 0; i < value.size(); ++i) {
             BigInteger entry;
 
             if ((PlaintextModulus)llabs(value[i]) >= mod)
@@ -157,9 +154,8 @@ bool PackedEncoding::Encode() {
 
             temp[i] = entry;
         }
-
-        for (; i < this->GetElementRingDimension(); i++)
-            temp[i] = BigInteger(0);
+        for (size_t j = value.size(); j < this->GetElementRingDimension(); ++j)
+            temp[j] = BigInteger(0);
 
         // the input plaintext data is in the evaluation format
         this->GetElement<Poly>().SetValues(std::move(temp), Format::EVALUATION);
