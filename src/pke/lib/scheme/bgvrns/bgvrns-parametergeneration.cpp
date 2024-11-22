@@ -347,10 +347,10 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
     cryptoParamsRNS->SetFloodingDistributionParameter(noise_param);
 }
 
-bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder,
-                                                uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
-                                                uint32_t numPartQ, uint32_t numHops) const {
+bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                                        uint32_t evalAddCount, uint32_t keySwitchCount,
+                                                        uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                                                        uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     uint32_t ptm                     = cryptoParamsBGVRNS->GetPlaintextModulus();
