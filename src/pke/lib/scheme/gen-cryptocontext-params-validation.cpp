@@ -61,6 +61,11 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
     }
     else if (isBFVRNS(scheme)) {
+        if(BV == parameters.GetKeySwitchTechnique()) {
+            if(32 <= parameters.GetDigitSize()) {
+                OPENFHE_THROW("digitSize should be less than 32 for keySwitchTechnique == BV");
+            }
+        }
         if (0 == parameters.GetPlaintextModulus()) {
             OPENFHE_THROW("PlaintextModulus is not set. It should be set to a non-zero value");
         }
@@ -69,6 +74,11 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
     }
     else if (isBGVRNS(scheme)) {
+        if(BV == parameters.GetKeySwitchTechnique()) {
+            if(32 <= parameters.GetDigitSize()) {
+                OPENFHE_THROW("digitSize should be less than 32 for keySwitchTechnique == BV");
+            }
+        }
         if (0 == parameters.GetPlaintextModulus()) {
             OPENFHE_THROW("PlaintextModulus is not set. It should be set to a non-zero value");
         }
