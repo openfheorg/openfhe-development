@@ -85,6 +85,13 @@ protected:
     usint slots                    = 0;
     SCHEME schemeID;
 
+protected:
+    /**
+    * @brief PrintValue() is called by operator<<
+    * @param out
+    */
+    virtual void PrintValue(std::ostream& out) const = 0;
+
 public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
@@ -137,7 +144,7 @@ public:
           slots(rhs.slots),
           schemeID(rhs.schemeID) {}
 
-    virtual ~PlaintextImpl() {}
+    virtual ~PlaintextImpl() = default;
 
     /**
    * GetEncodingType
@@ -398,38 +405,32 @@ public:
     }
 
     /**
-   * operator<< for ostream integration - calls PrintValue
-   * @param out
-   * @param item
-   * @return
-   */
-    friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item);
+    * @brief operator<< for ostream integration - calls PrintValue()
+    * @param out
+    * @param item
+    * @return
+    */
+    friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
+        item.PrintValue(out);
+        return out;
+    }
+    friend std::ostream& operator<<(std::ostream& out, const Plaintext& item) {
+        if (item)
+            out << *item;  // Call the non-pointer version
+        else
+            OPENFHE_THROW("Cannot de-reference nullptr for printing");
+        return out;
+    }
 
     /**
-   * PrintValue is called by operator<<
-   * @param out
-   */
-    virtual void PrintValue(std::ostream& out) const = 0;
-
-    /**
-   * GetFormattedValues() has a logic similar to PrintValue(), but requires a precision as an argument
-   * @param precision number of decimal digits of precision to print
-   * @return string with all values and "estimated precision"
-   */
+    * @brief GetFormattedValues() is similar to PrintValue() and requires a precision as an argument
+    * @param precision number of decimal digits of precision to print
+    * @return string with all values
+    */
     virtual std::string GetFormattedValues(int64_t precision) const {
         OPENFHE_THROW("not implemented");
     }
 };
-
-inline std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
-    item.PrintValue(out);
-    return out;
-}
-
-inline std::ostream& operator<<(std::ostream& out, const Plaintext& item) {
-    item->PrintValue(out);
-    return out;
-}
 
 inline bool operator==(const Plaintext& p1, const Plaintext& p2) {
     return *p1 == *p2;

@@ -48,6 +48,32 @@ namespace lbcrypto {
 class CoefPackedEncoding : public PlaintextImpl {
     std::vector<int64_t> value;
 
+protected:
+    /**
+    * @brief PrintValue() is called by operator<<
+    * @param out stream to print to
+    */
+    void PrintValue(std::ostream& out) const override {
+        out << "(";
+
+        // for sanity's sake: get rid of all trailing zeroes and print "..." instead
+        size_t i       = value.size();
+        bool allZeroes = true;
+        while (i > 0) {
+            --i;
+            if (value[i] != 0) {
+                allZeroes = false;
+                break;
+            }
+        }
+
+        if (allZeroes == false) {
+            for (size_t j = 0; j <= i; ++j)
+                out << value[j] << ", ";
+        }
+        out << "... )";
+    }
+
 public:
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
@@ -64,7 +90,7 @@ public:
                        SCHEME schemeId = SCHEME::INVALID_SCHEME)
         : PlaintextImpl(vp, ep, schemeId), value(coeffs) {}
 
-    virtual ~CoefPackedEncoding() = default;
+    ~CoefPackedEncoding() = default;
 
     /**
    * GetCoeffsValue
@@ -129,24 +155,6 @@ public:
     bool CompareTo(const PlaintextImpl& other) const {
         const auto& oth = static_cast<const CoefPackedEncoding&>(other);
         return oth.value == this->value;
-    }
-
-    /**
-   * PrintValue - used by operator<< for this object
-   * @param out
-   */
-    void PrintValue(std::ostream& out) const {
-        // for sanity's sake, trailing zeros get elided into "..."
-        out << "(";
-        size_t i = value.size();
-        while (--i > 0)
-            if (value[i] != 0)
-                break;
-
-        for (size_t j = 0; j <= i; j++)
-            out << ' ' << value[j];
-
-        out << " ... )";
     }
 };
 

@@ -65,7 +65,7 @@ public:
     // TODO provide wide-character version (for unicode); right now this class
     // only supports strings of 7-bit ASCII characters
 
-    virtual ~StringEncoding() {}
+    ~StringEncoding() = default;
 
     /**
    * GetStringValue
@@ -128,7 +128,7 @@ public:
    * PrintValue - used by operator<< for this object
    * @param out
    */
-    void PrintValue(std::ostream& out) const {
+    void PrintValue(std::ostream& out) const override {
         out << ptx;
     }
 };

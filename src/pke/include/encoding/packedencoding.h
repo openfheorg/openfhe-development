@@ -185,18 +185,30 @@ public:
    */
     static void Destroy();
 
-    void PrintValue(std::ostream& out) const {
-        // for sanity's sake, trailing zeros get elided into "..."
+protected:
+    /**
+    * @brief PrintValue() is called by operator<<
+    * @param out stream to print to
+    */
+    void PrintValue(std::ostream& out) const override {
         out << "(";
-        size_t i = value.size();
-        while (--i > 0)
-            if (value[i] != 0)
+
+        // for sanity's sake: get rid of all trailing zeroes and print "..." instead
+        size_t i       = value.size();
+        bool allZeroes = true;
+        while (i > 0) {
+            --i;
+            if (value[i] != 0) {
+                allZeroes = false;
                 break;
+            }
+        }
 
-        for (size_t j = 0; j <= i; j++)
-            out << ' ' << value[j];
-
-        out << " ... )";
+        if (allZeroes == false) {
+            for (size_t j = 0; j <= i; ++j)
+                out << value[j] << ", ";
+        }
+        out << "... )";
     }
 
 private:

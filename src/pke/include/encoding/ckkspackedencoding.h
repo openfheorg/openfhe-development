@@ -232,23 +232,11 @@ public:
    */
     static void Destroy();
 
-    void PrintValue(std::ostream& out) const override {
-        // for sanity's sake, trailing zeros get elided into "..."
-        // out.precision(15);
-        out << "(";
-        size_t i = value.size();
-        while (--i > 0)
-            if (value[i] != std::complex<double>(0, 0))
-                break;
-
-        for (size_t j = 0; j <= i; j++) {
-            out << value[j].real() << ", ";
-        }
-
-        out << " ... ); ";
-        out << "Estimated precision: " << encodingParams->GetPlaintextModulus() - m_logError << " bits" << std::endl;
-    }
-
+    /**
+    * @brief GetFormattedValues() is called by operator<< and requires a precision as an argument
+    * @param precision number of decimal digits of precision to print
+    * @return string with all values and "estimated precision"
+    */
     std::string GetFormattedValues(int64_t precision) const override {
         std::stringstream ss;
         ss << "(";
@@ -279,6 +267,10 @@ private:
     double m_logError = 0;
 
 protected:
+    void PrintValue(std::ostream& out) const override {
+        out << GetFormattedValues(8) << std::endl;
+    }
+
     usint GetDefaultSlotSize() {
         auto batchSize = GetEncodingParams()->GetBatchSize();
         return (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
