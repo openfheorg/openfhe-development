@@ -127,9 +127,9 @@ public:
     }
 
     /**
-   * Destructor
+   * Virtual Destructor
    */
-    virtual ~CryptoParametersRLWE() {}
+    ~CryptoParametersRLWE() = default;
 
     /**
    * Returns the value of standard deviation r for discrete Gaussian
@@ -414,33 +414,6 @@ public:
         m_thresholdNumOfParties = thresholdNumOfParties;
     }
 
-    /**
-   * == operator to compare to this instance of CryptoParametersRLWE object.
-   *
-   * @param &rhs CryptoParameters to check equality against.
-   */
-    bool operator==(const CryptoParametersBase<Element>& rhs) const {
-        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
-
-        if (el == nullptr)
-            return false;
-
-        return CryptoParametersBase<Element>::operator==(*el) &&
-               this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
-               *this->GetElementParams() == *el->GetElementParams() &&
-               *this->GetEncodingParams() == *el->GetEncodingParams() &&
-               m_distributionParameter == el->GetDistributionParameter() &&
-               m_assuranceMeasure == el->GetAssuranceMeasure() && m_noiseScale == el->GetNoiseScale() &&
-               m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
-               m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
-               m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
-               m_executionMode == el->GetExecutionMode() &&
-               m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
-               m_statisticalSecurity == el->GetStatisticalSecurity() &&
-               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
-               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
-    }
-
     void PrintParameters(std::ostream& os) const {
         CryptoParametersBase<Element>::PrintParameters(os);
 
@@ -541,6 +514,33 @@ protected:
     double m_numAdversarialQueries = 1;
 
     usint m_thresholdNumOfParties = 1;
+
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersRLWE objects.
+    *        It is called by CryptoParametersBase::operator==()
+    * @param rhs - the other CryptoParametersRLWE object to compare to.
+    * @return whether the two CryptoParametersRLWE objects are equivalent.
+    */
+    bool CompareTo(const CryptoParametersBase<Element>& rhs) const override {
+        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
+        if (el == nullptr)
+            return false;
+
+        return CryptoParametersBase<Element>::CompareTo(*el) &&
+               this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
+               *this->GetElementParams() == *el->GetElementParams() &&
+               *this->GetEncodingParams() == *el->GetEncodingParams() &&
+               m_distributionParameter == el->GetDistributionParameter() &&
+               m_assuranceMeasure == el->GetAssuranceMeasure() && m_noiseScale == el->GetNoiseScale() &&
+               m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
+               m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
+               m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
+               m_executionMode == el->GetExecutionMode() &&
+               m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
+               m_statisticalSecurity == el->GetStatisticalSecurity() &&
+               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
+               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
+    }
 };
 
 }  // namespace lbcrypto

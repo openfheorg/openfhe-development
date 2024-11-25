@@ -140,7 +140,25 @@ protected:
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
-    virtual ~CryptoParametersRNS() {}
+    ~CryptoParametersRNS() = default;
+
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersRNS objects.
+    *        It is called by CryptoParametersBase::operator==()
+    * @param rhs - the other CryptoParametersRNS object to compare to.
+    * @return whether the two CryptoParametersRNS objects are equivalent.
+    */
+    bool CompareTo(const CryptoParametersBase<DCRTPoly>& rhs) const override {
+        const auto* el = dynamic_cast<const CryptoParametersRNS*>(&rhs);
+        if (el == nullptr)
+            return false;
+
+        return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->GetScalingTechnique() &&
+               m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
+               m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
+               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
+               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode();
+    }
 
 public:
     /**
@@ -181,24 +199,6 @@ public:
    */
     static constexpr double EstimateMultipartyFloodingLogQ() {
         return static_cast<double>(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);
-    }
-
-    /**
-   * == operator to compare to this instance of CryptoParametersBase object.
-   *
-   * @param &rhs CryptoParameters to check equality against.
-   */
-    bool operator==(const CryptoParametersBase<DCRTPoly>& rhs) const override {
-        const auto* el = dynamic_cast<const CryptoParametersRNS*>(&rhs);
-
-        if (el == nullptr)
-            return false;
-
-        return CryptoParametersBase<DCRTPoly>::operator==(rhs) && m_scalTechnique == el->GetScalingTechnique() &&
-               m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
-               m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
-               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
-               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode();
     }
 
     void PrintParameters(std::ostream& os) const override {

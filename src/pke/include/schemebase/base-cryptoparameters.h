@@ -59,9 +59,9 @@ class CryptoParametersBase : public Serializable {
     using TugType  = typename Element::TugType;
 
 public:
-    CryptoParametersBase() {}
+    CryptoParametersBase() = default;
 
-    virtual ~CryptoParametersBase() {}
+    virtual ~CryptoParametersBase() = default;
 
     /**
    * Returns the value of plaintext modulus p
@@ -99,11 +99,11 @@ public:
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
     }
 
-    virtual bool operator==(const CryptoParametersBase<Element>& cmp) const {
-        return *m_encodingParams == *(cmp.GetEncodingParams()) && *m_params == *(cmp.GetElementParams());
+    bool operator==(const CryptoParametersBase<Element>& rhs) const {
+        return CompareTo(rhs);
     }
-    virtual bool operator!=(const CryptoParametersBase<Element>& cmp) const {
-        return !(*this == cmp);
+    bool operator!=(const CryptoParametersBase<Element>& rhs) const {
+        return !(*this == rhs);
     }
 
     /**
@@ -192,6 +192,16 @@ protected:
     CryptoParametersBase(CryptoParametersBase<Element>* from, std::shared_ptr<typename Element::Params> newElemParms) {
         *this    = *from;
         m_params = newElemParms;
+    }
+
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersBase objects. It is called by operator==()
+    *
+    * @param rhs - the other CryptoParametersBase object to compare to.
+    * @return whether the two CryptoParametersBase objects are equivalent.
+    */
+    virtual bool CompareTo(const CryptoParametersBase<Element>& rhs) const {
+        return (*m_encodingParams == *(rhs.GetEncodingParams()) && *m_params == *(rhs.GetElementParams()));
     }
 
     virtual void PrintParameters(std::ostream& out) const {
