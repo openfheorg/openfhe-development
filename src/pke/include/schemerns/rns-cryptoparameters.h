@@ -140,7 +140,7 @@ protected:
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
-    ~CryptoParametersRNS() = default;
+    ~CryptoParametersRNS() override = default;
 
     /**
     * @brief CompareTo() is a method to compare two CryptoParametersRNS objects.
@@ -158,6 +158,10 @@ protected:
                m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
                m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
                m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode();
+    }
+
+    void PrintParameters(std::ostream& os) const override {
+        CryptoParametersRLWE<DCRTPoly>::PrintParameters(os);
     }
 
 public:
@@ -199,10 +203,6 @@ public:
    */
     static constexpr double EstimateMultipartyFloodingLogQ() {
         return static_cast<double>(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);
-    }
-
-    void PrintParameters(std::ostream& os) const override {
-        CryptoParametersBase<DCRTPoly>::PrintParameters(os);
     }
 
     /////////////////////////////////////

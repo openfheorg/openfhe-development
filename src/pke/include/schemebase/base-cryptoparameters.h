@@ -68,7 +68,7 @@ public:
    *
    * @return the plaintext modulus.
    */
-    virtual const PlaintextModulus& GetPlaintextModulus() const {
+    PlaintextModulus GetPlaintextModulus() const {
         return m_encodingParams->GetPlaintextModulus();
     }
 
@@ -77,7 +77,7 @@ public:
    *
    * @return the ring element parameters.
    */
-    virtual const std::shared_ptr<typename Element::Params> GetElementParams() const {
+    const std::shared_ptr<typename Element::Params> GetElementParams() const {
         return m_params;
     }
 
@@ -88,14 +88,14 @@ public:
    *
    * @return the encoding parameters.
    */
-    virtual const EncodingParams GetEncodingParams() const {
+    const EncodingParams GetEncodingParams() const {
         return m_encodingParams;
     }
 
     /**
    * Sets the value of plaintext modulus p
    */
-    virtual void SetPlaintextModulus(const PlaintextModulus& plaintextModulus) {
+    void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
     }
 
@@ -119,7 +119,7 @@ public:
         return out;
     }
 
-    virtual usint GetDigitSize() const {
+    virtual uint32_t GetDigitSize() const {
         return 0;
     }
 
@@ -167,7 +167,7 @@ public:
         ar(::cereal::make_nvp("enp", m_encodingParams));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "CryptoParametersBase";
     }
     static uint32_t SerializedVersion() {
@@ -209,7 +209,6 @@ protected:
         out << "Encoding Parameters: " << *m_encodingParams << std::endl;
     }
 
-protected:
     // element-specific parameters
     std::shared_ptr<typename Element::Params> m_params;
 

@@ -129,7 +129,7 @@ public:
     /**
    * Virtual Destructor
    */
-    ~CryptoParametersRLWE() = default;
+    ~CryptoParametersRLWE() override = default;
 
     /**
    * Returns the value of standard deviation r for discrete Gaussian
@@ -174,7 +174,7 @@ public:
    *
    * @return the digit size.
    */
-    usint GetDigitSize() const {
+    uint32_t GetDigitSize() const override {
         return m_digitSize;
     }
 
@@ -184,7 +184,7 @@ public:
    *
    * @return maximum power of secret key
    */
-    uint32_t GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const override {
         return m_maxRelinSkDeg;
     }
 
@@ -414,14 +414,6 @@ public:
         m_thresholdNumOfParties = thresholdNumOfParties;
     }
 
-    void PrintParameters(std::ostream& os) const {
-        CryptoParametersBase<Element>::PrintParameters(os);
-
-        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
-           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
-           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
-    }
-
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
@@ -465,7 +457,7 @@ public:
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "CryptoParametersRLWE";
     }
 
@@ -479,7 +471,7 @@ protected:
     // noise scale
     PlaintextModulus m_noiseScale = 1;
     // digit size
-    usint m_digitSize = 1;
+    uint32_t m_digitSize = 1;
     // the highest power of secret key for which relinearization key is generated
     uint32_t m_maxRelinSkDeg = 2;
     // specifies whether the secret polynomials are generated from discrete
@@ -540,6 +532,14 @@ protected:
                m_statisticalSecurity == el->GetStatisticalSecurity() &&
                m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
                m_thresholdNumOfParties == el->GetThresholdNumOfParties();
+    }
+
+    void PrintParameters(std::ostream& os) const override {
+        CryptoParametersBase<Element>::PrintParameters(os);
+
+        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
+           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
+           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
     }
 };
 

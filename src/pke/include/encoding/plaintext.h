@@ -83,32 +83,52 @@ protected:
     size_t level                   = 0;
     size_t noiseScaleDeg           = 1;
     usint slots                    = 0;
+    PlaintextEncodings ptxtEncoding = INVALID_ENCODING;
     SCHEME schemeID;
 
+protected:
+    /**
+    * @brief PrintValue() is called by operator<<
+    * @param out
+    */
+    virtual void PrintValue(std::ostream& out) const = 0;
+
+    /**
+    * Method to compare two plaintext to test for equivalence.
+    * This method is called by operator==
+    *
+    * @param other - the other plaintext to compare to.
+    * @return whether the two plaintext are equivalent.
+    */
+    virtual bool CompareTo(const PlaintextImpl& other) const = 0;
+
 public:
-    PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
-                  bool isEncoded = false)
+    PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
+          ptxtEncoding(encoding),
           schemeID(schemeTag) {}
 
-    PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep,
+    PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
                   SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsNativePoly),
           encodingParams(std::move(ep)),
           encodedNativeVector(vp, Format::COEFFICIENT),
+          ptxtEncoding(encoding),
           schemeID(schemeTag) {}
 
-    PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep,
+    PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
                   SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsDCRTPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           encodedVectorDCRT(vp, Format::COEFFICIENT),
+          ptxtEncoding(encoding),
           schemeID(schemeTag) {}
 
     PlaintextImpl(const PlaintextImpl& rhs)
@@ -122,6 +142,7 @@ public:
           level(rhs.level),
           noiseScaleDeg(rhs.noiseScaleDeg),
           slots(rhs.slots),
+          ptxtEncoding(rhs.ptxtEncoding),
           schemeID(rhs.schemeID) {}
 
     PlaintextImpl(PlaintextImpl&& rhs)
@@ -135,15 +156,18 @@ public:
           level(rhs.level),
           noiseScaleDeg(rhs.noiseScaleDeg),
           slots(rhs.slots),
+          ptxtEncoding(rhs.ptxtEncoding),
           schemeID(rhs.schemeID) {}
 
-    virtual ~PlaintextImpl() {}
+    virtual ~PlaintextImpl() = default;
 
     /**
    * GetEncodingType
    * @return Encoding type used by this plaintext
    */
-    virtual PlaintextEncodings GetEncodingType() const = 0;
+    PlaintextEncodings GetEncodingType() const {
+        return ptxtEncoding;
+    }
 
     /**
    * Get the scaling factor of the plaintext for CKKS-based plaintexts.
@@ -203,10 +227,13 @@ public:
     virtual bool Encode() = 0;
 
     /**
-   * Decode the polynomial into the plaintext
+   * @brief Decode the polynomial into the plaintext
    * @return
    */
     virtual bool Decode() = 0;
+    virtual bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) {
+        OPENFHE_THROW("Not implemented");
+    }
 
     /**
    * Calculate and return lower bound that can be encoded with the plaintext
@@ -358,7 +385,7 @@ public:
         OPENFHE_THROW("not a packed coefficient vector");
     }
     virtual const std::vector<int64_t>& GetPackedValue() const {
-        OPENFHE_THROW("not a packed coefficient vector");
+        OPENFHE_THROW("not a packed vector");
     }
     virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
         OPENFHE_THROW("not a packed vector of complex numbers");
@@ -372,15 +399,6 @@ public:
     virtual void SetIntVectorValue(const std::vector<int64_t>&) {
         OPENFHE_THROW("does not support an int vector");
     }
-
-    /**
-   * Method to compare two plaintext to test for equivalence.
-   * This method is called by operator==
-   *
-   * @param other - the other plaintext to compare to.
-   * @return whether the two plaintext are equivalent.
-   */
-    virtual bool CompareTo(const PlaintextImpl& other) const = 0;
 
     /**
    * operator== for plaintexts.  This method makes sure the plaintexts are of
@@ -398,38 +416,32 @@ public:
     }
 
     /**
-   * operator<< for ostream integration - calls PrintValue
-   * @param out
-   * @param item
-   * @return
-   */
-    friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item);
+    * @brief operator<< for ostream integration - calls PrintValue()
+    * @param out
+    * @param item
+    * @return
+    */
+    friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
+        item.PrintValue(out);
+        return out;
+    }
+    friend std::ostream& operator<<(std::ostream& out, const Plaintext& item) {
+        if (item)
+            out << *item;  // Call the non-pointer version
+        else
+            OPENFHE_THROW("Cannot de-reference nullptr for printing");
+        return out;
+    }
 
     /**
-   * PrintValue is called by operator<<
-   * @param out
-   */
-    virtual void PrintValue(std::ostream& out) const = 0;
-
-    /**
-   * GetFormattedValues() has a logic similar to PrintValue(), but requires a precision as an argument
-   * @param precision number of decimal digits of precision to print
-   * @return string with all values and "estimated precision"
-   */
+    * @brief GetFormattedValues() is similar to PrintValue() and requires a precision as an argument
+    * @param precision number of decimal digits of precision to print
+    * @return string with all values
+    */
     virtual std::string GetFormattedValues(int64_t precision) const {
         OPENFHE_THROW("not implemented");
     }
 };
-
-inline std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
-    item.PrintValue(out);
-    return out;
-}
-
-inline std::ostream& operator<<(std::ostream& out, const Plaintext& item) {
-    item->PrintValue(out);
-    return out;
-}
 
 inline bool operator==(const Plaintext& p1, const Plaintext& p2) {
     return *p1 == *p2;
