@@ -35,19 +35,20 @@
   2 separate entities
  */
 
-#include <iomanip>
-#include <tuple>
-#include <unistd.h>
-
 #include "openfhe.h"
 #include "binfhecontext.h"
-#include "scheme/ckksrns/schemeswitching-data-serializer.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
+#include "schemeswitching-data-serializer.h"
+
+#include <iomanip>
+#include <tuple>
+#include <unistd.h>
+
 
 using namespace lbcrypto;
 

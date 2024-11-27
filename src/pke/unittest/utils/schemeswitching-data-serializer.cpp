@@ -28,7 +28,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "scheme/ckksrns/schemeswitching-data-serializer.h"
+#include "schemeswitching-data-serializer.h"
 
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
