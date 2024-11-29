@@ -124,7 +124,7 @@ public:
     /**
    * Destructor.
    */
-    virtual ~EncodingParamsImpl() {}
+    virtual ~EncodingParamsImpl() = default;
 
     // ACCESSORS
 
@@ -253,29 +253,6 @@ public:
         return !(*this == other);
     }
 
-private:
-    std::ostream& doprint(std::ostream& out) const {
-        out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
-            << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
-            << "]";
-        return out;
-    }
-
-    // plaintext modulus that is used by all schemes
-    PlaintextModulus m_plaintextModulus;
-    // root of unity for plaintext modulus
-    NativeInteger m_plaintextRootOfUnity;
-    // big plaintext modulus that is used for arbitrary cyclotomics
-    NativeInteger m_plaintextBigModulus;
-    // root of unity for big plaintext modulus
-    NativeInteger m_plaintextBigRootOfUnity;
-    // plaintext generator is used for packed encoding (to find the correct
-    // automorphism index)
-    uint32_t m_plaintextGenerator;
-    // maximum batch size used by EvalSumKeyGen for packed encoding
-    uint32_t m_batchSize;
-
-public:
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_plaintextModulus));
@@ -306,6 +283,29 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
+
+protected:
+    std::ostream& doprint(std::ostream& out) const {
+        out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
+            << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
+            << "]";
+        return out;
+    }
+
+private:
+    // plaintext modulus that is used by all schemes
+    PlaintextModulus m_plaintextModulus;
+    // root of unity for plaintext modulus
+    NativeInteger m_plaintextRootOfUnity;
+    // big plaintext modulus that is used for arbitrary cyclotomics
+    NativeInteger m_plaintextBigModulus;
+    // root of unity for big plaintext modulus
+    NativeInteger m_plaintextBigRootOfUnity;
+    // plaintext generator is used for packed encoding (to find the correct
+    // automorphism index)
+    uint32_t m_plaintextGenerator;
+    // maximum batch size used by EvalSumKeyGen for packed encoding
+    uint32_t m_batchSize;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<EncodingParamsImpl>& o) {

@@ -59,16 +59,16 @@ class CryptoParametersBase : public Serializable {
     using TugType  = typename Element::TugType;
 
 public:
-    CryptoParametersBase() {}
+    CryptoParametersBase() = default;
 
-    virtual ~CryptoParametersBase() {}
+    virtual ~CryptoParametersBase() = default;
 
     /**
    * Returns the value of plaintext modulus p
    *
    * @return the plaintext modulus.
    */
-    virtual const PlaintextModulus& GetPlaintextModulus() const {
+    PlaintextModulus GetPlaintextModulus() const {
         return m_encodingParams->GetPlaintextModulus();
     }
 
@@ -77,7 +77,7 @@ public:
    *
    * @return the ring element parameters.
    */
-    virtual const std::shared_ptr<typename Element::Params> GetElementParams() const {
+    const std::shared_ptr<typename Element::Params> GetElementParams() const {
         return m_params;
     }
 
@@ -88,22 +88,22 @@ public:
    *
    * @return the encoding parameters.
    */
-    virtual const EncodingParams GetEncodingParams() const {
+    const EncodingParams GetEncodingParams() const {
         return m_encodingParams;
     }
 
     /**
    * Sets the value of plaintext modulus p
    */
-    virtual void SetPlaintextModulus(const PlaintextModulus& plaintextModulus) {
+    void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
     }
 
-    virtual bool operator==(const CryptoParametersBase<Element>& cmp) const {
-        return *m_encodingParams == *(cmp.GetEncodingParams()) && *m_params == *(cmp.GetElementParams());
+    bool operator==(const CryptoParametersBase<Element>& rhs) const {
+        return CompareTo(rhs);
     }
-    virtual bool operator!=(const CryptoParametersBase<Element>& cmp) const {
-        return !(*this == cmp);
+    bool operator!=(const CryptoParametersBase<Element>& rhs) const {
+        return !(*this == rhs);
     }
 
     /**
@@ -119,7 +119,7 @@ public:
         return out;
     }
 
-    virtual usint GetDigitSize() const {
+    virtual uint32_t GetDigitSize() const {
         return 0;
     }
 
@@ -167,7 +167,7 @@ public:
         ar(::cereal::make_nvp("enp", m_encodingParams));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "CryptoParametersBase";
     }
     static uint32_t SerializedVersion() {
@@ -194,12 +194,21 @@ protected:
         m_params = newElemParms;
     }
 
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersBase objects. It is called by operator==()
+    *
+    * @param rhs - the other CryptoParametersBase object to compare to.
+    * @return whether the two CryptoParametersBase objects are equivalent.
+    */
+    virtual bool CompareTo(const CryptoParametersBase<Element>& rhs) const {
+        return (*m_encodingParams == *(rhs.GetEncodingParams()) && *m_params == *(rhs.GetElementParams()));
+    }
+
     virtual void PrintParameters(std::ostream& out) const {
         out << "Element Parameters: " << *m_params << std::endl;
         out << "Encoding Parameters: " << *m_encodingParams << std::endl;
     }
 
-protected:
     // element-specific parameters
     std::shared_ptr<typename Element::Params> m_params;
 

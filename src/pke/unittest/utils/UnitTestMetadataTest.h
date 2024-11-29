@@ -74,7 +74,7 @@ public:
    * the Clone method.
    *
    */
-    std::shared_ptr<Metadata> Clone() const {
+    std::shared_ptr<Metadata> Clone() const override {
         auto mdata = std::make_shared<MetadataTest>();
         mdata->m_s = this->m_s;
         return mdata;
@@ -97,7 +97,7 @@ public:
     /**
    * Defines how to check equality between objects of this class.
    */
-    bool operator==(const Metadata& mdata) const {
+    bool operator==(const Metadata& mdata) const override {
         try {
             const MetadataTest& mdataTest = dynamic_cast<const MetadataTest&>(mdata);
             return m_s == mdataTest.GetMetadata();  // All Metadata objects without
@@ -106,14 +106,6 @@ public:
         catch (const std::bad_cast& e) {
             OPENFHE_THROW("Tried to downcast an object of different class to MetadataTest");
         }
-    }
-
-    /**
-   * Defines how to print the contents of objects of this class.
-   */
-    std::ostream& print(std::ostream& out) const {
-        out << "[ " << m_s << " ]";
-        return out;
     }
 
     /**
@@ -201,6 +193,14 @@ public:
     }
 
 protected:
+    /**
+    * Defines how to print the contents of objects of this class.
+    */
+    std::ostream& PrintMetadata(std::ostream& out) const override {
+        out << "[ " << m_s << " ]";
+        return out;
+    }
+
     std::string m_s;
 };
 
