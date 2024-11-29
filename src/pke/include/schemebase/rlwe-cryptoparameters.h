@@ -127,9 +127,9 @@ public:
     }
 
     /**
-   * Destructor
+   * Virtual Destructor
    */
-    virtual ~CryptoParametersRLWE() {}
+    ~CryptoParametersRLWE() override = default;
 
     /**
    * Returns the value of standard deviation r for discrete Gaussian
@@ -174,7 +174,7 @@ public:
    *
    * @return the digit size.
    */
-    usint GetDigitSize() const {
+    uint32_t GetDigitSize() const override {
         return m_digitSize;
     }
 
@@ -184,7 +184,7 @@ public:
    *
    * @return maximum power of secret key
    */
-    uint32_t GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const override {
         return m_maxRelinSkDeg;
     }
 
@@ -414,41 +414,6 @@ public:
         m_thresholdNumOfParties = thresholdNumOfParties;
     }
 
-    /**
-   * == operator to compare to this instance of CryptoParametersRLWE object.
-   *
-   * @param &rhs CryptoParameters to check equality against.
-   */
-    bool operator==(const CryptoParametersBase<Element>& rhs) const {
-        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
-
-        if (el == nullptr)
-            return false;
-
-        return CryptoParametersBase<Element>::operator==(*el) &&
-               this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
-               *this->GetElementParams() == *el->GetElementParams() &&
-               *this->GetEncodingParams() == *el->GetEncodingParams() &&
-               m_distributionParameter == el->GetDistributionParameter() &&
-               m_assuranceMeasure == el->GetAssuranceMeasure() && m_noiseScale == el->GetNoiseScale() &&
-               m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
-               m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
-               m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
-               m_executionMode == el->GetExecutionMode() &&
-               m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
-               m_statisticalSecurity == el->GetStatisticalSecurity() &&
-               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
-               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
-    }
-
-    void PrintParameters(std::ostream& os) const {
-        CryptoParametersBase<Element>::PrintParameters(os);
-
-        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
-           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
-           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
-    }
-
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
@@ -492,7 +457,7 @@ public:
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "CryptoParametersRLWE";
     }
 
@@ -506,7 +471,7 @@ protected:
     // noise scale
     PlaintextModulus m_noiseScale = 1;
     // digit size
-    usint m_digitSize = 1;
+    uint32_t m_digitSize = 1;
     // the highest power of secret key for which relinearization key is generated
     uint32_t m_maxRelinSkDeg = 2;
     // specifies whether the secret polynomials are generated from discrete
@@ -541,6 +506,41 @@ protected:
     double m_numAdversarialQueries = 1;
 
     usint m_thresholdNumOfParties = 1;
+
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersRLWE objects.
+    *        It is called by CryptoParametersBase::operator==()
+    * @param rhs - the other CryptoParametersRLWE object to compare to.
+    * @return whether the two CryptoParametersRLWE objects are equivalent.
+    */
+    bool CompareTo(const CryptoParametersBase<Element>& rhs) const override {
+        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
+        if (el == nullptr)
+            return false;
+
+        return CryptoParametersBase<Element>::CompareTo(*el) &&
+               this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
+               *this->GetElementParams() == *el->GetElementParams() &&
+               *this->GetEncodingParams() == *el->GetEncodingParams() &&
+               m_distributionParameter == el->GetDistributionParameter() &&
+               m_assuranceMeasure == el->GetAssuranceMeasure() && m_noiseScale == el->GetNoiseScale() &&
+               m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
+               m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
+               m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
+               m_executionMode == el->GetExecutionMode() &&
+               m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
+               m_statisticalSecurity == el->GetStatisticalSecurity() &&
+               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
+               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
+    }
+
+    void PrintParameters(std::ostream& os) const override {
+        CryptoParametersBase<Element>::PrintParameters(os);
+
+        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
+           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
+           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
+    }
 };
 
 }  // namespace lbcrypto

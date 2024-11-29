@@ -70,21 +70,21 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {}
+    PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
-        : PlaintextImpl(vp, ep), value(coeffs) {}
+        : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::initializer_list<int64_t> coeffs)
-        : PlaintextImpl(vp, ep), value(coeffs) {}
+        : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     /**
    * @brief Constructs a container with a copy of each of the elements in rhs,
@@ -92,7 +92,7 @@ public:
    * @param rhs - The input object to copy.
    */
     explicit PackedEncoding(const std::vector<int64_t>& rhs)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {}
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(rhs) {}
 
     /**
    * @brief Constructs a container with a copy of each of the elements in il, in
@@ -100,22 +100,22 @@ public:
    * @param arr the list to copy.
    */
     PackedEncoding(std::initializer_list<int64_t> arr)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(arr) {}
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(arr) {}
 
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {}
+    PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value() {}
 
     static usint GetAutomorphismGenerator(usint m) {
         return m_automorphismGenerator[m];
     }
 
-    bool Encode();
+    bool Encode() override;
 
-    bool Decode();
+    bool Decode() override;
 
-    const std::vector<int64_t>& GetPackedValue() const {
+    const std::vector<int64_t>& GetPackedValue() const override {
         return value;
     }
 
@@ -123,16 +123,8 @@ public:
    * SetIntVectorValue
    * @param val integer vector to initialize the plaintext
    */
-    void SetIntVectorValue(const std::vector<int64_t>& val) {
+    void SetIntVectorValue(const std::vector<int64_t>& val) override {
         value = val;
-    }
-
-    /**
-   * GetEncodingType
-   * @return PACKED_ENCODING
-   */
-    PlaintextEncodings GetEncodingType() const {
-        return PACKED_ENCODING;
     }
 
     /**
@@ -140,7 +132,7 @@ public:
    *
    * @return the length of the plaintext in terms of the number of bits.
    */
-    size_t GetLength() const {
+    size_t GetLength() const override {
         return value.size();
     }
 
@@ -164,39 +156,53 @@ public:
    * SetLength of the plaintext to the given size
    * @param siz
    */
-    void SetLength(size_t siz) {
+    void SetLength(size_t siz) override {
         value.resize(siz);
     }
 
     /**
-   * Method to compare two plaintext to test for equivalence.  This method does
-   * not test that the plaintext are of the same type.
-   *
-   * @param other - the other plaintext to compare to.
-   * @return whether the two plaintext are equivalent.
-   */
-    bool CompareTo(const PlaintextImpl& other) const {
-        const auto& rv = static_cast<const PackedEncoding&>(other);
-        return this->value == rv.value;
+    * @brief Destructor method.
+    */
+    static void Destroy();
+
+protected:
+    /**
+    * @brief PrintValue() is called by operator<<
+    * @param out stream to print to
+    */
+    void PrintValue(std::ostream& out) const override {
+        out << "(";
+        // for sanity's sake: get rid of all trailing zeroes and print "..." instead
+        size_t i       = value.size();
+        bool allZeroes = true;
+        while (i > 0) {
+            --i;
+            if (value[i] != 0) {
+                allZeroes = false;
+                break;
+            }
+        }
+
+        if (allZeroes == false) {
+            for (size_t j = 0; j <= i; ++j)
+                out << value[j] << ", ";
+        }
+        out << "... )";
     }
 
     /**
-   * @brief Destructor method.
-   */
-    static void Destroy();
+    * Method to compare two plaintext to test for equivalence.  This method does
+    * not test that the plaintext are of the same type.
+    *
+    * @param rhs - the other plaintext to compare to.
+    * @return whether the two plaintext are equivalent.
+    */
+    bool CompareTo(const PlaintextImpl& rhs) const override {
+        const auto* el = dynamic_cast<const PackedEncoding*>(&rhs);
+        if (el == nullptr)
+            return false;
 
-    void PrintValue(std::ostream& out) const {
-        // for sanity's sake, trailing zeros get elided into "..."
-        out << "(";
-        size_t i = value.size();
-        while (--i > 0)
-            if (value[i] != 0)
-                break;
-
-        for (size_t j = 0; j <= i; j++)
-            out << ' ' << value[j];
-
-        out << " ... )";
+        return this->value == el->value;
     }
 
 private:
