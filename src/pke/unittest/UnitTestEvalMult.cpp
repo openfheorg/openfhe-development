@@ -35,8 +35,6 @@
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
-#include <cxxabi.h>
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -408,14 +406,7 @@ protected:
                 EXPECT_EQ(1, 1);
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -528,14 +519,7 @@ protected:
                 EXPECT_EQ(1, 1);
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -661,14 +645,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 };

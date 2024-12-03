@@ -56,10 +56,10 @@ template NativeInteger GreatestCommonDivisor(const NativeInteger& a, const Nativ
 template bool MillerRabinPrimalityTest(const NativeInteger& p, const usint niter);
 template const NativeInteger PollardRhoFactorization(const NativeInteger& n);
 template void PrimeFactorize(NativeInteger n, std::set<NativeInteger>& primeFactors);
-template NativeInteger FirstPrime(uint32_t nBits, uint32_t m);
-template NativeInteger LastPrime(uint32_t nBits, uint32_t m);
-template NativeInteger NextPrime(const NativeInteger& q, uint32_t m);
-template NativeInteger PreviousPrime(const NativeInteger& q, uint32_t m);
+template NativeInteger FirstPrime(uint32_t nBits, uint64_t m);
+template NativeInteger LastPrime(uint32_t nBits, uint64_t m);
+template NativeInteger NextPrime(const NativeInteger& q, uint64_t m);
+template NativeInteger PreviousPrime(const NativeInteger& q, uint64_t m);
 
 template std::vector<NativeInteger> GetTotientList(const NativeInteger& n);
 template std::vector<usint> GetTotientList(const usint& n);

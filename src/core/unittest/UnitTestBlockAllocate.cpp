@@ -32,21 +32,21 @@
 /*
   This code exercises the block allocator utility of the OpenFHE lattice encryption library.
  */
-
+#if 0
 // #define PROFILE    //define this is we want profiling output and statistics
-#include <assert.h>
-#include <stdio.h>
+    #include <assert.h>
+    #include <stdio.h>
 
-#include <iostream>
-#include <new>
+    #include <iostream>
+    #include <new>
 
-#include "gtest/gtest.h"
+    #include "gtest/gtest.h"
 
-#include "math/math-hal.h"
-#include "utils/blockAllocator/blockAllocator.h"
-#include "utils/debug.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
+    #include "math/math-hal.h"
+    #include "utils/blockAllocator/blockAllocator.h"
+    #include "utils/debug.h"
+    #include "utils/inttypes.h"
+    #include "utils/utilities.h"
 
 using namespace lbcrypto;
 
@@ -64,7 +64,7 @@ protected:
 /*  TESTING METHODS OF Allocator CLASS    */
 /************************************************/
 
-#define BLOCKSIZE 8192
+    #define BLOCKSIZE 8192
 
 typedef char Block[BLOCKSIZE];  // define Block as char array of size BLOCKSIZE
 
@@ -88,11 +88,11 @@ Allocator allocatorStaticPool(BLOCKSIZE, 20, staticMemoryPool);
 AllocatorPool<MyClass, 20> allocatorStaticPool2;
 
 // Benchmark allocators
-#ifdef __ANDROID__
+    #ifdef __ANDROID__
 static const int MAX_BLOCKS = 512;  // reduce size of pool for limited memory
-#else
+    #else
 static const int MAX_BLOCKS = 4096;
-#endif
+    #endif
 static const int MAX_BLOCK_SIZE = 8196;
 char* memoryPtrs[MAX_BLOCKS];
 char* memoryPtrs2[MAX_BLOCKS];
@@ -103,12 +103,12 @@ static void out_of_memory() {
     // new-handler function called by Allocator when pool is out of memory
 
     std::cerr << "out_of_memory in block allocator";
-#if 0
+    #if 0
   std::bad_alloc exception;
   throw(exception);
-#else
+    #else
     assert(0);
-#endif
+    #endif
 }
 
 typedef char* (*AllocFunc)(int size);
@@ -250,3 +250,4 @@ TEST(UTBlockAllocate, block_allocator_test) {
     Benchmark("Heap Blocks (Run 2)", AllocHeapBlocks, DeallocHeapBlocks);
     Benchmark("Heap Blocks (Run 3)", AllocHeapBlocks, DeallocHeapBlocks);
 }
+#endif

@@ -69,7 +69,6 @@ void RunBFVrns() {
     parameters.SetBatchSize(batchSize);
     parameters.SetDigitSize(digitSize);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetThresholdNumOfParties(5);
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

@@ -43,7 +43,7 @@ namespace {
 enum { MAX_BACKTRACE_ADDRESSES = 512 };
 }
 
-static bool stringEmpty(const std::string& str) {
+static bool stringEmpty(const std::string& str) noexcept {
     if (!str.length())
         return true;
 
@@ -56,18 +56,21 @@ static bool stringEmpty(const std::string& str) {
     return true;
 }
 
-std::vector<std::string> get_call_stack() {
+std::vector<std::string> get_call_stack() noexcept {
     void* bt_buffer[MAX_BACKTRACE_ADDRESSES] = {NULL};
     const int n                              = backtrace(bt_buffer, MAX_BACKTRACE_ADDRESSES);
     if (n < 1) {
         return std::vector<std::string>();
     }
-    const std::unique_ptr<char*> symbols(backtrace_symbols(bt_buffer, n));
+    char** symbols = reinterpret_cast<char**>(backtrace_symbols(bt_buffer, n));
+    if (symbols == NULL) {
+        return std::vector<std::string>();
+    }
 
     const size_t numSymbols = static_cast<size_t>(n);
-    std::vector<std::string> ret(numSymbols);
+    std::vector<std::string> retVec(numSymbols);
     for (size_t i = 0; i < numSymbols; ++i) {
-        std::string symbol(symbols.get()[i]);
+        std::string symbol(symbols[i]);
         // we need to get rid of anything that doesn't belong to the name
         // Mangled symbol examples:
         // ./lib/libOPENFHEcore.so.1(_Z14get_call_stackB5cxx11v+0x35) [0x7f1b5cdb91d5]
@@ -81,13 +84,14 @@ std::vector<std::string> get_call_stack() {
         size_t newLen = symbol.length() - pos;
         std::string mangledName(symbol.substr(pos + 1, newLen));
 
-        ret[i] = (stringEmpty(mangledName)) ? symbols.get()[i] : demangle(mangledName.c_str());
+        retVec[i] = (stringEmpty(mangledName)) ? symbols[i] : demangle(mangledName.c_str());
     }
 
-    return ret;
+    free(symbols);
+    return retVec;
 }
 #else
-std::vector<std::string> get_call_stack() {
+std::vector<std::string> get_call_stack() noexcept {
     return std::vector<std::string>();
 }
 #endif

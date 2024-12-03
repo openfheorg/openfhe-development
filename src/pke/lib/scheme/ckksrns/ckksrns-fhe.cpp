@@ -487,8 +487,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         ctxtDCRT[i] = temp;
     }
 
-    raised->SetElements(ctxtDCRT);
     raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
+    raised->SetElements(std::move(ctxtDCRT));
 
 #ifdef BOOTSTRAPTIMING
     std::cerr << "\nNumber of levels at the beginning of bootstrapping: "
@@ -937,7 +937,7 @@ std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots
     // Computing all indices for baby-step giant-step procedure for encoding and decoding
     indexList.reserve(b + g - 2 + bRem + gRem - 2 + 1 + M);
 
-    for (int32_t s = 0; s < int32_t(levelBudget); s++) {
+    for (int32_t s = 0; s < int32_t(levelBudget) - flagRem; s++) {
         for (int32_t j = 0; j < g; j++) {
             indexList.emplace_back(
                 ReduceRotation((j - (numRotations + 1) / 2 + 1) * (1 << (s * layersCollapse)), M / 4));
@@ -1616,7 +1616,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
             first         = cc->KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
-            inner->SetElements(elements);
+            inner->SetElements(std::move(elements));
             result = inner;
         }
         else {
@@ -1636,7 +1636,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
     result        = cc->KeySwitchDown(result);
     auto elements = result->GetElements();
     elements[0] += first;
-    result->SetElements(elements);
+    result->SetElements(std::move(elements));
 
     return result;
 }
@@ -1756,7 +1756,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                 first         = cc->KeySwitchDownFirstElement(inner);
                 auto elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
+                inner->SetElements(std::move(elements));
                 outer = inner;
             }
             else {
@@ -1774,7 +1774,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                     first += cc->KeySwitchDownFirstElement(inner);
                     auto elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
+                    inner->SetElements(std::move(elements));
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -1819,7 +1819,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                 first         = cc->KeySwitchDownFirstElement(inner);
                 auto elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
+                inner->SetElements(std::move(elements));
                 outer = inner;
             }
             else {
@@ -1837,7 +1837,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                     first += cc->KeySwitchDownFirstElement(inner);
                     auto elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
+                    inner->SetElements(std::move(elements));
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -1969,7 +1969,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                 first         = cc->KeySwitchDownFirstElement(inner);
                 auto elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
+                inner->SetElements(std::move(elements));
                 outer = inner;
             }
             else {
@@ -1987,7 +1987,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                     first += cc->KeySwitchDownFirstElement(inner);
                     auto elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
+                    inner->SetElements(std::move(elements));
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -2032,7 +2032,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                 first         = cc->KeySwitchDownFirstElement(inner);
                 auto elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
+                inner->SetElements(std::move(elements));
                 outer = inner;
             }
             else {
@@ -2050,7 +2050,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                     first += cc->KeySwitchDownFirstElement(inner);
                     auto elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
+                    inner->SetElements(std::move(elements));
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -2264,8 +2264,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         NativeVector nativeVec(N, nativeParams[i]->GetModulus());
         FitToNativeVector(N, temp, Max128BitValue(), &nativeVec);
         NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(nativeVec, Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, element);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, std::move(element));
     }
 
     usint numTowers = nativeParams.size();
@@ -2337,8 +2337,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     if (logc < 0) {
         OPENFHE_THROW("Too small scaling factor");
     }
-    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox = logc - logValid;
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2369,11 +2369,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax = realVal;
+                    realMax    = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax = imagVal;
+                    imagMax    = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2396,19 +2396,19 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
         NativeVector nativeVec(N, nativeParams[i]->GetModulus());
         FitToNativeVector(N, temp, Max64BitValue(), &nativeVec);
         NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(nativeVec, Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, element);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, std::move(element));
     }
 
     usint numTowers = nativeParams.size();
@@ -2436,7 +2436,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
+        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
@@ -2503,7 +2503,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> private
 
     DCRTPoly sPermuted = s.AutomorphismTransform(index, vec);
 
-    privateKeyPermuted->SetPrivateElement(sPermuted);
+    privateKeyPermuted->SetPrivateElement(std::move(sPermuted));
     privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
 
     return algo->KeySwitchGen(privateKey, privateKeyPermuted);

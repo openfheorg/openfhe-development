@@ -205,8 +205,8 @@ bool CKKSPackedEncoding::Encode() {
             NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
             FitToNativeVector(temp, Max128BitValue(), &nativeVec);
             NativePoly element = this->GetElement<DCRTPoly>().GetElementAtIndex(i);
-            element.SetValues(nativeVec, Format::COEFFICIENT);  // output was in coefficient format
-            this->encodedVectorDCRT.SetElementAtIndex(i, element);
+            element.SetValues(std::move(nativeVec), Format::COEFFICIENT);  // output was in coefficient format
+            this->encodedVectorDCRT.SetElementAtIndex(i, std::move(element));
         }
 
         usint numTowers = nativeParams.size();
@@ -366,8 +366,8 @@ bool CKKSPackedEncoding::Encode() {
             NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
             FitToNativeVector(temp, Max64BitValue(), &nativeVec);
             NativePoly element = this->GetElement<DCRTPoly>().GetElementAtIndex(i);
-            element.SetValues(nativeVec, Format::COEFFICIENT);  // output was in coefficient format
-            this->encodedVectorDCRT.SetElementAtIndex(i, element);
+            element.SetValues(std::move(nativeVec), Format::COEFFICIENT);  // output was in coefficient format
+            this->encodedVectorDCRT.SetElementAtIndex(i, std::move(element));
         }
 
         usint numTowers = nativeParams.size();
@@ -457,6 +457,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
             curValues[i] = cur;
         }
+
+        // clears the values containing information about the noise
+        GetElement<NativePoly>().SetValuesToZero();
     }
     else {
         powP = pow(2, -p);
@@ -486,6 +489,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
             curValues[i] = cur;
         }
+
+        // clears the values containing information about the noise
+        GetElement<Poly>().SetValuesToZero();
     }
 
     // the code below adds a Gaussian noise to the decrypted result

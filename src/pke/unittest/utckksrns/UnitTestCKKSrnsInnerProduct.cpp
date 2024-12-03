@@ -31,6 +31,7 @@
 
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
+#include "cryptocontext.h"
 
 #include <vector>
 #include "gtest/gtest.h"

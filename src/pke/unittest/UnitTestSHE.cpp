@@ -41,8 +41,6 @@
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
-#include <cxxabi.h>
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -145,18 +143,20 @@ constexpr usint BATCH     = 16;
 constexpr usint BATCH_LRG = 1 << 12;
 constexpr usint PTM       = 64;
 constexpr usint PTM_LRG   = 65537;
-constexpr usint BV_DSIZE  = 4;
+// checks BFV for a 46-bit plaintext modulus
+constexpr uint64_t PTM_XTR_LRG = 35184372744193;
+constexpr usint BV_DSIZE       = 4;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { ADD_PACKED, "01", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { ADD_PACKED, "02", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { ADD_PACKED, "03", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { ADD_PACKED, "04", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { ADD_PACKED, "02", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { ADD_PACKED, "03", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { ADD_PACKED, "04", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { ADD_PACKED, "05", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { ADD_PACKED, "06", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { ADD_PACKED, "07", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { ADD_PACKED, "08", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { ADD_PACKED, "06", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { ADD_PACKED, "07", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { ADD_PACKED, "08", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { ADD_PACKED, "09", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM,   DFLT,      1,      DFLT, HPS,              STANDARD,  DFLT}, },
     { ADD_PACKED, "10", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM,   DFLT,      1,      DFLT, HPS,              STANDARD,  DFLT}, },
     { ADD_PACKED, "11", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM,   DFLT,      1,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -192,13 +192,13 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // ==========================================
     // TestType,        Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { MULT_COEF_PACKED, "01", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_COEF_PACKED, "02", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_COEF_PACKED, "03", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_COEF_PACKED, "04", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_COEF_PACKED, "02", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_COEF_PACKED, "03", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_COEF_PACKED, "04", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { MULT_COEF_PACKED, "05", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_COEF_PACKED, "06", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_COEF_PACKED, "07", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_COEF_PACKED, "08", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_COEF_PACKED, "06", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_COEF_PACKED, "07", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_COEF_PACKED, "08", {BGVRNS_SCHEME, 16,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { MULT_COEF_PACKED, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { MULT_COEF_PACKED, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { MULT_COEF_PACKED, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM,   DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -234,13 +234,13 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // ==========================================
     // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { MULT_PACKED, "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_PACKED, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_PACKED, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_PACKED, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_PACKED, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_PACKED, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_PACKED, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { MULT_PACKED, "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_PACKED, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_PACKED, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { MULT_PACKED, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_PACKED, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_PACKED, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { MULT_PACKED, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { MULT_PACKED, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { MULT_PACKED, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { MULT_PACKED, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -273,16 +273,41 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { MULT_PACKED, "38", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
     { MULT_PACKED, "39", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     { MULT_PACKED, "40", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { MULT_PACKED, "41", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
+    { MULT_PACKED, "42", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
+    { MULT_PACKED, "43", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { MULT_PACKED, "44", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { MULT_PACKED, "45", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { MULT_PACKED, "46", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { MULT_PACKED, "47", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
+    { MULT_PACKED, "48", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
+    { MULT_PACKED, "49", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { MULT_PACKED, "50", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { MULT_PACKED, "51", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { MULT_PACKED, "52", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { MULT_PACKED, "53", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { MULT_PACKED, "54", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { MULT_PACKED, "55", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
+    { MULT_PACKED, "56", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
+    { MULT_PACKED, "57", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { MULT_PACKED, "58", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { MULT_PACKED, "59", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { MULT_PACKED, "60", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { MULT_PACKED, "61", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
+    { MULT_PACKED, "62", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
+    { MULT_PACKED, "63", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { MULT_PACKED, "64", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+
     // ==========================================
     // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { EVALATINDEX, "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALATINDEX, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALATINDEX, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALATINDEX, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALATINDEX, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALATINDEX, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALATINDEX, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALATINDEX, "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALATINDEX, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALATINDEX, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALATINDEX, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALATINDEX, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALATINDEX, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALATINDEX, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALATINDEX, "09", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      1,    HPS,              STANDARD,  DFLT}, },
     { EVALATINDEX, "10", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      1,    HPS,              STANDARD,  DFLT}, },
     { EVALATINDEX, "11", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      1,    BEHZ,             STANDARD,  DFLT}, },
@@ -315,16 +340,41 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALATINDEX, "38", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        EXTENDED,  DFLT}, },
     { EVALATINDEX, "39", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     { EVALATINDEX, "40", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { EVALATINDEX, "41", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              STANDARD,  DFLT}, },
+    { EVALATINDEX, "42", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              STANDARD,  DFLT}, },
+    { EVALATINDEX, "43", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        STANDARD,  DFLT}, },
+    { EVALATINDEX, "44", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        STANDARD,  DFLT}, },
+    { EVALATINDEX, "45", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { EVALATINDEX, "46", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { EVALATINDEX, "47", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              STANDARD,  DFLT}, },
+    { EVALATINDEX, "48", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              STANDARD,  DFLT}, },
+    { EVALATINDEX, "49", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        STANDARD,  DFLT}, },
+    { EVALATINDEX, "50", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        STANDARD,  DFLT}, },
+    { EVALATINDEX, "51", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { EVALATINDEX, "52", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { EVALATINDEX, "53", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              EXTENDED,  DFLT}, },
+    { EVALATINDEX, "54", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              EXTENDED,  DFLT}, },
+    { EVALATINDEX, "55", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { EVALATINDEX, "56", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { EVALATINDEX, "57", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { EVALATINDEX, "58", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         BV,     DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { EVALATINDEX, "59", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              EXTENDED,  DFLT}, },
+    { EVALATINDEX, "60", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPS,              EXTENDED,  DFLT}, },
+    { EVALATINDEX, "61", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { EVALATINDEX, "62", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { EVALATINDEX, "63", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { EVALATINDEX, "64", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+
     // ==========================================
     // TestType,   Descr, Scheme,       RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech          EncTech,   PREMode
     { EVALMERGE,  "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALMERGE,  "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALMERGE,  "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -362,13 +412,13 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // ==========================================
     // TestType,   Descr, Scheme,       RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { METADATA,   "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { METADATA,   "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { METADATA,   "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { METADATA,   "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { METADATA,   "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { METADATA,   "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { METADATA,   "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { METADATA,   "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { METADATA,   "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { METADATA,   "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { METADATA,   "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { METADATA,   "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { METADATA,   "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { METADATA,   "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { METADATA,   "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { METADATA,   "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { METADATA,   "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -403,13 +453,13 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // ==========================================
     // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { EVALSQUARE,  "01", {BGVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
-    { EVALSQUARE,  "02", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "03", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "04", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "02", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "03", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "04", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "05", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "06", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "07", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "08", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "06", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "07", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "08", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "09", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALSQUARE,  "10", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALSQUARE,  "11", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -526,14 +576,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -602,14 +645,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -652,8 +688,12 @@ protected:
             EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue()) << failmsg << " EvalMult fails";
 
             if (!((cc->getSchemeId() == SCHEME::BFVRNS_SCHEME) &&
-                  (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
-                       ->GetMultiplicationTechnique() == BEHZ))) {
+                  ((std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == BEHZ) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == HPS) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetEncryptionTechnique() == EXTENDED)))) {
                 cResult = cc->Compress(cResult, 1);
                 cc->Decrypt(kp.secretKey, cResult, &results);
                 results->SetLength(intArrayExpected->GetLength());
@@ -668,8 +708,12 @@ protected:
             EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue()) << failmsg << " operator* fails";
 
             if (!((cc->getSchemeId() == SCHEME::BFVRNS_SCHEME) &&
-                  (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
-                       ->GetMultiplicationTechnique() == BEHZ))) {
+                  ((std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == BEHZ) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetMultiplicationTechnique() == HPS) ||
+                   (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                        ->GetEncryptionTechnique() == EXTENDED)))) {
                 cResult = cc->Compress(cResult, 1);
                 cc->Decrypt(kp.secretKey, cResult, &results);
                 results->SetLength(intArrayExpected->GetLength());
@@ -695,14 +739,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -755,14 +792,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -818,14 +848,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -893,14 +916,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -1004,14 +1020,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -1059,14 +1068,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -1097,14 +1099,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -1151,14 +1146,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -1218,14 +1206,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -1243,14 +1224,7 @@ protected:
             EXPECT_EQ(1, 1);
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_EQ(0, 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 };

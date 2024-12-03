@@ -196,6 +196,18 @@ std::string SerializeToString(const T& t) {
     return s.str();
 }
 
+/**
+		 * DeserializeFromString - deserialize the object from a JSON string
+		 * @param obj - any object to deserialize into
+		 * @param json - JSON string
+		 */
+template <typename T>
+void DeserializeFromString(T& obj, const std::string& json) {
+    std::stringstream s;
+    s << json;
+    Serial::Deserialize(obj, s, SerType::JSON);
+}
+
 }  // namespace Serial
 
 }  // namespace lbcrypto

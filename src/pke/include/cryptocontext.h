@@ -65,6 +65,7 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <set>
 
 namespace lbcrypto {
 
@@ -115,91 +116,6 @@ class CryptoContextImpl : public Serializable {
         OPENFHE_THROW("Cannot find context for the given pointer to CryptoContextImpl");
     }
 
-    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
-                                                      size_t noiseScaleDeg, uint32_t level,
-                                                      const std::shared_ptr<ParmType> params, usint slots) const {
-        VerifyCKKSScheme(__func__);
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        if (level > 0) {
-            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-            // readily available. so, what we get is numModuli and use it for calculations
-            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
-            uint32_t multiplicativeDepth =
-                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
-            // so the user can understand the error more easily.
-            if (level >= numModuli) {
-                std::string errorMsg;
-                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
-                else
-                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
-
-                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
-                            std::to_string(multiplicativeDepth) + "]";
-                OPENFHE_THROW(errorMsg);
-            }
-        }
-
-        double scFact = 0;
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            scFact = cryptoParams->GetScalingFactorRealBig(level);
-            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
-            // in our encoding function, so we set it to 1 to make sure it
-            // has no effect on the encoding.
-            noiseScaleDeg = 1;
-        }
-        else {
-            scFact = cryptoParams->GetScalingFactorReal(level);
-        }
-
-        Plaintext p;
-        if (params == nullptr) {
-            std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
-            if (level != 0) {
-                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
-                for (uint32_t i = 0; i < level; i++) {
-                    elemParams.PopLastParam();
-                }
-                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
-            }
-            else {
-                elemParamsPtr = cryptoParams->GetElementParams();
-            }
-            // Check if plaintext has got enough slots for data (value)
-            usint ringDim    = elemParamsPtr->GetRingDimension();
-            size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
-                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
-                              "] of the vector with values should not be greater than ringDim/2 [" +
-                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
-            }
-            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
-                                                               noiseScaleDeg, level, scFact, slots));
-        }
-        else {
-            // Check if plaintext has got enough slots for data (value)
-            usint ringDim    = params->GetRingDimension();
-            size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
-                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
-                              "] of the vector with values should not be greater than ringDim/2 [" +
-                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
-            }
-            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
-                                                               level, scFact, slots));
-        }
-        p->Encode();
-
-        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has noiseScaleDeg 2.
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            p->SetNoiseScaleDeg(2);
-        }
-        return p;
-    }
-
     /**
     * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
     * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
@@ -211,52 +127,79 @@ class CryptoContextImpl : public Serializable {
     Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
                             uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        if (level > 0) {
-            if (getSchemeId() == SCHEME::BFVRNS_SCHEME) {
-                std::string errorMsg("The level value should be zero for BFVRNS_SCHEME. Currently: level is [" +
-                                     std::to_string(level) + "]");
-                OPENFHE_THROW(errorMsg);
-            }
-            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-            // readily available. so, what we get is numModuli and use it for calculations
-            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
-            uint32_t multiplicativeDepth =
-                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
-            // so the user can understand the error more easily.
-            if (level >= numModuli) {
-                std::string errorMsg;
-                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
-                else
-                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
 
-                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
-                            std::to_string(multiplicativeDepth) + "]";
-                OPENFHE_THROW(errorMsg);
+        if (level > 0) {
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            if (!isBFVRNS(m_schemeId)) {
+                // we throw an exception if level >= numModuli. However, we use multiplicativeDepth in the error message,
+                // so the user can understand the error more easily.
+                if (level >= numModuli) {
+                    uint32_t multiplicativeDepth =
+                        (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+                    std::string errorMsg;
+                    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                        errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                    else
+                        errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                    errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                                std::to_string(multiplicativeDepth) + "]";
+                    OPENFHE_THROW(errorMsg);
+                }
+            }
+            else {
+                if ((cryptoParams->GetMultiplicationTechnique() == BEHZ) ||
+                    (cryptoParams->GetMultiplicationTechnique() == HPS)) {
+                    OPENFHE_THROW(
+                        "BFV: Encoding at level > 0 is not currently supported for BEHZ or HPS. Use one of the HPSPOVERQ* methods instead.");
+                }
+
+                if ((cryptoParams->GetEncryptionTechnique() == EXTENDED)) {
+                    OPENFHE_THROW(
+                        "BFV: Encoding at level > 0 is not currently supported for the EXTENDED encryption method. Use the STANDARD encryption method instead.");
+                }
+                if (level >= numModuli) {
+                    std::string errorMsg =
+                        "The level value should be less the current number of RNS limbs in the cryptocontext.";
+                    errorMsg += " Currently: level is [" + std::to_string(level) + "] and number of RNS limbs is [" +
+                                std::to_string(numModuli) + "]";
+                    OPENFHE_THROW(errorMsg);
+                }
             }
         }
 
+        // uses a parameter set with a reduced number of RNS limbs corresponding to the level
+        std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
+        if (level != 0) {
+            ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
+            for (uint32_t i = 0; i < level; i++) {
+                elemParams.PopLastParam();
+            }
+            elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+        }
+        else {
+            elemParamsPtr = cryptoParams->GetElementParams();
+        }
+
         Plaintext p;
-        if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                                                       cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+        if (isBGVRNS(m_schemeId) && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+                                     cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
             NativeInteger scf;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
-                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
+                                                      getSchemeId(), 1, level, scf);
                 p->SetNoiseScaleDeg(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
-                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
+                                                      getSchemeId(), depth, level, scf);
             }
         }
         else {
-            auto elementParams = this->GetElementParams();
-            p = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
-                                                getSchemeId());
+            p = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
+                                                getSchemeId(), depth, level);
         }
 
         return p;
@@ -280,6 +223,32 @@ class CryptoContextImpl : public Serializable {
         return PlaintextFactory::MakePlaintext(encoding, cc->GetElementParams(), cc->GetEncodingParams(), value,
                                                value2);
     }
+
+    /**
+   * @brief Get indices that do not have automorphism keys for the given secret key tag in the key map
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to check the key map against
+   * @return indices that do not have automorphism keys associated with
+   */
+    static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyID,
+                                                              const std::set<uint32_t>& indices) {
+        std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyID)};
+        // if no index found for the given keyID, then the entire set "indices" is returned
+        return (existingIndices.empty()) ? indices :
+                                           CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
+    }
+    /**
+   * Get automorphism keys for a specific secret key tag
+   */
+    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
+    /**
+   * @brief Get automorphism keys for a specific secret key tag and an array of specific indices
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to retrieve key for
+   * @return shared_ptr to std::map where the map key/data pair is index/automorphism key
+   */
+    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetPartialEvalAutomorphismKeyMapPtr(
+        const std::string& keyID, const std::vector<uint32_t>& indexList);
 
     // cached evalmult keys, by secret key UID
     static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
@@ -386,6 +355,91 @@ protected:
                                  CALLER_INFO);
             OPENFHE_THROW(errorMsg);
         }
+    }
+
+    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
+                                                      size_t noiseScaleDeg, uint32_t level,
+                                                      const std::shared_ptr<ParmType> params, usint slots) const {
+        VerifyCKKSScheme(__func__);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        if (level > 0) {
+            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
+            // readily available. so, what we get is numModuli and use it for calculations
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            uint32_t multiplicativeDepth =
+                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
+                OPENFHE_THROW(errorMsg);
+            }
+        }
+
+        double scFact = 0;
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+            scFact = cryptoParams->GetScalingFactorRealBig(level);
+            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
+            // in our encoding function, so we set it to 1 to make sure it
+            // has no effect on the encoding.
+            noiseScaleDeg = 1;
+        }
+        else {
+            scFact = cryptoParams->GetScalingFactorReal(level);
+        }
+
+        Plaintext p;
+        if (params == nullptr) {
+            std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
+            if (level != 0) {
+                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
+                for (uint32_t i = 0; i < level; i++) {
+                    elemParams.PopLastParam();
+                }
+                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+            }
+            else {
+                elemParamsPtr = cryptoParams->GetElementParams();
+            }
+            // Check if plaintext has got enough slots for data (value)
+            usint ringDim    = elemParamsPtr->GetRingDimension();
+            size_t valueSize = value.size();
+            if (valueSize > ringDim / 2) {
+                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                              "] of the vector with values should not be greater than ringDim/2 [" +
+                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            }
+            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
+                                                               noiseScaleDeg, level, scFact, slots));
+        }
+        else {
+            // Check if plaintext has got enough slots for data (value)
+            usint ringDim    = params->GetRingDimension();
+            size_t valueSize = value.size();
+            if (valueSize > ringDim / 2) {
+                OPENFHE_THROW("The size [" + std::to_string(valueSize) +
+                              "] of the vector with values should not be greater than ringDim/2 [" +
+                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            }
+            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
+                                                               level, scFact, slots));
+        }
+        p->Encode();
+
+        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has noiseScaleDeg 2.
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+            p->SetNoiseScaleDeg(2);
+        }
+        return p;
     }
 
     PrivateKey<Element> privateKey;
@@ -632,15 +686,15 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-        Serial::Deserialize(CryptoContextImpl<Element>::GetAllEvalMultKeys(), ser, sertype);
+        std::map<std::string, std::vector<EvalKey<Element>>> omap;
 
-        // TODO (dsuponit): should we keep the code below?
-        // // The deserialize call created any contexts that needed to be created....
-        // // so all we need to do is put the keys into the maps for their context
+        Serial::Deserialize(omap, ser, sertype);
 
-        // for (auto k : CryptoContextImpl<Element>::s_evalMultKeyMap) {
-        //     CryptoContextImpl<Element>::s_evalMultKeyMap[k.first] = k.second;
-        // }
+        // The deserialize call creates all contexts that need to be created...
+        // so, all we need to do is to insert the keys into the maps for their context(s)
+        for (auto& [tag, vec] : omap) {
+            CryptoContextImpl<Element>::InsertEvalMultKey(vec, tag);
+        }
         return true;
     }
 
@@ -662,10 +716,12 @@ public:
 
     /**
    * InsertEvalMultKey - add the given vector of keys to the map, replacing the
-   * existing vector if there
+   * existing vector if it is there
    * @param evalKeyVec vector of keys
+   * @param keyTag key identifier, unique for every cryptocontext
    */
-    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec);
+    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec,
+                                  const std::string& keyTag = std::string());
 
     /**
    * SerializeEvalSumKey for a single EvalSum key or all of the EvalSum keys
@@ -781,6 +837,65 @@ public:
             return false;
 
         Serial::Serialize(omap, ser, sertype);
+        return true;
+    }
+
+    /**
+   * @brief Serialize automorphism keys for an array of specific indices within a specific secret key tag
+   * @param ser - stream to serialize to
+   * @param sertype - type of serialization
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to serialize key for
+   * @return true on success
+   */
+    template <typename ST>
+    static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyID,
+                                             const std::vector<uint32_t>& indexList) {
+        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> keyMap = {
+            {keyID, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyID, indexList)}};
+
+        Serial::Serialize(keyMap, ser, sertype);
+        return true;
+    }
+
+    /**
+   * @brief Deserialize automorphism keys for an array of specific indices within a specific secret key tag
+   * @param ser - stream to serialize from
+   * @param sertype - type of serialization
+   * @param keyID - secret key tag
+   * @param indexList - array of specific indices to serialize key for
+   * @return true on success
+   */
+    template <typename ST>
+    static bool DeserializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyID,
+                                               const std::vector<uint32_t>& indexList) {
+        if (!indexList.size())
+            OPENFHE_THROW("indexList may not be empty");
+        if (keyID.empty())
+            OPENFHE_THROW("keyID may not be empty");
+
+        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> allDeserKeys;
+        Serial::Deserialize(allDeserKeys, ser, sertype);
+
+        const auto& keyMapIt = allDeserKeys.find(keyID);
+        if (keyMapIt == allDeserKeys.end()) {
+            OPENFHE_THROW("Deserialized automorphism keys are not generated for ID [" + keyID + "].");
+        }
+
+        // create a new map with evalkeys for the specified indices
+        std::map<usint, EvalKey<Element>> newMap;
+        for (const uint32_t indx : indexList) {
+            const auto& key = keyMapIt->find(indx);
+            if (key == keyMapIt->end()) {
+                OPENFHE_THROW("No automorphism key generated for index [" + std::to_string(indx) + "] within keyID [" +
+                              keyID + "].");
+            }
+            newMap[indx] = key->second;
+        }
+
+        CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
+            std::make_shared<std::map<uint32_t, EvalKey<Element>>>(newMap), keyID);
+
         return true;
     }
 
@@ -957,12 +1072,9 @@ public:
     /**
    * Get automorphism keys for a specific secret key tag
    */
-    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
-
     static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyID) {
         return *(CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID));
     }
-
     /**
    * Get a map of summation keys (each is composed of several automorphism keys) for all secret keys
    */
@@ -1079,7 +1191,7 @@ public:
    * KeyGen generates a key pair using this algorithm's KeyGen method
    * @return a public/secret key pair
    */
-    KeyPair<Element> KeyGen() {
+    KeyPair<Element> KeyGen() const {
         return GetScheme()->KeyGen(GetContextForPointer(this), false);
     }
 
@@ -1089,7 +1201,7 @@ public:
    * entropy, for use in special cases like Ring Reduction
    * @return a public/secret key pair
    */
-    KeyPair<Element> SparseKeyGen() {
+    KeyPair<Element> SparseKeyGen() const {
         return GetScheme()->KeyGen(GetContextForPointer(this), true);
     }
 
@@ -1926,8 +2038,15 @@ public:
         if (!indexList.size())
             OPENFHE_THROW("Input index vector is empty");
 
-        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
+        // Do not generate duplicate keys that have been already generated and added to the static storage (map)
+        std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
+        std::set<uint32_t> indicesToGenerate{
+            CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
+
+        std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
+        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, newIndices);
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
+
         return evalKeys;
     }
 
@@ -1946,8 +2065,7 @@ public:
    *
    * @param ciphertext the input ciphertext.
    * @param i automorphism index
-   * @param &evalKeys - reference to the vector of evaluation keys generated by
-   * EvalAutomorphismKeyGen.
+   * @param &evalKeys - reference to the vector of evaluation keys generated by EvalAutomorphismKeyGen.
    * @return resulting ciphertext
    */
     Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
@@ -2675,13 +2793,13 @@ public:
    * encoding
    *
    * @param ciphertext the input ciphertext.
-   * @param rowSize size of rows in the matrix
+   * @param numRows number of rows in the matrix
    * @param &evalSumKeyMap - reference to the map of evaluation keys generated by
    * @param subringDim the current cyclotomic order/subring dimension. If set to
    * 0, we use the full cyclotomic order.
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
+    Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, usint numRows,
                                     const std::map<usint, EvalKey<Element>>& evalSumKeyMap, usint subringDim = 0) const;
 
     /**
@@ -2689,11 +2807,11 @@ public:
    * encoding
    *
    * @param ciphertext the input ciphertext.
-   * @param rowSize size of rows in the matrix
+   * @param numCols number of columns in the matrix
    * @param &evalSumKeyMap - reference to the map of evaluation keys generated by
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, usint rowSize,
+    Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, usint numCols,
                                     const std::map<usint, EvalKey<Element>>& evalSumKeyMap) const;
 
     //------------------------------------------------------------------------------
@@ -3536,15 +3654,15 @@ public:
      * @param keyTag map search id for the automorphism keys
      * @return vector with all indices in the map. if nothing is found for the given keyTag, then the vector is empty
      **/
-    static std::vector<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
+    static std::set<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
 
     /**
-     * @brief GetUniqueValues compares 2 vectors to generate a vector with unique values from the 2nd vector
-     * @param oldValues vector of integers to compare against (passed by value)
-     * @param newValues vector of integers to find unique values from  (passed by value)
-     * @return vector with unique values from newValues
+     * @brief GetUniqueValues compares 2 sets to generate a set with unique values from the 2nd set
+     * @param oldValues set of integers to compare against (passed by value)
+     * @param newValues set of integers to find unique values from  (passed by value)
+     * @return set with the unique values from newValues
      **/
-    static std::vector<uint32_t> GetUniqueValues(std::vector<uint32_t> oldValues, std::vector<uint32_t> newValues);
+    static std::set<uint32_t> GetUniqueValues(const std::set<uint32_t>& oldValues, const std::set<uint32_t>& newValues);
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

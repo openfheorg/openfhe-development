@@ -57,10 +57,10 @@ template M4Integer GreatestCommonDivisor(const M4Integer& a, const M4Integer& b)
 template bool MillerRabinPrimalityTest(const M4Integer& p, const usint niter);
 template const M4Integer PollardRhoFactorization(const M4Integer& n);
 template void PrimeFactorize(M4Integer n, std::set<M4Integer>& primeFactors);
-template M4Integer FirstPrime(uint32_t nBits, uint32_t m);
-template M4Integer LastPrime(uint32_t nBits, uint32_t m);
-template M4Integer NextPrime(const M4Integer& q, uint32_t m);
-template M4Integer PreviousPrime(const M4Integer& q, uint32_t m);
+template M4Integer FirstPrime(uint32_t nBits, uint64_t m);
+template M4Integer LastPrime(uint32_t nBits, uint64_t m);
+template M4Integer NextPrime(const M4Integer& q, uint64_t m);
+template M4Integer PreviousPrime(const M4Integer& q, uint64_t m);
 template std::vector<M4Integer> GetTotientList(const M4Integer& n);
 template M4Vector PolyMod(const M4Vector& dividend, const M4Vector& divisor, const M4Integer& modulus);
 template M4Vector PolynomialMultiplication(const M4Vector& a, const M4Vector& b);

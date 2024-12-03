@@ -35,12 +35,74 @@
  */
 
 #include "math/distributiongenerator.h"
+#include "utils/prng/blake2engine.h"
+#include "utils/exception.h"
 
-#include <memory>
-#include <random>
+#include <iostream>
+#if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
+    #include <dlfcn.h>
+#endif
 
 namespace lbcrypto {
 
-std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng = nullptr;
+std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng                                    = nullptr;
+PseudoRandomNumberGenerator::GenPRNGEngineFuncPtr PseudoRandomNumberGenerator::genPRNGEngine = nullptr;
+
+void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
+    if (genPRNGEngine)  // if genPRNGEngine has already been initialized
+        return;
+
+    if (libPath.empty()) {
+        // use the default OpenFHE PRNG that comes with the library
+        genPRNGEngine = default_prng::createEngineInstance;
+        if (!genPRNGEngine)
+            OPENFHE_THROW("Cannot find symbol: default_prng::createEngineInstance");
+        // std::cerr << "InitPRNGEngine: using local PRNG" << std::endl;
+    }
+    else {
+#if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
+        // enable this code for g++ on Linux only
+        // do not close libraryHandle, your application will crash if you do
+        void* libraryHandle = dlopen(libPath.c_str(), RTLD_LAZY);
+        if (!libraryHandle) {
+            std::string errMsg{std::string("Cannot open ") + libPath + ": "};
+            const char* dlsym_error = dlerror();
+            errMsg += dlsym_error;
+            OPENFHE_THROW(errMsg);
+        }
+        genPRNGEngine = (GenPRNGEngineFuncPtr)dlsym(libraryHandle, "createEngineInstance");
+        if (!genPRNGEngine) {
+            std::string errMsg{std::string("Cannot load symbol createEngineInstance() from ") + libPath};
+            const char* dlsym_error = dlerror();
+            errMsg += ": ";
+            errMsg += dlsym_error;
+            dlclose(libraryHandle);
+            OPENFHE_THROW(errMsg);
+        }
+        std::cerr << __FUNCTION__ << ": using external PRNG" << std::endl;
+#else
+        OPENFHE_THROW("OpenFHE may use an external PRNG library linked with g++ on Linux only");
+#endif
+    }
+}
+
+PRNG& PseudoRandomNumberGenerator::GetPRNG() {
+    // initialization of PRNGs
+    if (m_prng == nullptr) {
+#pragma omp critical
+        {
+            // we would like to believe that the block of code below is a good defense line
+            if (!genPRNGEngine)
+                InitPRNGEngine();
+            if (!genPRNGEngine)
+                OPENFHE_THROW("Failure to initialize the PRNG engine");
+
+            m_prng = std::shared_ptr<PRNG>(genPRNGEngine());
+            if (!m_prng)
+                OPENFHE_THROW("Cannot create a PRNG engine");
+        }  // pragma omp critical
+    }
+    return *m_prng;
+}
 
 }  // namespace lbcrypto

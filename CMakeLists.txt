@@ -26,8 +26,8 @@ endif()
 project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
-set(OPENFHE_VERSION_MINOR 1)
-set(OPENFHE_VERSION_PATCH 4)
+set(OPENFHE_VERSION_MINOR 2)
+set(OPENFHE_VERSION_PATCH 3)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -154,10 +154,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message (STATUS "BUILTIN_INFO_AVAILABLE is defined")
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(IGNORE_WARNINGS "${IGNORE_WARNINGS} -Wno-unused-private-field -Wno-shift-op-parentheses")
-endif()
-
 if( WITH_NATIVEOPT )
     set (NATIVE_OPT "-march=native")
 else()
@@ -187,6 +183,12 @@ if(WITH_COVTEST)
     link_libraries(gcov)
     set( BUILDDIR ${CMAKE_CURRENT_SOURCE_DIR}/build/)
     set( COVDIR ${BUILDDIR}coverage/)
+endif()
+
+if(UNIX AND NOT APPLE AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # OpenFHE may use an external shared object provided by user for PRNG and linked with g++ on Linux.
+    # In order to ensure that OpenFHE can dynamically load shared objects at runtime, add an additional library:
+    set(ADDITIONAL_LIBS "-ldl")
 endif()
 
 if(BUILD_STATIC)

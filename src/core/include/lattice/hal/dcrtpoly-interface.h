@@ -234,14 +234,6 @@ public:
     }
 
     /**
-   * @brief returns the element's original modulus, derived from Poly
-   * @return returns the modulus of the element.
-   */
-    const BigIntType& GetOriginalModulus() const {
-        return this->GetDerived().GetParams()->GetOriginalModulus();
-    }
-
-    /**
    * @brief returns the element's root of unity.
    * @return the element's root of unity.
    */
@@ -334,7 +326,7 @@ public:
    * @param element The element to store
    */
     void SetElementAtIndex(usint index, TowerType&& element) {
-        return this->GetDerived().SetElementAtIndex(index, element);
+        return this->GetDerived().SetElementAtIndex(index, std::move(element));
     }
 
     /***********************************************************************

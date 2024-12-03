@@ -363,7 +363,7 @@ public:
     virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
         OPENFHE_THROW("not a packed vector of complex numbers");
     }
-    virtual const std::vector<double> GetRealPackedValue() const {
+    virtual std::vector<double> GetRealPackedValue() const {
         OPENFHE_THROW("not a packed vector of real numbers");
     }
     virtual void SetStringValue(const std::string&) {
@@ -410,6 +410,15 @@ public:
    * @param out
    */
     virtual void PrintValue(std::ostream& out) const = 0;
+
+    /**
+   * GetFormattedValues() has a logic similar to PrintValue(), but requires a precision as an argument
+   * @param precision number of decimal digits of precision to print
+   * @return string with all values and "estimated precision"
+   */
+    virtual std::string GetFormattedValues(int64_t precision) const {
+        OPENFHE_THROW("not implemented");
+    }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {

@@ -36,8 +36,8 @@ namespace lbcrypto {
 void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseR^i (only for AP bootstrapping)
     if (m_method == BINFHE_METHOD::AP) {
-        auto&& logq = log(m_q.ConvertToDouble());
-        auto digitCountR{static_cast<size_t>(std::ceil(logq / log(static_cast<double>(m_baseR))))};
+        auto&& logq = std::log(m_q.ConvertToDouble());
+        auto digitCountR{static_cast<size_t>(std::ceil(logq / std::log(static_cast<double>(m_baseR))))};
         m_digitsR.clear();
         m_digitsR.reserve(digitCountR);
         BasicInteger value{1};
@@ -48,9 +48,10 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseG^i
     if (signEval) {
         constexpr uint32_t baseGlist[]  = {1 << 14, 1 << 18, 1 << 27};
-        constexpr double logbaseGlist[] = {noexcept(log(1 << 14)), noexcept(log(1 << 18)), noexcept(log(1 << 27))};
+        // {log(1 << 14), log(1 << 18), log(1 << 27)}
+        constexpr double logbaseGlist[] = {0x1.3687a9f1af2b1p+3, 0x1.8f40b5ed9812dp+3, 0x1.2b708872320e2p+4};
         constexpr NativeInteger nativebaseGlist[] = {1 << 14, 1 << 18, 1 << 27};
-        auto logQ{log(m_Q.ConvertToDouble())};
+        auto logQ{std::log(m_Q.ConvertToDouble())};
         for (size_t j = 0; j < 3; ++j) {
             NativeInteger vTemp{1};
             auto tempdigits{static_cast<size_t>(std::ceil(logQ / logbaseGlist[j]))};

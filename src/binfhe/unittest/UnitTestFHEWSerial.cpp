@@ -119,25 +119,25 @@ void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METH
 // They are left in this file for debugging purposes only.
 // TEST(UnitTestFHEWSerialAP, JSON) {
 //     std::string msg = "UnitTestFHEWSerialAP.JSON serialization test failed: ";
-//     UnitTestFHEWSerial(SerType::JSON, TOY, AP, FRESH, msg);
+//     UnitTestFHEWSerial(SerType::JSON, TOY, AP, SMALL_DIM, msg);
 // }
 
 TEST(UnitTestFHEWSerialAP, BINARY) {
     std::string msg = "UnitTestFHEWSerialAP.BINARY serialization test failed: ";
-    UnitTestFHEWSerial(SerType::BINARY, TOY, AP, FRESH, msg);
+    UnitTestFHEWSerial(SerType::BINARY, TOY, AP, SMALL_DIM, msg);
 }
 
 // TEST(UnitTestFHEWSerialGINX, JSON) {
 //     std::string msg = "UnitTestFHEWSerialGINX.JSON serialization test failed: ";
-//     UnitTestFHEWSerial(SerType::JSON, TOY, GINX, FRESH, msg);
+//     UnitTestFHEWSerial(SerType::JSON, TOY, GINX, SMALL_DIM, msg);
 // }
 
 TEST(UnitTestFHEWSerialGINX, BINARY) {
     std::string msg = "UnitTestFHEWSerialGINX.BINARY serialization test failed: ";
-    UnitTestFHEWSerial(SerType::BINARY, TOY, GINX, FRESH, msg);
+    UnitTestFHEWSerial(SerType::BINARY, TOY, GINX, SMALL_DIM, msg);
 }
 
 TEST(UnitTestFHEWSerialLMKCDEY, BINARY) {
     std::string msg = "UnitTestFHEWSerialGINX.BINARY serialization test failed: ";
-    UnitTestFHEWSerial(SerType::BINARY, TOY, LMKCDEY, FRESH, msg);
+    UnitTestFHEWSerial(SerType::BINARY, TOY, LMKCDEY, SMALL_DIM, msg);
 }

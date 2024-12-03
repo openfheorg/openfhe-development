@@ -59,7 +59,7 @@ bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() const {
 
 template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
-    if (log2(m_std) > 59) {
+    if (std::log2(m_std) > 59) {
         //    if (lbcrypto::GetMSB(static_cast<uint64_t>(std)) > 59) {
         std::string errorMsg(std::string("Standard deviation cannot exceed 59 bits"));
         OPENFHE_THROW(errorMsg);
@@ -77,17 +77,17 @@ double DiscreteGaussianGeneratorImpl<VecType>::GetStd() const {
 template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::Initialize() {
     // usually the bound of m_std * M is used, where M = 12 .. 40
-    // we use M = 12 here, which corresponds to the probability of roughly 2^(-100)
-    constexpr double acc{5e-32};
-    constexpr double M{noexcept(sqrt(-2 * log(acc)))};
-    int fin{static_cast<int>(ceil(m_std * M))};
+    // we use M = std::sqrt(-2. * std::log(5e-32)) = 12.0061 here,
+    // which corresponds to the probability of roughly 2^(-100)
+    double M{12.00610553538285};
+    int fin{static_cast<int>(std::ceil(m_std * M))};
 
     m_vals.clear();
     m_vals.reserve(fin);
     double variance{2 * m_std * m_std};
     double cusum{0.0};
     for (int x = 1; x <= fin; ++x) {
-        cusum += exp(-(static_cast<double>(x * x) / variance));
+        cusum += std::exp(-(static_cast<double>(x * x) / variance));
         m_vals.push_back(cusum);
     }
     m_a = 1.0 / (2 * cusum + 1.0);
@@ -172,9 +172,9 @@ VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(const uint32_t si
 template <typename VecType>
 typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
     double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const {
-    double t = log2(n) * stddev;
+    double t = std::log2(n) * stddev;
 
-    std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), ceil(mean + t));
+    std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), std::ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
     int32_t x;
@@ -197,8 +197,8 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
         OPENFHE_THROW("DiscreteGaussianGeneratorImpl called with stddev == +-inf");
 
     // this representation of log_2 is used for Visual Studio
-    double t = log2(n) * stddev;
-    std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), ceil(mean + t));
+    double t = std::log2(n) * stddev;
+    std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), std::ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
     double sigmaFactor   = 1 / (-2. * stddev * stddev);
@@ -223,7 +223,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev) {
     std::uniform_int_distribution<int64_t> uniform_sign(0, 1);
-    std::uniform_int_distribution<int64_t> uniform_j(0, ceil(stddev) - 1);
+    std::uniform_int_distribution<int64_t> uniform_j(0, std::ceil(stddev) - 1);
 
     PRNG& g = PseudoRandomNumberGenerator::GetPRNG();
 

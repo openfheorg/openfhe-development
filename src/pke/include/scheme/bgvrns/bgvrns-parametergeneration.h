@@ -57,17 +57,16 @@ namespace lbcrypto {
    * @param noisePerLevel is the noise we wish to maintain at each level
    */
 struct BGVNoiseEstimates {
-    const double Berr;
-    const double Bkey;
-    const double expansionFactor;
-    const double freshEncryptionNoise;
-    const double keySwitchingNoise;
-    const double modSwitchingNoise;
-    const double noisePerLevel;
+    double Berr;
+    double Bkey;
+    double expansionFactor;
+    double freshEncryptionNoise;
+    double keySwitchingNoise;
+    double modSwitchingNoise;
+    double noisePerLevel;
 
-    BGVNoiseEstimates(const double Berr0, const double Bkey0, const double expansionFactor0,
-                      const double freshEncryptionNoise0, const double keySwitchingNoise0,
-                      const double modSwitchingNoise0, double noisePerLevel0)
+    BGVNoiseEstimates(double Berr0, double Bkey0, double expansionFactor0, double freshEncryptionNoise0,
+                      double keySwitchingNoise0, double modSwitchingNoise0, double noisePerLevel0)
         : Berr(Berr0),
           Bkey(Bkey0),
           expansionFactor(expansionFactor0),
@@ -92,12 +91,12 @@ public:
    * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
    * @param numPartQ
-   * @param multihopQBound
+   * @param numHops numbers of hops for HRA-secure PRE
    * @return A boolean.
    */
     bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                         uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
-                         uint32_t numPartQ, usint multihopQBound) const override;
+                         uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                         uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -122,12 +121,12 @@ private:
    * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
    * @return The ring dimension.
    */
-    uint32_t computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t qBound,
-                                  usint cyclOrder) const;
+    uint32_t computeRingDimension(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t qBound,
+                                  uint32_t cyclOrder) const;
 
-    BGVNoiseEstimates computeNoiseEstimates(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+    BGVNoiseEstimates computeNoiseEstimates(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams,
                                             uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
-                                            uint32_t auxBits, usint numPrimes) const;
+                                            uint32_t auxTowers, uint32_t numPrimes) const;
 
     uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
                             const ScalingTechnique scalTech) const;
@@ -139,21 +138,23 @@ private:
    * @param ringDimension is the dimension of the ring (n)
    * @param evalAddCount is the maximum number of additions per level.
    * @param keySwitchCount is the maximum number of key switches per level.
-   * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
+   * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
    * @param numPrimes Number of CRT moduli.
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
-        std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
-        uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const;
+        const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
+        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
 
     /*
    * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
    *
    * @param cryptoParams contains parameters input by the user
    * @param numPrimes Number of CRT moduli.
+   * @param ringDimension ring dimension.
    */
-    void InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint numPrimes) const;
+    void InitializeFloodingDgg(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t numPrimes,
+                               uint32_t ringDimension) const;
 };
 
 }  // namespace lbcrypto

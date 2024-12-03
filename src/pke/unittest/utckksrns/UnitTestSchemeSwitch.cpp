@@ -36,7 +36,6 @@
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
-#include "utils/demangle.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
@@ -47,7 +46,6 @@
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
-#include <cxxabi.h>
 #include <iterator>
 
 using namespace lbcrypto;
@@ -352,14 +350,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -388,12 +379,12 @@ protected:
             // TODO: Andreea: number of slots is 32 here
             for (uint32_t i = 0; i < testData.slots; i++) {
                 // encrypted under small plantext modulus p = 4 and ciphertext modulus
-                ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i], FRESH, 4, modulus_LWE);
+                ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, 4, modulus_LWE);
             }
             std::vector<LWECiphertext> ctxtsLWE2(testData.slots);
             for (uint32_t i = 0; i < testData.slots; i++) {
                 // encrypted under larger plaintext modulus and large ciphertext modulus
-                ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x2[i], FRESH, pLWE, modulus_LWE);
+                ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x2[i], LARGE_DIM, pLWE, modulus_LWE);
             }
 
             cc->EvalFHEWtoCKKSSetup(ccLWE, testData.slots, testData.logQ);
@@ -422,14 +413,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -497,14 +481,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -599,14 +576,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -700,14 +670,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -802,14 +765,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 };

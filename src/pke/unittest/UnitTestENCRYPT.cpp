@@ -38,8 +38,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <cxxabi.h>
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -102,13 +100,13 @@ constexpr usint BV_DSIZE = 4;
 static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode
     { STRING_TEST, "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { STRING_TEST, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { STRING_TEST, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { STRING_TEST, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { STRING_TEST, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { STRING_TEST, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { STRING_TEST, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
     { STRING_TEST, "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { STRING_TEST, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { STRING_TEST, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { STRING_TEST, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { STRING_TEST, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { STRING_TEST, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { STRING_TEST, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
     { STRING_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT} },
     { STRING_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, BEHZ,             STANDARD, DFLT} },
     { STRING_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD, DFLT} },
@@ -120,13 +118,13 @@ static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
     // ==========================================
     // TestType,       Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode
     { COEF_PACKED_TEST, "01", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { COEF_PACKED_TEST, "03", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { COEF_PACKED_TEST, "04", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { COEF_PACKED_TEST, "03", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { COEF_PACKED_TEST, "04", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
     { COEF_PACKED_TEST, "05", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { COEF_PACKED_TEST, "06", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { COEF_PACKED_TEST, "07", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
-    { COEF_PACKED_TEST, "08", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { COEF_PACKED_TEST, "06", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { COEF_PACKED_TEST, "07", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
+    { COEF_PACKED_TEST, "08", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD, DFLT} },
     { COEF_PACKED_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT} },
     { COEF_PACKED_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, BEHZ,             STANDARD, DFLT} },
     { COEF_PACKED_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD, DFLT} },
@@ -175,17 +173,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-// TODO (dsuponit): demangle separately for linux, MacOS and Windows. see some links below
-// https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive
-// https://docs.microsoft.com/en-us/windows/win32/debug/retrieving-undecorated-symbol-names
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
@@ -233,14 +221,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 };

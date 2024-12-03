@@ -244,13 +244,13 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
         if ((addFirst) || (k > 0)) {
             auto cMult = cv[k].TimesNoCheck(cryptoParams->GetPModq());
             for (usint i = 0; i < sizeQl; i++) {
-                resultElements[k].SetElementAtIndex(i, cMult.GetElementAtIndex(i));
+                resultElements[k].SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
             }
         }
     }
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-    result->SetElements(resultElements);
+    result->SetElements(std::move(resultElements));
     return result;
 }
 
@@ -287,7 +287,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
                                            cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-    result->SetElements({ct0, ct1});
+    result->SetElements(std::vector<DCRTPoly>{std::move(ct0), std::move(ct1)});
     return result;
 }
 
@@ -386,11 +386,11 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         uint32_t sizePartQl = partsCt[part].GetNumOfElements();
         partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
-            cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
-            cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
-            cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
-            cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
-            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+             cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
+             cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
+             cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
+             cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
+             cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
 
         partsCtCompl[part].SetFormat(Format::EVALUATION);
 

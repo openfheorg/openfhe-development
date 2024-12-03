@@ -35,9 +35,10 @@
 #include <vector>
 
 /**
- * @brief get_call_stack() is a function to get the call stack
+ * @brief get_call_stack() is a function to get the call stack.
+ * @attention it must not throw an exception as it is called from OpenFHEException
  * @return a vector with call stack (demangled function names)
  */
-std::vector<std::string> get_call_stack();
+std::vector<std::string> get_call_stack() noexcept;
 
 #endif  // __GET_CALL_STACK_H__

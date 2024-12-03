@@ -70,7 +70,7 @@ int main() {
     std::cout << "Completed the key generation." << std::endl;
 
     // Sample Program: Step 3: Encryption
-    auto ct1 = cc.Encrypt(sk, P / 2 + 1, FRESH, P, Q);
+    auto ct1 = cc.Encrypt(sk, P / 2 + 1, LARGE_DIM, P, Q);
     std::cout << "Encrypted value: " << P / 2 + 1 << std::endl;
 
     // Sample Program: Step 4: Evaluation

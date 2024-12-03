@@ -41,6 +41,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <cstddef>
 
 namespace lbcrypto {
 
@@ -78,6 +79,13 @@ void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
         src.clear();
     }
 }
+
+/**
+ * @brief secure_memset() is a function with the same functionality which is provided by std::memset.
+ *        Usually, the compiler optimizes a call to std::memset out if it is called for a memory which goes out of scope.
+ *        This function is never optimized out and used to re-initialize a memory for security reasons.
+ */
+void secure_memset(volatile void* mem, uint8_t c, size_t len);
 
 }  // namespace lbcrypto
 

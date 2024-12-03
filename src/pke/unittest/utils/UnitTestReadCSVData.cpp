@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "UnitTestReadCSVData.h"
+#include "UnitTestException.h"
 
 #include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
@@ -111,12 +112,8 @@ std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileNa
         OPENFHE_THROW(errMsg);
     }
     catch (...) {
-#if defined EMSCRIPTEN
-        std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-        std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-        std::string errMsg(std::string("Unknown exception for data file ") + dataFileName + ": type " + name);
+        std::string errMsg(std::string("Unknown exception for data file ") + dataFileName + ": type " +
+                           UNIT_TEST_EXCEPTION_TYPE_NAME);
         OPENFHE_THROW(errMsg);
     }
 }

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2024, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -32,16 +32,24 @@
 #ifndef _SCHEME_UTILS_H_
 #define _SCHEME_UTILS_H_
 
-inline uint32_t ComputeNumLargeDigits(uint32_t numLargeDigits, usint multDepth) {
-    if (!numLargeDigits) {  // Choose one of the default values
-        if (multDepth > 3)  // If more than 4 towers, use 3 digits
-            numLargeDigits = 3;
-        else if (multDepth == 0)  // if there is only 1 tower, use one digit
-            numLargeDigits = 1;
-        else  // If 2, 3 or 4 towers, use 2 digits (1 <= multiplicativeDepth <=3 )
-            numLargeDigits = 2;
-    }
-    return numLargeDigits;
+inline uint32_t ComputeNumLargeDigits(uint32_t numLargeDigits, uint32_t multDepth) {
+    if (numLargeDigits > 0)
+        return numLargeDigits;
+    if (multDepth > 3)  // if more than 4 towers, use 3 digits
+        return 3;
+    if (multDepth > 0)  // if 2, 3 or 4 towers, use 2 digits
+        return 2;
+    return 1;  // if 1 tower, use one digit
+}
+
+inline uint32_t ComputeNumLargeDigitsPRE(uint32_t numLargeDigits, uint32_t numHops) {
+    if (numLargeDigits > 0)
+        return numLargeDigits;
+    if (numHops > 4)
+        return 3;
+    if (numHops > 1)
+        return 2;
+    return 1;
 }
 
 #endif

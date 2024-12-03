@@ -72,7 +72,7 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
 
     LWEPrivateKey sk = cc.KeyGen();
     for (auto _ : state) {
-        LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
+        LWECiphertext ct1 = cc.Encrypt(sk, 1, SMALL_DIM);
     }
 }
 
@@ -87,7 +87,7 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
+    LWECiphertext ct1 = cc.Encrypt(sk, 1, SMALL_DIM);
 
     for (auto _ : state) {
         LWECiphertext ct11 = cc.EvalNOT(ct1);
@@ -163,7 +163,7 @@ void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
     LWEPrivateKey sk  = cc.KeyGen();
     LWEPrivateKey skN = cc.KeyGenN();
 
-    auto ctQN1         = cc.Encrypt(skN, 1, FRESH);
+    auto ctQN1         = cc.Encrypt(skN, 1, SMALL_DIM);
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
     for (auto _ : state) {

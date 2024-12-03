@@ -45,8 +45,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <cxxabi.h>
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -119,39 +117,39 @@ constexpr usint MAX_RELIN_DEG   = 2;
 constexpr usint DSIZE           = 4;
 constexpr usint PTM             = 65537;
 constexpr usint BATCH           = 16;
-constexpr usint FIRST_MOD_SIZE  = 60;
+constexpr usint FIRST_MOD_SIZE  = 0;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
     // TestType, Descr, Scheme,      RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode
-    { CONTEXT, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { CONTEXT, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { CONTEXT, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { CONTEXT, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { CONTEXT, "05", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "05", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { CONTEXT, "06", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { CONTEXT, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { CONTEXT, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     // ==========================================
     // TestType,           Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode
-    { KEYS_AND_CIPHERTEXTS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "05", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "05", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "06", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "09", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "09", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "10", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "11", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "12", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "13", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "11", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "12", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "13", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "14", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "15", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "16", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "15", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "16", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     // ==========================================
 };
 // clang-format on
@@ -357,14 +355,7 @@ protected:
         }
         catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 

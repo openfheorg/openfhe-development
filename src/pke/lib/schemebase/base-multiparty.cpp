@@ -160,7 +160,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
         PrecomputeAutoMap(N, index, &vec);
 
         Element sPermuted = s.AutomorphismTransform(index, vec);
-        privateKeyPermuted->SetPrivateElement(sPermuted);
+        privateKeyPermuted->SetPrivateElement(std::move(sPermuted));
 
         // verify if the key indexList[i] exists in the evalKeyMap
         auto evalKeyIterator = evalKeyMap->find(indexList[i]);
@@ -185,9 +185,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     std::vector<uint32_t> autoIndices(indexList.size());
 
     for (size_t i = 0; i < indexList.size(); i++) {
-        autoIndices[i] = (cc->getSchemeId() == SCHEME::CKKSRNS_SCHEME) ?
-                             FindAutomorphismIndex2nComplex(indexList[i], M) :
-                             FindAutomorphismIndex2n(indexList[i], M);
+        autoIndices[i] = (isCKKS(cc->getSchemeId())) ? FindAutomorphismIndex2nComplex(indexList[i], M) :
+                                                       FindAutomorphismIndex2n(indexList[i], M);
     }
 
     return MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap, autoIndices);
@@ -233,7 +232,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(ConstCipherte
 
     const Element& s = privateKey->GetPrivateElement();
 
-    DggType dgg(NOISE_FLOODING::MP_SD);
+    DggType dgg(NoiseFlooding::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
 
     Element b = cv[0] + s * cv[1] + ns * e;
@@ -256,7 +255,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(ConstCipherte
     const std::vector<Element>& cv = ciphertext->GetElements();
     const Element& s               = privateKey->GetPrivateElement();
 
-    DggType dgg(NOISE_FLOODING::MP_SD);
+    DggType dgg(NoiseFlooding::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
 
     // e is added to do noise flooding
