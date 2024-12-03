@@ -48,6 +48,9 @@ int main(int argc, char* argv[]) {
 }
 
 void SimpleBootstrapExample() {
+    TimeVar t_total;   // define timer variable for TIC() TOC() timing functions.
+    double timeTotal;  // holds the resulting time
+
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
@@ -69,7 +72,7 @@ void SimpleBootstrapExample() {
     * you do not need to set the ring dimension.
     */
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 12);
+    parameters.SetRingDim(1 << 16);
 
     /*  A3) Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values
@@ -99,7 +102,7 @@ void SimpleBootstrapExample() {
     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping 
+    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
     uint32_t levelsAvailableAfterBootstrap = 10;
@@ -140,7 +143,11 @@ void SimpleBootstrapExample() {
 
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
+    TIC(t_total);
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
+    timeTotal            = TOC_MS(t_total);
+    PROFILELOG("Total time: "
+               << "\t" << timeTotal << " ms");
 
     std::cout << "Number of levels remaining after bootstrapping: "
               << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl

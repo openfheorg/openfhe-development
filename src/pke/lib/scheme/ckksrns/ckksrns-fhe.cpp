@@ -351,12 +351,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         OPENFHE_THROW("CKKS Iterative Bootstrapping is only supported for 1 or 2 iterations.");
     }
 
-#ifdef BOOTSTRAPTIMING
+    // #ifdef BOOTSTRAPTIMING
     TimeVar t;
     double timeEncode(0.0);
     double timeModReduce(0.0);
     double timeDecode(0.0);
-#endif
+    // #endif
 
     auto cc        = ciphertext->GetCryptoContext();
     uint32_t M     = cc->GetCyclotomicOrder();
@@ -541,9 +541,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // need to call internal modular reduction so it also works for FLEXIBLEAUTO
         algo->ModReduceInternalInPlace(raised, BASE_NUM_LEVELS_TO_DROP);
 
+        TIC(t);
         // only one linear transform is needed as the other one can be derived
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
                                          EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
+        timeEncode   = TOC(t);
+        std::cerr << "Encoding time: " << timeEncode << std::endl;
 
         auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
         auto conj       = Conjugate(ctxtEnc, evalKeyMap);
@@ -569,8 +572,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         //------------------------------------------------------------------------------
 
         // Evaluate Chebyshev series for the sine wave
-        ctxtEnc  = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
-        ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
+        TIC(t);
+        ctxtEnc       = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
+        ctxtEncI      = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
+        timeModReduce = TOC(t);
+        std::cerr << "Reduce time: " << timeModReduce << std::endl;
 
         // Double-angle iterations
         if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
@@ -614,9 +620,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
             algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
         }
 
+        TIC(t);
         // Only one linear transform is needed
-        ctxtDec = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0Pre, ctxtEnc) :
-                                    EvalSlotsToCoeffs(precom->m_U0PreFFT, ctxtEnc);
+        ctxtDec    = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0Pre, ctxtEnc) :
+                                       EvalSlotsToCoeffs(precom->m_U0PreFFT, ctxtEnc);
+        timeDecode = TOC(t);
+        std::cerr << "Decode time: " << timeDecode << std::endl;
     }
     else {
         //------------------------------------------------------------------------------
@@ -2337,8 +2346,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     if (logc < 0) {
         OPENFHE_THROW("Too small scaling factor");
     }
-    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox   = logc - logValid;
+    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2369,11 +2378,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax    = realVal;
+                    realMax = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax    = imagVal;
+                    imagMax = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2396,11 +2405,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
+        temp[i] = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2436,7 +2445,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
+        auto intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
