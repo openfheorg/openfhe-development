@@ -62,8 +62,10 @@ void validateParametersForCryptocontext(const Params& parameters) {
     }
     else if (isBFVRNS(scheme)) {
         if(BV == parameters.GetKeySwitchTechnique()) {
-            if(32 <= parameters.GetDigitSize()) {
-                OPENFHE_THROW("digitSize should be less than 32 for keySwitchTechnique == BV");
+            const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE/2));
+            if(maxDigitSize < parameters.GetDigitSize()) {
+                OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
+                              " for keySwitchTechnique == BV");
             }
         }
         if (0 == parameters.GetPlaintextModulus()) {
@@ -75,8 +77,10 @@ void validateParametersForCryptocontext(const Params& parameters) {
     }
     else if (isBGVRNS(scheme)) {
         if(BV == parameters.GetKeySwitchTechnique()) {
-            if(32 <= parameters.GetDigitSize()) {
-                OPENFHE_THROW("digitSize should be less than 32 for keySwitchTechnique == BV");
+            const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE/2));
+            if(maxDigitSize < parameters.GetDigitSize()) {
+                OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
+                              " for keySwitchTechnique == BV");
             }
         }
         if (0 == parameters.GetPlaintextModulus()) {
