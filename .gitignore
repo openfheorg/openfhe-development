@@ -21,6 +21,7 @@ test/bin
 output.txt
 Doxyfile
 apidoc_warning_logfile.txt
+third-party
 third-party/distros/gmp-6.1.1
 third-party/distros/gmp-6.1.2
 third-party/distros/ntl-10.3.0
