@@ -25,6 +25,12 @@ endif()
 
 project (OpenFHE C CXX)
 
+# 添加 cnpy 和 zlib 的路径
+include_directories(/usr/local/include/)
+link_directories(/usr/local/lib/)
+# 定义公共的链接库变量
+set(GLOBAL_LIBS cnpy z)
+
 set(OPENFHE_VERSION_MAJOR 1)
 set(OPENFHE_VERSION_MINOR 2)
 set(OPENFHE_VERSION_PATCH 3)

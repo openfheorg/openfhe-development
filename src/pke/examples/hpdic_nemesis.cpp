@@ -30,10 +30,13 @@
 //==================================================================================
 
 /*
-  Simple example for BFVrns (integer arithmetic)
+  HPDIC example to encrypt neural network model weights
  */
 
+#include <iostream>
+#include <string>
 #include "openfhe.h"
+#include "cnpy.h"
 
 using namespace lbcrypto;
 
@@ -137,6 +140,62 @@ int main() {
     std::cout << std::endl;
     std::cout << "===== HPDIC ===== " << std::endl;
     std::cout << std::endl;
+
+    /**
+     * HPDIC: Load model data in numpy, e.g., ~/PFLlib/results/numpy_MNIST.npy
+     */
+    // 默认文件路径
+    std::string default_path = "/home/cc/PFLlib/results/numpy_MNIST.npy";
+
+    // 提示用户输入文件路径
+    std::cout << "Enter the path to the .npy file (Press Enter to use default): ";
+    std::string input_path;
+    std::getline(std::cin, input_path);
+
+    // 使用用户输入路径或默认路径
+    std::string file_path = input_path.empty() ? default_path : input_path;
+    std::cout << "Using file path: " << file_path << std::endl;
+
+    try {
+        // 加载 .npy 文件
+        cnpy::NpyArray my_npz = cnpy::npy_load(file_path);
+
+        // 获取数据指针并转换为适当的类型（numpy里面是float32）
+        float* data = my_npz.data<float>();
+
+        // 获取数组的形状
+        std::vector<size_t> shape = my_npz.shape;
+
+        // 打印数组的维度
+        std::cout << "Shape: ";
+        for (size_t dim : shape) {
+            std::cout << dim << " ";
+        }
+        std::cout << std::endl;
+
+        // 打印前 3 个和后 3 个值
+        size_t total_elements = 1;
+        for (size_t dim : shape) {
+            total_elements *= dim;  // 计算总元素数
+        }
+
+        std::cout << "First 3 values: ";
+        for (size_t i = 0; i < std::min(total_elements, static_cast<size_t>(3)); ++i) {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Last 3 values: ";
+        for (size_t i = total_elements > 3 ? total_elements - 3 : 0; i < total_elements; ++i) {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+    catch (const std::exception& e) {
+        // 捕获并处理加载文件时的异常
+        std::cerr << "Error loading file: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }
