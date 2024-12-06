@@ -37,16 +37,13 @@
 
 #include "config_core.h"
 
+#include "math/nbtheory.h"
 #include "math/math-hal.h"
 #include "math/distributiongenerator.h"
-#include "math/nbtheory.h"
 
 #include "utils/debug.h"
 
-// #include <time.h>
-// #include <chrono>
 #include <cmath>
-// #include <sstream>
 #include <vector>
 
 namespace lbcrypto {
@@ -247,29 +244,21 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     if (i == 0) {
         return 1;
     }
+    else if (i == (static_cast<int32_t>(m) - 1)) { // could be true if (i > 0)
+        return static_cast<uint32_t>(i);
+    }
+    if (!IsPowerOfTwo(m))
+        OPENFHE_THROW("m should be a power of two.");
 
     // conjugation automorphism
-    if (i == int32_t(m - 1)) {
-        return uint32_t(i);
+    // generator. the usage of uint64_t prevents occasional integer overflow if the result of (g*g0) is too high
+    const uint64_t g0   = (i < 0) ? NativeInteger(5).ModInverse(m).ConvertToInt() : 5;
+    uint64_t g          = g0;
+    uint32_t i_unsigned = static_cast<uint32_t>(std::abs(i));
+    for (size_t j = 1; j < i_unsigned; j++) {
+        g = (g * g0) & (m - 1); // Modulus operation [ (g*g0)%m ] using bitwise AND
     }
-    else {
-        // generator
-        int32_t g0;
-
-        if (i < 0) {
-            g0 = NativeInteger(5).ModInverse(m).ConvertToInt();
-        }
-        else {
-            g0 = 5;
-        }
-        uint32_t i_unsigned = (uint32_t)std::abs(i);
-
-        int32_t g = g0;
-        for (size_t j = 1; j < i_unsigned; j++) {
-            g = (g * g0) % m;
-        }
-        return uint32_t(g);
-    }
+    return static_cast<uint32_t>(g);
 }
 
 void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {
