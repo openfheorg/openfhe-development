@@ -61,13 +61,6 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
     }
     else if (isBFVRNS(scheme)) {
-        if(BV == parameters.GetKeySwitchTechnique()) {
-            const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE/2));
-            if(maxDigitSize < parameters.GetDigitSize()) {
-                OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
-                              " for keySwitchTechnique == BV");
-            }
-        }
         if (0 == parameters.GetPlaintextModulus()) {
             OPENFHE_THROW("PlaintextModulus is not set. It should be set to a non-zero value");
         }
@@ -76,13 +69,6 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
     }
     else if (isBGVRNS(scheme)) {
-        if(BV == parameters.GetKeySwitchTechnique()) {
-            const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE/2));
-            if(maxDigitSize < parameters.GetDigitSize()) {
-                OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
-                              " for keySwitchTechnique == BV");
-            }
-        }
         if (0 == parameters.GetPlaintextModulus()) {
             OPENFHE_THROW("PlaintextModulus is not set. It should be set to a non-zero value");
         }
@@ -146,6 +132,13 @@ void validateParametersForCryptocontext(const Params& parameters) {
         std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(parameters.GetRingDim()) +
                              "]. Ring dimension must be a power of 2.");
         OPENFHE_THROW(errorMsg);
+    }
+    if (BV == parameters.GetKeySwitchTechnique()) {
+        const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE / 2));
+        if (maxDigitSize < parameters.GetDigitSize()) {
+            OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
+                          " for keySwitchTechnique == BV");
+        }
     }
     //====================================================================================================================
     constexpr usint maxMultiplicativeDepthValue = 1000;
