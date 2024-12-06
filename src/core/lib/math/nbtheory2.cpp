@@ -247,6 +247,8 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     else if (i == (static_cast<int32_t>(m) - 1)) { // could be true if (i > 0)
         return static_cast<uint32_t>(i);
     }
+    if (!IsPowerOfTwo(m))
+        OPENFHE_THROW("m should be a power of two.");
 
     // conjugation automorphism
     // generator. the usage of uint64_t prevents occasional integer overflow if the result of (g*g0) is too high
@@ -254,7 +256,7 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     uint64_t g          = g0;
     uint32_t i_unsigned = static_cast<uint32_t>(std::abs(i));
     for (size_t j = 1; j < i_unsigned; j++) {
-        g = (g * g0) % m;
+        g = (g * g0) & (m - 1); // Modulus operation [ (g*g0)%m ] using bitwise AND
     }
     return static_cast<uint32_t>(g);
 }
