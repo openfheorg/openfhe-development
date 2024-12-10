@@ -154,18 +154,6 @@ public:
                                        uint32_t precision) const override;
 
     //------------------------------------------------------------------------------
-    // Find Rotation Indices
-    //------------------------------------------------------------------------------
-
-    std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
-
-    std::vector<int32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
-
-    std::vector<int32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
-
-    std::vector<int32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
-
-    //------------------------------------------------------------------------------
     // Precomputations for CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
@@ -232,6 +220,18 @@ public:
     }
 
 private:
+    //------------------------------------------------------------------------------
+    // Find Rotation Indices
+    //------------------------------------------------------------------------------
+    std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
+
+    // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
+    // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
+    // These methods completely depend on FindBootstrapRotationIndices() to do that.
+    std::vector<uint32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<uint32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<uint32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
+
     //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions
     //------------------------------------------------------------------------------
