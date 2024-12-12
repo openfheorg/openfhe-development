@@ -55,7 +55,7 @@ namespace lbcrypto {
  */
 template <typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, bool> = true>
 inline constexpr bool IsPowerOfTwo(T Input) {
-    return (Input > 0) && !(Input & (Input - 1));
+    return Input && !(Input & (Input - 1));
 }
 
 /**
