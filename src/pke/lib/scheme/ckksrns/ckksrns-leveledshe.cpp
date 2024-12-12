@@ -42,6 +42,11 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "schemebase/base-scheme.h"
 
+#include <map>
+#include <memory>
+#include <utility>
+#include <vector>
+
 namespace lbcrypto {
 
 /////////////////////////////////////////
@@ -120,7 +125,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
         }
     }
 
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree()); 
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 
     for (usint i = 0; i < levels; ++i) {
@@ -186,7 +191,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     }
 
     DCRTPoly::Integer intPowP;
-    int64_t powp64 = ((int64_t)1) << precision;
+    int64_t powp64 = (static_cast<int64_t>(1)) << precision;
     if (pCurrent < 0) {
         intPowP = NativeInteger((uint128_t)powp64 >> (-pCurrent));
     }
@@ -258,7 +263,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
         int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                         logApprox :
                                         LargeScalingFactorConstants::MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
         std::vector<DCRTPoly::Integer> crtApprox(sizeQl, intStep);
         logApprox -= logStep;
 
@@ -266,7 +271,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
             int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                             logApprox :
                                             LargeScalingFactorConstants::MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
             std::vector<DCRTPoly::Integer> crtSF(sizeQl, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -386,7 +391,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 
     DoubleInteger large     = static_cast<DoubleInteger>(operand / approxFactor * scFactor + 0.5);
     DoubleInteger large_abs = (large < 0 ? -large : large);
-    DoubleInteger bound     = (uint64_t)1 << 63;
+    DoubleInteger bound     = static_cast<uint64_t>(1) << 63;
 
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
@@ -412,7 +417,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
         int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                         logApprox :
                                         LargeScalingFactorConstants::MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
@@ -420,7 +425,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
             int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                             logApprox :
                                             LargeScalingFactorConstants::MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
             std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -512,13 +517,13 @@ void LeveledSHECKKSRNS::MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, u
 
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                                     Ciphertext<DCRTPoly>& ciphertext2) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
-    usint c1lvl             = ciphertext1->GetLevel();
-    usint c2lvl             = ciphertext2->GetLevel();
-    usint c1depth           = ciphertext1->GetNoiseScaleDeg();
-    usint c2depth           = ciphertext2->GetNoiseScaleDeg();
-    auto sizeQl1            = ciphertext1->GetElements()[0].GetNumOfElements();
-    auto sizeQl2            = ciphertext2->GetElements()[0].GetNumOfElements();
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
+    usint c1lvl              = ciphertext1->GetLevel();
+    usint c2lvl              = ciphertext2->GetLevel();
+    usint c1depth            = ciphertext1->GetNoiseScaleDeg();
+    usint c2depth            = ciphertext2->GetNoiseScaleDeg();
+    auto sizeQl1             = ciphertext1->GetElements()[0].GetNumOfElements();
+    auto sizeQl2             = ciphertext2->GetElements()[0].GetNumOfElements();
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     if (c1lvl < c2lvl) {
@@ -658,8 +663,8 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& c
     AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
 
     if (ciphertext1->GetNoiseScaleDeg() == 2) {
-        const auto cryptoParams 
-            = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
+        const auto cryptoParams =
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
         ModReduceInternalInPlace(ciphertext1, cryptoParams->GetCompositeDegree());
         ModReduceInternalInPlace(ciphertext2, cryptoParams->GetCompositeDegree());
     }

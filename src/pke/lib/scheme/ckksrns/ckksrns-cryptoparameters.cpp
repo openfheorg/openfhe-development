@@ -38,6 +38,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
+#include <vector>
+
 namespace lbcrypto {
 
 // Precomputation of CRT tables encryption, decryption, and  homomorphic
@@ -47,9 +49,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                                                   uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
-    size_t sizeQ = GetElementParams()->GetParams().size();
+    size_t sizeQ             = GetElementParams()->GetParams().size();
     uint32_t compositeDegree = this->GetCompositeDegree();
-    compositeDegree = (compositeDegree == 0) ? 1 : compositeDegree;
+    compositeDegree          = (compositeDegree == 0) ? 1 : compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
@@ -162,11 +164,11 @@ void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) 
     if (GetScalingTechnique() == COMPOSITESCALINGAUTO) {
         if (NATIVEINT != 64)
             OPENFHE_THROW(config_error, "COMPOSITESCALINGAUTO scaling technique only supported with NATIVEINT==64.");
-        usint compositeDegree  = GetCompositeDegree();
-        usint registerWordSize = GetRegisterWordSize();
+        uint32_t compositeDegree  = GetCompositeDegree();
+        uint32_t registerWordSize = GetRegisterWordSize();
         if (registerWordSize <= 64) {
             if (registerWordSize < scalingModSize) {
-                compositeDegree = (uint32_t)std::ceil(static_cast<float>(scalingModSize) / registerWordSize);
+                compositeDegree = static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
                 // Assert minimum allowed moduli size on composite scaling mode
                 // @fdiasmor TODO: make it more robust for a range of multiplicative depth
                 if (static_cast<float>(scalingModSize) / compositeDegree < 21) {

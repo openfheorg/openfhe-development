@@ -101,7 +101,7 @@ constexpr uint32_t multiplicativeDepth = 1;
 #if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr uint32_t scalingModSize = 60;
 #else
-constexpr uint32_t scalingModSize   = 57;
+constexpr uint32_t scalingModSize = 57;
 #endif
 constexpr SecurityLevel securityLevel                       = HEStd_128_classic;
 constexpr uint32_t ringDim                                  = 0;
