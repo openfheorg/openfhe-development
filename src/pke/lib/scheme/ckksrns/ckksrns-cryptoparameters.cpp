@@ -48,6 +48,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ = GetElementParams()->GetParams().size();
+    uint32_t compositeDegree = this->GetCompositeDegree();
+    compositeDegree = (compositeDegree == 0) ? 1 : compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
@@ -82,7 +84,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     }
 
     // Pre-compute scaling factors for each level (used in FLEXIBLE* scaling techniques)
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+        m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
         m_scalingFactorsReal.resize(sizeQ);
 
         if ((sizeQ == 1) && (extraBits == 0)) {
@@ -152,6 +155,32 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 uint64_t CryptoParametersCKKSRNS::FindAuxPrimeStep() const {
     size_t n = GetElementParams()->GetRingDimension();
     return static_cast<uint64_t>(2 * n);
+}
+
+void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) {
+    // Add logic to determine whether composite scaling is feasible or not
+    if (GetScalingTechnique() == COMPOSITESCALINGAUTO) {
+        if (NATIVEINT != 64)
+            OPENFHE_THROW(config_error, "COMPOSITESCALINGAUTO scaling technique only supported with NATIVEINT==64.");
+        usint compositeDegree  = GetCompositeDegree();
+        usint registerWordSize = GetRegisterWordSize();
+        if (registerWordSize <= 64) {
+            if (registerWordSize < scalingModSize) {
+                compositeDegree = (uint32_t)std::ceil(static_cast<float>(scalingModSize) / registerWordSize);
+                // Assert minimum allowed moduli size on composite scaling mode
+                // @fdiasmor TODO: make it more robust for a range of multiplicative depth
+                if (static_cast<float>(scalingModSize) / compositeDegree < 21) {
+                    OPENFHE_THROW(
+                        config_error,
+                        "Moduli size is too short (< 21) for target multiplicative depth. Consider increasing the scaling factor or the register word size.");
+                }
+                m_compositeDegree = compositeDegree;
+            }  // else composite degree remains set to 1
+        }
+        else {
+            OPENFHE_THROW(config_error, "COMPOSITESCALING scaling technique only supports register word size <= 64.");
+        }
+    }
 }
 
 }  // namespace lbcrypto

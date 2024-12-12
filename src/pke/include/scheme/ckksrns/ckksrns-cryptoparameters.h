@@ -83,6 +83,26 @@ public:
                               multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                               numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel) {}
 
+    // This constructor is ideal when register word size varies and composite degree is set manually
+    CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
+                            float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
+                            usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                            KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
+                            usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT,
+                            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+                            ProxyReEncryptionMode PREMode           = NOT_SET,
+                            MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode             = EXEC_EVALUATION,
+                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                            PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
+                            uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
+                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+        : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
+                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, compositeDegree, registerWordSize,
+                              encTech, multTech, PREMode, multipartyMode, executionMode, decryptionNoiseMode,
+                              noiseScale, statisticalSecurity, numAdversarialQueries, thresholdNumOfParties,
+                              mPIntBootCiphertextCompressionLevel) {}
+
     virtual ~CryptoParametersCKKSRNS() {}
 
     void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
@@ -90,6 +110,8 @@ public:
                              uint32_t extraBits) override;
 
     uint64_t FindAuxPrimeStep() const override;
+
+    void ConfigureCompositeDegree(usint scalingModSize);
 
     /////////////////////////////////////
     // SERIALIZATION

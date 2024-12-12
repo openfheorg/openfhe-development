@@ -116,6 +116,8 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_compositeDegree                     = BASE_NUM_LEVELS_TO_DROP;
+        m_registerWordSize                    = NATIVEINT;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -138,6 +140,33 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_compositeDegree                     = BASE_NUM_LEVELS_TO_DROP;
+        m_registerWordSize                    = NATIVEINT;
+    }
+
+    CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
+                        float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                        SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
+                        ScalingTechnique scalTech = FIXEDMANUAL, usint compositeDegree = BASE_NUM_LEVELS_TO_DROP,
+                        usint registerWordSize = NATIVEINT, EncryptionTechnique encTech = STANDARD,
+                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
+                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode             = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
+                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                        uint32_t thresholdNumOfParties                        = 1,
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+        : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
+                                         assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
+                                         PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
+                                         statisticalSecurity, numAdversarialQueries, thresholdNumOfParties) {
+        m_ksTechnique                         = ksTech;
+        m_scalTechnique                       = scalTech;
+        m_encTechnique                        = encTech;
+        m_multTechnique                       = multTech;
+        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_compositeDegree                     = compositeDegree;  
+        m_registerWordSize                    = registerWordSize;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -198,7 +227,8 @@ public:
                m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
                m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
                m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
-               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode();
+               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode() &&
+               m_compositeDegree == el->GetCompositeDegree() && m_registerWordSize == el->GetRegisterWordSize();
     }
 
     void PrintParameters(std::ostream& os) const override {
@@ -608,7 +638,8 @@ public:
    * @return the scaling factor.
    */
     double GetScalingFactorReal(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsReal.size()) {
                 // TODO: Return an error here.
                 return m_approxSF;
@@ -621,7 +652,8 @@ public:
     }
 
     double GetScalingFactorRealBig(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
                 return m_approxSF;
@@ -633,18 +665,45 @@ public:
         return m_approxSF;
     }
 
-    /**
+   /**
    * Method to retrieve the modulus to be dropped of level l.
    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
    * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
    * @return the precomputed table
    */
     double GetModReduceFactor(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) { 
             return m_dmoduliQ[l];
         }
 
         return m_approxSF;
+    }
+
+    /////////////////////////////////////
+    // CKKS RNS Composite Scaling Params
+    /////////////////////////////////////
+
+    /**
+     * Returns the composite scaling degree d. Its values is determined at runtime based on
+     * input scaling factor and architecture register size (e.g., 32 bits, 48 bits, 64 bits).
+     * This parameter is only relevant when using the CKKS scheme and .
+     *
+     * @return the composite degree value for COMPOSITESCALING scaling technique
+     **/
+    uint32_t const& GetCompositeDegree() const {
+        // If not CKKS scheme, same value as BASE_NUM_LEVELS_TO_DROP
+        return m_compositeDegree;
+    }
+    /**
+     * Returns the architecture register word size (e.g., 32 bits, 48 bits, 64 bits).
+     * Used to determine the size of prime moduli in the CKKS scheme on 
+     * composite scaling mode (COMPOSITESCALINGAUTO).
+     * 
+     * @return the register word size for COMPOSITESCALING scaling technique
+     **/
+    uint32_t const& GetRegisterWordSize() const {
+        return m_registerWordSize;
     }
 
     /////////////////////////////////////
@@ -938,7 +997,8 @@ public:
     }
 
     const NativeInteger& GetScalingFactorInt(usint l) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsInt.size()) {
                 // TODO: Return an error here.
                 return m_fixedSF;
@@ -949,7 +1009,8 @@ public:
     }
 
     const NativeInteger& GetScalingFactorIntBig(usint l) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsIntBig.size()) {
                 // TODO: Return an error here.
                 return m_fixedSF;
@@ -960,7 +1021,8 @@ public:
     }
 
     const NativeInteger& GetModReduceFactorInt(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_qModt[l];
         }
         return m_fixedSF;
@@ -1483,6 +1545,15 @@ protected:
     double m_approxSF = 0;
 
     /////////////////////////////////////
+    // CKKS RNS Composite Scaling Params
+    /////////////////////////////////////
+
+    // Stores composite degree for composite modulus chain
+    uint32_t m_compositeDegree  = BASE_NUM_LEVELS_TO_DROP;
+    // Stores the architecture register word size
+    uint32_t m_registerWordSize = NATIVEINT;
+
+    /////////////////////////////////////
     // BFVrns : Encrypt
     /////////////////////////////////////
 
@@ -1791,6 +1862,8 @@ public:
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
         ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
+        ar(cereal::make_nvp("cd", m_compositeDegree));
+        ar(cereal::make_nvp("rws", m_registerWordSize));
     }
 
     template <class Archive>
@@ -1816,6 +1889,8 @@ public:
         catch (cereal::Exception&) {
             m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
         }
+        ar(cereal::make_nvp("cd", m_compositeDegree));
+        ar(cereal::make_nvp("rws", m_registerWordSize));
     }
 
     std::string SerializedObjectName() const override {

@@ -79,6 +79,10 @@ ScalingTechnique convertToScalingTechnique(const std::string& str) {
         return FLEXIBLEAUTO;
     else if (str == "FLEXIBLEAUTOEXT")
         return FLEXIBLEAUTOEXT;
+    else if (str == "COMPOSITESCALINGAUTO")
+        return COMPOSITESCALINGAUTO;
+    else if (str == "COMPOSITESCALINGMANUAL")
+        return COMPOSITESCALINGMANUAL;
     else if (str == "NORESCALE")
         return NORESCALE;
 
@@ -92,6 +96,8 @@ ScalingTechnique convertToScalingTechnique(uint32_t num) {
         case FIXEDAUTO:
         case FLEXIBLEAUTO:
         case FLEXIBLEAUTOEXT:
+        case COMPOSITESCALINGAUTO:
+        case COMPOSITESCALINGMANUAL:
         case NORESCALE:
             // case INVALID_RS_TECHNIQUE:
             return scTech;
@@ -115,6 +121,12 @@ std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
             break;
         case FLEXIBLEAUTOEXT:
             s << "FLEXIBLEAUTOEXT";
+            break;
+        case COMPOSITESCALINGAUTO:
+            s << "COMPOSITESCALINGAUTO";
+            break;
+        case COMPOSITESCALINGMANUAL:
+            s << "COMPOSITESCALINGMANUAL";
             break;
         case NORESCALE:
             s << "NORESCALE";

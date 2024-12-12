@@ -62,6 +62,15 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
     ProxyReEncryptionMode PREMode    = cryptoParamsCKKSRNS->GetPREMode();
 
+    // Determine appropriate composite degree automatically if scaling technique set to COMPOSITESCALINGAUTO
+    cryptoParamsCKKSRNS->ConfigureCompositeDegree(firstModSize);
+    uint32_t compositeDegree = cryptoParamsCKKSRNS->GetCompositeDegree();
+    uint32_t registerWordSize    = cryptoParamsCKKSRNS->GetRegisterWordSize();
+    compositeDegree *= (uint32_t)1;  // @fdiasmor: Avoid unused variable compilation error.
+    registerWordSize *= (uint32_t)1;  // @fdiasmor: Avoid unused variable compilation error.
+    // Bookeeping unique prime moduli
+    //    std::unordered_set<uint64_t> moduliQRecord;
+
     if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         std::stringstream s;
         s << "This PRE mode " << PREMode << " is not supported for CKKSRNS";
@@ -73,7 +82,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
-    uint32_t auxBits       = AUXMODSIZE;
+    uint32_t auxBits       = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ? 30 : AUXMODSIZE;
     uint32_t n             = cyclOrder / 2;
     uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
 
@@ -86,7 +95,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     if (ksTech == HYBRID) {
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
                                                               numPrimes, auxBits, true);
-        qBound += std::get<0>(hybridKSInfo);
+        if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
+           uint32_t tmpFactor = (compositeDegree == 2) ? 2 : 4;
+           qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
+        } else {
+            qBound += std::get<0>(hybridKSInfo);
+        }
     }
 
     // GAUSSIAN security constraint
