@@ -53,7 +53,7 @@ namespace lbcrypto {
  * @param Input to test if it is a power of 2.
  * @return is true if the unsigned int is a power of 2.
  */
-template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+template <typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, bool> = true>
 inline constexpr bool IsPowerOfTwo(T Input) {
     return Input && !(Input & (Input - 1));
 }
