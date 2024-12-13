@@ -31,6 +31,7 @@
 
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "utils/exception.h"
+#include "utils/utilities.h"
 
 #include <cmath>
 #include <algorithm>
@@ -302,8 +303,9 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
     // index n-1 in the vector corresponds to degree n
     if (n <= UPPER_BOUND_PS) {  // hard-coded values
         static const std::vector<uint32_t> mlist = PopulateParameterPS(UPPER_BOUND_PS);
-        uint32_t m                               = mlist[n - 1];
-        uint32_t k                               = std::floor(n / ((1 << m) - 1)) + 1;
+
+        uint32_t m = mlist[n - 1];
+        uint32_t k = static_cast<uint32_t>(std::floor(n / ((1U << m) - 1)) + 1);
 
         return std::vector<uint32_t>{k, m};
     }
@@ -312,13 +314,13 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
         std::vector<uint32_t> mlist;
         std::vector<uint32_t> multlist;
 
-        for (uint32_t k = 1; k <= n; k++) {
-            for (uint32_t m = 1; m <= std::ceil(log2(n / k) + 1) + 1; m++) {
-                if (int32_t(n) - int32_t(k * ((1 << m) - 1)) < 0) {
-                    if (std::abs(std::floor(log2(k)) - std::floor(log2(sqrt(n / 2)))) <= 1) {
+        for (size_t k = 1; k <= n; k++) {
+            for (size_t m = 1; m <= static_cast<uint32_t>(std::ceil(log2(n / k) + 1) + 1); m++) {
+                if (n < (k * ((1U << m) - 1))) {
+                    if (std::abs(std::floor(log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1) {
                         klist.push_back(k);
                         mlist.push_back(m);
-                        multlist.push_back(k + 2 * m + (1 << (m - 1)) - 4);
+                        multlist.push_back(k + 2 * m + (1U << (m - 1)) - 4);
                     }
                 }
             }
@@ -384,13 +386,12 @@ std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>
 uint32_t ReduceRotation(int32_t index, uint32_t slots) {
     int32_t islots = int32_t(slots);
 
-    // if slots is a power of 2
-    if ((slots & (slots - 1)) == 0) {
-        int32_t n = std::log2(slots);
+    if (IsPowerOfTwo(slots)) {
+        uint32_t n = static_cast<uint32_t>(std::log2(slots));
         if (index >= 0) {
             return index - ((index >> n) << n);
         }
-        return index + islots + ((int32_t(std::fabs(index)) >> n) << n);
+        return index + islots + ((std::abs(index) >> n) << n);
     }
     return (islots + index % islots) % islots;
 }
@@ -543,7 +544,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     // Coeff stores the coefficients for the given budget of levels
     std::vector<std::vector<std::vector<std::complex<double>>>> coeff(dimCollapse);
     for (uint32_t i = 0; i < uint32_t(dimCollapse); i++) {
-        if (flagRem) {
+    if (flagRem) {
             if (i >= 1) {
                 // after remainder
                 coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
@@ -556,14 +557,14 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
                 coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotationsRem);
                 for (uint32_t j = 0; j < numRotationsRem; j++) {
                     coeff[i][j] = std::vector<std::complex<double>>(slots);
-                }
-            }
+        }
+    }
         }
         else {
-            coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
+        coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
             for (uint32_t j = 0; j < numRotations; j++) {
-                coeff[i][j] = std::vector<std::complex<double>>(slots);
-            }
+            coeff[i][j] = std::vector<std::complex<double>>(slots);
+        }
         }
     }
 
@@ -578,8 +579,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
             }
             else {
                 std::vector<std::vector<std::complex<double>>> temp = coeff[s];
-                std::vector<std::vector<std::complex<double>>> zeros(numRotations,
-                                                                     std::vector<std::complex<double>>(slots, 0.0));
+        std::vector<std::vector<std::complex<double>>> zeros(numRotations,
+                                                             std::vector<std::complex<double>>(slots, 0.0));
                 coeff[s]   = zeros;
                 uint32_t t = 0;
 
@@ -602,15 +603,15 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 
         for (int32_t l = 0; l < remCollapse; l++) {
             if (l == 0) {
-                coeff[s][0] = coeff1[top];
+        coeff[s][0] = coeff1[top];
                 coeff[s][1] = coeff1[top + std::log2(slots)];
                 coeff[s][2] = coeff1[top + 2 * std::log2(slots)];
             }
             else {
                 std::vector<std::vector<std::complex<double>>> temp = coeff[s];
-                std::vector<std::vector<std::complex<double>>> zeros(numRotationsRem,
-                                                                     std::vector<std::complex<double>>(slots, 0.0));
-                coeff[s]   = zeros;
+        std::vector<std::vector<std::complex<double>>> zeros(numRotationsRem,
+                                                             std::vector<std::complex<double>>(slots, 0.0));
+            coeff[s]   = zeros;
                 uint32_t t = 0;
 
                 for (int32_t u = 0; u < (1 << (l + 1)) - 1; u++) {
@@ -763,30 +764,21 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget) {
     uint32_t layers = std::ceil(static_cast<double>(logSlots) / budget);
     uint32_t rows   = logSlots / layers;
     uint32_t rem    = logSlots % layers;
-
-    uint32_t dim = rows;
-    if (rem != 0) {
-        dim = rows + 1;
-    }
+    uint32_t dim    = (rem == 0) ? rows : (rows + 1);
 
     // the above choice ensures dim <= budget
     if (dim < budget) {
         layers -= 1;
         rows = logSlots / layers;
         rem  = logSlots - rows * layers;
-        dim  = rows;
-
-        if (rem != 0) {
-            dim = rows + 1;
-        }
+        dim  = (rem == 0) ? rows : (rows + 1);
 
         // the above choice endures dim >=budget
-        while (dim != budget) {
-            rows -= 1;
-            rem = logSlots - rows * layers;
-            dim = rows;
-            if (rem != 0) {
-                dim = rows + 1;
+        if (dim > budget) {
+            while (dim != budget) {
+                --rows;
+                rem = logSlots - rows * layers;
+                dim = (rem == 0) ? rows : (rows + 1);
             }
         }
     }
@@ -795,62 +787,63 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget) {
 }
 
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {
-    uint32_t logSlots = std::log2(slots);
-    // even for the case of a single slot we need one level for rescaling
-    if (logSlots == 0) {
-        logSlots = 1;
-    }
+    if(!slots)
+        OPENFHE_THROW("slots can not be 0");
+
+    // even for the case of (slots = 1) we need one level for rescaling as (std::log2(1) = 0)
+    uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
     std::vector<uint32_t> dims = SelectLayers(logSlots, levelBudget);
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    int32_t layersCollapse = dims[0];
-    int32_t remCollapse    = dims[2];
+    const uint32_t layersCollapse = dims[0];
+    const uint32_t remCollapse    = dims[2];
 
-    bool flagRem = (remCollapse == 0) ? false : true;
-
-    uint32_t numRotations    = (1 << (layersCollapse + 1)) - 1;
-    uint32_t numRotationsRem = (1 << (remCollapse + 1)) - 1;
+    const uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
+    const uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the baby-step b and the giant-step g for the collapsed layers for decoding.
-    int32_t g;
+    uint32_t g{0};
     if (dim1 == 0 || dim1 > numRotations) {
         if (numRotations > 7) {
-            g = (1 << (int32_t(layersCollapse / 2) + 2));
+            g = (1U << (layersCollapse / 2 + 2));
         }
         else {
-            g = (1 << (int32_t(layersCollapse / 2) + 1));
+            g = (1U << (layersCollapse / 2 + 1));
         }
     }
     else {
         g = dim1;
     }
-    int32_t b = (numRotations + 1) / g;
+    uint32_t b = (numRotations + 1) / g;
 
-    int32_t bRem = 0;
-    int32_t gRem = 0;
-    if (flagRem) {
+    uint32_t bRem{0};
+    uint32_t gRem{0};
+
+    // bool flagRem = (remCollapse == 0) ? false : true;
+    if (remCollapse != 0) {
         if (numRotationsRem > 7) {
-            gRem = (1 << (int32_t(remCollapse / 2) + 2));
+            gRem = (1U << (int32_t(remCollapse / 2) + 2));
         }
         else {
-            gRem = (1 << (int32_t(remCollapse / 2) + 1));
+            gRem = (1U << (int32_t(remCollapse / 2) + 1));
         }
         bRem = (numRotationsRem + 1) / gRem;
     }
 
     // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well
-    return {int32_t(levelBudget),     layersCollapse, remCollapse, int32_t(numRotations), b, g,
-            int32_t(numRotationsRem), bRem,           gRem};
+    return {static_cast<int32_t>(levelBudget), static_cast<int32_t>(layersCollapse), static_cast<int32_t>(remCollapse),
+            static_cast<int32_t>(numRotations), static_cast<int32_t>(b), static_cast<int32_t>(g),
+            static_cast<int32_t>(numRotationsRem), static_cast<int32_t>(bRem), static_cast<int32_t>(gRem)};
 }
 
 uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
     if (slots <= 1) {
         return 1;
     }
-    // return (1 << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
-    return (1 << (static_cast<uint32_t>(std::log2(std::ceil(sqrt(slots))) + 1)));
+    // return (1U << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
+    return (1U << (static_cast<uint32_t>(std::log2(std::ceil(std::sqrt(slots))) + 1)));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
@@ -863,13 +856,13 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
 
     // Computing the baby-step g and the giant-step h
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
-    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
+    uint32_t gStep = static_cast<int32_t>(std::ceil(static_cast<double>(slots) / bStep));
 
     // Computing all indices for baby-step giant-step procedure
     std::vector<int32_t> indexList;
     indexList.reserve(bStep + gStep - 2);
-    for (uint32_t i = 0; i < bStep; i++)
-        indexList.emplace_back(i + 1);
+    for (uint32_t i = 1; i <= bStep; i++)
+        indexList.emplace_back(i);
     for (uint32_t i = 2; i < gStep; i++)
         indexList.emplace_back(bStep * i);
 
@@ -911,7 +904,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
         if (slots < cols) {
             logl = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
             for (size_t j = 1; j <= logl; ++j) {
-                indexList.emplace_back(slots * (1 << (j - 1)));
+                indexList.emplace_back(slots * (1U << (j - 1)));
             }
         }
 
