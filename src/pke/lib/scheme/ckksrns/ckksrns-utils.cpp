@@ -565,7 +565,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
             for (uint32_t j = 0; j < numRotations; j++) {
             coeff[i][j] = std::vector<std::complex<double>>(slots);
         }
-        }
+    }
     }
 
     for (int32_t s = dimCollapse - 1; s > stop; s--) {
@@ -633,31 +633,24 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
     const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
     bool flag_i) {
-    uint32_t slots = rotGroup.size();
+    const uint32_t slots = rotGroup.size();
+    if (!slots)
+        OPENFHE_THROW("rotGroup can not be empty");
+    const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
+
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    int32_t layersCollapse;
-    int32_t rowsCollapse;
-    int32_t remCollapse;
-
-    std::vector<uint32_t> dims = SelectLayers(std::log2(slots), levelBudget);
-    layersCollapse             = dims[0];
-    rowsCollapse               = dims[1];
-    remCollapse                = dims[2];
+    std::vector<uint32_t> dims = SelectLayers(log2slots, levelBudget);
+    uint32_t layersCollapse    = dims[0];
+    uint32_t rowsCollapse      = dims[1];
+    uint32_t remCollapse       = dims[2];
 
     int32_t dimCollapse = int32_t(levelBudget);
-    int32_t flagRem     = 0;
+    int32_t flagRem     = (remCollapse == 0) ? 0 : 1;
 
-    if (remCollapse == 0) {
-        flagRem = 0;
-    }
-    else {
-        flagRem = 1;
-    }
-
-    uint32_t numRotations    = (1 << (layersCollapse + 1)) - 1;
-    uint32_t numRotationsRem = (1 << (remCollapse + 1)) - 1;
+    uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
+    uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the coefficients for decoding for the given level budget
     std::vector<std::vector<std::complex<double>>> coeff1 = CoeffDecodingOneLevel(pows, rotGroup, flag_i);
@@ -665,13 +658,13 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     // Coeff stores the coefficients for the given budget of levels
     std::vector<std::vector<std::vector<std::complex<double>>>> coeff(dimCollapse);
 
-    for (uint32_t i = 0; i < uint32_t(dimCollapse); i++) {
+    for (size_t i = 0; i < uint32_t(dimCollapse); i++) {
         if (flagRem) {
             if (i < levelBudget - 1) {
                 // before remainder
                 coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
 
-                for (uint32_t j = 0; j < numRotations; j++) {
+                for (size_t j = 0; j < numRotations; j++) {
                     coeff[i][j] = std::vector<std::complex<double>>(slots);
                 }
             }
@@ -679,7 +672,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
                 // remainder corresponds to the first index in encoding and to the last one in decoding
                 coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotationsRem);
 
-                for (uint32_t j = 0; j < numRotationsRem; j++) {
+                for (size_t j = 0; j < numRotationsRem; j++) {
                     coeff[i][j] = std::vector<std::complex<double>>(slots);
                 }
             }
@@ -687,18 +680,18 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
         else {
             coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
 
-            for (uint32_t j = 0; j < numRotations; j++) {
+            for (size_t j = 0; j < numRotations; j++) {
                 coeff[i][j] = std::vector<std::complex<double>>(slots);
             }
         }
     }
 
-    for (int32_t s = 0; s < rowsCollapse; s++) {
-        for (int32_t l = 0; l < layersCollapse; l++) {
+    for (size_t s = 0; s < rowsCollapse; s++) {
+        for (size_t l = 0; l < layersCollapse; l++) {
             if (l == 0) {
                 coeff[s][0] = coeff1[s * layersCollapse];
-                coeff[s][1] = coeff1[std::log2(slots) + s * layersCollapse];
-                coeff[s][2] = coeff1[2 * std::log2(slots) + s * layersCollapse];
+                coeff[s][1] = coeff1[log2slots + s * layersCollapse];
+                coeff[s][2] = coeff1[2 * log2slots + s * layersCollapse];
             }
             else {
                 std::vector<std::vector<std::complex<double>>> temp = coeff[s];
@@ -706,17 +699,12 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
                                                                      std::vector<std::complex<double>>(slots, 0.0));
                 coeff[s] = zeros;
 
-                for (uint32_t t = 0; t < 3; t++) {
-                    for (int32_t u = 0; u < (1 << (l + 1)) - 1; u++) {
-                        for (uint32_t k = 0; k < slots; k++) {
-                            if (t == 0)
-                                coeff[s][u][k] += coeff1[s * layersCollapse + l][k] * temp[u][k];
-                            if (t == 1)
-                                coeff[s][u + (1 << l)][k] +=
-                                    coeff1[s * layersCollapse + l + std::log2(slots)][k] * temp[u][k];
-                            if (t == 2)
-                                coeff[s][u + (1 << (l + 1))][k] +=
-                                    coeff1[s * layersCollapse + l + 2 * std::log2(slots)][k] * temp[u][k];
+                for (size_t t = 0; t < 3; t++) {
+                    uint32_t shift = (t == 0) ? 0 : ((t == 1) ? (1U << l) : (1U << (l + 1)));
+                    for (size_t u = 0; u < (1U << (l + 1)) - 1; u++) {
+                        for (size_t k = 0; k < slots; k++) {
+                            coeff[s][u + shift][k] +=
+                                coeff1[s * layersCollapse + l + t * log2slots][k] * temp[u][k];
                         }
                     }
                 }
@@ -725,13 +713,13 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     }
 
     if (flagRem) {
-        int32_t s = rowsCollapse;
+        uint32_t s = rowsCollapse;
 
-        for (int32_t l = 0; l < remCollapse; l++) {
+        for (size_t l = 0; l < remCollapse; l++) {
             if (l == 0) {
                 coeff[s][0] = coeff1[s * layersCollapse];
-                coeff[s][1] = coeff1[std::log2(slots) + s * layersCollapse];
-                coeff[s][2] = coeff1[2 * std::log2(slots) + s * layersCollapse];
+                coeff[s][1] = coeff1[log2slots + s * layersCollapse];
+                coeff[s][2] = coeff1[2 * log2slots + s * layersCollapse];
             }
             else {
                 std::vector<std::vector<std::complex<double>>> temp = coeff[s];
@@ -739,17 +727,11 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
                                                                      std::vector<std::complex<double>>(slots, 0.0));
                 coeff[s] = zeros;
 
-                for (uint32_t t = 0; t < 3; t++) {
-                    for (int32_t u = 0; u < (1 << (l + 1)) - 1; u++) {
-                        for (uint32_t k = 0; k < slots; k++) {
-                            if (t == 0)
-                                coeff[s][u][k] += coeff1[s * layersCollapse + l][k] * temp[u][k];
-                            if (t == 1)
-                                coeff[s][u + (1 << l)][k] +=
-                                    coeff1[s * layersCollapse + l + std::log2(slots)][k] * temp[u][k];
-                            if (t == 2)
-                                coeff[s][u + (1 << (l + 1))][k] +=
-                                    coeff1[s * layersCollapse + l + 2 * std::log2(slots)][k] * temp[u][k];
+                for (size_t t = 0; t < 3; t++) {
+                    uint32_t shift = (t == 0) ? 0 : ((t == 1) ? (1U << l) : (1U << (l + 1)));
+                    for (size_t u = 0; u < (1U << (l + 1)) - 1; u++) {
+                        for (size_t k = 0; k < slots; k++) {
+                            coeff[s][u + shift][k] += coeff1[s * layersCollapse + l + t * log2slots][k] * temp[u][k];
                         }
                     }
                 }
