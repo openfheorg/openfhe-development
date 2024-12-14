@@ -156,12 +156,15 @@ int main() {
     std::string file_path = input_path.empty() ? default_path : input_path;
     std::cout << "Using file path: " << file_path << std::endl;
 
+    float* data;
+    size_t sz_array = 0;
+
     try {
         // 加载 .npy 文件
         cnpy::NpyArray my_npz = cnpy::npy_load(file_path);
 
         // 获取数据指针并转换为适当的类型（numpy里面是float32）
-        float* data = my_npz.data<float>();
+        data = my_npz.data<float>();
 
         // 获取数组的形状
         std::vector<size_t> shape = my_npz.shape;
@@ -170,6 +173,7 @@ int main() {
         std::cout << "Shape: ";
         for (size_t dim : shape) {
             std::cout << dim << " ";
+            sz_array = dim;
         }
         std::cout << std::endl;
 
@@ -196,6 +200,9 @@ int main() {
         std::cerr << "Error loading file: " << e.what() << std::endl;
         return 1;
     }
+
+    // TODO
+    std::cout << "Encrypting " << sz_array << " floating numbers." << std::endl;
 
     return 0;
 }
