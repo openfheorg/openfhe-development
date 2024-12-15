@@ -207,7 +207,8 @@ int main() {
     auto prod_c1_and_p1_pack = cryptoContext->EvalMult(ciphertext1, p1_pack);
     Plaintext p1_sqr;
     cryptoContext->Decrypt(keyPair.secretKey, prod_c1_and_p1_pack, &p1_sqr);
-    std::cout << "#1 * #1" << p1_sqr << std::endl;
+    std::cout << "#1 * #1 = " << p1_sqr << std::endl;
+    std::cout << "To be continued: openfhe-development/src/pke/lib/scheme/bfvrns/bfvrns-leveledshe.cpp" << std::endl;
 
     return 0;
 }
