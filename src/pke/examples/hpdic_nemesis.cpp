@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     parameters.SetPlaintextModulus(65537);
     // parameters.SetMultiplicativeDepth(2);
     parameters.SetMultiplicativeDepth(1);
-    parameters.SetBatchSize(1);  // 设置 batch size 为 1，关闭批处理
+    // parameters.SetBatchSize(2);  // 设置 batch size 为 1，关闭批处理
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -218,16 +218,16 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Encrypting " << sz_array << " floating numbers." << std::endl;
 
-    std::vector<int64_t> hpdic_vec1 = {2};
-    Plaintext hpdic_pt1             = cryptoContext->MakePackedPlaintext(hpdic_vec1);
 
     /*********************
      * BEGIN Preprocessing
      */
 
+    std::vector<int64_t> vec_base = {1, 1};
+    Plaintext pt0           = cryptoContext->MakePackedPlaintext(vec_base);
+
     // Cached value
-    auto hpdic_ct1                  = cryptoContext->Encrypt(keyPair.publicKey, hpdic_pt1);
-    std::cout << "Plaintext hpdic_vec1: " << hpdic_vec1 << std::endl;
+    auto ct0                  = cryptoContext->Encrypt(keyPair.publicKey, pt0);
 
     // Step 3: 定义高斯生成器
     DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);  // 高斯噪声标准差
@@ -236,13 +236,14 @@ int main(int argc, char* argv[]) {
      * END Preprocessing
      *******************/
 
+    // New encryption
+    std::vector<int64_t> vec_new = {2, 4};
+    Plaintext pt_new                = cryptoContext->MakePackedPlaintext(vec_new);
+
     auto start = std::chrono::high_resolution_clock::now();
 
-    // Factor
-    Plaintext hpdic_pt0 = cryptoContext->MakePackedPlaintext(hpdic_vec1);
-
     // Reconstruction
-    auto prod_c1_and_p1 = cryptoContext->EvalMult(hpdic_ct1, hpdic_pt0);
+    auto prod_c1_and_p1 = cryptoContext->EvalMult(ct0, pt_new);
 
     /***********************
      * BEGIN Randomization
@@ -305,16 +306,18 @@ int main(int argc, char* argv[]) {
     Plaintext decryptedPt;
     cryptoContext->Decrypt(keyPair.secretKey, prod_c1_and_p1, &decryptedPt);
 
-    // Step 2: 提取第一个 slot 的值
+    // Step 2: 提取前两个 slot 的值
     auto packedValues = decryptedPt->GetPackedValue();  // 获取所有槽位的明文值
     if (!packedValues.empty()) {
-        std::cout << "Value of the first slot: " << packedValues[0] << std::endl;
+        std::cout << "Reconstructed first 2 values: " << packedValues[0]
+                << ", " << packedValues[1] << std::endl;
     }
     else {
         std::cout << "Decrypted plaintext is empty!" << std::endl;
     }
+    std::cout << "decryptedPt = " << decryptedPt << std::endl;
 
-    std::vector<int64_t> hpdic_vec2 = {8};
+    std::vector<int64_t> hpdic_vec2 = {2, 4};
     Plaintext hpdic_pt2             = cryptoContext->MakePackedPlaintext(hpdic_vec2);
     start                           = std::chrono::high_resolution_clock::now();
     auto hpdic_ct2                  = cryptoContext->Encrypt(keyPair.publicKey, hpdic_pt2);
