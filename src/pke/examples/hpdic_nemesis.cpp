@@ -39,10 +39,21 @@
 #include "openfhe.h"
 #include "cnpy.h"
 #include "math/discretegaussiangenerator.h"  // 确保包含高斯生成器头文件
+#include "lattice/dgsampling.h"
 
 using namespace lbcrypto;
 
-int main() {
+int main(int argc, char* argv[]) {
+    double gaussianStdDev = 0.1;  // 默认值
+    if (argc > 1) {
+        gaussianStdDev = std::atof(argv[1]);  // 将命令行输入转换为浮点数
+        if (gaussianStdDev <= 0) {
+            std::cerr << "Invalid Gaussian standard deviation. Using default value: 0.1" << std::endl;
+            gaussianStdDev = 0.1;
+        }
+    }
+    std::cout << "Using Gaussian standard deviation: " << gaussianStdDev << std::endl;
+
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
@@ -218,53 +229,53 @@ int main() {
     auto prod_c1_and_p1 = cryptoContext->EvalMult(hpdic_ct1, hpdic_pt1);
 
     // TODO BEGIN
-    // Step 1: 获取密文的分量
-    auto elements = prod_c1_and_p1->GetElements();  // 分量 c0 和 c1
+    // Step 1: 提取密文分量
+    auto elements = prod_c1_and_p1->GetElements();
+    DCRTPoly c0   = elements[0];
+    DCRTPoly c1   = elements[1];
 
-    // Step 2: 确保分量格式一致
-    auto& c0 = elements[0];
-    auto& c1 = elements[1];
-    c0.SetFormat(Format::COEFFICIENT);
-    c1.SetFormat(Format::COEFFICIENT);
+    // Step 2: 获取参数
+    const auto cryptoParams  = cryptoContext->GetCryptoParameters();
+    const auto elementParams = c0.GetParams();
+    const auto numTowers     = elementParams->GetParams().size();  // CRT 塔的数量
 
-    const auto cryptoParams = cryptoContext->GetCryptoParameters();
-    NativeInteger q         = c0.GetParams()->GetModulus();  // 获取模数 q
+    // Step 3: 定义高斯生成器
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);  // 高斯噪声标准差
 
-    DCRTPoly newC0 = c0;
-    DCRTPoly newC1 = c1;
+    // Step 4: 构建随机噪声 DCRTPoly
+    DCRTPoly randomNoise(elementParams, Format::COEFFICIENT);
 
-    // Step 3: 添加噪声
-    for (size_t i = 0; i < c0.GetNumOfElements(); ++i) {
-        const auto& nativePolyC0 = c0.GetElementAtIndex(i);
-        const auto& nativePolyC1 = c1.GetElementAtIndex(i);
+    for (size_t i = 0; i < numTowers; ++i) {
+        auto ringDim = elementParams->GetParams()[i]->GetRingDimension();
+        auto modulus = elementParams->GetParams()[i]->GetModulus();
 
-        NativePoly updatedPolyC0 = nativePolyC0;
-        NativePoly updatedPolyC1 = nativePolyC1;
+        // 使用高斯生成器生成 NativeVector 类型的噪声向量
+        NativeVector noiseVector = dgg.GenerateVector(ringDim, modulus);
 
-        for (size_t j = 0; j < updatedPolyC0.GetLength(); ++j) {
-            // 添加小范围噪声
-            auto noise = NativeInteger((rand() % 3) - 1);  // 噪声范围 [-1, 0, +1]
+        // 创建 NativePoly 并设置噪声值
+        NativePoly noisePoly(elementParams->GetParams()[i], Format::COEFFICIENT);
+        noisePoly.SetValues(noiseVector, Format::COEFFICIENT);
 
-            // 修改 c0 的系数
-            updatedPolyC0[j] = (updatedPolyC0[j] + noise) % q;
-
-            // 修改 c1 的系数，确保解密公式平衡
-            updatedPolyC1[j] = (updatedPolyC1[j] - noise) % q;  // 校正项
-        }
-
-        newC0.SetElementAtIndex(i, updatedPolyC0);
-        newC1.SetElementAtIndex(i, updatedPolyC1);
+        // 更新 DCRTPoly 的对应塔
+        randomNoise.SetElementAtIndex(i, noisePoly);
     }
 
+    // **将随机噪声转换为 EVALUATION 格式**
+    randomNoise.SetFormat(Format::EVALUATION);
+
+    // Step 5: 修改原始密文的 c0 和 c1
+    DCRTPoly newC0 = c0 + randomNoise;  // 在 c0 添加噪声
+    DCRTPoly newC1 = c1 - randomNoise;  // 在 c1 平衡噪声
+
+    // Step 6: 更新密文
     newC0.SetFormat(Format::EVALUATION);
     newC1.SetFormat(Format::EVALUATION);
 
-    // Step 4: 替换密文分量并更新 prod_c1_and_p1
     elements[0] = newC0;
     elements[1] = newC1;
     prod_c1_and_p1->SetElements(elements);
 
-    std::cout << "Modified c0 and c1 directly on polynomial level while maintaining decryptability." << std::endl;
+    std::cout << "Successfully added random noise to the ciphertext." << std::endl;
 
     //TODO END
 
