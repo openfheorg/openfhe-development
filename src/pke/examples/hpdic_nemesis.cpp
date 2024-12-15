@@ -203,6 +203,11 @@ int main() {
 
     // TODO
     std::cout << "Encrypting " << sz_array << " floating numbers." << std::endl;
+    auto p1_pack = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    auto prod_c1_and_p1_pack = cryptoContext->EvalMult(ciphertext1, p1_pack);
+    Plaintext p1_sqr;
+    cryptoContext->Decrypt(keyPair.secretKey, prod_c1_and_p1_pack, &p1_sqr);
+    std::cout << "#1 * #1" << p1_sqr << std::endl;
 
     return 0;
 }
