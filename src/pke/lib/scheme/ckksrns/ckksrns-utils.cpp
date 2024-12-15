@@ -183,7 +183,7 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
         OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divisor is zero.");
     }
 
-    if (int32_t(n - k) < 0)
+    if (n < k)
         return std::make_shared<longDiv>(std::vector<double>(1), f);
 
     std::vector<double> q(n - k + 1);
@@ -191,7 +191,7 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
     std::vector<double> d;
     d.reserve(g.size() + n);
 
-    while (int32_t(n - k) >= 0) {
+    while (n >= k) {
         // d is g padded with zeros before up to n
         d.clear();
         d.resize(n - k);
@@ -232,7 +232,7 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
         OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
     }
 
-    if (int32_t(n - k) < 0)
+    if (n < k)
         return std::make_shared<longDiv>(std::vector<double>(1), f);
 
     std::vector<double> q(n - k + 1);
@@ -240,7 +240,7 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
     std::vector<double> d;
     d.reserve(g.size() + n);
 
-    while (int32_t(n - k) > 0) {
+    while (n > k) {
         d.clear();
         d.resize(n + 1);
 
@@ -248,28 +248,29 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
         if (IsNotEqualOne(g[k]))
             q[n - k] /= g.back();
 
-        if (int32_t(k) == int32_t(n - k)) {
+        if (k == n - k) {
             d.front() = 2 * g[n - k];
 
-            for (uint32_t i = 1; i < 2 * k + 1; i++) {
-                d[i] = g[std::abs(int32_t(n - k - i))];
+            for (size_t i = 1; i < 2 * k + 1; i++) {
+                d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(n - k - i)))];
             }
         }
         else {
-            if (int32_t(k) > int32_t(n - k)) {
+            if (k > (n - k)) {
                 d.front() = 2 * g[n - k];
-                for (uint32_t i = 1; i < k - (n - k) + 1; i++) {
-                    d[i] = g[std::abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];
+                for (size_t i = 1; i < k - (n - k) + 1; i++) {
+                    d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(n - k - i)))] +
+                           g[static_cast<size_t>(n - k + i)];
                 }
-                for (uint32_t i = k - (n - k) + 1; i < n + 1; i++) {
-                    d[i] = g[std::abs(int32_t(i - n + k))];
+                for (size_t i = k - (n - k) + 1; i < n + 1; i++) {
+                    d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(i - n + k)))];
                 }
             }
             else {
                 d[n - k] = g.front();
-                for (uint32_t i = n - 2 * k; i < n + 1; i++) {
+                for (size_t i = n - 2 * k; i < n + 1; i++) {
                     if (i != n - k) {
-                        d[i] = g[std::abs(int32_t(i - n + k))];
+                        d[i] = g[static_cast<size_t>(std::abs(int32_t(i - n + k)))];
                     }
                 }
             }
@@ -455,9 +456,10 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
     // following order: the coefficients associated to the input shifted right,
     // the coefficients for the non-shifted input and the coefficients associated
     // to the input shifted left.
-    std::vector<std::vector<std::complex<double>>> coeff(3 * std::log2(slots));
+    const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
+    std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots);
 
-    for (uint32_t i = 0; i < 3 * std::log2(slots); i++) {
+    for (uint32_t i = 0; i < 3 * log2slots; i++) {
         coeff[i] = std::vector<std::complex<double>>(slots);
     }
 
@@ -472,18 +474,18 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
                 uint32_t jTwiddle = (lenq - (rotGroup[j] % lenq)) * (dim / lenq);
 
                 if (flag_i && (m == 2)) {
-                    std::complex<double> w                    = std::exp(-M_PI / 2 * I) * pows[jTwiddle];
-                    coeff[s + std::log2(slots)][j + k]        = std::exp(-M_PI / 2 * I);  // not shifted
-                    coeff[s + 2 * std::log2(slots)][j + k]    = std::exp(-M_PI / 2 * I);  // shifted left
-                    coeff[s + std::log2(slots)][j + k + lenh] = -w;                       // not shifted
-                    coeff[s][j + k + lenh]                    = w;                        // shifted right
+                    std::complex<double> w             = std::exp(-M_PI / 2 * I) * pows[jTwiddle];
+                    coeff[s + log2slots][j + k]        = std::exp(-M_PI / 2 * I);  // not shifted
+                    coeff[s + 2 * log2slots][j + k]    = std::exp(-M_PI / 2 * I);  // shifted left
+                    coeff[s + log2slots][j + k + lenh] = -w;                       // not shifted
+                    coeff[s][j + k + lenh]             = w;                        // shifted right
                 }
                 else {
-                    std::complex<double> w                    = pows[jTwiddle];
-                    coeff[s + std::log2(slots)][j + k]        = 1;   // not shifted
-                    coeff[s + 2 * std::log2(slots)][j + k]    = 1;   // shifted left
-                    coeff[s + std::log2(slots)][j + k + lenh] = -w;  // not shifted
-                    coeff[s][j + k + lenh]                    = w;   // shifted right
+                    std::complex<double> w             = pows[jTwiddle];
+                    coeff[s + log2slots][j + k]        = 1;   // not shifted
+                    coeff[s + 2 * log2slots][j + k]    = 1;   // shifted left
+                    coeff[s + log2slots][j + k + lenh] = -w;  // not shifted
+                    coeff[s][j + k + lenh]             = w;   // shifted right
                 }
             }
         }
@@ -505,9 +507,10 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
     // following order: the coefficients associated to the input shifted right,
     // the coefficients for the non-shifted input and the coefficients associated
     // to the input shifted left.
-    std::vector<std::vector<std::complex<double>>> coeff(3 * std::log2(slots));
+    const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
+    std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots);
 
-    for (uint32_t i = 0; i < 3 * std::log2(slots); i++) {
+    for (uint32_t i = 0; i < 3 * log2slots; i++) {
         coeff[i] = std::vector<std::complex<double>>(slots);
     }
 
@@ -522,18 +525,18 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
                 uint32_t jTwiddle = (rotGroup[j] % lenq) * (dim / lenq);
 
                 if (flag_i && (m == 2)) {
-                    std::complex<double> w                    = std::exp(M_PI / 2 * I) * pows[jTwiddle];
-                    coeff[s + std::log2(slots)][j + k]        = std::exp(M_PI / 2 * I);  // not shifted
-                    coeff[s + 2 * std::log2(slots)][j + k]    = w;                       // shifted left
-                    coeff[s + std::log2(slots)][j + k + lenh] = -w;                      // not shifted
-                    coeff[s][j + k + lenh]                    = std::exp(M_PI / 2 * I);  // shifted right
+                    std::complex<double> w             = std::exp(M_PI / 2 * I) * pows[jTwiddle];
+                    coeff[s + log2slots][j + k]        = std::exp(M_PI / 2 * I);  // not shifted
+                    coeff[s + 2 * log2slots][j + k]    = w;                       // shifted left
+                    coeff[s + log2slots][j + k + lenh] = -w;                      // not shifted
+                    coeff[s][j + k + lenh]             = std::exp(M_PI / 2 * I);  // shifted right
                 }
                 else {
-                    std::complex<double> w                    = pows[jTwiddle];
-                    coeff[s + std::log2(slots)][j + k]        = 1;   // not shifted
-                    coeff[s + 2 * std::log2(slots)][j + k]    = w;   // shifted left
-                    coeff[s + std::log2(slots)][j + k + lenh] = -w;  // not shifted
-                    coeff[s][j + k + lenh]                    = 1;   // shifted right
+                    std::complex<double> w             = pows[jTwiddle];
+                    coeff[s + log2slots][j + k]        = 1;   // not shifted
+                    coeff[s + 2 * log2slots][j + k]    = w;   // shifted left
+                    coeff[s + log2slots][j + k + lenh] = -w;  // not shifted
+                    coeff[s][j + k + lenh]             = 1;   // shifted right
                 }
             }
         }
@@ -570,30 +573,13 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     std::vector<std::vector<std::complex<double>>> coeff1 = CoeffEncodingOneLevel(pows, rotGroup, flag_i);
 
     // Coeff stores the coefficients for the given budget of levels
-    std::vector<std::vector<std::vector<std::complex<double>>>> coeff(dimCollapse);
-    for (uint32_t i = 0; i < uint32_t(dimCollapse); i++) {
+    std::vector<std::vector<std::vector<std::complex<double>>>> coeff(
+        dimCollapse,
+        std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
     if (flagRem) {
-            if (i >= 1) {
-                // after remainder
-                coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
-                for (uint32_t j = 0; j < numRotations; j++) {
-                    coeff[i][j] = std::vector<std::complex<double>>(slots);
-                }
-            }
-            else {
-                // remainder corresponds to the first index in encoding and to the last one in decoding
-                coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotationsRem);
-                for (uint32_t j = 0; j < numRotationsRem; j++) {
-                    coeff[i][j] = std::vector<std::complex<double>>(slots);
-        }
-    }
-        }
-        else {
-        coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
-            for (uint32_t j = 0; j < numRotations; j++) {
-            coeff[i][j] = std::vector<std::complex<double>>(slots);
-        }
-    }
+        // this one corresponds to the first index in encoding (same applies to the last index in decoding too)
+        coeff[0] =
+            std::vector<std::vector<std::complex<double>>>(numRotationsRem, std::vector<std::complex<double>>(slots));
     }
 
     for (int32_t s = dimCollapse - 1; s > stop; s--) {
@@ -636,7 +622,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
                 coeff[s][2] = coeff1[top + 2 * std::log2(slots)];
             }
             else {
-                std::vector<std::vector<std::complex<double>>> temp = coeff[s];
+            std::vector<std::vector<std::complex<double>>> temp = coeff[s];
         std::vector<std::vector<std::complex<double>>> zeros(numRotationsRem,
                                                              std::vector<std::complex<double>>(slots, 0.0));
             coeff[s]   = zeros;
@@ -690,23 +676,23 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     std::vector<std::vector<std::vector<std::complex<double>>>> coeff(
         dimCollapse,
         std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
-        if (flagRem) {
+    if (flagRem) {
         // this one corresponds to the last index in decoding (same applies to the first index in encoding too)
         coeff[dimCollapse - 1] =
             std::vector<std::vector<std::complex<double>>>(numRotationsRem, std::vector<std::complex<double>>(slots));
-                }
+    }
 
     if (layersCollapse) {  // this condition is necessary for the code executed before the inner loop
         std::vector<std::vector<std::complex<double>>> zeros(numRotations,
                                                              std::vector<std::complex<double>>(slots, 0.0));
-    for (size_t s = 0; s < rowsCollapse; s++) {
-                coeff[s][0] = coeff1[s * layersCollapse];
-                coeff[s][1] = coeff1[log2slots + s * layersCollapse];
-                coeff[s][2] = coeff1[2 * log2slots + s * layersCollapse];
+        for (size_t s = 0; s < rowsCollapse; s++) {
+            coeff[s][0] = coeff1[s * layersCollapse];
+            coeff[s][1] = coeff1[log2slots + s * layersCollapse];
+            coeff[s][2] = coeff1[2 * log2slots + s * layersCollapse];
 
             for (size_t l = 1; l < layersCollapse; l++) {
                 std::vector<std::vector<std::complex<double>>> temp = coeff[s];
-                coeff[s] = zeros;
+                coeff[s]                                            = zeros;
 
                 for (size_t t = 0; t < 3; t++) {
                     uint32_t shift = (t == 0) ? 0 : ((t == 1) ? (1U << l) : (1U << (l + 1)));
@@ -834,7 +820,10 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
     indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
 
     // Remove automorphisms corresponding to 0
-    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+    auto it = std::find(indexList.begin(), indexList.end(), 0);
+    if (it != indexList.end()) {
+        indexList.erase(it);
+    }
 
     return indexList;
 }
@@ -884,7 +873,10 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
     indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
 
     // Remove automorphisms corresponding to 0
-    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+    auto it = std::find(indexList.begin(), indexList.end(), 0);
+    if (it != indexList.end()) {
+        indexList.erase(it);
+    }
 
     return indexList;
 }
