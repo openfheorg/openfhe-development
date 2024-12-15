@@ -35,8 +35,10 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
 #include "openfhe.h"
 #include "cnpy.h"
+#include "math/discretegaussiangenerator.h"  // 确保包含高斯生成器头文件
 
 using namespace lbcrypto;
 
@@ -44,7 +46,9 @@ int main() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(2);
+    // parameters.SetMultiplicativeDepth(2);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetBatchSize(1);  // 设置 batch size 为 1，关闭批处理
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -124,22 +128,22 @@ int main() {
     plaintextRot3->SetLength(vectorOfInts1.size());
     plaintextRot4->SetLength(vectorOfInts1.size());
 
-    std::cout << "Plaintext #1: " << plaintext1 << std::endl;
-    std::cout << "Plaintext #2: " << plaintext2 << std::endl;
-    std::cout << "Plaintext #3: " << plaintext3 << std::endl;
+    // std::cout << "Plaintext #1: " << plaintext1 << std::endl;
+    // std::cout << "Plaintext #2: " << plaintext2 << std::endl;
+    // std::cout << "Plaintext #3: " << plaintext3 << std::endl;
 
     // Output results
-    std::cout << "\nResults of homomorphic computations" << std::endl;
-    std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
-    std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
-    std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
-    std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
-    std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
-    std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
+    // std::cout << "\nResults of homomorphic computations" << std::endl;
+    // std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
+    // std::cout << "#1 * #2 * #3: " << plaintextMultResult << std::endl;
+    // std::cout << "Left rotation of #1 by 1: " << plaintextRot1 << std::endl;
+    // std::cout << "Left rotation of #1 by 2: " << plaintextRot2 << std::endl;
+    // std::cout << "Right rotation of #1 by 1: " << plaintextRot3 << std::endl;
+    // std::cout << "Right rotation of #1 by 2: " << plaintextRot4 << std::endl;
 
-    std::cout << std::endl;
-    std::cout << "===== HPDIC ===== " << std::endl;
-    std::cout << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "===== HPDIC ===== " << std::endl;
+    // std::cout << std::endl;
 
     /**
      * HPDIC: Load model data in numpy, e.g., ~/PFLlib/results/numpy_MNIST.npy
@@ -201,16 +205,93 @@ int main() {
         return 1;
     }
 
-    // TODO
     std::cout << "Encrypting " << sz_array << " floating numbers." << std::endl;
-    auto p1_pack = cryptoContext->MakePackedPlaintext(vectorOfInts1);
-    // auto prod_c1_and_p1_pack = cryptoContext->EvalMult(ciphertext1, p1_pack);
-    auto prod_c1_and_p1_pack = ciphertext1;
-    prod_c1_and_p1_pack = cryptoContext->EvalMult(prod_c1_and_p1_pack, p1_pack);
-    Plaintext p1_sqr;
-    cryptoContext->Decrypt(keyPair.secretKey, prod_c1_and_p1_pack, &p1_sqr);
-    std::cout << "#1 * #1 = " << p1_sqr << std::endl;
-    std::cout << "To be continued: openfhe-development/src/pke/lib/scheme/bfvrns/bfvrns-leveledshe.cpp" << std::endl;
+
+    std::vector<int64_t> hpdic_vec1 = {2};
+    Plaintext hpdic_pt1             = cryptoContext->MakePackedPlaintext(hpdic_vec1);
+    auto hpdic_ct1                  = cryptoContext->Encrypt(keyPair.publicKey, hpdic_pt1);
+    std::cout << "Plaintext hpdic_vec1: " << hpdic_vec1 << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Caching
+    auto prod_c1_and_p1 = cryptoContext->EvalMult(hpdic_ct1, hpdic_pt1);
+
+    // TODO BEGIN
+    // Step 1: 获取密文的分量
+    auto elements = prod_c1_and_p1->GetElements();  // 分量 c0 和 c1
+
+    // Step 2: 确保分量格式一致
+    auto& c0 = elements[0];
+    auto& c1 = elements[1];
+    c0.SetFormat(Format::COEFFICIENT);
+    c1.SetFormat(Format::COEFFICIENT);
+
+    const auto cryptoParams = cryptoContext->GetCryptoParameters();
+    NativeInteger q         = c0.GetParams()->GetModulus();  // 获取模数 q
+
+    DCRTPoly newC0 = c0;
+    DCRTPoly newC1 = c1;
+
+    // Step 3: 添加噪声
+    for (size_t i = 0; i < c0.GetNumOfElements(); ++i) {
+        const auto& nativePolyC0 = c0.GetElementAtIndex(i);
+        const auto& nativePolyC1 = c1.GetElementAtIndex(i);
+
+        NativePoly updatedPolyC0 = nativePolyC0;
+        NativePoly updatedPolyC1 = nativePolyC1;
+
+        for (size_t j = 0; j < updatedPolyC0.GetLength(); ++j) {
+            // 添加小范围噪声
+            auto noise = NativeInteger((rand() % 3) - 1);  // 噪声范围 [-1, 0, +1]
+
+            // 修改 c0 的系数
+            updatedPolyC0[j] = (updatedPolyC0[j] + noise) % q;
+
+            // 修改 c1 的系数，确保解密公式平衡
+            updatedPolyC1[j] = (updatedPolyC1[j] - noise) % q;  // 校正项
+        }
+
+        newC0.SetElementAtIndex(i, updatedPolyC0);
+        newC1.SetElementAtIndex(i, updatedPolyC1);
+    }
+
+    newC0.SetFormat(Format::EVALUATION);
+    newC1.SetFormat(Format::EVALUATION);
+
+    // Step 4: 替换密文分量并更新 prod_c1_and_p1
+    elements[0] = newC0;
+    elements[1] = newC1;
+    prod_c1_and_p1->SetElements(elements);
+
+    std::cout << "Modified c0 and c1 directly on polynomial level while maintaining decryptability." << std::endl;
+
+    //TODO END
+
+    auto end                 = std::chrono::high_resolution_clock::now();
+    auto duration            = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Nemesis time taken for multi-cache: " << duration.count() << " microseconds" << std::endl;
+
+    // Step 1: 解密密文
+    Plaintext decryptedPt;
+    cryptoContext->Decrypt(keyPair.secretKey, prod_c1_and_p1, &decryptedPt);
+
+    // Step 2: 提取第一个 slot 的值
+    auto packedValues = decryptedPt->GetPackedValue();  // 获取所有槽位的明文值
+    if (!packedValues.empty()) {
+        std::cout << "Value of the first slot: " << packedValues[0] << std::endl;
+    }
+    else {
+        std::cout << "Decrypted plaintext is empty!" << std::endl;
+    }
+
+    std::vector<int64_t> hpdic_vec2 = {8};
+    Plaintext hpdic_pt2             = cryptoContext->MakePackedPlaintext(hpdic_vec2);
+    start                           = std::chrono::high_resolution_clock::now();
+    auto hpdic_ct2                  = cryptoContext->Encrypt(keyPair.publicKey, hpdic_pt2);
+    end                             = std::chrono::high_resolution_clock::now();
+    duration                        = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "OpenFHE time taken for homoencrypt: " << duration.count() << " microseconds" << std::endl;
 
     return 0;
 }

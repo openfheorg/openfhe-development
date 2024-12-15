@@ -209,7 +209,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
     ciphertext->SetNoiseScaleDeg(1);
 
-    // std::cout << "=====HPDIC DEBUG=====Current position: File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
+    std::cout << "=====HPDIC DEBUG===== File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
 
     return ciphertext;
 }

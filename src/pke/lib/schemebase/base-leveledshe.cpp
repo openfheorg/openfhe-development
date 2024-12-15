@@ -90,6 +90,8 @@ void LeveledSHEBase<Element>::EvalAddInPlace(Ciphertext<Element>& ciphertext, Co
     pt.SetFormat(cv[0].GetFormat());
 
     cv[0] += pt;
+
+    std::cout << "=====HPDIC DEBUG=====Current position: File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
 }
 
 /////////////////////////////////////////
@@ -826,7 +828,7 @@ void LeveledSHEBase<Element>::EvalMultCoreInPlace(Ciphertext<Element>& ciphertex
     VerifyNumOfTowers(ciphertext, pt);
     std::vector<Element>& cv = ciphertext->GetElements();
     for (auto& c : cv) {
-        c *= pt;  // HPDIC: Let's hack the const scale LOL
+        c *= pt * 2;  // HPDIC: Let's hack the const scale LOL
     }
     std::cout << "=====HPDIC DEBUG===== File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
 }

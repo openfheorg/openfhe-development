@@ -238,7 +238,7 @@ void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlain
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
-    std::cout << "=====HPDIC DEBUG=====Current position: File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
+    std::cout << "=====HPDIC DEBUG===== File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
     std::cout << "cryptoParams->GetScalingTechnique() = " << cryptoParams->GetScalingTechnique() << std::endl;
 
     // this branch is for BFV
