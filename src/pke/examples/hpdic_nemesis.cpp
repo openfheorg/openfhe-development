@@ -220,15 +220,34 @@ int main(int argc, char* argv[]) {
 
     std::vector<int64_t> hpdic_vec1 = {2};
     Plaintext hpdic_pt1             = cryptoContext->MakePackedPlaintext(hpdic_vec1);
+
+    /*********************
+     * BEGIN Preprocessing
+     */
+
+    // Cached value
     auto hpdic_ct1                  = cryptoContext->Encrypt(keyPair.publicKey, hpdic_pt1);
     std::cout << "Plaintext hpdic_vec1: " << hpdic_vec1 << std::endl;
 
+    // Step 3: 定义高斯生成器
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);  // 高斯噪声标准差
+    
+    /**
+     * END Preprocessing
+     *******************/
+
     auto start = std::chrono::high_resolution_clock::now();
 
-    // Caching
-    auto prod_c1_and_p1 = cryptoContext->EvalMult(hpdic_ct1, hpdic_pt1);
+    // Factor
+    Plaintext hpdic_pt0 = cryptoContext->MakePackedPlaintext(hpdic_vec1);
 
-    // TODO BEGIN
+    // Reconstruction
+    auto prod_c1_and_p1 = cryptoContext->EvalMult(hpdic_ct1, hpdic_pt0);
+
+    /***********************
+     * BEGIN Randomization
+     */
+
     // Step 1: 提取密文分量
     auto elements = prod_c1_and_p1->GetElements();
     DCRTPoly c0   = elements[0];
@@ -238,9 +257,6 @@ int main(int argc, char* argv[]) {
     const auto cryptoParams  = cryptoContext->GetCryptoParameters();
     const auto elementParams = c0.GetParams();
     const auto numTowers     = elementParams->GetParams().size();  // CRT 塔的数量
-
-    // Step 3: 定义高斯生成器
-    DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);  // 高斯噪声标准差
 
     // Step 4: 构建随机噪声 DCRTPoly
     DCRTPoly randomNoise(elementParams, Format::COEFFICIENT);
@@ -277,7 +293,9 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Successfully added random noise to the ciphertext." << std::endl;
 
-    //TODO END
+    /**
+     * END Randomization
+     *************************/
 
     auto end                 = std::chrono::high_resolution_clock::now();
     auto duration            = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
