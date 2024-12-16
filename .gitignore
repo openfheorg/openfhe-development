@@ -44,6 +44,7 @@ gmon.out
 *.class
 
 ## for the moment
+.cache
 .cproject
 .metadata/
 .project

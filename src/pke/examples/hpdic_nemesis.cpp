@@ -39,7 +39,7 @@
 #include "openfhe.h"
 #include "cnpy.h"
 #include "math/discretegaussiangenerator.h"  // 确保包含高斯生成器头文件
-#include "lattice/dgsampling.h"
+// #include "lattice/dgsampling.h"
 
 using namespace lbcrypto;
 
