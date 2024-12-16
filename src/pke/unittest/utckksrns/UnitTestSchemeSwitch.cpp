@@ -39,9 +39,9 @@
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "scheme/ckksrns/schemeswitching-data-serializer.h"
 #include "ciphertext-ser.h"
 #include "key/key-ser.h"
+#include "schemeswitching-data-serializer.h"
 
 #include <iostream>
 #include <vector>
