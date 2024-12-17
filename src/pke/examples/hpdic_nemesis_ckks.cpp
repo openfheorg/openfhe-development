@@ -39,10 +39,67 @@ HPDIC Nemesis MOD
 
 #include <chrono>
 #include <iostream>
+#include "cnpy.h"
 #include "openfhe.h"
 
 using namespace lbcrypto;
 using namespace std::chrono;  // 引用 std::chrono 命名空间
+
+/**
+ * Function: LoadNumpyFile
+ * Description: 加载一个 .npy 文件，并返回数据作为 std::vector<float>。
+ * Inputs:
+ *   - file_path: std::string - 指定 .npy 文件的路径。
+ * Outputs:
+ *   - std::vector<float> - 包含文件中所有浮点数数据的向量。
+ */
+std::vector<float> LoadNumpyFile(const std::string& file_path) {
+    std::vector<float> data_vector;
+
+    try {
+        // 加载 .npy 文件
+        cnpy::NpyArray my_npz = cnpy::npy_load(file_path);
+
+        // 获取数据指针并转换为 float 类型
+        float* data = my_npz.data<float>();
+
+        // 获取数组的总元素数
+        size_t total_elements = 1;
+        for (size_t dim : my_npz.shape) {
+            total_elements *= dim;
+        }
+
+        // 将数据复制到 std::vector
+        data_vector.assign(data, data + total_elements);
+
+        // 打印数组的维度
+        std::cout << "Shape: ";
+        for (size_t dim : my_npz.shape) {
+            std::cout << dim << " ";
+        }
+        std::cout << std::endl;
+
+        // 打印前 3 个和后 3 个值
+        std::cout << "First 3 values: ";
+        for (size_t i = 0; i < std::min(total_elements, static_cast<size_t>(3)); ++i) {
+            std::cout << data_vector[i] << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Last 3 values: ";
+        for (size_t i = total_elements > 3 ? total_elements - 3 : 0; i < total_elements; ++i) {
+            std::cout << data_vector[i] << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Successfully loaded " << total_elements << " floating-point numbers." << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error loading file: " << e.what() << std::endl;
+    }
+
+    return data_vector;
+}
 
 void SimpleBootstrapExample();
 
@@ -142,7 +199,7 @@ int main(int argc, char* argv[]) {
 
     // TODO: Multiplicative CKKS
     // Construct the base
-    std::vector<double> vec_base = {1, 1, 1, 1, 1, 1, 1, 1};
+    std::vector<double> vec_base(numSlots, 1.0);
     Plaintext pt_base            = cryptoContext->MakeCKKSPackedPlaintext(vec_base, 1, depth - 1);
     double gaussianStdDev = 0.1;  // 默认值
     if (argc > 1) {
@@ -236,4 +293,36 @@ int main(int argc, char* argv[]) {
     cryptoContext->Decrypt(keyPair.secretKey, ct_product, &result);
     result->SetLength(encodedLength);
     std::cout << "Nemesis CKKS recovery: \n\t" << result << std::endl;
+
+    // TODO: The real game starts here
+
+    // 定义三个固定的文件路径
+    std::vector<std::string> paths = {"/home/cc/PFLlib/results/numpy_MNIST.npy",
+                                      "/home/cc/PFLlib/results/numpy_FashionMNIST.npy",
+                                      "/home/cc/PFLlib/results/numpy_Cifar10.npy"};
+
+    // 提示用户选择路径
+    std::cout << "Select the file to load (enter 1, 2, or 3):\n";
+    std::cout << "1. " << paths[0] << "\n";
+    std::cout << "2. " << paths[1] << "\n";
+    std::cout << "3. " << paths[2] << "\n";
+
+    int choice = 0;
+    std::cin >> choice;
+
+    // 验证输入
+    if (choice < 1 || choice > 3) {
+        std::cerr << "Invalid choice. Will use 1." << std::endl;
+        choice = 1;
+    }
+
+    // 获取选定的路径
+    std::string file_path = paths[choice - 1];
+    std::cout << "Using file path: " << file_path << std::endl;
+
+    // 调用 LoadNumpyFile 函数加载数据
+    std::vector<float> data = LoadNumpyFile(file_path);
+
+    // 输出向量大小
+    std::cout << "Loaded vector size: " << data.size() << std::endl;
 }
