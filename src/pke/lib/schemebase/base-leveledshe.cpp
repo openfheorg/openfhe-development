@@ -35,6 +35,13 @@
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
+#include <memory>
+#include <vector>
+#include <map>
+#include <string>
+#include <utility>
+#include <algorithm>
+
 namespace lbcrypto {
 
 /////////////////////////////////////////
@@ -557,10 +564,17 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::ComposedEvalMult(ConstCiphertext<Element> ciphertext1,
                                                               ConstCiphertext<Element> ciphertext2,
                                                               const EvalKey<Element> evalKey) const {
+    const auto cc                  = ciphertext1->GetCryptoContext();
     auto algo                      = ciphertext1->GetCryptoContext()->GetScheme();
+    const auto cryptoParams        = ciphertext1->GetCryptoParameters();
     Ciphertext<Element> ciphertext = EvalMult(ciphertext1, ciphertext2);
     algo->KeySwitchInPlace(ciphertext, evalKey);
-    ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+    uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
+    if (cc->getSchemeId() == CKKSRNS_SCHEME) {
+        const auto cryptoRNSParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
+        levelsToDrop               = cryptoRNSParams->GetCompositeDegree();
+    }
+    ModReduceInPlace(ciphertext, levelsToDrop);
     return ciphertext;
 }
 

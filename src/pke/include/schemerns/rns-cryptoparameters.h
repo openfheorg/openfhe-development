@@ -165,7 +165,7 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        m_compositeDegree                     = compositeDegree;  
+        m_compositeDegree                     = compositeDegree;
         m_registerWordSize                    = registerWordSize;
     }
 
@@ -633,12 +633,12 @@ public:
     /**
    * Method to retrieve the scaling factor of level l.
    * For FIXEDMANUAL scaling technique method always returns 2^p, where p corresponds to plaintext modulus
-   * @param l For FLEXIBLEAUTO scaling technique the level whose scaling factor we want to learn.
+   * @param l For FLEXIBLEAUTO and COMPOSITESCALING scaling techniques the level whose scaling factor we want to learn.
    * Levels start from 0 (no scaling done - all towers) and go up to K-1, where K is the number of towers supported.
    * @return the scaling factor.
    */
     double GetScalingFactorReal(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsReal.size()) {
                 // TODO: Return an error here.
@@ -652,7 +652,7 @@ public:
     }
 
     double GetScalingFactorRealBig(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
@@ -665,15 +665,15 @@ public:
         return m_approxSF;
     }
 
-   /**
+    /**
    * Method to retrieve the modulus to be dropped of level l.
    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
-   * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
+   * @param l index of modulus to be dropped for FLEXIBLEAUTO and COMPOSITESCALING scaling techniques
    * @return the precomputed table
    */
     double GetModReduceFactor(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) { 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_dmoduliQ[l];
         }
 
@@ -697,9 +697,9 @@ public:
     }
     /**
      * Returns the architecture register word size (e.g., 32 bits, 48 bits, 64 bits).
-     * Used to determine the size of prime moduli in the CKKS scheme on 
+     * Used to determine the size of prime moduli in the CKKS scheme on
      * composite scaling mode (COMPOSITESCALINGAUTO).
-     * 
+     *
      * @return the register word size for COMPOSITESCALING scaling technique
      **/
     uint32_t const& GetRegisterWordSize() const {
@@ -1021,7 +1021,7 @@ public:
     }
 
     const NativeInteger& GetModReduceFactorInt(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_qModt[l];
         }
@@ -1549,7 +1549,7 @@ protected:
     /////////////////////////////////////
 
     // Stores composite degree for composite modulus chain
-    uint32_t m_compositeDegree  = BASE_NUM_LEVELS_TO_DROP;
+    uint32_t m_compositeDegree = BASE_NUM_LEVELS_TO_DROP;
     // Stores the architecture register word size
     uint32_t m_registerWordSize = NATIVEINT;
 

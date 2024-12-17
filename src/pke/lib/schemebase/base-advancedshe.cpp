@@ -34,6 +34,12 @@
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
+#include <vector>
+#include <string>
+#include <memory>
+#include <map>
+#include <set>
+
 namespace lbcrypto {
 
 template <class Element>
@@ -99,11 +105,20 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
 
     auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
+    const auto cc = ciphertextVec[0]->GetCryptoContext();
+
+    usint levelsToDrop = 1;  // TODO(@fdiasmor): Or BASE_NUM_LEVELS_TO_DROP ?
+    if (cc->getSchemeId() == CKKSRNS_SCHEME) {
+        const auto cryptoParams =
+            std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
+        levelsToDrop = cryptoParams->GetCompositeDegree();
+    }
+
     for (size_t i = 0; i < lim; i = i + 2) {
         ciphertextMultVec[ctrIndex] = algo->EvalMultAndRelinearize(
             i < inSize ? ciphertextVec[i] : ciphertextMultVec[i - inSize],
             i + 1 < inSize ? ciphertextVec[i + 1] : ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], 1);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
     }
 
     return ciphertextMultVec.back();
@@ -395,7 +410,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(const std::vector<Cipher
 
     for (size_t i = 1; i < ciphertextVec.size(); i++) {
         ciphertextMerged = algo->EvalAdd(
-            ciphertextMerged, algo->EvalAtIndex(algo->EvalMult(ciphertextVec[i], plaintext), -(int32_t)i, evalKeyMap));
+            ciphertextMerged,
+            algo->EvalAtIndex(algo->EvalMult(ciphertextVec[i], plaintext), -static_cast<int32_t>(i), evalKeyMap));
     }
 
     return ciphertextMerged;
