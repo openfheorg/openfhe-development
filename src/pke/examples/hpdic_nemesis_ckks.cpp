@@ -47,10 +47,7 @@ using namespace std::chrono;  // 引用 std::chrono 命名空间
 void SimpleBootstrapExample();
 
 int main(int argc, char* argv[]) {
-    SimpleBootstrapExample();
-}
 
-void SimpleBootstrapExample() {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
@@ -137,24 +134,106 @@ void SimpleBootstrapExample() {
     ptxt->SetLength(encodedLength);
     std::cout << "Input: " << ptxt << std::endl;
 
-    auto start = high_resolution_clock::now(); // 开始时间戳
+    auto start                = high_resolution_clock::now();  // 开始时间戳
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
     auto end                  = high_resolution_clock::now();  // 结束时间戳
     auto duration             = duration_cast<microseconds>(end - start).count();
-    std::cout << "Encryption time: " << duration << " microseconds" << std::endl;
+    std::cout << "OpenFHE CKKS Encryption time: " << duration << " microseconds" << std::endl;
 
-    std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
+    // TODO: Multiplicative CKKS
+    // Construct the base
+    std::vector<double> vec_base = {1, 1, 1, 1, 1, 1, 1, 1};
+    Plaintext pt_base            = cryptoContext->MakeCKKSPackedPlaintext(vec_base, 1, depth - 1);
+    double gaussianStdDev = 0.1;  // 默认值
+    if (argc > 1) {
+        gaussianStdDev = std::atof(argv[1]);  // 将命令行输入转换为浮点数
+        if (gaussianStdDev <= 0) {
+            std::cerr << "Invalid Gaussian standard deviation. Using default value: 0.1" << std::endl;
+            gaussianStdDev = 0.1;
+        }
+    }
+    std::cout << "Using Gaussian standard deviation: " << gaussianStdDev << std::endl;
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);  // 高斯噪声标准差
+
+    start = high_resolution_clock::now();  // 开始时间戳
+
+    // Construct the ciphertext through multiplicative caching
+    auto ct_product = cryptoContext->EvalMult(pt_base, ciph);
+    /***********************
+     * BEGIN Randomization
+     */
+
+    // Step 1: 提取密文分量
+    auto elements = ct_product->GetElements();
+    DCRTPoly c0   = elements[0];
+    DCRTPoly c1   = elements[1];
+
+    // Step 2: 获取参数
+    const auto cryptoParams  = cryptoContext->GetCryptoParameters();
+    const auto elementParams = c0.GetParams();
+    const auto numTowers     = elementParams->GetParams().size();  // CRT 塔的数量
+
+    // Step 4: 构建随机噪声 DCRTPoly
+    DCRTPoly randomNoise(elementParams, Format::COEFFICIENT);
+
+    for (size_t i = 0; i < numTowers; ++i) {
+        auto ringDim = elementParams->GetParams()[i]->GetRingDimension();
+        auto modulus = elementParams->GetParams()[i]->GetModulus();
+
+        // 使用高斯生成器生成 NativeVector 类型的噪声向量
+        NativeVector noiseVector = dgg.GenerateVector(ringDim, modulus);
+
+        // 创建 NativePoly 并设置噪声值
+        NativePoly noisePoly(elementParams->GetParams()[i], Format::COEFFICIENT);
+        noisePoly.SetValues(noiseVector, Format::COEFFICIENT);
+
+        // 更新 DCRTPoly 的对应塔
+        randomNoise.SetElementAtIndex(i, noisePoly);
+    }
+
+    // **将随机噪声转换为 EVALUATION 格式**
+    randomNoise.SetFormat(Format::EVALUATION);
+
+    // Step 5: 修改原始密文的 c0 和 c1
+    DCRTPoly newC0 = c0 + randomNoise;  // 在 c0 添加噪声
+    DCRTPoly newC1 = c1 - randomNoise;  // 在 c1 平衡噪声
+
+    // Step 6: 更新密文
+    newC0.SetFormat(Format::EVALUATION);
+    newC1.SetFormat(Format::EVALUATION);
+
+    elements[0] = newC0;
+    elements[1] = newC1;
+    ct_product->SetElements(elements);
+
+    end = high_resolution_clock::now();  // 结束时间戳
+    duration = duration_cast<microseconds>(end - start).count();
+
+    std::cout << "Successfully added random noise to the ciphertext." << std::endl;
+
+    std::cout << "Nemesis CKKS Encryption time: " << duration << " microseconds" << std::endl;
+
+    /**
+     * END Randomization
+     *************************/
+
+    // std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
 
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
-    auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
+    // auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
-    std::cout << "Number of levels remaining after bootstrapping: "
-              << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl
-              << std::endl;
+    // std::cout << "Number of levels remaining after bootstrapping: "
+    //           << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl
+    //           << std::endl;
+    auto ciphertextAfter = ciph;
 
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(encodedLength);
-    std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+    std::cout << "Original CKKS recovery: \n\t" << result << std::endl;
+
+    cryptoContext->Decrypt(keyPair.secretKey, ct_product, &result);
+    result->SetLength(encodedLength);
+    std::cout << "Nemesis CKKS recovery: \n\t" << result << std::endl;
 }
