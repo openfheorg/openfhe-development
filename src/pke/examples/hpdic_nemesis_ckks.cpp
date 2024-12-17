@@ -39,6 +39,7 @@ HPDIC Nemesis MOD
 
 #include <chrono>
 #include <iostream>
+#include <cstdlib>
 #include "cnpy.h"
 #include "openfhe.h"
 
@@ -280,6 +281,10 @@ std::vector<float> LoadNumpyFile(const std::string& file_path) {
     return data_vector;
 }
 
+bool isPowerOfTwo(int n) {
+    return (n > 0) && ((n & (n - 1)) == 0);
+}
+
 void SimpleBootstrapExample();
 
 int main(int argc, char* argv[]) {
@@ -351,14 +356,47 @@ int main(int argc, char* argv[]) {
     cryptoContext->Enable(FHE);
 
     usint ringDim = cryptoContext->GetRingDimension();
+    std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
+
     // This is the maximum number of slots that can be used for full packing.
     usint numSlots = ringDim / 2;
-    std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
+
+    usint sz_batch = numSlots;
+    // 检查命令行输入
+    if (argc >= 2) {
+        sz_batch = std::atoi(argv[1]);  // 用户输入的值
+
+        // 条件检查
+        if (sz_batch < 1) {
+            std::cerr << "Error: numSlots must be greater than or equal to 1.\n";
+            return 1;
+        }
+        if (sz_batch > ringDim / 2) {
+            std::cerr << "Error: numSlots must be less than or equal to ringDim / 2 (" << ringDim / 2 << ").\n";
+            return 1;
+        }
+    }
+
+    double gaussianStdDev = 0.1;  // 默认值
+    // if (argc > 1) {
+    //     gaussianStdDev = std::atof(argv[1]);  // 将命令行输入转换为浮点数
+    //     if (gaussianStdDev <= 0) {
+    //         std::cerr << "Invalid Gaussian standard deviation. Using default value: 0.1" << std::endl;
+    //         gaussianStdDev = 0.1;
+    //     }
+    // }
+    std::cout << "Using Gaussian standard deviation: " << gaussianStdDev << std::endl;
+
+    // 条件满足，输出结果
+    std::cout << "numSlots is set to: " << numSlots << std::endl;
+    std::cout << "sz_batch is set to: " << sz_batch << std::endl;
 
     cryptoContext->EvalBootstrapSetup(levelBudget);
 
     auto keyPair = cryptoContext->KeyGen();
+
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
+
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
@@ -378,18 +416,18 @@ int main(int argc, char* argv[]) {
 
     // TODO: Multiplicative CKKS
     // Construct the base
-    std::vector<double> vec_base(numSlots, 1.0);
+    start = high_resolution_clock::now();
+    std::vector<double> vec_base(sz_batch, 1.0);
     Plaintext pt_base            = cryptoContext->MakeCKKSPackedPlaintext(vec_base, 1, depth - 1);
+    end                          = high_resolution_clock::now();
+    duration                     = duration_cast<microseconds>(end - start).count();
+    std::cout << "Nemesis plaintext-caching time: " << duration << " microseconds" << std::endl;
+    start                        = high_resolution_clock::now();
     ciph                         = cryptoContext->Encrypt(keyPair.publicKey, pt_base);
-    double gaussianStdDev = 0.1;  // 默认值
-    if (argc > 1) {
-        gaussianStdDev = std::atof(argv[1]);  // 将命令行输入转换为浮点数
-        if (gaussianStdDev <= 0) {
-            std::cerr << "Invalid Gaussian standard deviation. Using default value: 0.1" << std::endl;
-            gaussianStdDev = 0.1;
-        }
-    }
-    std::cout << "Using Gaussian standard deviation: " << gaussianStdDev << std::endl;
+    end                        = high_resolution_clock::now();
+    duration                     = duration_cast<microseconds>(end - start).count();
+    std::cout << "Nemesis ciphertext-caching time: " << duration << " microseconds" << std::endl;
+
     DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);  // 高斯噪声标准差
 
     start = high_resolution_clock::now();  // 开始时间戳
@@ -511,7 +549,7 @@ int main(int argc, char* argv[]) {
     // =========================================
     auto start_default = high_resolution_clock::now();
 
-    auto ciphertexts_default = EncryptDefaultCKKS(cryptoContext, keyPair.publicKey, data, numSlots);
+    auto ciphertexts_default = EncryptDefaultCKKS(cryptoContext, keyPair.publicKey, data, sz_batch);
     auto end_default         = high_resolution_clock::now();
     auto duration_default    = duration_cast<milliseconds>(end_default - start_default).count();
 
@@ -523,7 +561,7 @@ int main(int argc, char* argv[]) {
     // =========================================
     auto start_noise = high_resolution_clock::now();
 
-    auto ciphertexts = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, numSlots, gaussianStdDev);
+    auto ciphertexts    = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, sz_batch, gaussianStdDev);
     auto end_noise      = high_resolution_clock::now();
     auto duration_noise = duration_cast<milliseconds>(end_noise - start_noise).count();
 
