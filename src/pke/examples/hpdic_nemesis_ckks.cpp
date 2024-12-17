@@ -174,7 +174,13 @@ std::vector<Ciphertext<DCRTPoly>> EncryptWithNoise(CryptoContext<DCRTPoly> crypt
     size_t totalDataSize = data.size();
     size_t numBatches    = (totalDataSize + numSlots - 1) / numSlots;  // 计算批次数量
 
+    // 时间统计
+    std::chrono::duration<double, std::milli> timeReconstruction(0);  // 前两步总时间
+    std::chrono::duration<double, std::milli> timeRandomization(0);   // 后四步总时间
+
     for (size_t batch = 0; batch < numBatches; ++batch) {
+        auto startReconstruction = std::chrono::high_resolution_clock::now();
+
         // 1. 从数据中提取 numSlots 个元素（不足时补 0）
         std::vector<double> batchData(numSlots, 0.0);
         size_t startIdx = batch * numSlots;
@@ -185,7 +191,11 @@ std::vector<Ciphertext<DCRTPoly>> EncryptWithNoise(CryptoContext<DCRTPoly> crypt
         // 2. 创建明文并加密
         Plaintext ptxt  = cryptoContext->MakeCKKSPackedPlaintext(batchData, 1, 0);
         auto ct_product = cryptoContext->EvalMult(ptxt, vec_base);
+        
+        auto endReconstruction = std::chrono::high_resolution_clock::now();
+        timeReconstruction += endReconstruction - startReconstruction;
 
+        auto startRandomization = std::chrono::high_resolution_clock::now();
         // 3. 提取 c0 和 c1 分量
         auto elements = ct_product->GetElements();
         DCRTPoly c0   = elements[0];
@@ -220,7 +230,13 @@ std::vector<Ciphertext<DCRTPoly>> EncryptWithNoise(CryptoContext<DCRTPoly> crypt
 
         // 6. 保存处理后的密文
         ciphertexts.push_back(ct_product);
+        auto endRandomization = std::chrono::high_resolution_clock::now();
+        timeRandomization += endRandomization - startRandomization;
     }
+
+    // 输出时间统计结果
+    std::cout << "Ciphertext-batch Reconstruction Time: " << timeReconstruction.count() << " ms" << std::endl;
+    std::cout << "Polynomial-noise Randomization Time: " << timeRandomization.count() << " ms" << std::endl;
 
     return ciphertexts;
 }
@@ -545,6 +561,20 @@ int main(int argc, char* argv[]) {
     std::cout << "Loaded vector size: " << data.size() << std::endl;
 
     // =========================================
+    // 2. 测量 EncryptWithNoise 的执行时间
+    // =========================================
+    auto start_noise = high_resolution_clock::now();
+
+    auto ciphertexts    = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, sz_batch, gaussianStdDev);
+    auto end_noise      = high_resolution_clock::now();
+    auto duration_noise = duration_cast<milliseconds>(end_noise - start_noise).count();
+
+    return 0;  // TODO: Stop here to only evaluate Nemesis
+
+    std::cout << "HPDIC Nemesis Encryption: Generated " << ciphertexts.size() << " ciphertexts." << std::endl;
+    std::cout << "HPDIC Nemesis Encryption time: " << duration_noise << " milliseconds." << std::endl;
+
+    // =========================================
     // 1. 测量 EncryptDefaultCKKS 的执行时间
     // =========================================
     auto start_default = high_resolution_clock::now();
@@ -555,18 +585,6 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Default CKKS Encryption: Generated " << ciphertexts_default.size() << " ciphertexts." << std::endl;
     std::cout << "Default CKKS Encryption time: " << duration_default << " milliseconds." << std::endl;
-
-    // =========================================
-    // 2. 测量 EncryptWithNoise 的执行时间
-    // =========================================
-    auto start_noise = high_resolution_clock::now();
-
-    auto ciphertexts    = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, sz_batch, gaussianStdDev);
-    auto end_noise      = high_resolution_clock::now();
-    auto duration_noise = duration_cast<milliseconds>(end_noise - start_noise).count();
-
-    std::cout << "HPDIC Nemesis Encryption: Generated " << ciphertexts.size() << " ciphertexts." << std::endl;
-    std::cout << "HPDIC Nemesis Encryption time: " << duration_noise << " milliseconds." << std::endl;
 
     // =========================================
     // 测试 Rache 函数并添加时间戳
