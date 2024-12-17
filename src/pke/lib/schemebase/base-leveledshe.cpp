@@ -830,7 +830,7 @@ void LeveledSHEBase<Element>::EvalMultCoreInPlace(Ciphertext<Element>& ciphertex
     for (auto& c : cv) {
         c *= pt;  // HPDIC: Let's hack the const scale LOL
     }
-    std::cout << "=====HPDIC DEBUG===== File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
+    // std::cout << "=====HPDIC DEBUG===== File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
 }
 
 }  // namespace lbcrypto

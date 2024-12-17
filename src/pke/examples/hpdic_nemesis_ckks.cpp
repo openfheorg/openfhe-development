@@ -46,6 +46,83 @@ using namespace lbcrypto;
 using namespace std::chrono;  // 引用 std::chrono 命名空间
 
 /**
+ * Function: EncryptWithNoise
+ * Description: 每次处理 numSlots 数据，将其与 vec_base 进行乘法，并添加随机高斯噪声。
+ * Inputs:
+ *   - cryptoContext: CKKS 加密上下文
+ *   - publicKey: 公钥
+ *   - data: 输入数据向量
+ *   - vec_base: 预定义的密文，含有 numSlots 个 1
+ *   - numSlots: 每次处理的槽位数量
+ *   - gaussianStdDev: 高斯噪声标准差
+ * Outputs:
+ *   - std::vector<Ciphertext<DCRTPoly>>: 生成的密文列表
+ */
+std::vector<Ciphertext<DCRTPoly>> EncryptWithNoise(CryptoContext<DCRTPoly> cryptoContext,
+                                                   const PublicKey<DCRTPoly>& publicKey,
+                                                   const std::vector<float>& data,
+                                                   const Ciphertext<DCRTPoly>& vec_base, size_t numSlots,
+                                                   double gaussianStdDev) {
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
+
+    // 初始化高斯噪声生成器
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg(gaussianStdDev);
+
+    size_t totalDataSize = data.size();
+    size_t numBatches    = (totalDataSize + numSlots - 1) / numSlots;  // 计算批次数量
+
+    for (size_t batch = 0; batch < numBatches; ++batch) {
+        // 1. 从数据中提取 numSlots 个元素（不足时补 0）
+        std::vector<double> batchData(numSlots, 0.0);
+        size_t startIdx = batch * numSlots;
+        for (size_t i = 0; i < numSlots && (startIdx + i) < totalDataSize; ++i) {
+            batchData[i] = data[startIdx + i];
+        }
+
+        // 2. 创建明文并加密
+        Plaintext ptxt  = cryptoContext->MakeCKKSPackedPlaintext(batchData, 1, 0);
+        auto ct_product = cryptoContext->EvalMult(ptxt, vec_base);
+
+        // 3. 提取 c0 和 c1 分量
+        auto elements = ct_product->GetElements();
+        DCRTPoly c0   = elements[0];
+        DCRTPoly c1   = elements[1];
+
+        const auto cryptoParams  = cryptoContext->GetCryptoParameters();
+        const auto elementParams = c0.GetParams();
+        const auto numTowers     = elementParams->GetParams().size();
+
+        // 4. 构建随机噪声 DCRTPoly
+        DCRTPoly randomNoise(elementParams, Format::COEFFICIENT);
+        for (size_t i = 0; i < numTowers; ++i) {
+            auto ringDim = elementParams->GetParams()[i]->GetRingDimension();
+            auto modulus = elementParams->GetParams()[i]->GetModulus();
+
+            NativeVector noiseVector = dgg.GenerateVector(ringDim, modulus);
+            NativePoly noisePoly(elementParams->GetParams()[i], Format::COEFFICIENT);
+            noisePoly.SetValues(noiseVector, Format::COEFFICIENT);
+
+            randomNoise.SetElementAtIndex(i, noisePoly);
+        }
+        randomNoise.SetFormat(Format::EVALUATION);
+
+        // 5. 修改密文的 c0 和 c1 分量
+        DCRTPoly newC0 = c0 + randomNoise;
+        DCRTPoly newC1 = c1 - randomNoise;
+
+        elements[0] = newC0;
+        elements[1] = newC1;
+
+        ct_product->SetElements(elements);
+
+        // 6. 保存处理后的密文
+        ciphertexts.push_back(ct_product);
+    }
+
+    return ciphertexts;
+}
+
+/**
  * Function: LoadNumpyFile
  * Description: 加载一个 .npy 文件，并返回数据作为 std::vector<float>。
  * Inputs:
@@ -201,6 +278,7 @@ int main(int argc, char* argv[]) {
     // Construct the base
     std::vector<double> vec_base(numSlots, 1.0);
     Plaintext pt_base            = cryptoContext->MakeCKKSPackedPlaintext(vec_base, 1, depth - 1);
+    ciph                         = cryptoContext->Encrypt(keyPair.publicKey, pt_base);
     double gaussianStdDev = 0.1;  // 默认值
     if (argc > 1) {
         gaussianStdDev = std::atof(argv[1]);  // 将命令行输入转换为浮点数
@@ -215,7 +293,7 @@ int main(int argc, char* argv[]) {
     start = high_resolution_clock::now();  // 开始时间戳
 
     // Construct the ciphertext through multiplicative caching
-    auto ct_product = cryptoContext->EvalMult(pt_base, ciph);
+    auto ct_product = cryptoContext->EvalMult(ptxt, ciph);
     /***********************
      * BEGIN Randomization
      */
@@ -325,4 +403,9 @@ int main(int argc, char* argv[]) {
 
     // 输出向量大小
     std::cout << "Loaded vector size: " << data.size() << std::endl;
+
+    // 调用函数
+    auto ciphertexts = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, numSlots, gaussianStdDev);
+
+    std::cout << "Generated " << ciphertexts.size() << " ciphertexts." << std::endl;
 }
