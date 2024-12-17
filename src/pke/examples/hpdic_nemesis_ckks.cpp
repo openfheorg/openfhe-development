@@ -46,6 +46,108 @@ using namespace lbcrypto;
 using namespace std::chrono;  // 引用 std::chrono 命名空间
 
 /**
+ * Function: NaiveEncryptMany
+ * Description: 逐个加密给定的多个明文，并返回密文向量。
+ * Inputs:
+ *   - cryptoContext: CKKS 加密上下文
+ *   - publicKey: 公钥
+ *   - data: 输入明文向量（std::vector<double>）
+ * Outputs:
+ *   - std::vector<Ciphertext<DCRTPoly>>: 加密后的密文向量
+ */
+std::vector<Ciphertext<DCRTPoly>> NaiveEncryptMany(CryptoContext<DCRTPoly> cryptoContext,
+                                                   const PublicKey<DCRTPoly>& publicKey,
+                                                   const std::vector<double>& data) {
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
+
+    for (const auto& x : data) {
+        // 1. 创建明文
+        std::vector<double> singleData = {x};
+        Plaintext ptxt                 = cryptoContext->MakeCKKSPackedPlaintext(singleData);
+
+        // 2. 加密明文
+        auto ciphertext = cryptoContext->Encrypt(publicKey, ptxt);
+
+        // 3. 保存密文
+        ciphertexts.push_back(ciphertext);
+    }
+
+    return ciphertexts;
+}
+
+/**
+ * Function: Rache
+ * Description: 每次加密一个明文 x，使用公式 enc(x) = enc(1) + (x - 1)。
+ * Inputs:
+ *   - cryptoContext: CKKS 加密上下文
+ *   - publicKey: 公钥
+ *   - data: 输入明文数据向量
+ *   - encOne: 已加密的 1（密文）
+ * Outputs:
+ *   - std::vector<Ciphertext<DCRTPoly>>: 生成的密文列表
+ */
+std::vector<Ciphertext<DCRTPoly>> Rache(CryptoContext<DCRTPoly> cryptoContext, const PublicKey<DCRTPoly>& publicKey,
+                                        const std::vector<double>& data, const Ciphertext<DCRTPoly>& encOne) {
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
+
+    for (const auto& x : data) {
+        // 1. 计算 x - 1
+        std::vector<double> diffData = {x - 1.0};
+
+        // 2. 创建明文 x - 1
+        Plaintext pt_diff = cryptoContext->MakeCKKSPackedPlaintext(diffData);
+
+        // 4. enc(x) = enc(1) + (x - 1)
+        auto ct_result = cryptoContext->EvalAdd(encOne, pt_diff);
+
+        // 5. 保存密文
+        ciphertexts.push_back(ct_result);
+    }
+
+    return ciphertexts;
+}
+
+/**
+ * Function: EncryptDefaultCKKS
+ * Description: 每次处理 numSlots 数据，调用默认的 CKKS 加密方法。
+ * Inputs:
+ *   - cryptoContext: CKKS 加密上下文
+ *   - publicKey: 公钥
+ *   - data: 输入数据向量
+ *   - numSlots: 每次处理的槽位数量
+ * Outputs:
+ *   - std::vector<Ciphertext<DCRTPoly>>: 生成的密文列表
+ */
+std::vector<Ciphertext<DCRTPoly>> EncryptDefaultCKKS(CryptoContext<DCRTPoly> cryptoContext,
+                                                     const PublicKey<DCRTPoly>& publicKey,
+                                                     const std::vector<float>& data, size_t numSlots) {
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
+
+    size_t totalDataSize = data.size();
+    size_t numBatches    = (totalDataSize + numSlots - 1) / numSlots;  // 计算批次数量
+
+    for (size_t batch = 0; batch < numBatches; ++batch) {
+        // 1. 从数据中提取 numSlots 个元素（不足时补 0）
+        std::vector<double> batchData(numSlots, 0.0);
+        size_t startIdx = batch * numSlots;
+        for (size_t i = 0; i < numSlots && (startIdx + i) < totalDataSize; ++i) {
+            batchData[i] = data[startIdx + i];
+        }
+
+        // 2. 创建明文
+        Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(batchData, 1, 0);
+
+        // 3. 进行加密
+        auto ciphertext = cryptoContext->Encrypt(publicKey, ptxt);
+
+        // 4. 保存密文
+        ciphertexts.push_back(ciphertext);
+    }
+
+    return ciphertexts;
+}
+
+/**
  * Function: EncryptWithNoise
  * Description: 每次处理 numSlots 数据，将其与 vec_base 进行乘法，并添加随机高斯噪声。
  * Inputs:
@@ -404,8 +506,67 @@ int main(int argc, char* argv[]) {
     // 输出向量大小
     std::cout << "Loaded vector size: " << data.size() << std::endl;
 
-    // 调用函数
-    auto ciphertexts = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, numSlots, gaussianStdDev);
+    // =========================================
+    // 1. 测量 EncryptDefaultCKKS 的执行时间
+    // =========================================
+    auto start_default = high_resolution_clock::now();
 
-    std::cout << "Generated " << ciphertexts.size() << " ciphertexts." << std::endl;
+    auto ciphertexts_default = EncryptDefaultCKKS(cryptoContext, keyPair.publicKey, data, numSlots);
+    auto end_default         = high_resolution_clock::now();
+    auto duration_default    = duration_cast<milliseconds>(end_default - start_default).count();
+
+    std::cout << "Default CKKS Encryption: Generated " << ciphertexts_default.size() << " ciphertexts." << std::endl;
+    std::cout << "Default CKKS Encryption time: " << duration_default << " milliseconds." << std::endl;
+
+    // =========================================
+    // 2. 测量 EncryptWithNoise 的执行时间
+    // =========================================
+    auto start_noise = high_resolution_clock::now();
+
+    auto ciphertexts = EncryptWithNoise(cryptoContext, keyPair.publicKey, data, ciph, numSlots, gaussianStdDev);
+    auto end_noise      = high_resolution_clock::now();
+    auto duration_noise = duration_cast<milliseconds>(end_noise - start_noise).count();
+
+    std::cout << "HPDIC Nemesis Encryption: Generated " << ciphertexts.size() << " ciphertexts." << std::endl;
+    std::cout << "HPDIC Nemesis Encryption time: " << duration_noise << " milliseconds." << std::endl;
+
+    // =========================================
+    // 测试 Rache 函数并添加时间戳
+    // =========================================
+
+    // 加密 1 作为输入
+    std::vector<double> vecOne = {1.0};
+    Plaintext pt_one           = cryptoContext->MakeCKKSPackedPlaintext(vecOne);
+    auto encOne                = cryptoContext->Encrypt(keyPair.publicKey, pt_one);
+
+    // 模拟输入数据
+    usint numTestSamples = 500;
+    std::vector<double> rache_data(numTestSamples);
+    for (size_t i = 0; i < numTestSamples; ++i) {
+        rache_data[i] = data[i];  // 测试数据：1.0, 2.0, ..., 1000.0
+    }
+    auto start_rache = high_resolution_clock::now();
+
+    auto ciphertexts_rache = Rache(cryptoContext, keyPair.publicKey, rache_data, encOne);
+
+    auto end_rache      = high_resolution_clock::now();
+    auto duration_rache = duration_cast<milliseconds>(end_rache - start_rache).count();
+
+    std::cout << "Rache Encryption: Generated " << ciphertexts_rache.size() << " ciphertexts." << std::endl;
+    std::cout << "Rache Encryption time: " << duration_rache << " milliseconds." << std::endl;
+
+    // ===================================
+    // 调用 NaiveEncryptMany 函数
+    // ===================================
+
+    // 时间戳记录开始时间
+    auto start_naive = high_resolution_clock::now();
+    auto naive_ciphertexts = NaiveEncryptMany(cryptoContext, keyPair.publicKey, rache_data);
+
+    // 时间戳记录结束时间
+    auto end_naive      = high_resolution_clock::now();
+    auto duration_naive = duration_cast<milliseconds>(end_naive - start_naive).count();
+
+    std::cout << "Naive Encryption: Encrypted " << naive_ciphertexts.size() << " values." << std::endl;
+    std::cout << "Naive Encryption time: " << duration_naive << " milliseconds." << std::endl;
 }
