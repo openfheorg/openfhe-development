@@ -107,7 +107,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
 
     const auto cc = ciphertextVec[0]->GetCryptoContext();
 
-    usint levelsToDrop = 1;  // TODO(@fdiasmor): Or BASE_NUM_LEVELS_TO_DROP ?
+    uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
     if (cc->getSchemeId() == CKKSRNS_SCHEME) {
         const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
