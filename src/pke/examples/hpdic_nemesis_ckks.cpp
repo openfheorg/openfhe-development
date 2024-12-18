@@ -569,7 +569,7 @@ int main(int argc, char* argv[]) {
     auto end_noise      = high_resolution_clock::now();
     auto duration_noise = duration_cast<milliseconds>(end_noise - start_noise).count();
 
-    return 0;  // TODO: Stop here to only evaluate Nemesis
+    // return 0;  // TODO: Stop here to only evaluate Nemesis
 
     std::cout << "HPDIC Nemesis Encryption: Generated " << ciphertexts.size() << " ciphertexts." << std::endl;
     std::cout << "HPDIC Nemesis Encryption time: " << duration_noise << " milliseconds." << std::endl;
