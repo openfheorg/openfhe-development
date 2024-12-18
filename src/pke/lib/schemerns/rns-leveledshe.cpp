@@ -235,7 +235,12 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertex
 }
 
 void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+
+    // std::cout << "=====HPDIC DEBUG===== File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
+    // std::cout << "cryptoParams->GetScalingTechnique() = " << cryptoParams->GetScalingTechnique() << std::endl;
+
     // this branch is for BFV
     if (cryptoParams->GetScalingTechnique() == NORESCALE) {
         EvalMultCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());

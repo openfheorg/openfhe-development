@@ -12,6 +12,7 @@ _build/
 api/
 doxyoutput/
 
+third-party/
 
 .ipynb_checkpoints
 
@@ -20,6 +21,7 @@ test/bin
 output.txt
 Doxyfile
 apidoc_warning_logfile.txt
+third-party
 third-party/distros/gmp-6.1.1
 third-party/distros/gmp-6.1.2
 third-party/distros/ntl-10.3.0
@@ -42,6 +44,7 @@ gmon.out
 *.class
 
 ## for the moment
+.cache
 .cproject
 .metadata/
 .project

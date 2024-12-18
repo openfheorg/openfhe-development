@@ -74,4 +74,6 @@
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
+#include "scheme/bfvrns/bfvrns-leveledshe.h"
+
 #endif /* SRC_LIB_OPENFHE_H_ */
