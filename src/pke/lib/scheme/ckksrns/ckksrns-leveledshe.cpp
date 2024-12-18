@@ -245,7 +245,10 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     // -gsimple-template-names
     // -gsplit-dwarf
     int32_t logApprox = 0;
-    const double res  = std::fabs(operand * scFactor);
+    const double res  = (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+                        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) ?
+                            std::fabs(scFactor) :
+                            std::fabs(operand * scFactor);
     if (res > 0) {
         int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
         int32_t logValid = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
@@ -290,12 +293,8 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
         cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
         int32_t logSF_cp = static_cast<int32_t>(std::ceil(std::log2(res)));
-        // int32_t logValid_cp = (logSF_cp <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
-        //                        logSF_cp :
-        //                        LargeScalingFactorConstants::MAX_BITS_IN_WORD;
         if (logSF_cp < 64) {
-            // DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
-            DCRTPoly::Integer intScFactor = std::llround(scFactor + 0.5);
+            DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
             std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
             for (usint i = 1; i < ciphertext->GetNoiseScaleDeg(); i++) {
                 crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
@@ -303,7 +302,6 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
         }
         else {
             // Multiply scFactor in two steps: scFactor / approxFactor and then approxFactor
-            // DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor / approxFactor + 0.5);
             DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor / approxFactor + 0.5);
             std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
             for (usint i = 1; i < ciphertext->GetNoiseScaleDeg(); i++) {
@@ -338,13 +336,6 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
             crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
         }
     }
-
-    // DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
-    // std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
-
-    // for (usint i = 1; i < ciphertext->GetNoiseScaleDeg(); i++) {
-    //     crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
-    // }
 
     return crtConstant;
 }
