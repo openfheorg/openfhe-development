@@ -72,10 +72,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     cryptoParamsCKKSRNS->ConfigureCompositeDegree(firstModSize);
     uint32_t compositeDegree  = cryptoParamsCKKSRNS->GetCompositeDegree();
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
-    compositeDegree *= static_cast<uint32_t>(1);   // @fdiasmor: Avoid unused variable compilation error.
-    registerWordSize *= static_cast<uint32_t>(1);  // @fdiasmor: Avoid unused variable compilation error.
-    // Bookeeping unique prime moduli
-    //    std::unordered_set<uint64_t> moduliQRecord;
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
         if (compositeDegree > 2 && (firstModSize <= 68 || scalingModSize <= 67)) {
@@ -120,7 +116,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     // Estimate ciphertext modulus Q*P bound (in case of HYBRID P*Q)
     if (ksTech == HYBRID) {
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
-                                                              numPrimes, auxBits, true);
+                                                              numPrimes, auxBits, scalTech, compositeDegree, true);
         if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
             uint32_t tmpFactor = (compositeDegree == 2) ? 2 : 4;
             qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
@@ -171,7 +167,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
         numPrimes *= compositeDegree;
-        std::cout << __FUNCTION__ << "::" << __LINE__ << " numPrimes: " << numPrimes << std::endl;
+        std::cout << __FUNCTION__ << "::" << __LINE__ << " numPrimes: " << numPrimes << " qBound: " << qBound
+                  << std::endl;
     }
 
     uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;

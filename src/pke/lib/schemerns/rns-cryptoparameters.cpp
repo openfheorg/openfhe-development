@@ -35,6 +35,10 @@
 #include "cryptocontext.h"
 #include "schemerns/rns-cryptoparameters.h"
 
+#include <vector>
+#include <memory>
+#include <utility>
+
 namespace lbcrypto {
 
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
@@ -128,7 +132,21 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 maxBits = bits;
         }
         // Select number of primes in auxiliary CRT basis
-        uint32_t sizeP     = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+        uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+        if (GetScalingTechnique() == COMPOSITESCALINGAUTO || GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+            usint compositeDegree = GetCompositeDegree();
+            switch (compositeDegree) {
+                case 0:  // not allowed
+                case 1:  // not composite
+                    break;
+                case 2:  // composite degree == 2
+                    sizeP += (sizeP % 2);
+                    break;
+                default:  // composite degree > 2
+                    sizeP += (sizeP % 4);
+                    break;
+            }
+        }
         uint64_t primeStep = FindAuxPrimeStep();
 
         // Choose special primes in auxiliary basis and compute their roots
@@ -387,7 +405,9 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
 
 std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
                                                               double dcrtBits, double extraModulusSize,
-                                                              uint32_t numPrimes, uint32_t auxBits, bool addOne) {
+                                                              uint32_t numPrimes, uint32_t auxBits,
+                                                              ScalingTechnique scalTech, uint32_t compositeDegree,
+                                                              bool addOne) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -421,7 +441,8 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
         size_t endTower   = ((j + 1) * numPerPartQ - 1 < sizeQ) ? (j + 1) * numPerPartQ - 1 : sizeQ - 1;
 
         // sum qi elements qi[startTower] + ... + qi[endTower] inclusive. the end element should be qi.begin()+(endTower+1)
-        uint32_t bits = static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
+        uint32_t bits =
+            static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
         if (bits > maxBits)
             maxBits = bits;
     }
@@ -433,6 +454,20 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
     // Select number of primes in auxiliary CRT basis
     auto sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+
+    if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
+        switch (compositeDegree) {
+            case 0:  // not allowed
+            case 1:  // not composite
+                break;
+            case 2:  // composite degree == 2
+                sizeP += (sizeP % 2);
+                break;
+            default:  // composite degree > 2
+                sizeP += (sizeP % 4);
+                break;
+        }
+    }
 
     return std::make_pair(sizeP * auxBits, sizeP);
 }

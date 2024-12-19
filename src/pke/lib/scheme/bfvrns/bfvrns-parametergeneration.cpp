@@ -40,6 +40,10 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/scheme-utils.h"
 
+#include <vector>
+#include <memory>
+#include <string>
+
 namespace lbcrypto {
 
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
@@ -125,7 +129,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                 uint32_t k = static_cast<uint32_t>(std::ceil(std::ceil(logq) / dcrtBits));
                 // set the number of digits
                 uint32_t numPartQ = ComputeNumLargeDigits(numDigits, k - 1);
-                auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, dcrtBits, dcrtBits, 0, k, auxBits);
+                auto hybridKSInfo =
+                    CryptoParametersRNS::EstimateLogP(numPartQ, dcrtBits, dcrtBits, 0, k, auxBits, scalTech);
                 logq += std::get<0>(hybridKSInfo);
             }
             return static_cast<double>(
