@@ -36,6 +36,7 @@
 #define PROFILE  // turns on the reporting of timing results
 
 #include "openfhe.h"
+
 #include <vector>
 #include <iostream>
 
@@ -108,7 +109,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "\n======EXAMPLE FOR EVALPOLY========\n" << std::endl;
 
-    uint32_t multDepth = 7;
+    uint32_t multDepth = 6;
     int argcCount      = 0;
     if (argc > 1) {
         while (argcCount < argc) {
