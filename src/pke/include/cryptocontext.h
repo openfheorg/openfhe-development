@@ -2392,8 +2392,9 @@ public:
                 std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
             GetScheme()->ModReduceInPlace(ciphertext, cryptoParams->GetCompositeDegree());
         }
-
-        GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        else {
+            GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        }
     }
 
     /**
@@ -2433,8 +2434,9 @@ public:
                 std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
             GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels * cryptoParams->GetCompositeDegree());
         }
-
-        GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels);
+        else {
+            GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels);
+        }
     }
     /**
    * Compress - Reduces the size of ciphertext modulus to minimize the
