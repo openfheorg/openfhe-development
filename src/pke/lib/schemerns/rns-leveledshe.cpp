@@ -390,6 +390,10 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
 // SHE LEVELED Compress
 /////////////////////////////////////////
 
+/*
+ * On COMPOSITESCALING technique, the number of towers to drop passed
+ * must be a multiple of composite degree.
+ */
 Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
     Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
     const auto cryptoParams     = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
@@ -399,7 +403,9 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertex
         cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
         usint compositeDegree = cryptoParams->GetCompositeDegree();
         levelsToDrop          = compositeDegree;
-        // towersLeft *= compositeDegree;
+        if (towersLeft % compositeDegree != 0) {
+            OPENFHE_THROW("Number of towers to drop must be a multiple of composite degree.");
+        }
     }
 
     while (result->GetNoiseScaleDeg() > 1) {
