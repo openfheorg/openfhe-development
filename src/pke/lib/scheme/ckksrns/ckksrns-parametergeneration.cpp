@@ -74,13 +74,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        // if (compositeDegree > 2 && (firstModSize <= 68 || scalingModSize <= 67)) {
-        //     OPENFHE_THROW(
-        //         config_error,
-        //         "This COMPOSITESCALING* version does not fully support composite degree > 2 for small prime moduli. Prime moduli size must generally be greater than 22.");
-        // }
-        // else
-        if (compositeDegree == 1 && registerWordSize < 32) {
+        if (compositeDegree > 2 && numPrimes > 4 && (firstModSize <= 68 || scalingModSize <= 67)) {
+            OPENFHE_THROW(
+                config_error,
+                "COMPOSITESCALING Warning: There will probably not be enough prime moduli for composite degree > 2 and too small prime moduli. Prime moduli size must generally be greater than 22 for larger multiplicative depth. Feel free to try it using COMPOSITESCALINGMANUAL at your own risk.");
+        }
+        else if (compositeDegree == 1 && registerWordSize < 32) {
             OPENFHE_THROW(config_error, "This COMPOSITESCALING* version does not support composite degree == 1.");
         }
         else if (compositeDegree < 1) {
@@ -106,8 +105,10 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
     uint32_t auxBits       = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ? 30 : AUXMODSIZE;
-    uint32_t n             = cyclOrder / 2;
-    uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
+    // Alternative way to calculate auxBits for composite scaling mode
+    //                         ((registerWordSize < 30) ? registerWordSize : 30) : AUXMODSIZE;
+    uint32_t n      = cyclOrder / 2;
+    uint32_t qBound = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
 
     // we add an extra bit to account for the alternating logic of selecting the RNS moduli in CKKS
     // ignore the case when there is only one max size modulus
@@ -168,8 +169,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
         numPrimes *= compositeDegree;
-        std::cout << __FUNCTION__ << "::" << __LINE__ << " numPrimes: " << numPrimes << " qBound: " << qBound
-                  << std::endl;
     }
 
     uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
