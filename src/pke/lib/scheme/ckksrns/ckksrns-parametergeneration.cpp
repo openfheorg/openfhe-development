@@ -74,10 +74,10 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        if (compositeDegree > 2 && numPrimes > 4 && (firstModSize <= 68 || scalingModSize <= 67)) {
+        if (compositeDegree > 2 && numPrimes > 4 && scalingModSize <= 60) {
             OPENFHE_THROW(
                 config_error,
-                "COMPOSITESCALING Warning: There will probably not be enough prime moduli for composite degree > 2 and too small prime moduli. Prime moduli size must generally be greater than 22 for larger multiplicative depth. Feel free to try it using COMPOSITESCALINGMANUAL at your own risk.");
+                "COMPOSITESCALING Warning: There will probably not be enough prime moduli for composite degree > 2 and too small prime moduli. Prime moduli size must generally be greater than 20 for larger multiplicative depth. Feel free to try it using COMPOSITESCALINGMANUAL at your own risk.");
         }
         else if (compositeDegree == 1 && registerWordSize < 32) {
             OPENFHE_THROW(config_error, "This COMPOSITESCALING* version does not support composite degree == 1.");
