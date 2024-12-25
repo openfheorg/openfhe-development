@@ -252,7 +252,7 @@ public:
                 "statisticalSecurity",
                 "numAdversarialQueries",
                 "thresholdNumOfParties",
-                "interactiveBootCompressionLevel"
+                "interactiveBootCompressionLevel",
                 "compositeDegree",
                 "registerWordSize"};
     }
