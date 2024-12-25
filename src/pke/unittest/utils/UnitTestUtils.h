@@ -43,6 +43,7 @@
 #include <algorithm>
 #include <csignal>
 #include <complex>
+#include <iostream>
 
 // some functions are inlined in this files to avoid link errors
 //===========================================================================================================
@@ -99,6 +100,9 @@ bool checkEquality(const std::vector<V>& a, const std::vector<V>& b, const doubl
  */
 template <typename V>
 void checkEquality(const std::vector<V>& a, const std::vector<V>& b, const double eps, const std::string& errMsg) {
+    // for (size_t i = 0; i < a.size(); i++) {
+    //     std::cout << "pred: " << a[i] << " x " << "gd: " << b[i] << std::endl;
+    // }
     EXPECT_TRUE(checkEquality(a, b, eps)) << errMsg;
 }
 //===========================================================================================================
