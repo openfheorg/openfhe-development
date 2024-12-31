@@ -142,7 +142,10 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 case 2:  // composite degree == 2
                     sizeP += (sizeP % 2);
                     break;
-                default:  // composite degree > 2
+                case 3:  // composite degree == 3
+                    sizeP += (sizeP % 3);
+                    break;
+                default:  // composite degree > 3
                     sizeP += (sizeP % 4);
                     break;
             }
@@ -463,7 +466,10 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
             case 2:  // composite degree == 2
                 sizeP += (sizeP % 2);
                 break;
-            default:  // composite degree > 2
+            case 3:  // composite degree == 3
+                sizeP += (sizeP % 3);
+                break;
+            default:  // composite degree > 3
                 sizeP += (sizeP % 4);
                 break;
         }
