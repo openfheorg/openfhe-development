@@ -59,7 +59,7 @@ enum TEST_CASE_TYPE {
     EVALATINDEX,
     EVALMERGE,
     EVAL_LINEAR_WSUM,
-    //    RE_ENCRYPTION,
+    RE_ENCRYPTION,
     EVAL_POLY,
     METADATA,
     ADD_PACKED_PRECISION,
@@ -98,9 +98,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case EVAL_LINEAR_WSUM:
             typeName = "EVAL_LINEAR_WSUM";
             break;
-        // case RE_ENCRYPTION:
-        //     typeName = "RE_ENCRYPTION";
-        //     break;
+        case RE_ENCRYPTION:
+            typeName = "RE_ENCRYPTION";
+            break;
         case EVAL_POLY:
             typeName = "EVAL_POLY";
             break;
@@ -178,332 +178,179 @@ constexpr double MIN_PRECISION_DIFF = 1.5;
 static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
 #if NATIVEINT == 64
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { ADD_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     38,     DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
+    // { ADD_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,          96,     HEStd_128_classic, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     // composite degree d = 2
-    { ADD_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 0,     45,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { ADD_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { ADD_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 12,    55,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   0},
-    { ADD_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 21,    60,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   0},
+    { MULT_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
+    { MULT_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     63,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
     // composite degree d = 3
-    { ADD_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 0,     60,     DSIZE, BATCH,   DFLT,       DFLT,          61,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   0},
-    { ADD_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { ADD_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 12,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48},   0},
-    { ADD_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 21,     135,     DSIZE, BATCH,   DFLT,       DFLT,          136,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   0},
+    { MULT_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
+    { MULT_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
     // composite degree d = 4
-    { ADD_PACKED, "09", {CKKSRNS_SCHEME, RING_DIM, 0,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   0},
-    { ADD_PACKED, "10", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { ADD_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 21,     110,     DSIZE, BATCH,   DFLT,       DFLT,          111,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 35},   0},
-    // DEFAULT
-     { ADD_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { ADD_PACKED, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // composite degree d = 1
-    { ADD_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     61,     DSIZE, BATCH,   DFLT,       DFLT,          63,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   0},
-    { ADD_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // ======================
-    { ADD_PACKED, "21", {CKKSRNS_SCHEME, RING_DIM, 0,     45,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { ADD_PACKED, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { ADD_PACKED, "23", {CKKSRNS_SCHEME, RING_DIM, 12,    55,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   32},
-    { ADD_PACKED, "24", {CKKSRNS_SCHEME, RING_DIM, 21,    60,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   32},
-    // composite degree d = 3
-    { ADD_PACKED, "25", {CKKSRNS_SCHEME, RING_DIM, 0,     60,     DSIZE, BATCH,   DFLT,       DFLT,          61,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   32},
-    { ADD_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { ADD_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 12,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48},   32},
-    { ADD_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 21,     135,     DSIZE, BATCH,   DFLT,       DFLT,          136,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   32},
-    // composite degree d = 4
-    { ADD_PACKED, "29", {CKKSRNS_SCHEME, RING_DIM, 0,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   32},
-    { ADD_PACKED, "30", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { ADD_PACKED, "31", {CKKSRNS_SCHEME, RING_DIM, 21,     110,     DSIZE, BATCH,   DFLT,       DFLT,          111,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 35},   32},
-    // DEFAULT
-     { ADD_PACKED, "32", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { ADD_PACKED, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    // composite degree d = 1
-    { ADD_PACKED, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     61,     DSIZE, BATCH,   DFLT,       DFLT,          63,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   32},
-    { ADD_PACKED, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    // ======================
-    { ADD_PACKED, "41", {CKKSRNS_SCHEME, RING_DIM, 0,     45,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { ADD_PACKED, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { ADD_PACKED, "43", {CKKSRNS_SCHEME, RING_DIM, 12,    55,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   RING_DIM_HALF},
-    { ADD_PACKED, "44", {CKKSRNS_SCHEME, RING_DIM, 21,    60,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   RING_DIM_HALF},
-    // composite degree d = 3
-    { ADD_PACKED, "45", {CKKSRNS_SCHEME, RING_DIM, 0,     60,     DSIZE, BATCH,   DFLT,       DFLT,          61,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   RING_DIM_HALF},
-    { ADD_PACKED, "46", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { ADD_PACKED, "47", {CKKSRNS_SCHEME, RING_DIM, 12,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48},   RING_DIM_HALF},
-    { ADD_PACKED, "48", {CKKSRNS_SCHEME, RING_DIM, 21,     135,     DSIZE, BATCH,   DFLT,       DFLT,          136,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   RING_DIM_HALF},
-    // composite degree d = 4
-    { ADD_PACKED, "49", {CKKSRNS_SCHEME, RING_DIM, 0,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   RING_DIM_HALF},
-    { ADD_PACKED, "50", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { ADD_PACKED, "51", {CKKSRNS_SCHEME, RING_DIM, 21,     110,     DSIZE, BATCH,   DFLT,       DFLT,          111,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 35},   RING_DIM_HALF},
-    // DEFAULT
-     { ADD_PACKED, "52", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { ADD_PACKED, "53", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 1
-    { ADD_PACKED, "54", {CKKSRNS_SCHEME, RING_DIM, 7,     61,     DSIZE, BATCH,   DFLT,       DFLT,          63,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   RING_DIM_HALF},
-    { ADD_PACKED, "55", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-// ==========================================
-// composite degree d = 2
-    { MULT_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 0,     45,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { MULT_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { MULT_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 12,    55,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   0},
-    { MULT_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 21,    60,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   0},
-    // composite degree d = 3
-    { MULT_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 0,     60,     DSIZE, BATCH,   DFLT,       DFLT,          61,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   0},
-    { MULT_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { MULT_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 12,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48},   0},
-    { MULT_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 21,     135,     DSIZE, BATCH,   DFLT,       DFLT,          136,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   0},
-    // composite degree d = 4
-    { MULT_PACKED, "09", {CKKSRNS_SCHEME, RING_DIM, 0,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   0},
-    { MULT_PACKED, "10", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { MULT_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 21,     110,     DSIZE, BATCH,   DFLT,       DFLT,          111,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 35},   0},
-    // DEFAULT
-     { MULT_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    { MULT_PACKED, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // composite degree d = 1
-    { MULT_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     61,     DSIZE, BATCH,   DFLT,       DFLT,          63,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   0},
-    { MULT_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // ======================
-    { MULT_PACKED, "21", {CKKSRNS_SCHEME, RING_DIM, 0,     45,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { MULT_PACKED, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { MULT_PACKED, "23", {CKKSRNS_SCHEME, RING_DIM, 12,    55,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   32},
-    { MULT_PACKED, "24", {CKKSRNS_SCHEME, RING_DIM, 21,    60,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   32},
-    // composite degree d = 3
-    { MULT_PACKED, "25", {CKKSRNS_SCHEME, RING_DIM, 0,     60,     DSIZE, BATCH,   DFLT,       DFLT,          61,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   32},
-    { MULT_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { MULT_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 12,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48},   32},
-    { MULT_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 21,     135,     DSIZE, BATCH,   DFLT,       DFLT,          136,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   32},
-    // composite degree d = 4
-    { MULT_PACKED, "29", {CKKSRNS_SCHEME, RING_DIM, 0,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   32},
-    { MULT_PACKED, "30", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { MULT_PACKED, "31", {CKKSRNS_SCHEME, RING_DIM, 21,     110,     DSIZE, BATCH,   DFLT,       DFLT,          111,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 35},   32},
-    // DEFAULT
-     { MULT_PACKED, "32", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    { MULT_PACKED, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    // composite degree d = 1
-    { MULT_PACKED, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     61,     DSIZE, BATCH,   DFLT,       DFLT,          63,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   32},
-    { MULT_PACKED, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   32},
-    // ======================
-    { MULT_PACKED, "41", {CKKSRNS_SCHEME, RING_DIM, 0,     45,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { MULT_PACKED, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { MULT_PACKED, "43", {CKKSRNS_SCHEME, RING_DIM, 12,    55,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   RING_DIM_HALF},
-    { MULT_PACKED, "44", {CKKSRNS_SCHEME, RING_DIM, 21,    60,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27},   RING_DIM_HALF},
-    // composite degree d = 3
-    { MULT_PACKED, "45", {CKKSRNS_SCHEME, RING_DIM, 0,     60,     DSIZE, BATCH,   DFLT,       DFLT,          61,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   RING_DIM_HALF},
-    { MULT_PACKED, "46", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { MULT_PACKED, "47", {CKKSRNS_SCHEME, RING_DIM, 12,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48},   RING_DIM_HALF},
-    { MULT_PACKED, "48", {CKKSRNS_SCHEME, RING_DIM, 21,     135,     DSIZE, BATCH,   DFLT,       DFLT,          136,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   RING_DIM_HALF},
-    // composite degree d = 4
-    { MULT_PACKED, "49", {CKKSRNS_SCHEME, RING_DIM, 0,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25},   RING_DIM_HALF},
-    { MULT_PACKED, "50", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { MULT_PACKED, "51", {CKKSRNS_SCHEME, RING_DIM, 21,     110,     DSIZE, BATCH,   DFLT,       DFLT,          111,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 35},   RING_DIM_HALF},
-    // DEFAULT
-     { MULT_PACKED, "52", {CKKSRNS_SCHEME, RING_DIM, 0,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    { MULT_PACKED, "53", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 1
-    { MULT_PACKED, "54", {CKKSRNS_SCHEME, RING_DIM, 7,     61,     DSIZE, BATCH,   DFLT,       DFLT,          63,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64},   RING_DIM_HALF},
-    { MULT_PACKED, "55", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { SCALE_FACTOR_ADJUSTMENTS, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { SCALE_FACTOR_ADJUSTMENTS, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { SCALE_FACTOR_ADJUSTMENTS, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { SCALE_FACTOR_ADJUSTMENTS, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { SCALE_FACTOR_ADJUSTMENTS, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { AUTO_LEVEL_REDUCE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { AUTO_LEVEL_REDUCE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { AUTO_LEVEL_REDUCE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { AUTO_LEVEL_REDUCE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { AUTO_LEVEL_REDUCE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { COMPRESS, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { COMPRESS, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { COMPRESS, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { COMPRESS, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { COMPRESS, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots    
+    { MULT_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     // composite degree d = 2
-    { EVAL_FAST_ROTATION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
+    { MULT_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
+    { MULT_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
     // composite degree d = 3
-    { EVAL_FAST_ROTATION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
+    { MULT_PACKED, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          86,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
+    { MULT_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
     // composite degree d = 4
-    { EVAL_FAST_ROTATION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // DEFAULT
-    { EVAL_FAST_ROTATION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // composite degree d = 1
-    { EVAL_FAST_ROTATION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // ======================
-    { EVAL_FAST_ROTATION, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   1},
-    // composite degree d = 3
-    { EVAL_FAST_ROTATION, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   1},
-    // composite degree d = 4
-    { EVAL_FAST_ROTATION, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   1},
-    // DEFAULT
-    { EVAL_FAST_ROTATION, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   1},
-    // composite degree d = 1
-    { EVAL_FAST_ROTATION, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   1},
-    // ======================
-    { EVAL_FAST_ROTATION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   2},
-    // composite degree d = 3
-    { EVAL_FAST_ROTATION, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   2},
-    // composite degree d = 4
-    { EVAL_FAST_ROTATION, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   2},
-    // DEFAULT
-    { EVAL_FAST_ROTATION, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   2},
-    // composite degree d = 1
-    { EVAL_FAST_ROTATION, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   2},
-    // ======================
-    { EVAL_FAST_ROTATION, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   4},
-    // composite degree d = 3
-    { EVAL_FAST_ROTATION, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   4},
-    // composite degree d = 4
-    { EVAL_FAST_ROTATION, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   4},
-    // DEFAULT
-    { EVAL_FAST_ROTATION, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   4},
-    // composite degree d = 1
-    { EVAL_FAST_ROTATION, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   4},
-    // ======================
-    { EVAL_FAST_ROTATION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // composite degree d = 3
-    { EVAL_FAST_ROTATION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // composite degree d = 4
-    { EVAL_FAST_ROTATION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // DEFAULT
-    { EVAL_FAST_ROTATION, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // composite degree d = 1
-    { EVAL_FAST_ROTATION, "45", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // ======================
-    { EVAL_FAST_ROTATION, "51", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 3
-    { EVAL_FAST_ROTATION, "52", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 4
-    { EVAL_FAST_ROTATION, "53", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // DEFAULT
-    { EVAL_FAST_ROTATION, "54", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 1
-    { EVAL_FAST_ROTATION, "55", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots    
+    { MULT_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     // composite degree d = 2
-    { EVALATINDEX, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
+    { MULT_PACKED, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
+    { MULT_PACKED, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
     // composite degree d = 3
-    { EVALATINDEX, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // composite degree d = 4
-    { EVALATINDEX, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // DEFAULT
-    { EVALATINDEX, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // composite degree d = 1
-    { EVALATINDEX, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-    // ======================
-    { EVALATINDEX, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   8},
+    { MULT_PACKED, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
+    { MULT_PACKED, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
+     // composite degree d = 4
+    { MULT_PACKED, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,               Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    // composite degree d = 2
+     { SCALE_FACTOR_ADJUSTMENTS, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+     { SCALE_FACTOR_ADJUSTMENTS, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,  COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     // composite degree d = 3
-    { EVALATINDEX, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},  8},
-    // composite degree d = 4
-    { EVALATINDEX, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   8},
-    // DEFAULT
-    { EVALATINDEX, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   8},
-    // composite degree d = 1
-    { EVALATINDEX, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   8},
-    // ======================
-    { EVALATINDEX, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   16},
-    // composite degree d = 3
-    { EVALATINDEX, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   16},
-    // composite degree d = 4
-    { EVALATINDEX, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   16},
-    // DEFAULT
-    { EVALATINDEX, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   16},
-    // composite degree d = 1
-    { EVALATINDEX, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   16},
-    // ======================
-    { EVALATINDEX, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 3
-    { EVALATINDEX, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 4
-    { EVALATINDEX, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // DEFAULT
-    { EVALATINDEX, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // composite degree d = 1
-    { EVALATINDEX, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-    // ======================
-    { EVALATINDEX, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // composite degree d = 3
-    { EVALATINDEX, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // composite degree d = 4
-    { EVALATINDEX, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // DEFAULT
-    { EVALATINDEX, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-    // composite degree d = 1
-    { EVALATINDEX, "45", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   BATCH},
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { EVALMERGE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { EVALMERGE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { EVALMERGE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { EVALMERGE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { EVALMERGE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { EVAL_LINEAR_WSUM, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { EVAL_LINEAR_WSUM, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { EVAL_LINEAR_WSUM, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { EVAL_LINEAR_WSUM, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { EVAL_LINEAR_WSUM, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { EVAL_POLY, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { EVAL_POLY, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { EVAL_POLY, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { EVAL_POLY, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { EVAL_POLY, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { METADATA, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { METADATA, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { METADATA, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { METADATA, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { METADATA, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { EVALSQUARE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 3
-    { EVALSQUARE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          81,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 4
-    { EVALSQUARE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     100,     DSIZE, BATCH,   DFLT,       DFLT,          101,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // DEFAULT
-    { EVALSQUARE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { EVALSQUARE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     30,     DSIZE, BATCH,   DFLT,       DFLT,          31,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-// ==========================================   // ==========================================
-// TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
-    { SMALL_SCALING_MOD_SIZE, "01", {CKKSRNS_SCHEME, 32768, 16,     50,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
-    // composite degree d = 1
-    { SMALL_SCALING_MOD_SIZE, "02", {CKKSRNS_SCHEME, 32768, 19,     22,     DSIZE, BATCH,   DFLT,       DFLT,          23,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32}, },
+     { SCALE_FACTOR_ADJUSTMENTS, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     56,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+     { AUTO_LEVEL_REDUCE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+     { AUTO_LEVEL_REDUCE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,  COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+     { AUTO_LEVEL_REDUCE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+     { AUTO_LEVEL_REDUCE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+     { AUTO_LEVEL_REDUCE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,      HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+
+    // ==========================================
+    // TestType, Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { COMPRESS, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { COMPRESS, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,  COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { COMPRESS, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { COMPRESS, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { COMPRESS, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,      HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+
+    // ==========================================
+    // TestType,         Descr,  Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { EVAL_FAST_ROTATION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVAL_FAST_ROTATION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVAL_FAST_ROTATION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVAL_FAST_ROTATION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVAL_FAST_ROTATION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+
+    { EVAL_FAST_ROTATION, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 1},
+    { EVAL_FAST_ROTATION, "10", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 1},
+    { EVAL_FAST_ROTATION, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 1},
+    { EVAL_FAST_ROTATION, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 1},
+    { EVAL_FAST_ROTATION, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 1},
+
+    { EVAL_FAST_ROTATION, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 2},
+    { EVAL_FAST_ROTATION, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 2},
+    { EVAL_FAST_ROTATION, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 2},
+    { EVAL_FAST_ROTATION, "20", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 2},
+    { EVAL_FAST_ROTATION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 2},
+
+    { EVAL_FAST_ROTATION, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 4},
+    { EVAL_FAST_ROTATION, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 4},
+    { EVAL_FAST_ROTATION, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 4},
+    { EVAL_FAST_ROTATION, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 4},
+    { EVAL_FAST_ROTATION, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 4},
+
+    { EVAL_FAST_ROTATION, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, BATCH},
+    { EVAL_FAST_ROTATION, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, BATCH},
+    { EVAL_FAST_ROTATION, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, BATCH},
+    { EVAL_FAST_ROTATION, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, BATCH},
+    { EVAL_FAST_ROTATION, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, BATCH},
+
+    { EVAL_FAST_ROTATION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "45", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, RING_DIM_HALF},
+
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { EVALATINDEX, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          62,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVALATINDEX, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     54,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVALATINDEX, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVALATINDEX, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+    { EVALATINDEX, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { EVALMERGE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALMERGE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALMERGE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALMERGE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALMERGE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,         120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { EVAL_LINEAR_WSUM, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_LINEAR_WSUM, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_LINEAR_WSUM, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_LINEAR_WSUM, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_LINEAR_WSUM, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,         120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { RE_ENCRYPTION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { RE_ENCRYPTION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { RE_ENCRYPTION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { RE_ENCRYPTION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { RE_ENCRYPTION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { EVAL_POLY, "01", {CKKSRNS_SCHEME, RING_DIM, 5,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_POLY, "02", {CKKSRNS_SCHEME, RING_DIM, 5,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_POLY, "03", {CKKSRNS_SCHEME, RING_DIM, 5,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_POLY, "04", {CKKSRNS_SCHEME, RING_DIM, 5,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_POLY, "05", {CKKSRNS_SCHEME, RING_DIM, 5,     118,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { METADATA, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { METADATA, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { METADATA, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { METADATA, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { METADATA, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+#endif
+
+#if NATIVEINT == 64
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
+    { EVALSQUARE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALSQUARE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALSQUARE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALSQUARE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVALSQUARE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
 #endif
 };
 // clang-format on
@@ -1378,8 +1225,11 @@ protected:
             // Encrypt plaintexts
             Ciphertext<Element> ct = cc->Encrypt(kp.publicKey, plaintext);
             ct *= ct;
-            size_t targetTowers = 1;
-            auto ctCompressed   = cc->Compress(ct, targetTowers);
+            size_t targetTowers      = 1;
+            auto cryptoParams        = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+            uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+            targetTowers *= compositeDegree;
+            auto ctCompressed = cc->Compress(ct, targetTowers);
 
             size_t towersLeft = ctCompressed->GetElements()[0].GetNumOfElements();
             EXPECT_TRUE(towersLeft == targetTowers) << " compress fails - towers mismatch";
@@ -1684,59 +1534,59 @@ protected:
         }
     }
 
-    // void UnitTest_ReEncryption(const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
-    //     try {
-    //         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+    void UnitTest_ReEncryption(const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-    //         size_t max = 128;
-    //         auto ptm   = 10;
+            size_t max = 128;
+            auto ptm   = 10;
 
-    //         std::vector<std::complex<double>> intvec(max);
-    //         for (size_t i = 0; i < max; ++i) {
-    //             intvec[i] = (rand() % (ptm / 2)) * (rand() % 2 ? 1 : -1);  // NOLINT
-    //         }
-    //         Plaintext plaintextInt = cc->MakeCKKSPackedPlaintext(intvec, 1, 0, nullptr, max);
+            std::vector<std::complex<double>> intvec(max);
+            for (size_t i = 0; i < max; ++i) {
+                intvec[i] = (rand() % (ptm / 2)) * (rand() % 2 ? 1 : -1);  // NOLINT
+            }
+            Plaintext plaintextInt = cc->MakeCKKSPackedPlaintext(intvec, 1, 0, nullptr, max);
 
-    //         KeyPair<Element> kp = cc->KeyGen();
-    //         EXPECT_EQ(kp.good(), true) << failmsg << " key generation for scalar encrypt/decrypt failed";
+            KeyPair<Element> kp = cc->KeyGen();
+            EXPECT_EQ(kp.good(), true) << failmsg << " key generation for scalar encrypt/decrypt failed";
 
-    //         KeyPair<Element> newKp = cc->KeyGen();
-    //         EXPECT_EQ(newKp.good(), true) << failmsg << " second key generation for scalar encrypt/decrypt failed";
+            KeyPair<Element> newKp = cc->KeyGen();
+            EXPECT_EQ(newKp.good(), true) << failmsg << " second key generation for scalar encrypt/decrypt failed";
 
-    //         // This generates the keys which are used to perform the key switching.
-    //         EvalKey<Element> evalKey = cc->ReKeyGen(kp.secretKey, newKp.publicKey);
+            // This generates the keys which are used to perform the key switching.
+            EvalKey<Element> evalKey = cc->ReKeyGen(kp.secretKey, newKp.publicKey);
 
-    //         Ciphertext<Element> ciphertext   = cc->Encrypt(kp.publicKey, plaintextInt);
-    //         Ciphertext<Element> reCiphertext = cc->ReEncrypt(ciphertext, evalKey);
-    //         Plaintext plaintextIntNew;
-    //         cc->Decrypt(newKp.secretKey, reCiphertext, &plaintextIntNew);
-    //         plaintextIntNew->SetLength(plaintextInt->GetLength());
-    //         auto tmp_a = plaintextIntNew->GetCKKSPackedValue();
-    //         auto tmp_b = plaintextInt->GetCKKSPackedValue();
-    //         std::stringstream buffer;
-    //         buffer << tmp_b << " - we get: " << tmp_a;
-    //         checkEquality(tmp_a, tmp_b, epsHigh, failmsg + " ReEncrypt integer plaintext " + buffer.str());
+            Ciphertext<Element> ciphertext   = cc->Encrypt(kp.publicKey, plaintextInt);
+            Ciphertext<Element> reCiphertext = cc->ReEncrypt(ciphertext, evalKey);
+            Plaintext plaintextIntNew;
+            cc->Decrypt(newKp.secretKey, reCiphertext, &plaintextIntNew);
+            plaintextIntNew->SetLength(plaintextInt->GetLength());
+            auto tmp_a = plaintextIntNew->GetCKKSPackedValue();
+            auto tmp_b = plaintextInt->GetCKKSPackedValue();
+            std::stringstream buffer;
+            buffer << tmp_b << " - we get: " << tmp_a;
+            checkEquality(tmp_a, tmp_b, epsHigh, failmsg + " ReEncrypt integer plaintext " + buffer.str());
 
-    //         Ciphertext<Element> ciphertext2   = cc->Encrypt(kp.publicKey, plaintextInt);
-    //         Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(ciphertext2, evalKey, kp.publicKey);
-    //         Plaintext plaintextIntNew2;
-    //         cc->Decrypt(newKp.secretKey, reCiphertext2, &plaintextIntNew2);
-    //         plaintextIntNew2->SetLength(plaintextInt->GetLength());
-    //         tmp_a = plaintextIntNew2->GetCKKSPackedValue();
-    //         tmp_b = plaintextInt->GetCKKSPackedValue();
-    //         std::stringstream buffer2;
-    //         buffer2 << tmp_b << " - we get: " << tmp_a;
-    //         checkEquality(tmp_a, tmp_b, epsHigh, failmsg + " HRA-secure ReEncrypt integer plaintext " + buffer2.str());
-    //     }
-    //     catch (std::exception& e) {
-    //         std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
-    //         // make it fail
-    //         EXPECT_TRUE(0 == 1) << failmsg;
-    //     }
-    //     catch (...) {
-    //         UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
-    //     }
-    // }
+            Ciphertext<Element> ciphertext2   = cc->Encrypt(kp.publicKey, plaintextInt);
+            Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(ciphertext2, evalKey, kp.publicKey);
+            Plaintext plaintextIntNew2;
+            cc->Decrypt(newKp.secretKey, reCiphertext2, &plaintextIntNew2);
+            plaintextIntNew2->SetLength(plaintextInt->GetLength());
+            tmp_a = plaintextIntNew2->GetCKKSPackedValue();
+            tmp_b = plaintextInt->GetCKKSPackedValue();
+            std::stringstream buffer2;
+            buffer2 << tmp_b << " - we get: " << tmp_a;
+            checkEquality(tmp_a, tmp_b, epsHigh, failmsg + " HRA-secure ReEncrypt integer plaintext " + buffer2.str());
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 
     void UnitTest_EvalPoly(const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
         try {
@@ -2113,15 +1963,15 @@ TEST_P(UTCKKSRNSCS, CKKSRNS) {
         case EVALATINDEX:
             UnitTest_EvalAtIndex(test, test.buildTestName());
             break;
-        // case EVALMERGE:
-        //     UnitTest_EvalMerge(test, test.buildTestName());
-        //     break;
+        case EVALMERGE:
+            UnitTest_EvalMerge(test, test.buildTestName());
+            break;
         case EVAL_LINEAR_WSUM:
             UnitTest_EvalLinearWSum(test, test.buildTestName());
             break;
-        // case RE_ENCRYPTION:
-        //     UnitTest_ReEncryption(test, test.buildTestName());
-        //     break;
+        case RE_ENCRYPTION:
+            UnitTest_ReEncryption(test, test.buildTestName());
+            break;
         case EVAL_POLY:
             UnitTest_EvalPoly(test, test.buildTestName());
             break;
