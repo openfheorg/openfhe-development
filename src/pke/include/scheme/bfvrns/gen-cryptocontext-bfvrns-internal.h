@@ -94,7 +94,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
         parameters.GetKeySwitchCount(),
         parameters.GetScalingModSize(),
         parameters.GetRingDim(),
-        parameters.GetNumLargeDigits());
+        parameters.GetNumLargeDigits(),
+        parameters.GetEvalCircuit());
     // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);

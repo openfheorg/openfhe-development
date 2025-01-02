@@ -45,7 +45,7 @@ namespace lbcrypto {
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                 uint32_t evalAddCount, uint32_t multiplicativeDepth,
                                                 uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
-                                                uint32_t numDigits) const {
+                                                uint32_t numDigits, const std::string& circuit) const {
     if (!cryptoParams)
         OPENFHE_THROW("No crypto parameters are supplied to BFVrns ParamsGen");
 
@@ -53,6 +53,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         OPENFHE_THROW(
             "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
             "in the range from 30 to 60");
+
+    if (circuit.size() > 0)
+        std::cout << "circuit provided" << std::endl;
+    else
+        std::cout << "no circuit provided" << std::endl;
 
     const auto cryptoParamsBFVRNS = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 

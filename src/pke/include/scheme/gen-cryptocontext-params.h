@@ -167,6 +167,9 @@ class Params {
     // COMPACT has stronger security assumption, thus more efficient
     COMPRESSION_LEVEL interactiveBootCompressionLevel;
 
+    // Circuit description
+    std::string evalCircuit;
+
     void SetToDefaults(SCHEME scheme);
 
 protected:
@@ -247,7 +250,8 @@ public:
                 "statisticalSecurity",
                 "numAdversarialQueries",
                 "thresholdNumOfParties",
-                "interactiveBootCompressionLevel"};
+                "interactiveBootCompressionLevel",
+                "evalCircuit"};
     }
 
     // getters
@@ -343,6 +347,9 @@ public:
     COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
         return interactiveBootCompressionLevel;
     }
+    const std::string& GetEvalCircuit() const {
+        return evalCircuit;
+    }
 
     // setters
     // They all must be virtual, so any of them can be disabled in the derived class
@@ -432,6 +439,9 @@ public:
     }
     virtual void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
         interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
+    }
+    virtual void SetEvalCircuit(std::string circuit) {
+        evalCircuit = circuit;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

@@ -71,7 +71,7 @@ public:
    */
     bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                          uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
-                         uint32_t n) const override {
+                         uint32_t n, const std::string& circuit) const override {
         OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
     }
 

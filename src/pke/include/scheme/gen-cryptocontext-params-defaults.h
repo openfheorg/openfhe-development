@@ -41,6 +41,8 @@
 #include "utils/inttypes.h"
 #include "constants.h"
 
+#include <string>
+
 namespace lbcrypto {
 
 namespace CKKSRNS_SCHEME_DEFAULTS {
@@ -81,6 +83,7 @@ constexpr uint32_t statisticalSecurity                      = 30;
 constexpr uint32_t numAdversarialQueries                    = 1;
 constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
+std::string evalCircuit                                     = "";
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -118,6 +121,7 @@ constexpr uint32_t statisticalSecurity                      = 0;
 constexpr uint32_t numAdversarialQueries                    = 0;
 constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
+std::string evalCircuit                                     = "";
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -151,6 +155,7 @@ constexpr uint32_t statisticalSecurity                      = 30;
 constexpr uint32_t numAdversarialQueries                    = 1;
 constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
+std::string evalCircuit                                     = "";
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================
