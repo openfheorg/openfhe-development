@@ -39,6 +39,7 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/scheme-utils.h"
+#include "circuit-utils.h"
 
 namespace lbcrypto {
 
@@ -54,10 +55,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
             "in the range from 30 to 60");
 
-    if (circuit.size() > 0)
-        std::cout << "circuit provided" << std::endl;
-    else
+    if (circuit.size() > 0) {
+        std::cout << "using a circuit" << std::endl;
+    }
+    else {
         std::cout << "no circuit provided" << std::endl;
+    }
 
     const auto cryptoParamsBFVRNS = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 
@@ -157,152 +160,159 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
     double logq = 0.;
 
-    // only public key encryption and EvalAdd (optional when evalAddCount = 0)
-    // operations are supported the correctness constraint from section 3.5 of
-    // https://eprint.iacr.org/2014/062.pdf is used
-    // optimization (noise reduction) from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
-    // is also applied
-    if ((multiplicativeDepth == 0) && (keySwitchCount == 0)) {
-        // Correctness constraint
-        auto logqBFV = [&](uint32_t n) -> double {
-            return std::log2(p * (4 * ((evalAddCount + 1) * Vnorm(n) + evalAddCount) + p));
-        };
+    if (circuit.size() > 0) {
+        auto params = EstimateCircuitBFV(cryptoParams, dcrtBits, nCustom, circuit);
+        logq        = params.logq;
+        n           = params.nRLWE;
+    }
+    else {
+        // only public key encryption and EvalAdd (optional when evalAddCount = 0)
+        // operations are supported the correctness constraint from section 3.5 of
+        // https://eprint.iacr.org/2014/062.pdf is used
+        // optimization (noise reduction) from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
+        // is also applied
+        if ((multiplicativeDepth == 0) && (keySwitchCount == 0)) {
+            // Correctness constraint
+            auto logqBFV = [&](uint32_t n) -> double {
+                return std::log2(p * (4 * ((evalAddCount + 1) * Vnorm(n) + evalAddCount) + p));
+            };
 
-        // initial value
-        logq = logqBFV(n);
-
-        while (nRLWE(logq) > n) {
-            n    = 2 * n;
+            // initial value
             logq = logqBFV(n);
+
+            while (nRLWE(logq) > n) {
+                n    = 2 * n;
+                logq = logqBFV(n);
+            }
+
+            // this code updates n and q to account for the discrete size of CRT moduli
+            // = dcrtBits
+            int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+
+            double logqCeil = k * dcrtBits;
+
+            while (nRLWE(logqCeil) > n) {
+                n        = 2 * n;
+                logq     = logqBFV(n);
+                k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+                logqCeil = k * dcrtBits;
+            }
         }
+        else if ((multiplicativeDepth == 0) && (keySwitchCount > 0) && (evalAddCount == 0)) {
+            // this case supports automorphism w/o any other operations
+            // base for relinearization
 
-        // this code updates n and q to account for the discrete size of CRT moduli
-        // = dcrtBits
-        int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+            double w = std::pow(2, (digitSize == 0 ? dcrtBits : digitSize));
 
-        double logqCeil = k * dcrtBits;
+            // Correctness constraint
+            auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
+                return std::log2(p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w, false)) + p));
+            };
 
-        while (nRLWE(logqCeil) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n);
-            k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
-            logqCeil = k * dcrtBits;
+            // initial values
+            double logqPrev = 6. * std::log2(10);
+            logq            = logqBFV(n, logqPrev);
+            logqPrev        = logq;
+
+            // increases n up to the level where desired security level is achieved
+            while (nRLWE(logq) > n) {
+                n        = 2 * n;
+                logq     = logqBFV(n, logqPrev);
+                logqPrev = logq;
+            }
+
+            logq = logqBFV(n, logqPrev);
+
+            // let logq converge with prescribed accuracy
+            while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
+                logqPrev = logq;
+                logq     = logqBFV(n, logqPrev);
+            }
+
+            // this code updates n and q to account for the discrete size of CRT
+            // moduli = dcrtBits
+            int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+
+            double logqCeil = k * dcrtBits;
+            logqPrev        = logqCeil;
+
+            while (nRLWE(logqCeil) > n) {
+                n        = 2 * n;
+                logq     = logqBFV(n, logqPrev);
+                k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+                logqCeil = k * dcrtBits;
+                logqPrev = logqCeil;
+            }
         }
-    }
-    else if ((multiplicativeDepth == 0) && (keySwitchCount > 0) && (evalAddCount == 0)) {
-        // this case supports automorphism w/o any other operations
-        // base for relinearization
+        else if ((evalAddCount == 0) && (multiplicativeDepth > 0) && (keySwitchCount == 0)) {
+            // Only EvalMult operations are used in the correctness constraint
+            // the correctness constraint from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
+            // is used
 
-        double w = std::pow(2, (digitSize == 0 ? dcrtBits : digitSize));
+            // base for relinearization
+            double w = std::pow(2, (digitSize == 0 ? dcrtBits : digitSize));
 
-        // Correctness constraint
-        auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
-            return std::log2(p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w, false)) + p));
-        };
+            // function used in the EvalMult constraint
+            auto C1 = [&](uint32_t n) -> double {
+                return delta(n) * delta(n) * p * Bkey;
+            };
 
-        // initial values
-        double logqPrev = 6. * std::log2(10);
-        logq            = logqBFV(n, logqPrev);
-        logqPrev        = logq;
+            // function used in the EvalMult constraint
+            auto C2 = [&](uint32_t n, double logqPrev) -> double {
+                return delta(n) * delta(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w, true);
+            };
 
-        // increases n up to the level where desired security level is achieved
-        while (nRLWE(logq) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
-            logqPrev = logq;
+            // main correctness constraint
+            auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
+                return log2(4 * p) + (multiplicativeDepth - 1) * log2(C1(n)) +
+                       log2(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
+            };
+
+            // initial values
+            double logqPrev = 6. * std::log2(10);
+            logq            = logqBFV(n, logqPrev);
+            logqPrev        = logq;
+
+            // increases n up to the level where desired security level is achieved
+            while (nRLWE(logq) > n) {
+                n        = 2 * n;
+                logq     = logqBFV(n, logqPrev);
+                logqPrev = logq;
+            }
+
+            logq = logqBFV(n, logqPrev);
+
+            // let logq converge with prescribed accuracy
+            while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
+                logqPrev = logq;
+                logq     = logqBFV(n, logqPrev);
+            }
+
+            // this code updates n and q to account for the discrete size of CRT
+            // moduli = dcrtBits
+
+            int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+
+            double logqCeil = k * dcrtBits;
+            logqPrev        = logqCeil;
+
+            while (nRLWE(logqCeil) > n) {
+                n        = 2 * n;
+                logq     = logqBFV(n, logqPrev);
+                k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+                logqCeil = k * dcrtBits;
+                logqPrev = logqCeil;
+            }
         }
+        else if ((multiplicativeDepth && (evalAddCount || keySwitchCount)) || (evalAddCount && keySwitchCount)) {
+            // throw an exception if at least 2 variables are not zero
+            std::string errMsg("multiplicativeDepth, evalAddCount and keySwitchCount are incorrectly set to [ ");
+            errMsg += std::to_string(multiplicativeDepth) + ", ";
+            errMsg += std::to_string(evalAddCount) + ", ";
+            errMsg += std::to_string(keySwitchCount) + " ]. Only one of them can be non-zero.";
 
-        logq = logqBFV(n, logqPrev);
-
-        // let logq converge with prescribed accuracy
-        while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
-            logqPrev = logq;
-            logq     = logqBFV(n, logqPrev);
+            OPENFHE_THROW(errMsg);
         }
-
-        // this code updates n and q to account for the discrete size of CRT
-        // moduli = dcrtBits
-        int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
-
-        double logqCeil = k * dcrtBits;
-        logqPrev        = logqCeil;
-
-        while (nRLWE(logqCeil) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
-            k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
-            logqCeil = k * dcrtBits;
-            logqPrev = logqCeil;
-        }
-    }
-    else if ((evalAddCount == 0) && (multiplicativeDepth > 0) && (keySwitchCount == 0)) {
-        // Only EvalMult operations are used in the correctness constraint
-        // the correctness constraint from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
-        // is used
-
-        // base for relinearization
-        double w = std::pow(2, (digitSize == 0 ? dcrtBits : digitSize));
-
-        // function used in the EvalMult constraint
-        auto C1 = [&](uint32_t n) -> double {
-            return delta(n) * delta(n) * p * Bkey;
-        };
-
-        // function used in the EvalMult constraint
-        auto C2 = [&](uint32_t n, double logqPrev) -> double {
-            return delta(n) * delta(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w, true);
-        };
-
-        // main correctness constraint
-        auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
-            return log2(4 * p) + (multiplicativeDepth - 1) * log2(C1(n)) +
-                   log2(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
-        };
-
-        // initial values
-        double logqPrev = 6. * std::log2(10);
-        logq            = logqBFV(n, logqPrev);
-        logqPrev        = logq;
-
-        // increases n up to the level where desired security level is achieved
-        while (nRLWE(logq) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
-            logqPrev = logq;
-        }
-
-        logq = logqBFV(n, logqPrev);
-
-        // let logq converge with prescribed accuracy
-        while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
-            logqPrev = logq;
-            logq     = logqBFV(n, logqPrev);
-        }
-
-        // this code updates n and q to account for the discrete size of CRT
-        // moduli = dcrtBits
-
-        int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
-
-        double logqCeil = k * dcrtBits;
-        logqPrev        = logqCeil;
-
-        while (nRLWE(logqCeil) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
-            k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
-            logqCeil = k * dcrtBits;
-            logqPrev = logqCeil;
-        }
-    }
-    else if ((multiplicativeDepth && (evalAddCount || keySwitchCount)) || (evalAddCount && keySwitchCount)) {
-        // throw an exception if at least 2 variables are not zero
-        std::string errMsg("multiplicativeDepth, evalAddCount and keySwitchCount are incorrectly set to [ ");
-        errMsg += std::to_string(multiplicativeDepth) + ", ";
-        errMsg += std::to_string(evalAddCount) + ", ";
-        errMsg += std::to_string(keySwitchCount) + " ]. Only one of them can be non-zero.";
-
-        OPENFHE_THROW(errMsg);
     }
 
     if ((n > nCustom) && (nCustom != 0))
@@ -310,6 +320,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                       " specified by the user does not meet the "
                       "security requirement. Please increase it to " +
                       std::to_string(n) + ".");
+
+    std::cerr << "logq = " << logq << std::endl;
 
     const size_t numInitialModuli = static_cast<size_t>(std::ceil(std::ceil(logq) / dcrtBits));
     if (numInitialModuli < 1)
