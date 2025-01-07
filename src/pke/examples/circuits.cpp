@@ -47,7 +47,7 @@ int main() {
     // Sample Program: Step 1: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(0);
+    parameters.SetRingDim(8192);
 
     // std::string fileName = DATAFOLDER + "/doubling.tsv";
     std::string fileName = DATAFOLDER + "/addition.tsv";
@@ -74,6 +74,12 @@ int main() {
 
     // Generate a public/private key pair
     keyPair = cryptoContext->KeyGen();
+
+    std::string fileNameValidate = DATAFOLDER + "/doubling.tsv";
+    std::ifstream fileValidate(fileNameValidate);
+    std::string circuitValidate((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
+
+    cryptoContext->ValidateCircuit(circuitValidate);
 
     // Sample Program: Step 3: Encryption
 

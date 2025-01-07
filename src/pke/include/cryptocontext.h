@@ -57,6 +57,8 @@
 
 #include "binfhecontext.h"
 
+#include "circuit-utils.h"
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -3663,6 +3665,22 @@ public:
      * @return set with the unique values from newValues
      **/
     static std::set<uint32_t> GetUniqueValues(const std::set<uint32_t>& oldValues, const std::set<uint32_t>& newValues);
+
+    bool ValidateCircuit(const std::string& circuit) {
+        auto circuitParams = EstimateCircuitBFV(params, GetElementParams()->GetParams()[0]->GetModulus().GetMSB(),
+                                                GetRingDimension(), circuit);
+
+        double logQReal = static_cast<double>(GetModulus().GetMSB());
+
+        if (circuitParams.logq < logQReal) {
+            std::cout << "Validation succeeded" << std::endl;
+            return true;
+        }
+        else {
+            std::cout << "Validation failed" << std::endl;
+            return false;
+        }
+    }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
