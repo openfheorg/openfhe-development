@@ -414,11 +414,14 @@ protected:
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
+            auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
             std::vector<std::complex<double>> input(
                 Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
-            Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
             auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
 
@@ -442,10 +445,10 @@ protected:
             auto actualResult = resultTwoIterations->GetCKKSPackedValue();
             checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps,
                           failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed");
-            // double precisionMultipleIterations =
-            //    CalculateApproximationError(actualResult, plaintext->GetCKKSPackedValue());
+            double precisionMultipleIterations =
+                CalculateApproximationError(actualResult, plaintext->GetCKKSPackedValue());
 
-            // EXPECT_GE(precisionMultipleIterations + precisionBuffer, numIterations * precision);
+            EXPECT_GE(precisionMultipleIterations + precisionBuffer, numIterations * precision);
 
             auto temp6 = input;
             std::rotate(temp6.begin(), temp6.begin() + 6, temp6.end());
