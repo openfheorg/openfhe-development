@@ -191,7 +191,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     }
 
     DCRTPoly::Integer intPowP;
-    int64_t powp64 = (static_cast<int64_t>(1)) << precision;
+    uint64_t powp64 = (static_cast<uint64_t>(1)) << precision;
     if (pCurrent < 0) {
         intPowP = NativeInteger((uint128_t)powp64 >> (-pCurrent));
     }

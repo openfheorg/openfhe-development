@@ -68,12 +68,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     // Determine appropriate composite degree automatically if scaling technique set to COMPOSITESCALINGAUTO
     cryptoParamsCKKSRNS->ConfigureCompositeDegree(firstModSize);
-    uint32_t compositeDegree  = cryptoParamsCKKSRNS->GetCompositeDegree();
-    uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
-    compositeDegree *= static_cast<uint32_t>(1);   // @fdiasmor: Avoid unused variable compilation error.
-    registerWordSize *= static_cast<uint32_t>(1);  // @fdiasmor: Avoid unused variable compilation error.
-    // Bookeeping unique prime moduli
-    //    std::unordered_set<uint64_t> moduliQRecord;
 
     if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         std::stringstream s;
@@ -100,7 +94,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
                                                               numPrimes, auxBits, true);
         if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-            uint32_t tmpFactor = (compositeDegree == 2) ? 2 : 4;
+            uint32_t tmpFactor = (cryptoParamsCKKSRNS->GetCompositeDegree() == 2) ? 2 : 4;
             qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
         }
         else {
