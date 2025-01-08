@@ -40,7 +40,7 @@ Ultilities for AAHE circuits
 #include <vector>
 #include <string>
 
-#include "cryptocontext.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 

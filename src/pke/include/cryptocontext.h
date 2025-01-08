@@ -3666,7 +3666,7 @@ public:
      **/
     static std::set<uint32_t> GetUniqueValues(const std::set<uint32_t>& oldValues, const std::set<uint32_t>& newValues);
 
-    bool ValidateCircuit(const std::string& circuit) {
+    bool ValidateCircuit(const std::string& circuit) const {
         auto circuitParams = EstimateCircuitBFV(params, GetElementParams()->GetParams()[0]->GetModulus().GetMSB(),
                                                 GetRingDimension(), circuit);
 
@@ -3679,6 +3679,42 @@ public:
         else {
             std::cout << "Validation failed" << std::endl;
             return false;
+        }
+    }
+
+    Ciphertext<DCRTPoly> EvaluateCircuit(const std::string& circuit,
+                                         const std::vector<Ciphertext<Element>>& vec) const {
+        if (ValidateCircuit(circuit)) {
+            std::istringstream f(circuit);
+            std::string line;
+
+            auto vecCircuit = vec;
+            std::string temp;
+
+            size_t count = count_lines(circuit);
+            vecCircuit.resize(count);
+
+            size_t counter = 0;
+
+            while (counter < count) {
+                Line circuitLine;
+                std::getline(f, temp, '\t');
+                circuitLine.id = std::stoi(temp);
+                std::getline(f, circuitLine.operation, '\t');
+                std::getline(f, temp, '\t');
+                circuitLine.low = std::stoi(temp);
+                std::getline(f, temp);
+                circuitLine.high = std::stoi(temp);
+                if (circuitLine.operation == "add") {
+                    vecCircuit[counter] = EvalAdd(vecCircuit[circuitLine.low - 1], vecCircuit[circuitLine.high - 1]);
+                }
+                counter++;
+            }
+
+            return vecCircuit[count - 1];
+        }
+        else {
+            return nullptr;
         }
     }
 

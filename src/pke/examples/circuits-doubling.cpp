@@ -44,15 +44,14 @@ using namespace lbcrypto;
 const std::string DATAFOLDER = "demoData";
 
 int main() {
-    // Sample Program: Step 1: Set CryptoContext
+    // Sample Program: Set CryptoContext
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetRingDim(8192);
 
-    // std::string fileName = DATAFOLDER + "/doubling.tsv";
-    std::string fileName = DATAFOLDER + "/addition.tsv";
+    std::string fileName = DATAFOLDER + "/doubling.tsv";
 
-    std::cout << "file name = " << fileName << std::endl;
+    std::cout << "circuit used during parameter/key generation = " << fileName << std::endl;
 
     std::ifstream file(fileName);
     std::string circuit((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -60,14 +59,13 @@ int main() {
     parameters.SetEvalCircuit(circuit);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+
     // Enable features that you wish to use
     cryptoContext->Enable(PKE);
     cryptoContext->Enable(KEYSWITCH);
     cryptoContext->Enable(LEVELEDSHE);
 
-    std::cerr << *cryptoContext->GetCryptoParameters() << std::endl;
-
-    // Sample Program: Step 2: Key Generation
+    std::cout << "Crypto Parameters: " << *cryptoContext->GetCryptoParameters() << std::endl;
 
     // Initialize Public Key Containers
     KeyPair<DCRTPoly> keyPair;
@@ -75,48 +73,69 @@ int main() {
     // Generate a public/private key pair
     keyPair = cryptoContext->KeyGen();
 
-    std::string fileNameValidate = DATAFOLDER + "/doubling.tsv";
+    std::cout << "\nValidating addition circuit" << std::endl;
+
+    std::string fileNameValidate = DATAFOLDER + "/addition.tsv";
     std::ifstream fileValidate(fileNameValidate);
-    std::string circuitValidate((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
+    std::string circuitAddition((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
 
-    cryptoContext->ValidateCircuit(circuitValidate);
+    cryptoContext->ValidateCircuit(circuitAddition);
 
-    // Sample Program: Step 3: Encryption
+    std::cout << "\nValidating doubling circuit" << std::endl;
+
+    std::string fileNameValidate2 = DATAFOLDER + "/doubling.tsv";
+    std::ifstream fileValidate2(fileNameValidate2);
+    std::string circuitDoubling((std::istreambuf_iterator<char>(fileValidate2)), std::istreambuf_iterator<char>());
+
+    cryptoContext->ValidateCircuit(circuitDoubling);
+
+    // Sample Program: Encryption
 
     // First plaintext vector is encoded
-    std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
-    // Second plaintext vector is encoded
-    std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
-    // Third plaintext vector is encoded
-    std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
 
-    // The encoded vectors are encrypted
+    // Ciphertext for the addition circuit
+    uint32_t count = 45;
+    std::vector<Ciphertext<DCRTPoly>> vecCtxt(count);
+    for (size_t i = 0; i < count; i++) {
+        vecCtxt[i] = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+    }
+
+    // Ciphertext for the doubling circuit
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
-    auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
-    auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
 
-    // Sample Program: Step 4: Evaluation
+    std::cout << "\nEvaluating addition circuit" << std::endl;
 
-    // Homomorphic additions
-    auto ciphertextAdd12     = cryptoContext->EvalAdd(ciphertext1, ciphertext2);
-    auto ciphertextAddResult = cryptoContext->EvalAdd(ciphertextAdd12, ciphertext3);
+    // Homomorphic additions for addition
+    auto ciphertextAddResult1 = cryptoContext->EvaluateCircuit(circuitAddition, vecCtxt);
 
-    // Sample Program: Step 5: Decryption
+    std::cout << "\nEvaluating doubling circuit" << std::endl;
 
-    // Decrypt the result of additions
-    Plaintext plaintextAddResult;
-    cryptoContext->Decrypt(keyPair.secretKey, ciphertextAddResult, &plaintextAddResult);
+    // Homomorphic additions for doubling
+    auto ciphertextAddResult2 = cryptoContext->EvaluateCircuit(circuitDoubling, {ciphertext1});
 
-    std::cout << "Plaintext #1: " << plaintext1 << std::endl;
-    std::cout << "Plaintext #2: " << plaintext2 << std::endl;
-    std::cout << "Plaintext #3: " << plaintext3 << std::endl;
+    std::cout << "\nPlaintext #1: " << plaintext1 << std::endl;
 
-    // Output results
-    std::cout << "\nResults of homomorphic computations" << std::endl;
-    std::cout << "#1 + #2 + #3: " << plaintextAddResult << std::endl;
+    if (ciphertextAddResult1 != nullptr) {
+        // Decrypt the result of additions
+        Plaintext plaintextAddResult;
+        cryptoContext->Decrypt(keyPair.secretKey, ciphertextAddResult1, &plaintextAddResult);
+
+        // Output results
+        std::cout << "\nResult of addition circuit" << std::endl;
+        std::cout << "44 additions mod t: " << plaintextAddResult << std::endl;
+    }
+
+    if (ciphertextAddResult2 != nullptr) {
+        // Decrypt the result of additions
+        Plaintext plaintextAddResult;
+        cryptoContext->Decrypt(keyPair.secretKey, ciphertextAddResult2, &plaintextAddResult);
+
+        // Output results
+        std::cout << "\nResult of doubling circuit" << std::endl;
+        std::cout << "44 additions mod t: " << plaintextAddResult << std::endl;
+    }
 
     return 0;
 }
