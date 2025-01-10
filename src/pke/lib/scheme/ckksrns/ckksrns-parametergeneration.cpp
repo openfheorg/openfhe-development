@@ -106,11 +106,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
-    uint32_t auxBits       = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ? 30 : AUXMODSIZE;
-    // Alternative way to calculate auxBits for composite scaling mode
-    //                         ((registerWordSize < 30) ? registerWordSize : 30) : AUXMODSIZE;
-    uint32_t n      = cyclOrder / 2;
-    uint32_t qBound = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
+    uint32_t auxBits       = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                                 // Alternative way to calculate auxBits for composite scaling mode
+                           std::ceil(registerWordSize * 0.9375) :
+                                 AUXMODSIZE;
+    uint32_t n             = cyclOrder / 2;
+    uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
 
     // we add an extra bit to account for the alternating logic of selecting the RNS moduli in CKKS
     // ignore the case when there is only one max size modulus
@@ -122,7 +123,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
                                                               numPrimes, auxBits, scalTech, compositeDegree, true);
         if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-            uint32_t tmpFactor = (compositeDegree == 2) ? 2 : 4;
+            uint32_t tmpFactor = compositeDegree;  // (compositeDegree == 2) ? 2 : 4;
             qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
         }
         else {
