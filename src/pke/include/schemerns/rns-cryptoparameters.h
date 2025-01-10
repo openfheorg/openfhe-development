@@ -116,8 +116,6 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        m_compositeDegree                     = BASE_NUM_LEVELS_TO_DROP;
-        m_registerWordSize                    = NATIVEINT;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -130,7 +128,8 @@ protected:
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
                         uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                        usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
                                          PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
@@ -140,32 +139,7 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        m_compositeDegree                     = BASE_NUM_LEVELS_TO_DROP;
-        m_registerWordSize                    = NATIVEINT;
-    }
-
-    CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
-                        float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
-                        SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
-                        ScalingTechnique scalTech = FIXEDMANUAL, usint compositeDegree = BASE_NUM_LEVELS_TO_DROP,
-                        usint registerWordSize = NATIVEINT, EncryptionTechnique encTech = STANDARD,
-                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
-                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode             = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
-        : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
-                                         assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
-                                         PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
-                                         statisticalSecurity, numAdversarialQueries, thresholdNumOfParties) {
-        m_ksTechnique                         = ksTech;
-        m_scalTechnique                       = scalTech;
-        m_encTechnique                        = encTech;
-        m_multTechnique                       = multTech;
-        m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        m_compositeDegree                     = compositeDegree;  
+        m_compositeDegree                     = compositeDegree;
         m_registerWordSize                    = registerWordSize;
     }
 
@@ -638,7 +612,7 @@ public:
    * @return the scaling factor.
    */
     double GetScalingFactorReal(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsReal.size()) {
                 // TODO: Return an error here.
@@ -652,7 +626,7 @@ public:
     }
 
     double GetScalingFactorRealBig(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
@@ -665,15 +639,15 @@ public:
         return m_approxSF;
     }
 
-   /**
+    /**
    * Method to retrieve the modulus to be dropped of level l.
    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
    * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
    * @return the precomputed table
    */
     double GetModReduceFactor(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) { 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_dmoduliQ[l];
         }
 
@@ -697,9 +671,9 @@ public:
     }
     /**
      * Returns the architecture register word size (e.g., 32 bits, 48 bits, 64 bits).
-     * Used to determine the size of prime moduli in the CKKS scheme on 
+     * Used to determine the size of prime moduli in the CKKS scheme on
      * composite scaling mode (COMPOSITESCALINGAUTO).
-     * 
+     *
      * @return the register word size for COMPOSITESCALING scaling technique
      **/
     uint32_t const& GetRegisterWordSize() const {
@@ -1021,7 +995,7 @@ public:
     }
 
     const NativeInteger& GetModReduceFactorInt(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT || 
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_qModt[l];
         }
@@ -1549,7 +1523,7 @@ protected:
     /////////////////////////////////////
 
     // Stores composite degree for composite modulus chain
-    uint32_t m_compositeDegree  = BASE_NUM_LEVELS_TO_DROP;
+    uint32_t m_compositeDegree = BASE_NUM_LEVELS_TO_DROP;
     // Stores the architecture register word size
     uint32_t m_registerWordSize = NATIVEINT;
 

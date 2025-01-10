@@ -105,8 +105,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetMaxRelinSkDeg(),
         parameters.GetKeySwitchTechnique(),
         parameters.GetScalingTechnique(),
-        parameters.GetCompositeDegree(),
-        parameters.GetRegisterWordSize(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique(),
         parameters.GetPREMode(),
@@ -117,7 +115,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetStatisticalSecurity(),
         parameters.GetNumAdversarialQueries(),
         parameters.GetThresholdNumOfParties(),
-        parameters.GetInteractiveBootCompressionLevel());
+        parameters.GetInteractiveBootCompressionLevel(),
+        parameters.GetCompositeDegree(),
+        parameters.GetRegisterWordSize());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
