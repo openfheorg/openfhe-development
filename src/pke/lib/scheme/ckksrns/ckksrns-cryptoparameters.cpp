@@ -162,8 +162,6 @@ uint64_t CryptoParametersCKKSRNS::FindAuxPrimeStep() const {
 void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) {
     // Add logic to determine whether composite scaling is feasible or not
     if (GetScalingTechnique() == COMPOSITESCALINGAUTO) {
-        if (NATIVEINT != 64)
-            OPENFHE_THROW("COMPOSITESCALINGAUTO scaling technique only supported with NATIVEINT==64.");
         uint32_t registerWordSize = GetRegisterWordSize();
         if (registerWordSize <= 64) {
             if (registerWordSize < scalingModSize) {
@@ -171,9 +169,9 @@ void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) 
                     static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
                 // Assert minimum allowed moduli size on composite scaling mode
                 // @fdiasmor TODO: make it more robust for a range of multiplicative depth
-                if (static_cast<float>(scalingModSize) / compositeDegree < 21) {
+                if (static_cast<float>(scalingModSize) / compositeDegree < 22) {
                     OPENFHE_THROW(
-                        "Moduli size is too short (< 21) for target multiplicative depth. Consider increasing the scaling factor or the register word size.");
+                        "Moduli size is too short (< 22) for target multiplicative depth. Consider increasing the scaling factor or the register word size.");
                 }
                 m_compositeDegree = compositeDegree;
             }  // else composite degree remains set to 1
