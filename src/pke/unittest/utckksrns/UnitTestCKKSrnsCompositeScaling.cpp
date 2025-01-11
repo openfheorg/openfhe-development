@@ -169,9 +169,9 @@ constexpr usint RING_DIM      = 512;
 constexpr usint RING_DIM_HALF = 256;
 constexpr usint DSIZE         = 10;
 constexpr usint BATCH         = 8;
-#if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
-constexpr usint RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
-#endif
+// #if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
+// constexpr usint RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
+// #endif
 // MIN_PRECISION_DIFF is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
 constexpr double MIN_PRECISION_DIFF = 1.5;
 // clang-format off
