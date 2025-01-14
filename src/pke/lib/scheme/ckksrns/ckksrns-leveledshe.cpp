@@ -42,6 +42,11 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "schemebase/base-scheme.h"
 
+#include <map>
+#include <memory>
+#include <utility>
+#include <vector>
+
 namespace lbcrypto {
 
 /////////////////////////////////////////
@@ -89,7 +94,7 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double
 
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
         if (ciphertext->GetNoiseScaleDeg() == 2) {
-            ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+            ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
         }
     }
 
@@ -120,7 +125,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
         }
     }
 
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels);
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 
     for (usint i = 0; i < levels; ++i) {
@@ -186,7 +191,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     }
 
     DCRTPoly::Integer intPowP;
-    int64_t powp64 = ((int64_t)1) << precision;
+    uint64_t powp64 = (static_cast<uint64_t>(1)) << precision;
     if (pCurrent < 0) {
         intPowP = NativeInteger((uint128_t)powp64 >> (-pCurrent));
     }
@@ -258,7 +263,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
         int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                         logApprox :
                                         LargeScalingFactorConstants::MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
         std::vector<DCRTPoly::Integer> crtApprox(sizeQl, intStep);
         logApprox -= logStep;
 
@@ -266,7 +271,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
             int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                             logApprox :
                                             LargeScalingFactorConstants::MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
             std::vector<DCRTPoly::Integer> crtSF(sizeQl, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -386,7 +391,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 
     DoubleInteger large     = static_cast<DoubleInteger>(operand / approxFactor * scFactor + 0.5);
     DoubleInteger large_abs = (large < 0 ? -large : large);
-    DoubleInteger bound     = (uint64_t)1 << 63;
+    DoubleInteger bound     = static_cast<uint64_t>(1) << 63;
 
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
@@ -412,7 +417,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
         int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                         logApprox :
                                         LargeScalingFactorConstants::MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
@@ -420,7 +425,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
             int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
                                             logApprox :
                                             LargeScalingFactorConstants::MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
             std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -512,13 +517,14 @@ void LeveledSHECKKSRNS::MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, u
 
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                                     Ciphertext<DCRTPoly>& ciphertext2) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
-    usint c1lvl             = ciphertext1->GetLevel();
-    usint c2lvl             = ciphertext2->GetLevel();
-    usint c1depth           = ciphertext1->GetNoiseScaleDeg();
-    usint c2depth           = ciphertext2->GetNoiseScaleDeg();
-    auto sizeQl1            = ciphertext1->GetElements()[0].GetNumOfElements();
-    auto sizeQl2            = ciphertext2->GetElements()[0].GetNumOfElements();
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
+    usint c1lvl              = ciphertext1->GetLevel();
+    usint c2lvl              = ciphertext2->GetLevel();
+    usint c1depth            = ciphertext1->GetNoiseScaleDeg();
+    usint c2depth            = ciphertext2->GetNoiseScaleDeg();
+    auto sizeQl1             = ciphertext1->GetElements()[0].GetNumOfElements();
+    auto sizeQl2             = ciphertext2->GetElements()[0].GetNumOfElements();
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     if (c1lvl < c2lvl) {
         if (c1depth == 2) {
@@ -527,28 +533,34 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
                 double scf2 = ciphertext2->GetScalingFactor();
                 double scf  = cryptoParams->GetScalingFactorReal(c1lvl);
                 double q1   = cryptoParams->GetModReduceFactor(sizeQl1 - 1);
+                for (uint32_t j = 1; j < compositeDegree; j++) {
+                    q1 *= cryptoParams->GetModReduceFactor(sizeQl1 - j - 1);
+                }
                 EvalMultCoreInPlace(ciphertext1, scf2 / scf1 * q1 / scf);
-                ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
-                if (c1lvl + 1 < c2lvl) {
-                    LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 1);
+                ModReduceInternalInPlace(ciphertext1, compositeDegree);
+                if (c1lvl + compositeDegree < c2lvl) {
+                    LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - compositeDegree);
                 }
                 ciphertext1->SetScalingFactor(ciphertext2->GetScalingFactor());
             }
             else {
-                if (c1lvl + 1 == c2lvl) {
-                    ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
+                if (c1lvl + compositeDegree == c2lvl) {
+                    ModReduceInternalInPlace(ciphertext1, compositeDegree);
                 }
                 else {
                     double scf1 = ciphertext1->GetScalingFactor();
-                    double scf2 = cryptoParams->GetScalingFactorRealBig(c2lvl - 1);
+                    double scf2 = cryptoParams->GetScalingFactorRealBig(c2lvl - compositeDegree);
                     double scf  = cryptoParams->GetScalingFactorReal(c1lvl);
                     double q1   = cryptoParams->GetModReduceFactor(sizeQl1 - 1);
-                    EvalMultCoreInPlace(ciphertext1, scf2 / scf1 * q1 / scf);
-                    ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
-                    if (c1lvl + 2 < c2lvl) {
-                        LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 2);
+                    for (uint32_t j = 1; j < compositeDegree; j++) {
+                        q1 *= cryptoParams->GetModReduceFactor(sizeQl1 - j - 1);
                     }
-                    ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
+                    EvalMultCoreInPlace(ciphertext1, scf2 / scf1 * q1 / scf);
+                    ModReduceInternalInPlace(ciphertext1, compositeDegree);
+                    if (c1lvl + 2 * compositeDegree < c2lvl) {
+                        LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 2 * compositeDegree);
+                    }
+                    ModReduceInternalInPlace(ciphertext1, compositeDegree);
                     ciphertext1->SetScalingFactor(ciphertext2->GetScalingFactor());
                 }
             }
@@ -564,13 +576,13 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
             }
             else {
                 double scf1 = ciphertext1->GetScalingFactor();
-                double scf2 = cryptoParams->GetScalingFactorRealBig(c2lvl - 1);
+                double scf2 = cryptoParams->GetScalingFactorRealBig(c2lvl - compositeDegree);
                 double scf  = cryptoParams->GetScalingFactorReal(c1lvl);
                 EvalMultCoreInPlace(ciphertext1, scf2 / scf1 / scf);
-                if (c1lvl + 1 < c2lvl) {
-                    LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 1);
+                if (c1lvl + compositeDegree < c2lvl) {
+                    LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - compositeDegree);
                 }
-                ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
+                ModReduceInternalInPlace(ciphertext1, compositeDegree);
                 ciphertext1->SetScalingFactor(ciphertext2->GetScalingFactor());
             }
         }
@@ -582,28 +594,34 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
                 double scf1 = ciphertext1->GetScalingFactor();
                 double scf  = cryptoParams->GetScalingFactorReal(c2lvl);
                 double q2   = cryptoParams->GetModReduceFactor(sizeQl2 - 1);
+                for (uint32_t j = 1; j < compositeDegree; j++) {
+                    q2 *= cryptoParams->GetModReduceFactor(sizeQl2 - j - 1);
+                }
                 EvalMultCoreInPlace(ciphertext2, scf1 / scf2 * q2 / scf);
-                ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
-                if (c2lvl + 1 < c1lvl) {
-                    LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 1);
+                ModReduceInternalInPlace(ciphertext2, compositeDegree);
+                if (c2lvl + compositeDegree < c1lvl) {
+                    LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - compositeDegree);
                 }
                 ciphertext2->SetScalingFactor(ciphertext1->GetScalingFactor());
             }
             else {
-                if (c2lvl + 1 == c1lvl) {
-                    ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
+                if (c2lvl + compositeDegree == c1lvl) {
+                    ModReduceInternalInPlace(ciphertext2, compositeDegree);
                 }
                 else {
                     double scf2 = ciphertext2->GetScalingFactor();
-                    double scf1 = cryptoParams->GetScalingFactorRealBig(c1lvl - 1);
+                    double scf1 = cryptoParams->GetScalingFactorRealBig(c1lvl - compositeDegree);
                     double scf  = cryptoParams->GetScalingFactorReal(c2lvl);
                     double q2   = cryptoParams->GetModReduceFactor(sizeQl2 - 1);
-                    EvalMultCoreInPlace(ciphertext2, scf1 / scf2 * q2 / scf);
-                    ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
-                    if (c2lvl + 2 < c1lvl) {
-                        LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 2);
+                    for (uint32_t j = 1; j < compositeDegree; j++) {
+                        q2 *= cryptoParams->GetModReduceFactor(sizeQl2 - j - 1);
                     }
-                    ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
+                    EvalMultCoreInPlace(ciphertext2, scf1 / scf2 * q2 / scf);
+                    ModReduceInternalInPlace(ciphertext2, compositeDegree);
+                    if (c2lvl + 2 * compositeDegree < c1lvl) {
+                        LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 2 * compositeDegree);
+                    }
+                    ModReduceInternalInPlace(ciphertext2, compositeDegree);
                     ciphertext2->SetScalingFactor(ciphertext1->GetScalingFactor());
                 }
             }
@@ -619,13 +637,13 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
             }
             else {
                 double scf2 = ciphertext2->GetScalingFactor();
-                double scf1 = cryptoParams->GetScalingFactorRealBig(c1lvl - 1);
+                double scf1 = cryptoParams->GetScalingFactorRealBig(c1lvl - compositeDegree);
                 double scf  = cryptoParams->GetScalingFactorReal(c2lvl);
                 EvalMultCoreInPlace(ciphertext2, scf1 / scf2 / scf);
-                if (c2lvl + 1 < c1lvl) {
-                    LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 1);
+                if (c2lvl + compositeDegree < c1lvl) {
+                    LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - compositeDegree);
                 }
-                ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
+                ModReduceInternalInPlace(ciphertext2, compositeDegree);
                 ciphertext2->SetScalingFactor(ciphertext1->GetScalingFactor());
             }
         }
@@ -645,8 +663,10 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& c
     AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
 
     if (ciphertext1->GetNoiseScaleDeg() == 2) {
-        ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
-        ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
+        const auto cryptoParams =
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
+        ModReduceInternalInPlace(ciphertext1, cryptoParams->GetCompositeDegree());
+        ModReduceInternalInPlace(ciphertext2, cryptoParams->GetCompositeDegree());
     }
 }
 

@@ -167,6 +167,11 @@ class Params {
     // COMPACT has stronger security assumption, thus more efficient
     COMPRESSION_LEVEL interactiveBootCompressionLevel;
 
+    // CKKS composite scaling parameters to support high-precision CKKS RNS with small word sizes
+    // Please refer to https://eprint.iacr.org/2023/1462.pdf for details
+    uint32_t compositeDegree;
+    uint32_t registerWordSize;
+
     void SetToDefaults(SCHEME scheme);
 
 protected:
@@ -247,7 +252,9 @@ public:
                 "statisticalSecurity",
                 "numAdversarialQueries",
                 "thresholdNumOfParties",
-                "interactiveBootCompressionLevel"};
+                "interactiveBootCompressionLevel",
+                "compositeDegree",
+                "registerWordSize"};
     }
 
     // getters
@@ -343,6 +350,12 @@ public:
     COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
         return interactiveBootCompressionLevel;
     }
+    uint32_t GetCompositeDegree() const {
+        return compositeDegree;
+    }
+    uint32_t GetRegisterWordSize() const {
+        return registerWordSize;
+    }
 
     // setters
     // They all must be virtual, so any of them can be disabled in the derived class
@@ -432,6 +445,12 @@ public:
     }
     virtual void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
         interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
+    }
+    virtual void SetCompositeDegree(uint32_t compositeDegree0) {
+        compositeDegree = compositeDegree0;
+    }
+    virtual void SetRegisterWordSize(uint32_t registerWordSize0) {
+        registerWordSize = registerWordSize0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

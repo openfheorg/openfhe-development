@@ -81,6 +81,8 @@ constexpr uint32_t statisticalSecurity                      = 30;
 constexpr uint32_t numAdversarialQueries                    = 1;
 constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
+constexpr uint32_t compositeDegree                          = 1;
+constexpr uint32_t registerWordSize                         = NATIVEINT;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -99,7 +101,7 @@ constexpr uint32_t multiplicativeDepth = 1;
 #if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr uint32_t scalingModSize = 60;
 #else
-constexpr uint32_t scalingModSize   = 57;
+constexpr uint32_t scalingModSize = 57;
 #endif
 constexpr SecurityLevel securityLevel                       = HEStd_128_classic;
 constexpr uint32_t ringDim                                  = 0;
@@ -118,6 +120,8 @@ constexpr uint32_t statisticalSecurity                      = 0;
 constexpr uint32_t numAdversarialQueries                    = 0;
 constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
+constexpr uint32_t compositeDegree                          = 1;
+constexpr uint32_t registerWordSize                         = NATIVEINT;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -151,6 +155,8 @@ constexpr uint32_t statisticalSecurity                      = 30;
 constexpr uint32_t numAdversarialQueries                    = 1;
 constexpr uint32_t thresholdNumOfParties                    = 1;
 constexpr COMPRESSION_LEVEL interactiveBootCompressionLevel = SLACK;
+constexpr uint32_t compositeDegree                          = 1;
+constexpr uint32_t registerWordSize                         = NATIVEINT;
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================

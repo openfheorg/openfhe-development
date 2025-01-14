@@ -76,6 +76,8 @@ namespace lbcrypto {
         SET_TO_SCHEME_DEFAULT(SCHEME, numAdversarialQueries);           \
         SET_TO_SCHEME_DEFAULT(SCHEME, thresholdNumOfParties);           \
         SET_TO_SCHEME_DEFAULT(SCHEME, interactiveBootCompressionLevel); \
+        SET_TO_SCHEME_DEFAULT(SCHEME, compositeDegree);                 \
+        SET_TO_SCHEME_DEFAULT(SCHEME, registerWordSize);                \
     }
 void Params::SetToDefaults(SCHEME scheme) {
     switch (scheme) {
@@ -163,6 +165,10 @@ Params::Params(const std::vector<std::string>& vals) {
         thresholdNumOfParties = static_cast<usint>(std::stoul(*it));
     if (!(++it)->empty())
         interactiveBootCompressionLevel = convertToCompressionLevel(*it);
+    if (!(++it)->empty())
+        compositeDegree = static_cast<usint>(std::stoul(*it));
+    if (!(++it)->empty())
+        registerWordSize = static_cast<usint>(std::stoul(*it));
 }
 //====================================================================================================================
 // clang-format off
@@ -196,7 +202,9 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; statisticalSecurity: " << obj.statisticalSecurity
         << "; numAdversarialQueries: " << obj.numAdversarialQueries
         << "; thresholdNumOfParties: " << obj.thresholdNumOfParties
-        << "; interactiveBootCompressionLevel: " << obj.interactiveBootCompressionLevel;
+        << "; interactiveBootCompressionLevel: " << obj.interactiveBootCompressionLevel
+        << "; compositeDegree: " << obj.compositeDegree
+        << "; registerWordSize: " << obj.registerWordSize;
 
     return os;
 }
