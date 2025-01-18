@@ -70,6 +70,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     // Determine appropriate composite degree automatically if scaling technique set to COMPOSITESCALINGAUTO
     cryptoParamsCKKSRNS->ConfigureCompositeDegree(firstModSize);
+  
     uint32_t compositeDegree  = cryptoParamsCKKSRNS->GetCompositeDegree();
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
 
@@ -116,6 +117,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     if (ksTech == HYBRID) {
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
                                                               numPrimes, auxBits, scalTech, compositeDegree, true);
+
         if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
             uint32_t tmpFactor = (cryptoParamsCKKSRNS->GetCompositeDegree() == 2) ? 2 : 4;
             qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
