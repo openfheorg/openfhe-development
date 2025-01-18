@@ -76,21 +76,18 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
         if (compositeDegree > 2 && scalingModSize < 55) {
             OPENFHE_THROW(
-                config_error,
                 "COMPOSITESCALING Warning: There will probably not be enough prime moduli for composite degree > 2 and scaling factor < 55, prime moduli too small. Prime moduli size must generally be greater than 22, especially for larger multiplicative depth. Try increasing the scaling factor (scalingModSize) or feel free to try it using COMPOSITESCALINGMANUAL at your own risk.");
         }
         else if (compositeDegree == 1 && registerWordSize < 64) {
             OPENFHE_THROW(
-                config_error,
                 "This COMPOSITESCALING* version does not support composite degree == 1 with register size < 64.");
         }
         else if (compositeDegree < 1) {
-            OPENFHE_THROW(config_error, "Composite degree must be greater than or equal to 1.");
+            OPENFHE_THROW("Composite degree must be greater than or equal to 1.");
         }
 
         if (registerWordSize < 24 && scalTech == COMPOSITESCALINGAUTO) {
             OPENFHE_THROW(
-                config_error,
                 "Register word size must be greater than or equal to 24 for COMPOSITESCALINGAUTO. Otherwise, try it with COMPOSITESCALINGMANUAL.");
         }
     }
@@ -120,7 +117,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
                                                               numPrimes, auxBits, scalTech, compositeDegree, true);
         if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-            uint32_t tmpFactor = (compositeDegree == 2) ? 2 : 4;
+            uint32_t tmpFactor = (cryptoParamsCKKSRNS->GetCompositeDegree() == 2) ? 2 : 4;
             qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
         }
         else {
@@ -290,7 +287,6 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                     }
                     catch (const OpenFHEException& ex) {
                         OPENFHE_THROW(
-                            config_error,
                             "COMPOSITE SCALING previous prime sampling error. Try increasing scaling factor (scalingModSize).");
                     }
                 } while (  // std::log2(qPrev[step].ConvertToDouble()) > qBitSize ||
@@ -309,7 +305,6 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                     }
                     catch (const OpenFHEException& ex) {
                         OPENFHE_THROW(
-                            config_error,
                             "COMPOSITE SCALING next prime sampling error. Try increasing scaling factor (scalingModSize).");
                     }
                 } while (std::log2(qNext[step].ConvertToDouble()) > registerWordSize ||
@@ -329,7 +324,6 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                         }
                         catch (const OpenFHEException& ex) {
                             OPENFHE_THROW(
-                                config_error,
                                 "COMPOSITE SCALING previous prime sampling error. Try increasing scaling factor (scalingModSize).");
                         }
                     } while (std::log2(qPrevNext.ConvertToDouble()) > registerWordSize ||
@@ -368,7 +362,6 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                         }
                         catch (const OpenFHEException& ex) {
                             OPENFHE_THROW(
-                                config_error,
                                 "COMPOSITE SCALING next prime sampling error. Try increasing scaling factor (scalingModSize).");
                         }
                     } while (  // std::log2(qNextPrev.ConvertToDouble()) > qBitSize ||
@@ -401,7 +394,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
     }  // if numPrimes > 1
 
     if (firstModSize == dcrtBits) {  // this requires dcrtBits < 60
-        OPENFHE_THROW(config_error, "firstModSize must be > scalingModSize.");
+        OPENFHE_THROW("firstModSize must be > scalingModSize.");
     }
     else {
         qBitSize = 0;

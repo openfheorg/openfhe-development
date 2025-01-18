@@ -54,8 +54,11 @@ template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     const CCParams<ContextGeneratorType>& parameters) {
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-    if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        OPENFHE_THROW("128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
+    if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
+        parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+        parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+        OPENFHE_THROW(
+            "128-bit CKKS is not supported for the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL methods.");
     }
 #endif
     using ParmType                   = typename Element::Params;
@@ -102,8 +105,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetMaxRelinSkDeg(),
         parameters.GetKeySwitchTechnique(),
         parameters.GetScalingTechnique(),
-        parameters.GetCompositeDegree(),
-        parameters.GetRegisterWordSize(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique(),
         parameters.GetPREMode(),
@@ -114,7 +115,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetStatisticalSecurity(),
         parameters.GetNumAdversarialQueries(),
         parameters.GetThresholdNumOfParties(),
-        parameters.GetInteractiveBootCompressionLevel());
+        parameters.GetInteractiveBootCompressionLevel(),
+        parameters.GetCompositeDegree(),
+        parameters.GetRegisterWordSize());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
