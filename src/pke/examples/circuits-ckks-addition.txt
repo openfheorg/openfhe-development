@@ -1,0 +1,34 @@
+---------------------------------- PHASE 1: NOISE ESTIMATION ----------------------------------
+circuit used during parameter/key generation = demoData/ckks-addition.tsv
+CKKS scheme is using ring dimension 8192
+
+
+Validating addition circuit
+Validation succeeded
+Before calling EstimateCircuit
+Validation succeeded
+Validation succeeded
+After calling EstimateCircuit
+Noise
+	12.8524
+---------------------------------- PHASE 2: EVALUATION ----------------------------------
+circuit used during parameter/key generation = demoData/ckks-addition.tsv
+Element Parameters: ILDCRTParams [m=16384 n=8192 q=4722366482869645115393 ru=0 bigq=0 bigru=0]
+  m_params:
+    0: ILParams [m=16384 n=8192 q=4722366482869645115393 ru=132383827643926519 bigq=0 bigru=0]
+
+
+Encoding Parameters: [p=61 rootP =0 bigP =0 rootBigP =0 g=0 L=4096]
+
+
+Running the following circuit: demoData/ckks-addition.tsv
+Validation succeeded
+Final output
+	[ (1000,0) (-1.12414e-08,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) ]
+Expected result
+	 [ (1000,0) (0,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) ]
+
+Running the following circuit: demoData/ckks-doubling.tsv
+Validation failed
+terminate called after throwing an instance of 'lbcrypto::OpenFHEException'
+  what():  git/openfhe-development/src/pke/include/cryptocontext.h:l.3815:EvaluateCircuit(): Could not evaluate the circuit as it does not match the application specifications.

@@ -106,18 +106,12 @@ void CKKSNoiseFloodingDemo() {
     std::cout << "Before calling EstimateCircuit" << std::endl;
 
     // We run the encrypted computation the first time.
-    auto noiseCiphertext =
-        cryptoContextNoiseEstimation->EstimateCircuit(circuitAddition, keyPairNoiseEstimation.publicKey);
+    auto noiseCiphertexts = cryptoContextNoiseEstimation->EstimateCircuits(keyPairNoiseEstimation.publicKey);
 
     std::cout << "After calling EstimateCircuit" << std::endl;
 
     // Decrypt  noise
-    Plaintext noisePlaintext;
-    cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext[0], &noisePlaintext);
-    double noiselow = noisePlaintext->GetLogError();
-    cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext[1], &noisePlaintext);
-    double noisehigh = noisePlaintext->GetLogError();
-    double noise     = std::max(noiselow, noisehigh);
+    double noise = cryptoContextNoiseEstimation->FindMaximumNoise(noiseCiphertexts, keyPairNoiseEstimation.secretKey);
     std::cout << "Noise \n\t" << noise << std::endl;
 
     // ----------------------- Setup second CryptoContext -----------------------------
@@ -146,6 +140,8 @@ void CKKSNoiseFloodingDemo() {
     // or vice versa, if we wish.
     auto cryptoContextEvaluation = GetCryptoContext(parametersEvaluation);
 
+    std::cerr << *cryptoContextEvaluation->GetCryptoParameters() << std::endl;
+
     // IMPORTANT: Generate new keys
     auto keyPairEvaluation = cryptoContextEvaluation->KeyGen();
 
@@ -154,11 +150,13 @@ void CKKSNoiseFloodingDemo() {
     Plaintext plaintext1              = cryptoContextEvaluation->MakeCKKSPackedPlaintext(vectorOfInts1);
 
     // Ciphertext for the addition circuit
-    uint32_t count = 45;
+    uint32_t count = 1000;
     std::vector<Ciphertext<DCRTPoly>> vecCtxt(count);
     for (size_t i = 0; i < count; i++) {
         vecCtxt[i] = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
     }
+
+    std::cerr << "\nRunning the following circuit: " << fileNameValidate << std::endl;
 
     // We run the encrypted computation the second time.
     auto ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitAddition, vecCtxt);
@@ -170,7 +168,30 @@ void CKKSNoiseFloodingDemo() {
     result->SetLength(vecSize);
     std::cout << "Final output \n\t" << result->GetCKKSPackedValue() << std::endl;
 
-    std::vector<std::complex<double>> expectedResult = {1.01, 1.04, 0, 0, 1.25, 0, 0, 1.64};
+    std::vector<std::complex<double>> expectedResult = {1000.0, 0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0};
+    std::cout << "Expected result\n\t " << expectedResult << std::endl;
+
+    fileNameValidate = DATAFOLDER + "/ckks-doubling.tsv";
+    fileValidate     = std::ifstream(fileNameValidate);
+    std::string circuitDoubling((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
+
+    // Ciphertext for the doubling circuit
+    count = 1;
+    std::vector<Ciphertext<DCRTPoly>> vecCtxt2(count);
+    for (size_t i = 0; i < count; i++) {
+        vecCtxt2[i] = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
+    }
+
+    std::cerr << "\nRunning the following circuit: " << fileNameValidate << std::endl;
+
+    // We run the encrypted computation the second time.
+    ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitDoubling, vecCtxt2);
+
+    // Decrypt final result
+    cryptoContextEvaluation->Decrypt(keyPairEvaluation.secretKey, ciphertextResult, &result);
+    result->SetLength(vecSize);
+    std::cout << "Final output \n\t" << result->GetCKKSPackedValue() << std::endl;
+
     std::cout << "Expected result\n\t " << expectedResult << std::endl;
 }
 
@@ -186,8 +207,7 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     * We must always use the same ring dimension in both iterations, so we set the security level to HEStd_NotSet,
     * and manually set the ring dimension.
     */
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 16);
+    parameters.SetRingDim(1 << 13);
 
     ScalingTechnique rescaleTech = FIXEDAUTO;
     usint dcrtBits               = 59;
@@ -201,13 +221,6 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
 
     std::ifstream file(fileName);
     circuits.push_back(std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()));
-
-    std::string fileName2 = DATAFOLDER + "/ckks-doubling.tsv";
-
-    std::cout << "circuit used during parameter/key generation = " << fileName2 << std::endl;
-
-    std::ifstream file2(fileName2);
-    circuits.push_back(std::string((std::istreambuf_iterator<char>(file2)), std::istreambuf_iterator<char>()));
 
     parameters.SetEvalCircuits(circuits);
 

@@ -1,0 +1,39 @@
+---------------------------------- PHASE 1: NOISE ESTIMATION ----------------------------------
+circuit used during parameter/key generation = demoData/ckks-addition.tsv
+circuit used during parameter/key generation = demoData/ckks-doubling.tsv
+CKKS scheme is using ring dimension 8192
+
+
+Validating adition circuit
+Validation succeeded
+Validation succeeded
+Validation succeeded
+Validation succeeded
+Validation succeeded
+Noise
+	17.8636
+---------------------------------- PHASE 2: EVALUATION ----------------------------------
+circuit used during parameter/key generation = demoData/ckks-addition.tsv
+circuit used during parameter/key generation = demoData/ckks-doubling.tsv
+Element Parameters: ILDCRTParams [m=16384 n=8192 q=11150372599265487291913707095945687064641537 ru=0 bigq=0 bigru=0]
+  m_params:
+    0: ILParams [m=16384 n=8192 q=151115727451828645937153 ru=8972316225803487303 bigq=0 bigru=0]
+    1: ILParams [m=16384 n=8192 q=73786976294839369729 ru=8889915667471819 bigq=0 bigru=0]
+
+
+Encoding Parameters: [p=66 rootP =0 bigP =0 rootBigP =0 g=0 L=4096]
+
+
+Running the following circuit: demoData/ckks-addition.tsv
+Validation succeeded
+Final output
+	[ (1000,0) (3.95812e-09,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) ]
+Expected result
+	 [ (1000,0) (0,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) ]
+
+Running the following circuit: demoData/ckks-doubling.tsv
+Validation succeeded
+Final output
+	[ (1000,0) (3.47932e-08,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) ]
+Expected result
+	 [ (1000,0) (0,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) (1000,0) ]

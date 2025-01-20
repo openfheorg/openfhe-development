@@ -92,9 +92,9 @@ void CKKSNoiseFloodingDemo() {
 
     // std::cout << "circuits" << cryptoParamsCKKS->GetCircuits() << std::endl;
 
-    std::cout << "\nValidating doubling circuit" << std::endl;
+    std::cout << "\nValidating addition circuit" << std::endl;
 
-    std::string fileNameValidate = DATAFOLDER + "/ckks-doubling.tsv";
+    std::string fileNameValidate = DATAFOLDER + "/ckks-addition.tsv";
     std::ifstream fileValidate(fileNameValidate);
     std::string circuitAddition((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
 
@@ -145,10 +145,17 @@ void CKKSNoiseFloodingDemo() {
     std::vector<double> vectorOfInts1 = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     Plaintext plaintext1              = cryptoContextEvaluation->MakeCKKSPackedPlaintext(vectorOfInts1);
 
-    auto ctxt = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
+    // Ciphertext for the addition circuit
+    uint32_t count = 1000;
+    std::vector<Ciphertext<DCRTPoly>> vecCtxt(count);
+    for (size_t i = 0; i < count; i++) {
+        vecCtxt[i] = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
+    }
+
+    std::cerr << "\nRunning the following circuit: " << fileNameValidate << std::endl;
 
     // We run the encrypted computation the second time.
-    auto ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitAddition, {ctxt});
+    auto ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitAddition, vecCtxt);
 
     // Decrypt final result
     Plaintext result;
@@ -157,7 +164,30 @@ void CKKSNoiseFloodingDemo() {
     result->SetLength(vecSize);
     std::cout << "Final output \n\t" << result->GetCKKSPackedValue() << std::endl;
 
-    std::vector<std::complex<double>> expectedResult = {1.01, 1.04, 0, 0, 1.25, 0, 0, 1.64};
+    std::vector<std::complex<double>> expectedResult = {1000.0, 0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0};
+    std::cout << "Expected result\n\t " << expectedResult << std::endl;
+
+    fileNameValidate = DATAFOLDER + "/ckks-doubling.tsv";
+    fileValidate     = std::ifstream(fileNameValidate);
+    std::string circuitDoubling((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
+
+    // Ciphertext for the doubling circuit
+    count = 1;
+    std::vector<Ciphertext<DCRTPoly>> vecCtxt2(count);
+    for (size_t i = 0; i < count; i++) {
+        vecCtxt2[i] = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
+    }
+
+    std::cerr << "\nRunning the following circuit: " << fileNameValidate << std::endl;
+
+    // We run the encrypted computation the second time.
+    ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitDoubling, vecCtxt2);
+
+    // Decrypt final result
+    cryptoContextEvaluation->Decrypt(keyPairEvaluation.secretKey, ciphertextResult, &result);
+    result->SetLength(vecSize);
+    std::cout << "Final output \n\t" << result->GetCKKSPackedValue() << std::endl;
+
     std::cout << "Expected result\n\t " << expectedResult << std::endl;
 }
 
@@ -174,7 +204,7 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     * and manually set the ring dimension.
     */
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 16);
+    parameters.SetRingDim(1 << 13);
 
     ScalingTechnique rescaleTech = FIXEDAUTO;
     usint dcrtBits               = 59;
@@ -203,7 +233,7 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     parameters.SetFirstModSize(firstMod);
 
     // In this example, we perform two multiplications and an addition.
-    parameters.SetMultiplicativeDepth(1);
+    parameters.SetMultiplicativeDepth(0);
 
     // Generate crypto context.
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

@@ -36,17 +36,36 @@ There is also an auxiliary method **EstimateCircuitBFV()** that estimates the no
 
 ## CKKS Examples
 
+Two circuits are considered: addition and doubling, just like in Section 3 of https://www.usenix.org/system/files/sec24summer-prepub-822-guo.pdf (USENIX'24). The addition circuit adds 999 randomly generated inputs.
+The doubling circuit adds the same ciphertext 999 times, i.e., it is equivalent to recursively doubling the input 10 times.
+
+* [Addition Circuit Example](src/pke/examples/circuits-ckks-addition.cpp) The parameters are set using the addition circuit.
+Then validation is performed for the addition circuit (passes). Finally, the program tries to execute
+both circuits. The evaluation for the addition circuit succeeds. The evaluation for the doubling circuit fails (throws an exception because validation fails). This example shows
+that the attack of https://www.usenix.org/system/files/sec24summer-prepub-822-guo.pdf is no longer possible because the circuits for addition and doubling are different, and have different noise growths.
+* [Doubling Circuit Example](src/pke/examples/circuits-ckks-doubling.cpp) The parameters are set using both the addition and doubling circuits (the maximum noise bound across both circuits is chosen).
+Then validation is performed for the addition circuit (passes). Finally, the program tries to execute
+both circuits. The evaluation for the addition circuit succeeds. The evaluation for the doubling circuit also succeeds.
+
+## Outputs of CKKS Examples
+
+* [Addition Circuit Example](src/pke/examples/circuits-ckks-addition.txt)
+* [Doubling Circuit Example](src/pke/examples/circuits-ckks-doubling.txt)
+
+Note that the noise estimate is 5 bits larger for the doubling case because the doubling
+circuit has worst-case growth, i.e., it increases the input noise by 1000 vs roughly 1000^(1/2) for the addition circuit.
+
 ## BFV Examples
 
-Two circuits considered: addition and doubling, just like in Section 3 of https://eprint.iacr.org/2024/127 (CCS'24). The addition circuit adds 45 randomly generated inputs.
+Two circuits are considered: addition and doubling, just like in Section 3 of https://eprint.iacr.org/2024/127 (CCS'24). The addition circuit adds 45 randomly generated inputs.
 The doubling circuit doubles the input ciphertext 44 times.
 
 * [Addition Circuit Example](src/pke/examples/circuits-addition.cpp) The parameters are set using the addition circuit.
-Then validation is performed for both addition (passed) and doubling (fails) circuits. Finally, the program tries to execute
+Then validation is performed for both addition (passes) and doubling (fails) circuits. Finally, the program tries to execute
 both circuits. The evaluation for the addition circuit succeeds. The evaluation for the doubling circuit fails (throws an exception). This example shows
 that the attack of https://eprint.iacr.org/2024/127 is no longer possible because the circuits for addition and doubling are different, and have different noise growths.
 * [Doubling Circuit Example](src/pke/examples/circuits-doubling.cpp) The parameters are set using the doubling circuit.
-Then validation is performed for both addition (passed) and doubling (passes) circuits. Finally, the program tries to execute
+Then validation is performed for both addition (passes) and doubling (passes) circuits. Finally, the program tries to execute
 both circuits. The evaluation for the addition circuit succeeds. The evaluation for the doubling circuit also succeeds.
 
 ## Outputs of BFV Examples
