@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Simple example for BFVrns (integer arithmetic)
+  Addition circuit example
  */
 
 #include "openfhe.h"

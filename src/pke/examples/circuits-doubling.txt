@@ -1,0 +1,36 @@
+circuit used during parameter/key generation = demoData/doubling.tsv
+using a circuit
+count = 45
+logq = 74.7627
+Crypto Parameters: Element Parameters: ILDCRTParams [m=16384 n=8192 q=1329227995784783648948129721038553089 ru=0 bigq=0 bigru=0]
+  m_params:
+    0: ILParams [m=16384 n=8192 q=1152921504606830593 ru=25959043411404 bigq=0 bigru=0]
+    1: ILParams [m=16384 n=8192 q=1152921504606748673 ru=100406242475323 bigq=0 bigru=0]
+
+
+Encoding Parameters: [p=65537 rootP =0 bigP =0 rootBigP =0 g=0 L=8192]
+
+
+Validating addition circuit
+count = 89
+Validation succeeded
+
+Validating doubling circuit
+count = 45
+Validation succeeded
+
+Evaluating addition circuit
+count = 89
+Validation succeeded
+
+Evaluating doubling circuit
+count = 45
+Validation succeeded
+
+Plaintext #1: ( 1 0 1 1 1 1 1 1 1 1 1 1 ... )
+
+Result of addition circuit
+44 additions mod t: ( 45 0 45 45 45 45 45 45 45 45 45 45 ... )
+
+Result of doubling circuit
+44 additions mod t: ( 4096 0 4096 4096 4096 4096 4096 4096 4096 4096 4096 4096 ... )
