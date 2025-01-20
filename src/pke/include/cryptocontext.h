@@ -3667,12 +3667,35 @@ public:
     static std::set<uint32_t> GetUniqueValues(const std::set<uint32_t>& oldValues, const std::set<uint32_t>& newValues);
 
     bool ValidateCircuit(const std::string& circuit) const {
-        auto circuitParams = EstimateCircuitBFV(params, GetElementParams()->GetParams()[0]->GetModulus().GetMSB(),
-                                                GetRingDimension(), circuit);
+        bool validateFlag = false;
 
-        double logQReal = static_cast<double>(GetModulus().GetMSB());
+        switch (m_schemeId) {
+            case SCHEME::CKKSRNS_SCHEME: {
+                const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(params);
+                auto circuits               = cryptoParamsCKKS->GetCircuits();
+                // Using std::find
+                auto it = std::find(circuits.begin(), circuits.end(), circuit);
 
-        if (circuitParams.logq < logQReal) {
+                validateFlag = it != circuits.end() ? true : false;
+
+                break;
+            }
+            case SCHEME::BFVRNS_SCHEME: {
+                auto circuitParams = EstimateCircuitBFV(
+                    params, GetElementParams()->GetParams()[0]->GetModulus().GetMSB(), GetRingDimension(), circuit);
+                double logQReal = static_cast<double>(GetModulus().GetMSB());
+                validateFlag    = circuitParams.logq < logQReal ? true : false;
+                break;
+            }
+            case SCHEME::BGVRNS_SCHEME:
+                std::cerr << "Unsupported scheme" << std::endl;
+                break;
+            case SCHEME::INVALID_SCHEME:
+                std::cerr << "Invalid scheme" << std::endl;
+                break;
+        }
+
+        if (validateFlag) {
             std::cout << "Validation succeeded" << std::endl;
             return true;
         }

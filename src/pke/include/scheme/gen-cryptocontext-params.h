@@ -168,7 +168,7 @@ class Params {
     COMPRESSION_LEVEL interactiveBootCompressionLevel;
 
     // Circuit description
-    std::string evalCircuit;
+    std::vector<std::string> evalCircuits;
 
     void SetToDefaults(SCHEME scheme);
 
@@ -347,8 +347,11 @@ public:
     COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
         return interactiveBootCompressionLevel;
     }
-    const std::string& GetEvalCircuit() const {
-        return evalCircuit;
+    const std::vector<std::string>& GetEvalCircuits() const {
+        return evalCircuits;
+    }
+    const std::string GetEvalCircuit() const {
+        return (evalCircuits.size() == 1) ? evalCircuits[0] : std::string();
     }
 
     // setters
@@ -441,7 +444,10 @@ public:
         interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
     }
     virtual void SetEvalCircuit(std::string circuit) {
-        evalCircuit = circuit;
+        evalCircuits = std::vector<std::string>(1, circuit);
+    }
+    virtual void SetEvalCircuits(std::vector<std::string> circuits) {
+        evalCircuits = circuits;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

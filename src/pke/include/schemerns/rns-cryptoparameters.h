@@ -106,7 +106,8 @@ protected:
                         MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
                         ExecutionMode executionMode                           = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                        const std::vector<std::string>& circuits              = std::vector<std::string>())
         : CryptoParametersRLWE<DCRTPoly>(
               std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
               distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,
@@ -116,6 +117,7 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_circuits                            = circuits;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -128,7 +130,8 @@ protected:
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
                         uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                        const std::vector<std::string>& circuits              = std::vector<std::string>())
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
                                          PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
@@ -138,6 +141,7 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_circuits                            = circuits;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -198,7 +202,8 @@ public:
                m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
                m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
                m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
-               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode();
+               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode() &&
+               m_circuits == el->GetCircuits();
     }
 
     void PrintParameters(std::ostream& os) const override {
@@ -1348,6 +1353,10 @@ public:
         return m_MPIntBootCiphertextCompressionLevel;
     }
 
+    std::vector<std::string> GetCircuits() const {
+        return m_circuits;
+    }
+
 protected:
     /////////////////////////////////////
     // PrecomputeCRTTables
@@ -1775,6 +1784,8 @@ protected:
     /////////////////////////////////////
     COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
 
+    std::vector<std::string> m_circuits;
+
 public:
     /////////////////////////////////////
     // SERIALIZATION
@@ -1791,6 +1802,7 @@ public:
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
         ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
+        ar(cereal::make_nvp("cts", m_circuits));
     }
 
     template <class Archive>
@@ -1808,6 +1820,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("cts", m_circuits));
         // try-catch is used for backwards compatibility down to 1.0.x
         // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0
         try {

@@ -37,6 +37,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -60,11 +61,12 @@ public:
                             MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
                             ExecutionMode executionMode                           = EXEC_EVALUATION,
                             DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
-                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                            const std::vector<std::string>& circuits              = std::vector<std::string>())
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
-                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {
-    }
+                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel,
+                              circuits) {}
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
@@ -77,11 +79,13 @@ public:
                             DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                             PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                             uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
-                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                            const std::vector<std::string>& circuits              = std::vector<std::string>())
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
                               multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
-                              numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel) {}
+                              numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel,
+                              circuits) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 

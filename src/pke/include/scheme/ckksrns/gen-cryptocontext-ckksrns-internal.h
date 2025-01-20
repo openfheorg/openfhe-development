@@ -112,7 +112,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetStatisticalSecurity(),
         parameters.GetNumAdversarialQueries(),
         parameters.GetThresholdNumOfParties(),
-        parameters.GetInteractiveBootCompressionLevel());
+        parameters.GetInteractiveBootCompressionLevel(),
+        parameters.GetEvalCircuits());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
