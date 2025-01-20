@@ -3705,6 +3705,81 @@ public:
         }
     }
 
+    std::vector<Ciphertext<DCRTPoly>> EstimateCircuits(const PublicKey<DCRTPoly> publicKey) {
+        std::vector<Ciphertext<DCRTPoly>> result;
+        const auto cryptoParamsCKKS       = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(params);
+        std::vector<std::string> circuits = cryptoParamsCKKS->GetCircuits();
+        for (size_t i = 0; i < circuits.size(); i++) {
+            auto vec = EstimateCircuit(circuits[i], publicKey);
+            for (size_t j = 0; j < vec.size(); j++) {
+                result.push_back(vec[j]);
+            }
+        }
+        return result;
+    }
+
+    std::vector<Ciphertext<DCRTPoly>> EstimateCircuit(const std::string& circuit, const PublicKey<DCRTPoly> publicKey) {
+        std::vector<Ciphertext<DCRTPoly>> result;
+
+        std::istringstream f(circuit);
+        std::string line;
+
+        std::vector<Ciphertext<DCRTPoly>> vecCircuit;
+        std::string temp;
+
+        size_t count = count_lines(circuit);
+
+        size_t counter = 0;
+
+        // evaluate the circuit for low values of the range
+        while (counter < count) {
+            Line circuitLine;
+            std::getline(f, temp, '\t');
+            circuitLine.id = std::stoi(temp);
+            std::getline(f, circuitLine.operation, '\t');
+            std::getline(f, temp, '\t');
+            circuitLine.low = std::stod(temp);
+            std::getline(f, temp);
+            circuitLine.high = std::stod(temp);
+            if (circuitLine.operation == "input") {
+                std::vector<double> vec1(GetRingDimension() / 2, circuitLine.low);
+                Plaintext ptxt1            = MakeCKKSPackedPlaintext(vec1);
+                Ciphertext<DCRTPoly> ciph1 = Encrypt(publicKey, ptxt1);
+                vecCircuit.push_back(ciph1);
+            }
+            counter++;
+        }
+
+        result.push_back(EvaluateCircuit(circuit, vecCircuit));
+
+        vecCircuit.clear();
+        counter = 0;
+        f       = std::istringstream(circuit);
+
+        // evaluate the circuit for high values of the range
+        while (counter < count) {
+            Line circuitLine;
+            std::getline(f, temp, '\t');
+            circuitLine.id = std::stoi(temp);
+            std::getline(f, circuitLine.operation, '\t');
+            std::getline(f, temp, '\t');
+            circuitLine.low = std::stod(temp);
+            std::getline(f, temp);
+            circuitLine.high = std::stod(temp);
+            if (circuitLine.operation == "input") {
+                std::vector<double> vec1(GetRingDimension() / 2, circuitLine.high);
+                Plaintext ptxt1            = MakeCKKSPackedPlaintext(vec1);
+                Ciphertext<DCRTPoly> ciph1 = Encrypt(publicKey, ptxt1);
+                vecCircuit.push_back(ciph1);
+            }
+            counter++;
+        }
+
+        result.push_back(EvaluateCircuit(circuit, vecCircuit));
+
+        return result;
+    }
+
     Ciphertext<DCRTPoly> EvaluateCircuit(const std::string& circuit,
                                          const std::vector<Ciphertext<Element>>& vec) const {
         if (ValidateCircuit(circuit)) {
@@ -3737,8 +3812,22 @@ public:
             return vecCircuit[count - 1];
         }
         else {
+            OPENFHE_THROW("Could not evaluate the circuit as it does not match the application specifications.");
             return nullptr;
         }
+    }
+
+    double FindMaximumNoise(const std::vector<Ciphertext<Element>>& vec, const PrivateKey<DCRTPoly> privateKey) {
+        double noiseMax = 0.0;
+        for (size_t i = 0; i < vec.size(); i++) {
+            Plaintext noisePlaintext;
+            Decrypt(privateKey, vec[i], &noisePlaintext);
+            double noise = noisePlaintext->GetLogError();
+            if (noise > noiseMax) {
+                noiseMax = noise;
+            }
+        }
+        return noiseMax;
     }
 
     template <class Archive>

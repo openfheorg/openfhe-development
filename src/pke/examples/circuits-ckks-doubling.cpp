@@ -92,9 +92,9 @@ void CKKSNoiseFloodingDemo() {
 
     // std::cout << "circuits" << cryptoParamsCKKS->GetCircuits() << std::endl;
 
-    std::cout << "\nValidating addition circuit" << std::endl;
+    std::cout << "\nValidating doubling circuit" << std::endl;
 
-    std::string fileNameValidate = DATAFOLDER + "/ckks-addition.tsv";
+    std::string fileNameValidate = DATAFOLDER + "/ckks-doubling.tsv";
     std::ifstream fileValidate(fileNameValidate);
     std::string circuitAddition((std::istreambuf_iterator<char>(fileValidate)), std::istreambuf_iterator<char>());
 
@@ -103,21 +103,11 @@ void CKKSNoiseFloodingDemo() {
     // Key Generation
     auto keyPairNoiseEstimation = cryptoContextNoiseEstimation->KeyGen();
 
-    std::cout << "Before calling EstimateCircuit" << std::endl;
-
     // We run the encrypted computation the first time.
-    auto noiseCiphertext =
-        cryptoContextNoiseEstimation->EstimateCircuit(circuitAddition, keyPairNoiseEstimation.publicKey);
-
-    std::cout << "After calling EstimateCircuit" << std::endl;
+    auto noiseCiphertexts = cryptoContextNoiseEstimation->EstimateCircuits(keyPairNoiseEstimation.publicKey);
 
     // Decrypt  noise
-    Plaintext noisePlaintext;
-    cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext[0], &noisePlaintext);
-    double noiselow = noisePlaintext->GetLogError();
-    cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext[1], &noisePlaintext);
-    double noisehigh = noisePlaintext->GetLogError();
-    double noise     = std::max(noiselow, noisehigh);
+    double noise = cryptoContextNoiseEstimation->FindMaximumNoise(noiseCiphertexts, keyPairNoiseEstimation.secretKey);
     std::cout << "Noise \n\t" << noise << std::endl;
 
     // ----------------------- Setup second CryptoContext -----------------------------
@@ -146,6 +136,8 @@ void CKKSNoiseFloodingDemo() {
     // or vice versa, if we wish.
     auto cryptoContextEvaluation = GetCryptoContext(parametersEvaluation);
 
+    std::cerr << *cryptoContextEvaluation->GetCryptoParameters() << std::endl;
+
     // IMPORTANT: Generate new keys
     auto keyPairEvaluation = cryptoContextEvaluation->KeyGen();
 
@@ -153,15 +145,10 @@ void CKKSNoiseFloodingDemo() {
     std::vector<double> vectorOfInts1 = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     Plaintext plaintext1              = cryptoContextEvaluation->MakeCKKSPackedPlaintext(vectorOfInts1);
 
-    // Ciphertext for the addition circuit
-    uint32_t count = 45;
-    std::vector<Ciphertext<DCRTPoly>> vecCtxt(count);
-    for (size_t i = 0; i < count; i++) {
-        vecCtxt[i] = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
-    }
+    auto ctxt = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);
 
     // We run the encrypted computation the second time.
-    auto ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitAddition, vecCtxt);
+    auto ciphertextResult = cryptoContextEvaluation->EvaluateCircuit(circuitAddition, {ctxt});
 
     // Decrypt final result
     Plaintext result;
@@ -216,7 +203,7 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     parameters.SetFirstModSize(firstMod);
 
     // In this example, we perform two multiplications and an addition.
-    parameters.SetMultiplicativeDepth(0);
+    parameters.SetMultiplicativeDepth(1);
 
     // Generate crypto context.
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
