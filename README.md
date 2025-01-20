@@ -42,7 +42,7 @@ There is also an auxiliary method **EstimateCircuitBFV()** that estimates the no
 
 ## CKKS Examples
 
-Two circuits are considered: addition and doubling, just like in Section 3 of https://www.usenix.org/system/files/sec24summer-prepub-822-guo.pdf (USENIX'24). The addition circuit adds 999 randomly generated inputs.
+Two circuits are considered: addition and doubling, just like in Section 3 of https://www.usenix.org/system/files/sec24summer-prepub-822-guo.pdf (USENIX'24). The addition circuit adds 1000 randomly generated inputs.
 The doubling circuit adds the same ciphertext 999 times, i.e., it is equivalent to recursively doubling the input 10 times.
 
 * [Addition Circuit Example](src/pke/examples/circuits-ckks-addition.cpp) The parameters are set using the addition circuit.
