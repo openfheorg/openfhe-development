@@ -15,6 +15,12 @@ Or refer to the following for your specific operating system:
 
 - [Windows](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/windows.html)
 
+Note that the CKKS examples require compiling OpenFHE using
+
+```
+cmake -DNATIVE_SIZE=128 ..
+```
+
 ## API Extensions
 
 The PoC extends the OpenFHE API with the following AAHE-related methods.
