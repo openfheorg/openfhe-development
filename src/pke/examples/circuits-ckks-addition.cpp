@@ -150,7 +150,7 @@ void CKKSNoiseFloodingDemo() {
     Plaintext plaintext1              = cryptoContextEvaluation->MakeCKKSPackedPlaintext(vectorOfInts1);
 
     // Ciphertext for the addition circuit
-    uint32_t count = 1000;
+    size_t count = count_lines(circuitAddition);
     std::vector<Ciphertext<DCRTPoly>> vecCtxt(count);
     for (size_t i = 0; i < count; i++) {
         vecCtxt[i] = cryptoContextEvaluation->Encrypt(keyPairEvaluation.publicKey, plaintext1);

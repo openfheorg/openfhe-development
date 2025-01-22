@@ -96,7 +96,7 @@ int main() {
     Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
     // Ciphertext for the addition circuit
-    uint32_t count = 45;
+    size_t count = count_lines(circuitAddition);
     std::vector<Ciphertext<DCRTPoly>> vecCtxt(count);
     for (size_t i = 0; i < count; i++) {
         vecCtxt[i] = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);

@@ -38,7 +38,7 @@ Ultilities for AAHE circuits
 namespace lbcrypto {
 
 int count_lines(const std::string& s) {
-    return std::accumulate(s.cbegin(), s.cend(), 1, [](int prev, char c) { return c != '\n' ? prev : prev + 1; });
+    return std::accumulate(s.cbegin(), s.cend(), 0, [](int prev, char c) { return c != '\n' ? prev : prev + 1; });
 }
 
 LatticeParamsCircuit EstimateCircuitBFV(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, size_t dcrtBits,
