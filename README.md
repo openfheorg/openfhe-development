@@ -15,7 +15,7 @@ cmake -DNATIVE_SIZE=128 ..
 
 As part of the cmake build, OpenFHE will download the git submodules. We will need these for the anonymous repository (as "git clone" is not supported by https://anonymous.4open.science/). 
 
-2. Download the [zip](https://anonymous.4open.science/api/repo/openfhe-development-0EE7/zip) file for this repository.
+2. Download the <a href="https://anonymous.4open.science/api/repo/openfhe-development-0EE7/zip" target="_blank">zip</a> file for this repository.
 
 3. Extract the zip file to a temporary directory, and copy the **src** and **demoData** folders to the repository where OpenFHE was cloned (this will overwrite these folders and files inside them).
 
