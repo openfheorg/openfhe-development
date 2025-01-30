@@ -103,6 +103,29 @@ public:
 
     void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
 
+    // We do not need to support LeveledSHEBFVRNS::Eval*Mutable(InPlace) as no automated adjustment of ciphertexts is
+    // typically done in BFV. These functions throw an exception if called
+    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                         Ciphertext<DCRTPoly>& ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2,
+                                         const EvalKey<DCRTPoly> evalKey) const override;
+    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2,
+                                const EvalKey<DCRTPoly> evalKey) const override;
+    void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+
+    Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                        Ciphertext<DCRTPoly>& ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    virtual void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    virtual void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+
+    Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                        Ciphertext<DCRTPoly>& ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+
     /////////////////////////////////////
     // AUTOMORPHISM
     /////////////////////////////////////
