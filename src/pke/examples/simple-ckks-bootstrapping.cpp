@@ -140,7 +140,7 @@ void SimpleBootstrapExample() {
 
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
-    auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
+    auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph,1,0,1);
 
     std::cout << "Number of levels remaining after bootstrapping: "
               << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl

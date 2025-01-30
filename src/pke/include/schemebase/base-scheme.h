@@ -1402,9 +1402,9 @@ public:
     }
 
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
-                                      uint32_t precision = 0) const {
+                                      uint32_t precision = 0, uint32_t targetLevel = 0) const {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalBootstrap(ciphertext, numIterations, precision);
+        return m_FHE->EvalBootstrap(ciphertext, numIterations, precision, targetLevel);
     }
 
     // SCHEMESWITCHING methods

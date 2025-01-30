@@ -151,7 +151,7 @@ public:
     void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots) override;
 
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
-                                       uint32_t precision) const override;
+                                       uint32_t precision, uint32_t targetLevel = 0) const override;
 
     //------------------------------------------------------------------------------
     // Precomputations for CoeffsToSlots and SlotsToCoeffs
@@ -239,7 +239,7 @@ private:
                                        const CryptoContextImpl<DCRTPoly>& cc);
     static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
-    void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
+    void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction, uint32_t targetLevel) const;
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
@@ -257,6 +257,8 @@ private:
 
     Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                    const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const;
+
+    Ciphertext<DCRTPoly> MorphPlaintext(ConstPlaintext plaintext, ConstCiphertext<DCRTPoly> ciphertext) const;
 
     /**
    * Set modulus and recalculates the vector values to fit the modulus

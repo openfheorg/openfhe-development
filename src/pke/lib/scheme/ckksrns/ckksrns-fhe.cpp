@@ -338,7 +338,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
-                                               uint32_t precision) const {
+                                               uint32_t precision, uint32_t targetLevel) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -372,10 +372,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         Ciphertext<DCRTPoly> ctScaledUp = ciphertext->Clone();
         // We multiply by powerOfTwoModulus, and leave the last CRT value to be 0 (mod powerOfTwoModulus).
         cc->GetScheme()->MultByIntegerInPlace(ctScaledUp, powerOfTwoModulus);
-        ctScaledUp->SetLevel(L0 - ctScaledUp->GetElements()[0].GetNumOfElements());
+        ctScaledUp->SetLevel(L0 - targetLevel - ctScaledUp->GetElements()[0].GetNumOfElements());
 
         // Step 3: Bootstrap the initial ciphertext.
-        auto ctInitialBootstrap = cc->EvalBootstrap(ciphertext, numIterations - 1, precision);
+        auto ctInitialBootstrap = cc->EvalBootstrap(ciphertext, numIterations - 1, precision, targetLevel);
         cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap, BASE_NUM_LEVELS_TO_DROP);
 
         // Step 4: Scale up by powerOfTwoModulus.
@@ -393,13 +393,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         for (auto& cv : ctBootstrappedScaledDown->GetElements()) {
             cv.DropLastElements(bootstrappingSizeQ - initSizeQ);
         }
-        ctBootstrappedScaledDown->SetLevel(L0 - ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements());
+        ctBootstrappedScaledDown->SetLevel(L0 - targetLevel - ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements());
 
         // Step 6 and 7: Calculate the bootstrapping error by subtracting the original ciphertext from the bootstrapped ciphertext. Mod down to q is done implicitly.
         auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
 
         // Step 8: Bootstrap the error.
-        auto ctBootstrappedError = cc->EvalBootstrap(ctBootstrappingError, 1, 0);
+        auto ctBootstrappedError = cc->EvalBootstrap(ctBootstrappingError, 1, 0, targetLevel);
         cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, BASE_NUM_LEVELS_TO_DROP);
 
         // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
@@ -424,18 +424,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     auto elementParamsRaised = *(cryptoParams->GetElementParams());
 
-    // For FLEXIBLEAUTOEXT we raised ciphertext does not include extra modulus
+    // For FLEXIBLEAUTOEXT the raised ciphertext does not include extra modulus
     // as it is multiplied by auxiliary plaintext
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         elementParamsRaised.PopLastParam();
     }
 
     auto paramsQ = elementParamsRaised.GetParams();
-    usint sizeQ  = paramsQ.size();
+    // sint sizeQ  = paramsQ.size();
+    uint32_t targetSizeQ = paramsQ.size() - targetLevel;
 
-    std::vector<NativeInteger> moduli(sizeQ);
-    std::vector<NativeInteger> roots(sizeQ);
-    for (size_t i = 0; i < sizeQ; i++) {
+    std::vector<NativeInteger> moduli(targetSizeQ);
+    std::vector<NativeInteger> roots(targetSizeQ);
+    for (size_t i = 0; i < targetSizeQ; i++) {
         moduli[i] = paramsQ[i]->GetModulus();
         roots[i]  = paramsQ[i]->GetRootOfUnity();
     }
@@ -474,7 +475,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto algo                   = cc->GetScheme();
     algo->ModReduceInternalInPlace(raised, raised->GetNoiseScaleDeg() - 1);
 
-    AdjustCiphertext(raised, correction);
+    AdjustCiphertext(raised, correction, targetLevel);
     auto ctxtDCRT = raised->GetElements();
 
     // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
@@ -2073,7 +2074,7 @@ uint32_t FHECKKSRNS::GetModDepthInternal(SecretKeyDist secretKeyDist) {
     }
 }
 
-void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
+void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction, uint32_t targetTower) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     auto cc   = ciphertext->GetCryptoContext();
@@ -2081,7 +2082,7 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
 
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
-        double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
+        double targetSF    = cryptoParams->GetScalingFactorReal(lvl + targetTower);
         double sourceSF    = ciphertext->GetScalingFactor();
         uint32_t numTowers = ciphertext->GetElements()[0].GetNumOfElements();
         double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
@@ -2438,12 +2439,44 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
     Ciphertext<DCRTPoly> result = ciphertext->Clone();
     std::vector<DCRTPoly>& cv   = result->GetElements();
 
+    const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+
+    // number of towers in the current ciphertext
+    const std::shared_ptr<ParmType> paramsQlP = cv[0].GetParams();
+    size_t sizeQlP = paramsQlP->GetParams().size();
+
+    // number of towers used for hybrid key switching
+    const std::shared_ptr<ParmType> paramsP   = cryptoParams->GetParamsP();
+    size_t sizeP = paramsP->GetParams().size();
+
+    // number of towers in the ciphertext before being extended
+    size_t sizeQl = sizeQlP - sizeP;
+
     DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    // number of towers in the plaintext
+    const std::shared_ptr<ParmType> paramsPtxtQlP = pt.GetParams();
+    size_t sizePtxtQlP = paramsPtxtQlP->GetParams().size();
+
+    // number of towers in the plaintext before being extended
+    size_t sizePtxtQl = sizePtxtQlP - sizeP;
+
     pt.SetFormat(Format::EVALUATION);
 
-    for (auto& c : cv) {
-        c *= pt;
+    for (uint32_t j = 0; j < cv.size(); j++) {
+        DCRTPoly& cj = cv[j];
+
+        for (uint32_t i = 0; i < sizeQl; i++) {
+            const auto& cji = cj.GetElementAtIndex(i);
+            const auto& pi  = pt.GetElementAtIndex(i);
+            cj.SetElementAtIndex(i, cji * pi);
+        }
+        for (usint i = sizeQl, idx = sizePtxtQl; i < sizeQlP; i++, idx++) {
+            const auto& cji = cj.GetElementAtIndex(i);
+            const auto& pi  = pt.GetElementAtIndex(idx);
+            cj.SetElementAtIndex(i, cji * pi);
+        }
     }
+
     result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
     result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
     return result;

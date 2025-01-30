@@ -3333,11 +3333,12 @@ public:
    * @param numIterations number of iterations to run iterative bootstrapping (Meta-BTS). Increasing the iterations increases the precision of bootstrapping.
    * @param precision precision of initial bootstrapping algorithm. This value is
    * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and precision = 0 (unused).
+   * @param targetLevel desired level for the output ciphertext; 0 implies the maximum number of levels are available after bootstrapping (default).
    * @return the refreshed ciphertext.
    */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
-                                      uint32_t precision = 0) const {
-        return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
+                                      uint32_t precision = 0, uint32_t targetLevel = 0) const {
+        return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision, targetLevel);
     }
 
     //------------------------------------------------------------------------------
