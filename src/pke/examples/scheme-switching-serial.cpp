@@ -62,18 +62,6 @@ using namespace lbcrypto;
 
 // Save-Load locations for keys
 const std::string DATAFOLDER      = "demoData";
-std::string ccLocation            = "/cryptocontext.txt";     // cc
-std::string pubKeyLocation        = "/key_pub.txt";           // Pub key
-std::string multKeyLocation       = "/key_mult.txt";          // relinearization key
-std::string rotKeyLocation        = "/key_rot.txt";           // automorphism / rotation key
-std::string paramssLocation       = "/paramss.txt";           // cc
-std::string binccLocation         = "/bincryptocontext.txt";  // binfhe cc
-std::string btRkLocation          = "/bt_rk.txt";             // binfhe bootstrapping refreshing key
-std::string btSwkLocation         = "/bt_swk.txt";            // binfhe bootstrapping rotation key
-std::string FHEWtoCKKSKeyLocation = "/key_swkFC.txt";         // switching key from FHEW to CKKS
-
-// Save-load locations for RAW ciphertexts
-std::string cipherLocation = "/ciphertext.txt";
 
 // Save-load locations for evaluated ciphertext
 std::string cipherArgminLocation = "/ciphertextArgmin.txt";
