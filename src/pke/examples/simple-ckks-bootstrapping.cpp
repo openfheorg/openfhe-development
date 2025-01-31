@@ -48,6 +48,9 @@ int main(int argc, char* argv[]) {
 }
 
 void SimpleBootstrapExample() {
+    TimeVar t;
+    double timeEval;
+
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
@@ -69,7 +72,7 @@ void SimpleBootstrapExample() {
     * you do not need to set the ring dimension.
     */
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 12);
+    parameters.SetRingDim(1 << 16);
 
     /*  A3) Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values
@@ -99,7 +102,7 @@ void SimpleBootstrapExample() {
     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping 
+    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
     uint32_t levelsAvailableAfterBootstrap = 10;
@@ -138,9 +141,12 @@ void SimpleBootstrapExample() {
 
     std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
 
+    TIC(t);
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
+    timeEval             = TOC(t);
+    std::cerr << "Bootstrapping time: " << timeEval << std::endl;
 
     std::cout << "Number of levels remaining after bootstrapping: "
               << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl

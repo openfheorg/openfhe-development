@@ -243,6 +243,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
         resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         if ((addFirst) || (k > 0)) {
             auto cMult = cv[k].TimesNoCheck(cryptoParams->GetPModq());
+#pragma omp parallel for
             for (usint i = 0; i < sizeQl; i++) {
                 resultElements[k].SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
             }
@@ -458,6 +459,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
         const DCRTPoly& bj = bv[j];
         const DCRTPoly& aj = av[j];
 
+#pragma omp parallel for
         for (usint i = 0; i < sizeQl; i++) {
             const auto& cji = cj.GetElementAtIndex(i);
             const auto& aji = aj.GetElementAtIndex(i);
@@ -466,10 +468,12 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
             cTilda0.SetElementAtIndex(i, cTilda0.GetElementAtIndex(i) + cji * bji);
             cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
         }
-        for (usint i = sizeQl, idx = sizeQ; i < sizeQlP; i++, idx++) {
+        uint32_t delta = sizeQ - sizeQl;
+#pragma omp parallel for
+        for (usint i = sizeQl; i < sizeQlP; i++) {
             const auto& cji = cj.GetElementAtIndex(i);
-            const auto& aji = aj.GetElementAtIndex(idx);
-            const auto& bji = bj.GetElementAtIndex(idx);
+            const auto& aji = aj.GetElementAtIndex(i + delta);
+            const auto& bji = bj.GetElementAtIndex(i + delta);
 
             cTilda0.SetElementAtIndex(i, cTilda0.GetElementAtIndex(i) + cji * bji);
             cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
