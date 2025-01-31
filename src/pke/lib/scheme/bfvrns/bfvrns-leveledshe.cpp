@@ -963,4 +963,57 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly> cipher
     return result;
 }
 
+// We do not need to support LeveledSHEBFVRNS::EvalMultMutable(InPlace) as no automated adjustment of ciphertexts is
+// typically done in BFV.
+static const std::string EVAL_MUTABLE_ERROR{
+    "The mutable features are not supported in the BFV scheme. Please use a non-mutable version of this function"
+};
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                                       Ciphertext<DCRTPoly>& ciphertext2) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                                       Ciphertext<DCRTPoly>& ciphertext2,
+                                                       const EvalKey<DCRTPoly> evalKey) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+void LeveledSHEBFVRNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2,
+                                              const EvalKey<DCRTPoly> evalKey) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+void LeveledSHEBFVRNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                                      Ciphertext<DCRTPoly>& ciphertext2) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+                                                      }
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+void LeveledSHEBFVRNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                             Ciphertext<DCRTPoly>& ciphertext2) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+void LeveledSHEBFVRNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                                      Ciphertext<DCRTPoly>& ciphertext2) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+void LeveledSHEBFVRNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                             Ciphertext<DCRTPoly>& ciphertext2) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+void LeveledSHEBFVRNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+    OPENFHE_THROW(EVAL_MUTABLE_ERROR);
+}
+
 }  // namespace lbcrypto
