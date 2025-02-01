@@ -63,12 +63,14 @@ public:
 
     virtual ~CryptoParametersBase() = default;
 
+    // NOTE: some getters and setters are declared "virtual" as they should be overriden and disabled in
+    // some scheme-specific parameter classes derived from CryptoParametersBase
     /**
    * Returns the value of plaintext modulus p
    *
    * @return the plaintext modulus.
    */
-    PlaintextModulus GetPlaintextModulus() const {
+    virtual PlaintextModulus GetPlaintextModulus() const {
         return m_encodingParams->GetPlaintextModulus();
     }
 
@@ -79,6 +81,10 @@ public:
    */
     const std::shared_ptr<typename Element::Params> GetElementParams() const {
         return m_params;
+    }
+
+    uint32_t GetRingDimension() const {
+        return m_params->GetRingDimension();
     }
 
     virtual const std::shared_ptr<typename Element::Params> GetParamsPK() const = 0;
@@ -201,7 +207,7 @@ protected:
     * @return whether the two CryptoParametersBase objects are equivalent.
     */
     virtual bool CompareTo(const CryptoParametersBase<Element>& rhs) const {
-        return (*m_encodingParams == *(rhs.GetEncodingParams()) && *m_params == *(rhs.GetElementParams()));
+        return (*m_encodingParams == *(rhs.m_encodingParams) && *m_params == *(rhs.m_params));
     }
 
     virtual void PrintParameters(std::ostream& out) const {

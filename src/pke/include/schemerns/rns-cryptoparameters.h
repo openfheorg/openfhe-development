@@ -156,12 +156,12 @@ protected:
         if (el == nullptr)
             return false;
 
-        return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->GetScalingTechnique() &&
-               m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
-               m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
-               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
-               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode() &&
-               m_compositeDegree == el->GetCompositeDegree() && m_registerWordSize == el->GetRegisterWordSize();
+        return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->m_scalTechnique &&
+               m_ksTechnique == el->m_ksTechnique && m_multTechnique == el->m_multTechnique &&
+               m_encTechnique == el->m_encTechnique && m_numPartQ == el->m_numPartQ &&
+               m_auxBits == el->m_auxBits && m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
+               m_multipartyMode == el->m_multipartyMode && m_executionMode == el->m_executionMode &&
+               m_compositeDegree == el->m_compositeDegree && m_registerWordSize == el->m_registerWordSize;
     }
 
     void PrintParameters(std::ostream& os) const override {
