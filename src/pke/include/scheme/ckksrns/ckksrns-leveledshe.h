@@ -109,6 +109,7 @@ public:
     Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, double operand) const override;
 
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
     Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, std::complex<double> operand) const override;
 
