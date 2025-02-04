@@ -7,6 +7,7 @@
 #cmakedefine WITH_BE2
 #cmakedefine WITH_BE4
 #cmakedefine WITH_NOISE_DEBUG
+#cmakedefine WITH_REDUCED_NOISE
 #cmakedefine WITH_NTL
 #cmakedefine WITH_TCM
 
@@ -16,4 +17,4 @@
 #cmakedefine MATHBACKEND @MATHBACKEND@
 #cmakedefine NATIVEINT @NATIVEINT@
 
-#endif // __CMAKE_GENERATED_CONFIG_CORE_H__
+#endif  // __CMAKE_GENERATED_CONFIG_CORE_H__
