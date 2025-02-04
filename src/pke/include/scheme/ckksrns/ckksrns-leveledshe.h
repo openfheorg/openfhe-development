@@ -105,6 +105,7 @@ public:
     Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, double operand) const override;
 
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
     Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const override;
 
@@ -156,7 +157,7 @@ public:
     /////////////////////////////////////
 
     void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const;
-
+    
     void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                      Ciphertext<DCRTPoly>& ciphertext2) const override;
 

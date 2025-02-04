@@ -101,6 +101,14 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double
     EvalMultCoreInPlace(ciphertext, operand);
 }
 
+void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+    LeveledSHERNS::EvalMultInPlace(ciphertext, plaintext);
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    if (cryptoParams->GetScalingTechnique() != NORESCALE)
+        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ciphertext->GetScalingFactor());
+}
+
 /////////////////////////////////////////
 // SHE MULTIPLICATION PLAINTEXT
 /////////////////////////////////////////
