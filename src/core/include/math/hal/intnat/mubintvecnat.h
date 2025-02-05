@@ -323,6 +323,7 @@ public:
    * @param value is the value to set.
    */
     void SwitchModulus(const IntegerType& value);
+    void LazySwitchModulus(const IntegerType& value);
 
     /**
    * Gets the vector modulus.

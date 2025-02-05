@@ -315,6 +315,7 @@ public:
    * @param value is the value to set.
    */
     void SwitchModulus(const ubint_el_t& value);
+    void LazySwitchModulus(const ubint_el_t& value);
 
     /**
    * Gets the vector modulus.

@@ -122,6 +122,13 @@ void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
 }
 
 template <class IntegerType>
+void NativeVectorT<IntegerType>::LazySwitchModulus(const IntegerType& modulus) {
+    for (auto& v : m_data)
+        v.ModEq(modulus);
+    this->SetModulus(modulus);
+}
+
+template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::Mod(const IntegerType& modulus) const {
     auto ans(*this);
     if (modulus.m_value == 2)

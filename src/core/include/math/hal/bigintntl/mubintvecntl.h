@@ -178,6 +178,7 @@ public:
     }
 
     void SwitchModulus(const myT& newModulus);
+    void LazySwitchModulus(const myT& newModulus);
 
     // public modulus accessors
     inline bool isModulusSet(void) const {

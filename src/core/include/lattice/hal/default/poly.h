@@ -317,6 +317,8 @@ public:
 
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
                        const Integer& rootOfUnityArb) override;
+    void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                           const Integer& rootOfUnityArb) override;
     void SwitchFormat() override;
     void MakeSparse(uint32_t wFactor) override;
     bool InverseExists() const override;
