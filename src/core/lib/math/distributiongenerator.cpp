@@ -37,6 +37,7 @@
 #include "math/distributiongenerator.h"
 #include "utils/prng/blake2engine.h"
 #include "utils/exception.h"
+#include "std-critical-section.h"
 
 #include <iostream>
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
@@ -91,6 +92,8 @@ PRNG& PseudoRandomNumberGenerator::GetPRNG() {
     if (m_prng == nullptr) {
 #pragma omp critical
         {
+            STD_CRITICAL_SECTION
+
             // we would like to believe that the block of code below is a good defense line
             if (!genPRNGEngine)
                 InitPRNGEngine();

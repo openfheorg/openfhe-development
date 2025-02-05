@@ -38,6 +38,7 @@
 
 #include "utils/inttypes.h"
 #include "utils/parallel.h"
+#include "std-critical-section.h"
 
 #include <complex>
 #include <vector>
@@ -78,10 +79,14 @@ void DiscreteFourierTransform::Reset() {
 
 void DiscreteFourierTransform::Initialize(uint32_t m, uint32_t nh) {
 #pragma omp critical
+{
+    STD_CRITICAL_SECTION
+
     // add a PrecomputedValues object to the map of precomputedValues only if it doesn't already exist for the given cyclotomic order
     if (precomputedValues.find(m) == precomputedValues.end()) {
         precomputedValues.insert({m, PrecomputedValues(m, nh)});
     }
+}
 }
 
 void DiscreteFourierTransform::PreComputeTable(uint32_t s) {
@@ -106,6 +111,8 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
 
 #pragma omp critical
     {
+        STD_CRITICAL_SECTION
+
         if (m != cachedM[l]) {
             // if (m > maxMCached) {
             //  // need to grow cachedM and the tables

@@ -40,6 +40,7 @@
 #include "math/nbtheory.h"
 #include "utils/exception.h"
 #include "utils/utilities.h"
+#include "std-critical-section.h"
 
 #include <map>
 #include <vector>
@@ -567,9 +568,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::ForwardTransformToBitReverseInPla
 
     IntType modulus = element->GetModulus();
 
-    auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
-    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
-        PreCompute(rootOfUnity, CycloOrder, modulus);
+    {
+        STD_CRITICAL_SECTION
+
+        auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
+        if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+            PreCompute(rootOfUnity, CycloOrder, modulus);
+        }
     }
 
     // if (typeid(IntType) == typeid(NativeInteger)) {
@@ -602,9 +607,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::ForwardTransformToBitReverse(cons
 
     IntType modulus = element.GetModulus();
 
-    auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
-    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
-        PreCompute(rootOfUnity, CycloOrder, modulus);
+    {
+        STD_CRITICAL_SECTION
+
+        auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
+        if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+            PreCompute(rootOfUnity, CycloOrder, modulus);
+        }
     }
 
     // if (typeid(IntType) == typeid(NativeInteger)) {
@@ -638,9 +647,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::InverseTransformFromBitReverseInP
 
     IntType modulus = element->GetModulus();
 
-    auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
-    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
-        PreCompute(rootOfUnity, CycloOrder, modulus);
+    {
+        STD_CRITICAL_SECTION
+  
+        auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
+        if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+            PreCompute(rootOfUnity, CycloOrder, modulus);
+        }
     }
 
     usint msb = GetMSB64(CycloOrderHf - 1);
@@ -676,9 +689,13 @@ void ChineseRemainderTransformFTTDyn<VecType>::InverseTransformFromBitReverse(co
 
     IntType modulus = element.GetModulus();
 
-    auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
-    if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
-        PreCompute(rootOfUnity, CycloOrder, modulus);
+    {
+        STD_CRITICAL_SECTION
+
+        auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
+        if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+            PreCompute(rootOfUnity, CycloOrder, modulus);
+        }
     }
 
     usint n = element.GetLength();
@@ -709,8 +726,11 @@ void ChineseRemainderTransformFTTDyn<VecType>::PreCompute(const IntType& rootOfU
     // Half of cyclo order
     usint CycloOrderHf = (CycloOrder >> 1);
 
+    STD_CRITICAL_SECTION
+
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
+// XXX - jbates - it is my belief that this is in the wrong place, mapSearch is not thread-safe
 #pragma omp critical
         {
             IntType x(1), xinv(1);
@@ -1107,6 +1127,8 @@ VecType ChineseRemainderTransformArbDyn<VecType>::ForwardTransform(const VecType
 
 #pragma omp critical
     {
+        STD_CRITICAL_SECTION
+
         if (BluesteinFFTDyn<VecType>::m_rootOfUnityTableByModulusRoot[nttModulusRoot].GetLength() == 0) {
             BluesteinFFTDyn<VecType>().PreComputeRootTableForNTT(cycloOrder, nttModulusRoot);
         }
@@ -1146,6 +1168,8 @@ VecType ChineseRemainderTransformArbDyn<VecType>::InverseTransform(const VecType
 
 #pragma omp critical
     {
+        STD_CRITICAL_SECTION
+
         if (BluesteinFFTDyn<VecType>::m_rootOfUnityTableByModulusRoot[nttModulusRoot].GetLength() == 0) {
             BluesteinFFTDyn<VecType>().PreComputeRootTableForNTT(cycloOrder, nttModulusRoot);
         }

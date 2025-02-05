@@ -33,9 +33,12 @@
   Represents and defines plaintext encodings in OpenFHE with bit packing capabilities
  */
 
+#include <mutex>
+
 #include "encoding/packedencoding.h"
 #include "math/math-hal.h"
 #include "utils/utilities.h"
+#include "std-critical-section.h"
 
 namespace lbcrypto {
 
@@ -248,11 +251,17 @@ void PackedEncoding::SetParams(usint m, EncodingParams params) {
     try {
         if (IsPowerOfTwo(m)) {
 #pragma omp critical
-            { SetParams_2n(m, params); }
+            {
+                STD_CRITICAL_SECTION
+
+                SetParams_2n(m, params);
+            }
         }
         else {
 #pragma omp critical
             {
+                STD_CRITICAL_SECTION
+
                 const ModulusM modulusM = {modulusNI, m};
                 // Arbitrary: Bluestein based CRT Arb. So we need the 2mth root of unity
                 if (params->GetPlaintextRootOfUnity() == 0) {
