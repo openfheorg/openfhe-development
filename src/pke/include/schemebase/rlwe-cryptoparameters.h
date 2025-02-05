@@ -183,19 +183,19 @@ public:
         return m_digitSize;
     }
 
-    double GetNoiseEstimate() const {
+    virtual double GetNoiseEstimate() const {
         return m_noiseEstimate;
     }
-    uint32_t GetMultiplicativeDepth() const {
+    virtual uint32_t GetMultiplicativeDepth() const {
         return m_multiplicativeDepth;
     }
-    uint32_t GetEvalAddCount() const {
+    virtual uint32_t GetEvalAddCount() const {
         return m_evalAddCount;
     }
-    uint32_t GetKeySwitchCount() const {
+    virtual uint32_t GetKeySwitchCount() const {
         return m_keySwitchCount;
     }
-    uint32_t GetPRENumHops() const {
+    virtual uint32_t GetPRENumHops() const {
         return m_PRENumHops;
     }
 

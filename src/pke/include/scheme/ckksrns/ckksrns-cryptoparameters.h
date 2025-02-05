@@ -101,6 +101,15 @@ public:
         //DISABLED_FOR_CKKSRNS_PARAMS;
     //}
 
+    uint32_t GetEvalAddCount() const override {
+        DISABLED_FOR_CKKSRNS_PARAMS;
+    }
+    uint32_t GetKeySwitchCount() const override {
+        DISABLED_FOR_CKKSRNS_PARAMS;
+    }
+    uint32_t GetPRENumHops() const override {
+        DISABLED_FOR_CKKSRNS_PARAMS;
+    }
 
     /////////////////////////////////////
     // SERIALIZATION
