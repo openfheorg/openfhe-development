@@ -88,6 +88,9 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
 }
 
 PRNG& PseudoRandomNumberGenerator::GetPRNG() {
+
+    STD_CRITICAL_SECTION
+
     // initialization of PRNGs
     if (m_prng == nullptr) {
 #pragma omp critical
