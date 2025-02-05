@@ -70,14 +70,20 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     // Determine appropriate composite degree automatically if scaling technique set to COMPOSITESCALINGAUTO
     cryptoParamsCKKSRNS->ConfigureCompositeDegree(firstModSize);
-  
+
     uint32_t compositeDegree  = cryptoParamsCKKSRNS->GetCompositeDegree();
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
         if (compositeDegree > 2 && scalingModSize < 55) {
-            OPENFHE_THROW(
-                "COMPOSITESCALING Warning: There will probably not be enough prime moduli for composite degree > 2 and scaling factor < 55, prime moduli too small. Prime moduli size must generally be greater than 22, especially for larger multiplicative depth. Try increasing the scaling factor (scalingModSize) or feel free to try it using COMPOSITESCALINGMANUAL at your own risk.");
+            std::string errorMsg = "COMPOSITESCALING Warning:";
+            errorMsg +=
+                "There will not be enough prime moduli for composite degree > 2 and scaling factor < 55 -- prime moduli too small.";
+            errorMsg +=
+                "Prime moduli size must generally be greater than 22, especially for larger multiplicative depth.";
+            errorMsg += "Try increasing the scaling factor (scalingModSize).";
+            errorMsg += "Also, feel free to use COMPOSITESCALINGMANUAL at your own risk.";
+            OPENFHE_THROW(errorMsg);
         }
         else if (compositeDegree == 1 && registerWordSize < 64) {
             OPENFHE_THROW(
@@ -88,8 +94,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         }
 
         if (registerWordSize < 24 && scalTech == COMPOSITESCALINGAUTO) {
-            OPENFHE_THROW(
-                "Register word size must be greater than or equal to 24 for COMPOSITESCALINGAUTO. Otherwise, try it with COMPOSITESCALINGMANUAL.");
+            std::string errorMsg = "Register word size must be greater than or equal to 24 for COMPOSITESCALINGAUTO.";
+            errorMsg += "Otherwise, try it with COMPOSITESCALINGMANUAL.";
+            OPENFHE_THROW(errorMsg);
         }
     }
 
@@ -166,11 +173,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     uint32_t dcrtBits = scalingModSize;
 
-    if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        numPrimes *= compositeDegree;
-        std::cout << __FUNCTION__ << "::" << __LINE__ << " numPrimes: " << numPrimes << " qBound: " << qBound
-                  << std::endl;
-    }
+    numPrimes *= compositeDegree;
 
     uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
     std::vector<NativeInteger> moduliQ(vecSize);
@@ -205,13 +208,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     // Validate the ring dimension found using estimated logQ(P) against actual logQ(P)
     if (stdLevel != HEStd_NotSet) {
-        uint32_t logActualQ = 0;
-        if (ksTech == HYBRID) {
-            logActualQ = cryptoParamsCKKSRNS->GetParamsQP()->GetModulus().GetMSB();
-        }
-        else {
-            logActualQ = cryptoParamsCKKSRNS->GetElementParams()->GetModulus().GetMSB();
-        }
+        uint32_t logActualQ = (ksTech == HYBRID) ? cryptoParamsCKKSRNS->GetParamsQP()->GetModulus().GetMSB() :
+                                                   cryptoParamsCKKSRNS->GetElementParams()->GetModulus().GetMSB();
 
         uint32_t nActual = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
         if (n < nActual) {
@@ -234,16 +232,13 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
     std::unordered_set<uint64_t> moduliQRecord;
 
     // Sample q0, the first primes in the modulus chain
-    NativeInteger q;
-    uint32_t qBitSize = static_cast<double>(dcrtBits) / compositeDegree;
-    uint32_t remBits  = dcrtBits;
+    uint32_t remBits = dcrtBits;
 
     for (uint32_t d = 1; d <= compositeDegree; ++d) {
-        double numBits = static_cast<double>(remBits) / (compositeDegree - d + 1);
-        qBitSize       = std::ceil(numBits);
-        q              = FirstPrime<NativeInteger>(qBitSize, cyclOrder);
-        q              = PreviousPrime<NativeInteger>(q, cyclOrder);
-        while (std::log2(q.ConvertToDouble()) > registerWordSize || std::log2(q.ConvertToDouble()) > numBits ||
+        uint32_t qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));
+        NativeInteger q   = FirstPrime<NativeInteger>(qBitSize, cyclOrder);
+        q                 = PreviousPrime<NativeInteger>(q, cyclOrder);
+        while (std::log2(q.ConvertToDouble()) > registerWordSize || std::log2(q.ConvertToDouble()) > qBitSize ||
                moduliQRecord.find(q.ConvertToInt()) != moduliQRecord.end()) {
             q = PreviousPrime<NativeInteger>(q, cyclOrder);
         }
@@ -253,17 +248,17 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         remBits -= std::ceil(std::log2(q.ConvertToDouble()));
     }
 
-    std::vector<NativeInteger> qPrev(std::ceil(static_cast<double>(compositeDegree) / 2));
-    std::vector<NativeInteger> qNext(compositeDegree - static_cast<uint32_t>(qPrev.size()));
-
     if (numPrimes > 1) {
+        std::vector<NativeInteger> qPrev(std::ceil(static_cast<double>(compositeDegree) / 2));
+        std::vector<NativeInteger> qNext(compositeDegree - static_cast<uint32_t>(qPrev.size()));
+
         // Prep to compute initial scaling factor
         double sf = moduliQ[numPrimes - 1].ConvertToDouble();
         for (uint32_t d = 2; d <= compositeDegree; ++d) {
             sf *= moduliQ[numPrimes - d].ConvertToDouble();
         }
 
-        uint32_t cnt = 1;
+        bool flag = true;
         for (usint i = numPrimes - compositeDegree; i >= 2 * compositeDegree; i -= compositeDegree) {
             // Compute initial scaling factor
             sf = static_cast<double>(std::pow(sf, 2));
@@ -273,15 +268,13 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
 
             auto sf_sqrt = std::pow(sf, 1.0 / compositeDegree);
 
-            qBitSize = std::ceil(std::log2(sf_sqrt));
-
             NativeInteger sfInt = std::llround(sf_sqrt);
             NativeInteger sfRem = sfInt.Mod(cyclOrder);
 
             double primeProduct = 1.0;
             std::unordered_set<uint64_t> qCurrentRecord;  // current prime tracker
 
-            for (uint32_t step = 0; step < static_cast<uint32_t>(qPrev.size()); ++step) {
+            for (size_t step = 0; step < qPrev.size(); ++step) {
                 qPrev[step] = sfInt - sfRem + NativeInteger(1) - NativeInteger(cyclOrder);
                 do {
                     try {
@@ -291,15 +284,14 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                         OPENFHE_THROW(
                             "COMPOSITE SCALING previous prime sampling error. Try increasing scaling factor (scalingModSize).");
                     }
-                } while (  // std::log2(qPrev[step].ConvertToDouble()) > qBitSize ||
-                    std::log2(qPrev[step].ConvertToDouble()) > registerWordSize ||
-                    moduliQRecord.find(qPrev[step].ConvertToInt()) != moduliQRecord.end() ||
-                    qCurrentRecord.find(qPrev[step].ConvertToInt()) != qCurrentRecord.end());
+                } while (std::log2(qPrev[step].ConvertToDouble()) > registerWordSize ||
+                         moduliQRecord.find(qPrev[step].ConvertToInt()) != moduliQRecord.end() ||
+                         qCurrentRecord.find(qPrev[step].ConvertToInt()) != qCurrentRecord.end());
                 qCurrentRecord.emplace(qPrev[step].ConvertToInt());
                 primeProduct *= qPrev[step].ConvertToDouble();
             }
 
-            for (uint32_t step = 0; step < static_cast<uint32_t>(qNext.size()); ++step) {
+            for (size_t step = 0; step < qNext.size(); ++step) {
                 qNext[step] = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);
                 do {
                     try {
@@ -316,7 +308,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                 primeProduct *= qNext[step].ConvertToDouble();
             }
 
-            if (cnt == 0) {
+            if (flag == false) {
                 NativeInteger qPrevNext = NativeInteger(qNext[qNext.size() - 1].ConvertToInt());
                 while (primeProduct > sf) {
                     do {
@@ -351,7 +343,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                     moduliQRecord.emplace(moduliQ[i - d].ConvertToInt());
                 }
 
-                cnt = 1;
+                flag = true;
             }
             else {
                 NativeInteger qNextPrev = NativeInteger(qPrev[qPrev.size() - 1].ConvertToInt());
@@ -366,10 +358,9 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                             OPENFHE_THROW(
                                 "COMPOSITE SCALING next prime sampling error. Try increasing scaling factor (scalingModSize).");
                         }
-                    } while (  // std::log2(qNextPrev.ConvertToDouble()) > qBitSize ||
-                        std::log2(qNextPrev.ConvertToDouble()) > registerWordSize ||
-                        moduliQRecord.find(qNextPrev.ConvertToInt()) != moduliQRecord.end() ||
-                        qCurrentRecord.find(qNextPrev.ConvertToInt()) != qCurrentRecord.end());
+                    } while (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize ||
+                             moduliQRecord.find(qNextPrev.ConvertToInt()) != moduliQRecord.end() ||
+                             qCurrentRecord.find(qNextPrev.ConvertToInt()) != qCurrentRecord.end());
                     qCurrentRecord.emplace(qNextPrev.ConvertToInt());
 
                     primeProduct /= qPrev[qPrev.size() - 1].ConvertToDouble();
@@ -390,7 +381,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                     moduliQRecord.emplace(moduliQ[i - d].ConvertToInt());
                 }
 
-                cnt = 0;
+                flag = false;
             }
         }  // for loop
     }  // if numPrimes > 1
@@ -399,10 +390,9 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         OPENFHE_THROW("firstModSize must be > scalingModSize.");
     }
     else {
-        qBitSize = 0;
-        remBits  = static_cast<uint32_t>(firstModSize);
+        remBits = static_cast<uint32_t>(firstModSize);
         for (uint32_t d = 1; d <= compositeDegree; ++d) {
-            qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));
+            uint32_t qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));
             // Find next prime
             NativeInteger nextInteger = FirstPrime<NativeInteger>(qBitSize, cyclOrder);
             nextInteger               = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);

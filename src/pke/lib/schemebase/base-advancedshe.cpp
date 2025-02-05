@@ -105,20 +105,11 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
 
     auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
-    const auto cc = ciphertextVec[0]->GetCryptoContext();
-
-    uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
-    if (cc->getSchemeId() == CKKSRNS_SCHEME) {
-        const auto cryptoParams =
-            std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
-        levelsToDrop = cryptoParams->GetCompositeDegree();
-    }
-
     for (size_t i = 0; i < lim; i = i + 2) {
         ciphertextMultVec[ctrIndex] = algo->EvalMultAndRelinearize(
             i < inSize ? ciphertextVec[i] : ciphertextMultVec[i - inSize],
             i + 1 < inSize ? ciphertextVec[i + 1] : ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], BASE_NUM_LEVELS_TO_DROP);
     }
 
     return ciphertextMultVec.back();
