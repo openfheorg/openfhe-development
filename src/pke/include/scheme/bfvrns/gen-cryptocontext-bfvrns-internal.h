@@ -84,6 +84,9 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
+    params->SetMultiplicativeDepth(parameters.GetMultiplicativeDepth());
+    params->SetEvalAddCount(parameters.GetEvalAddCount());
+    params->SetKeySwitchCount(parameters.GetKeySwitchCount());
 
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());

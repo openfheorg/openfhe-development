@@ -122,6 +122,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
     params->SetFloodingDistributionParameter(floodingNoiseStd);
+    params->SetMultiplicativeDepth(parameters.GetMultiplicativeDepth());
+    params->SetNoiseEstimate(parameters.GetNoiseEstimate());
 
     uint32_t numLargeDigits =
         ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
