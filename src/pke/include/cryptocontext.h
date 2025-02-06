@@ -443,6 +443,20 @@ protected:
         return p;
     }
 
+    /**
+    * GetCompositeDegree: get composite degree of the current scheme crypto context.
+    * @return integer value corresponding to composite degree
+    */
+    uint32_t GetCompositeDegreeFromCtxt() const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        if (!cryptoParams) {
+            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
+            OPENFHE_THROW(errorMsg);
+        }
+
+        return cryptoParams->GetCompositeDegree();
+    }
+
     PrivateKey<Element> privateKey;
 
 public:
@@ -1050,20 +1064,6 @@ public:
    */
     const IntType& GetRootOfUnity() const {
         return params->GetElementParams()->GetRootOfUnity();
-    }
-
-    /**
-    * GetCompositeDegree: get composite degree of the current scheme crypto context.
-    * @return integer value corresponding to composite degree
-    */
-    uint32_t GetCompositeDegreeFromCtxt() const {
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
-        if (!cryptoParams) {
-            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
-            OPENFHE_THROW(errorMsg);
-        }
-
-        return cryptoParams->GetCompositeDegree();
     }
 
     //------------------------------------------------------------------------------

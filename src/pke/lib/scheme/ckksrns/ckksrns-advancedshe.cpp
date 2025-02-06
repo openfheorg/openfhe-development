@@ -48,24 +48,37 @@ namespace lbcrypto {
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalMultMany(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                       const std::vector<EvalKey<DCRTPoly>>& evalKeys) const {
-    if (ciphertextVec.size() < 1)
+    const size_t inSize = ciphertextVec.size();
+
+    if (inSize < 2)
         OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
 
-    const size_t inSize = ciphertextVec.size();
-    const size_t lim    = inSize * 2 - 2;
+    if (inSize == 1)
+        return ciphertextVec[0];
+
+    const size_t lim = inSize * 2 - 2;
     std::vector<Ciphertext<DCRTPoly>> ciphertextMultVec;
     ciphertextMultVec.resize(inSize - 1);
-    size_t ctrIndex = 0;
 
     auto algo               = ciphertextVec[0]->GetCryptoContext()->GetScheme();
-    const auto cc           = ciphertextVec[0]->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
     uint32_t levelsToDrop   = cryptoParams->GetCompositeDegree();
 
-    for (size_t i = 0; i < lim; i = i + 2) {
-        ciphertextMultVec[ctrIndex] = algo->EvalMultAndRelinearize(
-            i < inSize ? ciphertextVec[i] : ciphertextMultVec[i - inSize],
-            i + 1 < inSize ? ciphertextVec[i + 1] : ciphertextMultVec[i + 1 - inSize], evalKeys);
+    size_t ctrIndex = 0;
+    size_t i        = 0;
+    for (; i < (inSize - 1); i += 2) {
+        ciphertextMultVec[ctrIndex] = algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextVec[(i + 1)], evalKeys);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
+    }
+    if (i < inSize) {
+        ciphertextMultVec[ctrIndex] =
+            algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextMultVec[i + 1 - inSize], evalKeys);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
+        i += 2;
+    }
+    for (; i < lim; i += 2) {
+        ciphertextMultVec[ctrIndex] =
+            algo->EvalMultAndRelinearize(ciphertextMultVec[i - inSize], ciphertextMultVec[i + 1 - inSize], evalKeys);
         algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
     }
 

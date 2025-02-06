@@ -540,7 +540,6 @@ void LeveledSHERNS::AdjustForMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciph
 Ciphertext<DCRTPoly> LeveledSHERNS::ComposedEvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
                                                      ConstCiphertext<DCRTPoly> ciphertext2,
                                                      const EvalKey<DCRTPoly> evalKey) const {
-    const auto cc           = ciphertext1->GetCryptoContext();
     auto algo               = ciphertext1->GetCryptoContext()->GetScheme();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
     Ciphertext<DCRTPoly> ciphertext = EvalMult(ciphertext1, ciphertext2);
@@ -548,8 +547,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::ComposedEvalMult(ConstCiphertext<DCRTPoly> c
     uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
     if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
         cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        const auto cryptoRNSParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
-        levelsToDrop               = cryptoRNSParams->GetCompositeDegree();
+        levelsToDrop = cryptoParams->GetCompositeDegree();
     }
     ModReduceInPlace(ciphertext, levelsToDrop);
     return ciphertext;

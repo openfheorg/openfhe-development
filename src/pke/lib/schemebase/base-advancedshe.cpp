@@ -46,8 +46,11 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
     const size_t inSize = ciphertextVec.size();
 
-    if (ciphertextVec.size() < 1)
+    if (ciphertextVec.size() < 2)
         OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
+
+    if (ciphertextVec.size() == 1)
+        return ciphertextVec[0];
 
     const size_t lim = inSize * 2 - 2;
     std::vector<Ciphertext<Element>> ciphertextSumVec;
