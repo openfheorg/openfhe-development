@@ -485,6 +485,8 @@ public:
     virtual void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
                                    const Integer& rootOfUnityArb) = 0;
 
+    virtual DerivedType& MultAccEqNoCheck(const DerivedType& V, const Integer& I) = 0;
+
     /**
    * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT
    *

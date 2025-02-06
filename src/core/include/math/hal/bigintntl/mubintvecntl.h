@@ -180,6 +180,10 @@ public:
     void SwitchModulus(const myT& newModulus);
     void LazySwitchModulus(const myT& newModulus);
 
+    myT& MultAccEqNoCheck(const myT& v, const uint64_t& i) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
+    }
+
     // public modulus accessors
     inline bool isModulusSet(void) const {
         return (this->m_modulus_state == INITIALIZED);

@@ -234,6 +234,10 @@ public:
     void SwitchModulus(const IntegerType& value);
     void LazySwitchModulus(const IntegerType& value);
 
+    BigVectorFixedT& MultAccEqNoCheck(const BigVectorFixedT& v, const IntegerType& i) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecfxd");
+    }
+
     /**
    * Gets the vector modulus.
    *

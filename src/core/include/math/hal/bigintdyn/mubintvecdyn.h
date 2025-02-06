@@ -317,6 +317,10 @@ public:
     void SwitchModulus(const ubint_el_t& value);
     void LazySwitchModulus(const ubint_el_t& value);
 
+    mubintvec& MultAccEqNoCheck(const mubintvec& v, const ubint_el_t& i) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecdyn");
+    }
+
     /**
    * Gets the vector modulus.
    *

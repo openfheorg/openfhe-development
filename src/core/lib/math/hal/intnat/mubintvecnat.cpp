@@ -129,6 +129,19 @@ void NativeVectorT<IntegerType>::LazySwitchModulus(const IntegerType& modulus) {
 }
 
 template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I) {
+    auto iv{I};
+    auto mv{m_modulus};
+    if (iv.m_value >= mv.m_value)
+        iv.ModEq(mv);
+    auto iinv{iv.PrepModMulConst(mv)};
+    const uint32_t ringdm = m_data.size();
+    for (uint32_t i = 0; i < ringdm; ++i)
+        m_data[i].ModAddFastEq(V.m_data[i].ModMulFastConst(iv, mv, iinv), mv);
+    return *this;
+}
+
+template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::Mod(const IntegerType& modulus) const {
     auto ans(*this);
     if (modulus.m_value == 2)
