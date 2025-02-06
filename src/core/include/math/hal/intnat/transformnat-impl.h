@@ -50,6 +50,9 @@
 #include <map>
 #include <vector>
 
+//#define DIAG_OUT(s) std::cerr << s
+#define DIAG_OUT(s)
+
 namespace intnat {
 
 using namespace lbcrypto;
@@ -663,11 +666,13 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPla
 
     {
         STD_CRITICAL_SECTION
+        DIAG_OUT("FTTBRIP>");
 
         auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
         if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
             PreCompute(rootOfUnity, CycloOrder, modulus);
         }
+        DIAG_OUT("<FTTBRIP");
     }
 
     NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
@@ -696,11 +701,13 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(cons
 
     {
         STD_CRITICAL_SECTION
+        DIAG_OUT("FTTBR>");
 
         auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
         if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
             PreCompute(rootOfUnity, CycloOrder, modulus);
         }
+        DIAG_OUT("<FTTBR");
     }
 
     NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
@@ -731,11 +738,13 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverseInP
 
     {
         STD_CRITICAL_SECTION
+        DIAG_OUT("ITFBRIP>");
 
         auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
         if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
             PreCompute(rootOfUnity, CycloOrder, modulus);
         }
+        DIAG_OUT("<ITFBRIP");
     }
 
     usint msb = GetMSB(CycloOrderHf - 1);
@@ -767,11 +776,13 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(co
 
     {
         STD_CRITICAL_SECTION
+        DIAG_OUT("ITFBR>");
 
         auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
         if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
             PreCompute(rootOfUnity, CycloOrder, modulus);
         }
+        DIAG_OUT("<ITFBR");
     }
 
     usint n = element.GetLength();
@@ -794,6 +805,7 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(const IntType& rootOfU
     usint CycloOrderHf = (CycloOrder >> 1);
 
     STD_CRITICAL_SECTION
+    DIAG_OUT("PC>");
 
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
@@ -846,11 +858,21 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(const IntType& rootOfU
             m_cycloOrderInversePreconTableByModulus[modulus]         = preconTableCOI;
         }
     }
+    DIAG_OUT("<PC");
 }
 
 template <typename VecType>
 void ChineseRemainderTransformFTTNat<VecType>::PreCompute(std::vector<IntType>& rootOfUnity, const usint CycloOrder,
                                                           std::vector<IntType>& moduliiChain) {
+    STD_CRITICAL_SECTION
+    //static bool done = false;
+    //if (done)
+    //{
+    //    DIAG_OUT("PCV>SKIP<PCV");
+    //    return;
+    //}
+
+    DIAG_OUT("PCV>");
     usint numOfRootU = rootOfUnity.size();
     usint numModulii = moduliiChain.size();
 
@@ -863,6 +885,10 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(std::vector<IntType>& 
         IntType currentMod(moduliiChain[i]);
         PreCompute(currentRoot, CycloOrder, currentMod);
     }
+
+    //done = true;
+
+    DIAG_OUT("<PCV");
 }
 
 template <typename VecType>
@@ -1189,6 +1215,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::ForwardTransform(const VecType
 #pragma omp critical
     {
         STD_CRITICAL_SECTION
+        DIAG_OUT("FT>");
 
         if (BluesteinFFTNat<VecType>::m_rootOfUnityTableByModulusRoot[nttModulusRoot].GetLength() == 0) {
             BluesteinFFTNat<VecType>().PreComputeRootTableForNTT(cycloOrder, nttModulusRoot);
@@ -1201,6 +1228,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::ForwardTransform(const VecType
         if (BluesteinFFTNat<VecType>::m_RBTableByModulusRootPair[modulusRootPair].GetLength() == 0) {
             BluesteinFFTNat<VecType>().PreComputeRBTable(cycloOrder, modulusRootPair);
         }
+        DIAG_OUT("<FT");
     }
 
     VecType inputToBluestein = Pad(element, cycloOrder, true);
@@ -1230,6 +1258,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::InverseTransform(const VecType
 #pragma omp critical
     {
         STD_CRITICAL_SECTION
+        DIAG_OUT("IT>");
 
         if (BluesteinFFTNat<VecType>::m_rootOfUnityTableByModulusRoot[nttModulusRoot].GetLength() == 0) {
             BluesteinFFTNat<VecType>().PreComputeRootTableForNTT(cycloOrder, nttModulusRoot);
@@ -1242,6 +1271,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::InverseTransform(const VecType
         if (BluesteinFFTNat<VecType>::m_RBTableByModulusRootPair[modulusRootPair].GetLength() == 0) {
             BluesteinFFTNat<VecType>().PreComputeRBTable(cycloOrder, modulusRootPair);
         }
+        DIAG_OUT("<IT");
     }
     VecType inputToBluestein = Pad(element, cycloOrder, false);
     auto outputBluestein =

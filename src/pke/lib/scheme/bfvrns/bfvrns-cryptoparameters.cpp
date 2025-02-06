@@ -44,6 +44,7 @@ namespace lbcrypto {
 void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                  EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                  uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
+    std::cerr << std::endl << "DIAG: PrecomputeCRTTables>" << std::endl;
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     NativeInteger t     = GetPlaintextModulus();
@@ -881,6 +882,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             m_tgammaQHatInvModqPrecon[i] = m_tgammaQHatInvModq[i].PrepModMulConst(moduliQ[i]);
         }
     }
+    std::cerr << std::endl << "DIAG: <PrecomputeCRTTables" << std::endl;
 }
 
 uint64_t CryptoParametersBFVRNS::FindAuxPrimeStep() const {
