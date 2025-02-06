@@ -10,6 +10,8 @@
 #cmakedefine WITH_REDUCED_NOISE
 #cmakedefine WITH_NTL
 #cmakedefine WITH_TCM
+#cmakedefine WITH_OPENMP
+#cmakedefine WITH_NATIVEOPT
 
 #cmakedefine CKKS_M_FACTOR @CKKS_M_FACTOR@
 #cmakedefine HAVE_INT128 @HAVE_INT128@

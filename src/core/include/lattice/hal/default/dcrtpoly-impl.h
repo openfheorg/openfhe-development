@@ -914,15 +914,42 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
     uint32_t sizeQ = (m_vectors.size() > paramsQ->GetParams().size()) ? paramsQ->GetParams().size() : m_vectors.size();
     uint32_t sizeP = ans.m_vectors.size();
+#if defined(HAVE_INT128) && (NATIVEINT == 64) && !defined(WITH_REDUCED_NOISE) && \
+    (defined(WITH_OPENMP) || (defined(__clang__) && !defined(WITH_NATIVEOPT)))
+    uint32_t ringDim = m_params->GetRingDimension();
+    std::vector<DoubleNativeInt> sum(sizeP);
+    #pragma omp parallel for firstprivate(sum) num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+    for (uint32_t ri = 0; ri < ringDim; ++ri) {
+        std::fill(sum.begin(), sum.end(), 0);
+        for (uint32_t i = 0; i < sizeQ; ++i) {
+            const auto& QHatModpi    = QHatModp[i];
+            const auto& qi           = m_vectors[i].GetModulus();
+            const auto xQHatInvModqi = m_vectors[i][ri]
+                                           .ModMulFastConst(QHatInvModq[i], qi, QHatInvModqPrecon[i])
+                                           .template ConvertToInt<uint64_t>();
+            for (uint32_t j = 0; j < sizeP; ++j)
+                sum[j] += Mul128(xQHatInvModqi, QHatModpi[j].ConvertToInt<uint64_t>());
+        }
+        for (uint32_t j = 0; j < sizeP; ++j) {
+            auto&& pj            = ans.m_vectors[j].GetModulus().template ConvertToInt<uint64_t>();
+            ans.m_vectors[j][ri] = BarrettUint128ModUint64(sum[j], pj, modpBarrettMu[j]);
+        }
+    }
+#else
     for (uint32_t i = 0; i < sizeQ; ++i) {
         auto xQHatInvModqi = m_vectors[i] * QHatInvModq[i];
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeP))
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeP))
         for (uint32_t j = 0; j < sizeP; ++j) {
+    #if defined(WITH_REDUCED_NOISE)
             auto tmp = xQHatInvModqi;
             tmp.SwitchModulus(ans.m_vectors[j].GetModulus(), ans.m_vectors[j].GetRootOfUnity(), 0, 0);
             ans.m_vectors[j] += (tmp *= QHatModp[i][j]);
+    #else
+            ans.m_vectors[j].MultAccEqNoCheck(xQHatInvModqi, QHatModp[i][j]);
+    #endif
         }
     }
+#endif
     return ans;
 }
 
