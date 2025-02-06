@@ -50,8 +50,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalMultMany(const std::vector<Cipherte
                                                       const std::vector<EvalKey<DCRTPoly>>& evalKeys) const {
     const size_t inSize = ciphertextVec.size();
 
-    if (inSize < 2)
-        OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
+    if (inSize == 0)
+        OPENFHE_THROW("Input ciphertext vector is empty.");
 
     if (inSize == 1)
         return ciphertextVec[0];

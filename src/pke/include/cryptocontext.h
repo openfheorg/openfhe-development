@@ -66,7 +66,9 @@
 #include <algorithm>
 #include <unordered_map>
 #include <set>
-#include <iostream>
+#ifdef DEBUG_KEY
+    #include <iostream>
+#endif
 
 namespace lbcrypto {
 
