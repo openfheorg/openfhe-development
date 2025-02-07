@@ -37,7 +37,6 @@
 #define __BLAKE2ENGINE_H__
 
 #include "utils/prng/prng.h"
-#include "std-critical-section.h"
 
 #include <cstddef>
 #include <array>
@@ -68,8 +67,6 @@ class Blake2Engine : public PRNG {
      * @brief main call to the PRNG
      */
     PRNG::result_type operator()() override {
-        STD_CRITICAL_SECTION
-
         if (m_bufferIndex == static_cast<size_t>(PRNG_BUFFER_SIZE))
             m_bufferIndex = 0;
 
