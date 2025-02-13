@@ -20,11 +20,15 @@ int main() {
   
   // Define the ring dimension N = 2^{logN}
   // Test for logN = 10, 11, ... , 16 (and if supported, 17 as well)
-  uint32_t logN = 16; 
+  uint32_t logN = 5; 
 
   // define native integer parameters
   // note that ILNativeParams takes as input the order m = 2*n
   auto params = std::make_shared<ILNativeParams>(1 << (logN + 1), DCRTBITS);
+
+  std::cout << "ring dimension     : " << params->GetRingDimension() << "\n";
+  std::cout << "prime modulus      : " << params->GetModulus() << "\n";
+  std::cout << "m-th root of unity : " << params->GetRootOfUnity() << "\n";
   
   // create a random polynomial in coefficient representation
   auto poly = NativePoly(dug, params, Format::COEFFICIENT);
