@@ -169,12 +169,15 @@ public:
    * @param extraModulusSize bit size for extra modulus in FLEXIBLEAUTOEXT (CKKS and BGV only)
    * @param numPrimes number of moduli witout extraModulus
    * @param auxBits size of auxiliar moduli used for hybrid key switching
+   * @param scalTech scaling technique
+   * @param compositeDegree number of moduli in each level (CKKS only)
    * @param addOne should an extra bit be added (for CKKS and BGV)
    *
    * @return log2 of the modulus and number of RNS limbs.
    */
     static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits,
+                                                    ScalingTechnique scalTech, uint32_t compositeDegree = 1,
                                                     bool addOne = false);
 
     /*
@@ -607,7 +610,7 @@ public:
     /**
    * Method to retrieve the scaling factor of level l.
    * For FIXEDMANUAL scaling technique method always returns 2^p, where p corresponds to plaintext modulus
-   * @param l For FLEXIBLEAUTO scaling technique the level whose scaling factor we want to learn.
+   * @param l For FLEXIBLEAUTO and COMPOSITESCALING scaling techniques the level whose scaling factor we want to learn.
    * Levels start from 0 (no scaling done - all towers) and go up to K-1, where K is the number of towers supported.
    * @return the scaling factor.
    */
@@ -642,7 +645,7 @@ public:
     /**
    * Method to retrieve the modulus to be dropped of level l.
    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
-   * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
+   * @param l index of modulus to be dropped for FLEXIBLEAUTO and COMPOSITESCALING scaling techniques
    * @return the precomputed table
    */
     double GetModReduceFactor(uint32_t l = 0) const {

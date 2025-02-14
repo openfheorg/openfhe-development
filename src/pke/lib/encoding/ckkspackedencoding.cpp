@@ -43,6 +43,9 @@
 #include <complex>
 #include <cmath>
 #include <vector>
+#include <string>
+#include <memory>
+#include <utility>
 
 namespace lbcrypto {
 
@@ -186,7 +189,7 @@ bool CKKSPackedEncoding::Encode() {
                 im = im64 >> (-pRemaining);
             }
             else {
-                int128_t pPowRemaining = ((int64_t)1) << pRemaining;
+                int128_t pPowRemaining = (static_cast<int64_t>(1)) << pRemaining;
                 im                     = pPowRemaining * im64;
             }
 
@@ -396,13 +399,13 @@ bool CKKSPackedEncoding::Encode() {
         int32_t MAX_LOG_STEP = 60;
         if (logApprox > 0) {
             int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
             std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
             logApprox -= logStep;
 
             while (logApprox > 0) {
                 int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-                DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+                DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
                 std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
                 crtApprox = CRTMult(crtApprox, crtSF, moduli);
                 logApprox -= logStep;
@@ -434,7 +437,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
     std::vector<std::complex<double>> curValues(slots);
 
     if (this->typeFlag == IsNativePoly) {
-        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
+        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
+            scalTech == COMPOSITESCALINGMANUAL)
             powP = pow(scalingFactor, -1);
         else
             powP = pow(2, -p);
@@ -466,7 +470,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
         // we will bring down the scaling factor to 2^p
         double scalingFactorPre = 0.0;
-        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
+        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
+            scalTech == COMPOSITESCALINGMANUAL)
             scalingFactorPre = pow(scalingFactor, -1) * pow(2, p);
         else
             scalingFactorPre = pow(2, -p * (noiseScaleDeg - 1));

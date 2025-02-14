@@ -39,6 +39,11 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
 
+#include <vector>
+#include <memory>
+#include <string>
+#include <utility>
+
 namespace lbcrypto {
 
 uint32_t ParameterGenerationBGVRNS::computeRingDimension(
@@ -151,7 +156,7 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
+        lcmCyclOrderPtm = static_cast<uint64_t>(pow2ptm) * plaintextModulus;
     }
     else {
         lcmCyclOrderPtm = cyclOrder;
@@ -451,8 +456,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
 
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
-        auto hybridKSInfo =
-            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits, true);
+        auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes,
+                                                              auxBits, scalTech, 1, true);
         qBound += std::get<0>(hybridKSInfo);
         auxTowers = std::get<1>(hybridKSInfo);
     }
@@ -484,7 +489,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                     numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
                     (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,
                     (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
-                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, false);
+                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, scalTech, 1, false);
                 newQBound += std::get<0>(hybridKSInfo);
             }
         } while (qBound < newQBound);
@@ -511,7 +516,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        modulusOrder = (uint64_t)pow2ptm * plaintextModulus;
+        modulusOrder = static_cast<uint64_t>(pow2ptm) * plaintextModulus;
 
         // Get the largest prime with size less or equal to firstModSize bits.
         moduliQ[0] = LastPrime<NativeInteger>(firstModSize, modulusOrder);
@@ -592,10 +597,10 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         else {
             // set batchsize to the actual batchsize i.e. n/d where d is the
             // order of ptm mod CyclOrder
-            a = (uint64_t)ptm % cyclOrder;
+            a = static_cast<uint64_t>(ptm) % cyclOrder;
             b = 1;
             while (a != 1) {
-                a = ((uint64_t)(a * ptm)) % cyclOrder;
+                a = static_cast<uint64_t>(a * ptm) % cyclOrder;
                 b++;
             }
 

@@ -66,6 +66,9 @@
 #include <algorithm>
 #include <unordered_map>
 #include <set>
+#ifdef DEBUG_KEY
+    #include <iostream>
+#endif
 
 namespace lbcrypto {
 
@@ -440,6 +443,20 @@ protected:
             p->SetNoiseScaleDeg(2);
         }
         return p;
+    }
+
+    /**
+    * GetCompositeDegree: get composite degree of the current scheme crypto context.
+    * @return integer value corresponding to composite degree
+    */
+    uint32_t GetCompositeDegreeFromCtxt() const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        if (!cryptoParams) {
+            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
+            OPENFHE_THROW(errorMsg);
+        }
+
+        return cryptoParams->GetCompositeDegree();
     }
 
     PrivateKey<Element> privateKey;
@@ -2339,7 +2356,7 @@ public:
     Ciphertext<Element> Rescale(ConstCiphertext<Element> ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        return GetScheme()->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2351,7 +2368,7 @@ public:
     void RescaleInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        GetScheme()->ModReduceInPlace(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2362,7 +2379,7 @@ public:
     Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        return GetScheme()->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2372,11 +2389,12 @@ public:
     void ModReduceInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        GetScheme()->ModReduceInPlace(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
    * LevelReduce - drops unnecessary RNS limbs (levels) from the ciphertext and evaluation key
+   * Note: the number of levels to drop is multiplied by the composite degree in CKKS when using COMPOSITESCALING* scaling techniques.
    * @param ciphertext input ciphertext. Supported only in BGV/CKKS.
    * @param evalKey input evaluation key (modified in place)
    * @returns the ciphertext with reduced number opf RNS limbs
@@ -2385,11 +2403,12 @@ public:
                                     size_t levels = 1) const {
         ValidateCiphertext(ciphertext);
 
-        return GetScheme()->LevelReduce(ciphertext, evalKey, levels);
+        return GetScheme()->LevelReduce(ciphertext, evalKey, levels * GetCompositeDegreeFromCtxt());
     }
 
     /**
    * LevelReduceInPlace - drops unnecessary RNS limbs (levels) from the ciphertext and evaluation key. Supported only in BGV/CKKS.
+   * Note: the number of levels to drop is multiplied by the composite degree in CKKS when using COMPOSITESCALING* scaling techniques.
    * @param ciphertext input ciphertext (modified in place)
    * @param evalKey input evaluation key (modified in place)
    */
@@ -2398,7 +2417,8 @@ public:
         if (levels <= 0) {
             return;
         }
-        GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels);
+
+        GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels * GetCompositeDegreeFromCtxt());
     }
     /**
    * Compress - Reduces the size of ciphertext modulus to minimize the

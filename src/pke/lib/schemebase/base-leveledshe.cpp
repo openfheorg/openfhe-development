@@ -35,6 +35,13 @@
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
+#include <memory>
+#include <vector>
+#include <map>
+#include <string>
+#include <utility>
+#include <algorithm>
+
 namespace lbcrypto {
 
 /////////////////////////////////////////
