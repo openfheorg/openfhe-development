@@ -77,7 +77,7 @@ option(WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                   
 option(WITH_NATIVEOPT "Use machine-specific optimizations"                             OFF )
 option(WITH_COVTEST "Turn on to enable coverage testing"                               OFF )
 option(WITH_NOISE_DEBUG "Use only when running lattice estimator; not for production"  OFF )
-option(WITH_REDUCED_NOISE "Enable reduced noise at cost of increased compute"          OFF )
+option(WITH_REDUCED_NOISE "Enable reduced noise within HKS and BFV HPSPOVERQ modes"    OFF )
 option(USE_MACPORTS "Use MacPorts installed packages"                                  OFF )
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
