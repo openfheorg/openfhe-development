@@ -139,7 +139,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
             // iterative approximations; we do not know the number
             // of digits and moduli at this point and use upper bounds
             double numTowers = std::ceil(logqPrev / dcrtBits);
+#if defined(WITH_REDUCED_NOISE)
             return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
+#else
+            return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0);
+#endif
         }
         else {
             double numDigitsPerTower = (digitSize == 0) ? 1 : ((dcrtBits / digitSize) + 1);

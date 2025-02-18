@@ -148,6 +148,9 @@ public:
    * @param value is the value to set.
    */
     void SwitchModulus(const I& value);
+    void LazySwitchModulus(const I& value);
+
+    T& MultAccEqNoCheck(const T& vec, const I& value);
 
     /**
    * Gets the vector modulus.

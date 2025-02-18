@@ -2,12 +2,11 @@
 # It defines the following variables
 #  OpenFHE_INCLUDE_DIRS - include directories for OpenFHE
 #  OpenFHE_LIBRARIES    - libraries to link against
-
 get_filename_component(OpenFHE_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT OpenFHE_BINARY_DIR)
-  include("${OpenFHE_CMAKE_DIR}/OpenFHETargets.cmake")
+    include("${OpenFHE_CMAKE_DIR}/OpenFHETargets.cmake")
 endif()
 
 # These are IMPORTED targets created by OpenFHETargets.cmake
@@ -24,7 +23,7 @@ set(OPENMP_LIBRARIES "@OPENMP_LIBRARIES@")
 set(OpenFHE_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
 set(OpenFHE_C_FLAGS "@CMAKE_C_FLAGS@")
 
-set (OpenFHE_EXE_LINKER_FLAGS "@CMAKE_EXE_LINKER_FLAGS@")
+set(OpenFHE_EXE_LINKER_FLAGS "@CMAKE_EXE_LINKER_FLAGS@")
 
 # CXX info
 set(OpenFHE_CXX_STANDARD "@CMAKE_CXX_STANDARD@")
@@ -35,10 +34,13 @@ set(OpenFHE_CXX_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@")
 set(OpenFHE_STATIC "@BUILD_STATIC@")
 set(OpenFHE_SHARED "@BUILD_SHARED@")
 set(OpenFHE_TCM "@WITH_TCM@")
+set(OpenFHE_NTL "@WITH_NTL@")
 set(OpenFHE_OPENMP "@WITH_OPENMP@")
 set(OpenFHE_NATIVE_SIZE "@NATIVE_SIZE@")
 set(OpenFHE_CKKS_M_FACTOR "@CKKS_M_FACTOR@")
 set(OpenFHE_NATIVEOPT "@WITH_NATIVEOPT@")
+set(OpenFHE_NOISEDEBUG "@WITH_NOISE_DEBUG@")
+set(OpenFHE_REDUCEDNOISE "@WITH_REDUCED_NOISE@")
 
 # Math Backend
 set(OpenFHE_BACKEND "@MATHBACKEND@")
@@ -49,23 +51,22 @@ set(OpenFHE_ARCHITECTURE "@ARCHITECTURE@")
 set(OpenFHE_BACKEND_FLAGS_BASE "@OpenFHE_BACKEND_FLAGS@")
 
 # Compile Definitions
-
-if( "@BUILD_SHARED@" )
-	set(OpenFHE_BINFHE_COMPILE_DEFINITIONS "@_pal_binfhe_compile_defs@")
-	set(OpenFHE_CORE_COMPILE_DEFINITIONS "@_pal_core_compile_defs@")
-	set(OpenFHE_PKE_COMPILE_DEFINITIONS "@_pal_pke_compile_defs@")
-	set(OpenFHE_COMPILE_DEFINITIONS
-			${OpenFHE_BINFHE_COMPILE_DEFINITIONS}
-			${OpenFHE_CORE_COMPILE_DEFINITIONS}
-			${OpenFHE_PKE_COMPILE_DEFINITIONS})
+if("@BUILD_SHARED@")
+    set(OpenFHE_BINFHE_COMPILE_DEFINITIONS "@_pal_binfhe_compile_defs@")
+    set(OpenFHE_CORE_COMPILE_DEFINITIONS "@_pal_core_compile_defs@")
+    set(OpenFHE_PKE_COMPILE_DEFINITIONS "@_pal_pke_compile_defs@")
+    set(OpenFHE_COMPILE_DEFINITIONS
+        ${OpenFHE_BINFHE_COMPILE_DEFINITIONS}
+        ${OpenFHE_CORE_COMPILE_DEFINITIONS}
+        ${OpenFHE_PKE_COMPILE_DEFINITIONS})
 endif()
 
-if( "@BUILD_STATIC@" )
-	set(OpenFHE_BINFHE_COMPILE_DEFINITIONS_STATIC "@_pal_binfhe_compile_defs_static@")
-	set(OpenFHE_CORE_COMPILE_DEFINITIONS_STATIC "@_pal_core_compile_defs_static@")
-	set(OpenFHE_PKE_COMPILE_DEFINITIONS_STATIC "@_pal_pke_compile_defs_static@")
-	set(OpenFHE_COMPILE_DEFINITIONS_STATIC
-			${OpenFHE_BINFHE_COMPILE_DEFINITIONS_STATIC}
-			${OpenFHE_CORE_COMPILE_DEFINITIONS_STATIC}
-			${OpenFHE_PKE_COMPILE_DEFINITIONS_STATIC})
+if("@BUILD_STATIC@")
+    set(OpenFHE_BINFHE_COMPILE_DEFINITIONS_STATIC "@_pal_binfhe_compile_defs_static@")
+    set(OpenFHE_CORE_COMPILE_DEFINITIONS_STATIC "@_pal_core_compile_defs_static@")
+    set(OpenFHE_PKE_COMPILE_DEFINITIONS_STATIC "@_pal_pke_compile_defs_static@")
+    set(OpenFHE_COMPILE_DEFINITIONS_STATIC
+        ${OpenFHE_BINFHE_COMPILE_DEFINITIONS_STATIC}
+        ${OpenFHE_CORE_COMPILE_DEFINITIONS_STATIC}
+        ${OpenFHE_PKE_COMPILE_DEFINITIONS_STATIC})
 endif()

@@ -382,6 +382,13 @@ void myVecP<myT>::SwitchModulus(const myT& newModulus) {
     this->SetModulus(newModulus);
 }
 
+template <class myT>
+void myVecP<myT>::LazySwitchModulus(const myT& modulus) {
+    for (uint32_t i = 0; i < this->GetLength(); ++i)
+        this->operator[](i).ModEq(modulus);
+    this->SetModulus(modulus);
+}
+
 // MODULAR ARITHMETIC FUNCTIONS
 
 template <class myT>
