@@ -407,6 +407,16 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
 }
 
 template <typename VecType>
+void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                                          const Integer& rootOfUnityArb) {
+    if (m_values != nullptr) {
+        m_values->LazySwitchModulus(modulus);
+        auto c{m_params->GetCyclotomicOrder()};
+        m_params = std::make_shared<PolyImpl::Params>(c, modulus, rootOfUnity, modulusArb, rootOfUnityArb);
+    }
+}
+
+template <typename VecType>
 void PolyImpl<VecType>::SwitchFormat() {
     const auto& co{m_params->GetCyclotomicOrder()};
     const auto& rd{m_params->GetRingDimension()};

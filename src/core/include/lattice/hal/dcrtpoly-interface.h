@@ -707,7 +707,6 @@ public:
    * @return is the result of the multiplication.
    */
     DerivedType& operator*=(const DerivedType& rhs) override = 0;
-    //    return this->GetDerived().operator*=(rhs);
 
     // multiplicative inverse operation
     /**

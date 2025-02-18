@@ -165,6 +165,13 @@ void mubintvec<ubint_el_t>::SwitchModulus(const ubint_el_t& modulus) {
 }
 
 template <class ubint_el_t>
+void mubintvec<ubint_el_t>::LazySwitchModulus(const ubint_el_t& modulus) {
+    for (auto& v : m_data)
+        v.ModEq(modulus);
+    this->SetModulus(modulus);
+}
+
+template <class ubint_el_t>
 mubintvec<ubint_el_t> mubintvec<ubint_el_t>::Mod(const ubint_el_t& modulus) const {
     auto ans(*this);
     if (modulus == 2)
