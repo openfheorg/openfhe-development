@@ -330,7 +330,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVAL_POLY, "02", {CKKSRNS_SCHEME, RING_DIM, 5,     55,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVAL_POLY, "03", {CKKSRNS_SCHEME, RING_DIM, 5,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVAL_POLY, "04", {CKKSRNS_SCHEME, RING_DIM, 5,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
-    { EVAL_POLY, "05", {CKKSRNS_SCHEME, RING_DIM, 5,     118,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
+    { EVAL_POLY, "05", {CKKSRNS_SCHEME, RING_DIM, 5,     117,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
 #endif
 
 #if NATIVEINT == 64
