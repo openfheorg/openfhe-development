@@ -166,10 +166,11 @@ int main(int argc, char* argv[]) {
 
     const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     uint32_t compositeDegree       = cryptoParamsCKKSRNS->GetCompositeDegree();
+
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Composite Degree: " << compositeDegree << "\nPrime Moduli Size: "
               << static_cast<float>(scalingModSize) / cryptoParamsCKKSRNS->GetCompositeDegree()
-              << "\nRegister word size: " << registerWordSize << std::endl;
+              << "\nRegister Word Size: " << registerWordSize << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
 
     std::vector<std::complex<double>> input({0.5, 0.7, 0.9, 0.95, 0.93});
@@ -180,7 +181,7 @@ int main(int argc, char* argv[]) {
     std::vector<double> coefficients2({1,   2,   3,   4,   5,   -1,   -2,   -3,   -4,   -5,
                                        0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5,
                                        0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
-
+  
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
 
     auto keyPair = cc->KeyGen();

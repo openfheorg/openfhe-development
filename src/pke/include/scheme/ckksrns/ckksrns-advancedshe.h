@@ -47,6 +47,9 @@ class AdvancedSHECKKSRNS : public AdvancedSHERNS {
 public:
     virtual ~AdvancedSHECKKSRNS() {}
 
+    Ciphertext<DCRTPoly> EvalMultMany(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                      const std::vector<EvalKey<DCRTPoly>>& evalKeyVec) const override;
+
     //------------------------------------------------------------------------------
     // LINEAR WEIGHTED SUM
     //------------------------------------------------------------------------------
