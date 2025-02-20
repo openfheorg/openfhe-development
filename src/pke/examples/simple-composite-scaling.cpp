@@ -41,7 +41,7 @@
 
 using namespace lbcrypto;
 
-int main() {
+int main(int argc, char* argv[]) {
     // Step 1: Setup CryptoContext
 
     // A. Specify main parameters
@@ -106,6 +106,46 @@ int main() {
     * The word size in bits of the target hardware architecture.
     */
     uint32_t registerWordSize = 32;
+
+    int argcCount = 1;
+    if (argc > 1) {
+        while (argcCount < argc) {
+            uint32_t paramValue = atoi(argv[argcCount]);
+            switch (argcCount) {
+                case 1:
+                    firstModSize = paramValue;
+                    std::cout << "Setting First Mod Size: " << firstModSize << std::endl;
+                    break;
+                case 2:
+                    scaleModSize = paramValue;
+                    std::cout << "Setting Scaling Mod Size: " << scaleModSize << std::endl;
+                    break;
+                case 3:
+                    registerWordSize = paramValue;
+                    std::cout << "Setting Register Word Size: " << registerWordSize << std::endl;
+                    break;
+                case 4:
+                    multDepth = paramValue;
+                    std::cout << "Setting Multiplicative Depth: " << multDepth << std::endl;
+                    break;
+                default:
+                    std::cout << "Invalid option" << std::endl;
+                    break;
+            }
+            argcCount += 1;
+            std::cout << "argcCount: " << argcCount << std::endl;
+        }
+        std::cout << "Complete !" << std::endl;
+    }
+    else {
+        std::cout << "Using default parameters" << std::endl;
+        std::cout << "First Mod Size: " << firstModSize << std::endl;
+        std::cout << "Scaling Mod Size: " << scaleModSize << std::endl;
+        std::cout << "Register Word Size: " << registerWordSize << std::endl;
+        std::cout << "Multiplicative Depth: " << multDepth << std::endl;
+        std::cout << "Usage: " << argv[0] << " [firstModSize] [scalingModSize] [registerWordSize] [multDepth]"
+                  << std::endl;
+    }
 
     /* A4) Desired security level based on FHE standards.
    * This parameter can take four values. Three of the possible values

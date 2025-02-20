@@ -445,6 +445,20 @@ protected:
         return p;
     }
 
+    /**
+    * GetCompositeDegree: get composite degree of the current scheme crypto context.
+    * @return integer value corresponding to composite degree
+    */
+    uint32_t GetCompositeDegreeFromCtxt() const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        if (!cryptoParams) {
+            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
+            OPENFHE_THROW(errorMsg);
+        }
+
+        return cryptoParams->GetCompositeDegree();
+    }
+
     PrivateKey<Element> privateKey;
 
 public:
@@ -2342,10 +2356,7 @@ public:
     Ciphertext<Element> Rescale(ConstCiphertext<Element> ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        const auto cryptoParams =
-            std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
-
-        return GetScheme()->ModReduce(ciphertext, cryptoParams->GetCompositeDegree());
+        return GetScheme()->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2357,10 +2368,7 @@ public:
     void RescaleInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        const auto cryptoParams =
-            std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
-
-        GetScheme()->ModReduceInPlace(ciphertext, cryptoParams->GetCompositeDegree());
+        GetScheme()->ModReduceInPlace(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2371,13 +2379,7 @@ public:
     Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        if (isCKKS(m_schemeId)) {
-            const auto cryptoParams =
-                std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
-            return GetScheme()->ModReduce(ciphertext, cryptoParams->GetCompositeDegree());
-        }
-
-        return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        return GetScheme()->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2387,14 +2389,7 @@ public:
     void ModReduceInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        if (isCKKS(m_schemeId)) {
-            const auto cryptoParams =
-                std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
-            GetScheme()->ModReduceInPlace(ciphertext, cryptoParams->GetCompositeDegree());
-        }
-        else {
-            GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
-        }
+        GetScheme()->ModReduceInPlace(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2408,13 +2403,7 @@ public:
                                     size_t levels = 1) const {
         ValidateCiphertext(ciphertext);
 
-        if (isCKKS(m_schemeId)) {
-            const auto cryptoParams =
-                std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
-            return GetScheme()->LevelReduce(ciphertext, evalKey, levels * cryptoParams->GetCompositeDegree());
-        }
-
-        return GetScheme()->LevelReduce(ciphertext, evalKey, levels);
+        return GetScheme()->LevelReduce(ciphertext, evalKey, levels * GetCompositeDegreeFromCtxt());
     }
 
     /**
@@ -2429,14 +2418,7 @@ public:
             return;
         }
 
-        if (isCKKS(m_schemeId)) {
-            const auto cryptoParams =
-                std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
-            GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels * cryptoParams->GetCompositeDegree());
-        }
-        else {
-            GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels);
-        }
+        GetScheme()->LevelReduceInPlace(ciphertext, evalKey, levels * GetCompositeDegreeFromCtxt());
     }
     /**
    * Compress - Reduces the size of ciphertext modulus to minimize the

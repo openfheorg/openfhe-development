@@ -51,7 +51,6 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
     size_t sizeQ             = GetElementParams()->GetParams().size();
     uint32_t compositeDegree = this->GetCompositeDegree();
-    // compositeDegree          = (compositeDegree == 0) ? 1 : compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
@@ -190,26 +189,22 @@ uint64_t CryptoParametersCKKSRNS::FindAuxPrimeStep() const {
 void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) {
     // Add logic to determine whether composite scaling is feasible or not
     if (GetScalingTechnique() == COMPOSITESCALINGAUTO) {
-        if (NATIVEINT != 64)
-            OPENFHE_THROW(config_error, "COMPOSITESCALINGAUTO scaling technique only supported with NATIVEINT==64.");
-        uint32_t compositeDegree  = GetCompositeDegree();
         uint32_t registerWordSize = GetRegisterWordSize();
         if (registerWordSize <= 64) {
             if (registerWordSize < scalingModSize) {
-                compositeDegree =
+                uint32_t compositeDegree =
                     static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
                 // Assert minimum allowed moduli size on composite scaling mode
                 // @fdiasmor TODO: make it more robust for a range of multiplicative depth
                 if (static_cast<float>(scalingModSize) / compositeDegree < 20) {
                     OPENFHE_THROW(
-                        config_error,
-                        "Moduli size is too short (< 20) for target multiplicative depth. Consider increasing the scaling factor or the register word size. Otherwise set those parameters manually using COMPOSITESCALINGMANUAL at your own risk.");
+                        "Moduli size is too short (< 20) for target multiplicative depth. Consider increasing the scaling factor or the register word size.");
                 }
                 m_compositeDegree = compositeDegree;
             }  // else composite degree remains set to 1
         }
         else {
-            OPENFHE_THROW(config_error, "COMPOSITESCALING scaling technique only supports register word size <= 64.");
+            OPENFHE_THROW("COMPOSITESCALING scaling technique only supports register word size <= 64.");
         }
     }
 }

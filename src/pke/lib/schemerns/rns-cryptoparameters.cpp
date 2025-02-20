@@ -38,8 +38,28 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include <string>
 
 namespace lbcrypto {
+
+uint32_t UpdateSizeP(uint32_t compositeDegree, uint32_t sizeP) {
+    switch (compositeDegree) {
+        case 0:  // not allowed
+            OPENFHE_THROW(std::string("Composite degree d = 0 is not allowed."));
+        case 1:  // not composite
+            break;
+        case 2:  // composite degree == 2
+            sizeP += (sizeP % 2);
+            break;
+        case 3:  // composite degree == 3
+            sizeP += (sizeP % 3);
+            break;
+        default:  // composite degree > 3
+            sizeP += (sizeP % 4);
+            break;
+    }
+    return sizeP;
+}
 
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                               EncryptionTechnique encTech, MultiplicationTechnique multTech,
@@ -134,19 +154,9 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // Select number of primes in auxiliary CRT basis
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
         if (GetScalingTechnique() == COMPOSITESCALINGAUTO || GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-            usint compositeDegree = GetCompositeDegree();
-            switch (compositeDegree) {
-                case 0:  // not allowed
-                case 1:  // not composite
-                    break;
-                case 2:  // composite degree == 2
-                    sizeP += (sizeP % 2);
-                    break;
-                default:  // composite degree > 2
-                    sizeP += (sizeP % 4);
-                    break;
-            }
+            sizeP = UpdateSizeP(m_compositeDegree, sizeP);
         }
+
         uint64_t primeStep = FindAuxPrimeStep();
 
         // Choose special primes in auxiliary basis and compute their roots
@@ -454,19 +464,8 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
     // Select number of primes in auxiliary CRT basis
     auto sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
-
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        switch (compositeDegree) {
-            case 0:  // not allowed
-            case 1:  // not composite
-                break;
-            case 2:  // composite degree == 2
-                sizeP += (sizeP % 2);
-                break;
-            default:  // composite degree > 2
-                sizeP += (sizeP % 4);
-                break;
-        }
+        sizeP = UpdateSizeP(compositeDegree, sizeP);
     }
 
     return std::make_pair(sizeP * auxBits, sizeP);

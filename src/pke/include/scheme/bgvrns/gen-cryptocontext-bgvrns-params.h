@@ -84,6 +84,12 @@ public:
     void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BGVRNS;
     }
+    void SetCompositeDegree(uint32_t compositeDegree0) override {
+        DISABLED_FOR_BGVRNS;
+    }
+    void SetRegisterWordSize(uint32_t registerWordSize0) override {
+        DISABLED_FOR_BGVRNS;
+    }
 };
 //====================================================================================================================
 
