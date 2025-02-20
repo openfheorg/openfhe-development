@@ -284,7 +284,9 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                     }
                     catch (const OpenFHEException& ex) {
                         OPENFHE_THROW(
-                            "COMPOSITE SCALING previous prime sampling error. Try increasing scaling factor (scalingModSize).");
+                            "COMPOSITE SCALING previous prime sampling error. "
+                            "Try increasing scaling factor (scalingModSize)."
+                            "Or try decreasing first modulus size (firstModSize)");
                     }
                 } while (std::log2(qPrev[step].ConvertToDouble()) > registerWordSize ||
                          moduliQRecord.find(qPrev[step].ConvertToInt()) != moduliQRecord.end() ||
