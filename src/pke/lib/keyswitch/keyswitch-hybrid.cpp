@@ -328,6 +328,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(const DCRT
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
     const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
+    
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "HKS Starts here" << std::endl;
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
     const std::shared_ptr<ParmType> paramsQl  = c.GetParams();
@@ -338,6 +341,10 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     size_t sizeP   = paramsP->GetParams().size();
     size_t sizeQlP = sizeQl + sizeP;
 
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "kl: " << sizeQl << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "kp: " << sizeP << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "kl+kp: " << sizeQlP << std::endl;
+
     uint32_t alpha = cryptoParams->GetNumPerPartQ();
     // The number of digits of the current ciphertext
     uint32_t numPartQl = ceil((static_cast<double>(sizeQl)) / alpha);
@@ -345,6 +352,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
         numPartQl = cryptoParams->GetNumberOfQPartitions();
 
     std::vector<DCRTPoly> partsCt(numPartQl);
+
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "Digit Decomposition starts here." << std::endl;
+    std::cout << "number of digits: " << numPartQl << std::endl;
 
     // Digit decomposition
     // Zero-padding and split
@@ -380,9 +390,23 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     std::vector<DCRTPoly> partsCtCompl(numPartQl);
     std::vector<DCRTPoly> partsCtExt(numPartQl);
 
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "Digit Decomposition ends here." << std::endl;
+    std::cout << "Digits are: \n";
+    
+    for (uint32_t part = 0; part < numPartQl; part++) {
+      std::cout << "digit[" << part << "] in eval representation\n" << partsCt[part] << std::endl;
+    }
+    
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "ModUp starts here." << std::endl;
+
     for (uint32_t part = 0; part < numPartQl; part++) {
         auto partCtClone = partsCt[part].Clone();
+        std::cout << "digit[" << part << "]" << std::endl;
         partCtClone.SetFormat(Format::COEFFICIENT);
+        std::cout << "Calling INTT" << std::endl;
+        std::cout << "digit[" << part << "] in coeff representation\n" << partCtClone << std::endl;
+        std::cout << "ModUp - Calling ApproxSwitchCRTBasis" << std::endl;
+        std::cout << "NOTE - OpenFHE calls ApproxSwitchCRTBasis on a batch of destination moduli to switch to" << std::endl;
 
         uint32_t sizePartQl = partsCt[part].GetNumOfElements();
         partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
@@ -391,8 +415,13 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
              cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
              cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
              cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
-
+        
+        std::cout << "ApproxSwitchCRTBasis result digit[" << part << "] in coeff:\n";
+        std::cout << partsCtCompl[part] << std::endl;
+        std::cout << "Calling NTT\n";
         partsCtCompl[part].SetFormat(Format::EVALUATION);
+        std::cout << "ApproxSwitchCRTBasis result digit[" << part << "] in eval:\n";
+        std::cout << partsCtCompl[part] << std::endl;
 
         partsCtExt[part] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
 
@@ -407,7 +436,12 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
         for (usint i = endPartIdx; i < sizeQlP; ++i) {
             partsCtExt[part].SetElementAtIndex(i, partsCtCompl[part].GetElementAtIndex(i - sizePartQl));
         }
+
+        std::cout << "Expanded digit[" << part << "] after stitch and copy\n";
+        std::cout << partsCtExt[part] << "\n";
     }
+
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "ModUp ends here." << std::endl;
 
     return std::make_shared<std::vector<DCRTPoly>>(std::move(partsCtExt));
 }
@@ -420,18 +454,24 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
     std::shared_ptr<std::vector<DCRTPoly>> cTilda = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
 
     PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
-
+    
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "ModDown starts here" << std::endl;
+    
+    std::cout << "Calling ModDown for cTilde[0]" << "\n";
     DCRTPoly ct0 = (*cTilda)[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
                                               cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
                                               cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
                                               cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
                                               cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-
+    
+    std::cout << "Calling ModDown for cTilde[1]" << "\n";
     DCRTPoly ct1 = (*cTilda)[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
                                               cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
                                               cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
                                               cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
                                               cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "ModDown ends here" << std::endl;
 
     return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
 }
@@ -439,9 +479,20 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
+    
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "Inner product starts here" << std::endl;
+
     const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
     const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
     const std::vector<DCRTPoly>& av = evalKey->GetAVector();
+
+    std::cout<< "bv: \n";
+    for (size_t b = 0; b< bv.size(); b++)
+      std::cout << bv[b] << "\n";
+    
+    std::cout<< "av: \n";
+    for (size_t a = 0; a< av.size(); a++)
+      std::cout << av[a] << "\n";
 
     const std::shared_ptr<ParmType> paramsP   = cryptoParams->GetParamsP();
     const std::shared_ptr<ParmType> paramsQlP = (*digits)[0].GetParams();
@@ -475,6 +526,14 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
             cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
         }
     }
+
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "Inner product ends here" << std::endl;
+
+    std::cout << "cTilde 0\n";
+    std::cout << cTilda0 << "\n";
+
+    std::cout << "cTilde 1\n";
+    std::cout << cTilda1 << "\n";
 
     return std::make_shared<std::vector<DCRTPoly>>(
         std::initializer_list<DCRTPoly>{std::move(cTilda0), std::move(cTilda1)});

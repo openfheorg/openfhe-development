@@ -36,6 +36,7 @@
 #include <chrono>
 #include <random>
 #include <thread>
+#include <iostream>
 
 namespace default_prng {
 
@@ -58,7 +59,7 @@ void Blake2Engine::Generate() {
 extern "C" {
 // if FIXED_SEED is defined, then PRNG uses a fixed seed number for reproducible results during debug.
 // Use only one OMP thread to ensure reproducibility
-// #define FIXED_SEED
+#define FIXED_SEED
 
 /**
  * @brief Blake2SeedGenerator generates the seed array for the Blake2 PRNG engine used by OpenFHE.

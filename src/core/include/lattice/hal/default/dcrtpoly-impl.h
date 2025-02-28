@@ -911,9 +911,15 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
     const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
     const std::vector<std::vector<NativeInteger>>& QHatModp, const std::vector<DoubleNativeInt>& modpBarrettMu) const {
+    
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "ApproxSwitchCRTBasis starts here." << std::endl;
+
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
     uint32_t sizeQ = (m_vectors.size() > paramsQ->GetParams().size()) ? paramsQ->GetParams().size() : m_vectors.size();
     uint32_t sizeP = ans.m_vectors.size();
+    std::cout << "src  moduli size: " << sizeQ << std::endl;
+    std::cout << "dest moduli size: " << sizeP << std::endl;
+
 #if defined(HAVE_INT128) && (NATIVEINT == 64) && !defined(WITH_REDUCED_NOISE) && \
     (defined(WITH_OPENMP) || (defined(__clang__) && !defined(WITH_NATIVEOPT)))
     uint32_t ringDim = m_params->GetRingDimension();
@@ -936,9 +942,27 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
         }
     }
 #else
+    std::cout << "Constants QHatInvModq: ";
+    for (auto value : QHatInvModq) {
+      std::cout << value << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "we are switching to dest moduli: \n";
+    for (uint32_t j = 0; j < sizeP; ++j) {
+      std::cout << "p[" << j << "]: " << ans.m_vectors[j].GetParams()->GetModulus() << "\n";
+    }
+
+    for (uint32_t j = 0; j < sizeP; j++) {
+      std::cout << "Constants QHatModp[" << j << "]: ";
+      for (uint32_t i = 0; i < sizeQ ; i++) {
+        std::cout << QHatModp[i][j] << " ";
+      }
+      std::cout << std::endl;
+    }
+
     for (uint32_t i = 0; i < sizeQ; ++i) {
         auto xQHatInvModqi = m_vectors[i] * QHatInvModq[i];
-    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeP))
+        #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeP))
         for (uint32_t j = 0; j < sizeP; ++j) {
     #if defined(WITH_REDUCED_NOISE)
             auto tmp = xQHatInvModqi;
@@ -950,6 +974,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
         }
     }
 #endif
+
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "ApproxSwitchCRTBasis ends here." << std::endl;
+
     return ans;
 }
 
@@ -995,7 +1022,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     DCRTPolyImpl<VecType> partP(paramsP, m_format, true);
     uint32_t sizeP = paramsP->GetParams().size();
     uint32_t sizeQ = m_vectors.size() - sizeP;
-
+    
+    std::cout << "Calling INTT\n";
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeP))
     for (uint32_t j = 0; j < sizeP; ++j) {
         partP.m_vectors[j] = m_vectors[sizeQ + j];
@@ -1006,15 +1034,28 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     }
     partP.OverrideFormat(Format::COEFFICIENT);
 
+    std::cout << "partP in coeff representation: \n";
+    std::cout << partP << "\n";
+
     auto partPSwitchedToQ =
         partP.ApproxSwitchCRTBasis(paramsP, paramsQ, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
+
+    std::cout << "partPSwitchedToQ in coeff representation: \n";
+    std::cout << partPSwitchedToQ << "\n";
 
     // Combine the switched DCRTPoly with the Q part of this to get the result
     DCRTPolyImpl<VecType> ans(paramsQ, Format::EVALUATION, true);
     uint32_t diffQ = paramsQ->GetParams().size() - sizeQ;
     if (diffQ > 0)
         ans.DropLastElements(diffQ);
+    
+    std::cout << "scalars for multiplication in step 4.5 Subtract and scale by Pinv mod Q in the HKS excel sheet:\n";
+    for (auto value : PInvModq) {
+      std::cout << value << " ";
+    }
+    std::cout << std::endl;
 
+    std::cout << "partPSwitchedToQ after NTT: \n";
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQ))
     for (uint32_t i = 0; i < sizeQ; ++i) {
         // Multiply everything by t mod Q (BGVrns only)
@@ -1023,6 +1064,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
         partPSwitchedToQ.m_vectors[i].SetFormat(Format::EVALUATION);
         ans.m_vectors[i] = (m_vectors[i] - partPSwitchedToQ.m_vectors[i]) * PInvModq[i];
     }
+    std::cout << "final answer after subtraction and mult by scalar: " << "\n";
+    std::cout << ans << "\n";
     return ans;
 }
 

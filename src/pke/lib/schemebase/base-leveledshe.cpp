@@ -460,6 +460,10 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
 
     algo->KeySwitchInPlace(result, evalKeyIterator->second);
 
+    std::cout << "Result of ciphertext after KeySwitch\n";
+    std::cout << "ctxt0: " << result->GetElements()[0] << std::endl;
+    std::cout << "ctxt1: " << result->GetElements()[1] << std::endl;
+
     std::vector<Element>& rcv = result->GetElements();
 
     rcv[0] = rcv[0].AutomorphismTransform(i, vec);
