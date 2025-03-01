@@ -119,7 +119,7 @@ int main() {
     //      This pre-mixing ensures the subsequent rotation's internal mixing cancels the initial adjustment.
     auto cRot1 = cc->EvalRotate(c1, 1);
 
-    std::cout << "Ctxt data after KS: " << std::endl;
+    std::cout << "Ctxt data after Rotation: " << std::endl;
     std::cout << "ctxt0: " << cRot1->GetElements()[0] << std::endl;
     std::cout << "ctxt1: " << cRot1->GetElements()[1] << std::endl;
 

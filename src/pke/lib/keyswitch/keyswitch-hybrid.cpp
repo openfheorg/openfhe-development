@@ -341,9 +341,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     size_t sizeP   = paramsP->GetParams().size();
     size_t sizeQlP = sizeQl + sizeP;
 
-    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "kl: " << sizeQl << std::endl;
-    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "kp: " << sizeP << std::endl;
-    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "kl+kp: " << sizeQlP << std::endl;
+    std::cout << "kl: " << sizeQl << std::endl;
+    std::cout << "kp: " << sizeP << std::endl;
+    std::cout << "kl+kp: " << sizeQlP << std::endl;
 
     uint32_t alpha = cryptoParams->GetNumPerPartQ();
     // The number of digits of the current ciphertext
