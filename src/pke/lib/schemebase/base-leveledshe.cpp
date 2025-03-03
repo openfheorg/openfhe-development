@@ -457,8 +457,11 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
     Ciphertext<Element> result = ciphertext->Clone();
+    
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "HKS for Rotation starts here" << std::endl;
 
     algo->KeySwitchInPlace(result, evalKeyIterator->second);
+    std::cout << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << "HKS For Rotation ends here" << std::endl;
 
     std::cout << "Result of ciphertext after KeySwitch\n";
     std::cout << "ctxt0: " << result->GetElements()[0] << std::endl;

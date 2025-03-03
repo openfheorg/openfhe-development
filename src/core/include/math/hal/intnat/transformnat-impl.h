@@ -302,6 +302,18 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
+    std::cout << " \n\n********* Forward " << element->GetLength() << " *********\n\n";
+    std::cout << "X = [" << (*element)[0];
+    for (uint32_t i = 1; i < element->GetLength(); ++i) {
+        std::cout << ", " << (*element)[i];
+    }
+    std::cout << "]\n";
+    std::cout << "modulus = " << element->GetModulus() << "\n";
+    std::cout << "twiddles = [" << rootOfUnityTable[0];
+    for (uint32_t i = 1; i < element->GetLength(); ++i) {
+        std::cout << ", " << rootOfUnityTable[i];
+    }
+    std::cout << "]\n";
     //
     // NTT based on the Cooley-Tukey (CT) butterfly
     // Inputs: element (vector of size n in standard ordering)
@@ -370,6 +382,12 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         (*element)[i + 1] = loVal - omegaFactor;
 #endif
     }
+
+    std::cout << "Y_truth = [" << (*element)[0];
+    for (uint32_t i = 1; i < element->GetLength(); ++i) {
+        std::cout << ", " << (*element)[i];
+    }
+    std::cout << "]\n";
 }
 
 template <typename VecType>
@@ -511,6 +529,20 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
+
+    std::cout << "\n\n********* Inverse NTT " << element->GetLength() << " *********\n\n";
+    std::cout << "X = [" << (*element)[0];
+    for (uint32_t i = 1; i < element->GetLength(); ++i) {
+        std::cout << ", " << (*element)[i];
+    }
+    std::cout << "]\n";
+    std::cout << "modulus = " << element->GetModulus() << "\n";
+    std::cout << "cyclo = " << cycloOrderInv << "\n";
+    std::cout << "twiddles = [" << rootOfUnityInverseTable[0];
+    for (uint32_t i = 1; i < element->GetLength(); ++i) {
+        std::cout << ", " << rootOfUnityInverseTable[i];
+    }
+    std::cout << "]\n";
     //
     // INTT based on the Gentleman-Sande (GS) butterfly
     // Inputs: element (vector of size n in bit-reversed ordering)
@@ -619,6 +651,12 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     // perform remaining n/2 scalar multiplies by (n inverse)
     for (uint32_t i = 0; i < j2; ++i)
         (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+
+    std::cout << "Y_truth = [" << (*element)[0];
+    for (uint32_t i = 1; i < element->GetLength(); ++i) {
+        std::cout << ", " << (*element)[i];
+    }
+    std::cout << "]\n";
 }
 
 template <typename VecType>

@@ -101,6 +101,8 @@ int main() {
 
     // Encrypt the encoded vectors
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    
+    std::cout << "\n\n\n<<<<<>>>>> Evaluation logic starts here\n\n\n";
 
     std::cout << "ctxt levels after fresh enc: " << c1->GetLevel() << std::endl;
     std::cout << "ctxt k fresh enc: " << c1->GetElements()[0].GetAllElements().size() << std::endl;
