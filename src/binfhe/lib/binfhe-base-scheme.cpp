@@ -38,6 +38,11 @@ namespace lbcrypto {
 // wrapper for KeyGen methods
 RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
                                   KEYGEN_MODE keygenMode = SYM_ENCRYPT) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (LWEsk == nullptr)
+        OPENFHE_THROW("PrivateKey is empty");
+
     const auto& LWEParams = params->GetLWEParams();
 
     RingGSWBTKey ek;
@@ -71,6 +76,12 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext& ct1,
                                         ConstLWECiphertext& ct2, bool extended) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct1 == nullptr)
+        OPENFHE_THROW("Ciphertext1 is empty");
+    if (ct2 == nullptr)
+        OPENFHE_THROW("Ciphertext2 is empty");
     if (ct1 == ct2)
         OPENFHE_THROW("Input ciphertexts should be independant");
 
@@ -117,6 +128,9 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                         const RingGSWBTKey& EK, const std::vector<LWECiphertext>& ctvector, bool extended) const {
+
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
 
     // check if the ciphertexts are all independent
     uint32_t length = ctvector.size();
@@ -175,6 +189,10 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext& ct, bool extended) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
 
     const auto& LWEParams = params->GetLWEParams();
     NativeInteger Q{LWEParams->GetQ()};
@@ -203,6 +221,11 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>&
 
 // Evaluation of the NOT operation; no key material is needed
 LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWECiphertext& ct) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
     NativeInteger q{ct->GetModulus()};
     uint32_t n{ct->GetLength()};
 
@@ -218,6 +241,11 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams>& p
 LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                      ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT,
                                      const NativeInteger& beta) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
     auto ct1 = std::make_shared<LWECiphertextImpl>(*ct);
     NativeInteger q{ct->GetModulus()};
     uint32_t functionProperty{this->checkInputFunction(LUT, q)};
@@ -306,7 +334,12 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
 // Evaluate Homomorphic Flooring
 LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext& ct, const NativeInteger& beta, uint32_t roundbits) const {
-    const auto& LWEParams = params->GetLWEParams();
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
+   const auto& LWEParams = params->GetLWEParams();
     NativeInteger q{roundbits == 0 ? LWEParams->Getq() : beta * (1 << (roundbits + 1))};
     NativeInteger mod{ct->GetModulus()};
 
@@ -347,6 +380,11 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams>&
 LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
                                      const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
                                      const NativeInteger& beta, bool schemeSwitch) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
     auto mod{ct->GetModulus()};
     const auto& LWEParams = params->GetLWEParams();
     auto q{LWEParams->Getq()};
@@ -420,6 +458,11 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
 std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHECryptoParams>& params,
                                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
                                                     const NativeInteger& beta) const {
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
     auto mod         = ct->GetModulus();
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
@@ -481,12 +524,12 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
 RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                                ConstRingGSWACCKey& ek, ConstLWECiphertext& ct) const {
-    if (ek == nullptr) {
-        std::string errMsg =
-            "Bootstrapping keys have not been generated. Please call BTKeyGen "
-            "before calling bootstrapping.";
-        OPENFHE_THROW(errMsg);
-    }
+    if (params == nullptr)
+        OPENFHE_THROW("BinFHECryptoParams is empty");
+    if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+    if (ek == nullptr)
+        OPENFHE_THROW("Bootstrapping keys have not been generated. Please call BTKeyGen before calling bootstrapping.");
 
     // Specifies the range [lb, ub) that will be used for mapping
     NativeInteger q  = ct->GetModulus();
