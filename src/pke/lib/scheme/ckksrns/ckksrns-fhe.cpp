@@ -535,7 +535,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         }
 
         NativeInteger qjProduct =
-            std::accumulate(qj.begin(), qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
+            std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
         uint32_t init_element_index = compositeDegree;
         for (size_t i = 0; i < ctxtDCRT.size(); i++) {
             std::vector<DCRTPoly> temp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
@@ -2565,9 +2565,9 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         if (logPowP > 64) {
             // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-            logValid       = (logPowP <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
-                                 logPowP :
-                                 LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+            logValid               = (logPowP <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
+                                         logPowP :
+                                         LargeScalingFactorConstants::MAX_BITS_IN_WORD;
             int32_t logApprox_PowP = logPowP - logValid;
             if (logApprox_PowP > 0) {
                 int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
