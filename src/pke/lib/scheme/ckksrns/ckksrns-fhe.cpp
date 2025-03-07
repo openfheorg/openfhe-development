@@ -182,7 +182,9 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         // Extract the modulus prior to bootstrapping
         double qDouble = GetBigModulus(cryptoParams);
 
-        uint128_t factor = (static_cast<uint128_t>(1) << (static_cast<uint32_t>(std::round(std::log2(qDouble)))));
+        int exponent;
+        std::frexp(static_cast<double>(qDouble), &exponent);
+        uint128_t factor = static_cast<uint128_t>(1) << static_cast<uint32_t>(exponent - 1);
         double pre       = (compositeDegree > 1) ? 1.0 : qDouble / factor;
         double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
         double scaleEnc  = pre / k;
@@ -309,7 +311,9 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     // Extract the modulus prior to bootstrapping
     double qDouble = GetBigModulus(cryptoParams);
 
-    uint128_t factor = (static_cast<uint128_t>(1) << (static_cast<uint32_t>(std::round(std::log2(qDouble)))));
+    int exponent;
+    std::frexp(static_cast<double>(qDouble), &exponent);
+    uint128_t factor = static_cast<uint128_t>(1) << static_cast<uint32_t>(exponent - 1);
     double pre       = qDouble / factor;
     double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
     double scaleEnc  = (compositeDegree > 1) ? 1.0 / k : pre / k;
