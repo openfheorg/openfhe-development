@@ -196,9 +196,9 @@ void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) 
                     static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
                 // Assert minimum allowed moduli size on composite scaling mode
                 // @fdiasmor TODO: make it more robust for a range of multiplicative depth
-                if (static_cast<float>(scalingModSize) / compositeDegree < 22) {
+                if (static_cast<float>(scalingModSize) / compositeDegree < 20) {
                     OPENFHE_THROW(
-                        "Moduli size is too short (< 22) for target multiplicative depth. Consider increasing the scaling factor or the register word size.");
+                        "Moduli size is too short (< 20) for target multiplicative depth. Consider increasing the scaling factor or the register word size.");
                 }
                 m_compositeDegree = compositeDegree;
             }  // else composite degree remains set to 1

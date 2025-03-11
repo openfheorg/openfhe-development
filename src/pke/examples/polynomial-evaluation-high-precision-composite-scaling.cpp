@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     std::cout << "\n======EXAMPLE FOR EVALPOLY========\n" << std::endl;
 
     uint32_t multDepth = 6;
-    int argcCount      = 0;
+    int argcCount      = 1;
     if (argc > 1) {
         while (argcCount < argc) {
             uint32_t paramValue = atoi(argv[argcCount]);
@@ -136,9 +136,9 @@ int main(int argc, char* argv[]) {
                     break;
             }
             argcCount += 1;
-            std::cout << "argcCount: " << argcCount << std::endl;
         }
-        std::cout << "Complete !" << std::endl;
+
+        std::cout << "Completed reading input parameters!" << std::endl;
     }
     else {
         std::cout << "Using default parameters" << std::endl;
@@ -166,9 +166,12 @@ int main(int argc, char* argv[]) {
 
     const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     uint32_t compositeDegree       = cryptoParamsCKKSRNS->GetCompositeDegree();
-    std::cout << "Composite Degree: " << compositeDegree << "\nPrime Moduli Bit Length: "
+
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    std::cout << "Composite Degree: " << compositeDegree << "\nPrime Moduli Size: "
               << static_cast<float>(scalingModSize) / cryptoParamsCKKSRNS->GetCompositeDegree()
-              << "\nTarget HW Arch Word Size: " << registerWordSize << std::endl;
+              << "\nRegister Word Size: " << registerWordSize << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
 
     std::vector<std::complex<double>> input({0.5, 0.7, 0.9, 0.95, 0.93});
 
@@ -178,9 +181,7 @@ int main(int argc, char* argv[]) {
     std::vector<double> coefficients2({1,   2,   3,   4,   5,   -1,   -2,   -3,   -4,   -5,
                                        0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5,
                                        0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
-    // std::vector<double> coefficients2({0,   0,   0,   0,   0,   -0,   -0,   -0,   -0,   -0,
-    //                                    0., 0., 0., 0., 0., -0., -0., -0., -0., -0.,
-    //                                    0., 0., 0., 0., 0., -0., -0., -0., -0., -0.});
+  
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
 
     auto keyPair = cc->KeyGen();
