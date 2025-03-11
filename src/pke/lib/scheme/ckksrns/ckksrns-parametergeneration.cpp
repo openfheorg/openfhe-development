@@ -314,7 +314,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                     }
                     catch (const OpenFHEException& ex) {
                         OPENFHE_THROW(
-                            "COMPOSITE SCALING previous prime sampling error. "
+                            "COMPOSITE SCALING next prime sampling error. "
                             "Try increasing scaling factor (scalingModSize) "
                             "or decreasing first modulus size (firstModSize) "
                             "or try another combination of firstModSize and scalingModSize.");
@@ -385,7 +385,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                         }
                         catch (const OpenFHEException& ex) {
                             OPENFHE_THROW(
-                                "COMPOSITE SCALING previous prime sampling error. "
+                                "COMPOSITE SCALING next prime sampling error. "
                                 "Try increasing scaling factor (scalingModSize) "
                                 "or decreasing first modulus size (firstModSize) "
                                 "or try another combination of firstModSize and scalingModSize.");
