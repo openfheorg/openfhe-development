@@ -303,8 +303,8 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
 
             bool fitsRegister = true;
             for (size_t step = 0; step < qNext.size(); ++step) {
-                qNext[step] = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);
-                do {
+              qNext[step] = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);  
+              do {
                     try {
                         if (fitsRegister == true) {
                             qNext[step] = lbcrypto::NextPrime(qNext[step], cyclOrder);
