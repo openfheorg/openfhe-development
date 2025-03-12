@@ -302,8 +302,8 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
             }
 
             bool fitsRegister = true;
-            qNext[0]          = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);
             for (size_t step = 0; step < qNext.size(); ++step) {
+                qNext[step] = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);
                 do {
                     try {
                         if (fitsRegister == true) {
