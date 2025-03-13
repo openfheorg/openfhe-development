@@ -1,0 +1,662 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - /usr/include/c++/10/bits/stl_pair.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">usr/include/c++/10/bits</a> - stl_pair.h<span style="font-size: 80%;"> (source / <a href="stl_pair.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntry">18</td>
+            <td class="headerCovTableEntryMed">88.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 18:46:08</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Pair implementation -*- C++ -*-</a>
+<a name="2"><span class="lineNum">       2 </span>            : </a>
+<a name="3"><span class="lineNum">       3 </span>            : // Copyright (C) 2001-2020 Free Software Foundation, Inc.</a>
+<a name="4"><span class="lineNum">       4 </span>            : //</a>
+<a name="5"><span class="lineNum">       5 </span>            : // This file is part of the GNU ISO C++ Library.  This library is free</a>
+<a name="6"><span class="lineNum">       6 </span>            : // software; you can redistribute it and/or modify it under the</a>
+<a name="7"><span class="lineNum">       7 </span>            : // terms of the GNU General Public License as published by the</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Free Software Foundation; either version 3, or (at your option)</a>
+<a name="9"><span class="lineNum">       9 </span>            : // any later version.</a>
+<a name="10"><span class="lineNum">      10 </span>            : </a>
+<a name="11"><span class="lineNum">      11 </span>            : // This library is distributed in the hope that it will be useful,</a>
+<a name="12"><span class="lineNum">      12 </span>            : // but WITHOUT ANY WARRANTY; without even the implied warranty of</a>
+<a name="13"><span class="lineNum">      13 </span>            : // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</a>
+<a name="14"><span class="lineNum">      14 </span>            : // GNU General Public License for more details.</a>
+<a name="15"><span class="lineNum">      15 </span>            : </a>
+<a name="16"><span class="lineNum">      16 </span>            : // Under Section 7 of GPL version 3, you are granted additional</a>
+<a name="17"><span class="lineNum">      17 </span>            : // permissions described in the GCC Runtime Library Exception, version</a>
+<a name="18"><span class="lineNum">      18 </span>            : // 3.1, as published by the Free Software Foundation.</a>
+<a name="19"><span class="lineNum">      19 </span>            : </a>
+<a name="20"><span class="lineNum">      20 </span>            : // You should have received a copy of the GNU General Public License and</a>
+<a name="21"><span class="lineNum">      21 </span>            : // a copy of the GCC Runtime Library Exception along with this program;</a>
+<a name="22"><span class="lineNum">      22 </span>            : // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see</a>
+<a name="23"><span class="lineNum">      23 </span>            : // &lt;http://www.gnu.org/licenses/&gt;.</a>
+<a name="24"><span class="lineNum">      24 </span>            : </a>
+<a name="25"><span class="lineNum">      25 </span>            : /*</a>
+<a name="26"><span class="lineNum">      26 </span>            :  *</a>
+<a name="27"><span class="lineNum">      27 </span>            :  * Copyright (c) 1994</a>
+<a name="28"><span class="lineNum">      28 </span>            :  * Hewlett-Packard Company</a>
+<a name="29"><span class="lineNum">      29 </span>            :  *</a>
+<a name="30"><span class="lineNum">      30 </span>            :  * Permission to use, copy, modify, distribute and sell this software</a>
+<a name="31"><span class="lineNum">      31 </span>            :  * and its documentation for any purpose is hereby granted without fee,</a>
+<a name="32"><span class="lineNum">      32 </span>            :  * provided that the above copyright notice appear in all copies and</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * that both that copyright notice and this permission notice appear</a>
+<a name="34"><span class="lineNum">      34 </span>            :  * in supporting documentation.  Hewlett-Packard Company makes no</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * representations about the suitability of this software for any</a>
+<a name="36"><span class="lineNum">      36 </span>            :  * purpose.  It is provided &quot;as is&quot; without express or implied warranty.</a>
+<a name="37"><span class="lineNum">      37 </span>            :  *</a>
+<a name="38"><span class="lineNum">      38 </span>            :  *</a>
+<a name="39"><span class="lineNum">      39 </span>            :  * Copyright (c) 1996,1997</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * Silicon Graphics Computer Systems, Inc.</a>
+<a name="41"><span class="lineNum">      41 </span>            :  *</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * Permission to use, copy, modify, distribute and sell this software</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * and its documentation for any purpose is hereby granted without fee,</a>
+<a name="44"><span class="lineNum">      44 </span>            :  * provided that the above copyright notice appear in all copies and</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * that both that copyright notice and this permission notice appear</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * in supporting documentation.  Silicon Graphics makes no</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * representations about the suitability of this software for any</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * purpose.  It is provided &quot;as is&quot; without express or implied warranty.</a>
+<a name="49"><span class="lineNum">      49 </span>            :  */</a>
+<a name="50"><span class="lineNum">      50 </span>            : </a>
+<a name="51"><span class="lineNum">      51 </span>            : /** @file bits/stl_pair.h</a>
+<a name="52"><span class="lineNum">      52 </span>            :  *  This is an internal header file, included by other library headers.</a>
+<a name="53"><span class="lineNum">      53 </span>            :  *  Do not attempt to use it directly. @headername{utility}</a>
+<a name="54"><span class="lineNum">      54 </span>            :  */</a>
+<a name="55"><span class="lineNum">      55 </span>            : </a>
+<a name="56"><span class="lineNum">      56 </span>            : #ifndef _STL_PAIR_H</a>
+<a name="57"><span class="lineNum">      57 </span>            : #define _STL_PAIR_H 1</a>
+<a name="58"><span class="lineNum">      58 </span>            : </a>
+<a name="59"><span class="lineNum">      59 </span>            : #include &lt;bits/move.h&gt; // for std::move / std::forward, and std::swap</a>
+<a name="60"><span class="lineNum">      60 </span>            : </a>
+<a name="61"><span class="lineNum">      61 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="62"><span class="lineNum">      62 </span>            : # include &lt;type_traits&gt; // for std::__decay_and_strip, std::is_reference_v</a>
+<a name="63"><span class="lineNum">      63 </span>            : #endif</a>
+<a name="64"><span class="lineNum">      64 </span>            : #if __cplusplus &gt; 201703L</a>
+<a name="65"><span class="lineNum">      65 </span>            : # include &lt;compare&gt;</a>
+<a name="66"><span class="lineNum">      66 </span>            : # define __cpp_lib_constexpr_utility 201811L</a>
+<a name="67"><span class="lineNum">      67 </span>            : #endif</a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<a name="69"><span class="lineNum">      69 </span>            : namespace std _GLIBCXX_VISIBILITY(default)</a>
+<a name="70"><span class="lineNum">      70 </span>            : {</a>
+<a name="71"><span class="lineNum">      71 </span>            : _GLIBCXX_BEGIN_NAMESPACE_VERSION</a>
+<a name="72"><span class="lineNum">      72 </span>            : </a>
+<a name="73"><span class="lineNum">      73 </span>            :   /**</a>
+<a name="74"><span class="lineNum">      74 </span>            :    *  @addtogroup utilities</a>
+<a name="75"><span class="lineNum">      75 </span>            :    *  @{</a>
+<a name="76"><span class="lineNum">      76 </span>            :    */</a>
+<a name="77"><span class="lineNum">      77 </span>            : </a>
+<a name="78"><span class="lineNum">      78 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="79"><span class="lineNum">      79 </span>            :   /// Tag type for piecewise construction of std::pair objects.</a>
+<a name="80"><span class="lineNum">      80 </span>            :   struct piecewise_construct_t { explicit piecewise_construct_t() = default; };</a>
+<a name="81"><span class="lineNum">      81 </span>            : </a>
+<a name="82"><span class="lineNum">      82 </span>            :   /// Tag for piecewise construction of std::pair objects.</a>
+<a name="83"><span class="lineNum">      83 </span>            :   _GLIBCXX17_INLINE constexpr piecewise_construct_t piecewise_construct =</a>
+<a name="84"><span class="lineNum">      84 </span>            :     piecewise_construct_t();</a>
+<a name="85"><span class="lineNum">      85 </span>            : </a>
+<a name="86"><span class="lineNum">      86 </span>            :   /// @cond undocumented</a>
+<a name="87"><span class="lineNum">      87 </span>            : </a>
+<a name="88"><span class="lineNum">      88 </span>            :   // Forward declarations.</a>
+<a name="89"><span class="lineNum">      89 </span>            :   template&lt;typename...&gt;</a>
+<a name="90"><span class="lineNum">      90 </span>            :     class tuple;</a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span>            :   template&lt;std::size_t...&gt;</a>
+<a name="93"><span class="lineNum">      93 </span>            :     struct _Index_tuple;</a>
+<a name="94"><span class="lineNum">      94 </span>            : </a>
+<a name="95"><span class="lineNum">      95 </span>            :   // Concept utility functions, reused in conditionally-explicit</a>
+<a name="96"><span class="lineNum">      96 </span>            :   // constructors.</a>
+<a name="97"><span class="lineNum">      97 </span>            :   // See PR 70437, don't look at is_constructible or</a>
+<a name="98"><span class="lineNum">      98 </span>            :   // is_convertible if the types are the same to</a>
+<a name="99"><span class="lineNum">      99 </span>            :   // avoid querying those properties for incomplete types.</a>
+<a name="100"><span class="lineNum">     100 </span>            :   template &lt;bool, typename _T1, typename _T2&gt;</a>
+<a name="101"><span class="lineNum">     101 </span>            :     struct _PCC</a>
+<a name="102"><span class="lineNum">     102 </span>            :     {</a>
+<a name="103"><span class="lineNum">     103 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="104"><span class="lineNum">     104 </span>            :       static constexpr bool _ConstructiblePair()</a>
+<a name="105"><span class="lineNum">     105 </span>            :       {</a>
+<a name="106"><span class="lineNum">     106 </span>            :         return __and_&lt;is_constructible&lt;_T1, const _U1&amp;&gt;,</a>
+<a name="107"><span class="lineNum">     107 </span>            :                       is_constructible&lt;_T2, const _U2&amp;&gt;&gt;::value;</a>
+<a name="108"><span class="lineNum">     108 </span>            :       }</a>
+<a name="109"><span class="lineNum">     109 </span>            : </a>
+<a name="110"><span class="lineNum">     110 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="111"><span class="lineNum">     111 </span>            :       static constexpr bool _ImplicitlyConvertiblePair()</a>
+<a name="112"><span class="lineNum">     112 </span>            :       {</a>
+<a name="113"><span class="lineNum">     113 </span>            :         return __and_&lt;is_convertible&lt;const _U1&amp;, _T1&gt;,</a>
+<a name="114"><span class="lineNum">     114 </span>            :                       is_convertible&lt;const _U2&amp;, _T2&gt;&gt;::value;</a>
+<a name="115"><span class="lineNum">     115 </span>            :       }</a>
+<a name="116"><span class="lineNum">     116 </span>            : </a>
+<a name="117"><span class="lineNum">     117 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="118"><span class="lineNum">     118 </span>            :       static constexpr bool _MoveConstructiblePair()</a>
+<a name="119"><span class="lineNum">     119 </span>            :       {</a>
+<a name="120"><span class="lineNum">     120 </span>            :         return __and_&lt;is_constructible&lt;_T1, _U1&amp;&amp;&gt;,</a>
+<a name="121"><span class="lineNum">     121 </span>            :                       is_constructible&lt;_T2, _U2&amp;&amp;&gt;&gt;::value;</a>
+<a name="122"><span class="lineNum">     122 </span>            :       }</a>
+<a name="123"><span class="lineNum">     123 </span>            : </a>
+<a name="124"><span class="lineNum">     124 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="125"><span class="lineNum">     125 </span>            :       static constexpr bool _ImplicitlyMoveConvertiblePair()</a>
+<a name="126"><span class="lineNum">     126 </span>            :       {</a>
+<a name="127"><span class="lineNum">     127 </span>            :         return __and_&lt;is_convertible&lt;_U1&amp;&amp;, _T1&gt;,</a>
+<a name="128"><span class="lineNum">     128 </span>            :                       is_convertible&lt;_U2&amp;&amp;, _T2&gt;&gt;::value;</a>
+<a name="129"><span class="lineNum">     129 </span>            :       }</a>
+<a name="130"><span class="lineNum">     130 </span>            : </a>
+<a name="131"><span class="lineNum">     131 </span>            :       template &lt;bool __implicit, typename _U1, typename _U2&gt;</a>
+<a name="132"><span class="lineNum">     132 </span>            :       static constexpr bool _CopyMovePair()</a>
+<a name="133"><span class="lineNum">     133 </span>            :       {</a>
+<a name="134"><span class="lineNum">     134 </span>            :         using __do_converts = __and_&lt;is_convertible&lt;const _U1&amp;, _T1&gt;,</a>
+<a name="135"><span class="lineNum">     135 </span>            :                                   is_convertible&lt;_U2&amp;&amp;, _T2&gt;&gt;;</a>
+<a name="136"><span class="lineNum">     136 </span>            :         using __converts = typename conditional&lt;__implicit,</a>
+<a name="137"><span class="lineNum">     137 </span>            :                                        __do_converts,</a>
+<a name="138"><span class="lineNum">     138 </span>            :                                        __not_&lt;__do_converts&gt;&gt;::type;</a>
+<a name="139"><span class="lineNum">     139 </span>            :         return __and_&lt;is_constructible&lt;_T1, const _U1&amp;&gt;,</a>
+<a name="140"><span class="lineNum">     140 </span>            :                       is_constructible&lt;_T2, _U2&amp;&amp;&gt;,</a>
+<a name="141"><span class="lineNum">     141 </span>            :                       __converts</a>
+<a name="142"><span class="lineNum">     142 </span>            :                       &gt;::value;</a>
+<a name="143"><span class="lineNum">     143 </span>            :       }</a>
+<a name="144"><span class="lineNum">     144 </span>            : </a>
+<a name="145"><span class="lineNum">     145 </span>            :       template &lt;bool __implicit, typename _U1, typename _U2&gt;</a>
+<a name="146"><span class="lineNum">     146 </span>            :       static constexpr bool _MoveCopyPair()</a>
+<a name="147"><span class="lineNum">     147 </span>            :       {</a>
+<a name="148"><span class="lineNum">     148 </span>            :         using __do_converts = __and_&lt;is_convertible&lt;_U1&amp;&amp;, _T1&gt;,</a>
+<a name="149"><span class="lineNum">     149 </span>            :                                   is_convertible&lt;const _U2&amp;, _T2&gt;&gt;;</a>
+<a name="150"><span class="lineNum">     150 </span>            :         using __converts = typename conditional&lt;__implicit,</a>
+<a name="151"><span class="lineNum">     151 </span>            :                                        __do_converts,</a>
+<a name="152"><span class="lineNum">     152 </span>            :                                        __not_&lt;__do_converts&gt;&gt;::type;</a>
+<a name="153"><span class="lineNum">     153 </span>            :         return __and_&lt;is_constructible&lt;_T1, _U1&amp;&amp;&gt;,</a>
+<a name="154"><span class="lineNum">     154 </span>            :                       is_constructible&lt;_T2, const _U2&amp;&amp;&gt;,</a>
+<a name="155"><span class="lineNum">     155 </span>            :                       __converts</a>
+<a name="156"><span class="lineNum">     156 </span>            :                       &gt;::value;</a>
+<a name="157"><span class="lineNum">     157 </span>            :       }</a>
+<a name="158"><span class="lineNum">     158 </span>            :   };</a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            :   template &lt;typename _T1, typename _T2&gt;</a>
+<a name="161"><span class="lineNum">     161 </span>            :     struct _PCC&lt;false, _T1, _T2&gt;</a>
+<a name="162"><span class="lineNum">     162 </span>            :     {</a>
+<a name="163"><span class="lineNum">     163 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="164"><span class="lineNum">     164 </span>            :       static constexpr bool _ConstructiblePair()</a>
+<a name="165"><span class="lineNum">     165 </span>            :       {</a>
+<a name="166"><span class="lineNum">     166 </span>            :         return false;</a>
+<a name="167"><span class="lineNum">     167 </span>            :       }</a>
+<a name="168"><span class="lineNum">     168 </span>            : </a>
+<a name="169"><span class="lineNum">     169 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="170"><span class="lineNum">     170 </span>            :       static constexpr bool _ImplicitlyConvertiblePair()</a>
+<a name="171"><span class="lineNum">     171 </span>            :       {</a>
+<a name="172"><span class="lineNum">     172 </span>            :         return false;</a>
+<a name="173"><span class="lineNum">     173 </span>            :       }</a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="176"><span class="lineNum">     176 </span>            :       static constexpr bool _MoveConstructiblePair()</a>
+<a name="177"><span class="lineNum">     177 </span>            :       {</a>
+<a name="178"><span class="lineNum">     178 </span>            :         return false;</a>
+<a name="179"><span class="lineNum">     179 </span>            :       }</a>
+<a name="180"><span class="lineNum">     180 </span>            : </a>
+<a name="181"><span class="lineNum">     181 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="182"><span class="lineNum">     182 </span>            :       static constexpr bool _ImplicitlyMoveConvertiblePair()</a>
+<a name="183"><span class="lineNum">     183 </span>            :       {</a>
+<a name="184"><span class="lineNum">     184 </span>            :         return false;</a>
+<a name="185"><span class="lineNum">     185 </span>            :       }</a>
+<a name="186"><span class="lineNum">     186 </span>            :   };</a>
+<a name="187"><span class="lineNum">     187 </span>            : #endif // C++11</a>
+<a name="188"><span class="lineNum">     188 </span>            : </a>
+<a name="189"><span class="lineNum">     189 </span>            :   template&lt;typename _U1, typename _U2&gt; class __pair_base</a>
+<a name="190"><span class="lineNum">     190 </span>            :   {</a>
+<a name="191"><span class="lineNum">     191 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="192"><span class="lineNum">     192 </span>            :     template&lt;typename _T1, typename _T2&gt; friend struct pair;</a>
+<a name="193"><span class="lineNum">     193 </span>            :     __pair_base() = default;</a>
+<a name="194"><span class="lineNum">     194 </span>            :     ~__pair_base() = default;</a>
+<a name="195"><span class="lineNum">     195 </span>            :     __pair_base(const __pair_base&amp;) = default;</a>
+<a name="196"><span class="lineNum">     196 </span>            :     __pair_base&amp; operator=(const __pair_base&amp;) = delete;</a>
+<a name="197"><span class="lineNum">     197 </span>            : #endif // C++11</a>
+<a name="198"><span class="lineNum">     198 </span>            :   };</a>
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<a name="200"><span class="lineNum">     200 </span>            :   /// @endcond</a>
+<a name="201"><span class="lineNum">     201 </span>            : </a>
+<a name="202"><span class="lineNum">     202 </span>            :  /**</a>
+<a name="203"><span class="lineNum">     203 </span>            :    *  @brief Struct holding two objects of arbitrary type.</a>
+<a name="204"><span class="lineNum">     204 </span>            :    *</a>
+<a name="205"><span class="lineNum">     205 </span>            :    *  @tparam _T1  Type of first object.</a>
+<a name="206"><span class="lineNum">     206 </span>            :    *  @tparam _T2  Type of second object.</a>
+<a name="207"><span class="lineNum">     207 </span>            :    *</a>
+<a name="208"><span class="lineNum">     208 </span>            :    *  &lt;https://gcc.gnu.org/onlinedocs/libstdc++/manual/utilities.html&gt;</a>
+<a name="209"><span class="lineNum">     209 </span>            :    */</a>
+<a name="210"><span class="lineNum">     210 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">       4965 :     struct pair</span></a>
+<a name="212"><span class="lineNum">     212 </span>            :     : private __pair_base&lt;_T1, _T2&gt;</a>
+<a name="213"><span class="lineNum">     213 </span>            :     {</a>
+<a name="214"><span class="lineNum">     214 </span>            :       typedef _T1 first_type;    ///&lt; The type of the `first` member</a>
+<a name="215"><span class="lineNum">     215 </span>            :       typedef _T2 second_type;   ///&lt; The type of the `second` member</a>
+<a name="216"><span class="lineNum">     216 </span>            : </a>
+<a name="217"><span class="lineNum">     217 </span>            :       _T1 first;                 ///&lt; The first member</a>
+<a name="218"><span class="lineNum">     218 </span>            :       _T2 second;                ///&lt; The second member</a>
+<a name="219"><span class="lineNum">     219 </span>            : </a>
+<a name="220"><span class="lineNum">     220 </span>            :       // _GLIBCXX_RESOLVE_LIB_DEFECTS</a>
+<a name="221"><span class="lineNum">     221 </span>            :       // 265.  std::pair::pair() effects overly restrictive</a>
+<a name="222"><span class="lineNum">     222 </span>            :       /** The default constructor creates @c first and @c second using their</a>
+<a name="223"><span class="lineNum">     223 </span>            :        *  respective default constructors.  */</a>
+<a name="224"><span class="lineNum">     224 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="225"><span class="lineNum">     225 </span>            :       template &lt;typename _U1 = _T1,</a>
+<a name="226"><span class="lineNum">     226 </span>            :                 typename _U2 = _T2,</a>
+<a name="227"><span class="lineNum">     227 </span>            :                 typename enable_if&lt;__and_&lt;</a>
+<a name="228"><span class="lineNum">     228 </span>            :                                      __is_implicitly_default_constructible&lt;_U1&gt;,</a>
+<a name="229"><span class="lineNum">     229 </span>            :                                      __is_implicitly_default_constructible&lt;_U2&gt;&gt;</a>
+<a name="230"><span class="lineNum">     230 </span>            :                                    ::value, bool&gt;::type = true&gt;</a>
+<a name="231"><span class="lineNum">     231 </span>            : #endif</a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineCov">          3 :       _GLIBCXX_CONSTEXPR pair()</span></a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineCov">          3 :       : first(), second() { }</span></a>
+<a name="234"><span class="lineNum">     234 </span>            : </a>
+<a name="235"><span class="lineNum">     235 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="236"><span class="lineNum">     236 </span>            :       template &lt;typename _U1 = _T1,</a>
+<a name="237"><span class="lineNum">     237 </span>            :                 typename _U2 = _T2,</a>
+<a name="238"><span class="lineNum">     238 </span>            :                 typename enable_if&lt;__and_&lt;</a>
+<a name="239"><span class="lineNum">     239 </span>            :                        is_default_constructible&lt;_U1&gt;,</a>
+<a name="240"><span class="lineNum">     240 </span>            :                        is_default_constructible&lt;_U2&gt;,</a>
+<a name="241"><span class="lineNum">     241 </span>            :                        __not_&lt;</a>
+<a name="242"><span class="lineNum">     242 </span>            :                          __and_&lt;__is_implicitly_default_constructible&lt;_U1&gt;,</a>
+<a name="243"><span class="lineNum">     243 </span>            :                                 __is_implicitly_default_constructible&lt;_U2&gt;&gt;&gt;&gt;</a>
+<a name="244"><span class="lineNum">     244 </span>            :                                    ::value, bool&gt;::type = false&gt;</a>
+<a name="245"><span class="lineNum">     245 </span>            :       explicit constexpr pair()</a>
+<a name="246"><span class="lineNum">     246 </span>            :       : first(), second() { }</a>
+<a name="247"><span class="lineNum">     247 </span>            : #endif</a>
+<a name="248"><span class="lineNum">     248 </span>            : </a>
+<a name="249"><span class="lineNum">     249 </span>            : #if __cplusplus &lt; 201103L</a>
+<a name="250"><span class="lineNum">     250 </span>            :       /// Two objects may be passed to a @c pair constructor to be copied.</a>
+<a name="251"><span class="lineNum">     251 </span>            :       pair(const _T1&amp; __a, const _T2&amp; __b)</a>
+<a name="252"><span class="lineNum">     252 </span>            :       : first(__a), second(__b) { }</a>
+<a name="253"><span class="lineNum">     253 </span>            : #else</a>
+<a name="254"><span class="lineNum">     254 </span>            :       // Shortcut for constraining the templates that don't take pairs.</a>
+<a name="255"><span class="lineNum">     255 </span>            :       /// @cond undocumented</a>
+<a name="256"><span class="lineNum">     256 </span>            :       using _PCCP = _PCC&lt;true, _T1, _T2&gt;;</a>
+<a name="257"><span class="lineNum">     257 </span>            :       /// @endcond</a>
+<a name="258"><span class="lineNum">     258 </span>            : </a>
+<a name="259"><span class="lineNum">     259 </span>            :       /// Construct from two const lvalues, allowing implicit conversions.</a>
+<a name="260"><span class="lineNum">     260 </span>            :       template&lt;typename _U1 = _T1, typename _U2=_T2, typename</a>
+<a name="261"><span class="lineNum">     261 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="262"><span class="lineNum">     262 </span>            :                            _ConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="263"><span class="lineNum">     263 </span>            :                          &amp;&amp; _PCCP::template</a>
+<a name="264"><span class="lineNum">     264 </span>            :                            _ImplicitlyConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="265"><span class="lineNum">     265 </span>            :                          bool&gt;::type=true&gt;</a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineCov">       3238 :       constexpr pair(const _T1&amp; __a, const _T2&amp; __b)</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">       3226 :       : first(__a), second(__b) { }</span></a>
+<a name="268"><span class="lineNum">     268 </span>            : </a>
+<a name="269"><span class="lineNum">     269 </span>            :       /// Construct from two const lvalues, disallowing implicit conversions.</a>
+<a name="270"><span class="lineNum">     270 </span>            :        template&lt;typename _U1 = _T1, typename _U2=_T2, typename</a>
+<a name="271"><span class="lineNum">     271 </span>            :                 enable_if&lt;_PCCP::template</a>
+<a name="272"><span class="lineNum">     272 </span>            :                             _ConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="273"><span class="lineNum">     273 </span>            :                           &amp;&amp; !_PCCP::template</a>
+<a name="274"><span class="lineNum">     274 </span>            :                             _ImplicitlyConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="275"><span class="lineNum">     275 </span>            :                          bool&gt;::type=false&gt;</a>
+<a name="276"><span class="lineNum">     276 </span>            :       explicit constexpr pair(const _T1&amp; __a, const _T2&amp; __b)</a>
+<a name="277"><span class="lineNum">     277 </span>            :       : first(__a), second(__b) { }</a>
+<a name="278"><span class="lineNum">     278 </span>            : #endif</a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span>            : #if __cplusplus &lt; 201103L</a>
+<a name="281"><span class="lineNum">     281 </span>            :       /// There is also a templated constructor to convert from other pairs.</a>
+<a name="282"><span class="lineNum">     282 </span>            :       template&lt;typename _U1, typename _U2&gt;</a>
+<a name="283"><span class="lineNum">     283 </span>            :         pair(const pair&lt;_U1, _U2&gt;&amp; __p)</a>
+<a name="284"><span class="lineNum">     284 </span>            :         : first(__p.first), second(__p.second) { }</a>
+<a name="285"><span class="lineNum">     285 </span>            : #else</a>
+<a name="286"><span class="lineNum">     286 </span>            :       // Shortcut for constraining the templates that take pairs.</a>
+<a name="287"><span class="lineNum">     287 </span>            :       /// @cond undocumented</a>
+<a name="288"><span class="lineNum">     288 </span>            :       template &lt;typename _U1, typename _U2&gt;</a>
+<a name="289"><span class="lineNum">     289 </span>            :         using _PCCFP = _PCC&lt;!is_same&lt;_T1, _U1&gt;::value</a>
+<a name="290"><span class="lineNum">     290 </span>            :                             || !is_same&lt;_T2, _U2&gt;::value,</a>
+<a name="291"><span class="lineNum">     291 </span>            :                             _T1, _T2&gt;;</a>
+<a name="292"><span class="lineNum">     292 </span>            :       /// @endcond</a>
+<a name="293"><span class="lineNum">     293 </span>            : </a>
+<a name="294"><span class="lineNum">     294 </span>            :       template&lt;typename _U1, typename _U2, typename</a>
+<a name="295"><span class="lineNum">     295 </span>            :                enable_if&lt;_PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="296"><span class="lineNum">     296 </span>            :                            _ConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="297"><span class="lineNum">     297 </span>            :                          &amp;&amp; _PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="298"><span class="lineNum">     298 </span>            :                            _ImplicitlyConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="299"><span class="lineNum">     299 </span>            :                           bool&gt;::type=true&gt;</a>
+<a name="300"><span class="lineNum">     300 </span>            :         constexpr pair(const pair&lt;_U1, _U2&gt;&amp; __p)</a>
+<a name="301"><span class="lineNum">     301 </span>            :         : first(__p.first), second(__p.second) { }</a>
+<a name="302"><span class="lineNum">     302 </span>            : </a>
+<a name="303"><span class="lineNum">     303 </span>            :       template&lt;typename _U1, typename _U2, typename</a>
+<a name="304"><span class="lineNum">     304 </span>            :                enable_if&lt;_PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="305"><span class="lineNum">     305 </span>            :                            _ConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="306"><span class="lineNum">     306 </span>            :                          &amp;&amp; !_PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="307"><span class="lineNum">     307 </span>            :                            _ImplicitlyConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="308"><span class="lineNum">     308 </span>            :                          bool&gt;::type=false&gt;</a>
+<a name="309"><span class="lineNum">     309 </span>            :         explicit constexpr pair(const pair&lt;_U1, _U2&gt;&amp; __p)</a>
+<a name="310"><span class="lineNum">     310 </span>            :         : first(__p.first), second(__p.second) { }</a>
+<a name="311"><span class="lineNum">     311 </span>            : #endif</a>
+<a name="312"><span class="lineNum">     312 </span>            : </a>
+<a name="313"><span class="lineNum">     313 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">     108854 :       constexpr pair(const pair&amp;) = default;        ///&lt; Copy constructor</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineCov">       3178 :       constexpr pair(pair&amp;&amp;) = default;         ///&lt; Move constructor</span></a>
+<a name="316"><span class="lineNum">     316 </span>            : </a>
+<a name="317"><span class="lineNum">     317 </span>            :       // DR 811.</a>
+<a name="318"><span class="lineNum">     318 </span>            :       template&lt;typename _U1, typename</a>
+<a name="319"><span class="lineNum">     319 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="320"><span class="lineNum">     320 </span>            :                            _MoveCopyPair&lt;true, _U1, _T2&gt;(),</a>
+<a name="321"><span class="lineNum">     321 </span>            :                          bool&gt;::type=true&gt;</a>
+<a name="322"><span class="lineNum">     322 </span>            :        constexpr pair(_U1&amp;&amp; __x, const _T2&amp; __y)</a>
+<a name="323"><span class="lineNum">     323 </span>            :        : first(std::forward&lt;_U1&gt;(__x)), second(__y) { }</a>
+<a name="324"><span class="lineNum">     324 </span>            : </a>
+<a name="325"><span class="lineNum">     325 </span>            :       template&lt;typename _U1, typename</a>
+<a name="326"><span class="lineNum">     326 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="327"><span class="lineNum">     327 </span>            :                            _MoveCopyPair&lt;false, _U1, _T2&gt;(),</a>
+<a name="328"><span class="lineNum">     328 </span>            :                          bool&gt;::type=false&gt;</a>
+<a name="329"><span class="lineNum">     329 </span>            :        explicit constexpr pair(_U1&amp;&amp; __x, const _T2&amp; __y)</a>
+<a name="330"><span class="lineNum">     330 </span>            :        : first(std::forward&lt;_U1&gt;(__x)), second(__y) { }</a>
+<a name="331"><span class="lineNum">     331 </span>            : </a>
+<a name="332"><span class="lineNum">     332 </span>            :       template&lt;typename _U2, typename</a>
+<a name="333"><span class="lineNum">     333 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="334"><span class="lineNum">     334 </span>            :                            _CopyMovePair&lt;true, _T1, _U2&gt;(),</a>
+<a name="335"><span class="lineNum">     335 </span>            :                          bool&gt;::type=true&gt;</a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineCov">      18019 :        constexpr pair(const _T1&amp; __x, _U2&amp;&amp; __y)</span></a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineCov">      18058 :        : first(__x), second(std::forward&lt;_U2&gt;(__y)) { }</span></a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            :       template&lt;typename _U2, typename</a>
+<a name="340"><span class="lineNum">     340 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="341"><span class="lineNum">     341 </span>            :                            _CopyMovePair&lt;false, _T1, _U2&gt;(),</a>
+<a name="342"><span class="lineNum">     342 </span>            :                          bool&gt;::type=false&gt;</a>
+<a name="343"><span class="lineNum">     343 </span>            :        explicit pair(const _T1&amp; __x, _U2&amp;&amp; __y)</a>
+<a name="344"><span class="lineNum">     344 </span>            :        : first(__x), second(std::forward&lt;_U2&gt;(__y)) { }</a>
+<a name="345"><span class="lineNum">     345 </span>            : </a>
+<a name="346"><span class="lineNum">     346 </span>            :       template&lt;typename _U1, typename _U2, typename</a>
+<a name="347"><span class="lineNum">     347 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="348"><span class="lineNum">     348 </span>            :                            _MoveConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="349"><span class="lineNum">     349 </span>            :                           &amp;&amp; _PCCP::template</a>
+<a name="350"><span class="lineNum">     350 </span>            :                            _ImplicitlyMoveConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="351"><span class="lineNum">     351 </span>            :                          bool&gt;::type=true&gt;</a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">       3608 :         constexpr pair(_U1&amp;&amp; __x, _U2&amp;&amp; __y)</span></a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineCov">    4045926 :         : first(std::forward&lt;_U1&gt;(__x)), second(std::forward&lt;_U2&gt;(__y)) { }</span></a>
+<a name="354"><span class="lineNum">     354 </span>            : </a>
+<a name="355"><span class="lineNum">     355 </span>            :       template&lt;typename _U1, typename _U2, typename</a>
+<a name="356"><span class="lineNum">     356 </span>            :                enable_if&lt;_PCCP::template</a>
+<a name="357"><span class="lineNum">     357 </span>            :                            _MoveConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="358"><span class="lineNum">     358 </span>            :                           &amp;&amp; !_PCCP::template</a>
+<a name="359"><span class="lineNum">     359 </span>            :                            _ImplicitlyMoveConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="360"><span class="lineNum">     360 </span>            :                          bool&gt;::type=false&gt;</a>
+<a name="361"><span class="lineNum">     361 </span>            :         explicit constexpr pair(_U1&amp;&amp; __x, _U2&amp;&amp; __y)</a>
+<a name="362"><span class="lineNum">     362 </span>            :         : first(std::forward&lt;_U1&gt;(__x)), second(std::forward&lt;_U2&gt;(__y)) { }</a>
+<a name="363"><span class="lineNum">     363 </span>            : </a>
+<a name="364"><span class="lineNum">     364 </span>            : </a>
+<a name="365"><span class="lineNum">     365 </span>            :       template&lt;typename _U1, typename _U2, typename</a>
+<a name="366"><span class="lineNum">     366 </span>            :                enable_if&lt;_PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="367"><span class="lineNum">     367 </span>            :                            _MoveConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="368"><span class="lineNum">     368 </span>            :                           &amp;&amp; _PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="369"><span class="lineNum">     369 </span>            :                            _ImplicitlyMoveConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="370"><span class="lineNum">     370 </span>            :                          bool&gt;::type=true&gt;</a>
+<a name="371"><span class="lineNum">     371 </span>            :         constexpr pair(pair&lt;_U1, _U2&gt;&amp;&amp; __p)</a>
+<a name="372"><span class="lineNum">     372 </span>            :         : first(std::forward&lt;_U1&gt;(__p.first)),</a>
+<a name="373"><span class="lineNum">     373 </span>            :           second(std::forward&lt;_U2&gt;(__p.second)) { }</a>
+<a name="374"><span class="lineNum">     374 </span>            : </a>
+<a name="375"><span class="lineNum">     375 </span>            :       template&lt;typename _U1, typename _U2, typename</a>
+<a name="376"><span class="lineNum">     376 </span>            :                enable_if&lt;_PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="377"><span class="lineNum">     377 </span>            :                            _MoveConstructiblePair&lt;_U1, _U2&gt;()</a>
+<a name="378"><span class="lineNum">     378 </span>            :                           &amp;&amp; !_PCCFP&lt;_U1, _U2&gt;::template</a>
+<a name="379"><span class="lineNum">     379 </span>            :                            _ImplicitlyMoveConvertiblePair&lt;_U1, _U2&gt;(),</a>
+<a name="380"><span class="lineNum">     380 </span>            :                          bool&gt;::type=false&gt;</a>
+<a name="381"><span class="lineNum">     381 </span>            :         explicit constexpr pair(pair&lt;_U1, _U2&gt;&amp;&amp; __p)</a>
+<a name="382"><span class="lineNum">     382 </span>            :         : first(std::forward&lt;_U1&gt;(__p.first)),</a>
+<a name="383"><span class="lineNum">     383 </span>            :           second(std::forward&lt;_U2&gt;(__p.second)) { }</a>
+<a name="384"><span class="lineNum">     384 </span>            : </a>
+<a name="385"><span class="lineNum">     385 </span>            :       template&lt;typename... _Args1, typename... _Args2&gt;</a>
+<a name="386"><span class="lineNum">     386 </span>            :         _GLIBCXX20_CONSTEXPR</a>
+<a name="387"><span class="lineNum">     387 </span>            :         pair(piecewise_construct_t, tuple&lt;_Args1...&gt;, tuple&lt;_Args2...&gt;);</a>
+<a name="388"><span class="lineNum">     388 </span>            : </a>
+<a name="389"><span class="lineNum">     389 </span>            :       _GLIBCXX20_CONSTEXPR pair&amp;</a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineCov">          2 :       operator=(typename conditional&lt;</span></a>
+<a name="391"><span class="lineNum">     391 </span>            :                 __and_&lt;is_copy_assignable&lt;_T1&gt;,</a>
+<a name="392"><span class="lineNum">     392 </span>            :                        is_copy_assignable&lt;_T2&gt;&gt;::value,</a>
+<a name="393"><span class="lineNum">     393 </span>            :                 const pair&amp;, const __nonesuch&amp;&gt;::type __p)</a>
+<a name="394"><span class="lineNum">     394 </span>            :       {</a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineNoCov">          0 :         first = __p.first;</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineNoCov">          0 :         second = __p.second;</span></a>
+<a name="397"><span class="lineNum">     397 </span><span class="lineCov">          2 :         return *this;</span></a>
+<a name="398"><span class="lineNum">     398 </span>            :       }</a>
+<a name="399"><span class="lineNum">     399 </span>            : </a>
+<a name="400"><span class="lineNum">     400 </span>            :       _GLIBCXX20_CONSTEXPR pair&amp;</a>
+<a name="401"><span class="lineNum">     401 </span>            :       operator=(typename conditional&lt;</a>
+<a name="402"><span class="lineNum">     402 </span>            :                 __and_&lt;is_move_assignable&lt;_T1&gt;,</a>
+<a name="403"><span class="lineNum">     403 </span>            :                        is_move_assignable&lt;_T2&gt;&gt;::value,</a>
+<a name="404"><span class="lineNum">     404 </span>            :                 pair&amp;&amp;, __nonesuch&amp;&amp;&gt;::type __p)</a>
+<a name="405"><span class="lineNum">     405 </span>            :       noexcept(__and_&lt;is_nothrow_move_assignable&lt;_T1&gt;,</a>
+<a name="406"><span class="lineNum">     406 </span>            :                       is_nothrow_move_assignable&lt;_T2&gt;&gt;::value)</a>
+<a name="407"><span class="lineNum">     407 </span>            :       {</a>
+<a name="408"><span class="lineNum">     408 </span>            :         first = std::forward&lt;first_type&gt;(__p.first);</a>
+<a name="409"><span class="lineNum">     409 </span>            :         second = std::forward&lt;second_type&gt;(__p.second);</a>
+<a name="410"><span class="lineNum">     410 </span>            :         return *this;</a>
+<a name="411"><span class="lineNum">     411 </span>            :       }</a>
+<a name="412"><span class="lineNum">     412 </span>            : </a>
+<a name="413"><span class="lineNum">     413 </span>            :       template&lt;typename _U1, typename _U2&gt;</a>
+<a name="414"><span class="lineNum">     414 </span>            :         _GLIBCXX20_CONSTEXPR</a>
+<a name="415"><span class="lineNum">     415 </span>            :         typename enable_if&lt;__and_&lt;is_assignable&lt;_T1&amp;, const _U1&amp;&gt;,</a>
+<a name="416"><span class="lineNum">     416 </span>            :                                   is_assignable&lt;_T2&amp;, const _U2&amp;&gt;&gt;::value,</a>
+<a name="417"><span class="lineNum">     417 </span>            :                            pair&amp;&gt;::type</a>
+<a name="418"><span class="lineNum">     418 </span>            :         operator=(const pair&lt;_U1, _U2&gt;&amp; __p)</a>
+<a name="419"><span class="lineNum">     419 </span>            :         {</a>
+<a name="420"><span class="lineNum">     420 </span>            :           first = __p.first;</a>
+<a name="421"><span class="lineNum">     421 </span>            :           second = __p.second;</a>
+<a name="422"><span class="lineNum">     422 </span>            :           return *this;</a>
+<a name="423"><span class="lineNum">     423 </span>            :         }</a>
+<a name="424"><span class="lineNum">     424 </span>            : </a>
+<a name="425"><span class="lineNum">     425 </span>            :       template&lt;typename _U1, typename _U2&gt;</a>
+<a name="426"><span class="lineNum">     426 </span>            :         _GLIBCXX20_CONSTEXPR</a>
+<a name="427"><span class="lineNum">     427 </span>            :         typename enable_if&lt;__and_&lt;is_assignable&lt;_T1&amp;, _U1&amp;&amp;&gt;,</a>
+<a name="428"><span class="lineNum">     428 </span>            :                                   is_assignable&lt;_T2&amp;, _U2&amp;&amp;&gt;&gt;::value,</a>
+<a name="429"><span class="lineNum">     429 </span>            :                            pair&amp;&gt;::type</a>
+<a name="430"><span class="lineNum">     430 </span>            :         operator=(pair&lt;_U1, _U2&gt;&amp;&amp; __p)</a>
+<a name="431"><span class="lineNum">     431 </span>            :         {</a>
+<a name="432"><span class="lineNum">     432 </span>            :           first = std::forward&lt;_U1&gt;(__p.first);</a>
+<a name="433"><span class="lineNum">     433 </span>            :           second = std::forward&lt;_U2&gt;(__p.second);</a>
+<a name="434"><span class="lineNum">     434 </span>            :           return *this;</a>
+<a name="435"><span class="lineNum">     435 </span>            :         }</a>
+<a name="436"><span class="lineNum">     436 </span>            : </a>
+<a name="437"><span class="lineNum">     437 </span>            :       /// Swap the first members and then the second members.</a>
+<a name="438"><span class="lineNum">     438 </span>            :       _GLIBCXX20_CONSTEXPR void</a>
+<a name="439"><span class="lineNum">     439 </span>            :       swap(pair&amp; __p)</a>
+<a name="440"><span class="lineNum">     440 </span>            :       noexcept(__and_&lt;__is_nothrow_swappable&lt;_T1&gt;,</a>
+<a name="441"><span class="lineNum">     441 </span>            :                       __is_nothrow_swappable&lt;_T2&gt;&gt;::value)</a>
+<a name="442"><span class="lineNum">     442 </span>            :       {</a>
+<a name="443"><span class="lineNum">     443 </span>            :         using std::swap;</a>
+<a name="444"><span class="lineNum">     444 </span>            :         swap(first, __p.first);</a>
+<a name="445"><span class="lineNum">     445 </span>            :         swap(second, __p.second);</a>
+<a name="446"><span class="lineNum">     446 </span>            :       }</a>
+<a name="447"><span class="lineNum">     447 </span>            : </a>
+<a name="448"><span class="lineNum">     448 </span>            :     private:</a>
+<a name="449"><span class="lineNum">     449 </span>            :       template&lt;typename... _Args1, std::size_t... _Indexes1,</a>
+<a name="450"><span class="lineNum">     450 </span>            :                typename... _Args2, std::size_t... _Indexes2&gt;</a>
+<a name="451"><span class="lineNum">     451 </span>            :         _GLIBCXX20_CONSTEXPR</a>
+<a name="452"><span class="lineNum">     452 </span>            :         pair(tuple&lt;_Args1...&gt;&amp;, tuple&lt;_Args2...&gt;&amp;,</a>
+<a name="453"><span class="lineNum">     453 </span>            :              _Index_tuple&lt;_Indexes1...&gt;, _Index_tuple&lt;_Indexes2...&gt;);</a>
+<a name="454"><span class="lineNum">     454 </span>            : #endif // C++11</a>
+<a name="455"><span class="lineNum">     455 </span>            :     };</a>
+<a name="456"><span class="lineNum">     456 </span>            : </a>
+<a name="457"><span class="lineNum">     457 </span>            :   /// @relates pair @{</a>
+<a name="458"><span class="lineNum">     458 </span>            : </a>
+<a name="459"><span class="lineNum">     459 </span>            : #if __cpp_deduction_guides &gt;= 201606</a>
+<a name="460"><span class="lineNum">     460 </span>            :   template&lt;typename _T1, typename _T2&gt; pair(_T1, _T2) -&gt; pair&lt;_T1, _T2&gt;;</a>
+<a name="461"><span class="lineNum">     461 </span>            : #endif</a>
+<a name="462"><span class="lineNum">     462 </span>            : </a>
+<a name="463"><span class="lineNum">     463 </span>            :   /// Two pairs of the same type are equal iff their members are equal.</a>
+<a name="464"><span class="lineNum">     464 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="465"><span class="lineNum">     465 </span>            :     inline _GLIBCXX_CONSTEXPR bool</a>
+<a name="466"><span class="lineNum">     466 </span>            :     operator==(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="467"><span class="lineNum">     467 </span>            :     { return __x.first == __y.first &amp;&amp; __x.second == __y.second; }</a>
+<a name="468"><span class="lineNum">     468 </span>            : </a>
+<a name="469"><span class="lineNum">     469 </span>            : #if __cpp_lib_three_way_comparison &amp;&amp; __cpp_lib_concepts</a>
+<a name="470"><span class="lineNum">     470 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="471"><span class="lineNum">     471 </span>            :     constexpr common_comparison_category_t&lt;__detail::__synth3way_t&lt;_T1&gt;,</a>
+<a name="472"><span class="lineNum">     472 </span>            :                                            __detail::__synth3way_t&lt;_T2&gt;&gt;</a>
+<a name="473"><span class="lineNum">     473 </span>            :     operator&lt;=&gt;(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="474"><span class="lineNum">     474 </span>            :     {</a>
+<a name="475"><span class="lineNum">     475 </span>            :       if (auto __c = __detail::__synth3way(__x.first, __y.first); __c != 0)</a>
+<a name="476"><span class="lineNum">     476 </span>            :         return __c;</a>
+<a name="477"><span class="lineNum">     477 </span>            :       return __detail::__synth3way(__x.second, __y.second);</a>
+<a name="478"><span class="lineNum">     478 </span>            :     }</a>
+<a name="479"><span class="lineNum">     479 </span>            : #else</a>
+<a name="480"><span class="lineNum">     480 </span>            :   /** Defines a lexicographical order for pairs.</a>
+<a name="481"><span class="lineNum">     481 </span>            :    *</a>
+<a name="482"><span class="lineNum">     482 </span>            :    * For two pairs of the same type, `P` is ordered before `Q` if</a>
+<a name="483"><span class="lineNum">     483 </span>            :    * `P.first` is less than `Q.first`, or if `P.first` and `Q.first`</a>
+<a name="484"><span class="lineNum">     484 </span>            :    * are equivalent (neither is less than the other) and `P.second` is less</a>
+<a name="485"><span class="lineNum">     485 </span>            :    * than `Q.second`.</a>
+<a name="486"><span class="lineNum">     486 </span>            :   */</a>
+<a name="487"><span class="lineNum">     487 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="488"><span class="lineNum">     488 </span>            :     inline _GLIBCXX_CONSTEXPR bool</a>
+<a name="489"><span class="lineNum">     489 </span><span class="lineCov">        938 :     operator&lt;(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</span></a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineCov">        856 :     { return __x.first &lt; __y.first</span></a>
+<a name="491"><span class="lineNum">     491 </span><span class="lineCov">        938 :              || (!(__y.first &lt; __x.first) &amp;&amp; __x.second &lt; __y.second); }</span></a>
+<a name="492"><span class="lineNum">     492 </span>            : </a>
+<a name="493"><span class="lineNum">     493 </span>            :   /// Uses @c operator== to find the result.</a>
+<a name="494"><span class="lineNum">     494 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="495"><span class="lineNum">     495 </span>            :     inline _GLIBCXX_CONSTEXPR bool</a>
+<a name="496"><span class="lineNum">     496 </span>            :     operator!=(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="497"><span class="lineNum">     497 </span>            :     { return !(__x == __y); }</a>
+<a name="498"><span class="lineNum">     498 </span>            : </a>
+<a name="499"><span class="lineNum">     499 </span>            :   /// Uses @c operator&lt; to find the result.</a>
+<a name="500"><span class="lineNum">     500 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="501"><span class="lineNum">     501 </span>            :     inline _GLIBCXX_CONSTEXPR bool</a>
+<a name="502"><span class="lineNum">     502 </span>            :     operator&gt;(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="503"><span class="lineNum">     503 </span>            :     { return __y &lt; __x; }</a>
+<a name="504"><span class="lineNum">     504 </span>            : </a>
+<a name="505"><span class="lineNum">     505 </span>            :   /// Uses @c operator&lt; to find the result.</a>
+<a name="506"><span class="lineNum">     506 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="507"><span class="lineNum">     507 </span>            :     inline _GLIBCXX_CONSTEXPR bool</a>
+<a name="508"><span class="lineNum">     508 </span>            :     operator&lt;=(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="509"><span class="lineNum">     509 </span>            :     { return !(__y &lt; __x); }</a>
+<a name="510"><span class="lineNum">     510 </span>            : </a>
+<a name="511"><span class="lineNum">     511 </span>            :   /// Uses @c operator&lt; to find the result.</a>
+<a name="512"><span class="lineNum">     512 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="513"><span class="lineNum">     513 </span>            :     inline _GLIBCXX_CONSTEXPR bool</a>
+<a name="514"><span class="lineNum">     514 </span>            :     operator&gt;=(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="515"><span class="lineNum">     515 </span>            :     { return !(__x &lt; __y); }</a>
+<a name="516"><span class="lineNum">     516 </span>            : #endif // !(three_way_comparison &amp;&amp; concepts)</a>
+<a name="517"><span class="lineNum">     517 </span>            : </a>
+<a name="518"><span class="lineNum">     518 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="519"><span class="lineNum">     519 </span>            :   /** Swap overload for pairs. Calls std::pair::swap().</a>
+<a name="520"><span class="lineNum">     520 </span>            :    *</a>
+<a name="521"><span class="lineNum">     521 </span>            :    * @note This std::swap overload is not declared in C++03 mode,</a>
+<a name="522"><span class="lineNum">     522 </span>            :    * which has performance implications, e.g. see https://gcc.gnu.org/PR38466</a>
+<a name="523"><span class="lineNum">     523 </span>            :   */</a>
+<a name="524"><span class="lineNum">     524 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="525"><span class="lineNum">     525 </span>            :     _GLIBCXX20_CONSTEXPR inline</a>
+<a name="526"><span class="lineNum">     526 </span>            : #if __cplusplus &gt; 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11</a>
+<a name="527"><span class="lineNum">     527 </span>            :     // Constrained free swap overload, see p0185r1</a>
+<a name="528"><span class="lineNum">     528 </span>            :     typename enable_if&lt;__and_&lt;__is_swappable&lt;_T1&gt;,</a>
+<a name="529"><span class="lineNum">     529 </span>            :                               __is_swappable&lt;_T2&gt;&gt;::value&gt;::type</a>
+<a name="530"><span class="lineNum">     530 </span>            : #else</a>
+<a name="531"><span class="lineNum">     531 </span>            :     void</a>
+<a name="532"><span class="lineNum">     532 </span>            : #endif</a>
+<a name="533"><span class="lineNum">     533 </span>            :     swap(pair&lt;_T1, _T2&gt;&amp; __x, pair&lt;_T1, _T2&gt;&amp; __y)</a>
+<a name="534"><span class="lineNum">     534 </span>            :     noexcept(noexcept(__x.swap(__y)))</a>
+<a name="535"><span class="lineNum">     535 </span>            :     { __x.swap(__y); }</a>
+<a name="536"><span class="lineNum">     536 </span>            : </a>
+<a name="537"><span class="lineNum">     537 </span>            : #if __cplusplus &gt; 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11</a>
+<a name="538"><span class="lineNum">     538 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="539"><span class="lineNum">     539 </span>            :     typename enable_if&lt;!__and_&lt;__is_swappable&lt;_T1&gt;,</a>
+<a name="540"><span class="lineNum">     540 </span>            :                                __is_swappable&lt;_T2&gt;&gt;::value&gt;::type</a>
+<a name="541"><span class="lineNum">     541 </span>            :     swap(pair&lt;_T1, _T2&gt;&amp;, pair&lt;_T1, _T2&gt;&amp;) = delete;</a>
+<a name="542"><span class="lineNum">     542 </span>            : #endif</a>
+<a name="543"><span class="lineNum">     543 </span>            : #endif // __cplusplus &gt;= 201103L</a>
+<a name="544"><span class="lineNum">     544 </span>            : </a>
+<a name="545"><span class="lineNum">     545 </span>            :   /// @} relates pair</a>
+<a name="546"><span class="lineNum">     546 </span>            : </a>
+<a name="547"><span class="lineNum">     547 </span>            :   /**</a>
+<a name="548"><span class="lineNum">     548 </span>            :    *  @brief A convenience wrapper for creating a pair from two objects.</a>
+<a name="549"><span class="lineNum">     549 </span>            :    *  @param  __x  The first object.</a>
+<a name="550"><span class="lineNum">     550 </span>            :    *  @param  __y  The second object.</a>
+<a name="551"><span class="lineNum">     551 </span>            :    *  @return   A newly-constructed pair&lt;&gt; object of the appropriate type.</a>
+<a name="552"><span class="lineNum">     552 </span>            :    *</a>
+<a name="553"><span class="lineNum">     553 </span>            :    *  The C++98 standard says the objects are passed by reference-to-const,</a>
+<a name="554"><span class="lineNum">     554 </span>            :    *  but C++03 says they are passed by value (this was LWG issue #181).</a>
+<a name="555"><span class="lineNum">     555 </span>            :    *</a>
+<a name="556"><span class="lineNum">     556 </span>            :    *  Since C++11 they have been passed by forwarding reference and then</a>
+<a name="557"><span class="lineNum">     557 </span>            :    *  forwarded to the new members of the pair. To create a pair with a</a>
+<a name="558"><span class="lineNum">     558 </span>            :    *  member of reference type, pass a `reference_wrapper` to this function.</a>
+<a name="559"><span class="lineNum">     559 </span>            :    */</a>
+<a name="560"><span class="lineNum">     560 </span>            :   // _GLIBCXX_RESOLVE_LIB_DEFECTS</a>
+<a name="561"><span class="lineNum">     561 </span>            :   // 181.  make_pair() unintended behavior</a>
+<a name="562"><span class="lineNum">     562 </span>            : #if __cplusplus &gt;= 201103L</a>
+<a name="563"><span class="lineNum">     563 </span>            :   // NB: DR 706.</a>
+<a name="564"><span class="lineNum">     564 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="565"><span class="lineNum">     565 </span>            :     constexpr pair&lt;typename __decay_and_strip&lt;_T1&gt;::__type,</a>
+<a name="566"><span class="lineNum">     566 </span>            :                    typename __decay_and_strip&lt;_T2&gt;::__type&gt;</a>
+<a name="567"><span class="lineNum">     567 </span>            :     make_pair(_T1&amp;&amp; __x, _T2&amp;&amp; __y)</a>
+<a name="568"><span class="lineNum">     568 </span>            :     {</a>
+<a name="569"><span class="lineNum">     569 </span>            :       typedef typename __decay_and_strip&lt;_T1&gt;::__type __ds_type1;</a>
+<a name="570"><span class="lineNum">     570 </span>            :       typedef typename __decay_and_strip&lt;_T2&gt;::__type __ds_type2;</a>
+<a name="571"><span class="lineNum">     571 </span>            :       typedef pair&lt;__ds_type1, __ds_type2&gt;              __pair_type;</a>
+<a name="572"><span class="lineNum">     572 </span>            :       return __pair_type(std::forward&lt;_T1&gt;(__x), std::forward&lt;_T2&gt;(__y));</a>
+<a name="573"><span class="lineNum">     573 </span>            :     }</a>
+<a name="574"><span class="lineNum">     574 </span>            : #else</a>
+<a name="575"><span class="lineNum">     575 </span>            :   template&lt;typename _T1, typename _T2&gt;</a>
+<a name="576"><span class="lineNum">     576 </span>            :     inline pair&lt;_T1, _T2&gt;</a>
+<a name="577"><span class="lineNum">     577 </span>            :     make_pair(_T1 __x, _T2 __y)</a>
+<a name="578"><span class="lineNum">     578 </span>            :     { return pair&lt;_T1, _T2&gt;(__x, __y); }</a>
+<a name="579"><span class="lineNum">     579 </span>            : #endif</a>
+<a name="580"><span class="lineNum">     580 </span>            : </a>
+<a name="581"><span class="lineNum">     581 </span>            :   /// @}</a>
+<a name="582"><span class="lineNum">     582 </span>            : </a>
+<a name="583"><span class="lineNum">     583 </span>            : _GLIBCXX_END_NAMESPACE_VERSION</a>
+<a name="584"><span class="lineNum">     584 </span>            : } // namespace std</a>
+<a name="585"><span class="lineNum">     585 </span>            : </a>
+<a name="586"><span class="lineNum">     586 </span>            : #endif /* _STL_PAIR_H */</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

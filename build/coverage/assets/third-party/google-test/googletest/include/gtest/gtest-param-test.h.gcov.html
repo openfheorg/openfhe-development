@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - third-party/google-test/googletest/include/gtest/gtest-param-test.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">third-party/google-test/googletest/include/gtest</a> - gtest-param-test.h<span style="font-size: 80%;"> (source / <a href="gtest-param-test.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 18:46:08</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright 2008, Google Inc.</a>
+<a name="2"><span class="lineNum">       2 </span>            : // All rights reserved.</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="5"><span class="lineNum">       5 </span>            : // modification, are permitted provided that the following conditions are</a>
+<a name="6"><span class="lineNum">       6 </span>            : // met:</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : //     * Redistributions of source code must retain the above copyright</a>
+<a name="9"><span class="lineNum">       9 </span>            : // notice, this list of conditions and the following disclaimer.</a>
+<a name="10"><span class="lineNum">      10 </span>            : //     * Redistributions in binary form must reproduce the above</a>
+<a name="11"><span class="lineNum">      11 </span>            : // copyright notice, this list of conditions and the following disclaimer</a>
+<a name="12"><span class="lineNum">      12 </span>            : // in the documentation and/or other materials provided with the</a>
+<a name="13"><span class="lineNum">      13 </span>            : // distribution.</a>
+<a name="14"><span class="lineNum">      14 </span>            : //     * Neither the name of Google Inc. nor the names of its</a>
+<a name="15"><span class="lineNum">      15 </span>            : // contributors may be used to endorse or promote products derived from</a>
+<a name="16"><span class="lineNum">      16 </span>            : // this software without specific prior written permission.</a>
+<a name="17"><span class="lineNum">      17 </span>            : //</a>
+<a name="18"><span class="lineNum">      18 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</a>
+<a name="19"><span class="lineNum">      19 </span>            : // &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</a>
+<a name="20"><span class="lineNum">      20 </span>            : // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR</a>
+<a name="21"><span class="lineNum">      21 </span>            : // A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT</a>
+<a name="22"><span class="lineNum">      22 </span>            : // OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,</a>
+<a name="23"><span class="lineNum">      23 </span>            : // SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT</a>
+<a name="24"><span class="lineNum">      24 </span>            : // LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY</a>
+<a name="26"><span class="lineNum">      26 </span>            : // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</a>
+<a name="27"><span class="lineNum">      27 </span>            : // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="29"><span class="lineNum">      29 </span>            : //</a>
+<a name="30"><span class="lineNum">      30 </span>            : // Macros and functions for implementing parameterized tests</a>
+<a name="31"><span class="lineNum">      31 </span>            : // in Google C++ Testing and Mocking Framework (Google Test)</a>
+<a name="32"><span class="lineNum">      32 </span>            : //</a>
+<a name="33"><span class="lineNum">      33 </span>            : // This file is generated by a SCRIPT.  DO NOT EDIT BY HAND!</a>
+<a name="34"><span class="lineNum">      34 </span>            : //</a>
+<a name="35"><span class="lineNum">      35 </span>            : // GOOGLETEST_CM0001 DO NOT DELETE</a>
+<a name="36"><span class="lineNum">      36 </span>            : #ifndef GTEST_INCLUDE_GTEST_GTEST_PARAM_TEST_H_</a>
+<a name="37"><span class="lineNum">      37 </span>            : #define GTEST_INCLUDE_GTEST_GTEST_PARAM_TEST_H_</a>
+<a name="38"><span class="lineNum">      38 </span>            : </a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : // Value-parameterized tests allow you to test your code with different</a>
+<a name="41"><span class="lineNum">      41 </span>            : // parameters without writing multiple copies of the same test.</a>
+<a name="42"><span class="lineNum">      42 </span>            : //</a>
+<a name="43"><span class="lineNum">      43 </span>            : // Here is how you use value-parameterized tests:</a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            : #if 0</a>
+<a name="46"><span class="lineNum">      46 </span>            : </a>
+<a name="47"><span class="lineNum">      47 </span>            : // To write value-parameterized tests, first you should define a fixture</a>
+<a name="48"><span class="lineNum">      48 </span>            : // class. It is usually derived from testing::TestWithParam&lt;T&gt; (see below for</a>
+<a name="49"><span class="lineNum">      49 </span>            : // another inheritance scheme that's sometimes useful in more complicated</a>
+<a name="50"><span class="lineNum">      50 </span>            : // class hierarchies), where the type of your parameter values.</a>
+<a name="51"><span class="lineNum">      51 </span>            : // TestWithParam&lt;T&gt; is itself derived from testing::Test. T can be any</a>
+<a name="52"><span class="lineNum">      52 </span>            : // copyable type. If it's a raw pointer, you are responsible for managing the</a>
+<a name="53"><span class="lineNum">      53 </span>            : // lifespan of the pointed values.</a>
+<a name="54"><span class="lineNum">      54 </span>            : </a>
+<a name="55"><span class="lineNum">      55 </span>            : class FooTest : public ::testing::TestWithParam&lt;const char*&gt; {</a>
+<a name="56"><span class="lineNum">      56 </span>            :   // You can implement all the usual class fixture members here.</a>
+<a name="57"><span class="lineNum">      57 </span>            : };</a>
+<a name="58"><span class="lineNum">      58 </span>            : </a>
+<a name="59"><span class="lineNum">      59 </span>            : // Then, use the TEST_P macro to define as many parameterized tests</a>
+<a name="60"><span class="lineNum">      60 </span>            : // for this fixture as you want. The _P suffix is for &quot;parameterized&quot;</a>
+<a name="61"><span class="lineNum">      61 </span>            : // or &quot;pattern&quot;, whichever you prefer to think.</a>
+<a name="62"><span class="lineNum">      62 </span>            : </a>
+<a name="63"><span class="lineNum">      63 </span>            : TEST_P(FooTest, DoesBlah) {</a>
+<a name="64"><span class="lineNum">      64 </span>            :   // Inside a test, access the test parameter with the GetParam() method</a>
+<a name="65"><span class="lineNum">      65 </span>            :   // of the TestWithParam&lt;T&gt; class:</a>
+<a name="66"><span class="lineNum">      66 </span>            :   EXPECT_TRUE(foo.Blah(GetParam()));</a>
+<a name="67"><span class="lineNum">      67 </span>            :   ...</a>
+<a name="68"><span class="lineNum">      68 </span>            : }</a>
+<a name="69"><span class="lineNum">      69 </span>            : </a>
+<a name="70"><span class="lineNum">      70 </span>            : TEST_P(FooTest, HasBlahBlah) {</a>
+<a name="71"><span class="lineNum">      71 </span>            :   ...</a>
+<a name="72"><span class="lineNum">      72 </span>            : }</a>
+<a name="73"><span class="lineNum">      73 </span>            : </a>
+<a name="74"><span class="lineNum">      74 </span>            : // Finally, you can use INSTANTIATE_TEST_SUITE_P to instantiate the test</a>
+<a name="75"><span class="lineNum">      75 </span>            : // case with any set of parameters you want. Google Test defines a number</a>
+<a name="76"><span class="lineNum">      76 </span>            : // of functions for generating test parameters. They return what we call</a>
+<a name="77"><span class="lineNum">      77 </span>            : // (surprise!) parameter generators. Here is a summary of them, which</a>
+<a name="78"><span class="lineNum">      78 </span>            : // are all in the testing namespace:</a>
+<a name="79"><span class="lineNum">      79 </span>            : //</a>
+<a name="80"><span class="lineNum">      80 </span>            : //</a>
+<a name="81"><span class="lineNum">      81 </span>            : //  Range(begin, end [, step]) - Yields values {begin, begin+step,</a>
+<a name="82"><span class="lineNum">      82 </span>            : //                               begin+step+step, ...}. The values do not</a>
+<a name="83"><span class="lineNum">      83 </span>            : //                               include end. step defaults to 1.</a>
+<a name="84"><span class="lineNum">      84 </span>            : //  Values(v1, v2, ..., vN)    - Yields values {v1, v2, ..., vN}.</a>
+<a name="85"><span class="lineNum">      85 </span>            : //  ValuesIn(container)        - Yields values from a C-style array, an STL</a>
+<a name="86"><span class="lineNum">      86 </span>            : //  ValuesIn(begin,end)          container, or an iterator range [begin, end).</a>
+<a name="87"><span class="lineNum">      87 </span>            : //  Bool()                     - Yields sequence {false, true}.</a>
+<a name="88"><span class="lineNum">      88 </span>            : //  Combine(g1, g2, ..., gN)   - Yields all combinations (the Cartesian product</a>
+<a name="89"><span class="lineNum">      89 </span>            : //                               for the math savvy) of the values generated</a>
+<a name="90"><span class="lineNum">      90 </span>            : //                               by the N generators.</a>
+<a name="91"><span class="lineNum">      91 </span>            : //</a>
+<a name="92"><span class="lineNum">      92 </span>            : // For more details, see comments at the definitions of these functions below</a>
+<a name="93"><span class="lineNum">      93 </span>            : // in this file.</a>
+<a name="94"><span class="lineNum">      94 </span>            : //</a>
+<a name="95"><span class="lineNum">      95 </span>            : // The following statement will instantiate tests from the FooTest test suite</a>
+<a name="96"><span class="lineNum">      96 </span>            : // each with parameter values &quot;meeny&quot;, &quot;miny&quot;, and &quot;moe&quot;.</a>
+<a name="97"><span class="lineNum">      97 </span>            : </a>
+<a name="98"><span class="lineNum">      98 </span>            : INSTANTIATE_TEST_SUITE_P(InstantiationName,</a>
+<a name="99"><span class="lineNum">      99 </span>            :                          FooTest,</a>
+<a name="100"><span class="lineNum">     100 </span>            :                          Values(&quot;meeny&quot;, &quot;miny&quot;, &quot;moe&quot;));</a>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<a name="102"><span class="lineNum">     102 </span>            : // To distinguish different instances of the pattern, (yes, you</a>
+<a name="103"><span class="lineNum">     103 </span>            : // can instantiate it more than once) the first argument to the</a>
+<a name="104"><span class="lineNum">     104 </span>            : // INSTANTIATE_TEST_SUITE_P macro is a prefix that will be added to the</a>
+<a name="105"><span class="lineNum">     105 </span>            : // actual test suite name. Remember to pick unique prefixes for different</a>
+<a name="106"><span class="lineNum">     106 </span>            : // instantiations. The tests from the instantiation above will have</a>
+<a name="107"><span class="lineNum">     107 </span>            : // these names:</a>
+<a name="108"><span class="lineNum">     108 </span>            : //</a>
+<a name="109"><span class="lineNum">     109 </span>            : //    * InstantiationName/FooTest.DoesBlah/0 for &quot;meeny&quot;</a>
+<a name="110"><span class="lineNum">     110 </span>            : //    * InstantiationName/FooTest.DoesBlah/1 for &quot;miny&quot;</a>
+<a name="111"><span class="lineNum">     111 </span>            : //    * InstantiationName/FooTest.DoesBlah/2 for &quot;moe&quot;</a>
+<a name="112"><span class="lineNum">     112 </span>            : //    * InstantiationName/FooTest.HasBlahBlah/0 for &quot;meeny&quot;</a>
+<a name="113"><span class="lineNum">     113 </span>            : //    * InstantiationName/FooTest.HasBlahBlah/1 for &quot;miny&quot;</a>
+<a name="114"><span class="lineNum">     114 </span>            : //    * InstantiationName/FooTest.HasBlahBlah/2 for &quot;moe&quot;</a>
+<a name="115"><span class="lineNum">     115 </span>            : //</a>
+<a name="116"><span class="lineNum">     116 </span>            : // You can use these names in --gtest_filter.</a>
+<a name="117"><span class="lineNum">     117 </span>            : //</a>
+<a name="118"><span class="lineNum">     118 </span>            : // This statement will instantiate all tests from FooTest again, each</a>
+<a name="119"><span class="lineNum">     119 </span>            : // with parameter values &quot;cat&quot; and &quot;dog&quot;:</a>
+<a name="120"><span class="lineNum">     120 </span>            : </a>
+<a name="121"><span class="lineNum">     121 </span>            : const char* pets[] = {&quot;cat&quot;, &quot;dog&quot;};</a>
+<a name="122"><span class="lineNum">     122 </span>            : INSTANTIATE_TEST_SUITE_P(AnotherInstantiationName, FooTest, ValuesIn(pets));</a>
+<a name="123"><span class="lineNum">     123 </span>            : </a>
+<a name="124"><span class="lineNum">     124 </span>            : // The tests from the instantiation above will have these names:</a>
+<a name="125"><span class="lineNum">     125 </span>            : //</a>
+<a name="126"><span class="lineNum">     126 </span>            : //    * AnotherInstantiationName/FooTest.DoesBlah/0 for &quot;cat&quot;</a>
+<a name="127"><span class="lineNum">     127 </span>            : //    * AnotherInstantiationName/FooTest.DoesBlah/1 for &quot;dog&quot;</a>
+<a name="128"><span class="lineNum">     128 </span>            : //    * AnotherInstantiationName/FooTest.HasBlahBlah/0 for &quot;cat&quot;</a>
+<a name="129"><span class="lineNum">     129 </span>            : //    * AnotherInstantiationName/FooTest.HasBlahBlah/1 for &quot;dog&quot;</a>
+<a name="130"><span class="lineNum">     130 </span>            : //</a>
+<a name="131"><span class="lineNum">     131 </span>            : // Please note that INSTANTIATE_TEST_SUITE_P will instantiate all tests</a>
+<a name="132"><span class="lineNum">     132 </span>            : // in the given test suite, whether their definitions come before or</a>
+<a name="133"><span class="lineNum">     133 </span>            : // AFTER the INSTANTIATE_TEST_SUITE_P statement.</a>
+<a name="134"><span class="lineNum">     134 </span>            : //</a>
+<a name="135"><span class="lineNum">     135 </span>            : // Please also note that generator expressions (including parameters to the</a>
+<a name="136"><span class="lineNum">     136 </span>            : // generators) are evaluated in InitGoogleTest(), after main() has started.</a>
+<a name="137"><span class="lineNum">     137 </span>            : // This allows the user on one hand, to adjust generator parameters in order</a>
+<a name="138"><span class="lineNum">     138 </span>            : // to dynamically determine a set of tests to run and on the other hand,</a>
+<a name="139"><span class="lineNum">     139 </span>            : // give the user a chance to inspect the generated tests with Google Test</a>
+<a name="140"><span class="lineNum">     140 </span>            : // reflection API before RUN_ALL_TESTS() is executed.</a>
+<a name="141"><span class="lineNum">     141 </span>            : //</a>
+<a name="142"><span class="lineNum">     142 </span>            : // You can see samples/sample7_unittest.cc and samples/sample8_unittest.cc</a>
+<a name="143"><span class="lineNum">     143 </span>            : // for more examples.</a>
+<a name="144"><span class="lineNum">     144 </span>            : //</a>
+<a name="145"><span class="lineNum">     145 </span>            : // In the future, we plan to publish the API for defining new parameter</a>
+<a name="146"><span class="lineNum">     146 </span>            : // generators. But for now this interface remains part of the internal</a>
+<a name="147"><span class="lineNum">     147 </span>            : // implementation and is subject to change.</a>
+<a name="148"><span class="lineNum">     148 </span>            : //</a>
+<a name="149"><span class="lineNum">     149 </span>            : //</a>
+<a name="150"><span class="lineNum">     150 </span>            : // A parameterized test fixture must be derived from testing::Test and from</a>
+<a name="151"><span class="lineNum">     151 </span>            : // testing::WithParamInterface&lt;T&gt;, where T is the type of the parameter</a>
+<a name="152"><span class="lineNum">     152 </span>            : // values. Inheriting from TestWithParam&lt;T&gt; satisfies that requirement because</a>
+<a name="153"><span class="lineNum">     153 </span>            : // TestWithParam&lt;T&gt; inherits from both Test and WithParamInterface. In more</a>
+<a name="154"><span class="lineNum">     154 </span>            : // complicated hierarchies, however, it is occasionally useful to inherit</a>
+<a name="155"><span class="lineNum">     155 </span>            : // separately from Test and WithParamInterface. For example:</a>
+<a name="156"><span class="lineNum">     156 </span>            : </a>
+<a name="157"><span class="lineNum">     157 </span>            : class BaseTest : public ::testing::Test {</a>
+<a name="158"><span class="lineNum">     158 </span>            :   // You can inherit all the usual members for a non-parameterized test</a>
+<a name="159"><span class="lineNum">     159 </span>            :   // fixture here.</a>
+<a name="160"><span class="lineNum">     160 </span>            : };</a>
+<a name="161"><span class="lineNum">     161 </span>            : </a>
+<a name="162"><span class="lineNum">     162 </span>            : class DerivedTest : public BaseTest, public ::testing::WithParamInterface&lt;int&gt; {</a>
+<a name="163"><span class="lineNum">     163 </span>            :   // The usual test fixture members go here too.</a>
+<a name="164"><span class="lineNum">     164 </span>            : };</a>
+<a name="165"><span class="lineNum">     165 </span>            : </a>
+<a name="166"><span class="lineNum">     166 </span>            : TEST_F(BaseTest, HasFoo) {</a>
+<a name="167"><span class="lineNum">     167 </span>            :   // This is an ordinary non-parameterized test.</a>
+<a name="168"><span class="lineNum">     168 </span>            : }</a>
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<a name="170"><span class="lineNum">     170 </span>            : TEST_P(DerivedTest, DoesBlah) {</a>
+<a name="171"><span class="lineNum">     171 </span>            :   // GetParam works just the same here as if you inherit from TestWithParam.</a>
+<a name="172"><span class="lineNum">     172 </span>            :   EXPECT_TRUE(foo.Blah(GetParam()));</a>
+<a name="173"><span class="lineNum">     173 </span>            : }</a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span>            : #endif  // 0</a>
+<a name="176"><span class="lineNum">     176 </span>            : </a>
+<a name="177"><span class="lineNum">     177 </span>            : #include &lt;iterator&gt;</a>
+<a name="178"><span class="lineNum">     178 </span>            : #include &lt;utility&gt;</a>
+<a name="179"><span class="lineNum">     179 </span>            : </a>
+<a name="180"><span class="lineNum">     180 </span>            : #include &quot;gtest/internal/gtest-internal.h&quot;</a>
+<a name="181"><span class="lineNum">     181 </span>            : #include &quot;gtest/internal/gtest-param-util.h&quot;</a>
+<a name="182"><span class="lineNum">     182 </span>            : #include &quot;gtest/internal/gtest-port.h&quot;</a>
+<a name="183"><span class="lineNum">     183 </span>            : </a>
+<a name="184"><span class="lineNum">     184 </span>            : namespace testing {</a>
+<a name="185"><span class="lineNum">     185 </span>            : </a>
+<a name="186"><span class="lineNum">     186 </span>            : // Functions producing parameter generators.</a>
+<a name="187"><span class="lineNum">     187 </span>            : //</a>
+<a name="188"><span class="lineNum">     188 </span>            : // Google Test uses these generators to produce parameters for value-</a>
+<a name="189"><span class="lineNum">     189 </span>            : // parameterized tests. When a parameterized test suite is instantiated</a>
+<a name="190"><span class="lineNum">     190 </span>            : // with a particular generator, Google Test creates and runs tests</a>
+<a name="191"><span class="lineNum">     191 </span>            : // for each element in the sequence produced by the generator.</a>
+<a name="192"><span class="lineNum">     192 </span>            : //</a>
+<a name="193"><span class="lineNum">     193 </span>            : // In the following sample, tests from test suite FooTest are instantiated</a>
+<a name="194"><span class="lineNum">     194 </span>            : // each three times with parameter values 3, 5, and 8:</a>
+<a name="195"><span class="lineNum">     195 </span>            : //</a>
+<a name="196"><span class="lineNum">     196 </span>            : // class FooTest : public TestWithParam&lt;int&gt; { ... };</a>
+<a name="197"><span class="lineNum">     197 </span>            : //</a>
+<a name="198"><span class="lineNum">     198 </span>            : // TEST_P(FooTest, TestThis) {</a>
+<a name="199"><span class="lineNum">     199 </span>            : // }</a>
+<a name="200"><span class="lineNum">     200 </span>            : // TEST_P(FooTest, TestThat) {</a>
+<a name="201"><span class="lineNum">     201 </span>            : // }</a>
+<a name="202"><span class="lineNum">     202 </span>            : // INSTANTIATE_TEST_SUITE_P(TestSequence, FooTest, Values(3, 5, 8));</a>
+<a name="203"><span class="lineNum">     203 </span>            : //</a>
+<a name="204"><span class="lineNum">     204 </span>            : </a>
+<a name="205"><span class="lineNum">     205 </span>            : // Range() returns generators providing sequences of values in a range.</a>
+<a name="206"><span class="lineNum">     206 </span>            : //</a>
+<a name="207"><span class="lineNum">     207 </span>            : // Synopsis:</a>
+<a name="208"><span class="lineNum">     208 </span>            : // Range(start, end)</a>
+<a name="209"><span class="lineNum">     209 </span>            : //   - returns a generator producing a sequence of values {start, start+1,</a>
+<a name="210"><span class="lineNum">     210 </span>            : //     start+2, ..., }.</a>
+<a name="211"><span class="lineNum">     211 </span>            : // Range(start, end, step)</a>
+<a name="212"><span class="lineNum">     212 </span>            : //   - returns a generator producing a sequence of values {start, start+step,</a>
+<a name="213"><span class="lineNum">     213 </span>            : //     start+step+step, ..., }.</a>
+<a name="214"><span class="lineNum">     214 </span>            : // Notes:</a>
+<a name="215"><span class="lineNum">     215 </span>            : //   * The generated sequences never include end. For example, Range(1, 5)</a>
+<a name="216"><span class="lineNum">     216 </span>            : //     returns a generator producing a sequence {1, 2, 3, 4}. Range(1, 9, 2)</a>
+<a name="217"><span class="lineNum">     217 </span>            : //     returns a generator producing {1, 3, 5, 7}.</a>
+<a name="218"><span class="lineNum">     218 </span>            : //   * start and end must have the same type. That type may be any integral or</a>
+<a name="219"><span class="lineNum">     219 </span>            : //     floating-point type or a user defined type satisfying these conditions:</a>
+<a name="220"><span class="lineNum">     220 </span>            : //     * It must be assignable (have operator=() defined).</a>
+<a name="221"><span class="lineNum">     221 </span>            : //     * It must have operator+() (operator+(int-compatible type) for</a>
+<a name="222"><span class="lineNum">     222 </span>            : //       two-operand version).</a>
+<a name="223"><span class="lineNum">     223 </span>            : //     * It must have operator&lt;() defined.</a>
+<a name="224"><span class="lineNum">     224 </span>            : //     Elements in the resulting sequences will also have that type.</a>
+<a name="225"><span class="lineNum">     225 </span>            : //   * Condition start &lt; end must be satisfied in order for resulting sequences</a>
+<a name="226"><span class="lineNum">     226 </span>            : //     to contain any elements.</a>
+<a name="227"><span class="lineNum">     227 </span>            : //</a>
+<a name="228"><span class="lineNum">     228 </span>            : template &lt;typename T, typename IncrementT&gt;</a>
+<a name="229"><span class="lineNum">     229 </span>            : internal::ParamGenerator&lt;T&gt; Range(T start, T end, IncrementT step) {</a>
+<a name="230"><span class="lineNum">     230 </span>            :   return internal::ParamGenerator&lt;T&gt;(</a>
+<a name="231"><span class="lineNum">     231 </span>            :       new internal::RangeGenerator&lt;T, IncrementT&gt;(start, end, step));</a>
+<a name="232"><span class="lineNum">     232 </span>            : }</a>
+<a name="233"><span class="lineNum">     233 </span>            : </a>
+<a name="234"><span class="lineNum">     234 </span>            : template &lt;typename T&gt;</a>
+<a name="235"><span class="lineNum">     235 </span>            : internal::ParamGenerator&lt;T&gt; Range(T start, T end) {</a>
+<a name="236"><span class="lineNum">     236 </span>            :   return Range(start, end, 1);</a>
+<a name="237"><span class="lineNum">     237 </span>            : }</a>
+<a name="238"><span class="lineNum">     238 </span>            : </a>
+<a name="239"><span class="lineNum">     239 </span>            : // ValuesIn() function allows generation of tests with parameters coming from</a>
+<a name="240"><span class="lineNum">     240 </span>            : // a container.</a>
+<a name="241"><span class="lineNum">     241 </span>            : //</a>
+<a name="242"><span class="lineNum">     242 </span>            : // Synopsis:</a>
+<a name="243"><span class="lineNum">     243 </span>            : // ValuesIn(const T (&amp;array)[N])</a>
+<a name="244"><span class="lineNum">     244 </span>            : //   - returns a generator producing sequences with elements from</a>
+<a name="245"><span class="lineNum">     245 </span>            : //     a C-style array.</a>
+<a name="246"><span class="lineNum">     246 </span>            : // ValuesIn(const Container&amp; container)</a>
+<a name="247"><span class="lineNum">     247 </span>            : //   - returns a generator producing sequences with elements from</a>
+<a name="248"><span class="lineNum">     248 </span>            : //     an STL-style container.</a>
+<a name="249"><span class="lineNum">     249 </span>            : // ValuesIn(Iterator begin, Iterator end)</a>
+<a name="250"><span class="lineNum">     250 </span>            : //   - returns a generator producing sequences with elements from</a>
+<a name="251"><span class="lineNum">     251 </span>            : //     a range [begin, end) defined by a pair of STL-style iterators. These</a>
+<a name="252"><span class="lineNum">     252 </span>            : //     iterators can also be plain C pointers.</a>
+<a name="253"><span class="lineNum">     253 </span>            : //</a>
+<a name="254"><span class="lineNum">     254 </span>            : // Please note that ValuesIn copies the values from the containers</a>
+<a name="255"><span class="lineNum">     255 </span>            : // passed in and keeps them to generate tests in RUN_ALL_TESTS().</a>
+<a name="256"><span class="lineNum">     256 </span>            : //</a>
+<a name="257"><span class="lineNum">     257 </span>            : // Examples:</a>
+<a name="258"><span class="lineNum">     258 </span>            : //</a>
+<a name="259"><span class="lineNum">     259 </span>            : // This instantiates tests from test suite StringTest</a>
+<a name="260"><span class="lineNum">     260 </span>            : // each with C-string values of &quot;foo&quot;, &quot;bar&quot;, and &quot;baz&quot;:</a>
+<a name="261"><span class="lineNum">     261 </span>            : //</a>
+<a name="262"><span class="lineNum">     262 </span>            : // const char* strings[] = {&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;};</a>
+<a name="263"><span class="lineNum">     263 </span>            : // INSTANTIATE_TEST_SUITE_P(StringSequence, StringTest, ValuesIn(strings));</a>
+<a name="264"><span class="lineNum">     264 </span>            : //</a>
+<a name="265"><span class="lineNum">     265 </span>            : // This instantiates tests from test suite StlStringTest</a>
+<a name="266"><span class="lineNum">     266 </span>            : // each with STL strings with values &quot;a&quot; and &quot;b&quot;:</a>
+<a name="267"><span class="lineNum">     267 </span>            : //</a>
+<a name="268"><span class="lineNum">     268 </span>            : // ::std::vector&lt; ::std::string&gt; GetParameterStrings() {</a>
+<a name="269"><span class="lineNum">     269 </span>            : //   ::std::vector&lt; ::std::string&gt; v;</a>
+<a name="270"><span class="lineNum">     270 </span>            : //   v.push_back(&quot;a&quot;);</a>
+<a name="271"><span class="lineNum">     271 </span>            : //   v.push_back(&quot;b&quot;);</a>
+<a name="272"><span class="lineNum">     272 </span>            : //   return v;</a>
+<a name="273"><span class="lineNum">     273 </span>            : // }</a>
+<a name="274"><span class="lineNum">     274 </span>            : //</a>
+<a name="275"><span class="lineNum">     275 </span>            : // INSTANTIATE_TEST_SUITE_P(CharSequence,</a>
+<a name="276"><span class="lineNum">     276 </span>            : //                          StlStringTest,</a>
+<a name="277"><span class="lineNum">     277 </span>            : //                          ValuesIn(GetParameterStrings()));</a>
+<a name="278"><span class="lineNum">     278 </span>            : //</a>
+<a name="279"><span class="lineNum">     279 </span>            : //</a>
+<a name="280"><span class="lineNum">     280 </span>            : // This will also instantiate tests from CharTest</a>
+<a name="281"><span class="lineNum">     281 </span>            : // each with parameter values 'a' and 'b':</a>
+<a name="282"><span class="lineNum">     282 </span>            : //</a>
+<a name="283"><span class="lineNum">     283 </span>            : // ::std::list&lt;char&gt; GetParameterChars() {</a>
+<a name="284"><span class="lineNum">     284 </span>            : //   ::std::list&lt;char&gt; list;</a>
+<a name="285"><span class="lineNum">     285 </span>            : //   list.push_back('a');</a>
+<a name="286"><span class="lineNum">     286 </span>            : //   list.push_back('b');</a>
+<a name="287"><span class="lineNum">     287 </span>            : //   return list;</a>
+<a name="288"><span class="lineNum">     288 </span>            : // }</a>
+<a name="289"><span class="lineNum">     289 </span>            : // ::std::list&lt;char&gt; l = GetParameterChars();</a>
+<a name="290"><span class="lineNum">     290 </span>            : // INSTANTIATE_TEST_SUITE_P(CharSequence2,</a>
+<a name="291"><span class="lineNum">     291 </span>            : //                          CharTest,</a>
+<a name="292"><span class="lineNum">     292 </span>            : //                          ValuesIn(l.begin(), l.end()));</a>
+<a name="293"><span class="lineNum">     293 </span>            : //</a>
+<a name="294"><span class="lineNum">     294 </span>            : template &lt;typename ForwardIterator&gt;</a>
+<a name="295"><span class="lineNum">     295 </span>            : internal::ParamGenerator&lt;</a>
+<a name="296"><span class="lineNum">     296 </span>            :     typename std::iterator_traits&lt;ForwardIterator&gt;::value_type&gt;</a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineCov">         21 : ValuesIn(ForwardIterator begin, ForwardIterator end) {</span></a>
+<a name="298"><span class="lineNum">     298 </span>            :   typedef typename std::iterator_traits&lt;ForwardIterator&gt;::value_type ParamType;</a>
+<a name="299"><span class="lineNum">     299 </span>            :   return internal::ParamGenerator&lt;ParamType&gt;(</a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineCov">         42 :       new internal::ValuesInIteratorRangeGenerator&lt;ParamType&gt;(begin, end));</span></a>
+<a name="301"><span class="lineNum">     301 </span>            : }</a>
+<a name="302"><span class="lineNum">     302 </span>            : </a>
+<a name="303"><span class="lineNum">     303 </span>            : template &lt;typename T, size_t N&gt;</a>
+<a name="304"><span class="lineNum">     304 </span>            : internal::ParamGenerator&lt;T&gt; ValuesIn(const T (&amp;array)[N]) {</a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineCov">          1 :   return ValuesIn(array, array + N);</span></a>
+<a name="306"><span class="lineNum">     306 </span>            : }</a>
+<a name="307"><span class="lineNum">     307 </span>            : </a>
+<a name="308"><span class="lineNum">     308 </span>            : template &lt;class Container&gt;</a>
+<a name="309"><span class="lineNum">     309 </span>            : internal::ParamGenerator&lt;typename Container::value_type&gt; ValuesIn(</a>
+<a name="310"><span class="lineNum">     310 </span>            :     const Container&amp; container) {</a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">         20 :   return ValuesIn(container.begin(), container.end());</span></a>
+<a name="312"><span class="lineNum">     312 </span>            : }</a>
+<a name="313"><span class="lineNum">     313 </span>            : </a>
+<a name="314"><span class="lineNum">     314 </span>            : // Values() allows generating tests from explicitly specified list of</a>
+<a name="315"><span class="lineNum">     315 </span>            : // parameters.</a>
+<a name="316"><span class="lineNum">     316 </span>            : //</a>
+<a name="317"><span class="lineNum">     317 </span>            : // Synopsis:</a>
+<a name="318"><span class="lineNum">     318 </span>            : // Values(T v1, T v2, ..., T vN)</a>
+<a name="319"><span class="lineNum">     319 </span>            : //   - returns a generator producing sequences with elements v1, v2, ..., vN.</a>
+<a name="320"><span class="lineNum">     320 </span>            : //</a>
+<a name="321"><span class="lineNum">     321 </span>            : // For example, this instantiates tests from test suite BarTest each</a>
+<a name="322"><span class="lineNum">     322 </span>            : // with values &quot;one&quot;, &quot;two&quot;, and &quot;three&quot;:</a>
+<a name="323"><span class="lineNum">     323 </span>            : //</a>
+<a name="324"><span class="lineNum">     324 </span>            : // INSTANTIATE_TEST_SUITE_P(NumSequence,</a>
+<a name="325"><span class="lineNum">     325 </span>            : //                          BarTest,</a>
+<a name="326"><span class="lineNum">     326 </span>            : //                          Values(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;));</a>
+<a name="327"><span class="lineNum">     327 </span>            : //</a>
+<a name="328"><span class="lineNum">     328 </span>            : // This instantiates tests from test suite BazTest each with values 1, 2, 3.5.</a>
+<a name="329"><span class="lineNum">     329 </span>            : // The exact type of values will depend on the type of parameter in BazTest.</a>
+<a name="330"><span class="lineNum">     330 </span>            : //</a>
+<a name="331"><span class="lineNum">     331 </span>            : // INSTANTIATE_TEST_SUITE_P(FloatingNumbers, BazTest, Values(1, 2, 3.5));</a>
+<a name="332"><span class="lineNum">     332 </span>            : //</a>
+<a name="333"><span class="lineNum">     333 </span>            : //</a>
+<a name="334"><span class="lineNum">     334 </span>            : template &lt;typename... T&gt;</a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineCov">          1 : internal::ValueArray&lt;T...&gt; Values(T... v) {</span></a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineCov">          1 :   return internal::ValueArray&lt;T...&gt;(std::move(v)...);</span></a>
+<a name="337"><span class="lineNum">     337 </span>            : }</a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            : // Bool() allows generating tests with parameters in a set of (false, true).</a>
+<a name="340"><span class="lineNum">     340 </span>            : //</a>
+<a name="341"><span class="lineNum">     341 </span>            : // Synopsis:</a>
+<a name="342"><span class="lineNum">     342 </span>            : // Bool()</a>
+<a name="343"><span class="lineNum">     343 </span>            : //   - returns a generator producing sequences with elements {false, true}.</a>
+<a name="344"><span class="lineNum">     344 </span>            : //</a>
+<a name="345"><span class="lineNum">     345 </span>            : // It is useful when testing code that depends on Boolean flags. Combinations</a>
+<a name="346"><span class="lineNum">     346 </span>            : // of multiple flags can be tested when several Bool()'s are combined using</a>
+<a name="347"><span class="lineNum">     347 </span>            : // Combine() function.</a>
+<a name="348"><span class="lineNum">     348 </span>            : //</a>
+<a name="349"><span class="lineNum">     349 </span>            : // In the following example all tests in the test suite FlagDependentTest</a>
+<a name="350"><span class="lineNum">     350 </span>            : // will be instantiated twice with parameters false and true.</a>
+<a name="351"><span class="lineNum">     351 </span>            : //</a>
+<a name="352"><span class="lineNum">     352 </span>            : // class FlagDependentTest : public testing::TestWithParam&lt;bool&gt; {</a>
+<a name="353"><span class="lineNum">     353 </span>            : //   virtual void SetUp() {</a>
+<a name="354"><span class="lineNum">     354 </span>            : //     external_flag = GetParam();</a>
+<a name="355"><span class="lineNum">     355 </span>            : //   }</a>
+<a name="356"><span class="lineNum">     356 </span>            : // }</a>
+<a name="357"><span class="lineNum">     357 </span>            : // INSTANTIATE_TEST_SUITE_P(BoolSequence, FlagDependentTest, Bool());</a>
+<a name="358"><span class="lineNum">     358 </span>            : //</a>
+<a name="359"><span class="lineNum">     359 </span>            : inline internal::ParamGenerator&lt;bool&gt; Bool() {</a>
+<a name="360"><span class="lineNum">     360 </span>            :   return Values(false, true);</a>
+<a name="361"><span class="lineNum">     361 </span>            : }</a>
+<a name="362"><span class="lineNum">     362 </span>            : </a>
+<a name="363"><span class="lineNum">     363 </span>            : // Combine() allows the user to combine two or more sequences to produce</a>
+<a name="364"><span class="lineNum">     364 </span>            : // values of a Cartesian product of those sequences' elements.</a>
+<a name="365"><span class="lineNum">     365 </span>            : //</a>
+<a name="366"><span class="lineNum">     366 </span>            : // Synopsis:</a>
+<a name="367"><span class="lineNum">     367 </span>            : // Combine(gen1, gen2, ..., genN)</a>
+<a name="368"><span class="lineNum">     368 </span>            : //   - returns a generator producing sequences with elements coming from</a>
+<a name="369"><span class="lineNum">     369 </span>            : //     the Cartesian product of elements from the sequences generated by</a>
+<a name="370"><span class="lineNum">     370 </span>            : //     gen1, gen2, ..., genN. The sequence elements will have a type of</a>
+<a name="371"><span class="lineNum">     371 </span>            : //     std::tuple&lt;T1, T2, ..., TN&gt; where T1, T2, ..., TN are the types</a>
+<a name="372"><span class="lineNum">     372 </span>            : //     of elements from sequences produces by gen1, gen2, ..., genN.</a>
+<a name="373"><span class="lineNum">     373 </span>            : //</a>
+<a name="374"><span class="lineNum">     374 </span>            : // Combine can have up to 10 arguments.</a>
+<a name="375"><span class="lineNum">     375 </span>            : //</a>
+<a name="376"><span class="lineNum">     376 </span>            : // Example:</a>
+<a name="377"><span class="lineNum">     377 </span>            : //</a>
+<a name="378"><span class="lineNum">     378 </span>            : // This will instantiate tests in test suite AnimalTest each one with</a>
+<a name="379"><span class="lineNum">     379 </span>            : // the parameter values tuple(&quot;cat&quot;, BLACK), tuple(&quot;cat&quot;, WHITE),</a>
+<a name="380"><span class="lineNum">     380 </span>            : // tuple(&quot;dog&quot;, BLACK), and tuple(&quot;dog&quot;, WHITE):</a>
+<a name="381"><span class="lineNum">     381 </span>            : //</a>
+<a name="382"><span class="lineNum">     382 </span>            : // enum Color { BLACK, GRAY, WHITE };</a>
+<a name="383"><span class="lineNum">     383 </span>            : // class AnimalTest</a>
+<a name="384"><span class="lineNum">     384 </span>            : //     : public testing::TestWithParam&lt;std::tuple&lt;const char*, Color&gt; &gt; {...};</a>
+<a name="385"><span class="lineNum">     385 </span>            : //</a>
+<a name="386"><span class="lineNum">     386 </span>            : // TEST_P(AnimalTest, AnimalLooksNice) {...}</a>
+<a name="387"><span class="lineNum">     387 </span>            : //</a>
+<a name="388"><span class="lineNum">     388 </span>            : // INSTANTIATE_TEST_SUITE_P(AnimalVariations, AnimalTest,</a>
+<a name="389"><span class="lineNum">     389 </span>            : //                          Combine(Values(&quot;cat&quot;, &quot;dog&quot;),</a>
+<a name="390"><span class="lineNum">     390 </span>            : //                                  Values(BLACK, WHITE)));</a>
+<a name="391"><span class="lineNum">     391 </span>            : //</a>
+<a name="392"><span class="lineNum">     392 </span>            : // This will instantiate tests in FlagDependentTest with all variations of two</a>
+<a name="393"><span class="lineNum">     393 </span>            : // Boolean flags:</a>
+<a name="394"><span class="lineNum">     394 </span>            : //</a>
+<a name="395"><span class="lineNum">     395 </span>            : // class FlagDependentTest</a>
+<a name="396"><span class="lineNum">     396 </span>            : //     : public testing::TestWithParam&lt;std::tuple&lt;bool, bool&gt; &gt; {</a>
+<a name="397"><span class="lineNum">     397 </span>            : //   virtual void SetUp() {</a>
+<a name="398"><span class="lineNum">     398 </span>            : //     // Assigns external_flag_1 and external_flag_2 values from the tuple.</a>
+<a name="399"><span class="lineNum">     399 </span>            : //     std::tie(external_flag_1, external_flag_2) = GetParam();</a>
+<a name="400"><span class="lineNum">     400 </span>            : //   }</a>
+<a name="401"><span class="lineNum">     401 </span>            : // };</a>
+<a name="402"><span class="lineNum">     402 </span>            : //</a>
+<a name="403"><span class="lineNum">     403 </span>            : // TEST_P(FlagDependentTest, TestFeature1) {</a>
+<a name="404"><span class="lineNum">     404 </span>            : //   // Test your code using external_flag_1 and external_flag_2 here.</a>
+<a name="405"><span class="lineNum">     405 </span>            : // }</a>
+<a name="406"><span class="lineNum">     406 </span>            : // INSTANTIATE_TEST_SUITE_P(TwoBoolSequence, FlagDependentTest,</a>
+<a name="407"><span class="lineNum">     407 </span>            : //                          Combine(Bool(), Bool()));</a>
+<a name="408"><span class="lineNum">     408 </span>            : //</a>
+<a name="409"><span class="lineNum">     409 </span>            : template &lt;typename... Generator&gt;</a>
+<a name="410"><span class="lineNum">     410 </span>            : internal::CartesianProductHolder&lt;Generator...&gt; Combine(const Generator&amp;... g) {</a>
+<a name="411"><span class="lineNum">     411 </span>            :   return internal::CartesianProductHolder&lt;Generator...&gt;(g...);</a>
+<a name="412"><span class="lineNum">     412 </span>            : }</a>
+<a name="413"><span class="lineNum">     413 </span>            : </a>
+<a name="414"><span class="lineNum">     414 </span>            : #define TEST_P(test_suite_name, test_name)                                     \</a>
+<a name="415"><span class="lineNum">     415 </span>            :   class GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)                     \</a>
+<a name="416"><span class="lineNum">     416 </span>            :       : public test_suite_name {                                               \</a>
+<a name="417"><span class="lineNum">     417 </span>            :    public:                                                                     \</a>
+<a name="418"><span class="lineNum">     418 </span>            :     GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)() {}                    \</a>
+<a name="419"><span class="lineNum">     419 </span>            :     void TestBody() override;                                                  \</a>
+<a name="420"><span class="lineNum">     420 </span>            :                                                                                \</a>
+<a name="421"><span class="lineNum">     421 </span>            :    private:                                                                    \</a>
+<a name="422"><span class="lineNum">     422 </span>            :     static int AddToRegistry() {                                               \</a>
+<a name="423"><span class="lineNum">     423 </span>            :       ::testing::UnitTest::GetInstance()                                       \</a>
+<a name="424"><span class="lineNum">     424 </span>            :           -&gt;parameterized_test_registry()                                      \</a>
+<a name="425"><span class="lineNum">     425 </span>            :           .GetTestSuitePatternHolder&lt;test_suite_name&gt;(                         \</a>
+<a name="426"><span class="lineNum">     426 </span>            :               GTEST_STRINGIFY_(test_suite_name),                               \</a>
+<a name="427"><span class="lineNum">     427 </span>            :               ::testing::internal::CodeLocation(__FILE__, __LINE__))           \</a>
+<a name="428"><span class="lineNum">     428 </span>            :           -&gt;AddTestPattern(                                                    \</a>
+<a name="429"><span class="lineNum">     429 </span>            :               GTEST_STRINGIFY_(test_suite_name), GTEST_STRINGIFY_(test_name),  \</a>
+<a name="430"><span class="lineNum">     430 </span>            :               new ::testing::internal::TestMetaFactory&lt;GTEST_TEST_CLASS_NAME_( \</a>
+<a name="431"><span class="lineNum">     431 </span>            :                   test_suite_name, test_name)&gt;());                             \</a>
+<a name="432"><span class="lineNum">     432 </span>            :       return 0;                                                                \</a>
+<a name="433"><span class="lineNum">     433 </span>            :     }                                                                          \</a>
+<a name="434"><span class="lineNum">     434 </span>            :     static int gtest_registering_dummy_ GTEST_ATTRIBUTE_UNUSED_;               \</a>
+<a name="435"><span class="lineNum">     435 </span>            :     GTEST_DISALLOW_COPY_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_suite_name,    \</a>
+<a name="436"><span class="lineNum">     436 </span>            :                                                            test_name));        \</a>
+<a name="437"><span class="lineNum">     437 </span>            :   };                                                                           \</a>
+<a name="438"><span class="lineNum">     438 </span>            :   int GTEST_TEST_CLASS_NAME_(test_suite_name,                                  \</a>
+<a name="439"><span class="lineNum">     439 </span>            :                              test_name)::gtest_registering_dummy_ =            \</a>
+<a name="440"><span class="lineNum">     440 </span>            :       GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)::AddToRegistry();     \</a>
+<a name="441"><span class="lineNum">     441 </span>            :   void GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)::TestBody()</a>
+<a name="442"><span class="lineNum">     442 </span>            : </a>
+<a name="443"><span class="lineNum">     443 </span>            : // The last argument to INSTANTIATE_TEST_SUITE_P allows the user to specify</a>
+<a name="444"><span class="lineNum">     444 </span>            : // generator and an optional function or functor that generates custom test name</a>
+<a name="445"><span class="lineNum">     445 </span>            : // suffixes based on the test parameters. Such a function or functor should</a>
+<a name="446"><span class="lineNum">     446 </span>            : // accept one argument of type testing::TestParamInfo&lt;class ParamType&gt;, and</a>
+<a name="447"><span class="lineNum">     447 </span>            : // return std::string.</a>
+<a name="448"><span class="lineNum">     448 </span>            : //</a>
+<a name="449"><span class="lineNum">     449 </span>            : // testing::PrintToStringParamName is a builtin test suffix generator that</a>
+<a name="450"><span class="lineNum">     450 </span>            : // returns the value of testing::PrintToString(GetParam()).</a>
+<a name="451"><span class="lineNum">     451 </span>            : //</a>
+<a name="452"><span class="lineNum">     452 </span>            : // Note: test names must be non-empty, unique, and may only contain ASCII</a>
+<a name="453"><span class="lineNum">     453 </span>            : // alphanumeric characters or underscore. Because PrintToString adds quotes</a>
+<a name="454"><span class="lineNum">     454 </span>            : // to std::string and C strings, it won't work for these types.</a>
+<a name="455"><span class="lineNum">     455 </span>            : </a>
+<a name="456"><span class="lineNum">     456 </span>            : #define GTEST_EXPAND_(arg) arg</a>
+<a name="457"><span class="lineNum">     457 </span>            : #define GTEST_GET_FIRST_(first, ...) first</a>
+<a name="458"><span class="lineNum">     458 </span>            : #define GTEST_GET_SECOND_(first, second, ...) second</a>
+<a name="459"><span class="lineNum">     459 </span>            : </a>
+<a name="460"><span class="lineNum">     460 </span>            : #define INSTANTIATE_TEST_SUITE_P(prefix, test_suite_name, ...)                \</a>
+<a name="461"><span class="lineNum">     461 </span>            :   static ::testing::internal::ParamGenerator&lt;test_suite_name::ParamType&gt;      \</a>
+<a name="462"><span class="lineNum">     462 </span>            :       gtest_##prefix##test_suite_name##_EvalGenerator_() {                    \</a>
+<a name="463"><span class="lineNum">     463 </span>            :     return GTEST_EXPAND_(GTEST_GET_FIRST_(__VA_ARGS__, DUMMY_PARAM_));        \</a>
+<a name="464"><span class="lineNum">     464 </span>            :   }                                                                           \</a>
+<a name="465"><span class="lineNum">     465 </span>            :   static ::std::string gtest_##prefix##test_suite_name##_EvalGenerateName_(   \</a>
+<a name="466"><span class="lineNum">     466 </span>            :       const ::testing::TestParamInfo&lt;test_suite_name::ParamType&gt;&amp; info) {     \</a>
+<a name="467"><span class="lineNum">     467 </span>            :     if (::testing::internal::AlwaysFalse()) {                                 \</a>
+<a name="468"><span class="lineNum">     468 </span>            :       ::testing::internal::TestNotEmpty(GTEST_EXPAND_(GTEST_GET_SECOND_(      \</a>
+<a name="469"><span class="lineNum">     469 </span>            :           __VA_ARGS__,                                                        \</a>
+<a name="470"><span class="lineNum">     470 </span>            :           ::testing::internal::DefaultParamName&lt;test_suite_name::ParamType&gt;,  \</a>
+<a name="471"><span class="lineNum">     471 </span>            :           DUMMY_PARAM_)));                                                    \</a>
+<a name="472"><span class="lineNum">     472 </span>            :       auto t = std::make_tuple(__VA_ARGS__);                                  \</a>
+<a name="473"><span class="lineNum">     473 </span>            :       static_assert(std::tuple_size&lt;decltype(t)&gt;::value &lt;= 2,                 \</a>
+<a name="474"><span class="lineNum">     474 </span>            :                     &quot;Too Many Args!&quot;);                                        \</a>
+<a name="475"><span class="lineNum">     475 </span>            :     }                                                                         \</a>
+<a name="476"><span class="lineNum">     476 </span>            :     return ((GTEST_EXPAND_(GTEST_GET_SECOND_(                                 \</a>
+<a name="477"><span class="lineNum">     477 </span>            :         __VA_ARGS__,                                                          \</a>
+<a name="478"><span class="lineNum">     478 </span>            :         ::testing::internal::DefaultParamName&lt;test_suite_name::ParamType&gt;,    \</a>
+<a name="479"><span class="lineNum">     479 </span>            :         DUMMY_PARAM_))))(info);                                               \</a>
+<a name="480"><span class="lineNum">     480 </span>            :   }                                                                           \</a>
+<a name="481"><span class="lineNum">     481 </span>            :   static int gtest_##prefix##test_suite_name##_dummy_                         \</a>
+<a name="482"><span class="lineNum">     482 </span>            :       GTEST_ATTRIBUTE_UNUSED_ =                                               \</a>
+<a name="483"><span class="lineNum">     483 </span>            :           ::testing::UnitTest::GetInstance()                                  \</a>
+<a name="484"><span class="lineNum">     484 </span>            :               -&gt;parameterized_test_registry()                                 \</a>
+<a name="485"><span class="lineNum">     485 </span>            :               .GetTestSuitePatternHolder&lt;test_suite_name&gt;(                    \</a>
+<a name="486"><span class="lineNum">     486 </span>            :                   GTEST_STRINGIFY_(test_suite_name),                          \</a>
+<a name="487"><span class="lineNum">     487 </span>            :                   ::testing::internal::CodeLocation(__FILE__, __LINE__))      \</a>
+<a name="488"><span class="lineNum">     488 </span>            :               -&gt;AddTestSuiteInstantiation(                                    \</a>
+<a name="489"><span class="lineNum">     489 </span>            :                   GTEST_STRINGIFY_(prefix),                                   \</a>
+<a name="490"><span class="lineNum">     490 </span>            :                   &amp;gtest_##prefix##test_suite_name##_EvalGenerator_,          \</a>
+<a name="491"><span class="lineNum">     491 </span>            :                   &amp;gtest_##prefix##test_suite_name##_EvalGenerateName_,       \</a>
+<a name="492"><span class="lineNum">     492 </span>            :                   __FILE__, __LINE__)</a>
+<a name="493"><span class="lineNum">     493 </span>            : </a>
+<a name="494"><span class="lineNum">     494 </span>            : </a>
+<a name="495"><span class="lineNum">     495 </span>            : // Allow Marking a Parameterized test class as not needing to be instantiated.</a>
+<a name="496"><span class="lineNum">     496 </span>            : #define GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(T)                   \</a>
+<a name="497"><span class="lineNum">     497 </span>            :   namespace gtest_do_not_use_outside_namespace_scope {}                   \</a>
+<a name="498"><span class="lineNum">     498 </span>            :   static const ::testing::internal::MarkAsIgnored gtest_allow_ignore_##T( \</a>
+<a name="499"><span class="lineNum">     499 </span>            :       GTEST_STRINGIFY_(T))</a>
+<a name="500"><span class="lineNum">     500 </span>            : </a>
+<a name="501"><span class="lineNum">     501 </span>            : // Legacy API is deprecated but still available</a>
+<a name="502"><span class="lineNum">     502 </span>            : #ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_</a>
+<a name="503"><span class="lineNum">     503 </span>            : #define INSTANTIATE_TEST_CASE_P                                            \</a>
+<a name="504"><span class="lineNum">     504 </span>            :   static_assert(::testing::internal::InstantiateTestCase_P_IsDeprecated(), \</a>
+<a name="505"><span class="lineNum">     505 </span>            :                 &quot;&quot;);                                                       \</a>
+<a name="506"><span class="lineNum">     506 </span>            :   INSTANTIATE_TEST_SUITE_P</a>
+<a name="507"><span class="lineNum">     507 </span>            : #endif  // GTEST_REMOVE_LEGACY_TEST_CASEAPI_</a>
+<a name="508"><span class="lineNum">     508 </span>            : </a>
+<a name="509"><span class="lineNum">     509 </span>            : }  // namespace testing</a>
+<a name="510"><span class="lineNum">     510 </span>            : </a>
+<a name="511"><span class="lineNum">     511 </span>            : #endif  // GTEST_INCLUDE_GTEST_GTEST_PARAM_TEST_H_</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

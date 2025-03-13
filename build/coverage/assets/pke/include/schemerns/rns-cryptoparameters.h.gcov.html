@@ -1,0 +1,1907 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - pke/include/schemerns/rns-cryptoparameters.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">pke/include/schemerns</a> - rns-cryptoparameters.h<span style="font-size: 80%;"> (source / <a href="rns-cryptoparameters.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">69</td>
+            <td class="headerCovTableEntry">93</td>
+            <td class="headerCovTableEntryLo">74.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryLo">70.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : #ifndef LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H</a>
+<a name="33"><span class="lineNum">      33 </span>            : #define LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : #include &quot;lattice/lat-hal.h&quot;</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : #include &quot;schemebase/rlwe-cryptoparameters.h&quot;</a>
+<a name="38"><span class="lineNum">      38 </span>            : </a>
+<a name="39"><span class="lineNum">      39 </span>            : #include &lt;string&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : #include &lt;vector&gt;</a>
+<a name="41"><span class="lineNum">      41 </span>            : #include &lt;memory&gt;</a>
+<a name="42"><span class="lineNum">      42 </span>            : #include &lt;utility&gt;</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span>            : /**</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * @namespace lbcrypto</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * The namespace of lbcrypto</a>
+<a name="47"><span class="lineNum">      47 </span>            :  */</a>
+<a name="48"><span class="lineNum">      48 </span>            : namespace lbcrypto {</a>
+<a name="49"><span class="lineNum">      49 </span>            : </a>
+<a name="50"><span class="lineNum">      50 </span>            : /**</a>
+<a name="51"><span class="lineNum">      51 </span>            :  * @brief main implementation class to capture essential cryptoparameters of</a>
+<a name="52"><span class="lineNum">      52 </span>            :  * any LBC system.</a>
+<a name="53"><span class="lineNum">      53 </span>            :  * As CryptoParametersRNS is not an abstract class and we don't want to</a>
+<a name="54"><span class="lineNum">      54 </span>            :  * instantiate, then we make all its constructors and the destructor protected</a>
+<a name="55"><span class="lineNum">      55 </span>            :  * @tparam Element a ring element.</a>
+<a name="56"><span class="lineNum">      56 </span>            :  */</a>
+<a name="57"><span class="lineNum">      57 </span>            : class CryptoParametersRNS : public CryptoParametersRLWE&lt;DCRTPoly&gt; {</a>
+<a name="58"><span class="lineNum">      58 </span>            :     using ParmType = typename DCRTPoly::Params;</a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
+<a name="60"><span class="lineNum">      60 </span>            : protected:</a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">        902 :     CryptoParametersRNS()</span></a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">        902 :         : CryptoParametersRLWE&lt;DCRTPoly&gt;(),</span></a>
+<a name="63"><span class="lineNum">      63 </span>            :           m_ksTechnique(BV),</a>
+<a name="64"><span class="lineNum">      64 </span>            :           m_scalTechnique(FIXEDMANUAL),</a>
+<a name="65"><span class="lineNum">      65 </span>            :           m_encTechnique(STANDARD),</a>
+<a name="66"><span class="lineNum">      66 </span>            :           m_multTechnique(HPS),</a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">        902 :           m_MPIntBootCiphertextCompressionLevel(SLACK) {}</span></a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<a name="69"><span class="lineNum">      69 </span>            :     CryptoParametersRNS(const CryptoParametersRNS&amp; rhs)</a>
+<a name="70"><span class="lineNum">      70 </span>            :         : CryptoParametersRLWE&lt;DCRTPoly&gt;(rhs),</a>
+<a name="71"><span class="lineNum">      71 </span>            :           m_ksTechnique(rhs.m_ksTechnique),</a>
+<a name="72"><span class="lineNum">      72 </span>            :           m_scalTechnique(rhs.m_scalTechnique),</a>
+<a name="73"><span class="lineNum">      73 </span>            :           m_encTechnique(rhs.m_encTechnique),</a>
+<a name="74"><span class="lineNum">      74 </span>            :           m_multTechnique(rhs.m_multTechnique),</a>
+<a name="75"><span class="lineNum">      75 </span>            :           m_MPIntBootCiphertextCompressionLevel(rhs.m_MPIntBootCiphertextCompressionLevel) {}</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span>            :     /**</a>
+<a name="78"><span class="lineNum">      78 </span>            :    * Constructor that initializes values.  Note that it is possible to set</a>
+<a name="79"><span class="lineNum">      79 </span>            :    * parameters in a way that is overall infeasible for actual use. There are</a>
+<a name="80"><span class="lineNum">      80 </span>            :    * fewer degrees of freedom than parameters provided.  Typically one chooses</a>
+<a name="81"><span class="lineNum">      81 </span>            :    * the basic noise, assurance and security parameters as the typical</a>
+<a name="82"><span class="lineNum">      82 </span>            :    * community-accepted values, then chooses the plaintext modulus and depth</a>
+<a name="83"><span class="lineNum">      83 </span>            :    * as needed.  The element parameters should then be choosen to provide</a>
+<a name="84"><span class="lineNum">      84 </span>            :    * correctness and security.  In some cases we would need to operate over</a>
+<a name="85"><span class="lineNum">      85 </span>            :    * already encrypted/provided ciphertext and the depth needs to be</a>
+<a name="86"><span class="lineNum">      86 </span>            :    * pre-computed for initial settings.</a>
+<a name="87"><span class="lineNum">      87 </span>            :    *</a>
+<a name="88"><span class="lineNum">      88 </span>            :    * @param params element parameters.</a>
+<a name="89"><span class="lineNum">      89 </span>            :    * @param &amp;plaintextModulus plaintext modulus.</a>
+<a name="90"><span class="lineNum">      90 </span>            :    * @param distributionParameter noise distribution parameter.</a>
+<a name="91"><span class="lineNum">      91 </span>            :    * @param assuranceMeasure assurance level.</a>
+<a name="92"><span class="lineNum">      92 </span>            :    * @param securityLevel security level.</a>
+<a name="93"><span class="lineNum">      93 </span>            :    * @param digitSize the size of the relinearization window.</a>
+<a name="94"><span class="lineNum">      94 </span>            :    * @param secretKeyDist sets the secretKeyDist of operation: GAUSSIAN or UNIFORM_TERNARY</a>
+<a name="95"><span class="lineNum">      95 </span>            :    * @param maxRelinSkDeg the maximum power of secret key for which the</a>
+<a name="96"><span class="lineNum">      96 </span>            :    * relinearization key is generated</a>
+<a name="97"><span class="lineNum">      97 </span>            :    * @param ksTech key switching method</a>
+<a name="98"><span class="lineNum">      98 </span>            :    * @param scalTech scaling method</a>
+<a name="99"><span class="lineNum">      99 </span>            :    * @param mPIntBootCiphertextCompressionLevel compression level</a>
+<a name="100"><span class="lineNum">     100 </span>            :    */</a>
+<a name="101"><span class="lineNum">     101 </span>            :     CryptoParametersRNS(std::shared_ptr&lt;ParmType&gt; params, const PlaintextModulus&amp; plaintextModulus,</a>
+<a name="102"><span class="lineNum">     102 </span>            :                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,</a>
+<a name="103"><span class="lineNum">     103 </span>            :                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,</a>
+<a name="104"><span class="lineNum">     104 </span>            :                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,</a>
+<a name="105"><span class="lineNum">     105 </span>            :                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,</a>
+<a name="106"><span class="lineNum">     106 </span>            :                         MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,</a>
+<a name="107"><span class="lineNum">     107 </span>            :                         ExecutionMode executionMode                           = EXEC_EVALUATION,</a>
+<a name="108"><span class="lineNum">     108 </span>            :                         DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,</a>
+<a name="109"><span class="lineNum">     109 </span>            :                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)</a>
+<a name="110"><span class="lineNum">     110 </span>            :         : CryptoParametersRLWE&lt;DCRTPoly&gt;(</a>
+<a name="111"><span class="lineNum">     111 </span>            :               std::move(params), EncodingParams(std::make_shared&lt;EncodingParamsImpl&gt;(plaintextModulus)),</a>
+<a name="112"><span class="lineNum">     112 </span>            :               distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,</a>
+<a name="113"><span class="lineNum">     113 </span>            :               multipartyMode, executionMode, decryptionNoiseMode) {</a>
+<a name="114"><span class="lineNum">     114 </span>            :         m_ksTechnique                         = ksTech;</a>
+<a name="115"><span class="lineNum">     115 </span>            :         m_scalTechnique                       = scalTech;</a>
+<a name="116"><span class="lineNum">     116 </span>            :         m_encTechnique                        = encTech;</a>
+<a name="117"><span class="lineNum">     117 </span>            :         m_multTechnique                       = multTech;</a>
+<a name="118"><span class="lineNum">     118 </span>            :         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;</a>
+<a name="119"><span class="lineNum">     119 </span>            :     }</a>
+<a name="120"><span class="lineNum">     120 </span>            : </a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">       2173 :     CryptoParametersRNS(std::shared_ptr&lt;ParmType&gt; params, EncodingParams encodingParams, float distributionParameter,</span></a>
+<a name="122"><span class="lineNum">     122 </span>            :                         float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,</a>
+<a name="123"><span class="lineNum">     123 </span>            :                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,</a>
+<a name="124"><span class="lineNum">     124 </span>            :                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,</a>
+<a name="125"><span class="lineNum">     125 </span>            :                         MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,</a>
+<a name="126"><span class="lineNum">     126 </span>            :                         MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,</a>
+<a name="127"><span class="lineNum">     127 </span>            :                         ExecutionMode executionMode             = EXEC_EVALUATION,</a>
+<a name="128"><span class="lineNum">     128 </span>            :                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,</a>
+<a name="129"><span class="lineNum">     129 </span>            :                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,</a>
+<a name="130"><span class="lineNum">     130 </span>            :                         uint32_t thresholdNumOfParties                        = 1,</a>
+<a name="131"><span class="lineNum">     131 </span>            :                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)</a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">       2173 :         : CryptoParametersRLWE&lt;DCRTPoly&gt;(std::move(params), std::move(encodingParams), distributionParameter,</span></a>
+<a name="133"><span class="lineNum">     133 </span>            :                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,</a>
+<a name="134"><span class="lineNum">     134 </span>            :                                          PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,</a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">       6519 :                                          statisticalSecurity, numAdversarialQueries, thresholdNumOfParties) {</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">       2173 :         m_ksTechnique                         = ksTech;</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">       2173 :         m_scalTechnique                       = scalTech;</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">       2173 :         m_encTechnique                        = encTech;</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">       2173 :         m_multTechnique                       = multTech;</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">       2173 :         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">       2173 :     }</span></a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">      32681 :     virtual ~CryptoParametersRNS() {}</span></a>
+<a name="144"><span class="lineNum">     144 </span>            : </a>
+<a name="145"><span class="lineNum">     145 </span>            : public:</a>
+<a name="146"><span class="lineNum">     146 </span>            :     /**</a>
+<a name="147"><span class="lineNum">     147 </span>            :    * Computes all tables needed for decryption, homomorphic multiplication and key switching.</a>
+<a name="148"><span class="lineNum">     148 </span>            :    * Even though this is a pure virtual function and must be overriden in all derived classes,</a>
+<a name="149"><span class="lineNum">     149 </span>            :    * PrecomputeCRTTables() has its own implementation in the source file. It should be called from</a>
+<a name="150"><span class="lineNum">     150 </span>            :    * derived classes' PrecomputeCRTTables() only and must not be called from CryptoParametersRNS::load().</a>
+<a name="151"><span class="lineNum">     151 </span>            :    * @param ksTech the technique to use for key switching (e.g., BV or GHS).</a>
+<a name="152"><span class="lineNum">     152 </span>            :    * @param scalTech the technique to use for scaling (e.g., FLEXIBLEAUTO or FIXEDMANUAL).</a>
+<a name="153"><span class="lineNum">     153 </span>            :    */</a>
+<a name="154"><span class="lineNum">     154 </span>            :     virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,</a>
+<a name="155"><span class="lineNum">     155 </span>            :                                      MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,</a>
+<a name="156"><span class="lineNum">     156 </span>            :                                      uint32_t extraBits) = 0;</a>
+<a name="157"><span class="lineNum">     157 </span>            : </a>
+<a name="158"><span class="lineNum">     158 </span>            :     virtual uint64_t FindAuxPrimeStep() const;</a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            :     /*</a>
+<a name="161"><span class="lineNum">     161 </span>            :    * Estimates the extra modulus bitsize needed for hybrid key swithing (used for finding the minimum secure ring dimension).</a>
+<a name="162"><span class="lineNum">     162 </span>            :    *</a>
+<a name="163"><span class="lineNum">     163 </span>            :    * @param numPartQ number of digits in hybrid key switching</a>
+<a name="164"><span class="lineNum">     164 </span>            :    * @param firstModulusSize bit size of first modulus</a>
+<a name="165"><span class="lineNum">     165 </span>            :    * @param dcrtBits bit size for other moduli</a>
+<a name="166"><span class="lineNum">     166 </span>            :    * @param extraModulusSize bit size for extra modulus in FLEXIBLEAUTOEXT (CKKS and BGV only)</a>
+<a name="167"><span class="lineNum">     167 </span>            :    * @param numPrimes number of moduli witout extraModulus</a>
+<a name="168"><span class="lineNum">     168 </span>            :    * @param auxBits size of auxiliar moduli used for hybrid key switching</a>
+<a name="169"><span class="lineNum">     169 </span>            :    * @param addOne should an extra bit be added (for CKKS and BGV)</a>
+<a name="170"><span class="lineNum">     170 </span>            :    *</a>
+<a name="171"><span class="lineNum">     171 </span>            :    * @return log2 of the modulus and number of RNS limbs.</a>
+<a name="172"><span class="lineNum">     172 </span>            :    */</a>
+<a name="173"><span class="lineNum">     173 </span>            :     static std::pair&lt;double, uint32_t&gt; EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,</a>
+<a name="174"><span class="lineNum">     174 </span>            :                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits,</a>
+<a name="175"><span class="lineNum">     175 </span>            :                                                     bool addOne = false);</a>
+<a name="176"><span class="lineNum">     176 </span>            : </a>
+<a name="177"><span class="lineNum">     177 </span>            :     /*</a>
+<a name="178"><span class="lineNum">     178 </span>            :    * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)</a>
+<a name="179"><span class="lineNum">     179 </span>            :    *</a>
+<a name="180"><span class="lineNum">     180 </span>            :    * @return number of extra bits needed for noise flooding</a>
+<a name="181"><span class="lineNum">     181 </span>            :    */</a>
+<a name="182"><span class="lineNum">     182 </span>            :     static constexpr double EstimateMultipartyFloodingLogQ() {</a>
+<a name="183"><span class="lineNum">     183 </span>            :         return static_cast&lt;double&gt;(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);</a>
+<a name="184"><span class="lineNum">     184 </span>            :     }</a>
+<a name="185"><span class="lineNum">     185 </span>            : </a>
+<a name="186"><span class="lineNum">     186 </span>            :     /**</a>
+<a name="187"><span class="lineNum">     187 </span>            :    * == operator to compare to this instance of CryptoParametersBase object.</a>
+<a name="188"><span class="lineNum">     188 </span>            :    *</a>
+<a name="189"><span class="lineNum">     189 </span>            :    * @param &amp;rhs CryptoParameters to check equality against.</a>
+<a name="190"><span class="lineNum">     190 </span>            :    */</a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 :     bool operator==(const CryptoParametersBase&lt;DCRTPoly&gt;&amp; rhs) const override {</span></a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineNoCov">          0 :         const auto* el = dynamic_cast&lt;const CryptoParametersRNS*&gt;(&amp;rhs);</span></a>
+<a name="193"><span class="lineNum">     193 </span>            : </a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :         if (el == nullptr)</span></a>
+<a name="195"><span class="lineNum">     195 </span>            :             return false;</a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineNoCov">          0 :         return CryptoParametersBase&lt;DCRTPoly&gt;::operator==(rhs) &amp;&amp; m_scalTechnique == el-&gt;GetScalingTechnique() &amp;&amp;</span></a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineNoCov">          0 :                m_ksTechnique == el-&gt;GetKeySwitchTechnique() &amp;&amp; m_multTechnique == el-&gt;GetMultiplicationTechnique() &amp;&amp;</span></a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineNoCov">          0 :                m_encTechnique == el-&gt;GetEncryptionTechnique() &amp;&amp; m_numPartQ == el-&gt;GetNumPartQ() &amp;&amp;</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :                m_auxBits == el-&gt;GetAuxBits() &amp;&amp; m_extraBits == el-&gt;GetExtraBits() &amp;&amp; m_PREMode == el-&gt;GetPREMode() &amp;&amp;</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :                m_multipartyMode == el-&gt;GetMultipartyMode() &amp;&amp; m_executionMode == el-&gt;GetExecutionMode();</span></a>
+<a name="202"><span class="lineNum">     202 </span>            :     }</a>
+<a name="203"><span class="lineNum">     203 </span>            : </a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineNoCov">          0 :     void PrintParameters(std::ostream&amp; os) const override {</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :         CryptoParametersBase&lt;DCRTPoly&gt;::PrintParameters(os);</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineNoCov">          0 :     }</span></a>
+<a name="207"><span class="lineNum">     207 </span>            : </a>
+<a name="208"><span class="lineNum">     208 </span>            :     /////////////////////////////////////</a>
+<a name="209"><span class="lineNum">     209 </span>            :     // PrecomputeCRTTables</a>
+<a name="210"><span class="lineNum">     210 </span>            :     /////////////////////////////////////</a>
+<a name="211"><span class="lineNum">     211 </span>            : </a>
+<a name="212"><span class="lineNum">     212 </span>            :     /**</a>
+<a name="213"><span class="lineNum">     213 </span>            :    * Method to retrieve the technique to be used for key switching.</a>
+<a name="214"><span class="lineNum">     214 </span>            :    *</a>
+<a name="215"><span class="lineNum">     215 </span>            :    * @return the key switching technique.</a>
+<a name="216"><span class="lineNum">     216 </span>            :    */</a>
+<a name="217"><span class="lineNum">     217 </span>            :     enum KeySwitchTechnique GetKeySwitchTechnique() const {</a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineNoCov">          0 :         return m_ksTechnique;</span></a>
+<a name="219"><span class="lineNum">     219 </span>            :     }</a>
+<a name="220"><span class="lineNum">     220 </span>            : </a>
+<a name="221"><span class="lineNum">     221 </span>            :     /**</a>
+<a name="222"><span class="lineNum">     222 </span>            :    * Method to retrieve the technique to be used for scaling.</a>
+<a name="223"><span class="lineNum">     223 </span>            :    *</a>
+<a name="224"><span class="lineNum">     224 </span>            :    * @return the scaling technique.</a>
+<a name="225"><span class="lineNum">     225 </span>            :    */</a>
+<a name="226"><span class="lineNum">     226 </span>            :     enum ScalingTechnique GetScalingTechnique() const {</a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">      10611 :         return m_scalTechnique;</span></a>
+<a name="228"><span class="lineNum">     228 </span>            :     }</a>
+<a name="229"><span class="lineNum">     229 </span>            : </a>
+<a name="230"><span class="lineNum">     230 </span>            :     /**</a>
+<a name="231"><span class="lineNum">     231 </span>            :    * Method to retrieve the technique to be used for rescaling.</a>
+<a name="232"><span class="lineNum">     232 </span>            :    *</a>
+<a name="233"><span class="lineNum">     233 </span>            :    * @return the rescaling technique.</a>
+<a name="234"><span class="lineNum">     234 </span>            :    */</a>
+<a name="235"><span class="lineNum">     235 </span>            :     enum EncryptionTechnique GetEncryptionTechnique() const {</a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineCov">         76 :         return m_encTechnique;</span></a>
+<a name="237"><span class="lineNum">     237 </span>            :     }</a>
+<a name="238"><span class="lineNum">     238 </span>            : </a>
+<a name="239"><span class="lineNum">     239 </span>            :     /**</a>
+<a name="240"><span class="lineNum">     240 </span>            :    * Method to retrieve the technique to be used for rescaling.</a>
+<a name="241"><span class="lineNum">     241 </span>            :    *</a>
+<a name="242"><span class="lineNum">     242 </span>            :    * @return the rescaling technique.</a>
+<a name="243"><span class="lineNum">     243 </span>            :    */</a>
+<a name="244"><span class="lineNum">     244 </span>            :     enum MultiplicationTechnique GetMultiplicationTechnique() const {</a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">        220 :         return m_multTechnique;</span></a>
+<a name="246"><span class="lineNum">     246 </span>            :     }</a>
+<a name="247"><span class="lineNum">     247 </span>            : </a>
+<a name="248"><span class="lineNum">     248 </span>            :     uint32_t GetAuxBits() const {</a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 :         return m_auxBits;</span></a>
+<a name="250"><span class="lineNum">     250 </span>            :     }</a>
+<a name="251"><span class="lineNum">     251 </span>            : </a>
+<a name="252"><span class="lineNum">     252 </span>            :     uint32_t GetExtraBits() const {</a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :         return m_extraBits;</span></a>
+<a name="254"><span class="lineNum">     254 </span>            :     }</a>
+<a name="255"><span class="lineNum">     255 </span>            : </a>
+<a name="256"><span class="lineNum">     256 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsPK() const override {</a>
+<a name="257"><span class="lineNum">     257 </span>            :         if ((m_ksTechnique == HYBRID) &amp;&amp; (m_PREMode != NOT_SET))</a>
+<a name="258"><span class="lineNum">     258 </span>            :             return m_paramsQP;</a>
+<a name="259"><span class="lineNum">     259 </span>            :         if ((m_encTechnique == EXTENDED) &amp;&amp; (m_paramsQr != nullptr))</a>
+<a name="260"><span class="lineNum">     260 </span>            :             return m_paramsQr;</a>
+<a name="261"><span class="lineNum">     261 </span>            :         return m_params;</a>
+<a name="262"><span class="lineNum">     262 </span>            :     }</a>
+<a name="263"><span class="lineNum">     263 </span>            : </a>
+<a name="264"><span class="lineNum">     264 </span>            :     /////////////////////////////////////</a>
+<a name="265"><span class="lineNum">     265 </span>            :     // BGVrns : ModReduce</a>
+<a name="266"><span class="lineNum">     266 </span>            :     /////////////////////////////////////</a>
+<a name="267"><span class="lineNum">     267 </span>            : </a>
+<a name="268"><span class="lineNum">     268 </span>            :     /**</a>
+<a name="269"><span class="lineNum">     269 </span>            :    * Method that returns the NTL precomputions for [t]_{q_i}</a>
+<a name="270"><span class="lineNum">     270 </span>            :    *</a>
+<a name="271"><span class="lineNum">     271 </span>            :    * @return the pre-computed values.</a>
+<a name="272"><span class="lineNum">     272 </span>            :    */</a>
+<a name="273"><span class="lineNum">     273 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettModqPrecon() const {</a>
+<a name="274"><span class="lineNum">     274 </span>            :         return m_tModqPrecon;</a>
+<a name="275"><span class="lineNum">     275 </span>            :     }</a>
+<a name="276"><span class="lineNum">     276 </span>            : </a>
+<a name="277"><span class="lineNum">     277 </span>            :     /**</a>
+<a name="278"><span class="lineNum">     278 </span>            :    * Get the precomputed table of [-t^{-1}]_{q_i}</a>
+<a name="279"><span class="lineNum">     279 </span>            :    *</a>
+<a name="280"><span class="lineNum">     280 </span>            :    * @return the pre-computed values.</a>
+<a name="281"><span class="lineNum">     281 </span>            :    */</a>
+<a name="282"><span class="lineNum">     282 </span>            :     const NativeInteger&amp; GetNegtInvModq(usint l) const {</a>
+<a name="283"><span class="lineNum">     283 </span>            :         return m_negtInvModq[l];</a>
+<a name="284"><span class="lineNum">     284 </span>            :     }</a>
+<a name="285"><span class="lineNum">     285 </span>            : </a>
+<a name="286"><span class="lineNum">     286 </span>            :     /**</a>
+<a name="287"><span class="lineNum">     287 </span>            :    * Method that returns the NTL precomputions for [-t^{-1}]_{q_i}</a>
+<a name="288"><span class="lineNum">     288 </span>            :    *</a>
+<a name="289"><span class="lineNum">     289 </span>            :    * @return the pre-computed values.</a>
+<a name="290"><span class="lineNum">     290 </span>            :    */</a>
+<a name="291"><span class="lineNum">     291 </span>            :     const NativeInteger&amp; GetNegtInvModqPrecon(usint l) const {</a>
+<a name="292"><span class="lineNum">     292 </span>            :         return m_negtInvModqPrecon[l];</a>
+<a name="293"><span class="lineNum">     293 </span>            :     }</a>
+<a name="294"><span class="lineNum">     294 </span>            : </a>
+<a name="295"><span class="lineNum">     295 </span>            :     /////////////////////////////////////</a>
+<a name="296"><span class="lineNum">     296 </span>            :     // CKKSrns : DropLastElementAndScale</a>
+<a name="297"><span class="lineNum">     297 </span>            :     /////////////////////////////////////</a>
+<a name="298"><span class="lineNum">     298 </span>            : </a>
+<a name="299"><span class="lineNum">     299 </span>            :     /**</a>
+<a name="300"><span class="lineNum">     300 </span>            :    * Q^(l) = \prod_{j=0}^{l-1}</a>
+<a name="301"><span class="lineNum">     301 </span>            :    * Gets the precomputed table of [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}</a>
+<a name="302"><span class="lineNum">     302 </span>            :    *</a>
+<a name="303"><span class="lineNum">     303 </span>            :    * @return the precomputed table</a>
+<a name="304"><span class="lineNum">     304 </span>            :    */</a>
+<a name="305"><span class="lineNum">     305 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetQlQlInvModqlDivqlModq(size_t i) const {</a>
+<a name="306"><span class="lineNum">     306 </span>            :         return m_QlQlInvModqlDivqlModq[i];</a>
+<a name="307"><span class="lineNum">     307 </span>            :     }</a>
+<a name="308"><span class="lineNum">     308 </span>            : </a>
+<a name="309"><span class="lineNum">     309 </span>            :     /**</a>
+<a name="310"><span class="lineNum">     310 </span>            :    * Q^(l) = \prod_{j=0}^{l-1}</a>
+<a name="311"><span class="lineNum">     311 </span>            :    * Gets the NTL precomputions for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}</a>
+<a name="312"><span class="lineNum">     312 </span>            :    *</a>
+<a name="313"><span class="lineNum">     313 </span>            :    * @return the precomputed table</a>
+<a name="314"><span class="lineNum">     314 </span>            :    */</a>
+<a name="315"><span class="lineNum">     315 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetQlQlInvModqlDivqlModqPrecon(size_t i) const {</a>
+<a name="316"><span class="lineNum">     316 </span>            :         return m_QlQlInvModqlDivqlModqPrecon[i];</a>
+<a name="317"><span class="lineNum">     317 </span>            :     }</a>
+<a name="318"><span class="lineNum">     318 </span>            : </a>
+<a name="319"><span class="lineNum">     319 </span>            :     /**</a>
+<a name="320"><span class="lineNum">     320 </span>            :    * Gets the precomputed table of [q_i^{-1}]_{q_j}</a>
+<a name="321"><span class="lineNum">     321 </span>            :    *</a>
+<a name="322"><span class="lineNum">     322 </span>            :    * @return the precomputed table</a>
+<a name="323"><span class="lineNum">     323 </span>            :    */</a>
+<a name="324"><span class="lineNum">     324 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetqlInvModq(size_t i) const {</a>
+<a name="325"><span class="lineNum">     325 </span>            :         return m_qlInvModq[i];</a>
+<a name="326"><span class="lineNum">     326 </span>            :     }</a>
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<a name="328"><span class="lineNum">     328 </span>            :     /**</a>
+<a name="329"><span class="lineNum">     329 </span>            :    * Gets the NTL precomputions for [q_i^{-1}]_{q_j}</a>
+<a name="330"><span class="lineNum">     330 </span>            :    *</a>
+<a name="331"><span class="lineNum">     331 </span>            :    * @return the precomputed table</a>
+<a name="332"><span class="lineNum">     332 </span>            :    */</a>
+<a name="333"><span class="lineNum">     333 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetqlInvModqPrecon(size_t i) const {</a>
+<a name="334"><span class="lineNum">     334 </span>            :         return m_qlInvModqPrecon[i];</a>
+<a name="335"><span class="lineNum">     335 </span>            :     }</a>
+<a name="336"><span class="lineNum">     336 </span>            : </a>
+<a name="337"><span class="lineNum">     337 </span>            :     /////////////////////////////////////</a>
+<a name="338"><span class="lineNum">     338 </span>            :     // KeySwitchHybrid : KeyGen</a>
+<a name="339"><span class="lineNum">     339 </span>            :     /////////////////////////////////////</a>
+<a name="340"><span class="lineNum">     340 </span>            : </a>
+<a name="341"><span class="lineNum">     341 </span>            :     /**</a>
+<a name="342"><span class="lineNum">     342 </span>            :    * Gets Q*P CRT basis</a>
+<a name="343"><span class="lineNum">     343 </span>            :    * Q*P = {q_1,...,q_l,p_1,...,p_k}</a>
+<a name="344"><span class="lineNum">     344 </span>            :    * Used in Hybrid key switch generation</a>
+<a name="345"><span class="lineNum">     345 </span>            :    *</a>
+<a name="346"><span class="lineNum">     346 </span>            :    * @return the precomputed CRT params</a>
+<a name="347"><span class="lineNum">     347 </span>            :    */</a>
+<a name="348"><span class="lineNum">     348 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsQP() const {</a>
+<a name="349"><span class="lineNum">     349 </span>            :         return m_paramsQP;</a>
+<a name="350"><span class="lineNum">     350 </span>            :     }</a>
+<a name="351"><span class="lineNum">     351 </span>            : </a>
+<a name="352"><span class="lineNum">     352 </span>            :     /**</a>
+<a name="353"><span class="lineNum">     353 </span>            :    * Method that returns the number of digits.</a>
+<a name="354"><span class="lineNum">     354 </span>            :    * Used in Hybrid key switch generation</a>
+<a name="355"><span class="lineNum">     355 </span>            :    * @return the number of digits.</a>
+<a name="356"><span class="lineNum">     356 </span>            :    */</a>
+<a name="357"><span class="lineNum">     357 </span>            :     uint32_t GetNumPartQ() const {</a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineNoCov">          0 :         return m_numPartQ;</span></a>
+<a name="359"><span class="lineNum">     359 </span>            :     }</a>
+<a name="360"><span class="lineNum">     360 </span>            : </a>
+<a name="361"><span class="lineNum">     361 </span>            :     /**</a>
+<a name="362"><span class="lineNum">     362 </span>            :    * Gets the precomputed table of [P]_{q_i}</a>
+<a name="363"><span class="lineNum">     363 </span>            :    * Used in Hybrid key switch generation.</a>
+<a name="364"><span class="lineNum">     364 </span>            :    * @return the precomputed table</a>
+<a name="365"><span class="lineNum">     365 </span>            :    */</a>
+<a name="366"><span class="lineNum">     366 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPModq() const {</a>
+<a name="367"><span class="lineNum">     367 </span>            :         return m_PModq;</a>
+<a name="368"><span class="lineNum">     368 </span>            :     }</a>
+<a name="369"><span class="lineNum">     369 </span>            : </a>
+<a name="370"><span class="lineNum">     370 </span>            :     /////////////////////////////////////</a>
+<a name="371"><span class="lineNum">     371 </span>            :     // KeySwitchHybrid : KeySwitch</a>
+<a name="372"><span class="lineNum">     372 </span>            :     /////////////////////////////////////</a>
+<a name="373"><span class="lineNum">     373 </span>            : </a>
+<a name="374"><span class="lineNum">     374 </span>            :     /**</a>
+<a name="375"><span class="lineNum">     375 </span>            :    * Gets the Auxiliary CRT basis {P} = {p_1,...,p_k}</a>
+<a name="376"><span class="lineNum">     376 </span>            :    * Used in Hybrid key switching</a>
+<a name="377"><span class="lineNum">     377 </span>            :    *</a>
+<a name="378"><span class="lineNum">     378 </span>            :    * @return the parameters CRT params</a>
+<a name="379"><span class="lineNum">     379 </span>            :    */</a>
+<a name="380"><span class="lineNum">     380 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsP() const {</a>
+<a name="381"><span class="lineNum">     381 </span>            :         return m_paramsP;</a>
+<a name="382"><span class="lineNum">     382 </span>            :     }</a>
+<a name="383"><span class="lineNum">     383 </span>            : </a>
+<a name="384"><span class="lineNum">     384 </span>            :     /**</a>
+<a name="385"><span class="lineNum">     385 </span>            :    * Method that returns the number of towers within every digit.</a>
+<a name="386"><span class="lineNum">     386 </span>            :    * This is the alpha parameter from the paper (see documentation</a>
+<a name="387"><span class="lineNum">     387 </span>            :    * for KeySwitchHHybrid).</a>
+<a name="388"><span class="lineNum">     388 </span>            :    * Used in Hybrid key switching</a>
+<a name="389"><span class="lineNum">     389 </span>            :    *</a>
+<a name="390"><span class="lineNum">     390 </span>            :    * @return the number of towers per digit.</a>
+<a name="391"><span class="lineNum">     391 </span>            :    */</a>
+<a name="392"><span class="lineNum">     392 </span>            :     uint32_t GetNumPerPartQ() const {</a>
+<a name="393"><span class="lineNum">     393 </span>            :         return m_numPerPartQ;</a>
+<a name="394"><span class="lineNum">     394 </span>            :     }</a>
+<a name="395"><span class="lineNum">     395 </span>            : </a>
+<a name="396"><span class="lineNum">     396 </span>            :     /*</a>
+<a name="397"><span class="lineNum">     397 </span>            :    * Method that returns the number of partitions.</a>
+<a name="398"><span class="lineNum">     398 </span>            :    * Used in Hybrid key switching</a>
+<a name="399"><span class="lineNum">     399 </span>            :    *</a>
+<a name="400"><span class="lineNum">     400 </span>            :    * @return the number of partitions.</a>
+<a name="401"><span class="lineNum">     401 </span>            :    */</a>
+<a name="402"><span class="lineNum">     402 </span>            :     uint32_t GetNumberOfQPartitions() const {</a>
+<a name="403"><span class="lineNum">     403 </span>            :         return m_paramsPartQ.size();</a>
+<a name="404"><span class="lineNum">     404 </span>            :     }</a>
+<a name="405"><span class="lineNum">     405 </span>            : </a>
+<a name="406"><span class="lineNum">     406 </span>            :     /**</a>
+<a name="407"><span class="lineNum">     407 </span>            :    * Method that returns the element parameters corresponding to</a>
+<a name="408"><span class="lineNum">     408 </span>            :    * partitions {Q_j} of Q.</a>
+<a name="409"><span class="lineNum">     409 </span>            :    * Used in Hybrid key switching</a>
+<a name="410"><span class="lineNum">     410 </span>            :    *</a>
+<a name="411"><span class="lineNum">     411 </span>            :    * @return the pre-computed values.</a>
+<a name="412"><span class="lineNum">     412 </span>            :    */</a>
+<a name="413"><span class="lineNum">     413 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&amp; GetParamsPartQ(uint32_t part) const {</a>
+<a name="414"><span class="lineNum">     414 </span>            :         return m_paramsPartQ[part];</a>
+<a name="415"><span class="lineNum">     415 </span>            :     }</a>
+<a name="416"><span class="lineNum">     416 </span>            : </a>
+<a name="417"><span class="lineNum">     417 </span>            :     /*</a>
+<a name="418"><span class="lineNum">     418 </span>            :    * Method that returns the element parameters corresponding to the</a>
+<a name="419"><span class="lineNum">     419 </span>            :    * complementary basis of a single digit j, i.e., the basis consisting of</a>
+<a name="420"><span class="lineNum">     420 </span>            :    * all other digits plus the special primes. Note that numTowers should be</a>
+<a name="421"><span class="lineNum">     421 </span>            :    * up to l (where l is the number of towers).</a>
+<a name="422"><span class="lineNum">     422 </span>            :    *</a>
+<a name="423"><span class="lineNum">     423 </span>            :    * @param numTowers is the total number of towers there are in the</a>
+<a name="424"><span class="lineNum">     424 </span>            :    * ciphertext.</a>
+<a name="425"><span class="lineNum">     425 </span>            :    * @param digit is the index of the digit we want to get the complementary</a>
+<a name="426"><span class="lineNum">     426 </span>            :    * partition from.</a>
+<a name="427"><span class="lineNum">     427 </span>            :    * @return the partitions.</a>
+<a name="428"><span class="lineNum">     428 </span>            :    */</a>
+<a name="429"><span class="lineNum">     429 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&amp; GetParamsComplPartQ(uint32_t numTowers, uint32_t digit) const {</a>
+<a name="430"><span class="lineNum">     430 </span>            :         return m_paramsComplPartQ[numTowers][digit];</a>
+<a name="431"><span class="lineNum">     431 </span>            :     }</a>
+<a name="432"><span class="lineNum">     432 </span>            : </a>
+<a name="433"><span class="lineNum">     433 </span>            :     /**</a>
+<a name="434"><span class="lineNum">     434 </span>            :    * Method that returns the precomputed values for QHat^-1 mod qj within a</a>
+<a name="435"><span class="lineNum">     435 </span>            :    * partition of towers, used in HYBRID.</a>
+<a name="436"><span class="lineNum">     436 </span>            :    *</a>
+<a name="437"><span class="lineNum">     437 </span>            :    * @return the pre-computed values.</a>
+<a name="438"><span class="lineNum">     438 </span>            :    */</a>
+<a name="439"><span class="lineNum">     439 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPartQlHatInvModq(uint32_t part, uint32_t sublvl) const {</a>
+<a name="440"><span class="lineNum">     440 </span>            :         if (part &lt; m_PartQlHatInvModq.size() &amp;&amp; sublvl &lt; m_PartQlHatInvModq[part].size())</a>
+<a name="441"><span class="lineNum">     441 </span>            :             return m_PartQlHatInvModq[part][sublvl];</a>
+<a name="442"><span class="lineNum">     442 </span>            : </a>
+<a name="443"><span class="lineNum">     443 </span>            :         OPENFHE_THROW(</a>
+<a name="444"><span class="lineNum">     444 </span>            :             &quot;CryptoParametersCKKS::GetPartitionQHatInvModQTable - &quot;</a>
+<a name="445"><span class="lineNum">     445 </span>            :             &quot;index out of bounds.&quot;);</a>
+<a name="446"><span class="lineNum">     446 </span>            :     }</a>
+<a name="447"><span class="lineNum">     447 </span>            : </a>
+<a name="448"><span class="lineNum">     448 </span>            :     /**</a>
+<a name="449"><span class="lineNum">     449 </span>            :    * Barrett multiplication precomputations getter.</a>
+<a name="450"><span class="lineNum">     450 </span>            :    *</a>
+<a name="451"><span class="lineNum">     451 </span>            :    * @param index The number of towers in the ciphertext.</a>
+<a name="452"><span class="lineNum">     452 </span>            :    * @return the pre-computed values.</a>
+<a name="453"><span class="lineNum">     453 </span>            :    */</a>
+<a name="454"><span class="lineNum">     454 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPartQlHatInvModqPrecon(uint32_t part, uint32_t sublvl) const {</a>
+<a name="455"><span class="lineNum">     455 </span>            :         if (part &lt; m_PartQlHatInvModqPrecon.size() &amp;&amp; sublvl &lt; m_PartQlHatInvModqPrecon[part].size())</a>
+<a name="456"><span class="lineNum">     456 </span>            :             return m_PartQlHatInvModqPrecon[part][sublvl];</a>
+<a name="457"><span class="lineNum">     457 </span>            : </a>
+<a name="458"><span class="lineNum">     458 </span>            :         OPENFHE_THROW(</a>
+<a name="459"><span class="lineNum">     459 </span>            :             &quot;CryptoParametersCKKS::&quot;</a>
+<a name="460"><span class="lineNum">     460 </span>            :             &quot;GetPartitionQHatInvModQPreconTable - index &quot;</a>
+<a name="461"><span class="lineNum">     461 </span>            :             &quot;out of bounds.&quot;);</a>
+<a name="462"><span class="lineNum">     462 </span>            :     }</a>
+<a name="463"><span class="lineNum">     463 </span>            : </a>
+<a name="464"><span class="lineNum">     464 </span>            :     /**</a>
+<a name="465"><span class="lineNum">     465 </span>            :    * Barrett multiplication precomputations getter.</a>
+<a name="466"><span class="lineNum">     466 </span>            :    *</a>
+<a name="467"><span class="lineNum">     467 </span>            :    * @param index The table containing [PartQHat]_{p_j}</a>
+<a name="468"><span class="lineNum">     468 </span>            :    * @return the pre-computed values.</a>
+<a name="469"><span class="lineNum">     469 </span>            :    */</a>
+<a name="470"><span class="lineNum">     470 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetPartQlHatModp(uint32_t lvl, uint32_t part) const {</a>
+<a name="471"><span class="lineNum">     471 </span>            :         if (lvl &lt; m_PartQlHatModp.size() &amp;&amp; part &lt; m_PartQlHatModp[lvl].size())</a>
+<a name="472"><span class="lineNum">     472 </span>            :             return m_PartQlHatModp[lvl][part];</a>
+<a name="473"><span class="lineNum">     473 </span>            : </a>
+<a name="474"><span class="lineNum">     474 </span>            :         OPENFHE_THROW(</a>
+<a name="475"><span class="lineNum">     475 </span>            :             &quot;CryptoParametersCKKS::GetPartitionQHatModPTable - &quot;</a>
+<a name="476"><span class="lineNum">     476 </span>            :             &quot;index out of bounds.&quot;);</a>
+<a name="477"><span class="lineNum">     477 </span>            :     }</a>
+<a name="478"><span class="lineNum">     478 </span>            : </a>
+<a name="479"><span class="lineNum">     479 </span>            :     /**</a>
+<a name="480"><span class="lineNum">     480 </span>            :    * Barrett multiplication precomputations getter.</a>
+<a name="481"><span class="lineNum">     481 </span>            :    *</a>
+<a name="482"><span class="lineNum">     482 </span>            :    * @param index The number of towers in the ciphertext.</a>
+<a name="483"><span class="lineNum">     483 </span>            :    * @return the pre-computed values.</a>
+<a name="484"><span class="lineNum">     484 </span>            :    */</a>
+<a name="485"><span class="lineNum">     485 </span>            :     const std::vector&lt;DoubleNativeInt&gt;&amp; GetmodComplPartqBarrettMu(uint32_t lvl, uint32_t part) const {</a>
+<a name="486"><span class="lineNum">     486 </span>            :         if (lvl &lt; m_modComplPartqBarrettMu.size() &amp;&amp; part &lt; m_modComplPartqBarrettMu[lvl].size())</a>
+<a name="487"><span class="lineNum">     487 </span>            :             return m_modComplPartqBarrettMu[lvl][part];</a>
+<a name="488"><span class="lineNum">     488 </span>            : </a>
+<a name="489"><span class="lineNum">     489 </span>            :         OPENFHE_THROW(</a>
+<a name="490"><span class="lineNum">     490 </span>            :             &quot;CryptoParametersCKKS::GetPartitionPrecon - index out &quot;</a>
+<a name="491"><span class="lineNum">     491 </span>            :             &quot;of bounds.&quot;);</a>
+<a name="492"><span class="lineNum">     492 </span>            :     }</a>
+<a name="493"><span class="lineNum">     493 </span>            : </a>
+<a name="494"><span class="lineNum">     494 </span>            :     /**</a>
+<a name="495"><span class="lineNum">     495 </span>            :    * Gets the precomputed table of [P^{-1}]_{q_i}</a>
+<a name="496"><span class="lineNum">     496 </span>            :    * Used in GHS key switching</a>
+<a name="497"><span class="lineNum">     497 </span>            :    *</a>
+<a name="498"><span class="lineNum">     498 </span>            :    * See more in &quot;A full RNS variant of approximate homomorphic</a>
+<a name="499"><span class="lineNum">     499 </span>            :    * encryption&quot; by Cheon, et. al. Section 4.</a>
+<a name="500"><span class="lineNum">     500 </span>            :    *</a>
+<a name="501"><span class="lineNum">     501 </span>            :    * @return the precomputed table</a>
+<a name="502"><span class="lineNum">     502 </span>            :    */</a>
+<a name="503"><span class="lineNum">     503 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPInvModq() const {</a>
+<a name="504"><span class="lineNum">     504 </span>            :         return m_PInvModq;</a>
+<a name="505"><span class="lineNum">     505 </span>            :     }</a>
+<a name="506"><span class="lineNum">     506 </span>            : </a>
+<a name="507"><span class="lineNum">     507 </span>            :     /**</a>
+<a name="508"><span class="lineNum">     508 </span>            :    * Gets the NTL precomputions for [P^{-1}]_{q_i}</a>
+<a name="509"><span class="lineNum">     509 </span>            :    * Used for speeding up GHS key switching.</a>
+<a name="510"><span class="lineNum">     510 </span>            :    *</a>
+<a name="511"><span class="lineNum">     511 </span>            :    * @return the precomputed table</a>
+<a name="512"><span class="lineNum">     512 </span>            :    */</a>
+<a name="513"><span class="lineNum">     513 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPInvModqPrecon() const {</a>
+<a name="514"><span class="lineNum">     514 </span>            :         return m_PInvModqPrecon;</a>
+<a name="515"><span class="lineNum">     515 </span>            :     }</a>
+<a name="516"><span class="lineNum">     516 </span>            : </a>
+<a name="517"><span class="lineNum">     517 </span>            :     /**</a>
+<a name="518"><span class="lineNum">     518 </span>            :    * Get the precomputed table of [(P/p_j)^{-1}]_{p_j}</a>
+<a name="519"><span class="lineNum">     519 </span>            :    * Used in GHS key switching.</a>
+<a name="520"><span class="lineNum">     520 </span>            :    *</a>
+<a name="521"><span class="lineNum">     521 </span>            :    * See more in &quot;A full RNS variant of approximate homomorphic</a>
+<a name="522"><span class="lineNum">     522 </span>            :    * encryption&quot; by Cheon, et. al. Section 4.</a>
+<a name="523"><span class="lineNum">     523 </span>            :    *</a>
+<a name="524"><span class="lineNum">     524 </span>            :    * @return the precomputed table</a>
+<a name="525"><span class="lineNum">     525 </span>            :    */</a>
+<a name="526"><span class="lineNum">     526 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPHatInvModp() const {</a>
+<a name="527"><span class="lineNum">     527 </span>            :         return m_PHatInvModp;</a>
+<a name="528"><span class="lineNum">     528 </span>            :     }</a>
+<a name="529"><span class="lineNum">     529 </span>            : </a>
+<a name="530"><span class="lineNum">     530 </span>            :     /**</a>
+<a name="531"><span class="lineNum">     531 </span>            :    * Get the NTL precomputions for [(P/p_j)^{-1}]_{p_j}</a>
+<a name="532"><span class="lineNum">     532 </span>            :    *</a>
+<a name="533"><span class="lineNum">     533 </span>            :    * @return the precomputed table</a>
+<a name="534"><span class="lineNum">     534 </span>            :    */</a>
+<a name="535"><span class="lineNum">     535 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetPHatInvModpPrecon() const {</a>
+<a name="536"><span class="lineNum">     536 </span>            :         return m_PHatInvModpPrecon;</a>
+<a name="537"><span class="lineNum">     537 </span>            :     }</a>
+<a name="538"><span class="lineNum">     538 </span>            : </a>
+<a name="539"><span class="lineNum">     539 </span>            :     /**</a>
+<a name="540"><span class="lineNum">     540 </span>            :    * Gets the precomputed table of [P/p_j]_{q_i}</a>
+<a name="541"><span class="lineNum">     541 </span>            :    * Used in GHS key switching.</a>
+<a name="542"><span class="lineNum">     542 </span>            :    *</a>
+<a name="543"><span class="lineNum">     543 </span>            :    * See more in &quot;A full RNS variant of approximate homomorphic</a>
+<a name="544"><span class="lineNum">     544 </span>            :    * encryption&quot; by Cheon, et. al. Section 4.</a>
+<a name="545"><span class="lineNum">     545 </span>            :    *</a>
+<a name="546"><span class="lineNum">     546 </span>            :    * @return the precomputed table</a>
+<a name="547"><span class="lineNum">     547 </span>            :    */</a>
+<a name="548"><span class="lineNum">     548 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetPHatModq() const {</a>
+<a name="549"><span class="lineNum">     549 </span>            :         return m_PHatModq;</a>
+<a name="550"><span class="lineNum">     550 </span>            :     }</a>
+<a name="551"><span class="lineNum">     551 </span>            : </a>
+<a name="552"><span class="lineNum">     552 </span>            :     /**</a>
+<a name="553"><span class="lineNum">     553 </span>            :    * Gets the Barrett modulo reduction precomputation for q_i</a>
+<a name="554"><span class="lineNum">     554 </span>            :    *</a>
+<a name="555"><span class="lineNum">     555 </span>            :    * @return the precomputed table</a>
+<a name="556"><span class="lineNum">     556 </span>            :    */</a>
+<a name="557"><span class="lineNum">     557 </span>            :     const std::vector&lt;DoubleNativeInt&gt;&amp; GetModqBarrettMu() const {</a>
+<a name="558"><span class="lineNum">     558 </span><span class="lineCov">          1 :         return m_modqBarrettMu;</span></a>
+<a name="559"><span class="lineNum">     559 </span>            :     }</a>
+<a name="560"><span class="lineNum">     560 </span>            : </a>
+<a name="561"><span class="lineNum">     561 </span>            :     /**</a>
+<a name="562"><span class="lineNum">     562 </span>            :    * Method that returns the precomputed values for [t^(-1)]_{q_i}</a>
+<a name="563"><span class="lineNum">     563 </span>            :    * Used in ModulusSwitching.</a>
+<a name="564"><span class="lineNum">     564 </span>            :    *</a>
+<a name="565"><span class="lineNum">     565 </span>            :    * @return the pre-computed values.</a>
+<a name="566"><span class="lineNum">     566 </span>            :    */</a>
+<a name="567"><span class="lineNum">     567 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettInvModq() const {</a>
+<a name="568"><span class="lineNum">     568 </span>            :         return m_tInvModq;</a>
+<a name="569"><span class="lineNum">     569 </span>            :     }</a>
+<a name="570"><span class="lineNum">     570 </span>            : </a>
+<a name="571"><span class="lineNum">     571 </span>            :     /**</a>
+<a name="572"><span class="lineNum">     572 </span>            :    * Method that returns the NTL precomputions for [t^{-1}]_{q_i}</a>
+<a name="573"><span class="lineNum">     573 </span>            :    *</a>
+<a name="574"><span class="lineNum">     574 </span>            :    * @return the pre-computed values.</a>
+<a name="575"><span class="lineNum">     575 </span>            :    */</a>
+<a name="576"><span class="lineNum">     576 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettInvModqPrecon() const {</a>
+<a name="577"><span class="lineNum">     577 </span>            :         return m_tInvModqPrecon;</a>
+<a name="578"><span class="lineNum">     578 </span>            :     }</a>
+<a name="579"><span class="lineNum">     579 </span>            : </a>
+<a name="580"><span class="lineNum">     580 </span>            :     /**</a>
+<a name="581"><span class="lineNum">     581 </span>            :    * Method that returns the precomputed values for [t^(-1)]_{p_j}</a>
+<a name="582"><span class="lineNum">     582 </span>            :    * Used in KeySwitching.</a>
+<a name="583"><span class="lineNum">     583 </span>            :    *</a>
+<a name="584"><span class="lineNum">     584 </span>            :    * @return the pre-computed values.</a>
+<a name="585"><span class="lineNum">     585 </span>            :    */</a>
+<a name="586"><span class="lineNum">     586 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettInvModp() const {</a>
+<a name="587"><span class="lineNum">     587 </span>            :         return m_tInvModp;</a>
+<a name="588"><span class="lineNum">     588 </span>            :     }</a>
+<a name="589"><span class="lineNum">     589 </span>            : </a>
+<a name="590"><span class="lineNum">     590 </span>            :     /**</a>
+<a name="591"><span class="lineNum">     591 </span>            :    * Method that returns the NTL precomputions for [t^{-1}]_{p_j}</a>
+<a name="592"><span class="lineNum">     592 </span>            :    *</a>
+<a name="593"><span class="lineNum">     593 </span>            :    * @return the pre-computed values.</a>
+<a name="594"><span class="lineNum">     594 </span>            :    */</a>
+<a name="595"><span class="lineNum">     595 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettInvModpPrecon() const {</a>
+<a name="596"><span class="lineNum">     596 </span>            :         return m_tInvModpPrecon;</a>
+<a name="597"><span class="lineNum">     597 </span>            :     }</a>
+<a name="598"><span class="lineNum">     598 </span>            : </a>
+<a name="599"><span class="lineNum">     599 </span>            :     /////////////////////////////////////</a>
+<a name="600"><span class="lineNum">     600 </span>            :     // CKKSrns Scaling Factor</a>
+<a name="601"><span class="lineNum">     601 </span>            :     /////////////////////////////////////</a>
+<a name="602"><span class="lineNum">     602 </span>            : </a>
+<a name="603"><span class="lineNum">     603 </span>            :     /**</a>
+<a name="604"><span class="lineNum">     604 </span>            :    * Method to retrieve the scaling factor of level l.</a>
+<a name="605"><span class="lineNum">     605 </span>            :    * For FIXEDMANUAL scaling technique method always returns 2^p, where p corresponds to plaintext modulus</a>
+<a name="606"><span class="lineNum">     606 </span>            :    * @param l For FLEXIBLEAUTO scaling technique the level whose scaling factor we want to learn.</a>
+<a name="607"><span class="lineNum">     607 </span>            :    * Levels start from 0 (no scaling done - all towers) and go up to K-1, where K is the number of towers supported.</a>
+<a name="608"><span class="lineNum">     608 </span>            :    * @return the scaling factor.</a>
+<a name="609"><span class="lineNum">     609 </span>            :    */</a>
+<a name="610"><span class="lineNum">     610 </span>            :     double GetScalingFactorReal(uint32_t l = 0) const {</a>
+<a name="611"><span class="lineNum">     611 </span><span class="lineCov">       3420 :         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {</span></a>
+<a name="612"><span class="lineNum">     612 </span><span class="lineCov">       1310 :             if (l &gt;= m_scalingFactorsReal.size()) {</span></a>
+<a name="613"><span class="lineNum">     613 </span>            :                 // TODO: Return an error here.</a>
+<a name="614"><span class="lineNum">     614 </span><span class="lineNoCov">          0 :                 return m_approxSF;</span></a>
+<a name="615"><span class="lineNum">     615 </span>            :             }</a>
+<a name="616"><span class="lineNum">     616 </span>            : </a>
+<a name="617"><span class="lineNum">     617 </span><span class="lineCov">       1310 :             return m_scalingFactorsReal[l];</span></a>
+<a name="618"><span class="lineNum">     618 </span>            :         }</a>
+<a name="619"><span class="lineNum">     619 </span>            : </a>
+<a name="620"><span class="lineNum">     620 </span><span class="lineCov">       2110 :         return m_approxSF;</span></a>
+<a name="621"><span class="lineNum">     621 </span>            :     }</a>
+<a name="622"><span class="lineNum">     622 </span>            : </a>
+<a name="623"><span class="lineNum">     623 </span>            :     double GetScalingFactorRealBig(uint32_t l = 0) const {</a>
+<a name="624"><span class="lineNum">     624 </span>            :         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {</a>
+<a name="625"><span class="lineNum">     625 </span><span class="lineCov">        749 :             if (l &gt;= m_scalingFactorsRealBig.size()) {</span></a>
+<a name="626"><span class="lineNum">     626 </span>            :                 // TODO: Return an error here.</a>
+<a name="627"><span class="lineNum">     627 </span><span class="lineNoCov">          0 :                 return m_approxSF;</span></a>
+<a name="628"><span class="lineNum">     628 </span>            :             }</a>
+<a name="629"><span class="lineNum">     629 </span>            : </a>
+<a name="630"><span class="lineNum">     630 </span><span class="lineCov">        749 :             return m_scalingFactorsRealBig[l];</span></a>
+<a name="631"><span class="lineNum">     631 </span>            :         }</a>
+<a name="632"><span class="lineNum">     632 </span>            : </a>
+<a name="633"><span class="lineNum">     633 </span>            :         return m_approxSF;</a>
+<a name="634"><span class="lineNum">     634 </span>            :     }</a>
+<a name="635"><span class="lineNum">     635 </span>            : </a>
+<a name="636"><span class="lineNum">     636 </span>            :     /**</a>
+<a name="637"><span class="lineNum">     637 </span>            :    * Method to retrieve the modulus to be dropped of level l.</a>
+<a name="638"><span class="lineNum">     638 </span>            :    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus</a>
+<a name="639"><span class="lineNum">     639 </span>            :    * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique</a>
+<a name="640"><span class="lineNum">     640 </span>            :    * @return the precomputed table</a>
+<a name="641"><span class="lineNum">     641 </span>            :    */</a>
+<a name="642"><span class="lineNum">     642 </span>            :     double GetModReduceFactor(uint32_t l = 0) const {</a>
+<a name="643"><span class="lineNum">     643 </span>            :         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {</a>
+<a name="644"><span class="lineNum">     644 </span>            :             return m_dmoduliQ[l];</a>
+<a name="645"><span class="lineNum">     645 </span>            :         }</a>
+<a name="646"><span class="lineNum">     646 </span>            : </a>
+<a name="647"><span class="lineNum">     647 </span>            :         return m_approxSF;</a>
+<a name="648"><span class="lineNum">     648 </span>            :     }</a>
+<a name="649"><span class="lineNum">     649 </span>            : </a>
+<a name="650"><span class="lineNum">     650 </span>            :     /////////////////////////////////////</a>
+<a name="651"><span class="lineNum">     651 </span>            :     // BFVrns : Encrypt : POverQ</a>
+<a name="652"><span class="lineNum">     652 </span>            :     /////////////////////////////////////</a>
+<a name="653"><span class="lineNum">     653 </span>            : </a>
+<a name="654"><span class="lineNum">     654 </span>            :     const NativeInteger GetNegQModt(uint32_t i = 0) const {</a>
+<a name="655"><span class="lineNum">     655 </span>            :         return m_negQModt[i];</a>
+<a name="656"><span class="lineNum">     656 </span>            :     }</a>
+<a name="657"><span class="lineNum">     657 </span>            : </a>
+<a name="658"><span class="lineNum">     658 </span>            :     const NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {</a>
+<a name="659"><span class="lineNum">     659 </span>            :         return m_negQModtPrecon[i];</a>
+<a name="660"><span class="lineNum">     660 </span>            :     }</a>
+<a name="661"><span class="lineNum">     661 </span>            : </a>
+<a name="662"><span class="lineNum">     662 </span>            :     const NativeInteger GetNegQrModt() const {</a>
+<a name="663"><span class="lineNum">     663 </span>            :         return m_negQrModt;</a>
+<a name="664"><span class="lineNum">     664 </span>            :     }</a>
+<a name="665"><span class="lineNum">     665 </span>            : </a>
+<a name="666"><span class="lineNum">     666 </span>            :     const NativeInteger GetNegQrModtPrecon() const {</a>
+<a name="667"><span class="lineNum">     667 </span>            :         return m_negQrModtPrecon;</a>
+<a name="668"><span class="lineNum">     668 </span>            :     }</a>
+<a name="669"><span class="lineNum">     669 </span>            : </a>
+<a name="670"><span class="lineNum">     670 </span>            :     /**</a>
+<a name="671"><span class="lineNum">     671 </span>            :    * Method that returns the precomputed values for [t^(-1)]_{a} where a is from {q_i} U r</a>
+<a name="672"><span class="lineNum">     672 </span>            :    * Used in ModulusSwitching.</a>
+<a name="673"><span class="lineNum">     673 </span>            :    *</a>
+<a name="674"><span class="lineNum">     674 </span>            :    * @return the pre-computed values.</a>
+<a name="675"><span class="lineNum">     675 </span>            :    */</a>
+<a name="676"><span class="lineNum">     676 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettInvModqr() const {</a>
+<a name="677"><span class="lineNum">     677 </span>            :         return m_tInvModqr;</a>
+<a name="678"><span class="lineNum">     678 </span>            :     }</a>
+<a name="679"><span class="lineNum">     679 </span>            : </a>
+<a name="680"><span class="lineNum">     680 </span>            :     /////////////////////////////////////</a>
+<a name="681"><span class="lineNum">     681 </span>            :     // BFVrns : Mult : ExpandCRTBasis</a>
+<a name="682"><span class="lineNum">     682 </span>            :     /////////////////////////////////////</a>
+<a name="683"><span class="lineNum">     683 </span>            : </a>
+<a name="684"><span class="lineNum">     684 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsQl(usint l = 0) const {</a>
+<a name="685"><span class="lineNum">     685 </span>            :         return m_paramsQl[l];</a>
+<a name="686"><span class="lineNum">     686 </span>            :     }</a>
+<a name="687"><span class="lineNum">     687 </span>            : </a>
+<a name="688"><span class="lineNum">     688 </span>            :     const std::vector&lt;double&gt;&amp; GetQlQHatInvModqDivqFrac(usint l) const {</a>
+<a name="689"><span class="lineNum">     689 </span>            :         return m_QlQHatInvModqDivqFrac[l];</a>
+<a name="690"><span class="lineNum">     690 </span>            :     }</a>
+<a name="691"><span class="lineNum">     691 </span>            : </a>
+<a name="692"><span class="lineNum">     692 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetQlQHatInvModqDivqModq(usint l) const {</a>
+<a name="693"><span class="lineNum">     693 </span>            :         return m_QlQHatInvModqDivqModq[l];</a>
+<a name="694"><span class="lineNum">     694 </span>            :     }</a>
+<a name="695"><span class="lineNum">     695 </span>            : </a>
+<a name="696"><span class="lineNum">     696 </span>            :     /**</a>
+<a name="697"><span class="lineNum">     697 </span>            :    * Gets the Auxiliary CRT basis {R} = {r_1,...,r_k}</a>
+<a name="698"><span class="lineNum">     698 </span>            :    * used in homomorphic multiplication</a>
+<a name="699"><span class="lineNum">     699 </span>            :    *</a>
+<a name="700"><span class="lineNum">     700 </span>            :    * @return the precomputed CRT params</a>
+<a name="701"><span class="lineNum">     701 </span>            :    */</a>
+<a name="702"><span class="lineNum">     702 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsRl(usint l = 0) const {</a>
+<a name="703"><span class="lineNum">     703 </span>            :         return m_paramsRl[l];</a>
+<a name="704"><span class="lineNum">     704 </span>            :     }</a>
+<a name="705"><span class="lineNum">     705 </span>            : </a>
+<a name="706"><span class="lineNum">     706 </span>            :     /**</a>
+<a name="707"><span class="lineNum">     707 </span>            :    * Gets the Auxiliary expanded CRT basis {S} = {Q*R} =</a>
+<a name="708"><span class="lineNum">     708 </span>            :    * {{q_i},{r_k}} used in homomorphic multiplication</a>
+<a name="709"><span class="lineNum">     709 </span>            :    *</a>
+<a name="710"><span class="lineNum">     710 </span>            :    * @return the precomputed CRT params</a>
+<a name="711"><span class="lineNum">     711 </span>            :    */</a>
+<a name="712"><span class="lineNum">     712 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsQlRl(usint l = 0) const {</a>
+<a name="713"><span class="lineNum">     713 </span>            :         return m_paramsQlRl[l];</a>
+<a name="714"><span class="lineNum">     714 </span>            :     }</a>
+<a name="715"><span class="lineNum">     715 </span>            : </a>
+<a name="716"><span class="lineNum">     716 </span>            :     /**</a>
+<a name="717"><span class="lineNum">     717 </span>            :    * Gets the precomputed table of [(Q/q_i)^{-1}]_{q_i}</a>
+<a name="718"><span class="lineNum">     718 </span>            :    *</a>
+<a name="719"><span class="lineNum">     719 </span>            :    * @return the precomputed table</a>
+<a name="720"><span class="lineNum">     720 </span>            :    */</a>
+<a name="721"><span class="lineNum">     721 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetQlHatInvModq(usint l = 0) const {</a>
+<a name="722"><span class="lineNum">     722 </span>            :         return m_QlHatInvModq[l];</a>
+<a name="723"><span class="lineNum">     723 </span>            :     }</a>
+<a name="724"><span class="lineNum">     724 </span>            : </a>
+<a name="725"><span class="lineNum">     725 </span>            :     /**</a>
+<a name="726"><span class="lineNum">     726 </span>            :    * Gets the NTL precomputations for [(Q/q_i)^{-1}]_{q_i}</a>
+<a name="727"><span class="lineNum">     727 </span>            :    *</a>
+<a name="728"><span class="lineNum">     728 </span>            :    * @return the precomputed table</a>
+<a name="729"><span class="lineNum">     729 </span>            :    */</a>
+<a name="730"><span class="lineNum">     730 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetQlHatInvModqPrecon(usint l = 0) const {</a>
+<a name="731"><span class="lineNum">     731 </span>            :         return m_QlHatInvModqPrecon[l];</a>
+<a name="732"><span class="lineNum">     732 </span>            :     }</a>
+<a name="733"><span class="lineNum">     733 </span>            : </a>
+<a name="734"><span class="lineNum">     734 </span>            :     /**</a>
+<a name="735"><span class="lineNum">     735 </span>            :    * Gets the precomputed table of [Q/q_i]_{r_k}</a>
+<a name="736"><span class="lineNum">     736 </span>            :    *</a>
+<a name="737"><span class="lineNum">     737 </span>            :    * @return the precomputed table</a>
+<a name="738"><span class="lineNum">     738 </span>            :    */</a>
+<a name="739"><span class="lineNum">     739 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetQlHatModr(usint l = 0) const {</a>
+<a name="740"><span class="lineNum">     740 </span>            :         return m_QlHatModr[l];</a>
+<a name="741"><span class="lineNum">     741 </span>            :     }</a>
+<a name="742"><span class="lineNum">     742 </span>            : </a>
+<a name="743"><span class="lineNum">     743 </span>            :     /**</a>
+<a name="744"><span class="lineNum">     744 </span>            :    * Gets the precomputed table of [\alpha*Q]_{r_k}</a>
+<a name="745"><span class="lineNum">     745 </span>            :    *</a>
+<a name="746"><span class="lineNum">     746 </span>            :    * @return the precomputed table</a>
+<a name="747"><span class="lineNum">     747 </span>            :    */</a>
+<a name="748"><span class="lineNum">     748 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetalphaQlModr(usint l = 0) const {</a>
+<a name="749"><span class="lineNum">     749 </span>            :         return m_alphaQlModr[l];</a>
+<a name="750"><span class="lineNum">     750 </span>            :     }</a>
+<a name="751"><span class="lineNum">     751 </span>            : </a>
+<a name="752"><span class="lineNum">     752 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetmNegRlQHatInvModq(usint l = 0) const {</a>
+<a name="753"><span class="lineNum">     753 </span>            :         return m_negRlQHatInvModq[l];</a>
+<a name="754"><span class="lineNum">     754 </span>            :     }</a>
+<a name="755"><span class="lineNum">     755 </span>            : </a>
+<a name="756"><span class="lineNum">     756 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetmNegRlQHatInvModqPrecon(usint l = 0) const {</a>
+<a name="757"><span class="lineNum">     757 </span>            :         return m_negRlQHatInvModqPrecon[l];</a>
+<a name="758"><span class="lineNum">     758 </span>            :     }</a>
+<a name="759"><span class="lineNum">     759 </span>            : </a>
+<a name="760"><span class="lineNum">     760 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetmNegRlQlHatInvModq(usint l = 0) const {</a>
+<a name="761"><span class="lineNum">     761 </span>            :         return m_negRlQlHatInvModq[l];</a>
+<a name="762"><span class="lineNum">     762 </span>            :     }</a>
+<a name="763"><span class="lineNum">     763 </span>            : </a>
+<a name="764"><span class="lineNum">     764 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetmNegRlQlHatInvModqPrecon(usint l = 0) const {</a>
+<a name="765"><span class="lineNum">     765 </span>            :         return m_negRlQlHatInvModqPrecon[l];</a>
+<a name="766"><span class="lineNum">     766 </span>            :     }</a>
+<a name="767"><span class="lineNum">     767 </span>            : </a>
+<a name="768"><span class="lineNum">     768 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetqInvModr() const {</a>
+<a name="769"><span class="lineNum">     769 </span><span class="lineCov">          1 :         return m_qInvModr;</span></a>
+<a name="770"><span class="lineNum">     770 </span>            :     }</a>
+<a name="771"><span class="lineNum">     771 </span>            : </a>
+<a name="772"><span class="lineNum">     772 </span>            :     /**</a>
+<a name="773"><span class="lineNum">     773 </span>            :    * Gets the Barrett modulo reduction precomputations for r_k</a>
+<a name="774"><span class="lineNum">     774 </span>            :    *</a>
+<a name="775"><span class="lineNum">     775 </span>            :    * @return the precomputed table</a>
+<a name="776"><span class="lineNum">     776 </span>            :    */</a>
+<a name="777"><span class="lineNum">     777 </span>            :     std::vector&lt;DoubleNativeInt&gt; const&amp; GetModrBarrettMu() const {</a>
+<a name="778"><span class="lineNum">     778 </span><span class="lineCov">          1 :         return m_modrBarrettMu;</span></a>
+<a name="779"><span class="lineNum">     779 </span>            :     }</a>
+<a name="780"><span class="lineNum">     780 </span>            : </a>
+<a name="781"><span class="lineNum">     781 </span>            :     /**</a>
+<a name="782"><span class="lineNum">     782 </span>            :    * Gets the precomputed table of 1./q_i</a>
+<a name="783"><span class="lineNum">     783 </span>            :    *</a>
+<a name="784"><span class="lineNum">     784 </span>            :    * @return the precomputed table</a>
+<a name="785"><span class="lineNum">     785 </span>            :    */</a>
+<a name="786"><span class="lineNum">     786 </span>            :     std::vector&lt;double&gt; const&amp; GetqInv() const {</a>
+<a name="787"><span class="lineNum">     787 </span><span class="lineCov">          3 :         return m_qInv;</span></a>
+<a name="788"><span class="lineNum">     788 </span>            :     }</a>
+<a name="789"><span class="lineNum">     789 </span>            : </a>
+<a name="790"><span class="lineNum">     790 </span>            :     /////////////////////////////////////</a>
+<a name="791"><span class="lineNum">     791 </span>            :     // BFVrns : Mult : ScaleAndRound</a>
+<a name="792"><span class="lineNum">     792 </span>            :     /////////////////////////////////////</a>
+<a name="793"><span class="lineNum">     793 </span>            : </a>
+<a name="794"><span class="lineNum">     794 </span>            :     /**</a>
+<a name="795"><span class="lineNum">     795 </span>            :    * For S = QR</a>
+<a name="796"><span class="lineNum">     796 </span>            :    * Gets the precomputed table of \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}</a>
+<a name="797"><span class="lineNum">     797 </span>            :    *</a>
+<a name="798"><span class="lineNum">     798 </span>            :    * @return the precomputed table</a>
+<a name="799"><span class="lineNum">     799 </span>            :    */</a>
+<a name="800"><span class="lineNum">     800 </span>            :     const std::vector&lt;double&gt;&amp; GettRSHatInvModsDivsFrac() const {</a>
+<a name="801"><span class="lineNum">     801 </span><span class="lineCov">          2 :         return m_tRSHatInvModsDivsFrac;</span></a>
+<a name="802"><span class="lineNum">     802 </span>            :     }</a>
+<a name="803"><span class="lineNum">     803 </span>            : </a>
+<a name="804"><span class="lineNum">     804 </span>            :     /**</a>
+<a name="805"><span class="lineNum">     805 </span>            :    * For S = QR</a>
+<a name="806"><span class="lineNum">     806 </span>            :    * Gets the precomputed table of [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}</a>
+<a name="807"><span class="lineNum">     807 </span>            :    *</a>
+<a name="808"><span class="lineNum">     808 </span>            :    * @return the precomputed table</a>
+<a name="809"><span class="lineNum">     809 </span>            :    */</a>
+<a name="810"><span class="lineNum">     810 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GettRSHatInvModsDivsModr() const {</a>
+<a name="811"><span class="lineNum">     811 </span><span class="lineCov">          2 :         return m_tRSHatInvModsDivsModr;</span></a>
+<a name="812"><span class="lineNum">     812 </span>            :     }</a>
+<a name="813"><span class="lineNum">     813 </span>            : </a>
+<a name="814"><span class="lineNum">     814 </span>            :     /////////////////////////////////////</a>
+<a name="815"><span class="lineNum">     815 </span>            :     // BFVrns : Mult : SwitchCRTBasis</a>
+<a name="816"><span class="lineNum">     816 </span>            :     /////////////////////////////////////</a>
+<a name="817"><span class="lineNum">     817 </span>            : </a>
+<a name="818"><span class="lineNum">     818 </span>            :     /**</a>
+<a name="819"><span class="lineNum">     819 </span>            :    * Gets the precomputed table of [(R/r_k)^{-1}]_{r_k}</a>
+<a name="820"><span class="lineNum">     820 </span>            :    *</a>
+<a name="821"><span class="lineNum">     821 </span>            :    * @return the precomputed table</a>
+<a name="822"><span class="lineNum">     822 </span>            :    */</a>
+<a name="823"><span class="lineNum">     823 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetRlHatInvModr(usint l = 0) const {</a>
+<a name="824"><span class="lineNum">     824 </span>            :         return m_RlHatInvModr[l];</a>
+<a name="825"><span class="lineNum">     825 </span>            :     }</a>
+<a name="826"><span class="lineNum">     826 </span>            : </a>
+<a name="827"><span class="lineNum">     827 </span>            :     /**</a>
+<a name="828"><span class="lineNum">     828 </span>            :    * Gets the NTL precomputation for [(R/r_k)^{-1}]_{r_k}</a>
+<a name="829"><span class="lineNum">     829 </span>            :    *</a>
+<a name="830"><span class="lineNum">     830 </span>            :    * @return the precomputed table</a>
+<a name="831"><span class="lineNum">     831 </span>            :    */</a>
+<a name="832"><span class="lineNum">     832 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetRlHatInvModrPrecon(usint l = 0) const {</a>
+<a name="833"><span class="lineNum">     833 </span>            :         return m_RlHatInvModrPrecon[l];</a>
+<a name="834"><span class="lineNum">     834 </span>            :     }</a>
+<a name="835"><span class="lineNum">     835 </span>            : </a>
+<a name="836"><span class="lineNum">     836 </span>            :     /**</a>
+<a name="837"><span class="lineNum">     837 </span>            :    * Gets the precomputed table of [R/r_k]_{q_i}</a>
+<a name="838"><span class="lineNum">     838 </span>            :    *</a>
+<a name="839"><span class="lineNum">     839 </span>            :    * @return the precomputed table</a>
+<a name="840"><span class="lineNum">     840 </span>            :    */</a>
+<a name="841"><span class="lineNum">     841 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetRlHatModq(usint l = 0) const {</a>
+<a name="842"><span class="lineNum">     842 </span>            :         return m_RlHatModq[l];</a>
+<a name="843"><span class="lineNum">     843 </span>            :     }</a>
+<a name="844"><span class="lineNum">     844 </span>            : </a>
+<a name="845"><span class="lineNum">     845 </span>            :     /**</a>
+<a name="846"><span class="lineNum">     846 </span>            :    * Gets the precomputed table of [\alpha*P]_{q_i}</a>
+<a name="847"><span class="lineNum">     847 </span>            :    *</a>
+<a name="848"><span class="lineNum">     848 </span>            :    * @return the precomputed table</a>
+<a name="849"><span class="lineNum">     849 </span>            :    */</a>
+<a name="850"><span class="lineNum">     850 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GetalphaRlModq(usint l = 0) const {</a>
+<a name="851"><span class="lineNum">     851 </span>            :         return m_alphaRlModq[l];</a>
+<a name="852"><span class="lineNum">     852 </span>            :     }</a>
+<a name="853"><span class="lineNum">     853 </span>            : </a>
+<a name="854"><span class="lineNum">     854 </span>            :     const std::vector&lt;double&gt;&amp; GettQlSlHatInvModsDivsFrac(usint l) const {</a>
+<a name="855"><span class="lineNum">     855 </span>            :         return m_tQlSlHatInvModsDivsFrac[l];</a>
+<a name="856"><span class="lineNum">     856 </span>            :     }</a>
+<a name="857"><span class="lineNum">     857 </span>            : </a>
+<a name="858"><span class="lineNum">     858 </span>            :     const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; GettQlSlHatInvModsDivsModq(usint l) const {</a>
+<a name="859"><span class="lineNum">     859 </span>            :         return m_tQlSlHatInvModsDivsModq[l];</a>
+<a name="860"><span class="lineNum">     860 </span>            :     }</a>
+<a name="861"><span class="lineNum">     861 </span>            : </a>
+<a name="862"><span class="lineNum">     862 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetQlHatModq(usint l) const {</a>
+<a name="863"><span class="lineNum">     863 </span>            :         return m_QlHatModq[l];</a>
+<a name="864"><span class="lineNum">     864 </span>            :     }</a>
+<a name="865"><span class="lineNum">     865 </span>            : </a>
+<a name="866"><span class="lineNum">     866 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GetQlHatModqPrecon(usint l) const {</a>
+<a name="867"><span class="lineNum">     867 </span>            :         return m_QlHatModqPrecon[l];</a>
+<a name="868"><span class="lineNum">     868 </span>            :     }</a>
+<a name="869"><span class="lineNum">     869 </span>            : </a>
+<a name="870"><span class="lineNum">     870 </span>            :     /**</a>
+<a name="871"><span class="lineNum">     871 </span>            :    * Gets the precomputed table of 1./p_j</a>
+<a name="872"><span class="lineNum">     872 </span>            :    *</a>
+<a name="873"><span class="lineNum">     873 </span>            :    * @return the precomputed table</a>
+<a name="874"><span class="lineNum">     874 </span>            :    */</a>
+<a name="875"><span class="lineNum">     875 </span>            :     std::vector&lt;double&gt; const&amp; GetrInv() const {</a>
+<a name="876"><span class="lineNum">     876 </span><span class="lineCov">          3 :         return m_rInv;</span></a>
+<a name="877"><span class="lineNum">     877 </span>            :     }</a>
+<a name="878"><span class="lineNum">     878 </span>            : </a>
+<a name="879"><span class="lineNum">     879 </span>            :     /////////////////////////////////////</a>
+<a name="880"><span class="lineNum">     880 </span>            :     // BFVrns : Decrypt : ScaleAndRound</a>
+<a name="881"><span class="lineNum">     881 </span>            :     /////////////////////////////////////</a>
+<a name="882"><span class="lineNum">     882 </span>            : </a>
+<a name="883"><span class="lineNum">     883 </span>            :     /**</a>
+<a name="884"><span class="lineNum">     884 </span>            :    * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}/q_i}</a>
+<a name="885"><span class="lineNum">     885 </span>            :    *</a>
+<a name="886"><span class="lineNum">     886 </span>            :    * @return the precomputed table</a>
+<a name="887"><span class="lineNum">     887 </span>            :    */</a>
+<a name="888"><span class="lineNum">     888 </span>            :     const std::vector&lt;double&gt;&amp; GettQHatInvModqDivqFrac() const {</a>
+<a name="889"><span class="lineNum">     889 </span>            :         return m_tQHatInvModqDivqFrac;</a>
+<a name="890"><span class="lineNum">     890 </span>            :     }</a>
+<a name="891"><span class="lineNum">     891 </span>            : </a>
+<a name="892"><span class="lineNum">     892 </span>            :     /**</a>
+<a name="893"><span class="lineNum">     893 </span>            :    * When log2(q_i) &gt;= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}</a>
+<a name="894"><span class="lineNum">     894 </span>            :    * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}*B/q_i}</a>
+<a name="895"><span class="lineNum">     895 </span>            :    *</a>
+<a name="896"><span class="lineNum">     896 </span>            :    * @return the precomputed table</a>
+<a name="897"><span class="lineNum">     897 </span>            :    */</a>
+<a name="898"><span class="lineNum">     898 </span>            :     const std::vector&lt;double&gt;&amp; GettQHatInvModqBDivqFrac() const {</a>
+<a name="899"><span class="lineNum">     899 </span>            :         return m_tQHatInvModqBDivqFrac;</a>
+<a name="900"><span class="lineNum">     900 </span>            :     }</a>
+<a name="901"><span class="lineNum">     901 </span>            : </a>
+<a name="902"><span class="lineNum">     902 </span>            :     /**</a>
+<a name="903"><span class="lineNum">     903 </span>            :    * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}/q_i}]_t</a>
+<a name="904"><span class="lineNum">     904 </span>            :    *</a>
+<a name="905"><span class="lineNum">     905 </span>            :    * @return the precomputed table</a>
+<a name="906"><span class="lineNum">     906 </span>            :    */</a>
+<a name="907"><span class="lineNum">     907 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettQHatInvModqDivqModt() const {</a>
+<a name="908"><span class="lineNum">     908 </span>            :         return m_tQHatInvModqDivqModt;</a>
+<a name="909"><span class="lineNum">     909 </span>            :     }</a>
+<a name="910"><span class="lineNum">     910 </span>            : </a>
+<a name="911"><span class="lineNum">     911 </span>            :     /**</a>
+<a name="912"><span class="lineNum">     912 </span>            :    * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t</a>
+<a name="913"><span class="lineNum">     913 </span>            :    *</a>
+<a name="914"><span class="lineNum">     914 </span>            :    * @return the precomputed table</a>
+<a name="915"><span class="lineNum">     915 </span>            :    */</a>
+<a name="916"><span class="lineNum">     916 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettQHatInvModqDivqModtPrecon() const {</a>
+<a name="917"><span class="lineNum">     917 </span>            :         return m_tQHatInvModqDivqModtPrecon;</a>
+<a name="918"><span class="lineNum">     918 </span>            :     }</a>
+<a name="919"><span class="lineNum">     919 </span>            : </a>
+<a name="920"><span class="lineNum">     920 </span>            :     /**</a>
+<a name="921"><span class="lineNum">     921 </span>            :    * When log2(q_i) &gt;= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}</a>
+<a name="922"><span class="lineNum">     922 </span>            :    * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t</a>
+<a name="923"><span class="lineNum">     923 </span>            :    *</a>
+<a name="924"><span class="lineNum">     924 </span>            :    * @return the precomputed table</a>
+<a name="925"><span class="lineNum">     925 </span>            :    */</a>
+<a name="926"><span class="lineNum">     926 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettQHatInvModqBDivqModt() const {</a>
+<a name="927"><span class="lineNum">     927 </span>            :         return m_tQHatInvModqBDivqModt;</a>
+<a name="928"><span class="lineNum">     928 </span>            :     }</a>
+<a name="929"><span class="lineNum">     929 </span>            : </a>
+<a name="930"><span class="lineNum">     930 </span>            :     /**</a>
+<a name="931"><span class="lineNum">     931 </span>            :    * When log2(q_i) &gt;= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}</a>
+<a name="932"><span class="lineNum">     932 </span>            :    * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t</a>
+<a name="933"><span class="lineNum">     933 </span>            :    *</a>
+<a name="934"><span class="lineNum">     934 </span>            :    * @return the precomputed table</a>
+<a name="935"><span class="lineNum">     935 </span>            :    */</a>
+<a name="936"><span class="lineNum">     936 </span>            :     const std::vector&lt;NativeInteger&gt;&amp; GettQHatInvModqBDivqModtPrecon() const {</a>
+<a name="937"><span class="lineNum">     937 </span>            :         return m_tQHatInvModqBDivqModtPrecon;</a>
+<a name="938"><span class="lineNum">     938 </span>            :     }</a>
+<a name="939"><span class="lineNum">     939 </span>            : </a>
+<a name="940"><span class="lineNum">     940 </span>            :     const NativeInteger&amp; GetScalingFactorInt(usint l) const {</a>
+<a name="941"><span class="lineNum">     941 </span><span class="lineCov">        404 :         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {</span></a>
+<a name="942"><span class="lineNum">     942 </span><span class="lineCov">        404 :             if (l &gt;= m_scalingFactorsInt.size()) {</span></a>
+<a name="943"><span class="lineNum">     943 </span>            :                 // TODO: Return an error here.</a>
+<a name="944"><span class="lineNum">     944 </span><span class="lineNoCov">          0 :                 return m_fixedSF;</span></a>
+<a name="945"><span class="lineNum">     945 </span>            :             }</a>
+<a name="946"><span class="lineNum">     946 </span><span class="lineCov">        404 :             return m_scalingFactorsInt[l];</span></a>
+<a name="947"><span class="lineNum">     947 </span>            :         }</a>
+<a name="948"><span class="lineNum">     948 </span><span class="lineNoCov">          0 :         return m_fixedSF;</span></a>
+<a name="949"><span class="lineNum">     949 </span>            :     }</a>
+<a name="950"><span class="lineNum">     950 </span>            : </a>
+<a name="951"><span class="lineNum">     951 </span>            :     const NativeInteger&amp; GetScalingFactorIntBig(usint l) const {</a>
+<a name="952"><span class="lineNum">     952 </span>            :         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {</a>
+<a name="953"><span class="lineNum">     953 </span><span class="lineCov">        407 :             if (l &gt;= m_scalingFactorsIntBig.size()) {</span></a>
+<a name="954"><span class="lineNum">     954 </span>            :                 // TODO: Return an error here.</a>
+<a name="955"><span class="lineNum">     955 </span><span class="lineNoCov">          0 :                 return m_fixedSF;</span></a>
+<a name="956"><span class="lineNum">     956 </span>            :             }</a>
+<a name="957"><span class="lineNum">     957 </span><span class="lineCov">        407 :             return m_scalingFactorsIntBig[l];</span></a>
+<a name="958"><span class="lineNum">     958 </span>            :         }</a>
+<a name="959"><span class="lineNum">     959 </span>            :         return m_fixedSF;</a>
+<a name="960"><span class="lineNum">     960 </span>            :     }</a>
+<a name="961"><span class="lineNum">     961 </span>            : </a>
+<a name="962"><span class="lineNum">     962 </span>            :     const NativeInteger&amp; GetModReduceFactorInt(uint32_t l = 0) const {</a>
+<a name="963"><span class="lineNum">     963 </span>            :         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {</a>
+<a name="964"><span class="lineNum">     964 </span>            :             return m_qModt[l];</a>
+<a name="965"><span class="lineNum">     965 </span>            :         }</a>
+<a name="966"><span class="lineNum">     966 </span>            :         return m_fixedSF;</a>
+<a name="967"><span class="lineNum">     967 </span>            :     }</a>
+<a name="968"><span class="lineNum">     968 </span>            : </a>
+<a name="969"><span class="lineNum">     969 </span>            :     /////////////////////////////////////</a>
+<a name="970"><span class="lineNum">     970 </span>            :     // BFVrns : Encrypt</a>
+<a name="971"><span class="lineNum">     971 </span>            :     /////////////////////////////////////</a>
+<a name="972"><span class="lineNum">     972 </span>            : </a>
+<a name="973"><span class="lineNum">     973 </span>            :     /**</a>
+<a name="974"><span class="lineNum">     974 </span>            :    * Gets the precomputed table of 1./p_{q_i}</a>
+<a name="975"><span class="lineNum">     975 </span>            :    *</a>
+<a name="976"><span class="lineNum">     976 </span>            :    * @return the precomputed table</a>
+<a name="977"><span class="lineNum">     977 </span>            :    */</a>
+<a name="978"><span class="lineNum">     978 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetrInvModq() const {</a>
+<a name="979"><span class="lineNum">     979 </span>            :         return m_rInvModq;</a>
+<a name="980"><span class="lineNum">     980 </span>            :     }</a>
+<a name="981"><span class="lineNum">     981 </span>            : </a>
+<a name="982"><span class="lineNum">     982 </span>            :     /**</a>
+<a name="983"><span class="lineNum">     983 </span>            :    * Gets the Auxiliary CRT basis {Qr} = {Q U r}</a>
+<a name="984"><span class="lineNum">     984 </span>            :    * used in BFV encryption in mode EXTENDED</a>
+<a name="985"><span class="lineNum">     985 </span>            :    *</a>
+<a name="986"><span class="lineNum">     986 </span>            :    * @return the precomputed CRT params</a>
+<a name="987"><span class="lineNum">     987 </span>            :    */</a>
+<a name="988"><span class="lineNum">     988 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsQr() const {</a>
+<a name="989"><span class="lineNum">     989 </span>            :         return m_paramsQr;</a>
+<a name="990"><span class="lineNum">     990 </span>            :     }</a>
+<a name="991"><span class="lineNum">     991 </span>            : </a>
+<a name="992"><span class="lineNum">     992 </span>            :     /////////////////////////////////////</a>
+<a name="993"><span class="lineNum">     993 </span>            :     // BFVrnsB</a>
+<a name="994"><span class="lineNum">     994 </span>            :     /////////////////////////////////////</a>
+<a name="995"><span class="lineNum">     995 </span>            : </a>
+<a name="996"><span class="lineNum">     996 </span>            :     /**</a>
+<a name="997"><span class="lineNum">     997 </span>            :    * Gets the Auxiliary CRT basis {Bsk} = {B U msk}</a>
+<a name="998"><span class="lineNum">     998 </span>            :    * used in homomorphic multiplication</a>
+<a name="999"><span class="lineNum">     999 </span>            :    *</a>
+<a name="1000"><span class="lineNum">    1000 </span>            :    * @return the precomputed CRT params</a>
+<a name="1001"><span class="lineNum">    1001 </span>            :    */</a>
+<a name="1002"><span class="lineNum">    1002 </span>            :     const std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; GetParamsQBsk() const {</a>
+<a name="1003"><span class="lineNum">    1003 </span>            :         return m_paramsQBsk;</a>
+<a name="1004"><span class="lineNum">    1004 </span>            :     }</a>
+<a name="1005"><span class="lineNum">    1005 </span>            : </a>
+<a name="1006"><span class="lineNum">    1006 </span>            :     /**</a>
+<a name="1007"><span class="lineNum">    1007 </span>            :    * Gets the precomputed table of q_i</a>
+<a name="1008"><span class="lineNum">    1008 </span>            :    *</a>
+<a name="1009"><span class="lineNum">    1009 </span>            :    * @return the precomputed table</a>
+<a name="1010"><span class="lineNum">    1010 </span>            :    */</a>
+<a name="1011"><span class="lineNum">    1011 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetModuliQ() const {</a>
+<a name="1012"><span class="lineNum">    1012 </span><span class="lineCov">          1 :         return m_moduliQ;</span></a>
+<a name="1013"><span class="lineNum">    1013 </span>            :     }</a>
+<a name="1014"><span class="lineNum">    1014 </span>            : </a>
+<a name="1015"><span class="lineNum">    1015 </span>            :     /**</a>
+<a name="1016"><span class="lineNum">    1016 </span>            :    * Gets the precomputed table of bsk_j</a>
+<a name="1017"><span class="lineNum">    1017 </span>            :    *</a>
+<a name="1018"><span class="lineNum">    1018 </span>            :    * @return the precomputed table</a>
+<a name="1019"><span class="lineNum">    1019 </span>            :    */</a>
+<a name="1020"><span class="lineNum">    1020 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetModuliBsk() const {</a>
+<a name="1021"><span class="lineNum">    1021 </span><span class="lineCov">          1 :         return m_moduliBsk;</span></a>
+<a name="1022"><span class="lineNum">    1022 </span>            :     }</a>
+<a name="1023"><span class="lineNum">    1023 </span>            : </a>
+<a name="1024"><span class="lineNum">    1024 </span>            :     /**</a>
+<a name="1025"><span class="lineNum">    1025 </span>            :    * Gets the Barrett modulo reduction precomputation for bsk_j</a>
+<a name="1026"><span class="lineNum">    1026 </span>            :    *</a>
+<a name="1027"><span class="lineNum">    1027 </span>            :    * @return the precomputed table</a>
+<a name="1028"><span class="lineNum">    1028 </span>            :    */</a>
+<a name="1029"><span class="lineNum">    1029 </span>            :     std::vector&lt;DoubleNativeInt&gt; const&amp; GetModbskBarrettMu() const {</a>
+<a name="1030"><span class="lineNum">    1030 </span><span class="lineCov">          1 :         return m_modbskBarrettMu;</span></a>
+<a name="1031"><span class="lineNum">    1031 </span>            :     }</a>
+<a name="1032"><span class="lineNum">    1032 </span>            : </a>
+<a name="1033"><span class="lineNum">    1033 </span>            :     /**</a>
+<a name="1034"><span class="lineNum">    1034 </span>            :    * Gets the precomputed table of [mtilde*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1035"><span class="lineNum">    1035 </span>            :    *</a>
+<a name="1036"><span class="lineNum">    1036 </span>            :    * @return the precomputed table</a>
+<a name="1037"><span class="lineNum">    1037 </span>            :    */</a>
+<a name="1038"><span class="lineNum">    1038 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetmtildeQHatInvModq() const {</a>
+<a name="1039"><span class="lineNum">    1039 </span><span class="lineCov">          1 :         return m_mtildeQHatInvModq;</span></a>
+<a name="1040"><span class="lineNum">    1040 </span>            :     }</a>
+<a name="1041"><span class="lineNum">    1041 </span>            : </a>
+<a name="1042"><span class="lineNum">    1042 </span>            :     /**</a>
+<a name="1043"><span class="lineNum">    1043 </span>            :    * Gets the NTL precomputations for [mtilde*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1044"><span class="lineNum">    1044 </span>            :    *</a>
+<a name="1045"><span class="lineNum">    1045 </span>            :    * @return the precomputed table</a>
+<a name="1046"><span class="lineNum">    1046 </span>            :    */</a>
+<a name="1047"><span class="lineNum">    1047 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetmtildeQHatInvModqPrecon() const {</a>
+<a name="1048"><span class="lineNum">    1048 </span><span class="lineCov">          1 :         return m_mtildeQHatInvModqPrecon;</span></a>
+<a name="1049"><span class="lineNum">    1049 </span>            :     }</a>
+<a name="1050"><span class="lineNum">    1050 </span>            : </a>
+<a name="1051"><span class="lineNum">    1051 </span>            :     /**</a>
+<a name="1052"><span class="lineNum">    1052 </span>            :    * Gets the precomputed table of [Q/q_i]_{bsk_j}</a>
+<a name="1053"><span class="lineNum">    1053 </span>            :    *</a>
+<a name="1054"><span class="lineNum">    1054 </span>            :    * @return the precomputed table</a>
+<a name="1055"><span class="lineNum">    1055 </span>            :    */</a>
+<a name="1056"><span class="lineNum">    1056 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; const&amp; GetQHatModbsk() const {</a>
+<a name="1057"><span class="lineNum">    1057 </span><span class="lineCov">          1 :         return m_QHatModbsk;</span></a>
+<a name="1058"><span class="lineNum">    1058 </span>            :     }</a>
+<a name="1059"><span class="lineNum">    1059 </span>            : </a>
+<a name="1060"><span class="lineNum">    1060 </span>            :     /**</a>
+<a name="1061"><span class="lineNum">    1061 </span>            :    * Gets the precomputed table of [(q_i)^{-1}]_{bsk_j}</a>
+<a name="1062"><span class="lineNum">    1062 </span>            :    *</a>
+<a name="1063"><span class="lineNum">    1063 </span>            :    * @return the precomputed table</a>
+<a name="1064"><span class="lineNum">    1064 </span>            :    */</a>
+<a name="1065"><span class="lineNum">    1065 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; const&amp; GetqInvModbsk() const {</a>
+<a name="1066"><span class="lineNum">    1066 </span>            :         return m_qInvModbsk;</a>
+<a name="1067"><span class="lineNum">    1067 </span>            :     }</a>
+<a name="1068"><span class="lineNum">    1068 </span>            : </a>
+<a name="1069"><span class="lineNum">    1069 </span>            :     /**</a>
+<a name="1070"><span class="lineNum">    1070 </span>            :    * Gets the precomputed table of [Q/q_i]_{mtilde}</a>
+<a name="1071"><span class="lineNum">    1071 </span>            :    *</a>
+<a name="1072"><span class="lineNum">    1072 </span>            :    * @return the precomputed table</a>
+<a name="1073"><span class="lineNum">    1073 </span>            :    */</a>
+<a name="1074"><span class="lineNum">    1074 </span>            :     std::vector&lt;uint64_t&gt; const&amp; GetQHatModmtilde() const {</a>
+<a name="1075"><span class="lineNum">    1075 </span><span class="lineCov">          1 :         return m_QHatModmtilde;</span></a>
+<a name="1076"><span class="lineNum">    1076 </span>            :     }</a>
+<a name="1077"><span class="lineNum">    1077 </span>            : </a>
+<a name="1078"><span class="lineNum">    1078 </span>            :     /**</a>
+<a name="1079"><span class="lineNum">    1079 </span>            :    * Gets the precomputed table of [Q]_{bsk_j}</a>
+<a name="1080"><span class="lineNum">    1080 </span>            :    *</a>
+<a name="1081"><span class="lineNum">    1081 </span>            :    * @return the precomputed table</a>
+<a name="1082"><span class="lineNum">    1082 </span>            :    */</a>
+<a name="1083"><span class="lineNum">    1083 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetQModbsk() const {</a>
+<a name="1084"><span class="lineNum">    1084 </span><span class="lineCov">          1 :         return m_QModbsk;</span></a>
+<a name="1085"><span class="lineNum">    1085 </span>            :     }</a>
+<a name="1086"><span class="lineNum">    1086 </span>            : </a>
+<a name="1087"><span class="lineNum">    1087 </span>            :     /**</a>
+<a name="1088"><span class="lineNum">    1088 </span>            :    * Gets the NTL precomputations for [Q]_{bsk_j}</a>
+<a name="1089"><span class="lineNum">    1089 </span>            :    *</a>
+<a name="1090"><span class="lineNum">    1090 </span>            :    * @return the precomputed table</a>
+<a name="1091"><span class="lineNum">    1091 </span>            :    */</a>
+<a name="1092"><span class="lineNum">    1092 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetQModbskPrecon() const {</a>
+<a name="1093"><span class="lineNum">    1093 </span><span class="lineCov">          1 :         return m_QModbskPrecon;</span></a>
+<a name="1094"><span class="lineNum">    1094 </span>            :     }</a>
+<a name="1095"><span class="lineNum">    1095 </span>            : </a>
+<a name="1096"><span class="lineNum">    1096 </span>            :     /**</a>
+<a name="1097"><span class="lineNum">    1097 </span>            :    * Gets the precomputed [-Q^{-1}]_{mtilde}</a>
+<a name="1098"><span class="lineNum">    1098 </span>            :    *</a>
+<a name="1099"><span class="lineNum">    1099 </span>            :    * @return the precomputed value</a>
+<a name="1100"><span class="lineNum">    1100 </span>            :    */</a>
+<a name="1101"><span class="lineNum">    1101 </span>            :     uint64_t const&amp; GetNegQInvModmtilde() const {</a>
+<a name="1102"><span class="lineNum">    1102 </span><span class="lineCov">          1 :         return m_negQInvModmtilde;</span></a>
+<a name="1103"><span class="lineNum">    1103 </span>            :     }</a>
+<a name="1104"><span class="lineNum">    1104 </span>            : </a>
+<a name="1105"><span class="lineNum">    1105 </span>            :     /**</a>
+<a name="1106"><span class="lineNum">    1106 </span>            :    * Gets the precomputed table of [mtilde^{-1}]_{bsk_j}</a>
+<a name="1107"><span class="lineNum">    1107 </span>            :    *</a>
+<a name="1108"><span class="lineNum">    1108 </span>            :    * @return the precomputed table</a>
+<a name="1109"><span class="lineNum">    1109 </span>            :    */</a>
+<a name="1110"><span class="lineNum">    1110 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetmtildeInvModbsk() const {</a>
+<a name="1111"><span class="lineNum">    1111 </span><span class="lineCov">          1 :         return m_mtildeInvModbsk;</span></a>
+<a name="1112"><span class="lineNum">    1112 </span>            :     }</a>
+<a name="1113"><span class="lineNum">    1113 </span>            : </a>
+<a name="1114"><span class="lineNum">    1114 </span>            :     /**</a>
+<a name="1115"><span class="lineNum">    1115 </span>            :    * Gets the NTL precomputations for [mtilde^{-1}]_{bsk_j}</a>
+<a name="1116"><span class="lineNum">    1116 </span>            :    *</a>
+<a name="1117"><span class="lineNum">    1117 </span>            :    * @return the precomputed table</a>
+<a name="1118"><span class="lineNum">    1118 </span>            :    */</a>
+<a name="1119"><span class="lineNum">    1119 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetmtildeInvModbskPrecon() const {</a>
+<a name="1120"><span class="lineNum">    1120 </span><span class="lineCov">          1 :         return m_mtildeInvModbskPrecon;</span></a>
+<a name="1121"><span class="lineNum">    1121 </span>            :     }</a>
+<a name="1122"><span class="lineNum">    1122 </span>            : </a>
+<a name="1123"><span class="lineNum">    1123 </span>            :     /**</a>
+<a name="1124"><span class="lineNum">    1124 </span>            :    * Gets the precomputed table of [t*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1125"><span class="lineNum">    1125 </span>            :    *</a>
+<a name="1126"><span class="lineNum">    1126 </span>            :    * @return the precomputed table</a>
+<a name="1127"><span class="lineNum">    1127 </span>            :    */</a>
+<a name="1128"><span class="lineNum">    1128 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GettQHatInvModq() const {</a>
+<a name="1129"><span class="lineNum">    1129 </span>            :         return m_tQHatInvModq;</a>
+<a name="1130"><span class="lineNum">    1130 </span>            :     }</a>
+<a name="1131"><span class="lineNum">    1131 </span>            : </a>
+<a name="1132"><span class="lineNum">    1132 </span>            :     /**</a>
+<a name="1133"><span class="lineNum">    1133 </span>            :    * Gets the NTL precomputations for [t*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1134"><span class="lineNum">    1134 </span>            :    *</a>
+<a name="1135"><span class="lineNum">    1135 </span>            :    * @return the precomputed table</a>
+<a name="1136"><span class="lineNum">    1136 </span>            :    */</a>
+<a name="1137"><span class="lineNum">    1137 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GettQHatInvModqPrecon() const {</a>
+<a name="1138"><span class="lineNum">    1138 </span>            :         return m_tQHatInvModqPrecon;</a>
+<a name="1139"><span class="lineNum">    1139 </span>            :     }</a>
+<a name="1140"><span class="lineNum">    1140 </span>            : </a>
+<a name="1141"><span class="lineNum">    1141 </span>            :     /**</a>
+<a name="1142"><span class="lineNum">    1142 </span>            :    * Gets the precomputed table of [t*gamma*(Q/q_i)^(-1)]_{q_i}</a>
+<a name="1143"><span class="lineNum">    1143 </span>            :    *</a>
+<a name="1144"><span class="lineNum">    1144 </span>            :    * @return the precomputed table</a>
+<a name="1145"><span class="lineNum">    1145 </span>            :    */</a>
+<a name="1146"><span class="lineNum">    1146 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GettgammaQHatInvModq() const {</a>
+<a name="1147"><span class="lineNum">    1147 </span>            :         return m_tgammaQHatInvModq;</a>
+<a name="1148"><span class="lineNum">    1148 </span>            :     }</a>
+<a name="1149"><span class="lineNum">    1149 </span>            : </a>
+<a name="1150"><span class="lineNum">    1150 </span>            :     /**</a>
+<a name="1151"><span class="lineNum">    1151 </span>            :    * Gets the NTL precomputations for [t*gamma*(Q/q_i)^(-1)]_{q_i}</a>
+<a name="1152"><span class="lineNum">    1152 </span>            :    *</a>
+<a name="1153"><span class="lineNum">    1153 </span>            :    * @return the precomputed table</a>
+<a name="1154"><span class="lineNum">    1154 </span>            :    */</a>
+<a name="1155"><span class="lineNum">    1155 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GettgammaQHatInvModqPrecon() const {</a>
+<a name="1156"><span class="lineNum">    1156 </span>            :         return m_tgammaQHatInvModqPrecon;</a>
+<a name="1157"><span class="lineNum">    1157 </span>            :     }</a>
+<a name="1158"><span class="lineNum">    1158 </span>            : </a>
+<a name="1159"><span class="lineNum">    1159 </span>            :     /**</a>
+<a name="1160"><span class="lineNum">    1160 </span>            :    * Gets the precomputed table of [t/Q]_{bsk_j}</a>
+<a name="1161"><span class="lineNum">    1161 </span>            :    *</a>
+<a name="1162"><span class="lineNum">    1162 </span>            :    * @return the precomputed table</a>
+<a name="1163"><span class="lineNum">    1163 </span>            :    */</a>
+<a name="1164"><span class="lineNum">    1164 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GettQInvModbsk() const {</a>
+<a name="1165"><span class="lineNum">    1165 </span>            :         return m_tQInvModbsk;</a>
+<a name="1166"><span class="lineNum">    1166 </span>            :     }</a>
+<a name="1167"><span class="lineNum">    1167 </span>            : </a>
+<a name="1168"><span class="lineNum">    1168 </span>            :     /**</a>
+<a name="1169"><span class="lineNum">    1169 </span>            :    * Gets the NTL precomputations for [t/Q]_{bsk_j}</a>
+<a name="1170"><span class="lineNum">    1170 </span>            :    *</a>
+<a name="1171"><span class="lineNum">    1171 </span>            :    * @return the precomputed table</a>
+<a name="1172"><span class="lineNum">    1172 </span>            :    */</a>
+<a name="1173"><span class="lineNum">    1173 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GettQInvModbskPrecon() const {</a>
+<a name="1174"><span class="lineNum">    1174 </span>            :         return m_tQInvModbskPrecon;</a>
+<a name="1175"><span class="lineNum">    1175 </span>            :     }</a>
+<a name="1176"><span class="lineNum">    1176 </span>            : </a>
+<a name="1177"><span class="lineNum">    1177 </span>            :     /**</a>
+<a name="1178"><span class="lineNum">    1178 </span>            :    * Gets the precomputed table of [(B/b_j)^{-1}]_{b_j}</a>
+<a name="1179"><span class="lineNum">    1179 </span>            :    *</a>
+<a name="1180"><span class="lineNum">    1180 </span>            :    * @return the precomputed table</a>
+<a name="1181"><span class="lineNum">    1181 </span>            :    */</a>
+<a name="1182"><span class="lineNum">    1182 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetBHatInvModb() const {</a>
+<a name="1183"><span class="lineNum">    1183 </span>            :         return m_BHatInvModb;</a>
+<a name="1184"><span class="lineNum">    1184 </span>            :     }</a>
+<a name="1185"><span class="lineNum">    1185 </span>            : </a>
+<a name="1186"><span class="lineNum">    1186 </span>            :     /**</a>
+<a name="1187"><span class="lineNum">    1187 </span>            :    * Gets the NTL precomputations for [(B/b_j)^{-1}]_{b_j}</a>
+<a name="1188"><span class="lineNum">    1188 </span>            :    *</a>
+<a name="1189"><span class="lineNum">    1189 </span>            :    * @return the precomputed table</a>
+<a name="1190"><span class="lineNum">    1190 </span>            :    */</a>
+<a name="1191"><span class="lineNum">    1191 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetBHatInvModbPrecon() const {</a>
+<a name="1192"><span class="lineNum">    1192 </span>            :         return m_BHatInvModbPrecon;</a>
+<a name="1193"><span class="lineNum">    1193 </span>            :     }</a>
+<a name="1194"><span class="lineNum">    1194 </span>            : </a>
+<a name="1195"><span class="lineNum">    1195 </span>            :     /**</a>
+<a name="1196"><span class="lineNum">    1196 </span>            :    * Gets the precomputed table of [B/b_j]_{msk}</a>
+<a name="1197"><span class="lineNum">    1197 </span>            :    *</a>
+<a name="1198"><span class="lineNum">    1198 </span>            :    * @return the precomputed table</a>
+<a name="1199"><span class="lineNum">    1199 </span>            :    */</a>
+<a name="1200"><span class="lineNum">    1200 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetBHatModmsk() const {</a>
+<a name="1201"><span class="lineNum">    1201 </span>            :         return m_BHatModmsk;</a>
+<a name="1202"><span class="lineNum">    1202 </span>            :     }</a>
+<a name="1203"><span class="lineNum">    1203 </span>            : </a>
+<a name="1204"><span class="lineNum">    1204 </span>            :     /**</a>
+<a name="1205"><span class="lineNum">    1205 </span>            :    * Gets the precomputed [B^{-1}]_msk</a>
+<a name="1206"><span class="lineNum">    1206 </span>            :    *</a>
+<a name="1207"><span class="lineNum">    1207 </span>            :    * @return the precomputed value</a>
+<a name="1208"><span class="lineNum">    1208 </span>            :    */</a>
+<a name="1209"><span class="lineNum">    1209 </span>            :     NativeInteger const&amp; GetBInvModmsk() const {</a>
+<a name="1210"><span class="lineNum">    1210 </span>            :         return m_BInvModmsk;</a>
+<a name="1211"><span class="lineNum">    1211 </span>            :     }</a>
+<a name="1212"><span class="lineNum">    1212 </span>            : </a>
+<a name="1213"><span class="lineNum">    1213 </span>            :     /**</a>
+<a name="1214"><span class="lineNum">    1214 </span>            :    * Gets the NTL precomputions for [B^{-1}]_msk</a>
+<a name="1215"><span class="lineNum">    1215 </span>            :    *</a>
+<a name="1216"><span class="lineNum">    1216 </span>            :    * @return the precomputed value</a>
+<a name="1217"><span class="lineNum">    1217 </span>            :    */</a>
+<a name="1218"><span class="lineNum">    1218 </span>            :     NativeInteger const&amp; GetBInvModmskPrecon() const {</a>
+<a name="1219"><span class="lineNum">    1219 </span>            :         return m_BInvModmskPrecon;</a>
+<a name="1220"><span class="lineNum">    1220 </span>            :     }</a>
+<a name="1221"><span class="lineNum">    1221 </span>            : </a>
+<a name="1222"><span class="lineNum">    1222 </span>            :     /**</a>
+<a name="1223"><span class="lineNum">    1223 </span>            :    * Gets the precomputed table of [B/b_j]_{q_i}</a>
+<a name="1224"><span class="lineNum">    1224 </span>            :    *</a>
+<a name="1225"><span class="lineNum">    1225 </span>            :    * @return the precomputed table</a>
+<a name="1226"><span class="lineNum">    1226 </span>            :    */</a>
+<a name="1227"><span class="lineNum">    1227 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; const&amp; GetBHatModq() const {</a>
+<a name="1228"><span class="lineNum">    1228 </span>            :         return m_BHatModq;</a>
+<a name="1229"><span class="lineNum">    1229 </span>            :     }</a>
+<a name="1230"><span class="lineNum">    1230 </span>            : </a>
+<a name="1231"><span class="lineNum">    1231 </span>            :     /**</a>
+<a name="1232"><span class="lineNum">    1232 </span>            :    * Gets the precomputed table of [B]_{q_i}</a>
+<a name="1233"><span class="lineNum">    1233 </span>            :    *</a>
+<a name="1234"><span class="lineNum">    1234 </span>            :    * @return the precomputed table</a>
+<a name="1235"><span class="lineNum">    1235 </span>            :    */</a>
+<a name="1236"><span class="lineNum">    1236 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetBModq() const {</a>
+<a name="1237"><span class="lineNum">    1237 </span>            :         return m_BModq;</a>
+<a name="1238"><span class="lineNum">    1238 </span>            :     }</a>
+<a name="1239"><span class="lineNum">    1239 </span>            : </a>
+<a name="1240"><span class="lineNum">    1240 </span>            :     /**</a>
+<a name="1241"><span class="lineNum">    1241 </span>            :    * Gets the NTL precomputions for [B]_{q_i}</a>
+<a name="1242"><span class="lineNum">    1242 </span>            :    *</a>
+<a name="1243"><span class="lineNum">    1243 </span>            :    * @return the precomputed table</a>
+<a name="1244"><span class="lineNum">    1244 </span>            :    */</a>
+<a name="1245"><span class="lineNum">    1245 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetBModqPrecon() const {</a>
+<a name="1246"><span class="lineNum">    1246 </span>            :         return m_BModqPrecon;</a>
+<a name="1247"><span class="lineNum">    1247 </span>            :     }</a>
+<a name="1248"><span class="lineNum">    1248 </span>            : </a>
+<a name="1249"><span class="lineNum">    1249 </span>            :     /**</a>
+<a name="1250"><span class="lineNum">    1250 </span>            :    * Gets auxiliary modulus gamma</a>
+<a name="1251"><span class="lineNum">    1251 </span>            :    *</a>
+<a name="1252"><span class="lineNum">    1252 </span>            :    * @return gamma</a>
+<a name="1253"><span class="lineNum">    1253 </span>            :    */</a>
+<a name="1254"><span class="lineNum">    1254 </span>            :     uint32_t const&amp; Getgamma() const {</a>
+<a name="1255"><span class="lineNum">    1255 </span>            :         return m_gamma;</a>
+<a name="1256"><span class="lineNum">    1256 </span>            :     }</a>
+<a name="1257"><span class="lineNum">    1257 </span>            : </a>
+<a name="1258"><span class="lineNum">    1258 </span>            :     // TODO: use 64 bit words in case NativeInteger uses smaller word size</a>
+<a name="1259"><span class="lineNum">    1259 </span>            :     /**</a>
+<a name="1260"><span class="lineNum">    1260 </span>            :    * Gets t*gamma where t - plaintext modulus, gamma - auxiliary modulus</a>
+<a name="1261"><span class="lineNum">    1261 </span>            :    *</a>
+<a name="1262"><span class="lineNum">    1262 </span>            :    * @return t*gamma</a>
+<a name="1263"><span class="lineNum">    1263 </span>            :    */</a>
+<a name="1264"><span class="lineNum">    1264 </span>            :     NativeInteger const&amp; Gettgamma() const {</a>
+<a name="1265"><span class="lineNum">    1265 </span>            :         return m_tgamma;</a>
+<a name="1266"><span class="lineNum">    1266 </span>            :     }</a>
+<a name="1267"><span class="lineNum">    1267 </span>            : </a>
+<a name="1268"><span class="lineNum">    1268 </span>            :     /**</a>
+<a name="1269"><span class="lineNum">    1269 </span>            :    * Gets the precomputed table of [-(q_i)^{-1}]_{t*gamma}</a>
+<a name="1270"><span class="lineNum">    1270 </span>            :    *</a>
+<a name="1271"><span class="lineNum">    1271 </span>            :    * @return the precomputed table</a>
+<a name="1272"><span class="lineNum">    1272 </span>            :    */</a>
+<a name="1273"><span class="lineNum">    1273 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetNegInvqModtgamma() const {</a>
+<a name="1274"><span class="lineNum">    1274 </span>            :         return m_negInvqModtgamma;</a>
+<a name="1275"><span class="lineNum">    1275 </span>            :     }</a>
+<a name="1276"><span class="lineNum">    1276 </span>            : </a>
+<a name="1277"><span class="lineNum">    1277 </span>            :     /**</a>
+<a name="1278"><span class="lineNum">    1278 </span>            :    * Gets the NTL precomputations for [-(q_i)^{-1}]_{t*gamma}</a>
+<a name="1279"><span class="lineNum">    1279 </span>            :    *</a>
+<a name="1280"><span class="lineNum">    1280 </span>            :    * @return the precomputed table</a>
+<a name="1281"><span class="lineNum">    1281 </span>            :    */</a>
+<a name="1282"><span class="lineNum">    1282 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetNegInvqModtgammaPrecon() const {</a>
+<a name="1283"><span class="lineNum">    1283 </span>            :         return m_negInvqModtgammaPrecon;</a>
+<a name="1284"><span class="lineNum">    1284 </span>            :     }</a>
+<a name="1285"><span class="lineNum">    1285 </span>            : </a>
+<a name="1286"><span class="lineNum">    1286 </span>            :     /**</a>
+<a name="1287"><span class="lineNum">    1287 </span>            :    * Gets the precomputed table of [*(Q/q_i/q_0)^{-1}]_{q_i}</a>
+<a name="1288"><span class="lineNum">    1288 </span>            :    *</a>
+<a name="1289"><span class="lineNum">    1289 </span>            :    * @return the precomputed table</a>
+<a name="1290"><span class="lineNum">    1290 </span>            :    */</a>
+<a name="1291"><span class="lineNum">    1291 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetMultipartyQHatInvModqAtIndex(usint l) const {</a>
+<a name="1292"><span class="lineNum">    1292 </span>            :         return m_multipartyQHatInvModq[l];</a>
+<a name="1293"><span class="lineNum">    1293 </span>            :     }</a>
+<a name="1294"><span class="lineNum">    1294 </span>            : </a>
+<a name="1295"><span class="lineNum">    1295 </span>            :     /**</a>
+<a name="1296"><span class="lineNum">    1296 </span>            :    * Gets the NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}</a>
+<a name="1297"><span class="lineNum">    1297 </span>            :    *</a>
+<a name="1298"><span class="lineNum">    1298 </span>            :    * @return the precomputed table</a>
+<a name="1299"><span class="lineNum">    1299 </span>            :    */</a>
+<a name="1300"><span class="lineNum">    1300 </span>            :     std::vector&lt;NativeInteger&gt; const&amp; GetMultipartyQHatInvModqPreconAtIndex(usint l) const {</a>
+<a name="1301"><span class="lineNum">    1301 </span>            :         return m_multipartyQHatInvModqPrecon[l];</a>
+<a name="1302"><span class="lineNum">    1302 </span>            :     }</a>
+<a name="1303"><span class="lineNum">    1303 </span>            : </a>
+<a name="1304"><span class="lineNum">    1304 </span>            :     /**</a>
+<a name="1305"><span class="lineNum">    1305 </span>            :    * Gets the precomputed table of [Q/q_i/q_0]_{q_0}</a>
+<a name="1306"><span class="lineNum">    1306 </span>            :    *</a>
+<a name="1307"><span class="lineNum">    1307 </span>            :    * @return the precomputed table</a>
+<a name="1308"><span class="lineNum">    1308 </span>            :    */</a>
+<a name="1309"><span class="lineNum">    1309 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; const&amp; GetMultipartyQHatModq0AtIndex(usint l) const {</a>
+<a name="1310"><span class="lineNum">    1310 </span>            :         return m_multipartyQHatModq0[l];</a>
+<a name="1311"><span class="lineNum">    1311 </span>            :     }</a>
+<a name="1312"><span class="lineNum">    1312 </span>            : </a>
+<a name="1313"><span class="lineNum">    1313 </span>            :     /**</a>
+<a name="1314"><span class="lineNum">    1314 </span>            :    * Gets the precomputed table of [\alpha*Q/q_0]_{q_0} for 0 &lt;= alpha &lt;= 1</a>
+<a name="1315"><span class="lineNum">    1315 </span>            :    *</a>
+<a name="1316"><span class="lineNum">    1316 </span>            :    * @return the precomputed table</a>
+<a name="1317"><span class="lineNum">    1317 </span>            :    */</a>
+<a name="1318"><span class="lineNum">    1318 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; const&amp; GetMultipartyAlphaQModq0AtIndex(usint l) const {</a>
+<a name="1319"><span class="lineNum">    1319 </span>            :         return m_multipartyAlphaQModq0[l];</a>
+<a name="1320"><span class="lineNum">    1320 </span>            :     }</a>
+<a name="1321"><span class="lineNum">    1321 </span>            : </a>
+<a name="1322"><span class="lineNum">    1322 </span>            :     /**</a>
+<a name="1323"><span class="lineNum">    1323 </span>            :    * Gets the Barrett modulo reduction precomputation for q_0</a>
+<a name="1324"><span class="lineNum">    1324 </span>            :    *</a>
+<a name="1325"><span class="lineNum">    1325 </span>            :    * @return the precomputed table</a>
+<a name="1326"><span class="lineNum">    1326 </span>            :    */</a>
+<a name="1327"><span class="lineNum">    1327 </span>            :     std::vector&lt;DoubleNativeInt&gt; const&amp; GetMultipartyModq0BarrettMu() const {</a>
+<a name="1328"><span class="lineNum">    1328 </span>            :         return m_multipartyModq0BarrettMu;</a>
+<a name="1329"><span class="lineNum">    1329 </span>            :     }</a>
+<a name="1330"><span class="lineNum">    1330 </span>            : </a>
+<a name="1331"><span class="lineNum">    1331 </span>            :     /**</a>
+<a name="1332"><span class="lineNum">    1332 </span>            :    * Gets the precomputed table of \frac{1/q_i}</a>
+<a name="1333"><span class="lineNum">    1333 </span>            :    *</a>
+<a name="1334"><span class="lineNum">    1334 </span>            :    * @return the precomputed table</a>
+<a name="1335"><span class="lineNum">    1335 </span>            :    */</a>
+<a name="1336"><span class="lineNum">    1336 </span>            :     std::vector&lt;double&gt; const&amp; GetMultipartyQInv() const {</a>
+<a name="1337"><span class="lineNum">    1337 </span>            :         return m_multipartyQInv;</a>
+<a name="1338"><span class="lineNum">    1338 </span>            :     }</a>
+<a name="1339"><span class="lineNum">    1339 </span>            : </a>
+<a name="1340"><span class="lineNum">    1340 </span>            :     /////////////////////////////////////</a>
+<a name="1341"><span class="lineNum">    1341 </span>            :     // CKKS RNS MultiParty Bootstrapping Parameter</a>
+<a name="1342"><span class="lineNum">    1342 </span>            :     /////////////////////////////////////</a>
+<a name="1343"><span class="lineNum">    1343 </span>            :     /**</a>
+<a name="1344"><span class="lineNum">    1344 </span>            :    * Gets the Multi-Party Interactive Bootstrapping Ciphertext Compression Level</a>
+<a name="1345"><span class="lineNum">    1345 </span>            :    * @return m_MPIntBootCiphertextCompressionLevel</a>
+<a name="1346"><span class="lineNum">    1346 </span>            :    */</a>
+<a name="1347"><span class="lineNum">    1347 </span>            :     COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {</a>
+<a name="1348"><span class="lineNum">    1348 </span>            :         return m_MPIntBootCiphertextCompressionLevel;</a>
+<a name="1349"><span class="lineNum">    1349 </span>            :     }</a>
+<a name="1350"><span class="lineNum">    1350 </span>            : </a>
+<a name="1351"><span class="lineNum">    1351 </span>            : protected:</a>
+<a name="1352"><span class="lineNum">    1352 </span>            :     /////////////////////////////////////</a>
+<a name="1353"><span class="lineNum">    1353 </span>            :     // PrecomputeCRTTables</a>
+<a name="1354"><span class="lineNum">    1354 </span>            :     /////////////////////////////////////</a>
+<a name="1355"><span class="lineNum">    1355 </span>            : </a>
+<a name="1356"><span class="lineNum">    1356 </span>            :     // Stores the technique to use for key switching</a>
+<a name="1357"><span class="lineNum">    1357 </span>            :     enum KeySwitchTechnique m_ksTechnique;</a>
+<a name="1358"><span class="lineNum">    1358 </span>            : </a>
+<a name="1359"><span class="lineNum">    1359 </span>            :     enum ScalingTechnique m_scalTechnique;</a>
+<a name="1360"><span class="lineNum">    1360 </span>            : </a>
+<a name="1361"><span class="lineNum">    1361 </span>            :     enum EncryptionTechnique m_encTechnique;</a>
+<a name="1362"><span class="lineNum">    1362 </span>            : </a>
+<a name="1363"><span class="lineNum">    1363 </span>            :     enum MultiplicationTechnique m_multTechnique;</a>
+<a name="1364"><span class="lineNum">    1364 </span>            : </a>
+<a name="1365"><span class="lineNum">    1365 </span>            :     uint32_t m_auxBits = 0;</a>
+<a name="1366"><span class="lineNum">    1366 </span>            : </a>
+<a name="1367"><span class="lineNum">    1367 </span>            :     uint32_t m_extraBits = 0;</a>
+<a name="1368"><span class="lineNum">    1368 </span>            : </a>
+<a name="1369"><span class="lineNum">    1369 </span>            :     /////////////////////////////////////</a>
+<a name="1370"><span class="lineNum">    1370 </span>            :     // BGVrns ModReduce</a>
+<a name="1371"><span class="lineNum">    1371 </span>            :     /////////////////////////////////////</a>
+<a name="1372"><span class="lineNum">    1372 </span>            : </a>
+<a name="1373"><span class="lineNum">    1373 </span>            :     // Stores NTL precomputations for [t]_{q_i}</a>
+<a name="1374"><span class="lineNum">    1374 </span>            :     std::vector&lt;NativeInteger&gt; m_tModqPrecon;</a>
+<a name="1375"><span class="lineNum">    1375 </span>            : </a>
+<a name="1376"><span class="lineNum">    1376 </span>            :     // Stores [-t^{-1}]_{q_i}</a>
+<a name="1377"><span class="lineNum">    1377 </span>            :     std::vector&lt;NativeInteger&gt; m_negtInvModq;</a>
+<a name="1378"><span class="lineNum">    1378 </span>            : </a>
+<a name="1379"><span class="lineNum">    1379 </span>            :     // Stores NTL precomputations for [-t^{-1}]_{q_i}</a>
+<a name="1380"><span class="lineNum">    1380 </span>            :     std::vector&lt;NativeInteger&gt; m_negtInvModqPrecon;</a>
+<a name="1381"><span class="lineNum">    1381 </span>            : </a>
+<a name="1382"><span class="lineNum">    1382 </span>            :     /////////////////////////////////////</a>
+<a name="1383"><span class="lineNum">    1383 </span>            :     // CKKSrns/BFVrns DropLastElementAndScale</a>
+<a name="1384"><span class="lineNum">    1384 </span>            :     /////////////////////////////////////</a>
+<a name="1385"><span class="lineNum">    1385 </span>            : </a>
+<a name="1386"><span class="lineNum">    1386 </span>            :     // Q^(l) = \prod_{j=0}^{l-1}</a>
+<a name="1387"><span class="lineNum">    1387 </span>            :     // Stores [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}</a>
+<a name="1388"><span class="lineNum">    1388 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QlQlInvModqlDivqlModq;</a>
+<a name="1389"><span class="lineNum">    1389 </span>            : </a>
+<a name="1390"><span class="lineNum">    1390 </span>            :     // Q^(l) = \prod_{j=0}^{l-1}</a>
+<a name="1391"><span class="lineNum">    1391 </span>            :     // Stores NTL precomputations for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}</a>
+<a name="1392"><span class="lineNum">    1392 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QlQlInvModqlDivqlModqPrecon;</a>
+<a name="1393"><span class="lineNum">    1393 </span>            : </a>
+<a name="1394"><span class="lineNum">    1394 </span>            :     // Stores [q_l^{-1}]_{q_i}</a>
+<a name="1395"><span class="lineNum">    1395 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_qlInvModq;</a>
+<a name="1396"><span class="lineNum">    1396 </span>            : </a>
+<a name="1397"><span class="lineNum">    1397 </span>            :     // Stores NTL precomputations for [q_l^{-1}]_{q_i}</a>
+<a name="1398"><span class="lineNum">    1398 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_qlInvModqPrecon;</a>
+<a name="1399"><span class="lineNum">    1399 </span>            : </a>
+<a name="1400"><span class="lineNum">    1400 </span>            :     /////////////////////////////////////</a>
+<a name="1401"><span class="lineNum">    1401 </span>            :     // KeySwitchHybrid KeyGen</a>
+<a name="1402"><span class="lineNum">    1402 </span>            :     /////////////////////////////////////</a>
+<a name="1403"><span class="lineNum">    1403 </span>            : </a>
+<a name="1404"><span class="lineNum">    1404 </span>            :     // Params for Extended CRT basis {QP} = {q_1...q_l,p_1,...,p_k}</a>
+<a name="1405"><span class="lineNum">    1405 </span>            :     // used in GHS key switching</a>
+<a name="1406"><span class="lineNum">    1406 </span>            :     std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; m_paramsQP;</a>
+<a name="1407"><span class="lineNum">    1407 </span>            : </a>
+<a name="1408"><span class="lineNum">    1408 </span>            :     // Stores the partition size {PartQ} = {Q_1,...,Q_l}</a>
+<a name="1409"><span class="lineNum">    1409 </span>            :     // where each Q_i is the product of q_j</a>
+<a name="1410"><span class="lineNum">    1410 </span>            :     uint32_t m_numPartQ = 0;</a>
+<a name="1411"><span class="lineNum">    1411 </span>            : </a>
+<a name="1412"><span class="lineNum">    1412 </span>            :     // Stores [P]_{q_i}, used in GHS key switching</a>
+<a name="1413"><span class="lineNum">    1413 </span>            :     std::vector&lt;NativeInteger&gt; m_PModq;</a>
+<a name="1414"><span class="lineNum">    1414 </span>            : </a>
+<a name="1415"><span class="lineNum">    1415 </span>            :     /////////////////////////////////////</a>
+<a name="1416"><span class="lineNum">    1416 </span>            :     // KeySwitchHybrid KeySwitch</a>
+<a name="1417"><span class="lineNum">    1417 </span>            :     /////////////////////////////////////</a>
+<a name="1418"><span class="lineNum">    1418 </span>            : </a>
+<a name="1419"><span class="lineNum">    1419 </span>            :     // Params for Auxiliary CRT basis {P} = {p_1,...,p_k}</a>
+<a name="1420"><span class="lineNum">    1420 </span>            :     // used in GHS key switching</a>
+<a name="1421"><span class="lineNum">    1421 </span>            :     std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; m_paramsP;</a>
+<a name="1422"><span class="lineNum">    1422 </span>            : </a>
+<a name="1423"><span class="lineNum">    1423 </span>            :     // Stores the number of towers per Q_i</a>
+<a name="1424"><span class="lineNum">    1424 </span>            :     uint32_t m_numPerPartQ = 0;</a>
+<a name="1425"><span class="lineNum">    1425 </span>            : </a>
+<a name="1426"><span class="lineNum">    1426 </span>            :     // Stores the parameters for moduli Q_i</a>
+<a name="1427"><span class="lineNum">    1427 </span>            :     std::vector&lt;std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&gt; m_paramsPartQ;</a>
+<a name="1428"><span class="lineNum">    1428 </span>            : </a>
+<a name="1429"><span class="lineNum">    1429 </span>            :     // Stores the parameters for complementary {\bar{Q_i},P}</a>
+<a name="1430"><span class="lineNum">    1430 </span>            :     std::vector&lt;std::vector&lt;std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&gt;&gt; m_paramsComplPartQ;</a>
+<a name="1431"><span class="lineNum">    1431 </span>            : </a>
+<a name="1432"><span class="lineNum">    1432 </span>            :     // Stores [{(Q_k)^(l)/q_i}^{-1}]_{q_i} for HYBRID</a>
+<a name="1433"><span class="lineNum">    1433 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_PartQlHatInvModq;</a>
+<a name="1434"><span class="lineNum">    1434 </span>            : </a>
+<a name="1435"><span class="lineNum">    1435 </span>            :     // Stores NTL precomputations for</a>
+<a name="1436"><span class="lineNum">    1436 </span>            :     // [{(Q_k)^(l)/q_i}^{-1}]_{q_i} for HYBRID</a>
+<a name="1437"><span class="lineNum">    1437 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_PartQlHatInvModqPrecon;</a>
+<a name="1438"><span class="lineNum">    1438 </span>            : </a>
+<a name="1439"><span class="lineNum">    1439 </span>            :     // Stores [QHat_i]_{p_j}</a>
+<a name="1440"><span class="lineNum">    1440 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt;&gt; m_PartQlHatModp;</a>
+<a name="1441"><span class="lineNum">    1441 </span>            : </a>
+<a name="1442"><span class="lineNum">    1442 </span>            :     // Stores the Barrett mu for CompQBar_i</a>
+<a name="1443"><span class="lineNum">    1443 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;DoubleNativeInt&gt;&gt;&gt; m_modComplPartqBarrettMu;</a>
+<a name="1444"><span class="lineNum">    1444 </span>            : </a>
+<a name="1445"><span class="lineNum">    1445 </span>            :     // Stores [P^{-1}]_{q_i}, required for GHS key switching</a>
+<a name="1446"><span class="lineNum">    1446 </span>            :     std::vector&lt;NativeInteger&gt; m_PInvModq;</a>
+<a name="1447"><span class="lineNum">    1447 </span>            : </a>
+<a name="1448"><span class="lineNum">    1448 </span>            :     // Stores NTL precomputations for [P^{-1}]_{q_i}</a>
+<a name="1449"><span class="lineNum">    1449 </span>            :     std::vector&lt;NativeInteger&gt; m_PInvModqPrecon;</a>
+<a name="1450"><span class="lineNum">    1450 </span>            : </a>
+<a name="1451"><span class="lineNum">    1451 </span>            :     // Stores [(P/p_j)^{-1}]_{p_j}, required for GHS key switching</a>
+<a name="1452"><span class="lineNum">    1452 </span>            :     std::vector&lt;NativeInteger&gt; m_PHatInvModp;</a>
+<a name="1453"><span class="lineNum">    1453 </span>            : </a>
+<a name="1454"><span class="lineNum">    1454 </span>            :     // Stores NTL precomputations for [(P/p_j)^{-1}]_{p_j}</a>
+<a name="1455"><span class="lineNum">    1455 </span>            :     std::vector&lt;NativeInteger&gt; m_PHatInvModpPrecon;</a>
+<a name="1456"><span class="lineNum">    1456 </span>            : </a>
+<a name="1457"><span class="lineNum">    1457 </span>            :     // Stores [P/p_j]_{q_i}, required for GHS key switching</a>
+<a name="1458"><span class="lineNum">    1458 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_PHatModq;</a>
+<a name="1459"><span class="lineNum">    1459 </span>            : </a>
+<a name="1460"><span class="lineNum">    1460 </span>            :     // Stores the BarrettUint128ModUint64 precomputations for q_j</a>
+<a name="1461"><span class="lineNum">    1461 </span>            :     std::vector&lt;DoubleNativeInt&gt; m_modqBarrettMu;</a>
+<a name="1462"><span class="lineNum">    1462 </span>            : </a>
+<a name="1463"><span class="lineNum">    1463 </span>            :     // Stores [t^{-1}]_{p_j}</a>
+<a name="1464"><span class="lineNum">    1464 </span>            :     std::vector&lt;NativeInteger&gt; m_tInvModp;</a>
+<a name="1465"><span class="lineNum">    1465 </span>            : </a>
+<a name="1466"><span class="lineNum">    1466 </span>            :     // Stores NTL precomputations for [t^{-1}]_{p_j}</a>
+<a name="1467"><span class="lineNum">    1467 </span>            :     std::vector&lt;NativeInteger&gt; m_tInvModpPrecon;</a>
+<a name="1468"><span class="lineNum">    1468 </span>            : </a>
+<a name="1469"><span class="lineNum">    1469 </span>            :     /////////////////////////////////////</a>
+<a name="1470"><span class="lineNum">    1470 </span>            :     // CKKS Scaling Factor</a>
+<a name="1471"><span class="lineNum">    1471 </span>            :     /////////////////////////////////////</a>
+<a name="1472"><span class="lineNum">    1472 </span>            : </a>
+<a name="1473"><span class="lineNum">    1473 </span>            :     // A vector holding the doubles that correspond to the exact</a>
+<a name="1474"><span class="lineNum">    1474 </span>            :     // scaling factor of each level, when FLEXIBLEAUTO is used.</a>
+<a name="1475"><span class="lineNum">    1475 </span>            :     std::vector&lt;double&gt; m_scalingFactorsReal;</a>
+<a name="1476"><span class="lineNum">    1476 </span>            : </a>
+<a name="1477"><span class="lineNum">    1477 </span>            :     std::vector&lt;double&gt; m_scalingFactorsRealBig;</a>
+<a name="1478"><span class="lineNum">    1478 </span>            : </a>
+<a name="1479"><span class="lineNum">    1479 </span>            :     // Stores q_i as doubles</a>
+<a name="1480"><span class="lineNum">    1480 </span>            :     std::vector&lt;double&gt; m_dmoduliQ;</a>
+<a name="1481"><span class="lineNum">    1481 </span>            : </a>
+<a name="1482"><span class="lineNum">    1482 </span>            :     // Stores 2^ptm where ptm - plaintext modulus</a>
+<a name="1483"><span class="lineNum">    1483 </span>            :     double m_approxSF = 0;</a>
+<a name="1484"><span class="lineNum">    1484 </span>            : </a>
+<a name="1485"><span class="lineNum">    1485 </span>            :     /////////////////////////////////////</a>
+<a name="1486"><span class="lineNum">    1486 </span>            :     // BFVrns : Encrypt</a>
+<a name="1487"><span class="lineNum">    1487 </span>            :     /////////////////////////////////////</a>
+<a name="1488"><span class="lineNum">    1488 </span>            : </a>
+<a name="1489"><span class="lineNum">    1489 </span>            :     std::vector&lt;NativeInteger&gt; m_scalingFactorsInt;</a>
+<a name="1490"><span class="lineNum">    1490 </span>            : </a>
+<a name="1491"><span class="lineNum">    1491 </span>            :     std::vector&lt;NativeInteger&gt; m_scalingFactorsIntBig;</a>
+<a name="1492"><span class="lineNum">    1492 </span>            : </a>
+<a name="1493"><span class="lineNum">    1493 </span>            :     std::vector&lt;NativeInteger&gt; m_qModt;</a>
+<a name="1494"><span class="lineNum">    1494 </span>            : </a>
+<a name="1495"><span class="lineNum">    1495 </span>            :     NativeInteger m_fixedSF = NativeInteger(1);</a>
+<a name="1496"><span class="lineNum">    1496 </span>            : </a>
+<a name="1497"><span class="lineNum">    1497 </span>            :     /////////////////////////////////////</a>
+<a name="1498"><span class="lineNum">    1498 </span>            :     // BFVrns : Encrypt</a>
+<a name="1499"><span class="lineNum">    1499 </span>            :     /////////////////////////////////////</a>
+<a name="1500"><span class="lineNum">    1500 </span>            : </a>
+<a name="1501"><span class="lineNum">    1501 </span>            :     std::vector&lt;NativeInteger&gt; m_negQModt;</a>
+<a name="1502"><span class="lineNum">    1502 </span>            :     std::vector&lt;NativeInteger&gt; m_negQModtPrecon;</a>
+<a name="1503"><span class="lineNum">    1503 </span>            :     std::vector&lt;NativeInteger&gt; m_tInvModq;</a>
+<a name="1504"><span class="lineNum">    1504 </span>            :     std::vector&lt;NativeInteger&gt; m_tInvModqPrecon;</a>
+<a name="1505"><span class="lineNum">    1505 </span>            :     std::vector&lt;NativeInteger&gt; m_tInvModqr;</a>
+<a name="1506"><span class="lineNum">    1506 </span>            : </a>
+<a name="1507"><span class="lineNum">    1507 </span>            :     /////////////////////////////////////</a>
+<a name="1508"><span class="lineNum">    1508 </span>            :     // BFVrns : Encrypt</a>
+<a name="1509"><span class="lineNum">    1509 </span>            :     /////////////////////////////////////</a>
+<a name="1510"><span class="lineNum">    1510 </span>            : </a>
+<a name="1511"><span class="lineNum">    1511 </span>            :     std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; m_paramsQr;</a>
+<a name="1512"><span class="lineNum">    1512 </span>            :     NativeInteger m_negQrModt;</a>
+<a name="1513"><span class="lineNum">    1513 </span>            :     NativeInteger m_negQrModtPrecon;</a>
+<a name="1514"><span class="lineNum">    1514 </span>            :     std::vector&lt;NativeInteger&gt; m_rInvModq;</a>
+<a name="1515"><span class="lineNum">    1515 </span>            : </a>
+<a name="1516"><span class="lineNum">    1516 </span>            :     /////////////////////////////////////</a>
+<a name="1517"><span class="lineNum">    1517 </span>            :     // BFVrns : Decrypt : ScaleAndRound</a>
+<a name="1518"><span class="lineNum">    1518 </span>            :     /////////////////////////////////////</a>
+<a name="1519"><span class="lineNum">    1519 </span>            : </a>
+<a name="1520"><span class="lineNum">    1520 </span>            :     // Stores \frac{t*{Q/q_i}^{-1}/q_i}</a>
+<a name="1521"><span class="lineNum">    1521 </span>            :     std::vector&lt;double&gt; m_tQHatInvModqDivqFrac;</a>
+<a name="1522"><span class="lineNum">    1522 </span>            : </a>
+<a name="1523"><span class="lineNum">    1523 </span>            :     // when log2(q_i) &gt;= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}</a>
+<a name="1524"><span class="lineNum">    1524 </span>            :     // Stores \frac{t*{Q/q_i}^{-1}*B/q_i}</a>
+<a name="1525"><span class="lineNum">    1525 </span>            :     std::vector&lt;double&gt; m_tQHatInvModqBDivqFrac;</a>
+<a name="1526"><span class="lineNum">    1526 </span>            : </a>
+<a name="1527"><span class="lineNum">    1527 </span>            :     // Stores [\floor{t*{Q/q_i}^{-1}/q_i}]_t</a>
+<a name="1528"><span class="lineNum">    1528 </span>            :     std::vector&lt;NativeInteger&gt; m_tQHatInvModqDivqModt;</a>
+<a name="1529"><span class="lineNum">    1529 </span>            : </a>
+<a name="1530"><span class="lineNum">    1530 </span>            :     // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t</a>
+<a name="1531"><span class="lineNum">    1531 </span>            :     std::vector&lt;NativeInteger&gt; m_tQHatInvModqDivqModtPrecon;</a>
+<a name="1532"><span class="lineNum">    1532 </span>            : </a>
+<a name="1533"><span class="lineNum">    1533 </span>            :     // when log2(q_i) &gt;= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}</a>
+<a name="1534"><span class="lineNum">    1534 </span>            :     // Stores [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t</a>
+<a name="1535"><span class="lineNum">    1535 </span>            :     std::vector&lt;NativeInteger&gt; m_tQHatInvModqBDivqModt;</a>
+<a name="1536"><span class="lineNum">    1536 </span>            : </a>
+<a name="1537"><span class="lineNum">    1537 </span>            :     // when log2 q_i &gt;= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}</a>
+<a name="1538"><span class="lineNum">    1538 </span>            :     // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t</a>
+<a name="1539"><span class="lineNum">    1539 </span>            :     std::vector&lt;NativeInteger&gt; m_tQHatInvModqBDivqModtPrecon;</a>
+<a name="1540"><span class="lineNum">    1540 </span>            : </a>
+<a name="1541"><span class="lineNum">    1541 </span>            :     /////////////////////////////////////</a>
+<a name="1542"><span class="lineNum">    1542 </span>            :     // BFVrns : Mult : ExpandCRTBasis</a>
+<a name="1543"><span class="lineNum">    1543 </span>            :     /////////////////////////////////////</a>
+<a name="1544"><span class="lineNum">    1544 </span>            : </a>
+<a name="1545"><span class="lineNum">    1545 </span>            :     // Auxiliary CRT basis {Ql} = {q_i}</a>
+<a name="1546"><span class="lineNum">    1546 </span>            :     // used in homomorphic multiplication</a>
+<a name="1547"><span class="lineNum">    1547 </span>            :     std::vector&lt;std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&gt; m_paramsQl;</a>
+<a name="1548"><span class="lineNum">    1548 </span>            : </a>
+<a name="1549"><span class="lineNum">    1549 </span>            :     std::vector&lt;std::vector&lt;double&gt;&gt; m_QlQHatInvModqDivqFrac;</a>
+<a name="1550"><span class="lineNum">    1550 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_QlQHatInvModqDivqModq;</a>
+<a name="1551"><span class="lineNum">    1551 </span>            : </a>
+<a name="1552"><span class="lineNum">    1552 </span>            :     // Auxiliary CRT basis {Rl} = {r_k}</a>
+<a name="1553"><span class="lineNum">    1553 </span>            :     // used in homomorphic multiplication</a>
+<a name="1554"><span class="lineNum">    1554 </span>            :     std::vector&lt;std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&gt; m_paramsRl;</a>
+<a name="1555"><span class="lineNum">    1555 </span>            : </a>
+<a name="1556"><span class="lineNum">    1556 </span>            :     // Auxiliary expanded CRT basis Ql*Rl = {s_m}</a>
+<a name="1557"><span class="lineNum">    1557 </span>            :     // used in homomorphic multiplication</a>
+<a name="1558"><span class="lineNum">    1558 </span>            :     std::vector&lt;std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt;&gt; m_paramsQlRl;</a>
+<a name="1559"><span class="lineNum">    1559 </span>            : </a>
+<a name="1560"><span class="lineNum">    1560 </span>            :     // Stores [(Ql/q_i)^{-1}]_{q_i}</a>
+<a name="1561"><span class="lineNum">    1561 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QlHatInvModq;</a>
+<a name="1562"><span class="lineNum">    1562 </span>            : </a>
+<a name="1563"><span class="lineNum">    1563 </span>            :     // Stores NTL precomputations for [(Ql/q_i)^{-1}]_{q_i}</a>
+<a name="1564"><span class="lineNum">    1564 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QlHatInvModqPrecon;</a>
+<a name="1565"><span class="lineNum">    1565 </span>            : </a>
+<a name="1566"><span class="lineNum">    1566 </span>            :     // Stores [Q/q_i]_{r_k}</a>
+<a name="1567"><span class="lineNum">    1567 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_QlHatModr;</a>
+<a name="1568"><span class="lineNum">    1568 </span>            : </a>
+<a name="1569"><span class="lineNum">    1569 </span>            :     // Stores [\alpha*Ql]_{r_k} for 0 &lt;= alpha &lt;= sizeQl</a>
+<a name="1570"><span class="lineNum">    1570 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_alphaQlModr;</a>
+<a name="1571"><span class="lineNum">    1571 </span>            : </a>
+<a name="1572"><span class="lineNum">    1572 </span>            :     // Barrett modulo reduction precomputation for r_k</a>
+<a name="1573"><span class="lineNum">    1573 </span>            :     std::vector&lt;DoubleNativeInt&gt; m_modrBarrettMu;</a>
+<a name="1574"><span class="lineNum">    1574 </span>            : </a>
+<a name="1575"><span class="lineNum">    1575 </span>            :     // Stores \frac{1/q_i}</a>
+<a name="1576"><span class="lineNum">    1576 </span>            :     std::vector&lt;double&gt; m_qInv;</a>
+<a name="1577"><span class="lineNum">    1577 </span>            : </a>
+<a name="1578"><span class="lineNum">    1578 </span>            :     /////////////////////////////////////</a>
+<a name="1579"><span class="lineNum">    1579 </span>            :     // BFVrns : Mult : ScaleAndRound</a>
+<a name="1580"><span class="lineNum">    1580 </span>            :     /////////////////////////////////////</a>
+<a name="1581"><span class="lineNum">    1581 </span>            : </a>
+<a name="1582"><span class="lineNum">    1582 </span>            :     // S = QR</a>
+<a name="1583"><span class="lineNum">    1583 </span>            :     // Stores \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}</a>
+<a name="1584"><span class="lineNum">    1584 </span>            :     std::vector&lt;double&gt; m_tRSHatInvModsDivsFrac;</a>
+<a name="1585"><span class="lineNum">    1585 </span>            : </a>
+<a name="1586"><span class="lineNum">    1586 </span>            :     // S = QR</a>
+<a name="1587"><span class="lineNum">    1587 </span>            :     // Stores [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}</a>
+<a name="1588"><span class="lineNum">    1588 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_tRSHatInvModsDivsModr;</a>
+<a name="1589"><span class="lineNum">    1589 </span>            : </a>
+<a name="1590"><span class="lineNum">    1590 </span>            :     /////////////////////////////////////</a>
+<a name="1591"><span class="lineNum">    1591 </span>            :     // BFVrns : Mult : SwitchCRTBasis</a>
+<a name="1592"><span class="lineNum">    1592 </span>            :     /////////////////////////////////////</a>
+<a name="1593"><span class="lineNum">    1593 </span>            : </a>
+<a name="1594"><span class="lineNum">    1594 </span>            :     // Stores [(Rl/r_k)^{-1}]_{r_k}</a>
+<a name="1595"><span class="lineNum">    1595 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_RlHatInvModr;</a>
+<a name="1596"><span class="lineNum">    1596 </span>            : </a>
+<a name="1597"><span class="lineNum">    1597 </span>            :     // Stores NTL precomputations for [(Rl/r_k)^{-1}]_{r_k}</a>
+<a name="1598"><span class="lineNum">    1598 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_RlHatInvModrPrecon;</a>
+<a name="1599"><span class="lineNum">    1599 </span>            : </a>
+<a name="1600"><span class="lineNum">    1600 </span>            :     // Stores [Rl/r_k]_{q_i}</a>
+<a name="1601"><span class="lineNum">    1601 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_RlHatModq;</a>
+<a name="1602"><span class="lineNum">    1602 </span>            : </a>
+<a name="1603"><span class="lineNum">    1603 </span>            :     // Stores [\alpha*Rl]_{q_i} for 0 &lt;= alpha &lt;= sizeR</a>
+<a name="1604"><span class="lineNum">    1604 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_alphaRlModq;</a>
+<a name="1605"><span class="lineNum">    1605 </span>            : </a>
+<a name="1606"><span class="lineNum">    1606 </span>            :     // Stores \frac{1/r_k}</a>
+<a name="1607"><span class="lineNum">    1607 </span>            :     std::vector&lt;double&gt; m_rInv;</a>
+<a name="1608"><span class="lineNum">    1608 </span>            : </a>
+<a name="1609"><span class="lineNum">    1609 </span>            :     /////////////////////////////////////</a>
+<a name="1610"><span class="lineNum">    1610 </span>            :     // BFVrns : Mult : FastExpandCRTBasisPloverQ</a>
+<a name="1611"><span class="lineNum">    1611 </span>            :     /////////////////////////////////////</a>
+<a name="1612"><span class="lineNum">    1612 </span>            : </a>
+<a name="1613"><span class="lineNum">    1613 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_negRlQHatInvModq;</a>
+<a name="1614"><span class="lineNum">    1614 </span>            : </a>
+<a name="1615"><span class="lineNum">    1615 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_negRlQHatInvModqPrecon;</a>
+<a name="1616"><span class="lineNum">    1616 </span>            : </a>
+<a name="1617"><span class="lineNum">    1617 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_negRlQlHatInvModq;</a>
+<a name="1618"><span class="lineNum">    1618 </span>            : </a>
+<a name="1619"><span class="lineNum">    1619 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_negRlQlHatInvModqPrecon;</a>
+<a name="1620"><span class="lineNum">    1620 </span>            : </a>
+<a name="1621"><span class="lineNum">    1621 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_qInvModr;</a>
+<a name="1622"><span class="lineNum">    1622 </span>            : </a>
+<a name="1623"><span class="lineNum">    1623 </span>            :     /////////////////////////////////////</a>
+<a name="1624"><span class="lineNum">    1624 </span>            :     // BFVrns : Mult : ExpandCRTBasisQlHat</a>
+<a name="1625"><span class="lineNum">    1625 </span>            :     /////////////////////////////////////</a>
+<a name="1626"><span class="lineNum">    1626 </span>            : </a>
+<a name="1627"><span class="lineNum">    1627 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QlHatModq;</a>
+<a name="1628"><span class="lineNum">    1628 </span>            : </a>
+<a name="1629"><span class="lineNum">    1629 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QlHatModqPrecon;</a>
+<a name="1630"><span class="lineNum">    1630 </span>            : </a>
+<a name="1631"><span class="lineNum">    1631 </span>            :     /////////////////////////////////////</a>
+<a name="1632"><span class="lineNum">    1632 </span>            :     // BFVrns : Mult : ScaleAndRoundP</a>
+<a name="1633"><span class="lineNum">    1633 </span>            :     /////////////////////////////////////</a>
+<a name="1634"><span class="lineNum">    1634 </span>            : </a>
+<a name="1635"><span class="lineNum">    1635 </span>            :     std::vector&lt;std::vector&lt;double&gt;&gt; m_tQlSlHatInvModsDivsFrac;</a>
+<a name="1636"><span class="lineNum">    1636 </span>            : </a>
+<a name="1637"><span class="lineNum">    1637 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_tQlSlHatInvModsDivsModq;</a>
+<a name="1638"><span class="lineNum">    1638 </span>            : </a>
+<a name="1639"><span class="lineNum">    1639 </span>            :     /////////////////////////////////////</a>
+<a name="1640"><span class="lineNum">    1640 </span>            :     // BFVrnsB</a>
+<a name="1641"><span class="lineNum">    1641 </span>            :     /////////////////////////////////////</a>
+<a name="1642"><span class="lineNum">    1642 </span>            : </a>
+<a name="1643"><span class="lineNum">    1643 </span>            :     // Auxiliary CRT basis {Bsk} = {B U msk} = {{b_j} U msk}</a>
+<a name="1644"><span class="lineNum">    1644 </span>            :     std::shared_ptr&lt;ILDCRTParams&lt;BigInteger&gt;&gt; m_paramsQBsk;</a>
+<a name="1645"><span class="lineNum">    1645 </span>            : </a>
+<a name="1646"><span class="lineNum">    1646 </span>            :     // number of moduli in the base {Q}</a>
+<a name="1647"><span class="lineNum">    1647 </span>            :     uint32_t m_numq = 0;</a>
+<a name="1648"><span class="lineNum">    1648 </span>            : </a>
+<a name="1649"><span class="lineNum">    1649 </span>            :     // number of moduli in the auxilliary base {B}</a>
+<a name="1650"><span class="lineNum">    1650 </span>            :     uint32_t m_numb = 0;</a>
+<a name="1651"><span class="lineNum">    1651 </span>            : </a>
+<a name="1652"><span class="lineNum">    1652 </span>            :     // mtilde = 2^16</a>
+<a name="1653"><span class="lineNum">    1653 </span>            :     NativeInteger m_mtilde = NativeInteger(BasicInteger(1) &lt;&lt; 16);</a>
+<a name="1654"><span class="lineNum">    1654 </span>            : </a>
+<a name="1655"><span class="lineNum">    1655 </span>            :     // Auxiliary modulus msk</a>
+<a name="1656"><span class="lineNum">    1656 </span>            :     NativeInteger m_msk;</a>
+<a name="1657"><span class="lineNum">    1657 </span>            : </a>
+<a name="1658"><span class="lineNum">    1658 </span>            :     // Stores q_i</a>
+<a name="1659"><span class="lineNum">    1659 </span>            :     std::vector&lt;NativeInteger&gt; m_moduliQ;</a>
+<a name="1660"><span class="lineNum">    1660 </span>            : </a>
+<a name="1661"><span class="lineNum">    1661 </span>            :     // Stores auxilliary base moduli b_j</a>
+<a name="1662"><span class="lineNum">    1662 </span>            :     std::vector&lt;NativeInteger&gt; m_moduliB;</a>
+<a name="1663"><span class="lineNum">    1663 </span>            : </a>
+<a name="1664"><span class="lineNum">    1664 </span>            :     // Stores the roots of unity modulo bsk_j</a>
+<a name="1665"><span class="lineNum">    1665 </span>            :     std::vector&lt;NativeInteger&gt; m_rootsBsk;</a>
+<a name="1666"><span class="lineNum">    1666 </span>            : </a>
+<a name="1667"><span class="lineNum">    1667 </span>            :     // Stores moduli {bsk_i} = {{b_j} U msk}</a>
+<a name="1668"><span class="lineNum">    1668 </span>            :     std::vector&lt;NativeInteger&gt; m_moduliBsk;</a>
+<a name="1669"><span class="lineNum">    1669 </span>            : </a>
+<a name="1670"><span class="lineNum">    1670 </span>            :     // Barrett modulo reduction precomputation for bsk_j</a>
+<a name="1671"><span class="lineNum">    1671 </span>            :     std::vector&lt;DoubleNativeInt&gt; m_modbskBarrettMu;</a>
+<a name="1672"><span class="lineNum">    1672 </span>            : </a>
+<a name="1673"><span class="lineNum">    1673 </span>            :     // Stores [mtilde*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1674"><span class="lineNum">    1674 </span>            :     std::vector&lt;NativeInteger&gt; m_mtildeQHatInvModq;</a>
+<a name="1675"><span class="lineNum">    1675 </span>            : </a>
+<a name="1676"><span class="lineNum">    1676 </span>            :     // Stores NTL precomputations for [mtilde*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1677"><span class="lineNum">    1677 </span>            :     std::vector&lt;NativeInteger&gt; m_mtildeQHatInvModqPrecon;</a>
+<a name="1678"><span class="lineNum">    1678 </span>            : </a>
+<a name="1679"><span class="lineNum">    1679 </span>            :     // Stores [Q/q_i]_{bsk_j}</a>
+<a name="1680"><span class="lineNum">    1680 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_QHatModbsk;</a>
+<a name="1681"><span class="lineNum">    1681 </span>            : </a>
+<a name="1682"><span class="lineNum">    1682 </span>            :     // Stores [(q_i)^{-1}]_{bsk_j}</a>
+<a name="1683"><span class="lineNum">    1683 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_qInvModbsk;</a>
+<a name="1684"><span class="lineNum">    1684 </span>            : </a>
+<a name="1685"><span class="lineNum">    1685 </span>            :     // Stores [Q/q_i]_{mtilde}</a>
+<a name="1686"><span class="lineNum">    1686 </span>            :     std::vector&lt;uint64_t&gt; m_QHatModmtilde;</a>
+<a name="1687"><span class="lineNum">    1687 </span>            : </a>
+<a name="1688"><span class="lineNum">    1688 </span>            :     // Stores [Q]_{bsk_j}</a>
+<a name="1689"><span class="lineNum">    1689 </span>            :     std::vector&lt;NativeInteger&gt; m_QModbsk;</a>
+<a name="1690"><span class="lineNum">    1690 </span>            :     // Stores NTL precomputations for [Q]_{bsk_j}</a>
+<a name="1691"><span class="lineNum">    1691 </span>            :     std::vector&lt;NativeInteger&gt; m_QModbskPrecon;</a>
+<a name="1692"><span class="lineNum">    1692 </span>            : </a>
+<a name="1693"><span class="lineNum">    1693 </span>            :     // Stores [-Q^{-1}]_{mtilde}</a>
+<a name="1694"><span class="lineNum">    1694 </span>            :     uint64_t m_negQInvModmtilde = 0;</a>
+<a name="1695"><span class="lineNum">    1695 </span>            : </a>
+<a name="1696"><span class="lineNum">    1696 </span>            :     // Stores [mtilde^{-1}]_{bsk_j}</a>
+<a name="1697"><span class="lineNum">    1697 </span>            :     std::vector&lt;NativeInteger&gt; m_mtildeInvModbsk;</a>
+<a name="1698"><span class="lineNum">    1698 </span>            :     // Stores NTL precomputations for [mtilde^{-1}]_{bsk_j}</a>
+<a name="1699"><span class="lineNum">    1699 </span>            :     std::vector&lt;NativeInteger&gt; m_mtildeInvModbskPrecon;</a>
+<a name="1700"><span class="lineNum">    1700 </span>            : </a>
+<a name="1701"><span class="lineNum">    1701 </span>            :     // Stores [t*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1702"><span class="lineNum">    1702 </span>            :     std::vector&lt;NativeInteger&gt; m_tQHatInvModq;</a>
+<a name="1703"><span class="lineNum">    1703 </span>            : </a>
+<a name="1704"><span class="lineNum">    1704 </span>            :     // Stores NTL precomputations for [t*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1705"><span class="lineNum">    1705 </span>            :     std::vector&lt;NativeInteger&gt; m_tQHatInvModqPrecon;</a>
+<a name="1706"><span class="lineNum">    1706 </span>            : </a>
+<a name="1707"><span class="lineNum">    1707 </span>            :     // Stores [t*gamma*(Q/q_i)^(-1)]_{q_i}</a>
+<a name="1708"><span class="lineNum">    1708 </span>            :     std::vector&lt;NativeInteger&gt; m_tgammaQHatInvModq;</a>
+<a name="1709"><span class="lineNum">    1709 </span>            :     // Stores NTL precomputations for [t*gamma*(Q/q_i)^(-1)]_{q_i}</a>
+<a name="1710"><span class="lineNum">    1710 </span>            :     std::vector&lt;NativeInteger&gt; m_tgammaQHatInvModqPrecon;</a>
+<a name="1711"><span class="lineNum">    1711 </span>            : </a>
+<a name="1712"><span class="lineNum">    1712 </span>            :     // Stores [t/Q]_{bsk_j}</a>
+<a name="1713"><span class="lineNum">    1713 </span>            :     std::vector&lt;NativeInteger&gt; m_tQInvModbsk;</a>
+<a name="1714"><span class="lineNum">    1714 </span>            :     // Stores NTL precomputations for [t/Q]_{bsk_j}</a>
+<a name="1715"><span class="lineNum">    1715 </span>            :     std::vector&lt;NativeInteger&gt; m_tQInvModbskPrecon;</a>
+<a name="1716"><span class="lineNum">    1716 </span>            : </a>
+<a name="1717"><span class="lineNum">    1717 </span>            :     // Stores [(B/b_j)^{-1}]_{b_j}</a>
+<a name="1718"><span class="lineNum">    1718 </span>            :     std::vector&lt;NativeInteger&gt; m_BHatInvModb;</a>
+<a name="1719"><span class="lineNum">    1719 </span>            : </a>
+<a name="1720"><span class="lineNum">    1720 </span>            :     // Stores NTL precomputations for [(B/b_j)^{-1}]_{b_j}</a>
+<a name="1721"><span class="lineNum">    1721 </span>            :     std::vector&lt;NativeInteger&gt; m_BHatInvModbPrecon;</a>
+<a name="1722"><span class="lineNum">    1722 </span>            : </a>
+<a name="1723"><span class="lineNum">    1723 </span>            :     // stores [B/b_j]_{msk}</a>
+<a name="1724"><span class="lineNum">    1724 </span>            :     std::vector&lt;NativeInteger&gt; m_BHatModmsk;</a>
+<a name="1725"><span class="lineNum">    1725 </span>            : </a>
+<a name="1726"><span class="lineNum">    1726 </span>            :     // Stores [B^{-1}]_msk</a>
+<a name="1727"><span class="lineNum">    1727 </span>            :     NativeInteger m_BInvModmsk;</a>
+<a name="1728"><span class="lineNum">    1728 </span>            :     // Stores NTL precomputations for [B^{-1}]_msk</a>
+<a name="1729"><span class="lineNum">    1729 </span>            :     NativeInteger m_BInvModmskPrecon;</a>
+<a name="1730"><span class="lineNum">    1730 </span>            : </a>
+<a name="1731"><span class="lineNum">    1731 </span>            :     // Stores [B/b_j]_{q_i}</a>
+<a name="1732"><span class="lineNum">    1732 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_BHatModq;</a>
+<a name="1733"><span class="lineNum">    1733 </span>            : </a>
+<a name="1734"><span class="lineNum">    1734 </span>            :     // Stores [B]_{q_i}</a>
+<a name="1735"><span class="lineNum">    1735 </span>            :     std::vector&lt;NativeInteger&gt; m_BModq;</a>
+<a name="1736"><span class="lineNum">    1736 </span>            :     // Stores NTL precomputations for [B]_{q_i}</a>
+<a name="1737"><span class="lineNum">    1737 </span>            :     std::vector&lt;NativeInteger&gt; m_BModqPrecon;</a>
+<a name="1738"><span class="lineNum">    1738 </span>            : </a>
+<a name="1739"><span class="lineNum">    1739 </span>            :     // Stores gamma = 2^26;</a>
+<a name="1740"><span class="lineNum">    1740 </span>            :     uint32_t m_gamma = 1 &lt;&lt; 26;</a>
+<a name="1741"><span class="lineNum">    1741 </span>            : </a>
+<a name="1742"><span class="lineNum">    1742 </span>            :     // TODO: use 64 bit words in case NativeInteger uses smaller word size</a>
+<a name="1743"><span class="lineNum">    1743 </span>            :     // Stores t*gamma on a uint64_t word</a>
+<a name="1744"><span class="lineNum">    1744 </span>            :     NativeInteger m_tgamma;</a>
+<a name="1745"><span class="lineNum">    1745 </span>            : </a>
+<a name="1746"><span class="lineNum">    1746 </span>            :     // Stores [-(q_i)^{-1}]_{t*gamma}</a>
+<a name="1747"><span class="lineNum">    1747 </span>            :     std::vector&lt;NativeInteger&gt; m_negInvqModtgamma;</a>
+<a name="1748"><span class="lineNum">    1748 </span>            :     // Stores NTL precomputations for [-(q_i)^{-1}]_{t*gamma}</a>
+<a name="1749"><span class="lineNum">    1749 </span>            :     std::vector&lt;NativeInteger&gt; m_negInvqModtgammaPrecon;</a>
+<a name="1750"><span class="lineNum">    1750 </span>            : </a>
+<a name="1751"><span class="lineNum">    1751 </span>            :     /////////////////////////////////////</a>
+<a name="1752"><span class="lineNum">    1752 </span>            :     // BFVrns and BGVrns : Multiparty Decryption : ExpandCRTBasis</a>
+<a name="1753"><span class="lineNum">    1753 </span>            :     /////////////////////////////////////</a>
+<a name="1754"><span class="lineNum">    1754 </span>            : </a>
+<a name="1755"><span class="lineNum">    1755 </span>            :     // Stores [*(Q/q_i/q_0)^{-1}]_{q_i}</a>
+<a name="1756"><span class="lineNum">    1756 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_multipartyQHatInvModq;</a>
+<a name="1757"><span class="lineNum">    1757 </span>            : </a>
+<a name="1758"><span class="lineNum">    1758 </span>            :     // Stores NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}</a>
+<a name="1759"><span class="lineNum">    1759 </span>            :     std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; m_multipartyQHatInvModqPrecon;</a>
+<a name="1760"><span class="lineNum">    1760 </span>            : </a>
+<a name="1761"><span class="lineNum">    1761 </span>            :     // Stores [Q/q_i/q_0]_{q_0}</a>
+<a name="1762"><span class="lineNum">    1762 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_multipartyQHatModq0;</a>
+<a name="1763"><span class="lineNum">    1763 </span>            : </a>
+<a name="1764"><span class="lineNum">    1764 </span>            :     // Stores [\alpha*Q/q_0]_{q_0} for 0 &lt;= alpha &lt;= 1</a>
+<a name="1765"><span class="lineNum">    1765 </span>            :     std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt; m_multipartyAlphaQModq0;</a>
+<a name="1766"><span class="lineNum">    1766 </span>            : </a>
+<a name="1767"><span class="lineNum">    1767 </span>            :     // Barrett modulo reduction precomputation for q_0</a>
+<a name="1768"><span class="lineNum">    1768 </span>            :     std::vector&lt;DoubleNativeInt&gt; m_multipartyModq0BarrettMu;</a>
+<a name="1769"><span class="lineNum">    1769 </span>            : </a>
+<a name="1770"><span class="lineNum">    1770 </span>            :     // Stores \frac{1/q_i}</a>
+<a name="1771"><span class="lineNum">    1771 </span>            :     std::vector&lt;double&gt; m_multipartyQInv;</a>
+<a name="1772"><span class="lineNum">    1772 </span>            : </a>
+<a name="1773"><span class="lineNum">    1773 </span>            :     /////////////////////////////////////</a>
+<a name="1774"><span class="lineNum">    1774 </span>            :     // CKKS RNS MultiParty Bootstrapping Parameter</a>
+<a name="1775"><span class="lineNum">    1775 </span>            :     /////////////////////////////////////</a>
+<a name="1776"><span class="lineNum">    1776 </span>            :     COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;</a>
+<a name="1777"><span class="lineNum">    1777 </span>            : </a>
+<a name="1778"><span class="lineNum">    1778 </span>            : public:</a>
+<a name="1779"><span class="lineNum">    1779 </span>            :     /////////////////////////////////////</a>
+<a name="1780"><span class="lineNum">    1780 </span>            :     // SERIALIZATION</a>
+<a name="1781"><span class="lineNum">    1781 </span>            :     /////////////////////////////////////</a>
+<a name="1782"><span class="lineNum">    1782 </span>            : </a>
+<a name="1783"><span class="lineNum">    1783 </span>            :     template &lt;class Archive&gt;</a>
+<a name="1784"><span class="lineNum">    1784 </span><span class="lineCov">        902 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
+<a name="1785"><span class="lineNum">    1785 </span><span class="lineCov">        394 :         ar(cereal::base_class&lt;CryptoParametersRLWE&lt;DCRTPoly&gt;&gt;(this));</span></a>
+<a name="1786"><span class="lineNum">    1786 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;ks&quot;, m_ksTechnique));</span></a>
+<a name="1787"><span class="lineNum">    1787 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;rs&quot;, m_scalTechnique));</span></a>
+<a name="1788"><span class="lineNum">    1788 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;encs&quot;, m_encTechnique));</span></a>
+<a name="1789"><span class="lineNum">    1789 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;muls&quot;, m_multTechnique));</span></a>
+<a name="1790"><span class="lineNum">    1790 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;dnum&quot;, m_numPartQ));</span></a>
+<a name="1791"><span class="lineNum">    1791 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;ab&quot;, m_auxBits));</span></a>
+<a name="1792"><span class="lineNum">    1792 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;eb&quot;, m_extraBits));</span></a>
+<a name="1793"><span class="lineNum">    1793 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;ccl&quot;, m_MPIntBootCiphertextCompressionLevel));</span></a>
+<a name="1794"><span class="lineNum">    1794 </span><span class="lineCov">        902 :     }</span></a>
+<a name="1795"><span class="lineNum">    1795 </span>            : </a>
+<a name="1796"><span class="lineNum">    1796 </span>            :     template &lt;class Archive&gt;</a>
+<a name="1797"><span class="lineNum">    1797 </span><span class="lineCov">        902 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
+<a name="1798"><span class="lineNum">    1798 </span><span class="lineCov">        902 :         if (version &gt; SerializedVersion()) {</span></a>
+<a name="1799"><span class="lineNum">    1799 </span><span class="lineNoCov">          0 :             std::string errMsg(&quot;serialized object version &quot; + std::to_string(version) +</span></a>
+<a name="1800"><span class="lineNum">    1800 </span>            :                                &quot; is from a later version of the library&quot;);</a>
+<a name="1801"><span class="lineNum">    1801 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(errMsg);</span></a>
+<a name="1802"><span class="lineNum">    1802 </span>            :         }</a>
+<a name="1803"><span class="lineNum">    1803 </span><span class="lineCov">        394 :         ar(cereal::base_class&lt;CryptoParametersRLWE&lt;DCRTPoly&gt;&gt;(this));</span></a>
+<a name="1804"><span class="lineNum">    1804 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;ks&quot;, m_ksTechnique));</span></a>
+<a name="1805"><span class="lineNum">    1805 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;rs&quot;, m_scalTechnique));</span></a>
+<a name="1806"><span class="lineNum">    1806 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;encs&quot;, m_encTechnique));</span></a>
+<a name="1807"><span class="lineNum">    1807 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;muls&quot;, m_multTechnique));</span></a>
+<a name="1808"><span class="lineNum">    1808 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;dnum&quot;, m_numPartQ));</span></a>
+<a name="1809"><span class="lineNum">    1809 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;ab&quot;, m_auxBits));</span></a>
+<a name="1810"><span class="lineNum">    1810 </span><span class="lineCov">        902 :         ar(cereal::make_nvp(&quot;eb&quot;, m_extraBits));</span></a>
+<a name="1811"><span class="lineNum">    1811 </span>            :         // try-catch is used for backwards compatibility down to 1.0.x</a>
+<a name="1812"><span class="lineNum">    1812 </span>            :         // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0</a>
+<a name="1813"><span class="lineNum">    1813 </span>            :         try {</a>
+<a name="1814"><span class="lineNum">    1814 </span><span class="lineCov">        902 :             ar(cereal::make_nvp(&quot;ccl&quot;, m_MPIntBootCiphertextCompressionLevel));</span></a>
+<a name="1815"><span class="lineNum">    1815 </span>            :         }</a>
+<a name="1816"><span class="lineNum">    1816 </span><span class="lineNoCov">          0 :         catch (cereal::Exception&amp;) {</span></a>
+<a name="1817"><span class="lineNum">    1817 </span><span class="lineNoCov">          0 :             m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;</span></a>
+<a name="1818"><span class="lineNum">    1818 </span>            :         }</a>
+<a name="1819"><span class="lineNum">    1819 </span><span class="lineCov">        902 :     }</span></a>
+<a name="1820"><span class="lineNum">    1820 </span>            : </a>
+<a name="1821"><span class="lineNum">    1821 </span>            :     std::string SerializedObjectName() const override {</a>
+<a name="1822"><span class="lineNum">    1822 </span>            :         return &quot;SchemeParametersRNS&quot;;</a>
+<a name="1823"><span class="lineNum">    1823 </span>            :     }</a>
+<a name="1824"><span class="lineNum">    1824 </span>            :     static uint32_t SerializedVersion() {</a>
+<a name="1825"><span class="lineNum">    1825 </span>            :         return 1;</a>
+<a name="1826"><span class="lineNum">    1826 </span>            :     }</a>
+<a name="1827"><span class="lineNum">    1827 </span>            : };</a>
+<a name="1828"><span class="lineNum">    1828 </span>            : </a>
+<a name="1829"><span class="lineNum">    1829 </span>            : }  // namespace lbcrypto</a>
+<a name="1830"><span class="lineNum">    1830 </span>            : </a>
+<a name="1831"><span class="lineNum">    1831 </span>            : #endif</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - src/pke/unittest/utbgvrns/UnitTestBGVrnsAutomorphism.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">src/pke/unittest/utbgvrns</a> - UnitTestBGVrnsAutomorphism.cpp<span style="font-size: 80%;"> (source / <a href="UnitTestBGVrnsAutomorphism.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">144</td>
+            <td class="headerCovTableEntry">168</td>
+            <td class="headerCovTableEntryMed">85.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 18:46:08</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : #include &quot;BaseTestCase.h&quot;</a>
+<a name="32"><span class="lineNum">      32 </span>            : #include &quot;UnitTestReadCSVData.h&quot;</a>
+<a name="33"><span class="lineNum">      33 </span>            : #include &quot;UnitTestUtils.h&quot;</a>
+<a name="34"><span class="lineNum">      34 </span>            : #include &quot;UnitTestCCParams.h&quot;</a>
+<a name="35"><span class="lineNum">      35 </span>            : #include &quot;UnitTestCryptoContext.h&quot;</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : #include &lt;iostream&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : #include &lt;vector&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : #include &lt;unordered_map&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : #include &quot;gtest/gtest.h&quot;</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : using namespace lbcrypto;</a>
+<a name="43"><span class="lineNum">      43 </span>            : class Params;</a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            : //===========================================================================================================</a>
+<a name="46"><span class="lineNum">      46 </span>            : enum TEST_CASE_TYPE {</a>
+<a name="47"><span class="lineNum">      47 </span>            :     BGVRNS_AUTOMORPHISM = 0,</a>
+<a name="48"><span class="lineNum">      48 </span>            :     EVAL_AT_INDX_PACKED_ARRAY,</a>
+<a name="49"><span class="lineNum">      49 </span>            :     EVAL_SUM_PACKED_ARRAY,</a>
+<a name="50"><span class="lineNum">      50 </span>            : };</a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">         68 : TEST_CASE_TYPE convertStringToCaseType(const std::string&amp; str) {</span></a>
+<a name="52"><span class="lineNum">      52 </span>            :     const std::unordered_map&lt;std::string, TEST_CASE_TYPE&gt; stringToCaseType = {</a>
+<a name="53"><span class="lineNum">      53 </span>            :         {&quot;BGVRNS_AUTOMORPHISM&quot;, BGVRNS_AUTOMORPHISM},</a>
+<a name="54"><span class="lineNum">      54 </span>            :         {&quot;EVAL_AT_INDX_PACKED_ARRAY&quot;, EVAL_AT_INDX_PACKED_ARRAY},</a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">        340 :         {&quot;EVAL_SUM_PACKED_ARRAY&quot;, EVAL_SUM_PACKED_ARRAY}};</span></a>
+<a name="56"><span class="lineNum">      56 </span>            :     auto search = stringToCaseType.find(str);</a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">         68 :     if (stringToCaseType.end() != search) {</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">         68 :         return search-&gt;second;</span></a>
+<a name="59"><span class="lineNum">      59 </span>            :     }</a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineNoCov">          0 :     OPENFHE_THROW(std::string(&quot;Can not convert &quot;) + str + &quot;to test case&quot;);</span></a>
+<a name="61"><span class="lineNum">      61 </span>            : }</a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">        204 : static std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const TEST_CASE_TYPE&amp; type) {</span></a>
+<a name="63"><span class="lineNum">      63 </span>            :     const std::unordered_map&lt;TEST_CASE_TYPE, std::string&gt; caseTypeToString = {</a>
+<a name="64"><span class="lineNum">      64 </span>            :         {BGVRNS_AUTOMORPHISM, &quot;BGVRNS_AUTOMORPHISM&quot;},</a>
+<a name="65"><span class="lineNum">      65 </span>            :         {EVAL_AT_INDX_PACKED_ARRAY, &quot;EVAL_AT_INDX_PACKED_ARRAY&quot;},</a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">       1020 :         {EVAL_SUM_PACKED_ARRAY, &quot;EVAL_SUM_PACKED_ARRAY&quot;}};</span></a>
+<a name="67"><span class="lineNum">      67 </span>            :     auto search = caseTypeToString.find(type);</a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">        204 :     if (caseTypeToString.end() != search) {</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">        204 :         return os &lt;&lt; search-&gt;second;</span></a>
+<a name="70"><span class="lineNum">      70 </span>            :     }</a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineNoCov">          0 :     OPENFHE_THROW(&quot;Unknown test case&quot;);</span></a>
+<a name="72"><span class="lineNum">      72 </span>            : }</a>
+<a name="73"><span class="lineNum">      73 </span>            : //===========================================================================================================</a>
+<a name="74"><span class="lineNum">      74 </span>            : enum TEST_CASE_ERROR {</a>
+<a name="75"><span class="lineNum">      75 </span>            :     SUCCESS = 0,</a>
+<a name="76"><span class="lineNum">      76 </span>            :     CORNER_CASES,</a>
+<a name="77"><span class="lineNum">      77 </span>            :     INVALID_INPUT_DATA,</a>
+<a name="78"><span class="lineNum">      78 </span>            :     INVALID_PRIVATE_KEY,</a>
+<a name="79"><span class="lineNum">      79 </span>            :     INVALID_PUBLIC_KEY,</a>
+<a name="80"><span class="lineNum">      80 </span>            :     INVALID_EVAL_KEY,</a>
+<a name="81"><span class="lineNum">      81 </span>            :     INVALID_INDEX,</a>
+<a name="82"><span class="lineNum">      82 </span>            :     INVALID_BATCH_SIZE,</a>
+<a name="83"><span class="lineNum">      83 </span>            :     NO_KEY_GEN_CALL</a>
+<a name="84"><span class="lineNum">      84 </span>            : };</a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">         68 : TEST_CASE_ERROR convertStringToCaseError(const std::string&amp; str) {</span></a>
+<a name="86"><span class="lineNum">      86 </span>            :     std::unordered_map&lt;std::string, TEST_CASE_ERROR&gt; stringToError = {</a>
+<a name="87"><span class="lineNum">      87 </span>            :         {&quot;SUCCESS&quot;, SUCCESS},</a>
+<a name="88"><span class="lineNum">      88 </span>            :         {&quot;CORNER_CASES&quot;, CORNER_CASES},</a>
+<a name="89"><span class="lineNum">      89 </span>            :         {&quot;INVALID_INPUT_DATA&quot;, INVALID_INPUT_DATA},</a>
+<a name="90"><span class="lineNum">      90 </span>            :         {&quot;INVALID_PRIVATE_KEY&quot;, INVALID_PRIVATE_KEY},</a>
+<a name="91"><span class="lineNum">      91 </span>            :         {&quot;INVALID_PUBLIC_KEY&quot;, INVALID_PUBLIC_KEY},</a>
+<a name="92"><span class="lineNum">      92 </span>            :         {&quot;INVALID_EVAL_KEY&quot;, INVALID_EVAL_KEY},</a>
+<a name="93"><span class="lineNum">      93 </span>            :         {&quot;INVALID_INDEX&quot;, INVALID_INDEX},</a>
+<a name="94"><span class="lineNum">      94 </span>            :         {&quot;INVALID_BATCH_SIZE&quot;, INVALID_BATCH_SIZE},</a>
+<a name="95"><span class="lineNum">      95 </span>            :         {&quot;NO_KEY_GEN_CALL&quot;, NO_KEY_GEN_CALL},</a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">        748 :     };</span></a>
+<a name="97"><span class="lineNum">      97 </span>            :     auto search = stringToError.find(str);</a>
+<a name="98"><span class="lineNum">      98 </span><span class="lineCov">         68 :     if (stringToError.end() != search) {</span></a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">         68 :         return search-&gt;second;</span></a>
+<a name="100"><span class="lineNum">     100 </span>            :     }</a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :     OPENFHE_THROW(std::string(&quot;Can not convert &quot;) + str + &quot;to test case error&quot;);</span></a>
+<a name="102"><span class="lineNum">     102 </span>            : }</a>
+<a name="103"><span class="lineNum">     103 </span>            : //===========================================================================================================</a>
+<a name="104"><span class="lineNum">     104 </span>            : struct TEST_CASE_UTBGVRNS_AUTOMORPHISM : public BaseTestCase {</a>
+<a name="105"><span class="lineNum">     105 </span>            :     TEST_CASE_TYPE testCaseType;</a>
+<a name="106"><span class="lineNum">     106 </span>            :     // test case description - MUST BE UNIQUE</a>
+<a name="107"><span class="lineNum">     107 </span>            :     std::string description;</a>
+<a name="108"><span class="lineNum">     108 </span>            : </a>
+<a name="109"><span class="lineNum">     109 </span>            :     // additional test case data</a>
+<a name="110"><span class="lineNum">     110 </span>            :     TEST_CASE_ERROR error;</a>
+<a name="111"><span class="lineNum">     111 </span>            :     std::vector&lt;uint32_t&gt; indexList;</a>
+<a name="112"><span class="lineNum">     112 </span>            : </a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineCov">        136 :     std::string buildTestName() const {</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">        272 :         std::stringstream ss;</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">        136 :         ss &lt;&lt; testCaseType &lt;&lt; &quot;_&quot; &lt;&lt; description;</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">        136 :         return ss.str();</span></a>
+<a name="117"><span class="lineNum">     117 </span>            :     }</a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">         68 :     std::string toString() const {</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">        136 :         std::stringstream ss;</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">         68 :         ss &lt;&lt; &quot;[testCase: &quot; &lt;&lt; testCaseType &lt;&lt; &quot;], [description: &quot; &lt;&lt; description</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">         68 :            &lt;&lt; &quot;], [params: &quot; &lt;&lt; getCryptoContextParamOverrides() &lt;&lt; &quot;], [error: &quot; &lt;&lt; error</span></a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineCov">        136 :            &lt;&lt; &quot;], [indexList: &quot; &lt;&lt; indexList &lt;&lt; &quot;] &quot;;</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">         68 :         return ss.str();</span></a>
+<a name="124"><span class="lineNum">     124 </span>            :     }</a>
+<a name="125"><span class="lineNum">     125 </span>            : };</a>
+<a name="126"><span class="lineNum">     126 </span>            : </a>
+<a name="127"><span class="lineNum">     127 </span>            : // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.</a>
+<a name="128"><span class="lineNum">     128 </span>            : // the name MUST be constructed from digits, letters and '_' only</a>
+<a name="129"><span class="lineNum">     129 </span>            : static auto testName = [](const testing::TestParamInfo&lt;TEST_CASE_UTBGVRNS_AUTOMORPHISM&gt;&amp; testParamInfo) {</a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineCov">         68 :     return testParamInfo.param.buildTestName();</span></a>
+<a name="131"><span class="lineNum">     131 </span>            : };</a>
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">         68 : static std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const TEST_CASE_UTBGVRNS_AUTOMORPHISM&amp; test) {</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">        136 :     return os &lt;&lt; test.toString();</span></a>
+<a name="135"><span class="lineNum">     135 </span>            : }</a>
+<a name="136"><span class="lineNum">     136 </span>            : //===========================================================================================================</a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">          1 : std::vector&lt;TEST_CASE_UTBGVRNS_AUTOMORPHISM&gt; getTestData(std::string fileName) {</span></a>
+<a name="138"><span class="lineNum">     138 </span>            :     // TODO: add a new test data file for NATIVEINT == 128</a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">          1 :     std::string testDataFileName(createDataFileName(fileName));</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">          2 :     std::vector&lt;std::vector&lt;std::string&gt;&gt; fileRows(readDataFile(testDataFileName));</span></a>
+<a name="141"><span class="lineNum">     141 </span>            :     size_t numRows = fileRows.size();</a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span>            :     std::vector&lt;TEST_CASE_UTBGVRNS_AUTOMORPHISM&gt; allData;</a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">          1 :     allData.reserve(numRows);</span></a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineCov">         69 :     for (const std::vector&lt;std::string&gt;&amp; vec : fileRows) {</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">         68 :         TEST_CASE_UTBGVRNS_AUTOMORPHISM testCase;</span></a>
+<a name="148"><span class="lineNum">     148 </span>            : </a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineCov">         68 :         auto it               = vec.begin();</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">         68 :         testCase.testCaseType = convertStringToCaseType(*it);</span></a>
+<a name="151"><span class="lineNum">     151 </span>            :         testCase.description  = *(++it);</a>
+<a name="152"><span class="lineNum">     152 </span>            : </a>
+<a name="153"><span class="lineNum">     153 </span>            :         // size_t numOverrides = testCase.populateCryptoContextParams(++it);</a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">         68 :         size_t numOverrides = testCase.setCryptoContextParamsOverrides(++it);</span></a>
+<a name="155"><span class="lineNum">     155 </span>            : </a>
+<a name="156"><span class="lineNum">     156 </span>            :         it += numOverrides;</a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">         68 :         if (it != vec.end()) {</span></a>
+<a name="158"><span class="lineNum">     158 </span>            :             // process TEST_CASE_ERROR</a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">         68 :             testCase.error = convertStringToCaseError(*it);</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">         68 :             if (++it != vec.end()) {</span></a>
+<a name="161"><span class="lineNum">     161 </span>            :                 // process list of indices</a>
+<a name="162"><span class="lineNum">     162 </span>            :                 std::string indexListStr(*it);</a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">         48 :                 if (!isEmpty(indexListStr)) {</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineCov">         96 :                     std::vector&lt;std::string&gt; indices = tokenize(indexListStr, '|');</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">        360 :                     for (std::string&amp; i : indices) {</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">        312 :                         testCase.indexList.push_back(static_cast&lt;uint32_t&gt;(std::stoul(i)));</span></a>
+<a name="167"><span class="lineNum">     167 </span>            :                     }</a>
+<a name="168"><span class="lineNum">     168 </span>            :                 }</a>
+<a name="169"><span class="lineNum">     169 </span>            :             }</a>
+<a name="170"><span class="lineNum">     170 </span>            :         }</a>
+<a name="171"><span class="lineNum">     171 </span>            : </a>
+<a name="172"><span class="lineNum">     172 </span>            :         allData.push_back(std::move(testCase));</a>
+<a name="173"><span class="lineNum">     173 </span>            :     }</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">          1 :     return allData;</span></a>
+<a name="175"><span class="lineNum">     175 </span>            : }</a>
+<a name="176"><span class="lineNum">     176 </span>            : //===========================================================================================================</a>
+<a name="177"><span class="lineNum">     177 </span>            : static std::vector&lt;TEST_CASE_UTBGVRNS_AUTOMORPHISM&gt; testCasesUTBGVRNS_AUTOMORPHISM = getTestData(__FILE__);</a>
+<a name="178"><span class="lineNum">     178 </span>            : //===========================================================================================================</a>
+<a name="179"><span class="lineNum">     179 </span>            : </a>
+<a name="180"><span class="lineNum">     180 </span>            : class UTBGVRNS_AUTOMORPHISM : public ::testing::TestWithParam&lt;TEST_CASE_UTBGVRNS_AUTOMORPHISM&gt; {</a>
+<a name="181"><span class="lineNum">     181 </span>            :     using Element    = DCRTPoly;</a>
+<a name="182"><span class="lineNum">     182 </span>            :     const double eps = EPSILON;</a>
+<a name="183"><span class="lineNum">     183 </span>            : </a>
+<a name="184"><span class="lineNum">     184 </span>            :     const std::vector&lt;int64_t&gt; vector8{1, 2, 3, 4, 5, 6, 7, 8};</a>
+<a name="185"><span class="lineNum">     185 </span>            :     const std::vector&lt;int64_t&gt; vectorFailure{1, 2, 3, 4};</a>
+<a name="186"><span class="lineNum">     186 </span>            :     const usint invalidIndexAutomorphism = 4;</a>
+<a name="187"><span class="lineNum">     187 </span>            :     const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36</a>
+<a name="188"><span class="lineNum">     188 </span>            : </a>
+<a name="189"><span class="lineNum">     189 </span>            : protected:</a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">         68 :     void SetUp() {}</span></a>
+<a name="191"><span class="lineNum">     191 </span>            : </a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">         68 :     void TearDown() {</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov">         68 :         PackedEncoding::Destroy();</span></a>
+<a name="194"><span class="lineNum">     194 </span>            :         CryptoContextFactory&lt;DCRTPoly&gt;::ReleaseAllContexts();</a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">         68 :     }</span></a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineCov">         24 :     void UnitTest_AutomorphismPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM&amp; testData,</span></a>
+<a name="198"><span class="lineNum">     198 </span>            :                                           const std::string&amp; failmsg = std::string()) {</a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineCov">        192 :         for (auto index : testData.indexList) {</span></a>
+<a name="200"><span class="lineNum">     200 </span>            :             try {</a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">        168 :                 CryptoContext&lt;Element&gt; cc(UnitTestGenerateContext(testData));</span></a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span>            :                 // Initialize the public key containers.</a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">        336 :                 KeyPair&lt;Element&gt; kp = cc-&gt;KeyGen();</span></a>
+<a name="205"><span class="lineNum">     205 </span>            : </a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">        168 :                 index                         = (INVALID_INDEX == testData.error) ? invalidIndexAutomorphism : index;</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">        168 :                 std::vector&lt;int64_t&gt; inputVec = (INVALID_INPUT_DATA == testData.error) ? vectorFailure : vector8;</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineCov">        168 :                 Plaintext intArray            = cc-&gt;MakePackedPlaintext(inputVec);</span></a>
+<a name="209"><span class="lineNum">     209 </span>            : </a>
+<a name="210"><span class="lineNum">     210 </span>            :                 Ciphertext&lt;Element&gt; ciphertext =</a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">        168 :                     (INVALID_PUBLIC_KEY == testData.error) ?</span></a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">        336 :                         cc-&gt;Encrypt(static_cast&lt;const PublicKey&lt;Element&gt;&gt;(nullptr), intArray) :</span></a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineCov">        812 :                         cc-&gt;Encrypt(kp.publicKey, intArray);</span></a>
+<a name="214"><span class="lineNum">     214 </span>            : </a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">        140 :                 std::vector&lt;usint&gt; indexList(testData.indexList);</span></a>
+<a name="216"><span class="lineNum">     216 </span>            : </a>
+<a name="217"><span class="lineNum">     217 </span>            :                 auto evalKeys =</a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">        140 :                     (INVALID_PRIVATE_KEY == testData.error) ?</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">        196 :                         cc-&gt;EvalAutomorphismKeyGen(static_cast&lt;const PrivateKey&lt;Element&gt;&gt;(nullptr), indexList) :</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">        392 :                         cc-&gt;EvalAutomorphismKeyGen(kp.secretKey, indexList);</span></a>
+<a name="221"><span class="lineNum">     221 </span>            : </a>
+<a name="222"><span class="lineNum">     222 </span>            :                 std::map&lt;usint, EvalKey&lt;Element&gt;&gt; emptyEvalKeys;</a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">        112 :                 Ciphertext&lt;Element&gt; p1 = (INVALID_EVAL_KEY == testData.error) ?</span></a>
+<a name="224"><span class="lineNum">     224 </span>            :                                              cc-&gt;EvalAutomorphism(ciphertext, index, emptyEvalKeys) :</a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">        392 :                                              cc-&gt;EvalAutomorphism(ciphertext, index, *evalKeys);</span></a>
+<a name="226"><span class="lineNum">     226 </span>            : </a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">         56 :                 Plaintext intArrayNew;</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">        112 :                 cc-&gt;Decrypt(kp.secretKey, p1, &amp;intArrayNew);</span></a>
+<a name="229"><span class="lineNum">     229 </span>            : </a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">        112 :                 std::string errMsg(&quot; for index[&quot; + std::to_string(index) + &quot;]&quot;);</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineCov">         56 :                 switch (testData.error) {</span></a>
+<a name="232"><span class="lineNum">     232 </span>            :                     case SUCCESS:</a>
+<a name="233"><span class="lineNum">     233 </span>            :                         // should not fail</a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineCov">         28 :                         EXPECT_TRUE(CheckAutomorphism(intArrayNew-&gt;GetPackedValue(), vector8)) &lt;&lt; errMsg;</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineCov">         28 :                         break;</span></a>
+<a name="236"><span class="lineNum">     236 </span>            :                     case INVALID_INPUT_DATA:</a>
+<a name="237"><span class="lineNum">     237 </span>            :                         // should fail</a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineCov">         28 :                         EXPECT_FALSE(CheckAutomorphism(intArrayNew-&gt;GetPackedValue(), vector8)) &lt;&lt; errMsg;</span></a>
+<a name="239"><span class="lineNum">     239 </span><span class="lineCov">         28 :                         break;</span></a>
+<a name="240"><span class="lineNum">     240 </span>            :                     default:</a>
+<a name="241"><span class="lineNum">     241 </span>            :                         // make it fail</a>
+<a name="242"><span class="lineNum">     242 </span>            :                         std::cerr &lt;&lt; __func__ &lt;&lt; &quot; failed &quot; &lt;&lt; errMsg &lt;&lt; std::endl;</a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineNoCov">          0 :                         EXPECT_EQ(0, 1);</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="245"><span class="lineNum">     245 </span>            :                 }</a>
+<a name="246"><span class="lineNum">     246 </span>            :             }</a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov">        224 :             catch (std::exception&amp; e) {</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">        112 :                 switch (testData.error) {</span></a>
+<a name="249"><span class="lineNum">     249 </span>            :                     case SUCCESS:</a>
+<a name="250"><span class="lineNum">     250 </span>            :                     case INVALID_INPUT_DATA:</a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineNoCov">          0 :                         std::cerr &lt;&lt; &quot;Exception thrown from &quot; &lt;&lt; __func__ &lt;&lt; &quot;(): &quot; &lt;&lt; e.what() &lt;&lt; std::endl;</span></a>
+<a name="252"><span class="lineNum">     252 </span>            :                         // make it fail</a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :                         EXPECT_EQ(0, 1);</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="255"><span class="lineNum">     255 </span>            :                     default:</a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineCov">        112 :                         EXPECT_EQ(1, 1);</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineCov">        112 :                         break;</span></a>
+<a name="258"><span class="lineNum">     258 </span>            :                 }</a>
+<a name="259"><span class="lineNum">     259 </span>            :             }</a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineNoCov">          0 :             catch (...) {</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineNoCov">          0 :                 UNIT_TEST_HANDLE_ALL_EXCEPTIONS;</span></a>
+<a name="262"><span class="lineNum">     262 </span>            :             }</a>
+<a name="263"><span class="lineNum">     263 </span>            :         }</a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineCov">         24 :     }</span></a>
+<a name="265"><span class="lineNum">     265 </span>            : </a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineCov">         24 :     void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM&amp; testData,</span></a>
+<a name="267"><span class="lineNum">     267 </span>            :                                          const std::string&amp; failmsg = std::string()) {</a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">        168 :         for (auto index : testData.indexList) {</span></a>
+<a name="269"><span class="lineNum">     269 </span>            :             try {</a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">        144 :                 CryptoContext&lt;Element&gt; cc(UnitTestGenerateContext(testData));</span></a>
+<a name="271"><span class="lineNum">     271 </span>            : </a>
+<a name="272"><span class="lineNum">     272 </span>            :                 // Initialize the public key containers.</a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineCov">        288 :                 KeyPair&lt;Element&gt; kp = cc-&gt;KeyGen();</span></a>
+<a name="274"><span class="lineNum">     274 </span>            : </a>
+<a name="275"><span class="lineNum">     275 </span><span class="lineCov">        144 :                 std::vector&lt;int64_t&gt; inputVec = (INVALID_INPUT_DATA == testData.error) ? vectorFailure : vector8;</span></a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineCov">        144 :                 Plaintext intArray            = cc-&gt;MakePackedPlaintext(inputVec);</span></a>
+<a name="277"><span class="lineNum">     277 </span>            : </a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineCov">        144 :                 if (NO_KEY_GEN_CALL != testData.error) {</span></a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineCov">        116 :                     std::vector&lt;int32_t&gt; indices{(int32_t)index, (int32_t)-index};</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">        116 :                     if (INVALID_PRIVATE_KEY == testData.error)</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">         56 :                         cc-&gt;EvalAtIndexKeyGen(static_cast&lt;const PrivateKey&lt;Element&gt;&gt;(nullptr), indices);</span></a>
+<a name="282"><span class="lineNum">     282 </span>            :                     else</a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineCov">        204 :                         cc-&gt;EvalAtIndexKeyGen(kp.secretKey, indices);</span></a>
+<a name="284"><span class="lineNum">     284 </span>            :                 }</a>
+<a name="285"><span class="lineNum">     285 </span>            : </a>
+<a name="286"><span class="lineNum">     286 </span>            :                 Ciphertext&lt;Element&gt; ciphertext =</a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">        116 :                     (INVALID_PUBLIC_KEY == testData.error) ?</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineCov">        232 :                         cc-&gt;Encrypt(static_cast&lt;const PublicKey&lt;Element&gt;&gt;(nullptr), intArray) :</span></a>
+<a name="289"><span class="lineNum">     289 </span><span class="lineCov">        576 :                         cc-&gt;Encrypt(kp.publicKey, intArray);</span></a>
+<a name="290"><span class="lineNum">     290 </span>            : </a>
+<a name="291"><span class="lineNum">     291 </span><span class="lineCov">         88 :                 if (INVALID_INDEX == testData.error)</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineNoCov">          0 :                     index = invalidIndexAutomorphism;</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineCov">        176 :                 Ciphertext&lt;Element&gt; p1 = cc-&gt;EvalAtIndex(ciphertext, index);</span></a>
+<a name="294"><span class="lineNum">     294 </span><span class="lineCov">         60 :                 Ciphertext&lt;Element&gt; p2 = cc-&gt;EvalAtIndex(p1, -index);</span></a>
+<a name="295"><span class="lineNum">     295 </span>            : </a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">         60 :                 Plaintext intArrayNew;</span></a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineCov">        180 :                 cc-&gt;Decrypt(kp.secretKey, p2, &amp;intArrayNew);</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineCov">         60 :                 intArrayNew-&gt;SetLength(inputVec.size());</span></a>
+<a name="299"><span class="lineNum">     299 </span>            : </a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineCov">        120 :                 std::string errMsg(&quot; for index[&quot; + std::to_string(index) + &quot;]&quot;);</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineCov">         60 :                 switch (testData.error) {</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">         32 :                     case SUCCESS:</span></a>
+<a name="303"><span class="lineNum">     303 </span>            :                     case CORNER_CASES:</a>
+<a name="304"><span class="lineNum">     304 </span>            :                         // should not fail</a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineCov">         32 :                         checkEquality(intArrayNew-&gt;GetPackedValue(), vector8, eps, errMsg);</span></a>
+<a name="306"><span class="lineNum">     306 </span>            :                         break;</a>
+<a name="307"><span class="lineNum">     307 </span>            :                     case INVALID_INPUT_DATA:</a>
+<a name="308"><span class="lineNum">     308 </span>            :                         // should fail</a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">         56 :                         EXPECT_FALSE(checkEquality(intArrayNew-&gt;GetPackedValue(), vector8)) &lt;&lt; errMsg;</span></a>
+<a name="310"><span class="lineNum">     310 </span><span class="lineCov">         28 :                         break;</span></a>
+<a name="311"><span class="lineNum">     311 </span>            :                     default:</a>
+<a name="312"><span class="lineNum">     312 </span>            :                         // make it fail</a>
+<a name="313"><span class="lineNum">     313 </span>            :                         std::cerr &lt;&lt; __func__ &lt;&lt; &quot; failed &quot; &lt;&lt; errMsg &lt;&lt; std::endl;</a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineNoCov">          0 :                         EXPECT_EQ(0, 1);</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="316"><span class="lineNum">     316 </span>            :                 }</a>
+<a name="317"><span class="lineNum">     317 </span>            :             }</a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">        168 :             catch (std::exception&amp; e) {</span></a>
+<a name="319"><span class="lineNum">     319 </span><span class="lineCov">         84 :                 switch (testData.error) {</span></a>
+<a name="320"><span class="lineNum">     320 </span>            :                     case SUCCESS:</a>
+<a name="321"><span class="lineNum">     321 </span>            :                     case CORNER_CASES:</a>
+<a name="322"><span class="lineNum">     322 </span>            :                     case INVALID_INPUT_DATA:</a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineNoCov">          0 :                         std::cerr &lt;&lt; &quot;Exception thrown from &quot; &lt;&lt; __func__ &lt;&lt; &quot;(): &quot; &lt;&lt; e.what() &lt;&lt; std::endl;</span></a>
+<a name="324"><span class="lineNum">     324 </span>            :                         // make it fail</a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineNoCov">          0 :                         EXPECT_EQ(0, 1);</span></a>
+<a name="326"><span class="lineNum">     326 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="327"><span class="lineNum">     327 </span>            :                     default:</a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov">         84 :                         EXPECT_EQ(1, 1);</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineCov">         84 :                         break;</span></a>
+<a name="330"><span class="lineNum">     330 </span>            :                 }</a>
+<a name="331"><span class="lineNum">     331 </span>            :             }</a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :             catch (...) {</span></a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineNoCov">          0 :                 UNIT_TEST_HANDLE_ALL_EXCEPTIONS;</span></a>
+<a name="334"><span class="lineNum">     334 </span>            :             }</a>
+<a name="335"><span class="lineNum">     335 </span>            :         }</a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineCov">         24 :     }</span></a>
+<a name="337"><span class="lineNum">     337 </span>            : </a>
+<a name="338"><span class="lineNum">     338 </span><span class="lineCov">         20 :     void UnitTest_EvalSumPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM&amp; testData,</span></a>
+<a name="339"><span class="lineNum">     339 </span>            :                                      const std::string&amp; failmsg = std::string()) {</a>
+<a name="340"><span class="lineNum">     340 </span>            :         try {</a>
+<a name="341"><span class="lineNum">     341 </span><span class="lineCov">         20 :             CryptoContext&lt;Element&gt; cc(UnitTestGenerateContext(testData));</span></a>
+<a name="342"><span class="lineNum">     342 </span>            : </a>
+<a name="343"><span class="lineNum">     343 </span>            :             // Initialize the public key containers.</a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineCov">         40 :             KeyPair&lt;Element&gt; kp = cc-&gt;KeyGen();</span></a>
+<a name="345"><span class="lineNum">     345 </span>            : </a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineCov">         20 :             std::vector&lt;int64_t&gt; inputVec = vector8;</span></a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineCov">         20 :             Plaintext intArray            = cc-&gt;MakePackedPlaintext(inputVec);</span></a>
+<a name="348"><span class="lineNum">     348 </span>            : </a>
+<a name="349"><span class="lineNum">     349 </span><span class="lineCov">         20 :             if (NO_KEY_GEN_CALL != testData.error) {</span></a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">         16 :                 if (INVALID_PRIVATE_KEY == testData.error)</span></a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineCov">          8 :                     cc-&gt;EvalSumKeyGen(static_cast&lt;const PrivateKey&lt;Element&gt;&gt;(nullptr));</span></a>
+<a name="352"><span class="lineNum">     352 </span>            :                 else</a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineCov">         24 :                     cc-&gt;EvalSumKeyGen(kp.secretKey);</span></a>
+<a name="354"><span class="lineNum">     354 </span>            :             }</a>
+<a name="355"><span class="lineNum">     355 </span>            : </a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineCov">         16 :             Ciphertext&lt;Element&gt; ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?</span></a>
+<a name="357"><span class="lineNum">     357 </span><span class="lineCov">         32 :                                                  cc-&gt;Encrypt(static_cast&lt;const PublicKey&lt;Element&gt;&gt;(nullptr), intArray) :</span></a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">         84 :                                                  cc-&gt;Encrypt(kp.publicKey, intArray);</span></a>
+<a name="359"><span class="lineNum">     359 </span>            : </a>
+<a name="360"><span class="lineNum">     360 </span>            :             uint32_t batchSize     = 8;</a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineCov">         12 :             uint32_t batchSz       = (INVALID_BATCH_SIZE == testData.error) ? (batchSize * 1000) : batchSize;</span></a>
+<a name="362"><span class="lineNum">     362 </span><span class="lineCov">         20 :             Ciphertext&lt;Element&gt; p1 = cc-&gt;EvalSum(ciphertext, batchSz);</span></a>
+<a name="363"><span class="lineNum">     363 </span>            : </a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineCov">          4 :             Plaintext intArrayNew;</span></a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineCov">          8 :             cc-&gt;Decrypt(kp.secretKey, p1, &amp;intArrayNew);</span></a>
+<a name="366"><span class="lineNum">     366 </span>            : </a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">          4 :             switch (testData.error) {</span></a>
+<a name="368"><span class="lineNum">     368 </span>            :                 case SUCCESS:</a>
+<a name="369"><span class="lineNum">     369 </span>            :                     // should not fail</a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineCov">          4 :                     EXPECT_TRUE(checkEquality(intArrayNew-&gt;GetPackedValue()[0], vector8Sum));</span></a>
+<a name="371"><span class="lineNum">     371 </span><span class="lineCov">          4 :                     break;</span></a>
+<a name="372"><span class="lineNum">     372 </span>            :                 default:</a>
+<a name="373"><span class="lineNum">     373 </span>            :                     // make it fail</a>
+<a name="374"><span class="lineNum">     374 </span>            :                     std::cerr &lt;&lt; __func__ &lt;&lt; &quot; failed&quot; &lt;&lt; std::endl;</a>
+<a name="375"><span class="lineNum">     375 </span><span class="lineNoCov">          0 :                     EXPECT_EQ(0, 1);</span></a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineNoCov">          0 :                     break;</span></a>
+<a name="377"><span class="lineNum">     377 </span>            :             }</a>
+<a name="378"><span class="lineNum">     378 </span>            :         }</a>
+<a name="379"><span class="lineNum">     379 </span><span class="lineCov">         32 :         catch (std::exception&amp; e) {</span></a>
+<a name="380"><span class="lineNum">     380 </span><span class="lineCov">         16 :             if (SUCCESS == testData.error) {</span></a>
+<a name="381"><span class="lineNum">     381 </span><span class="lineNoCov">          0 :                 std::cerr &lt;&lt; &quot;Exception thrown from &quot; &lt;&lt; __func__ &lt;&lt; &quot;(): &quot; &lt;&lt; e.what() &lt;&lt; std::endl;</span></a>
+<a name="382"><span class="lineNum">     382 </span>            :                 // make it fail</a>
+<a name="383"><span class="lineNum">     383 </span><span class="lineNoCov">          0 :                 EXPECT_EQ(0, 1);</span></a>
+<a name="384"><span class="lineNum">     384 </span>            :             }</a>
+<a name="385"><span class="lineNum">     385 </span>            :             else</a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineCov">         16 :                 EXPECT_EQ(1, 1);</span></a>
+<a name="387"><span class="lineNum">     387 </span>            :         }</a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineNoCov">          0 :         catch (...) {</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineNoCov">          0 :             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;</span></a>
+<a name="390"><span class="lineNum">     390 </span>            :         }</a>
+<a name="391"><span class="lineNum">     391 </span><span class="lineCov">         20 :     }</span></a>
+<a name="392"><span class="lineNum">     392 </span>            : };</a>
+<a name="393"><span class="lineNum">     393 </span>            : </a>
+<a name="394"><span class="lineNum">     394 </span>            : //===========================================================================================================</a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineCov">        140 : TEST_P(UTBGVRNS_AUTOMORPHISM, Automorphism) {</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineCov">         68 :     setupSignals();</span></a>
+<a name="397"><span class="lineNum">     397 </span><span class="lineCov">        136 :     auto test = GetParam();</span></a>
+<a name="398"><span class="lineNum">     398 </span>            : </a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineCov">         68 :     switch (test.testCaseType) {</span></a>
+<a name="400"><span class="lineNum">     400 </span><span class="lineCov">         24 :         case BGVRNS_AUTOMORPHISM:</span></a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">         24 :             UnitTest_AutomorphismPackedArray(test, test.buildTestName());</span></a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineCov">         24 :             break;</span></a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineCov">         24 :         case EVAL_AT_INDX_PACKED_ARRAY:</span></a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineCov">         24 :             UnitTest_EvalAtIndexPackedArray(test, test.buildTestName());</span></a>
+<a name="405"><span class="lineNum">     405 </span><span class="lineCov">         24 :             break;</span></a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineCov">         20 :         case EVAL_SUM_PACKED_ARRAY:</span></a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineCov">         20 :             UnitTest_EvalSumPackedArray(test, test.buildTestName());</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineCov">         20 :             break;</span></a>
+<a name="409"><span class="lineNum">     409 </span>            :         default:</a>
+<a name="410"><span class="lineNum">     410 </span>            :             break;</a>
+<a name="411"><span class="lineNum">     411 </span>            :     }</a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">         68 : }</span></a>
+<a name="413"><span class="lineNum">     413 </span>            : </a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">         69 : INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTBGVRNS_AUTOMORPHISM),</span></a>
+<a name="415"><span class="lineNum">     415 </span>            :                          testName);</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

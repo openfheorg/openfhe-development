@@ -1,0 +1,1679 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - src/core/include/lattice/hal/dcrtpoly-interface.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">src/core/include/lattice/hal</a> - dcrtpoly-interface.h<span style="font-size: 80%;"> (source / <a href="dcrtpoly-interface.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">61</td>
+            <td class="headerCovTableEntryLo">31.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 18:46:08</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntryLo">17.4 %</td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : /*</a>
+<a name="33"><span class="lineNum">      33 </span>            :   Defines an interface that any DCRT Polynomial implmentation must implement in order to work in OpenFHE.</a>
+<a name="34"><span class="lineNum">      34 </span>            :  */</a>
+<a name="35"><span class="lineNum">      35 </span>            : </a>
+<a name="36"><span class="lineNum">      36 </span>            : #ifndef LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H</a>
+<a name="37"><span class="lineNum">      37 </span>            : #define LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H</a>
+<a name="38"><span class="lineNum">      38 </span>            : </a>
+<a name="39"><span class="lineNum">      39 </span>            : #include &quot;lattice/hal/default/ildcrtparams.h&quot;</a>
+<a name="40"><span class="lineNum">      40 </span>            : #include &quot;lattice/ilelement.h&quot;</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : #include &quot;math/math-hal.h&quot;</a>
+<a name="43"><span class="lineNum">      43 </span>            : #include &quot;math/distrgen.h&quot;</a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            : #include &quot;utils/inttypes.h&quot;</a>
+<a name="46"><span class="lineNum">      46 </span>            : #include &quot;utils/exception.h&quot;</a>
+<a name="47"><span class="lineNum">      47 </span>            : </a>
+<a name="48"><span class="lineNum">      48 </span>            : #include &lt;functional&gt;</a>
+<a name="49"><span class="lineNum">      49 </span>            : #include &lt;memory&gt;</a>
+<a name="50"><span class="lineNum">      50 </span>            : #include &lt;string&gt;</a>
+<a name="51"><span class="lineNum">      51 </span>            : #include &lt;utility&gt;</a>
+<a name="52"><span class="lineNum">      52 </span>            : #include &lt;vector&gt;</a>
+<a name="53"><span class="lineNum">      53 </span>            : </a>
+<a name="54"><span class="lineNum">      54 </span>            : namespace lbcrypto {</a>
+<a name="55"><span class="lineNum">      55 </span>            : </a>
+<a name="56"><span class="lineNum">      56 </span>            : /**</a>
+<a name="57"><span class="lineNum">      57 </span>            :  * @brief Ideal lattice for the double-CRT interface representation.</a>
+<a name="58"><span class="lineNum">      58 </span>            :  * The interface contains a methods required for computations on lattices</a>
+<a name="59"><span class="lineNum">      59 </span>            :  * The double-CRT representation of polynomials is a common optimization for</a>
+<a name="60"><span class="lineNum">      60 </span>            :  * lattice encryption operations. Basically, it allows large-modulus polynomials</a>
+<a name="61"><span class="lineNum">      61 </span>            :  * to be represented as multiple smaller-modulus polynomials.  The double-CRT</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * representations are discussed theoretically here:</a>
+<a name="63"><span class="lineNum">      63 </span>            :  *   - Gentry C., Halevi S., Smart N.P. (2012) Homomorphic Evaluation of the AES</a>
+<a name="64"><span class="lineNum">      64 </span>            :  * Circuit. In: Safavi-Naini R., Canetti R. (eds) Advances in Cryptology –</a>
+<a name="65"><span class="lineNum">      65 </span>            :  * CRYPTO 2012. Lecture Notes in Computer Science, vol 7417. Springer, Berlin,</a>
+<a name="66"><span class="lineNum">      66 </span>            :  * Heidelberg</a>
+<a name="67"><span class="lineNum">      67 </span>            :  *</a>
+<a name="68"><span class="lineNum">      68 </span>            :  *</a>
+<a name="69"><span class="lineNum">      69 </span>            :  * @tparam DerivedType Curiously-Recurring-Template-Pattern</a>
+<a name="70"><span class="lineNum">      70 </span>            :  * @tparam BigVecType The Vector type before decomposing the polynomial into CRT</a>
+<a name="71"><span class="lineNum">      71 </span>            :  * @tparam LilVecType The underlaying RNS data structure, a vectors type structure, that will compose the CRT data</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * @tparam RNSContainer The container of LilVecType, a lbcrypto::PolyImpl or vector typically</a>
+<a name="73"><span class="lineNum">      73 </span>            :  *</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * example for the default DerivedType the template types would be...</a>
+<a name="75"><span class="lineNum">      75 </span>            :  *    DerivedType       - DCRTPolyImpl&lt;BigVector&gt;</a>
+<a name="76"><span class="lineNum">      76 </span>            :  *    BigVecType        - BigVector</a>
+<a name="77"><span class="lineNum">      77 </span>            :  *    LilVecType        - NativeVector</a>
+<a name="78"><span class="lineNum">      78 </span>            :  *    RNSContainer&lt;LVT&gt; - PolyImpl</a>
+<a name="79"><span class="lineNum">      79 </span>            :  */</a>
+<a name="80"><span class="lineNum">      80 </span>            : </a>
+<a name="81"><span class="lineNum">      81 </span>            : // TODO: CRTP with ILElement to remove virtual overhead</a>
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<a name="83"><span class="lineNum">      83 </span>            : template &lt;typename DerivedType, typename BigVecType, typename LilVecType,</a>
+<a name="84"><span class="lineNum">      84 </span>            :           template &lt;typename LVT&gt; typename RNSContainerType&gt;</a>
+<a name="85"><span class="lineNum">      85 </span>            : class DCRTPolyInterface : public ILElement&lt;DerivedType, BigVecType&gt; {</a>
+<a name="86"><span class="lineNum">      86 </span>            : public:</a>
+<a name="87"><span class="lineNum">      87 </span>            :     using BigIntType    = typename BigVecType::Integer;</a>
+<a name="88"><span class="lineNum">      88 </span>            :     using Params        = ILDCRTParams&lt;BigIntType&gt;;</a>
+<a name="89"><span class="lineNum">      89 </span>            :     using LilIntType    = typename LilVecType::Integer;</a>
+<a name="90"><span class="lineNum">      90 </span>            :     using TowerType     = RNSContainerType&lt;LilVecType&gt;;</a>
+<a name="91"><span class="lineNum">      91 </span>            :     using PolyLargeType = RNSContainerType&lt;BigVecType&gt;;</a>
+<a name="92"><span class="lineNum">      92 </span>            :     using DggType       = DiscreteGaussianGeneratorImpl&lt;LilVecType&gt;;</a>
+<a name="93"><span class="lineNum">      93 </span>            :     using DugType       = DiscreteUniformGeneratorImpl&lt;LilVecType&gt;;</a>
+<a name="94"><span class="lineNum">      94 </span>            :     using TugType       = TernaryUniformGeneratorImpl&lt;LilVecType&gt;;</a>
+<a name="95"><span class="lineNum">      95 </span>            :     using BugType       = BinaryUniformGeneratorImpl&lt;LilVecType&gt;;</a>
+<a name="96"><span class="lineNum">      96 </span>            : </a>
+<a name="97"><span class="lineNum">      97 </span>            :     /**</a>
+<a name="98"><span class="lineNum">      98 </span>            :    * @brief Get the Derived object, this is apart of the CRTP software design pattern</a>
+<a name="99"><span class="lineNum">      99 </span>            :    * it allows the base class (this one) to implement methods that call the derived</a>
+<a name="100"><span class="lineNum">     100 </span>            :    * objects implementation.</a>
+<a name="101"><span class="lineNum">     101 </span>            :    *</a>
+<a name="102"><span class="lineNum">     102 </span>            :    * @ref Chapter 21.2 &quot;C++ Templates The Complete Guide&quot; by David Vandevoorde and Nicolai M. Josuttis</a>
+<a name="103"><span class="lineNum">     103 </span>            :    * http://www.informit.com/articles/article.asp?p=31473</a>
+<a name="104"><span class="lineNum">     104 </span>            :    *</a>
+<a name="105"><span class="lineNum">     105 </span>            :    * @return DerivedType&amp;</a>
+<a name="106"><span class="lineNum">     106 </span>            :    */</a>
+<a name="107"><span class="lineNum">     107 </span>            :     DerivedType&amp; GetDerived() {</a>
+<a name="108"><span class="lineNum">     108 </span>            :         return static_cast&lt;DerivedType&amp;&gt;(*this);</a>
+<a name="109"><span class="lineNum">     109 </span>            :     }</a>
+<a name="110"><span class="lineNum">     110 </span>            : </a>
+<a name="111"><span class="lineNum">     111 </span>            :     const DerivedType&amp; GetDerived() const {</a>
+<a name="112"><span class="lineNum">     112 </span>            :         return static_cast&lt;DerivedType const&amp;&gt;(*this);</a>
+<a name="113"><span class="lineNum">     113 </span>            :     }</a>
+<a name="114"><span class="lineNum">     114 </span>            : </a>
+<a name="115"><span class="lineNum">     115 </span>            :     /**</a>
+<a name="116"><span class="lineNum">     116 </span>            :    * @brief Create lambda that allocates a zeroed element for the case when it</a>
+<a name="117"><span class="lineNum">     117 </span>            :    * is called from a templated class</a>
+<a name="118"><span class="lineNum">     118 </span>            :    *</a>
+<a name="119"><span class="lineNum">     119 </span>            :    * @param params the params to use.</a>
+<a name="120"><span class="lineNum">     120 </span>            :    * @param format - EVALUATION or COEFFICIENT</a>
+<a name="121"><span class="lineNum">     121 </span>            :    */</a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineCov">          1 :     static std::function&lt;DerivedType()&gt; Allocator(const std::shared_ptr&lt;Params&gt;&amp; params, Format format) {</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">       1082 :         return [=]() {</span></a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineCov">     112277 :             return DerivedType(params, format, true);</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">          2 :         };</span></a>
+<a name="126"><span class="lineNum">     126 </span>            :     }</a>
+<a name="127"><span class="lineNum">     127 </span>            : </a>
+<a name="128"><span class="lineNum">     128 </span>            :     /**</a>
+<a name="129"><span class="lineNum">     129 </span>            :    * @brief Allocator for discrete uniform distribution.</a>
+<a name="130"><span class="lineNum">     130 </span>            :    *</a>
+<a name="131"><span class="lineNum">     131 </span>            :    * @param params Params instance that is is passed.</a>
+<a name="132"><span class="lineNum">     132 </span>            :    * @param resultFormat resultFormat for the polynomials generated.</a>
+<a name="133"><span class="lineNum">     133 </span>            :    * @param stddev standard deviation for the discrete gaussian generator.</a>
+<a name="134"><span class="lineNum">     134 </span>            :    * @return the resulting vector.</a>
+<a name="135"><span class="lineNum">     135 </span>            :    */</a>
+<a name="136"><span class="lineNum">     136 </span>            :     static std::function&lt;DerivedType()&gt; MakeDiscreteGaussianCoefficientAllocator(const std::shared_ptr&lt;Params&gt;&amp; params,</a>
+<a name="137"><span class="lineNum">     137 </span>            :                                                                                  Format resultFormat, double stddev) {</a>
+<a name="138"><span class="lineNum">     138 </span>            :         return [=]() {</a>
+<a name="139"><span class="lineNum">     139 </span>            :             DggType dgg(stddev);</a>
+<a name="140"><span class="lineNum">     140 </span>            :             return DerivedType(dgg, params, resultFormat);</a>
+<a name="141"><span class="lineNum">     141 </span>            :         };</a>
+<a name="142"><span class="lineNum">     142 </span>            :     }</a>
+<a name="143"><span class="lineNum">     143 </span>            : </a>
+<a name="144"><span class="lineNum">     144 </span>            :     /**</a>
+<a name="145"><span class="lineNum">     145 </span>            :    * @brief Allocator for discrete uniform distribution.</a>
+<a name="146"><span class="lineNum">     146 </span>            :    *</a>
+<a name="147"><span class="lineNum">     147 </span>            :    * @param params Params instance that is is passed.</a>
+<a name="148"><span class="lineNum">     148 </span>            :    * @param format format for the polynomials generated.</a>
+<a name="149"><span class="lineNum">     149 </span>            :    * @return the resulting vector.</a>
+<a name="150"><span class="lineNum">     150 </span>            :    */</a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineCov">          1 :     static std::function&lt;DerivedType()&gt; MakeDiscreteUniformAllocator(const std::shared_ptr&lt;Params&gt;&amp; params,</span></a>
+<a name="152"><span class="lineNum">     152 </span>            :                                                                      Format format) {</a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">         28 :         return [=]() {</span></a>
+<a name="154"><span class="lineNum">     154 </span>            :             DugType dug;</a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">        109 :             return DerivedType(dug, params, format);</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          2 :         };</span></a>
+<a name="157"><span class="lineNum">     157 </span>            :     }</a>
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<a name="159"><span class="lineNum">     159 </span>            :     /**</a>
+<a name="160"><span class="lineNum">     160 </span>            :    * @brief Makes a copy of the DCRTPoly, but it includes only a sequential</a>
+<a name="161"><span class="lineNum">     161 </span>            :    * subset of the towers that the original holds.</a>
+<a name="162"><span class="lineNum">     162 </span>            :    *</a>
+<a name="163"><span class="lineNum">     163 </span>            :    * @param startTower The index number of the first tower to clone</a>
+<a name="164"><span class="lineNum">     164 </span>            :    * @param endTower The index number of the last tower to clone</a>
+<a name="165"><span class="lineNum">     165 </span>            :    * @return new Element</a>
+<a name="166"><span class="lineNum">     166 </span>            :    */</a>
+<a name="167"><span class="lineNum">     167 </span>            :     DerivedType CloneTowers(uint32_t startTower, uint32_t endTower) {</a>
+<a name="168"><span class="lineNum">     168 </span>            :         return this-&gt;GetDerived().CloneTowers(startTower, endTower);</a>
+<a name="169"><span class="lineNum">     169 </span>            :     }</a>
+<a name="170"><span class="lineNum">     170 </span>            : </a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :     DerivedType Clone() const final {</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineNoCov">          0 :         return DerivedType(this-&gt;GetDerived());</span></a>
+<a name="173"><span class="lineNum">     173 </span>            :     }</a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :     DerivedType CloneEmpty() const final {</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :         return DerivedType();</span></a>
+<a name="177"><span class="lineNum">     177 </span>            :     }</a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :     DerivedType CloneParametersOnly() const final {</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">          2 :         return DerivedType(this-&gt;GetDerived().GetParams(), this-&gt;GetDerived().GetFormat());</span></a>
+<a name="181"><span class="lineNum">     181 </span>            :     }</a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            :     /**</a>
+<a name="184"><span class="lineNum">     184 </span>            :    * @brief Clone with noise.  This method creates a new DCRTPoly and clones the</a>
+<a name="185"><span class="lineNum">     185 </span>            :    * params. The tower values will be filled up with noise based on the discrete</a>
+<a name="186"><span class="lineNum">     186 </span>            :    * gaussian.</a>
+<a name="187"><span class="lineNum">     187 </span>            :    *</a>
+<a name="188"><span class="lineNum">     188 </span>            :    * @param &amp;dgg the input discrete Gaussian generator. The dgg will be the seed</a>
+<a name="189"><span class="lineNum">     189 </span>            :    * to populate the towers of the DCRTPoly with random numbers.</a>
+<a name="190"><span class="lineNum">     190 </span>            :    * @param format the input format fixed to EVALUATION. Format is a enum type</a>
+<a name="191"><span class="lineNum">     191 </span>            :    * that indicates if the polynomial is in Evaluation representation or</a>
+<a name="192"><span class="lineNum">     192 </span>            :    * Coefficient representation. It is defined in inttypes.h.</a>
+<a name="193"><span class="lineNum">     193 </span>            :    */</a>
+<a name="194"><span class="lineNum">     194 </span>            :     DerivedType CloneWithNoise(const DiscreteGaussianGeneratorImpl&lt;BigVecType&gt;&amp; dgg, Format format) const override = 0;</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            :     /**</a>
+<a name="197"><span class="lineNum">     197 </span>            :    * @brief Get method of the format.</a>
+<a name="198"><span class="lineNum">     198 </span>            :    *</a>
+<a name="199"><span class="lineNum">     199 </span>            :    * @return the format, either COEFFICIENT or EVALUATION</a>
+<a name="200"><span class="lineNum">     200 </span>            :    */</a>
+<a name="201"><span class="lineNum">     201 </span>            :     Format GetFormat() const override = 0;</a>
+<a name="202"><span class="lineNum">     202 </span>            :     //    return this-&gt;GetDerived().GetFormat();</a>
+<a name="203"><span class="lineNum">     203 </span>            : </a>
+<a name="204"><span class="lineNum">     204 </span>            :     /**</a>
+<a name="205"><span class="lineNum">     205 </span>            :    * @brief returns the parameters of the element.</a>
+<a name="206"><span class="lineNum">     206 </span>            :    * @return the element parameter set.</a>
+<a name="207"><span class="lineNum">     207 </span>            :    */</a>
+<a name="208"><span class="lineNum">     208 </span>            :     const std::shared_ptr&lt;Params&gt;&amp; GetParams() const {</a>
+<a name="209"><span class="lineNum">     209 </span>            :         return this-&gt;GetDerived().GetParams();</a>
+<a name="210"><span class="lineNum">     210 </span>            :     }</a>
+<a name="211"><span class="lineNum">     211 </span>            : </a>
+<a name="212"><span class="lineNum">     212 </span>            :     /**</a>
+<a name="213"><span class="lineNum">     213 </span>            :    * @brief returns the element's cyclotomic order</a>
+<a name="214"><span class="lineNum">     214 </span>            :    * @return returns the cyclotomic order of the element.</a>
+<a name="215"><span class="lineNum">     215 </span>            :    */</a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :     usint GetCyclotomicOrder() const final {</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :         return this-&gt;GetDerived().GetParams()-&gt;GetCyclotomicOrder();</span></a>
+<a name="218"><span class="lineNum">     218 </span>            :     }</a>
+<a name="219"><span class="lineNum">     219 </span>            : </a>
+<a name="220"><span class="lineNum">     220 </span>            :     /**</a>
+<a name="221"><span class="lineNum">     221 </span>            :    * @brief returns the element's ring dimension</a>
+<a name="222"><span class="lineNum">     222 </span>            :    * @return returns the ring dimension of the element.</a>
+<a name="223"><span class="lineNum">     223 </span>            :    */</a>
+<a name="224"><span class="lineNum">     224 </span>            :     usint GetRingDimension() const {</a>
+<a name="225"><span class="lineNum">     225 </span>            :         return this-&gt;GetDerived().GetParams()-&gt;GetRingDimension();</a>
+<a name="226"><span class="lineNum">     226 </span>            :     }</a>
+<a name="227"><span class="lineNum">     227 </span>            : </a>
+<a name="228"><span class="lineNum">     228 </span>            :     /**</a>
+<a name="229"><span class="lineNum">     229 </span>            :    * @brief returns the element's modulus</a>
+<a name="230"><span class="lineNum">     230 </span>            :    * @return returns the modulus of the element.</a>
+<a name="231"><span class="lineNum">     231 </span>            :    */</a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineNoCov">          0 :     const BigIntType&amp; GetModulus() const final {</span></a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineNoCov">          0 :         return this-&gt;GetDerived().GetParams()-&gt;GetModulus();</span></a>
+<a name="234"><span class="lineNum">     234 </span>            :     }</a>
+<a name="235"><span class="lineNum">     235 </span>            : </a>
+<a name="236"><span class="lineNum">     236 </span>            :     /**</a>
+<a name="237"><span class="lineNum">     237 </span>            :    * @brief returns the element's root of unity.</a>
+<a name="238"><span class="lineNum">     238 </span>            :    * @return the element's root of unity.</a>
+<a name="239"><span class="lineNum">     239 </span>            :    */</a>
+<a name="240"><span class="lineNum">     240 </span>            :     // TODO: this doesn't look right</a>
+<a name="241"><span class="lineNum">     241 </span>            :     const BigIntType GetRootOfUnity() const {</a>
+<a name="242"><span class="lineNum">     242 </span>            :         //        return BigIntType(0);</a>
+<a name="243"><span class="lineNum">     243 </span>            :         return this-&gt;GetDerived().GetParams()-&gt;GetRootOfUnity();</a>
+<a name="244"><span class="lineNum">     244 </span>            :     }</a>
+<a name="245"><span class="lineNum">     245 </span>            : </a>
+<a name="246"><span class="lineNum">     246 </span>            :     /**</a>
+<a name="247"><span class="lineNum">     247 </span>            :    * @brief Get method for length of each component element.</a>
+<a name="248"><span class="lineNum">     248 </span>            :    * NOTE assumes all components are the same size. (Ring Dimension)</a>
+<a name="249"><span class="lineNum">     249 </span>            :    *</a>
+<a name="250"><span class="lineNum">     250 </span>            :    * @return length of the component element</a>
+<a name="251"><span class="lineNum">     251 </span>            :    */</a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineNoCov">          0 :     usint GetLength() const final {</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :         return this-&gt;GetDerived().GetParams()-&gt;GetRingDimension();</span></a>
+<a name="254"><span class="lineNum">     254 </span>            :     }</a>
+<a name="255"><span class="lineNum">     255 </span>            : </a>
+<a name="256"><span class="lineNum">     256 </span>            :     /**</a>
+<a name="257"><span class="lineNum">     257 </span>            :    * @brief Get interpolated value of elements at all tower index i.</a>
+<a name="258"><span class="lineNum">     258 </span>            :    * Note this operation is computationally intense. Does bound checking</a>
+<a name="259"><span class="lineNum">     259 </span>            :    * @return interpolated value at index i.</a>
+<a name="260"><span class="lineNum">     260 </span>            :    */</a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineNoCov">          0 :     BigIntType&amp; at(usint i) final {</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;at() not implemented for DCRTPoly&quot;);</span></a>
+<a name="263"><span class="lineNum">     263 </span>            :     }</a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineNoCov">          0 :     const BigIntType&amp; at(usint i) const final {</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;const at() not implemented for DCRTPoly&quot;);</span></a>
+<a name="266"><span class="lineNum">     266 </span>            :     }</a>
+<a name="267"><span class="lineNum">     267 </span>            : </a>
+<a name="268"><span class="lineNum">     268 </span>            :     /**</a>
+<a name="269"><span class="lineNum">     269 </span>            :    * @brief Get interpolated value of element at index i.</a>
+<a name="270"><span class="lineNum">     270 </span>            :    * Note this operation is computationally intense. No bound checking</a>
+<a name="271"><span class="lineNum">     271 </span>            :    * @return interpolated value at index i.</a>
+<a name="272"><span class="lineNum">     272 </span>            :    */</a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineNoCov">          0 :     BigIntType&amp; operator[](usint i) final {</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;operator[] not implemented for DCRTPoly&quot;);</span></a>
+<a name="275"><span class="lineNum">     275 </span>            :     }</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :     const BigIntType&amp; operator[](usint i) const final {</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;const operator[] not implemented for DCRTPoly&quot;);</span></a>
+<a name="278"><span class="lineNum">     278 </span>            :     }</a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span>            :     /**</a>
+<a name="281"><span class="lineNum">     281 </span>            :    * @brief Get method that returns a vector of all component elements.</a>
+<a name="282"><span class="lineNum">     282 </span>            :    *</a>
+<a name="283"><span class="lineNum">     283 </span>            :    * @returns a vector of the component elements.</a>
+<a name="284"><span class="lineNum">     284 </span>            :    */</a>
+<a name="285"><span class="lineNum">     285 </span>            :     const std::vector&lt;TowerType&gt;&amp; GetAllElements() const {</a>
+<a name="286"><span class="lineNum">     286 </span>            :         return this-&gt;GetDerived().GetAllElements();</a>
+<a name="287"><span class="lineNum">     287 </span>            :     }</a>
+<a name="288"><span class="lineNum">     288 </span>            :     std::vector&lt;TowerType&gt;&amp; GetAllElements() {</a>
+<a name="289"><span class="lineNum">     289 </span>            :         return this-&gt;GetDerived().GetAllElements();</a>
+<a name="290"><span class="lineNum">     290 </span>            :     }</a>
+<a name="291"><span class="lineNum">     291 </span>            : </a>
+<a name="292"><span class="lineNum">     292 </span>            :     /**</a>
+<a name="293"><span class="lineNum">     293 </span>            :    * @brief Get method of the number of component elements, also known as the</a>
+<a name="294"><span class="lineNum">     294 </span>            :    * number of towers.</a>
+<a name="295"><span class="lineNum">     295 </span>            :    *</a>
+<a name="296"><span class="lineNum">     296 </span>            :    * @return the number of component elements.</a>
+<a name="297"><span class="lineNum">     297 </span>            :    */</a>
+<a name="298"><span class="lineNum">     298 </span>            :     usint GetNumOfElements() const {</a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineCov">         79 :         return this-&gt;GetDerived().GetAllElements().size();</span></a>
+<a name="300"><span class="lineNum">     300 </span>            :     }</a>
+<a name="301"><span class="lineNum">     301 </span>            : </a>
+<a name="302"><span class="lineNum">     302 </span>            :     /**</a>
+<a name="303"><span class="lineNum">     303 </span>            :    * @brief Get method of individual tower of elements.</a>
+<a name="304"><span class="lineNum">     304 </span>            :    * Note this behavior is different than poly</a>
+<a name="305"><span class="lineNum">     305 </span>            :    * @param i index of tower to be returned.</a>
+<a name="306"><span class="lineNum">     306 </span>            :    * @returns a reference to the returned tower</a>
+<a name="307"><span class="lineNum">     307 </span>            :    */</a>
+<a name="308"><span class="lineNum">     308 </span>            :     const TowerType&amp; GetElementAtIndex(usint i) const {</a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">         75 :         return this-&gt;GetDerived().GetAllElements()[i];</span></a>
+<a name="310"><span class="lineNum">     310 </span>            :     }</a>
+<a name="311"><span class="lineNum">     311 </span>            : </a>
+<a name="312"><span class="lineNum">     312 </span>            :     /**</a>
+<a name="313"><span class="lineNum">     313 </span>            :    * @brief Sets element at index</a>
+<a name="314"><span class="lineNum">     314 </span>            :    *</a>
+<a name="315"><span class="lineNum">     315 </span>            :    * @param index where the element should be set</a>
+<a name="316"><span class="lineNum">     316 </span>            :    * @param element The element to store</a>
+<a name="317"><span class="lineNum">     317 </span>            :    */</a>
+<a name="318"><span class="lineNum">     318 </span>            :     void SetElementAtIndex(usint index, const TowerType&amp; element) {</a>
+<a name="319"><span class="lineNum">     319 </span>            :         return this-&gt;GetDerived().SetElementAtIndex(index, element);</a>
+<a name="320"><span class="lineNum">     320 </span>            :     }</a>
+<a name="321"><span class="lineNum">     321 </span>            : </a>
+<a name="322"><span class="lineNum">     322 </span>            :     /**</a>
+<a name="323"><span class="lineNum">     323 </span>            :    * @brief Sets element at index</a>
+<a name="324"><span class="lineNum">     324 </span>            :    *</a>
+<a name="325"><span class="lineNum">     325 </span>            :    * @param index where the element should be set</a>
+<a name="326"><span class="lineNum">     326 </span>            :    * @param element The element to store</a>
+<a name="327"><span class="lineNum">     327 </span>            :    */</a>
+<a name="328"><span class="lineNum">     328 </span>            :     void SetElementAtIndex(usint index, TowerType&amp;&amp; element) {</a>
+<a name="329"><span class="lineNum">     329 </span>            :         return this-&gt;GetDerived().SetElementAtIndex(index, std::move(element));</a>
+<a name="330"><span class="lineNum">     330 </span>            :     }</a>
+<a name="331"><span class="lineNum">     331 </span>            : </a>
+<a name="332"><span class="lineNum">     332 </span>            :     /***********************************************************************</a>
+<a name="333"><span class="lineNum">     333 </span>            :    * Yuriy and I stopped here!</a>
+<a name="334"><span class="lineNum">     334 </span>            :    **********************************************************************/</a>
+<a name="335"><span class="lineNum">     335 </span>            : </a>
+<a name="336"><span class="lineNum">     336 </span>            :     /**</a>
+<a name="337"><span class="lineNum">     337 </span>            :    * @brief Write the element as \f$ \sum\limits{i=0}^{\lfloor {\log q/base}</a>
+<a name="338"><span class="lineNum">     338 </span>            :    * \rfloor} {(base^i u_i)} \f$ and return the vector of \f$ \left\{u_0,</a>
+<a name="339"><span class="lineNum">     339 </span>            :    * u_1,...,u_{\lfloor {\log q/base} \rfloor} \right\} \in R_{{base}^{\lceil</a>
+<a name="340"><span class="lineNum">     340 </span>            :    * {\log q/base} \rceil}} \f$; This is used as a subroutine in the</a>
+<a name="341"><span class="lineNum">     341 </span>            :    * relinearization procedure.</a>
+<a name="342"><span class="lineNum">     342 </span>            :    *</a>
+<a name="343"><span class="lineNum">     343 </span>            :    * @param baseBits is the number of bits in the base, i.e., \f$ base =</a>
+<a name="344"><span class="lineNum">     344 </span>            :    * 2^{baseBits} \f$.</a>
+<a name="345"><span class="lineNum">     345 </span>            :    * @return is the pointer where the base decomposition vector is stored</a>
+<a name="346"><span class="lineNum">     346 </span>            :    *</a>
+<a name="347"><span class="lineNum">     347 </span>            :    * @warning not efficient and  not fast, uses multiprecision arithmetic and</a>
+<a name="348"><span class="lineNum">     348 </span>            :    *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.</a>
+<a name="349"><span class="lineNum">     349 </span>            :    */</a>
+<a name="350"><span class="lineNum">     350 </span>            :     std::vector&lt;DerivedType&gt; BaseDecompose(usint baseBits, bool evalModeAnswer) const override = 0;</a>
+<a name="351"><span class="lineNum">     351 </span>            : </a>
+<a name="352"><span class="lineNum">     352 </span>            :     /**</a>
+<a name="353"><span class="lineNum">     353 </span>            :    * @brief Generate a vector of PolyImpl's as \f$ \left\{x, {base}*x,</a>
+<a name="354"><span class="lineNum">     354 </span>            :    * {base}^2*x, ..., {base}^{\lfloor {\log q/{base}} \rfloor} \right\}*x \f$,</a>
+<a name="355"><span class="lineNum">     355 </span>            :    * where \f$ x \f$ is the current PolyImpl object;</a>
+<a name="356"><span class="lineNum">     356 </span>            :    * used as a subroutine in the relinearization procedure to get powers of a</a>
+<a name="357"><span class="lineNum">     357 </span>            :    * certain &quot;base&quot; for the secret key element.</a>
+<a name="358"><span class="lineNum">     358 </span>            :    *</a>
+<a name="359"><span class="lineNum">     359 </span>            :    * @param baseBits is the number of bits in the base, i.e., \f$ base =</a>
+<a name="360"><span class="lineNum">     360 </span>            :    * 2^{baseBits} \f$.</a>
+<a name="361"><span class="lineNum">     361 </span>            :    * @return is the pointer where the base decomposition vector is stored</a>
+<a name="362"><span class="lineNum">     362 </span>            :    *</a>
+<a name="363"><span class="lineNum">     363 </span>            :    * @warning not efficient and  not fast, uses multiprecision arithmetic and</a>
+<a name="364"><span class="lineNum">     364 </span>            :    *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.</a>
+<a name="365"><span class="lineNum">     365 </span>            :    */</a>
+<a name="366"><span class="lineNum">     366 </span>            :     std::vector&lt;DerivedType&gt; PowersOfBase(usint baseBits) const override = 0;</a>
+<a name="367"><span class="lineNum">     367 </span>            : </a>
+<a name="368"><span class="lineNum">     368 </span>            :     /**</a>
+<a name="369"><span class="lineNum">     369 </span>            :    * CRT basis decomposition of c as [c qi/q]_qi</a>
+<a name="370"><span class="lineNum">     370 </span>            :    *</a>
+<a name="371"><span class="lineNum">     371 </span>            :    * @param &amp;baseBits bits in the base for additional digit decomposition if</a>
+<a name="372"><span class="lineNum">     372 </span>            :    * base &gt; 0</a>
+<a name="373"><span class="lineNum">     373 </span>            :    * @return is the pointer where the resulting vector is stored</a>
+<a name="374"><span class="lineNum">     374 </span>            :    */</a>
+<a name="375"><span class="lineNum">     375 </span>            :     std::vector&lt;DerivedType&gt; CRTDecompose(uint32_t baseBits) const {</a>
+<a name="376"><span class="lineNum">     376 </span>            :         return this-&gt;GetDerived().CRTDecompose(baseBits);</a>
+<a name="377"><span class="lineNum">     377 </span>            :     }</a>
+<a name="378"><span class="lineNum">     378 </span>            : </a>
+<a name="379"><span class="lineNum">     379 </span>            :     DerivedType&amp; operator=(const TowerType&amp; rhs) {</a>
+<a name="380"><span class="lineNum">     380 </span>            :         return this-&gt;GetDerived().operator=(rhs);</a>
+<a name="381"><span class="lineNum">     381 </span>            :     }</a>
+<a name="382"><span class="lineNum">     382 </span>            : </a>
+<a name="383"><span class="lineNum">     383 </span>            :     /**</a>
+<a name="384"><span class="lineNum">     384 </span>            :    * @brief Assignment Operator.</a>
+<a name="385"><span class="lineNum">     385 </span>            :    *</a>
+<a name="386"><span class="lineNum">     386 </span>            :    * @param &amp;rhs the copied element.</a>
+<a name="387"><span class="lineNum">     387 </span>            :    * @return the resulting element.</a>
+<a name="388"><span class="lineNum">     388 </span>            :    */</a>
+<a name="389"><span class="lineNum">     389 </span>            :     DerivedType&amp; operator=(const DerivedType&amp; rhs) override = 0;</a>
+<a name="390"><span class="lineNum">     390 </span>            : </a>
+<a name="391"><span class="lineNum">     391 </span>            :     /**</a>
+<a name="392"><span class="lineNum">     392 </span>            :    * @brief Move Assignment Operator.</a>
+<a name="393"><span class="lineNum">     393 </span>            :    *</a>
+<a name="394"><span class="lineNum">     394 </span>            :    * @param &amp;rhs the copied element.</a>
+<a name="395"><span class="lineNum">     395 </span>            :    * @return the resulting element.</a>
+<a name="396"><span class="lineNum">     396 </span>            :    */</a>
+<a name="397"><span class="lineNum">     397 </span>            :     DerivedType&amp; operator=(DerivedType&amp;&amp; rhs) override = 0;</a>
+<a name="398"><span class="lineNum">     398 </span>            : </a>
+<a name="399"><span class="lineNum">     399 </span>            :     /**</a>
+<a name="400"><span class="lineNum">     400 </span>            :    * @brief Initalizer list</a>
+<a name="401"><span class="lineNum">     401 </span>            :    *</a>
+<a name="402"><span class="lineNum">     402 </span>            :    * @param &amp;rhs the list to initalized the element.</a>
+<a name="403"><span class="lineNum">     403 </span>            :    * @return the resulting element.</a>
+<a name="404"><span class="lineNum">     404 </span>            :    */</a>
+<a name="405"><span class="lineNum">     405 </span>            :     DerivedType&amp; operator=(std::initializer_list&lt;uint64_t&gt; rhs) override = 0;</a>
+<a name="406"><span class="lineNum">     406 </span>            : </a>
+<a name="407"><span class="lineNum">     407 </span>            :     /**</a>
+<a name="408"><span class="lineNum">     408 </span>            :    * @brief Assignment Operator. The usint val will be set at index zero and all</a>
+<a name="409"><span class="lineNum">     409 </span>            :    * other indices will be set to zero.</a>
+<a name="410"><span class="lineNum">     410 </span>            :    *</a>
+<a name="411"><span class="lineNum">     411 </span>            :    * @param val is the usint to assign to index zero.</a>
+<a name="412"><span class="lineNum">     412 </span>            :    * @return the resulting vector.</a>
+<a name="413"><span class="lineNum">     413 </span>            :    */</a>
+<a name="414"><span class="lineNum">     414 </span>            :     DerivedType&amp; operator=(uint64_t val) {</a>
+<a name="415"><span class="lineNum">     415 </span>            :         return this-&gt;GetDerived().operator=(val);</a>
+<a name="416"><span class="lineNum">     416 </span>            :     }</a>
+<a name="417"><span class="lineNum">     417 </span>            : </a>
+<a name="418"><span class="lineNum">     418 </span>            :     /**</a>
+<a name="419"><span class="lineNum">     419 </span>            :    * @brief Creates a Poly from a vector of signed integers (used for trapdoor</a>
+<a name="420"><span class="lineNum">     420 </span>            :    * sampling)</a>
+<a name="421"><span class="lineNum">     421 </span>            :    *</a>
+<a name="422"><span class="lineNum">     422 </span>            :    * @param &amp;rhs the vector to set the PolyImpl to.</a>
+<a name="423"><span class="lineNum">     423 </span>            :    * @return the resulting PolyImpl.</a>
+<a name="424"><span class="lineNum">     424 </span>            :     */</a>
+<a name="425"><span class="lineNum">     425 </span>            :     DerivedType&amp; operator=(const std::vector&lt;int64_t&gt;&amp; rhs) {</a>
+<a name="426"><span class="lineNum">     426 </span>            :         return this-&gt;GetDerived().operator=(rhs);</a>
+<a name="427"><span class="lineNum">     427 </span>            :     }</a>
+<a name="428"><span class="lineNum">     428 </span>            : </a>
+<a name="429"><span class="lineNum">     429 </span>            :     /**</a>
+<a name="430"><span class="lineNum">     430 </span>            :    * @brief Creates a Poly from a vector of signed integers (used for trapdoor</a>
+<a name="431"><span class="lineNum">     431 </span>            :    * sampling)</a>
+<a name="432"><span class="lineNum">     432 </span>            :    *</a>
+<a name="433"><span class="lineNum">     433 </span>            :    * @param &amp;rhs the vector to set the PolyImpl to.</a>
+<a name="434"><span class="lineNum">     434 </span>            :    * @return the resulting PolyImpl.</a>
+<a name="435"><span class="lineNum">     435 </span>            :    */</a>
+<a name="436"><span class="lineNum">     436 </span>            :     DerivedType&amp; operator=(const std::vector&lt;int32_t&gt;&amp; rhs) {</a>
+<a name="437"><span class="lineNum">     437 </span>            :         return this-&gt;GetDerived().operator=(rhs);</a>
+<a name="438"><span class="lineNum">     438 </span>            :     }</a>
+<a name="439"><span class="lineNum">     439 </span>            : </a>
+<a name="440"><span class="lineNum">     440 </span>            :     /**</a>
+<a name="441"><span class="lineNum">     441 </span>            :    * @brief Initalizer list</a>
+<a name="442"><span class="lineNum">     442 </span>            :    *</a>
+<a name="443"><span class="lineNum">     443 </span>            :    * @param &amp;rhs the list to set the PolyImpl to.</a>
+<a name="444"><span class="lineNum">     444 </span>            :    * @return the resulting PolyImpl.</a>
+<a name="445"><span class="lineNum">     445 </span>            :    */</a>
+<a name="446"><span class="lineNum">     446 </span>            :     DerivedType&amp; operator=(std::initializer_list&lt;std::string&gt; rhs) {</a>
+<a name="447"><span class="lineNum">     447 </span>            :         return this-&gt;GetDerived().operator=(rhs);</a>
+<a name="448"><span class="lineNum">     448 </span>            :     }</a>
+<a name="449"><span class="lineNum">     449 </span>            : </a>
+<a name="450"><span class="lineNum">     450 </span>            :     /**</a>
+<a name="451"><span class="lineNum">     451 </span>            :    * @brief Unary minus on a element.</a>
+<a name="452"><span class="lineNum">     452 </span>            :    * @return additive inverse of the an element.</a>
+<a name="453"><span class="lineNum">     453 </span>            :    */</a>
+<a name="454"><span class="lineNum">     454 </span>            :     DerivedType operator-() const override = 0;</a>
+<a name="455"><span class="lineNum">     455 </span>            : </a>
+<a name="456"><span class="lineNum">     456 </span>            :     /**</a>
+<a name="457"><span class="lineNum">     457 </span>            :    * @brief Equality operator.</a>
+<a name="458"><span class="lineNum">     458 </span>            :    *</a>
+<a name="459"><span class="lineNum">     459 </span>            :    * @param &amp;rhs is the specified element to be compared with this element.</a>
+<a name="460"><span class="lineNum">     460 </span>            :    * @return true if this element represents the same values as the specified</a>
+<a name="461"><span class="lineNum">     461 </span>            :    * element, false otherwise.</a>
+<a name="462"><span class="lineNum">     462 </span>            :    */</a>
+<a name="463"><span class="lineNum">     463 </span>            :     bool operator==(const DerivedType&amp; rhs) const override = 0;</a>
+<a name="464"><span class="lineNum">     464 </span>            : </a>
+<a name="465"><span class="lineNum">     465 </span>            :     /**</a>
+<a name="466"><span class="lineNum">     466 </span>            :    * @brief Performs an entry-wise addition over all elements of each tower with</a>
+<a name="467"><span class="lineNum">     467 </span>            :    * the towers of the element on the right hand side.</a>
+<a name="468"><span class="lineNum">     468 </span>            :    *</a>
+<a name="469"><span class="lineNum">     469 </span>            :    * @param &amp;rhs is the element to add with.</a>
+<a name="470"><span class="lineNum">     470 </span>            :    * @return is the result of the addition.</a>
+<a name="471"><span class="lineNum">     471 </span>            :    */</a>
+<a name="472"><span class="lineNum">     472 </span>            :     DerivedType&amp; operator+=(const DerivedType&amp; rhs) override = 0;</a>
+<a name="473"><span class="lineNum">     473 </span>            : </a>
+<a name="474"><span class="lineNum">     474 </span>            :     /**</a>
+<a name="475"><span class="lineNum">     475 </span>            :    * @brief Performs an entry-wise subtraction over all elements of each tower</a>
+<a name="476"><span class="lineNum">     476 </span>            :    * with the towers of the element on the right hand side.</a>
+<a name="477"><span class="lineNum">     477 </span>            :    *</a>
+<a name="478"><span class="lineNum">     478 </span>            :    * @param &amp;rhs is the element to subtract from.</a>
+<a name="479"><span class="lineNum">     479 </span>            :    * @return is the result of the addition.</a>
+<a name="480"><span class="lineNum">     480 </span>            :    */</a>
+<a name="481"><span class="lineNum">     481 </span>            :     DerivedType&amp; operator-=(const DerivedType&amp; rhs) override = 0;</a>
+<a name="482"><span class="lineNum">     482 </span>            : </a>
+<a name="483"><span class="lineNum">     483 </span>            :     /**</a>
+<a name="484"><span class="lineNum">     484 </span>            :    * @brief Permutes coefficients in a polynomial. Moves the ith index to the</a>
+<a name="485"><span class="lineNum">     485 </span>            :    * first one, it only supports odd indices.</a>
+<a name="486"><span class="lineNum">     486 </span>            :    *</a>
+<a name="487"><span class="lineNum">     487 </span>            :    * @param &amp;i is the element to perform the automorphism transform with.</a>
+<a name="488"><span class="lineNum">     488 </span>            :    * @return is the result of the automorphism transform.</a>
+<a name="489"><span class="lineNum">     489 </span>            :    */</a>
+<a name="490"><span class="lineNum">     490 </span>            :     DerivedType AutomorphismTransform(uint32_t i) const override = 0;</a>
+<a name="491"><span class="lineNum">     491 </span>            : </a>
+<a name="492"><span class="lineNum">     492 </span>            :     /**</a>
+<a name="493"><span class="lineNum">     493 </span>            :    * @brief Performs an automorphism transform operation using precomputed bit</a>
+<a name="494"><span class="lineNum">     494 </span>            :    * reversal indices.</a>
+<a name="495"><span class="lineNum">     495 </span>            :    *</a>
+<a name="496"><span class="lineNum">     496 </span>            :    * @param &amp;i is the element to perform the automorphism transform with.</a>
+<a name="497"><span class="lineNum">     497 </span>            :    * @param &amp;vec a vector with precomputed indices</a>
+<a name="498"><span class="lineNum">     498 </span>            :    * @return is the result of the automorphism transform.</a>
+<a name="499"><span class="lineNum">     499 </span>            :    */</a>
+<a name="500"><span class="lineNum">     500 </span>            :     DerivedType AutomorphismTransform(uint32_t i, const std::vector&lt;uint32_t&gt;&amp; vec) const override = 0;</a>
+<a name="501"><span class="lineNum">     501 </span>            : </a>
+<a name="502"><span class="lineNum">     502 </span>            :     /**</a>
+<a name="503"><span class="lineNum">     503 </span>            :    * @brief Transpose the ring element using the automorphism operation</a>
+<a name="504"><span class="lineNum">     504 </span>            :    *</a>
+<a name="505"><span class="lineNum">     505 </span>            :    * @return is the result of the transposition.</a>
+<a name="506"><span class="lineNum">     506 </span>            :    */</a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineCov">        204 :     DerivedType Transpose() const final {</span></a>
+<a name="508"><span class="lineNum">     508 </span><span class="lineCov">        204 :         if (this-&gt;GetDerived().GetFormat() == Format::COEFFICIENT)</span></a>
+<a name="509"><span class="lineNum">     509 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(</span></a>
+<a name="510"><span class="lineNum">     510 </span>            :                 &quot;DCRTPolyInterface element transposition is currently &quot;</a>
+<a name="511"><span class="lineNum">     511 </span>            :                 &quot;implemented only in the Evaluation representation.&quot;);</a>
+<a name="512"><span class="lineNum">     512 </span><span class="lineCov">        204 :         return this-&gt;GetDerived().AutomorphismTransform(this-&gt;GetDerived().GetCyclotomicOrder() - 1);</span></a>
+<a name="513"><span class="lineNum">     513 </span>            :     }</a>
+<a name="514"><span class="lineNum">     514 </span>            : </a>
+<a name="515"><span class="lineNum">     515 </span>            :     /**</a>
+<a name="516"><span class="lineNum">     516 </span>            :    * @brief Performs an addition operation and returns the result.</a>
+<a name="517"><span class="lineNum">     517 </span>            :    *</a>
+<a name="518"><span class="lineNum">     518 </span>            :    * @param &amp;element is the element to add with.</a>
+<a name="519"><span class="lineNum">     519 </span>            :    * @return is the result of the addition.</a>
+<a name="520"><span class="lineNum">     520 </span>            :    */</a>
+<a name="521"><span class="lineNum">     521 </span>            :     DerivedType Plus(const DerivedType&amp; rhs) const override = 0;</a>
+<a name="522"><span class="lineNum">     522 </span>            :     //    return this-&gt;GetDerived().Plus(rhs);</a>
+<a name="523"><span class="lineNum">     523 </span>            : </a>
+<a name="524"><span class="lineNum">     524 </span>            :     /**</a>
+<a name="525"><span class="lineNum">     525 </span>            :    * @brief Performs a multiplication operation and returns the result.</a>
+<a name="526"><span class="lineNum">     526 </span>            :    *</a>
+<a name="527"><span class="lineNum">     527 </span>            :    * @param &amp;element is the element to multiply with.</a>
+<a name="528"><span class="lineNum">     528 </span>            :    * @return is the result of the multiplication.</a>
+<a name="529"><span class="lineNum">     529 </span>            :    */</a>
+<a name="530"><span class="lineNum">     530 </span>            :     DerivedType Times(const DerivedType&amp; rhs) const override = 0;</a>
+<a name="531"><span class="lineNum">     531 </span>            :     //    return this-&gt;GetDerived().Times(rhs);</a>
+<a name="532"><span class="lineNum">     532 </span>            : </a>
+<a name="533"><span class="lineNum">     533 </span>            :     /**</a>
+<a name="534"><span class="lineNum">     534 </span>            :    * @brief Performs a subtraction operation and returns the result.</a>
+<a name="535"><span class="lineNum">     535 </span>            :    *</a>
+<a name="536"><span class="lineNum">     536 </span>            :    * @param &amp;element is the element to subtract from.</a>
+<a name="537"><span class="lineNum">     537 </span>            :    * @return is the result of the subtraction.</a>
+<a name="538"><span class="lineNum">     538 </span>            :    */</a>
+<a name="539"><span class="lineNum">     539 </span>            :     DerivedType Minus(const DerivedType&amp; rhs) const override = 0;</a>
+<a name="540"><span class="lineNum">     540 </span>            : </a>
+<a name="541"><span class="lineNum">     541 </span>            :     /**</a>
+<a name="542"><span class="lineNum">     542 </span>            :    * @brief Scalar addition - add an element to the first index of each tower.</a>
+<a name="543"><span class="lineNum">     543 </span>            :    *</a>
+<a name="544"><span class="lineNum">     544 </span>            :    * @param &amp;element is the element to add entry-wise.</a>
+<a name="545"><span class="lineNum">     545 </span>            :    * @return is the result of the addition operation.</a>
+<a name="546"><span class="lineNum">     546 </span>            :    */</a>
+<a name="547"><span class="lineNum">     547 </span>            :     DerivedType Plus(const BigIntType&amp; rhs) const override = 0;</a>
+<a name="548"><span class="lineNum">     548 </span>            : </a>
+<a name="549"><span class="lineNum">     549 </span>            :     /**</a>
+<a name="550"><span class="lineNum">     550 </span>            :    * @brief Scalar addition for elements in CRT format.</a>
+<a name="551"><span class="lineNum">     551 </span>            :    * CRT elements are represented as vector of integer elements which</a>
+<a name="552"><span class="lineNum">     552 </span>            :    * correspond to the represented number modulo the primes in the</a>
+<a name="553"><span class="lineNum">     553 </span>            :    * tower chain (in same order).</a>
+<a name="554"><span class="lineNum">     554 </span>            :    *</a>
+<a name="555"><span class="lineNum">     555 </span>            :    * @param &amp;element is the element to add entry-wise.</a>
+<a name="556"><span class="lineNum">     556 </span>            :    * @return is the result of the addition operation.</a>
+<a name="557"><span class="lineNum">     557 </span>            :    */</a>
+<a name="558"><span class="lineNum">     558 </span>            :     DerivedType Plus(const std::vector&lt;BigIntType&gt;&amp; rhs) const {</a>
+<a name="559"><span class="lineNum">     559 </span>            :         return this-&gt;GetDerived().Plus(rhs);</a>
+<a name="560"><span class="lineNum">     560 </span>            :     }</a>
+<a name="561"><span class="lineNum">     561 </span>            : </a>
+<a name="562"><span class="lineNum">     562 </span>            :     /**</a>
+<a name="563"><span class="lineNum">     563 </span>            :    * @brief Scalar subtraction - subtract an element to all entries.</a>
+<a name="564"><span class="lineNum">     564 </span>            :    *</a>
+<a name="565"><span class="lineNum">     565 </span>            :    * @param &amp;element is the element to subtract entry-wise.</a>
+<a name="566"><span class="lineNum">     566 </span>            :    * @return is the return value of the minus operation.</a>
+<a name="567"><span class="lineNum">     567 </span>            :    */</a>
+<a name="568"><span class="lineNum">     568 </span>            :     DerivedType Minus(const BigIntType&amp; rhs) const override = 0;</a>
+<a name="569"><span class="lineNum">     569 </span>            : </a>
+<a name="570"><span class="lineNum">     570 </span>            :     /**</a>
+<a name="571"><span class="lineNum">     571 </span>            :    * @brief Scalar subtraction for elements in CRT format.</a>
+<a name="572"><span class="lineNum">     572 </span>            :    * CRT elements are represented as vector of integer elements which</a>
+<a name="573"><span class="lineNum">     573 </span>            :    * correspond to the represented number modulo the primes in the</a>
+<a name="574"><span class="lineNum">     574 </span>            :    * tower chain (in same order).</a>
+<a name="575"><span class="lineNum">     575 </span>            :    *</a>
+<a name="576"><span class="lineNum">     576 </span>            :    * @param &amp;element is the element to subtract entry-wise.</a>
+<a name="577"><span class="lineNum">     577 </span>            :    * @return is the result of the subtraction operation.</a>
+<a name="578"><span class="lineNum">     578 </span>            :    */</a>
+<a name="579"><span class="lineNum">     579 </span>            :     DerivedType Minus(const std::vector&lt;BigIntType&gt;&amp; rhs) const {</a>
+<a name="580"><span class="lineNum">     580 </span>            :         return this-&gt;GetDerived().Minus(rhs);</a>
+<a name="581"><span class="lineNum">     581 </span>            :     }</a>
+<a name="582"><span class="lineNum">     582 </span>            : </a>
+<a name="583"><span class="lineNum">     583 </span>            :     /**</a>
+<a name="584"><span class="lineNum">     584 </span>            :    * @brief Scalar multiplication - multiply all entries.</a>
+<a name="585"><span class="lineNum">     585 </span>            :    *</a>
+<a name="586"><span class="lineNum">     586 </span>            :    * @param &amp;element is the element to multiply entry-wise.</a>
+<a name="587"><span class="lineNum">     587 </span>            :    * @return is the return value of the times operation.</a>
+<a name="588"><span class="lineNum">     588 </span>            :    */</a>
+<a name="589"><span class="lineNum">     589 </span>            :     DerivedType Times(const BigIntType&amp; rhs) const override = 0;</a>
+<a name="590"><span class="lineNum">     590 </span>            : </a>
+<a name="591"><span class="lineNum">     591 </span>            :     /**</a>
+<a name="592"><span class="lineNum">     592 </span>            :    * @brief Scalar multiplication - multiply by a signed integer</a>
+<a name="593"><span class="lineNum">     593 </span>            :    *</a>
+<a name="594"><span class="lineNum">     594 </span>            :    * @param &amp;element is the element to multiply entry-wise.</a>
+<a name="595"><span class="lineNum">     595 </span>            :    * @return is the return value of the times operation.</a>
+<a name="596"><span class="lineNum">     596 </span>            :    */</a>
+<a name="597"><span class="lineNum">     597 </span>            :     DerivedType Times(NativeInteger::SignedNativeInt rhs) const override = 0;</a>
+<a name="598"><span class="lineNum">     598 </span>            : </a>
+<a name="599"><span class="lineNum">     599 </span>            : #if NATIVEINT != 64</a>
+<a name="600"><span class="lineNum">     600 </span>            :     /**</a>
+<a name="601"><span class="lineNum">     601 </span>            :    * @brief Scalar multiplication - multiply by a signed integer</a>
+<a name="602"><span class="lineNum">     602 </span>            :    *</a>
+<a name="603"><span class="lineNum">     603 </span>            :    * @param &amp;element is the element to multiply entry-wise.</a>
+<a name="604"><span class="lineNum">     604 </span>            :    * @return is the return value of the times operation.</a>
+<a name="605"><span class="lineNum">     605 </span>            :    *</a>
+<a name="606"><span class="lineNum">     606 </span>            :    * @note this is need for 128-bit so that the 64-bit inputs can be used.</a>
+<a name="607"><span class="lineNum">     607 </span>            :    */</a>
+<a name="608"><span class="lineNum">     608 </span>            :     DerivedType Times(int64_t rhs) const {</a>
+<a name="609"><span class="lineNum">     609 </span>            :         return this-&gt;GetDerived().Times(rhs);</a>
+<a name="610"><span class="lineNum">     610 </span>            :     }</a>
+<a name="611"><span class="lineNum">     611 </span>            : #endif</a>
+<a name="612"><span class="lineNum">     612 </span>            : </a>
+<a name="613"><span class="lineNum">     613 </span>            :     /**</a>
+<a name="614"><span class="lineNum">     614 </span>            :    * @brief Scalar multiplication by an integer represented in CRT Basis.</a>
+<a name="615"><span class="lineNum">     615 </span>            :    *</a>
+<a name="616"><span class="lineNum">     616 </span>            :    * @param &amp;element is the element to multiply entry-wise.</a>
+<a name="617"><span class="lineNum">     617 </span>            :    * @return is the return value of the times operation.</a>
+<a name="618"><span class="lineNum">     618 </span>            :    */</a>
+<a name="619"><span class="lineNum">     619 </span>            :     DerivedType Times(const std::vector&lt;NativeInteger&gt;&amp; rhs) const {</a>
+<a name="620"><span class="lineNum">     620 </span>            :         return this-&gt;GetDerived().Times(rhs);</a>
+<a name="621"><span class="lineNum">     621 </span>            :     }</a>
+<a name="622"><span class="lineNum">     622 </span>            : </a>
+<a name="623"><span class="lineNum">     623 </span>            :     /**</a>
+<a name="624"><span class="lineNum">     624 </span>            :    * @brief Performs a multiplication operation even when the multiplicands</a>
+<a name="625"><span class="lineNum">     625 </span>            :    * have a different number of towers.</a>
+<a name="626"><span class="lineNum">     626 </span>            :    *</a>
+<a name="627"><span class="lineNum">     627 </span>            :    * @param &amp;element is the element to multiply with.</a>
+<a name="628"><span class="lineNum">     628 </span>            :    * @return is the result of the multiplication.</a>
+<a name="629"><span class="lineNum">     629 </span>            :    */</a>
+<a name="630"><span class="lineNum">     630 </span>            :     DerivedType TimesNoCheck(const std::vector&lt;NativeInteger&gt;&amp; rhs) const {</a>
+<a name="631"><span class="lineNum">     631 </span>            :         return this-&gt;GetDerived().TimesNoCheck(rhs);</a>
+<a name="632"><span class="lineNum">     632 </span>            :     }</a>
+<a name="633"><span class="lineNum">     633 </span>            : </a>
+<a name="634"><span class="lineNum">     634 </span>            :     /**</a>
+<a name="635"><span class="lineNum">     635 </span>            :    * @brief Scalar modular multiplication by an integer represented in CRT</a>
+<a name="636"><span class="lineNum">     636 </span>            :    * Basis.</a>
+<a name="637"><span class="lineNum">     637 </span>            :    *</a>
+<a name="638"><span class="lineNum">     638 </span>            :    * @param &amp;element is the element to multiply entry-wise.</a>
+<a name="639"><span class="lineNum">     639 </span>            :    * @return is the return value of the times operation.</a>
+<a name="640"><span class="lineNum">     640 </span>            :    *</a>
+<a name="641"><span class="lineNum">     641 </span>            :    * @warning Should remove this, data is truncated to native-word size.</a>
+<a name="642"><span class="lineNum">     642 </span>            :    */</a>
+<a name="643"><span class="lineNum">     643 </span>            :     DerivedType Times(const std::vector&lt;BigIntType&gt;&amp; rhs) const {</a>
+<a name="644"><span class="lineNum">     644 </span>            :         return this-&gt;GetDerived().Times(rhs);</a>
+<a name="645"><span class="lineNum">     645 </span>            :     }</a>
+<a name="646"><span class="lineNum">     646 </span>            : </a>
+<a name="647"><span class="lineNum">     647 </span>            :     /**</a>
+<a name="648"><span class="lineNum">     648 </span>            :    * @brief Scalar multiplication followed by division and rounding operation -</a>
+<a name="649"><span class="lineNum">     649 </span>            :    * operation on all entries.</a>
+<a name="650"><span class="lineNum">     650 </span>            :    *</a>
+<a name="651"><span class="lineNum">     651 </span>            :    * @param &amp;p is the element to multiply entry-wise.</a>
+<a name="652"><span class="lineNum">     652 </span>            :    * @param &amp;q is the element to divide entry-wise.</a>
+<a name="653"><span class="lineNum">     653 </span>            :    * @return is the return value of the multiply, divide and followed by</a>
+<a name="654"><span class="lineNum">     654 </span>            :    * rounding operation.</a>
+<a name="655"><span class="lineNum">     655 </span>            :    *</a>
+<a name="656"><span class="lineNum">     656 </span>            :    * @warning Will remove, this is only inplace because of BFV</a>
+<a name="657"><span class="lineNum">     657 </span>            :    */</a>
+<a name="658"><span class="lineNum">     658 </span><span class="lineNoCov">          0 :     DerivedType MultiplyAndRound(const BigIntType&amp; p, const BigIntType&amp; q) const final {</span></a>
+<a name="659"><span class="lineNum">     659 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;MultiplyAndRound not implemented for DCRTPoly&quot;);</span></a>
+<a name="660"><span class="lineNum">     660 </span>            :     }</a>
+<a name="661"><span class="lineNum">     661 </span>            : </a>
+<a name="662"><span class="lineNum">     662 </span>            :     /**</a>
+<a name="663"><span class="lineNum">     663 </span>            :    * @brief Scalar division followed by rounding operation - operation on all</a>
+<a name="664"><span class="lineNum">     664 </span>            :    * entries.</a>
+<a name="665"><span class="lineNum">     665 </span>            :    *</a>
+<a name="666"><span class="lineNum">     666 </span>            :    * @param &amp;q is the element to divide entry-wise.</a>
+<a name="667"><span class="lineNum">     667 </span>            :    * @return is the return value of the divide, followed by rounding operation.</a>
+<a name="668"><span class="lineNum">     668 </span>            :    *</a>
+<a name="669"><span class="lineNum">     669 </span>            :    * @warning Will remove, this is only inplace because of BFV</a>
+<a name="670"><span class="lineNum">     670 </span>            :    */</a>
+<a name="671"><span class="lineNum">     671 </span><span class="lineNoCov">          0 :     DerivedType DivideAndRound(const BigIntType&amp; q) const final {</span></a>
+<a name="672"><span class="lineNum">     672 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;DivideAndRound not implemented for DCRTPoly&quot;);</span></a>
+<a name="673"><span class="lineNum">     673 </span>            :     }</a>
+<a name="674"><span class="lineNum">     674 </span>            : </a>
+<a name="675"><span class="lineNum">     675 </span>            :     /**</a>
+<a name="676"><span class="lineNum">     676 </span>            :    * @brief Performs a negation operation and returns the result.</a>
+<a name="677"><span class="lineNum">     677 </span>            :    *</a>
+<a name="678"><span class="lineNum">     678 </span>            :    * @return is the result of the negation.</a>
+<a name="679"><span class="lineNum">     679 </span>            :    */</a>
+<a name="680"><span class="lineNum">     680 </span>            :     virtual DerivedType Negate() const = 0;</a>
+<a name="681"><span class="lineNum">     681 </span>            : </a>
+<a name="682"><span class="lineNum">     682 </span>            :     DerivedType&amp; operator+=(const BigIntType&amp; rhs) override = 0;</a>
+<a name="683"><span class="lineNum">     683 </span>            :     virtual DerivedType&amp; operator+=(const LilIntType&amp; rhs)  = 0;</a>
+<a name="684"><span class="lineNum">     684 </span>            : </a>
+<a name="685"><span class="lineNum">     685 </span>            :     /**</a>
+<a name="686"><span class="lineNum">     686 </span>            :    * @brief Performs a subtraction operation and returns the result.</a>
+<a name="687"><span class="lineNum">     687 </span>            :    *</a>
+<a name="688"><span class="lineNum">     688 </span>            :    * @param &amp;element is the element to subtract from.</a>
+<a name="689"><span class="lineNum">     689 </span>            :    * @return is the result of the subtraction.</a>
+<a name="690"><span class="lineNum">     690 </span>            :    */</a>
+<a name="691"><span class="lineNum">     691 </span>            :     DerivedType&amp; operator-=(const BigIntType&amp; rhs) override = 0;</a>
+<a name="692"><span class="lineNum">     692 </span>            :     virtual DerivedType&amp; operator-=(const LilIntType&amp; rhs)  = 0;</a>
+<a name="693"><span class="lineNum">     693 </span>            : </a>
+<a name="694"><span class="lineNum">     694 </span>            :     /**</a>
+<a name="695"><span class="lineNum">     695 </span>            :    * @brief Performs a multiplication operation and returns the result.</a>
+<a name="696"><span class="lineNum">     696 </span>            :    *</a>
+<a name="697"><span class="lineNum">     697 </span>            :    * @param &amp;element is the element to multiply by.</a>
+<a name="698"><span class="lineNum">     698 </span>            :    * @return is the result of the multiplication.</a>
+<a name="699"><span class="lineNum">     699 </span>            :    */</a>
+<a name="700"><span class="lineNum">     700 </span>            :     DerivedType&amp; operator*=(const BigIntType&amp; rhs) override = 0;</a>
+<a name="701"><span class="lineNum">     701 </span>            :     virtual DerivedType&amp; operator*=(const LilIntType&amp; rhs)  = 0;</a>
+<a name="702"><span class="lineNum">     702 </span>            : </a>
+<a name="703"><span class="lineNum">     703 </span>            :     /**</a>
+<a name="704"><span class="lineNum">     704 </span>            :    * @brief Performs a multiplication operation and returns the result.</a>
+<a name="705"><span class="lineNum">     705 </span>            :    *</a>
+<a name="706"><span class="lineNum">     706 </span>            :    * @param &amp;element is the element to multiply with.</a>
+<a name="707"><span class="lineNum">     707 </span>            :    * @return is the result of the multiplication.</a>
+<a name="708"><span class="lineNum">     708 </span>            :    */</a>
+<a name="709"><span class="lineNum">     709 </span>            :     DerivedType&amp; operator*=(const DerivedType&amp; rhs) override = 0;</a>
+<a name="710"><span class="lineNum">     710 </span>            :     //    return this-&gt;GetDerived().operator*=(rhs);</a>
+<a name="711"><span class="lineNum">     711 </span>            : </a>
+<a name="712"><span class="lineNum">     712 </span>            :     // multiplicative inverse operation</a>
+<a name="713"><span class="lineNum">     713 </span>            :     /**</a>
+<a name="714"><span class="lineNum">     714 </span>            :    * @brief Performs a multiplicative inverse operation and returns the result.</a>
+<a name="715"><span class="lineNum">     715 </span>            :    *</a>
+<a name="716"><span class="lineNum">     716 </span>            :    * @return is the result of the multiplicative inverse.</a>
+<a name="717"><span class="lineNum">     717 </span>            :    */</a>
+<a name="718"><span class="lineNum">     718 </span>            :     DerivedType MultiplicativeInverse() const override = 0;</a>
+<a name="719"><span class="lineNum">     719 </span>            : </a>
+<a name="720"><span class="lineNum">     720 </span>            :     /**</a>
+<a name="721"><span class="lineNum">     721 </span>            :    * @brief Perform a modulus by 2 operation.  Returns the least significant</a>
+<a name="722"><span class="lineNum">     722 </span>            :    * bit.</a>
+<a name="723"><span class="lineNum">     723 </span>            :    *</a>
+<a name="724"><span class="lineNum">     724 </span>            :    * @return is the resulting value.</a>
+<a name="725"><span class="lineNum">     725 </span>            :    *</a>
+<a name="726"><span class="lineNum">     726 </span>            :    * @warning Doesn't make sense for DCRT</a>
+<a name="727"><span class="lineNum">     727 </span>            :    */</a>
+<a name="728"><span class="lineNum">     728 </span><span class="lineNoCov">          0 :     DerivedType ModByTwo() const final {</span></a>
+<a name="729"><span class="lineNum">     729 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;Mod of a BigIntType not implemented for DCRTPoly&quot;);</span></a>
+<a name="730"><span class="lineNum">     730 </span>            :     }</a>
+<a name="731"><span class="lineNum">     731 </span>            : </a>
+<a name="732"><span class="lineNum">     732 </span>            :     /**</a>
+<a name="733"><span class="lineNum">     733 </span>            :    * @brief Modulus - perform a modulus operation. Does proper mapping of</a>
+<a name="734"><span class="lineNum">     734 </span>            :    * [-modulus/2, modulus/2) to [0, modulus)</a>
+<a name="735"><span class="lineNum">     735 </span>            :    *</a>
+<a name="736"><span class="lineNum">     736 </span>            :    * @param modulus is the modulus to use.</a>
+<a name="737"><span class="lineNum">     737 </span>            :    * @return is the return value of the modulus.</a>
+<a name="738"><span class="lineNum">     738 </span>            :    *</a>
+<a name="739"><span class="lineNum">     739 </span>            :    * @warning Doesn't make sense for DCRT</a>
+<a name="740"><span class="lineNum">     740 </span>            :    */</a>
+<a name="741"><span class="lineNum">     741 </span><span class="lineNoCov">          0 :     DerivedType Mod(const BigIntType&amp; modulus) const final {</span></a>
+<a name="742"><span class="lineNum">     742 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;Mod of a BigIntType not implemented for DCRTPoly&quot;);</span></a>
+<a name="743"><span class="lineNum">     743 </span>            :     }</a>
+<a name="744"><span class="lineNum">     744 </span>            : </a>
+<a name="745"><span class="lineNum">     745 </span>            :     /**</a>
+<a name="746"><span class="lineNum">     746 </span>            :    * @brief Get method that should not be used</a>
+<a name="747"><span class="lineNum">     747 </span>            :    *</a>
+<a name="748"><span class="lineNum">     748 </span>            :    * @return will throw an error.</a>
+<a name="749"><span class="lineNum">     749 </span>            :    *</a>
+<a name="750"><span class="lineNum">     750 </span>            :    * @warning Doesn't make sense for DCRT</a>
+<a name="751"><span class="lineNum">     751 </span>            :    */</a>
+<a name="752"><span class="lineNum">     752 </span><span class="lineNoCov">          0 :     const BigVecType&amp; GetValues() const final {</span></a>
+<a name="753"><span class="lineNum">     753 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;GetValues not implemented for DCRTPoly&quot;);</span></a>
+<a name="754"><span class="lineNum">     754 </span>            :     }</a>
+<a name="755"><span class="lineNum">     755 </span>            : </a>
+<a name="756"><span class="lineNum">     756 </span>            :     /**</a>
+<a name="757"><span class="lineNum">     757 </span>            :    * @brief Set method that should not be used, will throw an error.</a>
+<a name="758"><span class="lineNum">     758 </span>            :    *</a>
+<a name="759"><span class="lineNum">     759 </span>            :    * @param &amp;values</a>
+<a name="760"><span class="lineNum">     760 </span>            :    * @param format</a>
+<a name="761"><span class="lineNum">     761 </span>            :    *</a>
+<a name="762"><span class="lineNum">     762 </span>            :    * @warning Doesn't make sense for DCRT</a>
+<a name="763"><span class="lineNum">     763 </span>            :    */</a>
+<a name="764"><span class="lineNum">     764 </span>            :     void SetValues(const BigVecType&amp; values, Format format) {</a>
+<a name="765"><span class="lineNum">     765 </span>            :         OPENFHE_THROW(&quot;SetValues not implemented for DCRTPoly&quot;);</a>
+<a name="766"><span class="lineNum">     766 </span>            :     }</a>
+<a name="767"><span class="lineNum">     767 </span>            : </a>
+<a name="768"><span class="lineNum">     768 </span>            :     /**</a>
+<a name="769"><span class="lineNum">     769 </span>            :    * @brief Sets all values of element to zero.</a>
+<a name="770"><span class="lineNum">     770 </span>            :    */</a>
+<a name="771"><span class="lineNum">     771 </span>            :     virtual void SetValuesToZero() = 0;</a>
+<a name="772"><span class="lineNum">     772 </span>            : </a>
+<a name="773"><span class="lineNum">     773 </span>            :     /**</a>
+<a name="774"><span class="lineNum">     774 </span>            :    * @brief Sets values with a different modulus</a>
+<a name="775"><span class="lineNum">     775 </span>            :    */</a>
+<a name="776"><span class="lineNum">     776 </span>            :     virtual void SetValuesModSwitch(const DerivedType&amp; element, const NativeInteger&amp; modulus) = 0;</a>
+<a name="777"><span class="lineNum">     777 </span>            : </a>
+<a name="778"><span class="lineNum">     778 </span>            :     /**</a>
+<a name="779"><span class="lineNum">     779 </span>            :    * @brief Adds &quot;1&quot; to every entry in every tower.</a>
+<a name="780"><span class="lineNum">     780 </span>            :    */</a>
+<a name="781"><span class="lineNum">     781 </span>            :     void AddILElementOne() override = 0;</a>
+<a name="782"><span class="lineNum">     782 </span>            : </a>
+<a name="783"><span class="lineNum">     783 </span>            :     /**</a>
+<a name="784"><span class="lineNum">     784 </span>            :    * @brief Add uniformly random values to all components except for the first</a>
+<a name="785"><span class="lineNum">     785 </span>            :    * one</a>
+<a name="786"><span class="lineNum">     786 </span>            :    *</a>
+<a name="787"><span class="lineNum">     787 </span>            :    * @warning Doesn't make sense for DCRT</a>
+<a name="788"><span class="lineNum">     788 </span>            :    */</a>
+<a name="789"><span class="lineNum">     789 </span>            :     DerivedType AddRandomNoise(const BigIntType&amp; modulus) const {</a>
+<a name="790"><span class="lineNum">     790 </span>            :         OPENFHE_THROW(&quot;AddRandomNoise is not currently implemented for DCRTPoly&quot;);</a>
+<a name="791"><span class="lineNum">     791 </span>            :     }</a>
+<a name="792"><span class="lineNum">     792 </span>            : </a>
+<a name="793"><span class="lineNum">     793 </span>            :     /**</a>
+<a name="794"><span class="lineNum">     794 </span>            :    * @brief Make DCRTPoly Sparse. Sets every index of each tower not equal to</a>
+<a name="795"><span class="lineNum">     795 </span>            :    * zero mod the wFactor to zero.</a>
+<a name="796"><span class="lineNum">     796 </span>            :    *</a>
+<a name="797"><span class="lineNum">     797 </span>            :    * @param &amp;wFactor ratio between the sparse and none-sparse values.</a>
+<a name="798"><span class="lineNum">     798 </span>            :    *</a>
+<a name="799"><span class="lineNum">     799 </span>            :    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.</a>
+<a name="800"><span class="lineNum">     800 </span>            :    */</a>
+<a name="801"><span class="lineNum">     801 </span><span class="lineNoCov">          0 :     void MakeSparse(uint32_t wFactor) final {</span></a>
+<a name="802"><span class="lineNum">     802 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;MakeSparse is not currently implemented for DCRTPoly&quot;);</span></a>
+<a name="803"><span class="lineNum">     803 </span>            :     }</a>
+<a name="804"><span class="lineNum">     804 </span>            : </a>
+<a name="805"><span class="lineNum">     805 </span>            :     /**</a>
+<a name="806"><span class="lineNum">     806 </span>            :    * @brief Returns true if ALL the tower(s) are empty.</a>
+<a name="807"><span class="lineNum">     807 </span>            :    * @return true if all towers are empty</a>
+<a name="808"><span class="lineNum">     808 </span>            :    */</a>
+<a name="809"><span class="lineNum">     809 </span>            :     bool IsEmpty() const override = 0;</a>
+<a name="810"><span class="lineNum">     810 </span>            : </a>
+<a name="811"><span class="lineNum">     811 </span>            :     /**</a>
+<a name="812"><span class="lineNum">     812 </span>            :    * @brief Drops the last element in the double-CRT representation. The</a>
+<a name="813"><span class="lineNum">     813 </span>            :    * resulting DCRTPoly element will have one less tower.</a>
+<a name="814"><span class="lineNum">     814 </span>            :    */</a>
+<a name="815"><span class="lineNum">     815 </span>            :     virtual void DropLastElement() = 0;</a>
+<a name="816"><span class="lineNum">     816 </span>            : </a>
+<a name="817"><span class="lineNum">     817 </span>            :     /**</a>
+<a name="818"><span class="lineNum">     818 </span>            :    * @brief Drops the last i elements in the double-CRT representation.</a>
+<a name="819"><span class="lineNum">     819 </span>            :    */</a>
+<a name="820"><span class="lineNum">     820 </span>            :     virtual void DropLastElements(size_t i) = 0;</a>
+<a name="821"><span class="lineNum">     821 </span>            : </a>
+<a name="822"><span class="lineNum">     822 </span>            :     /**</a>
+<a name="823"><span class="lineNum">     823 </span>            :    * @brief Drops the last element in the double-CRT representation and scales</a>
+<a name="824"><span class="lineNum">     824 </span>            :    * down by the last CRT modulus. The resulting DCRTPoly element will have one</a>
+<a name="825"><span class="lineNum">     825 </span>            :    * less tower.</a>
+<a name="826"><span class="lineNum">     826 </span>            :    * @param &amp;QlQlInvModqlDivqlModq precomputed values for</a>
+<a name="827"><span class="lineNum">     827 </span>            :    * [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}</a>
+<a name="828"><span class="lineNum">     828 </span>            :    * @param &amp;QlQlInvModqlDivqlModqPrecon NTL-specific precomputations</a>
+<a name="829"><span class="lineNum">     829 </span>            :    * @param &amp;qlInvModq precomputed values for [q_l^{-1}]_{q_i}</a>
+<a name="830"><span class="lineNum">     830 </span>            :    * @param &amp;qlInvModqPrecon NTL-specific precomputations</a>
+<a name="831"><span class="lineNum">     831 </span>            :    */</a>
+<a name="832"><span class="lineNum">     832 </span>            :     virtual void DropLastElementAndScale(const std::vector&lt;NativeInteger&gt;&amp; QlQlInvModqlDivqlModq,</a>
+<a name="833"><span class="lineNum">     833 </span>            :                                          const std::vector&lt;NativeInteger&gt;&amp; qlInvModq) = 0;</a>
+<a name="834"><span class="lineNum">     834 </span>            : </a>
+<a name="835"><span class="lineNum">     835 </span>            :     /**</a>
+<a name="836"><span class="lineNum">     836 </span>            :    * @brief ModReduces reduces the DCRTPoly element's composite modulus by</a>
+<a name="837"><span class="lineNum">     837 </span>            :    * dropping the last modulus from the chain of moduli as well as dropping the</a>
+<a name="838"><span class="lineNum">     838 </span>            :    * last tower.</a>
+<a name="839"><span class="lineNum">     839 </span>            :    *</a>
+<a name="840"><span class="lineNum">     840 </span>            :    * @param &amp;t is the plaintextModulus used for the DCRTPoly</a>
+<a name="841"><span class="lineNum">     841 </span>            :    * @param &amp;tModqPrecon NTL-specific precomputations for [t]_{q_i}</a>
+<a name="842"><span class="lineNum">     842 </span>            :    * @param &amp;negtInvModq precomputed values for [-t^{-1}]_{q_i}</a>
+<a name="843"><span class="lineNum">     843 </span>            :    * @param &amp;negtInvModqPrecon NTL-specific precomputations for [-t^{-1}]_{q_i}</a>
+<a name="844"><span class="lineNum">     844 </span>            :    * @param &amp;qlInvModq precomputed values for [q_{l}^{-1}]_{q_i}</a>
+<a name="845"><span class="lineNum">     845 </span>            :    * @param &amp;qlInvModqPrecon NTL-specific precomputations for [q_{l}^{-1}]_{q_i}</a>
+<a name="846"><span class="lineNum">     846 </span>            :    */</a>
+<a name="847"><span class="lineNum">     847 </span>            :     virtual void ModReduce(const NativeInteger&amp; t, const std::vector&lt;NativeInteger&gt;&amp; tModqPrecon,</a>
+<a name="848"><span class="lineNum">     848 </span>            :                            const NativeInteger&amp; negtInvModq, const NativeInteger&amp; negtInvModqPrecon,</a>
+<a name="849"><span class="lineNum">     849 </span>            :                            const std::vector&lt;NativeInteger&gt;&amp; qlInvModq,</a>
+<a name="850"><span class="lineNum">     850 </span>            :                            const std::vector&lt;NativeInteger&gt;&amp; qlInvModqPrecon) = 0;</a>
+<a name="851"><span class="lineNum">     851 </span>            : </a>
+<a name="852"><span class="lineNum">     852 </span>            :     /**</a>
+<a name="853"><span class="lineNum">     853 </span>            :    * @brief Interpolates the DCRTPoly to a Poly based on the Chinese Remainder</a>
+<a name="854"><span class="lineNum">     854 </span>            :    * Transform Interpolation. and then returns a Poly with that single element</a>
+<a name="855"><span class="lineNum">     855 </span>            :    *</a>
+<a name="856"><span class="lineNum">     856 </span>            :    * @return the interpolated ring element as a Poly object.</a>
+<a name="857"><span class="lineNum">     857 </span>            :    */</a>
+<a name="858"><span class="lineNum">     858 </span>            :     virtual PolyLargeType CRTInterpolate() const = 0;</a>
+<a name="859"><span class="lineNum">     859 </span>            : </a>
+<a name="860"><span class="lineNum">     860 </span>            :     virtual TowerType DecryptionCRTInterpolate(PlaintextModulus ptm) const = 0;</a>
+<a name="861"><span class="lineNum">     861 </span>            : </a>
+<a name="862"><span class="lineNum">     862 </span>            :     /**</a>
+<a name="863"><span class="lineNum">     863 </span>            :    * @brief If the values are small enough this is used for efficiency</a>
+<a name="864"><span class="lineNum">     864 </span>            :    *</a>
+<a name="865"><span class="lineNum">     865 </span>            :    * @return NativePoly</a>
+<a name="866"><span class="lineNum">     866 </span>            :    *</a>
+<a name="867"><span class="lineNum">     867 </span>            :    * @warning This will be replaced with a non-member utility function.</a>
+<a name="868"><span class="lineNum">     868 </span>            :    */</a>
+<a name="869"><span class="lineNum">     869 </span>            :     virtual TowerType ToNativePoly() const = 0;</a>
+<a name="870"><span class="lineNum">     870 </span>            : </a>
+<a name="871"><span class="lineNum">     871 </span>            :     /**</a>
+<a name="872"><span class="lineNum">     872 </span>            :    * @brief Interpolates the DCRTPoly to a Poly based on the Chinese Remainder</a>
+<a name="873"><span class="lineNum">     873 </span>            :    * Transform Interpolation, only at element index i, all other elements are</a>
+<a name="874"><span class="lineNum">     874 </span>            :    * zero. and then returns a Poly with that single element</a>
+<a name="875"><span class="lineNum">     875 </span>            :    *</a>
+<a name="876"><span class="lineNum">     876 </span>            :    * @return the interpolated ring element as a Poly object.</a>
+<a name="877"><span class="lineNum">     877 </span>            :    */</a>
+<a name="878"><span class="lineNum">     878 </span>            :     virtual PolyLargeType CRTInterpolateIndex(usint i) const = 0;</a>
+<a name="879"><span class="lineNum">     879 </span>            : </a>
+<a name="880"><span class="lineNum">     880 </span>            :     /**</a>
+<a name="881"><span class="lineNum">     881 </span>            :    * @brief Computes and returns the product of primes in the current moduli</a>
+<a name="882"><span class="lineNum">     882 </span>            :    * chain. Compared to GetModulus, which always returns the product of all</a>
+<a name="883"><span class="lineNum">     883 </span>            :    * primes in the crypto parameters, this method will return a different</a>
+<a name="884"><span class="lineNum">     884 </span>            :    * modulus, based on the towers/moduli that are currently in the chain (some</a>
+<a name="885"><span class="lineNum">     885 </span>            :    * towers are dropped along the way).</a>
+<a name="886"><span class="lineNum">     886 </span>            :    *</a>
+<a name="887"><span class="lineNum">     887 </span>            :    * @return the product of moduli in the current towers.</a>
+<a name="888"><span class="lineNum">     888 </span>            :    */</a>
+<a name="889"><span class="lineNum">     889 </span>            :     virtual BigIntType GetWorkingModulus() const = 0;</a>
+<a name="890"><span class="lineNum">     890 </span>            : </a>
+<a name="891"><span class="lineNum">     891 </span>            :     /**</a>
+<a name="892"><span class="lineNum">     892 </span>            :    * @brief Returns the element parameters for DCRTPoly elements in an extended</a>
+<a name="893"><span class="lineNum">     893 </span>            :    * CRT basis, which is the concatenation of the towers currently in &quot;this&quot;</a>
+<a name="894"><span class="lineNum">     894 </span>            :    * DCRTPoly, and the moduli in ParamsP.</a>
+<a name="895"><span class="lineNum">     895 </span>            :    *</a>
+<a name="896"><span class="lineNum">     896 </span>            :    * @return element parameters of the extended basis.</a>
+<a name="897"><span class="lineNum">     897 </span>            :    */</a>
+<a name="898"><span class="lineNum">     898 </span>            :     virtual std::shared_ptr&lt;Params&gt; GetExtendedCRTBasis(const std::shared_ptr&lt;Params&gt;&amp; paramsP) const = 0;</a>
+<a name="899"><span class="lineNum">     899 </span>            : </a>
+<a name="900"><span class="lineNum">     900 </span>            :     virtual void TimesQovert(const std::shared_ptr&lt;Params&gt;&amp; paramsQ, const std::vector&lt;NativeInteger&gt;&amp; tInvModq,</a>
+<a name="901"><span class="lineNum">     901 </span>            :                              const NativeInteger&amp; t, const NativeInteger&amp; NegQModt,</a>
+<a name="902"><span class="lineNum">     902 </span>            :                              const NativeInteger&amp; NegQModtPrecon) = 0;</a>
+<a name="903"><span class="lineNum">     903 </span>            : </a>
+<a name="904"><span class="lineNum">     904 </span>            :     /**</a>
+<a name="905"><span class="lineNum">     905 </span>            :    * @brief Performs approximate CRT basis switching:</a>
+<a name="906"><span class="lineNum">     906 </span>            :    * {X}_{Q} -&gt; {X'}_{P}</a>
+<a name="907"><span class="lineNum">     907 </span>            :    * X' = X + alpha*Q for small alpha</a>
+<a name="908"><span class="lineNum">     908 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="909"><span class="lineNum">     909 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="910"><span class="lineNum">     910 </span>            :    *</a>
+<a name="911"><span class="lineNum">     911 </span>            :    * Brief algorithm:</a>
+<a name="912"><span class="lineNum">     912 </span>            :    * [X']_{p_j} = [\sum_i([x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)]_{p_j}</a>
+<a name="913"><span class="lineNum">     913 </span>            :    *</a>
+<a name="914"><span class="lineNum">     914 </span>            :    * Source: &quot;A full RNS variant of approximate homomorphic encryption&quot; by</a>
+<a name="915"><span class="lineNum">     915 </span>            :    * Cheon, et. al.</a>
+<a name="916"><span class="lineNum">     916 </span>            :    *</a>
+<a name="917"><span class="lineNum">     917 </span>            :    * @param &amp;paramsQ parameters for the CRT basis {q_1,...,q_l}</a>
+<a name="918"><span class="lineNum">     918 </span>            :    * @param &amp;paramsP parameters for the CRT basis {p_1,...,p_k}</a>
+<a name="919"><span class="lineNum">     919 </span>            :    * @param &amp;QHatinvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}</a>
+<a name="920"><span class="lineNum">     920 </span>            :    * @param &amp;QHatinvModqPrecon NTL-specific precomputations</a>
+<a name="921"><span class="lineNum">     921 </span>            :    * @param &amp;QHatModp precomputed values for [Q/q_i]_{p_j}</a>
+<a name="922"><span class="lineNum">     922 </span>            :    * @param &amp;modpBarrettMu 128-bit Barrett reduction precomputed values</a>
+<a name="923"><span class="lineNum">     923 </span>            :    * @return the representation of {X + alpha*Q} in basis {P}.</a>
+<a name="924"><span class="lineNum">     924 </span>            :    */</a>
+<a name="925"><span class="lineNum">     925 </span>            :     virtual DerivedType ApproxSwitchCRTBasis(const std::shared_ptr&lt;Params&gt;&amp; paramsQ,</a>
+<a name="926"><span class="lineNum">     926 </span>            :                                              const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="927"><span class="lineNum">     927 </span>            :                                              const std::vector&lt;NativeInteger&gt;&amp; QHatInvModq,</a>
+<a name="928"><span class="lineNum">     928 </span>            :                                              const std::vector&lt;NativeInteger&gt;&amp; QHatInvModqPrecon,</a>
+<a name="929"><span class="lineNum">     929 </span>            :                                              const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModp,</a>
+<a name="930"><span class="lineNum">     930 </span>            :                                              const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarrettMu) const = 0;</a>
+<a name="931"><span class="lineNum">     931 </span>            : </a>
+<a name="932"><span class="lineNum">     932 </span>            :     /**</a>
+<a name="933"><span class="lineNum">     933 </span>            :    * @brief Performs approximate modulus raising:</a>
+<a name="934"><span class="lineNum">     934 </span>            :    * {X}_{Q} -&gt; {X'}_{Q,P}.</a>
+<a name="935"><span class="lineNum">     935 </span>            :    * X' = X + alpha*Q for small alpha</a>
+<a name="936"><span class="lineNum">     936 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="937"><span class="lineNum">     937 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="938"><span class="lineNum">     938 </span>            :    *</a>
+<a name="939"><span class="lineNum">     939 </span>            :    * Brief algorithm:</a>
+<a name="940"><span class="lineNum">     940 </span>            :    * {X}_{Q} -&gt; {X'}_Q : trivial</a>
+<a name="941"><span class="lineNum">     941 </span>            :    * {X}_{Q} -&gt; {X'}_P : use DCRTPoly::ApproxSwitchCRTBasis</a>
+<a name="942"><span class="lineNum">     942 </span>            :    *</a>
+<a name="943"><span class="lineNum">     943 </span>            :    * Source: &quot;A full RNS variant of approximate homomorphic encryption&quot; by</a>
+<a name="944"><span class="lineNum">     944 </span>            :    * Cheon, et. al.</a>
+<a name="945"><span class="lineNum">     945 </span>            :    *</a>
+<a name="946"><span class="lineNum">     946 </span>            :    * @param &amp;paramsQ parameters for the CRT basis {q_1,...,q_l}</a>
+<a name="947"><span class="lineNum">     947 </span>            :    * @param &amp;paramsP parameters for the CRT basis {p_1,...,p_k}</a>
+<a name="948"><span class="lineNum">     948 </span>            :    * @param &amp;QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}</a>
+<a name="949"><span class="lineNum">     949 </span>            :    * @param &amp;QHatInvModqPrecon NTL-specific precomputations</a>
+<a name="950"><span class="lineNum">     950 </span>            :    * @param &amp;QHatModp precomputed values for [Q/q_i]_{p_j}</a>
+<a name="951"><span class="lineNum">     951 </span>            :    * @param &amp;modpBarrettMu 128-bit Barrett reduction precomputed values for</a>
+<a name="952"><span class="lineNum">     952 </span>            :    * p_j</a>
+<a name="953"><span class="lineNum">     953 </span>            :    * @return the representation of {X + alpha*Q} in basis {Q,P}.</a>
+<a name="954"><span class="lineNum">     954 </span>            :    */</a>
+<a name="955"><span class="lineNum">     955 </span>            :     virtual void ApproxModUp(const std::shared_ptr&lt;Params&gt;&amp; paramsQ, const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="956"><span class="lineNum">     956 </span>            :                              const std::shared_ptr&lt;Params&gt;&amp; paramsQP, const std::vector&lt;NativeInteger&gt;&amp; QHatInvModq,</a>
+<a name="957"><span class="lineNum">     957 </span>            :                              const std::vector&lt;NativeInteger&gt;&amp; QHatInvModqPrecon,</a>
+<a name="958"><span class="lineNum">     958 </span>            :                              const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModp,</a>
+<a name="959"><span class="lineNum">     959 </span>            :                              const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarrettMu) = 0;</a>
+<a name="960"><span class="lineNum">     960 </span>            : </a>
+<a name="961"><span class="lineNum">     961 </span>            :     /**</a>
+<a name="962"><span class="lineNum">     962 </span>            :    * @brief Performs approximate modulus reduction:</a>
+<a name="963"><span class="lineNum">     963 </span>            :    * {X}_{Q,P} -&gt; {\approx(X/P)}_{Q}.</a>
+<a name="964"><span class="lineNum">     964 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="965"><span class="lineNum">     965 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="966"><span class="lineNum">     966 </span>            :    *</a>
+<a name="967"><span class="lineNum">     967 </span>            :    * Brief algorithm:</a>
+<a name="968"><span class="lineNum">     968 </span>            :    * 1) use DCRTPoly::ApproxSwitchCRTBasis : {X}_{P} -&gt; {X'}_{Q}</a>
+<a name="969"><span class="lineNum">     969 </span>            :    * 2) compute : {(X-X') * P^{-1}}_{Q}</a>
+<a name="970"><span class="lineNum">     970 </span>            :    *</a>
+<a name="971"><span class="lineNum">     971 </span>            :    * Source: &quot;A full RNS variant of approximate homomorphic encryption&quot; by</a>
+<a name="972"><span class="lineNum">     972 </span>            :    * Cheon, et. al.</a>
+<a name="973"><span class="lineNum">     973 </span>            :    *</a>
+<a name="974"><span class="lineNum">     974 </span>            :    * @param &amp;paramsQ parameters for the CRT basis {q_1,...,q_l}</a>
+<a name="975"><span class="lineNum">     975 </span>            :    * @param &amp;paramsP parameters for the CRT basis {p_1,...,p_k}</a>
+<a name="976"><span class="lineNum">     976 </span>            :    * @param &amp;PInvModq precomputed values for (P^{-1} mod q_j)</a>
+<a name="977"><span class="lineNum">     977 </span>            :    * @param &amp;PInvModqPrecon NTL-specific precomputations</a>
+<a name="978"><span class="lineNum">     978 </span>            :    * @param &amp;PHatInvModp precomputed values for [(P/p_j)^{-1}]_{p_j}</a>
+<a name="979"><span class="lineNum">     979 </span>            :    * @param &amp;PHatInvModpPrecon NTL-specific precomputations</a>
+<a name="980"><span class="lineNum">     980 </span>            :    * @param &amp;PHatModq precomputed values for [P/p_j]_{q_i}</a>
+<a name="981"><span class="lineNum">     981 </span>            :    * @param &amp;modqBarrettMu 128-bit Barrett reduction precomputed values for</a>
+<a name="982"><span class="lineNum">     982 </span>            :    * q_i</a>
+<a name="983"><span class="lineNum">     983 </span>            :    * @param &amp;tInvModp precomputed values for [t^{-1}]_{p_j}</a>
+<a name="984"><span class="lineNum">     984 </span>            :    * used in BGVrns</a>
+<a name="985"><span class="lineNum">     985 </span>            :    * @param t often corresponds to the plaintext modulus</a>
+<a name="986"><span class="lineNum">     986 </span>            :    * used in BGVrns</a>
+<a name="987"><span class="lineNum">     987 </span>            :    * @return the representation of {\approx(X/P)}_{Q}</a>
+<a name="988"><span class="lineNum">     988 </span>            :    */</a>
+<a name="989"><span class="lineNum">     989 </span>            :     virtual DerivedType ApproxModDown(</a>
+<a name="990"><span class="lineNum">     990 </span>            :         const std::shared_ptr&lt;Params&gt;&amp; paramsQ, const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="991"><span class="lineNum">     991 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; PInvModq, const std::vector&lt;NativeInteger&gt;&amp; PInvModqPrecon,</a>
+<a name="992"><span class="lineNum">     992 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; PHatInvModp, const std::vector&lt;NativeInteger&gt;&amp; PHatInvModpPrecon,</a>
+<a name="993"><span class="lineNum">     993 </span>            :         const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; PHatModq, const std::vector&lt;DoubleNativeInt&gt;&amp; modqBarrettMu,</a>
+<a name="994"><span class="lineNum">     994 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; tInvModp, const std::vector&lt;NativeInteger&gt;&amp; tInvModpPrecon,</a>
+<a name="995"><span class="lineNum">     995 </span>            :         const NativeInteger&amp; t, const std::vector&lt;NativeInteger&gt;&amp; tModqPrecon) const = 0;</a>
+<a name="996"><span class="lineNum">     996 </span>            : </a>
+<a name="997"><span class="lineNum">     997 </span>            :     /**</a>
+<a name="998"><span class="lineNum">     998 </span>            :    * @brief Performs CRT basis switching:</a>
+<a name="999"><span class="lineNum">     999 </span>            :    * {X}_{Q} -&gt; {X}_{P}</a>
+<a name="1000"><span class="lineNum">    1000 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1001"><span class="lineNum">    1001 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="1002"><span class="lineNum">    1002 </span>            :    *</a>
+<a name="1003"><span class="lineNum">    1003 </span>            :    * Brief algorithm:</a>
+<a name="1004"><span class="lineNum">    1004 </span>            :    * 1) X=\sum_i[x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)-alpha*Q</a>
+<a name="1005"><span class="lineNum">    1005 </span>            :    * 2) compute round[[x_i*(Q/q_i)^{-1}]_{q_i} / q_i] to find alpha</a>
+<a name="1006"><span class="lineNum">    1006 </span>            :    * 3) [X]_{p_j}=[\sum_i[x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)]_{p_j}-[alpha*Q]_{p_j}</a>
+<a name="1007"><span class="lineNum">    1007 </span>            :    *</a>
+<a name="1008"><span class="lineNum">    1008 </span>            :    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the</a>
+<a name="1009"><span class="lineNum">    1009 </span>            :    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report</a>
+<a name="1010"><span class="lineNum">    1010 </span>            :    * 2018/117. (https://eprint.iacr.org/2018/117)</a>
+<a name="1011"><span class="lineNum">    1011 </span>            :    *</a>
+<a name="1012"><span class="lineNum">    1012 </span>            :    * @param &amp;paramsP parameters for the CRT basis {p_1,...,p_k}</a>
+<a name="1013"><span class="lineNum">    1013 </span>            :    * @param &amp;QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1014"><span class="lineNum">    1014 </span>            :    * @param &amp;QHatInvModqPrecon NTL-specific precomputations</a>
+<a name="1015"><span class="lineNum">    1015 </span>            :    * @param &amp;QHatModp precomputed values for [Q/q_i]_{p_j}</a>
+<a name="1016"><span class="lineNum">    1016 </span>            :    * @param &amp;alphaQModp precomputed values for [alpha*Q]_{p_j}</a>
+<a name="1017"><span class="lineNum">    1017 </span>            :    * @param &amp;modpBarrettMu 128-bit Barrett reduction precomputed values for</a>
+<a name="1018"><span class="lineNum">    1018 </span>            :    * p_j</a>
+<a name="1019"><span class="lineNum">    1019 </span>            :    * @params &amp;qInv precomputed values for 1/q_i</a>
+<a name="1020"><span class="lineNum">    1020 </span>            :    * @return the representation of {X}_{P}</a>
+<a name="1021"><span class="lineNum">    1021 </span>            :    */</a>
+<a name="1022"><span class="lineNum">    1022 </span>            :     virtual DerivedType SwitchCRTBasis(const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="1023"><span class="lineNum">    1023 </span>            :                                        const std::vector&lt;NativeInteger&gt;&amp; QHatInvModq,</a>
+<a name="1024"><span class="lineNum">    1024 </span>            :                                        const std::vector&lt;NativeInteger&gt;&amp; QHatInvModqPrecon,</a>
+<a name="1025"><span class="lineNum">    1025 </span>            :                                        const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModp,</a>
+<a name="1026"><span class="lineNum">    1026 </span>            :                                        const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; alphaQModp,</a>
+<a name="1027"><span class="lineNum">    1027 </span>            :                                        const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarrettMu,</a>
+<a name="1028"><span class="lineNum">    1028 </span>            :                                        const std::vector&lt;double&gt;&amp; qInv) const = 0;</a>
+<a name="1029"><span class="lineNum">    1029 </span>            : </a>
+<a name="1030"><span class="lineNum">    1030 </span>            :     /**</a>
+<a name="1031"><span class="lineNum">    1031 </span>            :    * @brief Performs modulus raising:</a>
+<a name="1032"><span class="lineNum">    1032 </span>            :    * {X}_{Q} -&gt; {X}_{Q,P}</a>
+<a name="1033"><span class="lineNum">    1033 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1034"><span class="lineNum">    1034 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="1035"><span class="lineNum">    1035 </span>            :    *</a>
+<a name="1036"><span class="lineNum">    1036 </span>            :    * Brief algorithm:</a>
+<a name="1037"><span class="lineNum">    1037 </span>            :    * {X}_{Q} -&gt; {X}_P : use DCRTPoly::SwitchCRTBasis</a>
+<a name="1038"><span class="lineNum">    1038 </span>            :    * combine {X}_{Q} and {X}_{P}</a>
+<a name="1039"><span class="lineNum">    1039 </span>            :    * Outputs the resulting polynomial in CRT/RNS</a>
+<a name="1040"><span class="lineNum">    1040 </span>            :    *</a>
+<a name="1041"><span class="lineNum">    1041 </span>            :    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the</a>
+<a name="1042"><span class="lineNum">    1042 </span>            :    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report</a>
+<a name="1043"><span class="lineNum">    1043 </span>            :    * 2018/117. (https://eprint.iacr.org/2018/117)</a>
+<a name="1044"><span class="lineNum">    1044 </span>            :    *</a>
+<a name="1045"><span class="lineNum">    1045 </span>            :    * @param &amp;paramsQP parameters for the CRT basis {q_1,...,q_l,p_1,...,p_k}</a>
+<a name="1046"><span class="lineNum">    1046 </span>            :    * @param &amp;paramsP parameters for the CRT basis {p_1,...,p_k}</a>
+<a name="1047"><span class="lineNum">    1047 </span>            :    * @param &amp;QHatInvModq precomputed values for [QInv_i]_{q_i}</a>
+<a name="1048"><span class="lineNum">    1048 </span>            :    * @param &amp;QHatInvModqPrecon NTL-specific precomputations</a>
+<a name="1049"><span class="lineNum">    1049 </span>            :    * @param &amp;QHatModp precomputed values for [QHat_i]_{p_j}</a>
+<a name="1050"><span class="lineNum">    1050 </span>            :    * @param &amp;alphaQModp precomputed values for [alpha*Q]_{p_j}</a>
+<a name="1051"><span class="lineNum">    1051 </span>            :    * @param &amp;modpBarrettMu 128-bit Barrett reduction precomputed values for</a>
+<a name="1052"><span class="lineNum">    1052 </span>            :    * p_j</a>
+<a name="1053"><span class="lineNum">    1053 </span>            :    * @params &amp;qInv precomputed values for 1/q_i</a>
+<a name="1054"><span class="lineNum">    1054 </span>            :    * @param resultFormat Specifies the format we want the result to be in</a>
+<a name="1055"><span class="lineNum">    1055 </span>            :    *</a>
+<a name="1056"><span class="lineNum">    1056 </span>            :    */</a>
+<a name="1057"><span class="lineNum">    1057 </span>            :     virtual void ExpandCRTBasis(const std::shared_ptr&lt;Params&gt;&amp; paramsQP, const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="1058"><span class="lineNum">    1058 </span>            :                                 const std::vector&lt;NativeInteger&gt;&amp; QHatInvModq,</a>
+<a name="1059"><span class="lineNum">    1059 </span>            :                                 const std::vector&lt;NativeInteger&gt;&amp; QHatInvModqPrecon,</a>
+<a name="1060"><span class="lineNum">    1060 </span>            :                                 const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModp,</a>
+<a name="1061"><span class="lineNum">    1061 </span>            :                                 const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; alphaQModp,</a>
+<a name="1062"><span class="lineNum">    1062 </span>            :                                 const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarrettMu, const std::vector&lt;double&gt;&amp; qInv,</a>
+<a name="1063"><span class="lineNum">    1063 </span>            :                                 Format resultFormat) = 0;</a>
+<a name="1064"><span class="lineNum">    1064 </span>            : </a>
+<a name="1065"><span class="lineNum">    1065 </span>            :     /**</a>
+<a name="1066"><span class="lineNum">    1066 </span>            :    * @brief Performs modulus raising in reverse order:</a>
+<a name="1067"><span class="lineNum">    1067 </span>            :    * {X}_{Q} -&gt; {X}_{P,Q}</a>
+<a name="1068"><span class="lineNum">    1068 </span>            :    */</a>
+<a name="1069"><span class="lineNum">    1069 </span>            :     virtual void ExpandCRTBasisReverseOrder(const std::shared_ptr&lt;Params&gt;&amp; paramsQP,</a>
+<a name="1070"><span class="lineNum">    1070 </span>            :                                             const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="1071"><span class="lineNum">    1071 </span>            :                                             const std::vector&lt;NativeInteger&gt;&amp; QHatInvModq,</a>
+<a name="1072"><span class="lineNum">    1072 </span>            :                                             const std::vector&lt;NativeInteger&gt;&amp; QHatInvModqPrecon,</a>
+<a name="1073"><span class="lineNum">    1073 </span>            :                                             const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModp,</a>
+<a name="1074"><span class="lineNum">    1074 </span>            :                                             const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; alphaQModp,</a>
+<a name="1075"><span class="lineNum">    1075 </span>            :                                             const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarrettMu,</a>
+<a name="1076"><span class="lineNum">    1076 </span>            :                                             const std::vector&lt;double&gt;&amp; qInv, Format resultFormat) = 0;</a>
+<a name="1077"><span class="lineNum">    1077 </span>            : </a>
+<a name="1078"><span class="lineNum">    1078 </span>            :     struct CRTBasisExtensionPrecomputations {</a>
+<a name="1079"><span class="lineNum">    1079 </span>            :         // TODO (dsuponit) and (pascoec): make the data members private to enforce their constantness and add getters.</a>
+<a name="1080"><span class="lineNum">    1080 </span>            :         std::shared_ptr&lt;Params&gt; paramsQlPl;</a>
+<a name="1081"><span class="lineNum">    1081 </span>            :         std::shared_ptr&lt;Params&gt; paramsPl;</a>
+<a name="1082"><span class="lineNum">    1082 </span>            :         std::shared_ptr&lt;Params&gt; paramsQl;</a>
+<a name="1083"><span class="lineNum">    1083 </span>            :         std::vector&lt;NativeInteger&gt; mPlQHatInvModq;</a>
+<a name="1084"><span class="lineNum">    1084 </span>            :         std::vector&lt;NativeInteger&gt; mPlQHatInvModqPrecon;</a>
+<a name="1085"><span class="lineNum">    1085 </span>            :         std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; qInvModp;</a>
+<a name="1086"><span class="lineNum">    1086 </span>            :         std::vector&lt;DoubleNativeInt&gt; modpBarrettMu;</a>
+<a name="1087"><span class="lineNum">    1087 </span>            :         std::vector&lt;NativeInteger&gt; PlHatInvModp;</a>
+<a name="1088"><span class="lineNum">    1088 </span>            :         std::vector&lt;NativeInteger&gt; PlHatInvModpPrecon;</a>
+<a name="1089"><span class="lineNum">    1089 </span>            :         std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; PlHatModq;</a>
+<a name="1090"><span class="lineNum">    1090 </span>            :         std::vector&lt;std::vector&lt;NativeInteger&gt;&gt; alphaPlModq;</a>
+<a name="1091"><span class="lineNum">    1091 </span>            :         std::vector&lt;DoubleNativeInt&gt; modqBarrettMu;</a>
+<a name="1092"><span class="lineNum">    1092 </span>            :         std::vector&lt;double&gt; pInv;</a>
+<a name="1093"><span class="lineNum">    1093 </span>            : </a>
+<a name="1094"><span class="lineNum">    1094 </span>            :         // clang-format off</a>
+<a name="1095"><span class="lineNum">    1095 </span><span class="lineCov">        320 :         CRTBasisExtensionPrecomputations(</span></a>
+<a name="1096"><span class="lineNum">    1096 </span>            :             const std::shared_ptr&lt;Params&gt;&amp; paramsQlPl0,</a>
+<a name="1097"><span class="lineNum">    1097 </span>            :             const std::shared_ptr&lt;Params&gt;&amp; paramsPl0,</a>
+<a name="1098"><span class="lineNum">    1098 </span>            :             const std::shared_ptr&lt;Params&gt;&amp; paramsQl0,</a>
+<a name="1099"><span class="lineNum">    1099 </span>            :             const std::vector&lt;NativeInteger&gt;&amp; mPlQHatInvModq0,</a>
+<a name="1100"><span class="lineNum">    1100 </span>            :             const std::vector&lt;NativeInteger&gt;&amp; mPlQHatInvModqPrecon0,</a>
+<a name="1101"><span class="lineNum">    1101 </span>            :             const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; qInvModp0,</a>
+<a name="1102"><span class="lineNum">    1102 </span>            :             const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarrettMu0,</a>
+<a name="1103"><span class="lineNum">    1103 </span>            :             const std::vector&lt;NativeInteger&gt;&amp; PlHatInvModp0,</a>
+<a name="1104"><span class="lineNum">    1104 </span>            :             const std::vector&lt;NativeInteger&gt;&amp; PlHatInvModpPrecon0,</a>
+<a name="1105"><span class="lineNum">    1105 </span>            :             const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; PlHatModq0,</a>
+<a name="1106"><span class="lineNum">    1106 </span>            :             const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; alphaPlModq0,</a>
+<a name="1107"><span class="lineNum">    1107 </span>            :             const std::vector&lt;DoubleNativeInt&gt;&amp; modqBarrettMu0,</a>
+<a name="1108"><span class="lineNum">    1108 </span>            :             const std::vector&lt;double&gt;&amp; pInv0)</a>
+<a name="1109"><span class="lineNum">    1109 </span>            :             : paramsQlPl(paramsQlPl0),</a>
+<a name="1110"><span class="lineNum">    1110 </span>            :               paramsPl(paramsPl0),</a>
+<a name="1111"><span class="lineNum">    1111 </span>            :               paramsQl(paramsQl0),</a>
+<a name="1112"><span class="lineNum">    1112 </span>            :               mPlQHatInvModq(mPlQHatInvModq0),</a>
+<a name="1113"><span class="lineNum">    1113 </span>            :               mPlQHatInvModqPrecon(mPlQHatInvModqPrecon0),</a>
+<a name="1114"><span class="lineNum">    1114 </span>            :               qInvModp(qInvModp0),</a>
+<a name="1115"><span class="lineNum">    1115 </span>            :               modpBarrettMu(modpBarrettMu0),</a>
+<a name="1116"><span class="lineNum">    1116 </span>            :               PlHatInvModp(PlHatInvModp0),</a>
+<a name="1117"><span class="lineNum">    1117 </span>            :               PlHatInvModpPrecon(PlHatInvModpPrecon0),</a>
+<a name="1118"><span class="lineNum">    1118 </span>            :               PlHatModq(PlHatModq0),</a>
+<a name="1119"><span class="lineNum">    1119 </span>            :               alphaPlModq(alphaPlModq0),</a>
+<a name="1120"><span class="lineNum">    1120 </span>            :               modqBarrettMu(modqBarrettMu0),</a>
+<a name="1121"><span class="lineNum">    1121 </span><span class="lineCov">        320 :               pInv(pInv0) {}</span></a>
+<a name="1122"><span class="lineNum">    1122 </span>            :         // clang-format on</a>
+<a name="1123"><span class="lineNum">    1123 </span>            :     };</a>
+<a name="1124"><span class="lineNum">    1124 </span>            :     typedef struct CRTBasisExtensionPrecomputations CRTBasisExtensionPrecomputations;</a>
+<a name="1125"><span class="lineNum">    1125 </span>            : </a>
+<a name="1126"><span class="lineNum">    1126 </span>            :     virtual void FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations&amp; precomputed) = 0;</a>
+<a name="1127"><span class="lineNum">    1127 </span>            : </a>
+<a name="1128"><span class="lineNum">    1128 </span>            :     virtual void ExpandCRTBasisQlHat(const std::shared_ptr&lt;Params&gt;&amp; paramsQ,</a>
+<a name="1129"><span class="lineNum">    1129 </span>            :                                      const std::vector&lt;NativeInteger&gt;&amp; QlHatModq,</a>
+<a name="1130"><span class="lineNum">    1130 </span>            :                                      const std::vector&lt;NativeInteger&gt;&amp; QlHatModqPrecon, const usint sizeQ) = 0;</a>
+<a name="1131"><span class="lineNum">    1131 </span>            : </a>
+<a name="1132"><span class="lineNum">    1132 </span>            :     /**</a>
+<a name="1133"><span class="lineNum">    1133 </span>            :    * @brief Performs scale and round:</a>
+<a name="1134"><span class="lineNum">    1134 </span>            :    * {X}_{Q} -&gt; {\round(t/Q*X)}_t</a>
+<a name="1135"><span class="lineNum">    1135 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1136"><span class="lineNum">    1136 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="1137"><span class="lineNum">    1137 </span>            :    *</a>
+<a name="1138"><span class="lineNum">    1138 </span>            :    * Brief algorithm:</a>
+<a name="1139"><span class="lineNum">    1139 </span>            :    * [\sum_i x_i*[t*QHatInv_i/q_i]_t + Round(\sum_i x_i*{t*QHatInv_i/q_i})]_t</a>
+<a name="1140"><span class="lineNum">    1140 </span>            :    *</a>
+<a name="1141"><span class="lineNum">    1141 </span>            :    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the</a>
+<a name="1142"><span class="lineNum">    1142 </span>            :    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report</a>
+<a name="1143"><span class="lineNum">    1143 </span>            :    * 2018/117. (https://eprint.iacr.org/2018/117)</a>
+<a name="1144"><span class="lineNum">    1144 </span>            :    *</a>
+<a name="1145"><span class="lineNum">    1145 </span>            :    * @param &amp;t often corresponds to the plaintext modulus</a>
+<a name="1146"><span class="lineNum">    1146 </span>            :    * @param &amp;tQHatInvModqDivqModt precomputed values for</a>
+<a name="1147"><span class="lineNum">    1147 </span>            :    * [Floor{t*QHatInv_i/q_i}]_t</a>
+<a name="1148"><span class="lineNum">    1148 </span>            :    * @param &amp;tQHatInvModqDivqModtPrecon NTL-specific precomputations</a>
+<a name="1149"><span class="lineNum">    1149 </span>            :    * @param &amp;tQHatInvModqBDivqModt precomputed values for</a>
+<a name="1150"><span class="lineNum">    1150 </span>            :    * [Floor{t*QHatInv_i*B/q_i}]_t used when CRT moduli are 45..60 bits long</a>
+<a name="1151"><span class="lineNum">    1151 </span>            :    * @param &amp;tQHatInvBDivqModtPrecon NTL-specific precomputations</a>
+<a name="1152"><span class="lineNum">    1152 </span>            :    * used when CRT moduli are 45..60 bits long</a>
+<a name="1153"><span class="lineNum">    1153 </span>            :    * @param &amp;tQHatInvModqDivqFrac precomputed values for Frac{t*QHatInv_i/q_i}</a>
+<a name="1154"><span class="lineNum">    1154 </span>            :    * @param &amp;tQHatInvBDivqFrac precomputed values for Frac{t*QHatInv_i*B/q_i}</a>
+<a name="1155"><span class="lineNum">    1155 </span>            :    * used when CRT moduli are 45..60 bits long</a>
+<a name="1156"><span class="lineNum">    1156 </span>            :    * @return the result of computation as a polynomial with native 64-bit</a>
+<a name="1157"><span class="lineNum">    1157 </span>            :    * coefficients</a>
+<a name="1158"><span class="lineNum">    1158 </span>            :    */</a>
+<a name="1159"><span class="lineNum">    1159 </span>            :     virtual TowerType ScaleAndRound(const NativeInteger&amp; t, const std::vector&lt;NativeInteger&gt;&amp; tQHatInvModqDivqModt,</a>
+<a name="1160"><span class="lineNum">    1160 </span>            :                                     const std::vector&lt;NativeInteger&gt;&amp; tQHatInvModqDivqModtPrecon,</a>
+<a name="1161"><span class="lineNum">    1161 </span>            :                                     const std::vector&lt;NativeInteger&gt;&amp; tQHatInvModqBDivqModt,</a>
+<a name="1162"><span class="lineNum">    1162 </span>            :                                     const std::vector&lt;NativeInteger&gt;&amp; tQHatInvModqBDivqModtPrecon,</a>
+<a name="1163"><span class="lineNum">    1163 </span>            :                                     const std::vector&lt;double&gt;&amp; tQHatInvModqDivqFrac,</a>
+<a name="1164"><span class="lineNum">    1164 </span>            :                                     const std::vector&lt;double&gt;&amp; tQHatInvModqBDivqFrac) const = 0;</a>
+<a name="1165"><span class="lineNum">    1165 </span>            : </a>
+<a name="1166"><span class="lineNum">    1166 </span>            :     /**</a>
+<a name="1167"><span class="lineNum">    1167 </span>            :    * @brief Computes approximate scale and round:</a>
+<a name="1168"><span class="lineNum">    1168 </span>            :    * {X}_{Q,P} -&gt; {\approx{t/Q * X}}_{P}</a>
+<a name="1169"><span class="lineNum">    1169 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1170"><span class="lineNum">    1170 </span>            :    * {P} = {p_1,...,p_k}</a>
+<a name="1171"><span class="lineNum">    1171 </span>            :    *</a>
+<a name="1172"><span class="lineNum">    1172 </span>            :    * Brief algorithm:</a>
+<a name="1173"><span class="lineNum">    1173 </span>            :    * Let S = {Q,P}</a>
+<a name="1174"><span class="lineNum">    1174 </span>            :    * 1) [\sum_k x_k * alpha_k]_{p_j}</a>
+<a name="1175"><span class="lineNum">    1175 </span>            :    * 2) alpha_k = [Floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}</a>
+<a name="1176"><span class="lineNum">    1176 </span>            :    *</a>
+<a name="1177"><span class="lineNum">    1177 </span>            :    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the</a>
+<a name="1178"><span class="lineNum">    1178 </span>            :    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report</a>
+<a name="1179"><span class="lineNum">    1179 </span>            :    * 2018/117. (https://eprint.iacr.org/2018/117)</a>
+<a name="1180"><span class="lineNum">    1180 </span>            :    *</a>
+<a name="1181"><span class="lineNum">    1181 </span>            :    * @param &amp;paramsP parameters for the CRT basis {p_1,...,p_k}</a>
+<a name="1182"><span class="lineNum">    1182 </span>            :    * @param &amp;tPSHatInvModsDivsModp precomputed values for</a>
+<a name="1183"><span class="lineNum">    1183 </span>            :    * [\floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}</a>
+<a name="1184"><span class="lineNum">    1184 </span>            :    * @param &amp;modpBarretMu 128-bit Barrett reduction precomputed values for</a>
+<a name="1185"><span class="lineNum">    1185 </span>            :    * p_j</a>
+<a name="1186"><span class="lineNum">    1186 </span>            :    * @return the result {\approx{t/Q * X}}_{P}</a>
+<a name="1187"><span class="lineNum">    1187 </span>            :    */</a>
+<a name="1188"><span class="lineNum">    1188 </span>            :     virtual DerivedType ApproxScaleAndRound(const std::shared_ptr&lt;Params&gt;&amp; paramsP,</a>
+<a name="1189"><span class="lineNum">    1189 </span>            :                                             const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; tPSHatInvModsDivsModp,</a>
+<a name="1190"><span class="lineNum">    1190 </span>            :                                             const std::vector&lt;DoubleNativeInt&gt;&amp; modpBarretMu) const = 0;</a>
+<a name="1191"><span class="lineNum">    1191 </span>            : </a>
+<a name="1192"><span class="lineNum">    1192 </span>            :     /**</a>
+<a name="1193"><span class="lineNum">    1193 </span>            :    * @brief Computes scale and round:</a>
+<a name="1194"><span class="lineNum">    1194 </span>            :    * {X}_{I,O} -&gt; {t/I * X}_{O}</a>
+<a name="1195"><span class="lineNum">    1195 </span>            :    * {I} = {i_1,...,i_l}</a>
+<a name="1196"><span class="lineNum">    1196 </span>            :    * {O} = {o_1,...,o_k}</a>
+<a name="1197"><span class="lineNum">    1197 </span>            :    * O, the output modulus can be either P or Q, and I is the other one.</a>
+<a name="1198"><span class="lineNum">    1198 </span>            :    *</a>
+<a name="1199"><span class="lineNum">    1199 </span>            :    * Brief algorithm:</a>
+<a name="1200"><span class="lineNum">    1200 </span>            :    * Let S = {I,O}</a>
+<a name="1201"><span class="lineNum">    1201 </span>            :    * 1) [\sum_k x_k * alpha_k + Round(\sum_k beta_k * x_k)]_{o_j}</a>
+<a name="1202"><span class="lineNum">    1202 </span>            :    * 2) alpha_k = [Floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}</a>
+<a name="1203"><span class="lineNum">    1203 </span>            :    * 3) beta_k = {t*O*[[SHatInv_k]_{s_k}/s_k}</a>
+<a name="1204"><span class="lineNum">    1204 </span>            :    *</a>
+<a name="1205"><span class="lineNum">    1205 </span>            :    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the</a>
+<a name="1206"><span class="lineNum">    1206 </span>            :    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report</a>
+<a name="1207"><span class="lineNum">    1207 </span>            :    * 2018/117. (https://eprint.iacr.org/2018/117)</a>
+<a name="1208"><span class="lineNum">    1208 </span>            :    *</a>
+<a name="1209"><span class="lineNum">    1209 </span>            :    * @param &amp;paramsOutput parameters for the CRT basis {o_1,...,o_k}.</a>
+<a name="1210"><span class="lineNum">    1210 </span>            :    * @param &amp;tOSHatInvModsDivsModo precomputed values for</a>
+<a name="1211"><span class="lineNum">    1211 </span>            :    * [\floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}</a>
+<a name="1212"><span class="lineNum">    1212 </span>            :    * @param &amp;tPSHatInvModsDivsFrac precomputed values for</a>
+<a name="1213"><span class="lineNum">    1213 </span>            :    * {t*O*[[SHatInv_k]_{s_k}/s_k}</a>
+<a name="1214"><span class="lineNum">    1214 </span>            :    * @param &amp;modoBarretMu 128-bit Barrett reduction precomputed values for</a>
+<a name="1215"><span class="lineNum">    1215 </span>            :    * o_j</a>
+<a name="1216"><span class="lineNum">    1216 </span>            :    * @return the result {t/I * X}_{O}</a>
+<a name="1217"><span class="lineNum">    1217 </span>            :    */</a>
+<a name="1218"><span class="lineNum">    1218 </span>            :     virtual DerivedType ScaleAndRound(const std::shared_ptr&lt;Params&gt;&amp; paramsOutput,</a>
+<a name="1219"><span class="lineNum">    1219 </span>            :                                       const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; tOSHatInvModsDivsModo,</a>
+<a name="1220"><span class="lineNum">    1220 </span>            :                                       const std::vector&lt;double&gt;&amp; tOSHatInvModsDivsFrac,</a>
+<a name="1221"><span class="lineNum">    1221 </span>            :                                       const std::vector&lt;DoubleNativeInt&gt;&amp; modoBarretMu) const = 0;</a>
+<a name="1222"><span class="lineNum">    1222 </span>            : </a>
+<a name="1223"><span class="lineNum">    1223 </span>            :     /**</a>
+<a name="1224"><span class="lineNum">    1224 </span>            :    * @brief Computes scale and round for fast rounding:</a>
+<a name="1225"><span class="lineNum">    1225 </span>            :    * {X}_{Q} -&gt; {\round(t/Q * X)}_t</a>
+<a name="1226"><span class="lineNum">    1226 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1227"><span class="lineNum">    1227 </span>            :    *</a>
+<a name="1228"><span class="lineNum">    1228 </span>            :    * Brief algorithm:</a>
+<a name="1229"><span class="lineNum">    1229 </span>            :    *</a>
+<a name="1230"><span class="lineNum">    1230 </span>            :    * Source: Jean-Claude Bajard and Julien Eynard and Anwar Hasan and Vincent</a>
+<a name="1231"><span class="lineNum">    1231 </span>            :    * Zucca. A Full RNS Variant of FV like Somewhat Homomorphic Encryption</a>
+<a name="1232"><span class="lineNum">    1232 </span>            :    * Schemes. Cryptology ePrint Archive: Report 2016/510.</a>
+<a name="1233"><span class="lineNum">    1233 </span>            :    * (https://eprint.iacr.org/2016/510)</a>
+<a name="1234"><span class="lineNum">    1234 </span>            :    *</a>
+<a name="1235"><span class="lineNum">    1235 </span>            :    * @param &amp;moduliQ moduli {q_1,...,q_l}</a>
+<a name="1236"><span class="lineNum">    1236 </span>            :    * @param &amp;t often corresponds to the plaintext modulus</a>
+<a name="1237"><span class="lineNum">    1237 </span>            :    * @param &amp;tgamma t * gamma : t * 2^26 reduction</a>
+<a name="1238"><span class="lineNum">    1238 </span>            :    * @param &amp;tgammaQHatModq [t*gamma*(Q/q_i)]_{q_i}</a>
+<a name="1239"><span class="lineNum">    1239 </span>            :    * @param &amp;tgammaQHatModqPrecon NTL-specific precomputations</a>
+<a name="1240"><span class="lineNum">    1240 </span>            :    * @param &amp;negInvqModtgamma [-q^{-1}]_{t*gamma}</a>
+<a name="1241"><span class="lineNum">    1241 </span>            :    * @param &amp;negInvqModtgammaPrecon NTL-specific precomputations</a>
+<a name="1242"><span class="lineNum">    1242 </span>            :    * @return</a>
+<a name="1243"><span class="lineNum">    1243 </span>            :    */</a>
+<a name="1244"><span class="lineNum">    1244 </span>            :     virtual TowerType ScaleAndRound(const std::vector&lt;NativeInteger&gt;&amp; moduliQ, const NativeInteger&amp; t,</a>
+<a name="1245"><span class="lineNum">    1245 </span>            :                                     const NativeInteger&amp; tgamma, const std::vector&lt;NativeInteger&gt;&amp; tgammaQHatModq,</a>
+<a name="1246"><span class="lineNum">    1246 </span>            :                                     const std::vector&lt;NativeInteger&gt;&amp; tgammaQHatModqPrecon,</a>
+<a name="1247"><span class="lineNum">    1247 </span>            :                                     const std::vector&lt;NativeInteger&gt;&amp; negInvqModtgamma,</a>
+<a name="1248"><span class="lineNum">    1248 </span>            :                                     const std::vector&lt;NativeInteger&gt;&amp; negInvqModtgammaPrecon) const = 0;</a>
+<a name="1249"><span class="lineNum">    1249 </span>            : </a>
+<a name="1250"><span class="lineNum">    1250 </span>            :     /**</a>
+<a name="1251"><span class="lineNum">    1251 </span>            :    * @brief Computes scale and round for BFV encryption mode EXTENDED:</a>
+<a name="1252"><span class="lineNum">    1252 </span>            :    * {X}_{Qp} -&gt; {\round(1/p * X)}_Q</a>
+<a name="1253"><span class="lineNum">    1253 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1254"><span class="lineNum">    1254 </span>            :    *</a>
+<a name="1255"><span class="lineNum">    1255 </span>            :    * Source: Andrey Kim and Yuriy Polyakov and Vincent Zucca. Revisiting Homomorphic Encryption</a>
+<a name="1256"><span class="lineNum">    1256 </span>            :    * Schemes for Finite Fields. Cryptology ePrint Archive: Report 2021/204.</a>
+<a name="1257"><span class="lineNum">    1257 </span>            :    * (https://eprint.iacr.org/2021/204.pdf)</a>
+<a name="1258"><span class="lineNum">    1258 </span>            :    *</a>
+<a name="1259"><span class="lineNum">    1259 </span>            :    * @param &amp;paramsQ Parameters for moduli {q_1,...,q_l}</a>
+<a name="1260"><span class="lineNum">    1260 </span>            :    * @param &amp;pInvModq p^{-1}_{q_i}</a>
+<a name="1261"><span class="lineNum">    1261 </span>            :    * @return</a>
+<a name="1262"><span class="lineNum">    1262 </span>            :    */</a>
+<a name="1263"><span class="lineNum">    1263 </span>            :     virtual void ScaleAndRoundPOverQ(const std::shared_ptr&lt;Params&gt;&amp; paramsQ,</a>
+<a name="1264"><span class="lineNum">    1264 </span>            :                                      const std::vector&lt;NativeInteger&gt;&amp; pInvModq) = 0;</a>
+<a name="1265"><span class="lineNum">    1265 </span>            : </a>
+<a name="1266"><span class="lineNum">    1266 </span>            :     /**</a>
+<a name="1267"><span class="lineNum">    1267 </span>            :    * @brief Expands basis:</a>
+<a name="1268"><span class="lineNum">    1268 </span>            :    * {X}_{Q} -&gt; {X}_{Q,Bsk,mtilde}</a>
+<a name="1269"><span class="lineNum">    1269 </span>            :    * mtilde is a redundant modulus used to remove q overflows generated from</a>
+<a name="1270"><span class="lineNum">    1270 </span>            :    * fast conversion. Outputs the resulting polynomial in CRT/RNS</a>
+<a name="1271"><span class="lineNum">    1271 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1272"><span class="lineNum">    1272 </span>            :    * {Bsk} = {bsk_1,...,bsk_k}</a>
+<a name="1273"><span class="lineNum">    1273 </span>            :    *</a>
+<a name="1274"><span class="lineNum">    1274 </span>            :    *</a>
+<a name="1275"><span class="lineNum">    1275 </span>            :    * Source: Jean-Claude Bajard and Julien Eynard and Anwar Hasan and Vincent</a>
+<a name="1276"><span class="lineNum">    1276 </span>            :    * Zucca. A Full RNS Variant of FV like Somewhat Homomorphic Encryption</a>
+<a name="1277"><span class="lineNum">    1277 </span>            :    * Schemes. Cryptology ePrint Archive: Report 2016/510.</a>
+<a name="1278"><span class="lineNum">    1278 </span>            :    * (https://eprint.iacr.org/2016/510)</a>
+<a name="1279"><span class="lineNum">    1279 </span>            :    *</a>
+<a name="1280"><span class="lineNum">    1280 </span>            :    * @param paramsQBsk: container of QBsk moduli and roots on unity</a>
+<a name="1281"><span class="lineNum">    1281 </span>            :    * @param &amp;moduliQ: basis {Q} = {q_1,q_2,...,q_l}</a>
+<a name="1282"><span class="lineNum">    1282 </span>            :    * @param &amp;moduliBsk: basis {Bsk U mtilde} ...</a>
+<a name="1283"><span class="lineNum">    1283 </span>            :    * @param &amp;modbskBarrettMu: 128-bit Barrett reduction precomputed values for</a>
+<a name="1284"><span class="lineNum">    1284 </span>            :    * bsk_j</a>
+<a name="1285"><span class="lineNum">    1285 </span>            :    * @param &amp;mtildeQHatInvModq: [mtilde*(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1286"><span class="lineNum">    1286 </span>            :    * @param &amp;mtildeQHatInvModqPrecon NTL-specific precomputations</a>
+<a name="1287"><span class="lineNum">    1287 </span>            :    * @param &amp;QHatModbsk: [Q/q_i]_{bsk_j}</a>
+<a name="1288"><span class="lineNum">    1288 </span>            :    * @param &amp;QHatModmtilde: [Q/q_i]_{mtilde}</a>
+<a name="1289"><span class="lineNum">    1289 </span>            :    * @param &amp;QModbsk: [Q]_{bsk_j}</a>
+<a name="1290"><span class="lineNum">    1290 </span>            :    * @param &amp;QModbskPrecon NTL-specific precomputations</a>
+<a name="1291"><span class="lineNum">    1291 </span>            :    * @param &amp;negQInvModmtilde: [-Q^{-1}]_{mtilde}</a>
+<a name="1292"><span class="lineNum">    1292 </span>            :    * @param &amp;mtildeInvModbsk: [mtilde^{-1}]_{bsk_j}</a>
+<a name="1293"><span class="lineNum">    1293 </span>            :    * @param &amp;mtildeInvModbskPrecon NTL-specific precomputations</a>
+<a name="1294"><span class="lineNum">    1294 </span>            :    */</a>
+<a name="1295"><span class="lineNum">    1295 </span>            :     virtual void FastBaseConvqToBskMontgomery(</a>
+<a name="1296"><span class="lineNum">    1296 </span>            :         const std::shared_ptr&lt;Params&gt;&amp; paramsQBsk, const std::vector&lt;NativeInteger&gt;&amp; moduliQ,</a>
+<a name="1297"><span class="lineNum">    1297 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; moduliBsk, const std::vector&lt;DoubleNativeInt&gt;&amp; modbskBarrettMu,</a>
+<a name="1298"><span class="lineNum">    1298 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; mtildeQHatInvModq, const std::vector&lt;NativeInteger&gt;&amp; mtildeQHatInvModqPrecon,</a>
+<a name="1299"><span class="lineNum">    1299 </span>            :         const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModbsk, const std::vector&lt;uint64_t&gt;&amp; QHatModmtilde,</a>
+<a name="1300"><span class="lineNum">    1300 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; QModbsk, const std::vector&lt;NativeInteger&gt;&amp; QModbskPrecon,</a>
+<a name="1301"><span class="lineNum">    1301 </span>            :         const uint64_t&amp; negQInvModmtilde, const std::vector&lt;NativeInteger&gt;&amp; mtildeInvModbsk,</a>
+<a name="1302"><span class="lineNum">    1302 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; mtildeInvModbskPrecon) = 0;</a>
+<a name="1303"><span class="lineNum">    1303 </span>            : </a>
+<a name="1304"><span class="lineNum">    1304 </span>            :     /**</a>
+<a name="1305"><span class="lineNum">    1305 </span>            :    * @brief Computes scale and floor:</a>
+<a name="1306"><span class="lineNum">    1306 </span>            :    * {X}_{Q,Bsk} -&gt; {\floor{t/Q * X}}_{Bsk}</a>
+<a name="1307"><span class="lineNum">    1307 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1308"><span class="lineNum">    1308 </span>            :    * {Bsk} = {bsk_1,...,bsk_k}</a>
+<a name="1309"><span class="lineNum">    1309 </span>            :    * Outputs the resulting polynomial in CRT/RNS</a>
+<a name="1310"><span class="lineNum">    1310 </span>            :    *</a>
+<a name="1311"><span class="lineNum">    1311 </span>            :    * Source: Jean-Claude Bajard and Julien Eynard and Anwar Hasan and Vincent</a>
+<a name="1312"><span class="lineNum">    1312 </span>            :    * Zucca. A Full RNS Variant of FV like Somewhat Homomorphic Encryption</a>
+<a name="1313"><span class="lineNum">    1313 </span>            :    * Schemes. Cryptology ePrint Archive: Report 2016/510.</a>
+<a name="1314"><span class="lineNum">    1314 </span>            :    * (https://eprint.iacr.org/2016/510)</a>
+<a name="1315"><span class="lineNum">    1315 </span>            :    *</a>
+<a name="1316"><span class="lineNum">    1316 </span>            :    * @param &amp;t: plaintext modulus</a>
+<a name="1317"><span class="lineNum">    1317 </span>            :    * @param &amp;moduliQ: {Q} = {q_1,...,q_l}</a>
+<a name="1318"><span class="lineNum">    1318 </span>            :    * @param &amp;moduliBsk: {Bsk} = {bsk_1,...,bsk_k}</a>
+<a name="1319"><span class="lineNum">    1319 </span>            :    * @param &amp;modbskBarrettMu: 128-bit Barrett reduction precomputed values for</a>
+<a name="1320"><span class="lineNum">    1320 </span>            :    * bsk_j</a>
+<a name="1321"><span class="lineNum">    1321 </span>            :    * @param &amp;tQHatInvModq: [(Q/q_i)^{-1}]_{q_i}</a>
+<a name="1322"><span class="lineNum">    1322 </span>            :    * @param &amp;tQHatInvModqPrecon: NTL-specific precomputations</a>
+<a name="1323"><span class="lineNum">    1323 </span>            :    * @param &amp;QHatModbsk: [Q/q_i]_{bsk_i}</a>
+<a name="1324"><span class="lineNum">    1324 </span>            :    * @param &amp;qInvModbsk: [(q_i)^{-1}]_{bsk_j}</a>
+<a name="1325"><span class="lineNum">    1325 </span>            :    * @param &amp;tQInvModbsk: [t*Q^{-1}]_{bsk_j}</a>
+<a name="1326"><span class="lineNum">    1326 </span>            :    * @param &amp;tQInvModbskPrecon: NTL-specific precomputations</a>
+<a name="1327"><span class="lineNum">    1327 </span>            :    */</a>
+<a name="1328"><span class="lineNum">    1328 </span>            :     virtual void FastRNSFloorq(</a>
+<a name="1329"><span class="lineNum">    1329 </span>            :         const NativeInteger&amp; t, const std::vector&lt;NativeInteger&gt;&amp; moduliQ, const std::vector&lt;NativeInteger&gt;&amp; moduliBsk,</a>
+<a name="1330"><span class="lineNum">    1330 </span>            :         const std::vector&lt;DoubleNativeInt&gt;&amp; modbskBarrettMu, const std::vector&lt;NativeInteger&gt;&amp; tQHatInvModq,</a>
+<a name="1331"><span class="lineNum">    1331 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; tQHatInvModqPrecon, const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; QHatModbsk,</a>
+<a name="1332"><span class="lineNum">    1332 </span>            :         const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; qInvModbsk, const std::vector&lt;NativeInteger&gt;&amp; tQInvModbsk,</a>
+<a name="1333"><span class="lineNum">    1333 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; tQInvModbskPrecon) = 0;</a>
+<a name="1334"><span class="lineNum">    1334 </span>            : </a>
+<a name="1335"><span class="lineNum">    1335 </span>            :     /**</a>
+<a name="1336"><span class="lineNum">    1336 </span>            :    * @brief @brief Converts basis:</a>
+<a name="1337"><span class="lineNum">    1337 </span>            :    * {X}_{Q,Bsk} -&gt; {X}_{Bsk}</a>
+<a name="1338"><span class="lineNum">    1338 </span>            :    * {Q} = {q_1,...,q_l}</a>
+<a name="1339"><span class="lineNum">    1339 </span>            :    * {Bsk} = {bsk_1,...,bsk_k}</a>
+<a name="1340"><span class="lineNum">    1340 </span>            :    * using Shenoy Kumaresan method.</a>
+<a name="1341"><span class="lineNum">    1341 </span>            :    * Outputs the resulting polynomial in CRT/RNS</a>
+<a name="1342"><span class="lineNum">    1342 </span>            :    *</a>
+<a name="1343"><span class="lineNum">    1343 </span>            :    * Source: Jean-Claude Bajard and Julien Eynard and Anwar Hasan and Vincent</a>
+<a name="1344"><span class="lineNum">    1344 </span>            :    * Zucca. A Full RNS Variant of FV like Somewhat Homomorphic Encryption</a>
+<a name="1345"><span class="lineNum">    1345 </span>            :    * Schemes. Cryptology ePrint Archive: Report 2016/510.</a>
+<a name="1346"><span class="lineNum">    1346 </span>            :    * (https://eprint.iacr.org/2016/510)</a>
+<a name="1347"><span class="lineNum">    1347 </span>            :    *</a>
+<a name="1348"><span class="lineNum">    1348 </span>            :    * Note in the source paper, B is referred to by M.</a>
+<a name="1349"><span class="lineNum">    1349 </span>            :    *</a>
+<a name="1350"><span class="lineNum">    1350 </span>            :    * @param &amp;paramsQ: Params for Q</a>
+<a name="1351"><span class="lineNum">    1351 </span>            :    * @param &amp;modqBarrettMu precomputed Barrett Mu for q_i</a>
+<a name="1352"><span class="lineNum">    1352 </span>            :    * @param &amp;moduliBsk: basis {Bsk} = {bsk_1,...,bsk_k}</a>
+<a name="1353"><span class="lineNum">    1353 </span>            :    * @param &amp;modbskBarrettMu: precomputed Barrett Mu for bsk_j</a>
+<a name="1354"><span class="lineNum">    1354 </span>            :    * @param &amp;BHatInvModb: [(B/b_j)^{-1}]_{b_j}</a>
+<a name="1355"><span class="lineNum">    1355 </span>            :    * @param &amp;BHatInvModbPrecon NTL precomptations for [(B/b_j)^{-1}]_{b_j}</a>
+<a name="1356"><span class="lineNum">    1356 </span>            :    * @param &amp;BHatModmsk: [B/b_j]_{msk}</a>
+<a name="1357"><span class="lineNum">    1357 </span>            :    * @param &amp;BInvModmsk: [B^{-1}]_{msk}</a>
+<a name="1358"><span class="lineNum">    1358 </span>            :    * @param &amp;BInvModmskPrecon NTL precomptation for [B^{-1}]_{msk}</a>
+<a name="1359"><span class="lineNum">    1359 </span>            :    * @param &amp;BHatModq: [B/b_j]_{q_i}</a>
+<a name="1360"><span class="lineNum">    1360 </span>            :    * @param &amp;BModq: [B]_{q_i}</a>
+<a name="1361"><span class="lineNum">    1361 </span>            :    * @param &amp;BModqPrecon NTL precomptations for [B]_{q_i}</a>
+<a name="1362"><span class="lineNum">    1362 </span>            :    */</a>
+<a name="1363"><span class="lineNum">    1363 </span>            :     virtual void FastBaseConvSK(</a>
+<a name="1364"><span class="lineNum">    1364 </span>            :         const std::shared_ptr&lt;Params&gt;&amp; paramsQ, const std::vector&lt;DoubleNativeInt&gt;&amp; modqBarrettMu,</a>
+<a name="1365"><span class="lineNum">    1365 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; moduliBsk, const std::vector&lt;DoubleNativeInt&gt;&amp; modbskBarrettMu,</a>
+<a name="1366"><span class="lineNum">    1366 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; BHatInvModb, const std::vector&lt;NativeInteger&gt;&amp; BHatInvModbPrecon,</a>
+<a name="1367"><span class="lineNum">    1367 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; BHatModmsk, const NativeInteger&amp; BInvModmsk,</a>
+<a name="1368"><span class="lineNum">    1368 </span>            :         const NativeInteger&amp; BInvModmskPrecon, const std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&amp; BHatModq,</a>
+<a name="1369"><span class="lineNum">    1369 </span>            :         const std::vector&lt;NativeInteger&gt;&amp; BModq, const std::vector&lt;NativeInteger&gt;&amp; BModqPrecon) = 0;</a>
+<a name="1370"><span class="lineNum">    1370 </span>            : </a>
+<a name="1371"><span class="lineNum">    1371 </span>            :     /**</a>
+<a name="1372"><span class="lineNum">    1372 </span>            :    * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.</a>
+<a name="1373"><span class="lineNum">    1373 </span>            :    *</a>
+<a name="1374"><span class="lineNum">    1374 </span>            :    * @warning use @see SetFormat(format) instead</a>
+<a name="1375"><span class="lineNum">    1375 </span>            :    */</a>
+<a name="1376"><span class="lineNum">    1376 </span>            :     void SwitchFormat() override = 0;</a>
+<a name="1377"><span class="lineNum">    1377 </span>            : </a>
+<a name="1378"><span class="lineNum">    1378 </span>            :     /**</a>
+<a name="1379"><span class="lineNum">    1379 </span>            :    * @brief Sets format to value without performing NTT. Only use if you know what you're doing.</a>
+<a name="1380"><span class="lineNum">    1380 </span>            :    *</a>
+<a name="1381"><span class="lineNum">    1381 </span>            :    */</a>
+<a name="1382"><span class="lineNum">    1382 </span>            :     virtual void OverrideFormat(const Format f) = 0;</a>
+<a name="1383"><span class="lineNum">    1383 </span>            : </a>
+<a name="1384"><span class="lineNum">    1384 </span>            :     /**</a>
+<a name="1385"><span class="lineNum">    1385 </span>            :    * @brief Switch modulus and adjust the values</a>
+<a name="1386"><span class="lineNum">    1386 </span>            :    *</a>
+<a name="1387"><span class="lineNum">    1387 </span>            :    * @param &amp;modulus is the modulus to be set</a>
+<a name="1388"><span class="lineNum">    1388 </span>            :    * @param &amp;rootOfUnity is the corresponding root of unity for the modulus</a>
+<a name="1389"><span class="lineNum">    1389 </span>            :    * @param &amp;modulusArb is the modulus used for arbitrary cyclotomics CRT</a>
+<a name="1390"><span class="lineNum">    1390 </span>            :    * @param &amp;rootOfUnityArb is the corresponding root of unity for the modulus</a>
+<a name="1391"><span class="lineNum">    1391 </span>            :    * ASSUMPTION: This method assumes that the caller provides the correct</a>
+<a name="1392"><span class="lineNum">    1392 </span>            :    * rootOfUnity for the modulus</a>
+<a name="1393"><span class="lineNum">    1393 </span>            :    */</a>
+<a name="1394"><span class="lineNum">    1394 </span><span class="lineNoCov">          0 :     void SwitchModulus(const BigIntType&amp; modulus, const BigIntType&amp; rootOfUnity, const BigIntType&amp; modulusArb,</span></a>
+<a name="1395"><span class="lineNum">    1395 </span>            :                        const BigIntType&amp; rootOfUnityArb) final {</a>
+<a name="1396"><span class="lineNum">    1396 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;SwitchModulus not implemented for DCRTPoly&quot;);</span></a>
+<a name="1397"><span class="lineNum">    1397 </span>            :     }</a>
+<a name="1398"><span class="lineNum">    1398 </span>            : </a>
+<a name="1399"><span class="lineNum">    1399 </span>            :     /**</a>
+<a name="1400"><span class="lineNum">    1400 </span>            :    * @brief Switch modulus at tower i and adjust the values</a>
+<a name="1401"><span class="lineNum">    1401 </span>            :    *</a>
+<a name="1402"><span class="lineNum">    1402 </span>            :    * @param index is the index for the tower</a>
+<a name="1403"><span class="lineNum">    1403 </span>            :    * @param &amp;modulus is the modulus to be set</a>
+<a name="1404"><span class="lineNum">    1404 </span>            :    * @param &amp;rootOfUnity is the corresponding root of unity for the modulus</a>
+<a name="1405"><span class="lineNum">    1405 </span>            :    * ASSUMPTION: This method assumes that the caller provides the correct</a>
+<a name="1406"><span class="lineNum">    1406 </span>            :    * rootOfUnity for the modulus</a>
+<a name="1407"><span class="lineNum">    1407 </span>            :    */</a>
+<a name="1408"><span class="lineNum">    1408 </span>            :     virtual void SwitchModulusAtIndex(size_t index, const BigIntType&amp; modulus, const BigIntType&amp; rootOfUnity) = 0;</a>
+<a name="1409"><span class="lineNum">    1409 </span>            : </a>
+<a name="1410"><span class="lineNum">    1410 </span>            :     /**</a>
+<a name="1411"><span class="lineNum">    1411 </span>            :    * @brief Determines if inverse exists</a>
+<a name="1412"><span class="lineNum">    1412 </span>            :    *</a>
+<a name="1413"><span class="lineNum">    1413 </span>            :    * @return is the Boolean representation of the existence of multiplicative</a>
+<a name="1414"><span class="lineNum">    1414 </span>            :    * inverse.</a>
+<a name="1415"><span class="lineNum">    1415 </span>            :    */</a>
+<a name="1416"><span class="lineNum">    1416 </span>            :     bool InverseExists() const override = 0;</a>
+<a name="1417"><span class="lineNum">    1417 </span>            : </a>
+<a name="1418"><span class="lineNum">    1418 </span>            :     /**</a>
+<a name="1419"><span class="lineNum">    1419 </span>            :    * @brief Returns the infinity norm, basically the largest value in the ring</a>
+<a name="1420"><span class="lineNum">    1420 </span>            :    * element.</a>
+<a name="1421"><span class="lineNum">    1421 </span>            :    *</a>
+<a name="1422"><span class="lineNum">    1422 </span>            :    * @return is the largest value in the ring element.</a>
+<a name="1423"><span class="lineNum">    1423 </span>            :    */</a>
+<a name="1424"><span class="lineNum">    1424 </span>            :     //    virtual double Norm() const override = 0;</a>
+<a name="1425"><span class="lineNum">    1425 </span><span class="lineNoCov">          0 :     double Norm() const final {</span></a>
+<a name="1426"><span class="lineNum">    1426 </span><span class="lineNoCov">          0 :         return PolyLargeType(this-&gt;GetDerived().CRTInterpolate()).Norm();</span></a>
+<a name="1427"><span class="lineNum">    1427 </span>            :     }</a>
+<a name="1428"><span class="lineNum">    1428 </span>            : </a>
+<a name="1429"><span class="lineNum">    1429 </span>            :     const std::string GetElementName() const {</a>
+<a name="1430"><span class="lineNum">    1430 </span>            :         return this-&gt;GetDerived().GetElementName();</a>
+<a name="1431"><span class="lineNum">    1431 </span>            :     }</a>
+<a name="1432"><span class="lineNum">    1432 </span>            : </a>
+<a name="1433"><span class="lineNum">    1433 </span>            : protected:</a>
+<a name="1434"><span class="lineNum">    1434 </span>            :     /**</a>
+<a name="1435"><span class="lineNum">    1435 </span>            :    * @brief ostream operator</a>
+<a name="1436"><span class="lineNum">    1436 </span>            :    * @param os the input preceding output stream</a>
+<a name="1437"><span class="lineNum">    1437 </span>            :    * @param vec the element to add to the output stream.</a>
+<a name="1438"><span class="lineNum">    1438 </span>            :    * @return a resulting concatenated output stream</a>
+<a name="1439"><span class="lineNum">    1439 </span>            :    */</a>
+<a name="1440"><span class="lineNum">    1440 </span><span class="lineNoCov">          0 :     friend inline std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const DerivedType&amp; vec) {</span></a>
+<a name="1441"><span class="lineNum">    1441 </span>            :         // os &lt;&lt; (vec.m_format == EVALUATION ? &quot;EVAL: &quot; : &quot;COEF: &quot;);</a>
+<a name="1442"><span class="lineNum">    1442 </span><span class="lineNoCov">          0 :         for (usint i = 0; i &lt; vec.GetAllElements().size(); i++) {</span></a>
+<a name="1443"><span class="lineNum">    1443 </span><span class="lineNoCov">          0 :             if (i != 0)</span></a>
+<a name="1444"><span class="lineNum">    1444 </span>            :                 os &lt;&lt; std::endl;</a>
+<a name="1445"><span class="lineNum">    1445 </span><span class="lineNoCov">          0 :             os &lt;&lt; i &lt;&lt; &quot;: &quot;;</span></a>
+<a name="1446"><span class="lineNum">    1446 </span><span class="lineNoCov">          0 :             os &lt;&lt; vec.GetAllElements()[i];</span></a>
+<a name="1447"><span class="lineNum">    1447 </span>            :         }</a>
+<a name="1448"><span class="lineNum">    1448 </span><span class="lineNoCov">          0 :         return os;</span></a>
+<a name="1449"><span class="lineNum">    1449 </span>            :     }</a>
+<a name="1450"><span class="lineNum">    1450 </span>            : </a>
+<a name="1451"><span class="lineNum">    1451 </span>            :     /**</a>
+<a name="1452"><span class="lineNum">    1452 </span>            :    * @brief Element-element addition operator.</a>
+<a name="1453"><span class="lineNum">    1453 </span>            :    * @param a first element to add.</a>
+<a name="1454"><span class="lineNum">    1454 </span>            :    * @param b second element to add.</a>
+<a name="1455"><span class="lineNum">    1455 </span>            :    * @return the result of the addition operation.</a>
+<a name="1456"><span class="lineNum">    1456 </span>            :    */</a>
+<a name="1457"><span class="lineNum">    1457 </span>            :     friend inline DerivedType operator+(const DerivedType&amp; a, const DerivedType&amp; b) {</a>
+<a name="1458"><span class="lineNum">    1458 </span><span class="lineCov">          2 :         return a.Plus(b);</span></a>
+<a name="1459"><span class="lineNum">    1459 </span>            :     }</a>
+<a name="1460"><span class="lineNum">    1460 </span>            :     /**</a>
+<a name="1461"><span class="lineNum">    1461 </span>            :    * @brief Element-integer addition operator.</a>
+<a name="1462"><span class="lineNum">    1462 </span>            :    * @param a first element to add.</a>
+<a name="1463"><span class="lineNum">    1463 </span>            :    * @param b integer to add.</a>
+<a name="1464"><span class="lineNum">    1464 </span>            :    * @return the result of the addition operation.</a>
+<a name="1465"><span class="lineNum">    1465 </span>            :    */</a>
+<a name="1466"><span class="lineNum">    1466 </span>            :     friend inline DerivedType operator+(const DerivedType&amp; a, const BigIntType&amp; b) {</a>
+<a name="1467"><span class="lineNum">    1467 </span><span class="lineCov">          1 :         return a.Plus(b);</span></a>
+<a name="1468"><span class="lineNum">    1468 </span>            :     }</a>
+<a name="1469"><span class="lineNum">    1469 </span>            : </a>
+<a name="1470"><span class="lineNum">    1470 </span>            :     /**</a>
+<a name="1471"><span class="lineNum">    1471 </span>            :    * @brief BigIntType-element addition operator.</a>
+<a name="1472"><span class="lineNum">    1472 </span>            :    * @param a integer to add.</a>
+<a name="1473"><span class="lineNum">    1473 </span>            :    * @param b element to add.</a>
+<a name="1474"><span class="lineNum">    1474 </span>            :    * @return the result of the addition operation.</a>
+<a name="1475"><span class="lineNum">    1475 </span>            :    */</a>
+<a name="1476"><span class="lineNum">    1476 </span>            :     friend inline DerivedType operator+(const BigIntType&amp; a, const DerivedType&amp; b) {</a>
+<a name="1477"><span class="lineNum">    1477 </span>            :         return b.Plus(a);</a>
+<a name="1478"><span class="lineNum">    1478 </span>            :     }</a>
+<a name="1479"><span class="lineNum">    1479 </span>            : </a>
+<a name="1480"><span class="lineNum">    1480 </span>            :     /**</a>
+<a name="1481"><span class="lineNum">    1481 </span>            :    * @brief Element-integer addition operator with CRT integer.</a>
+<a name="1482"><span class="lineNum">    1482 </span>            :    * @param a first element to add.</a>
+<a name="1483"><span class="lineNum">    1483 </span>            :    * @param b integer to add.</a>
+<a name="1484"><span class="lineNum">    1484 </span>            :    * @return the result of the addition operation.</a>
+<a name="1485"><span class="lineNum">    1485 </span>            :    */</a>
+<a name="1486"><span class="lineNum">    1486 </span>            :     friend inline DerivedType operator+(const DerivedType&amp; a, const std::vector&lt;BigIntType&gt;&amp; b) {</a>
+<a name="1487"><span class="lineNum">    1487 </span>            :         return a.Plus(b);</a>
+<a name="1488"><span class="lineNum">    1488 </span>            :     }</a>
+<a name="1489"><span class="lineNum">    1489 </span>            : </a>
+<a name="1490"><span class="lineNum">    1490 </span>            :     /**</a>
+<a name="1491"><span class="lineNum">    1491 </span>            :    * @brief BigIntType-element addition operator with CRT integer.</a>
+<a name="1492"><span class="lineNum">    1492 </span>            :    * @param a integer to add.</a>
+<a name="1493"><span class="lineNum">    1493 </span>            :    * @param b element to add.</a>
+<a name="1494"><span class="lineNum">    1494 </span>            :    * @return the result of the addition operation.</a>
+<a name="1495"><span class="lineNum">    1495 </span>            :    */</a>
+<a name="1496"><span class="lineNum">    1496 </span>            :     friend inline DerivedType operator+(const std::vector&lt;BigIntType&gt;&amp; a, const DerivedType&amp; b) {</a>
+<a name="1497"><span class="lineNum">    1497 </span>            :         return b.Plus(a);</a>
+<a name="1498"><span class="lineNum">    1498 </span>            :     }</a>
+<a name="1499"><span class="lineNum">    1499 </span>            : </a>
+<a name="1500"><span class="lineNum">    1500 </span>            :     /**</a>
+<a name="1501"><span class="lineNum">    1501 </span>            :    * @brief Element-element subtraction operator.</a>
+<a name="1502"><span class="lineNum">    1502 </span>            :    * @param a element to subtract from.</a>
+<a name="1503"><span class="lineNum">    1503 </span>            :    * @param b element to subtract.</a>
+<a name="1504"><span class="lineNum">    1504 </span>            :    * @return the result of the subtraction operation.</a>
+<a name="1505"><span class="lineNum">    1505 </span>            :    */</a>
+<a name="1506"><span class="lineNum">    1506 </span>            :     friend inline DerivedType operator-(const DerivedType&amp; a, const DerivedType&amp; b) {</a>
+<a name="1507"><span class="lineNum">    1507 </span>            :         return a.Minus(b);</a>
+<a name="1508"><span class="lineNum">    1508 </span>            :     }</a>
+<a name="1509"><span class="lineNum">    1509 </span>            : </a>
+<a name="1510"><span class="lineNum">    1510 </span>            :     /**</a>
+<a name="1511"><span class="lineNum">    1511 </span>            :    * @brief Element-integer subtraction operator with CRT integer.</a>
+<a name="1512"><span class="lineNum">    1512 </span>            :    * @param a first element to subtract.</a>
+<a name="1513"><span class="lineNum">    1513 </span>            :    * @param b integer to subtract.</a>
+<a name="1514"><span class="lineNum">    1514 </span>            :    * @return the result of the subtraction operation.</a>
+<a name="1515"><span class="lineNum">    1515 </span>            :    */</a>
+<a name="1516"><span class="lineNum">    1516 </span>            :     friend inline DerivedType operator-(const DerivedType&amp; a, const std::vector&lt;BigIntType&gt;&amp; b) {</a>
+<a name="1517"><span class="lineNum">    1517 </span>            :         return a.Minus(b);</a>
+<a name="1518"><span class="lineNum">    1518 </span>            :     }</a>
+<a name="1519"><span class="lineNum">    1519 </span>            : </a>
+<a name="1520"><span class="lineNum">    1520 </span>            :     /**</a>
+<a name="1521"><span class="lineNum">    1521 </span>            :    * @brief BigIntType-element subtraction operator with CRT integer.</a>
+<a name="1522"><span class="lineNum">    1522 </span>            :    * @param a integer to subtract.</a>
+<a name="1523"><span class="lineNum">    1523 </span>            :    * @param b element to subtract.</a>
+<a name="1524"><span class="lineNum">    1524 </span>            :    * @return the result of the subtraction operation.</a>
+<a name="1525"><span class="lineNum">    1525 </span>            :    */</a>
+<a name="1526"><span class="lineNum">    1526 </span>            :     friend inline DerivedType operator-(const std::vector&lt;BigIntType&gt;&amp; a, const DerivedType&amp; b) {</a>
+<a name="1527"><span class="lineNum">    1527 </span>            :         return b.Minus(a);</a>
+<a name="1528"><span class="lineNum">    1528 </span>            :     }</a>
+<a name="1529"><span class="lineNum">    1529 </span>            : </a>
+<a name="1530"><span class="lineNum">    1530 </span>            :     /**</a>
+<a name="1531"><span class="lineNum">    1531 </span>            :    * @brief Element-integer subtraction operator.</a>
+<a name="1532"><span class="lineNum">    1532 </span>            :    * @param a element to subtract from.</a>
+<a name="1533"><span class="lineNum">    1533 </span>            :    * @param b integer to subtract.</a>
+<a name="1534"><span class="lineNum">    1534 </span>            :    * @return the result of the subtraction operation.</a>
+<a name="1535"><span class="lineNum">    1535 </span>            :    */</a>
+<a name="1536"><span class="lineNum">    1536 </span>            :     friend inline DerivedType operator-(const DerivedType&amp; a, const BigIntType&amp; b) {</a>
+<a name="1537"><span class="lineNum">    1537 </span>            :         return a.Minus(b);</a>
+<a name="1538"><span class="lineNum">    1538 </span>            :     }</a>
+<a name="1539"><span class="lineNum">    1539 </span>            : </a>
+<a name="1540"><span class="lineNum">    1540 </span>            :     /**</a>
+<a name="1541"><span class="lineNum">    1541 </span>            :    * @brief Element-element multiplication operator.</a>
+<a name="1542"><span class="lineNum">    1542 </span>            :    * @param a element to multiply.</a>
+<a name="1543"><span class="lineNum">    1543 </span>            :    * @param b element to multiply.</a>
+<a name="1544"><span class="lineNum">    1544 </span>            :    * @return the result of the multiplication operation.</a>
+<a name="1545"><span class="lineNum">    1545 </span>            :    */</a>
+<a name="1546"><span class="lineNum">    1546 </span>            :     friend inline DerivedType operator*(const DerivedType&amp; a, const DerivedType&amp; b) {</a>
+<a name="1547"><span class="lineNum">    1547 </span><span class="lineCov">          4 :         return a.Times(b);</span></a>
+<a name="1548"><span class="lineNum">    1548 </span>            :     }</a>
+<a name="1549"><span class="lineNum">    1549 </span>            : </a>
+<a name="1550"><span class="lineNum">    1550 </span>            :     /**</a>
+<a name="1551"><span class="lineNum">    1551 </span>            :    * @brief Element-integer multiplication operator.</a>
+<a name="1552"><span class="lineNum">    1552 </span>            :    * @param a element to multiply.</a>
+<a name="1553"><span class="lineNum">    1553 </span>            :    * @param b integer to multiply.</a>
+<a name="1554"><span class="lineNum">    1554 </span>            :    * @return the result of the multiplication operation.</a>
+<a name="1555"><span class="lineNum">    1555 </span>            :    */</a>
+<a name="1556"><span class="lineNum">    1556 </span>            :     friend inline DerivedType operator*(const DerivedType&amp; a, const BigIntType&amp; b) {</a>
+<a name="1557"><span class="lineNum">    1557 </span>            :         return a.Times(b);</a>
+<a name="1558"><span class="lineNum">    1558 </span>            :     }</a>
+<a name="1559"><span class="lineNum">    1559 </span>            : </a>
+<a name="1560"><span class="lineNum">    1560 </span>            :     /**</a>
+<a name="1561"><span class="lineNum">    1561 </span>            :    * @brief Element-CRT number multiplication operator.</a>
+<a name="1562"><span class="lineNum">    1562 </span>            :    * @param a element to multiply.</a>
+<a name="1563"><span class="lineNum">    1563 </span>            :    * @param b integer to multiply, in CRT format.</a>
+<a name="1564"><span class="lineNum">    1564 </span>            :    * @return the result of the multiplication operation.</a>
+<a name="1565"><span class="lineNum">    1565 </span>            :    */</a>
+<a name="1566"><span class="lineNum">    1566 </span>            :     friend inline DerivedType operator*(const DerivedType&amp; a, const std::vector&lt;BigIntType&gt;&amp; b) {</a>
+<a name="1567"><span class="lineNum">    1567 </span>            :         return a.Times(b);</a>
+<a name="1568"><span class="lineNum">    1568 </span>            :     }</a>
+<a name="1569"><span class="lineNum">    1569 </span>            : </a>
+<a name="1570"><span class="lineNum">    1570 </span>            :     /**</a>
+<a name="1571"><span class="lineNum">    1571 </span>            :    * @brief BigIntType-element multiplication operator.</a>
+<a name="1572"><span class="lineNum">    1572 </span>            :    * @param a integer to multiply.</a>
+<a name="1573"><span class="lineNum">    1573 </span>            :    * @param b element to multiply.</a>
+<a name="1574"><span class="lineNum">    1574 </span>            :    * @return the result of the multiplication operation.</a>
+<a name="1575"><span class="lineNum">    1575 </span>            :    */</a>
+<a name="1576"><span class="lineNum">    1576 </span>            :     friend inline DerivedType operator*(const BigIntType&amp; a, const DerivedType&amp; b) {</a>
+<a name="1577"><span class="lineNum">    1577 </span>            :         return b.Times(a);</a>
+<a name="1578"><span class="lineNum">    1578 </span>            :     }</a>
+<a name="1579"><span class="lineNum">    1579 </span>            : </a>
+<a name="1580"><span class="lineNum">    1580 </span>            :     /**</a>
+<a name="1581"><span class="lineNum">    1581 </span>            :    * @brief Element-signed-integer multiplication operator.</a>
+<a name="1582"><span class="lineNum">    1582 </span>            :    * @param a element to multiply.</a>
+<a name="1583"><span class="lineNum">    1583 </span>            :    * @param b integer to multiply.</a>
+<a name="1584"><span class="lineNum">    1584 </span>            :    * @return the result of the multiplication operation.</a>
+<a name="1585"><span class="lineNum">    1585 </span>            :    */</a>
+<a name="1586"><span class="lineNum">    1586 </span>            :     friend inline DerivedType operator*(const DerivedType&amp; a, int64_t b) {</a>
+<a name="1587"><span class="lineNum">    1587 </span>            :         return a.Times((NativeInteger::SignedNativeInt)b);</a>
+<a name="1588"><span class="lineNum">    1588 </span>            :     }</a>
+<a name="1589"><span class="lineNum">    1589 </span>            : </a>
+<a name="1590"><span class="lineNum">    1590 </span>            :     /**</a>
+<a name="1591"><span class="lineNum">    1591 </span>            :    * @brief signed-BigIntType-element multiplication operator.</a>
+<a name="1592"><span class="lineNum">    1592 </span>            :    * @param a integer to multiply.</a>
+<a name="1593"><span class="lineNum">    1593 </span>            :    * @param b element to multiply.</a>
+<a name="1594"><span class="lineNum">    1594 </span>            :    * @return the result of the multiplication operation.</a>
+<a name="1595"><span class="lineNum">    1595 </span>            :    */</a>
+<a name="1596"><span class="lineNum">    1596 </span>            :     friend inline DerivedType operator*(int64_t a, const DerivedType&amp; b) {</a>
+<a name="1597"><span class="lineNum">    1597 </span>            :         return b.Times((NativeInteger::SignedNativeInt)a);</a>
+<a name="1598"><span class="lineNum">    1598 </span>            :     }</a>
+<a name="1599"><span class="lineNum">    1599 </span>            : };</a>
+<a name="1600"><span class="lineNum">    1600 </span>            : </a>
+<a name="1601"><span class="lineNum">    1601 </span>            : }  // namespace lbcrypto</a>
+<a name="1602"><span class="lineNum">    1602 </span>            : </a>
+<a name="1603"><span class="lineNum">    1603 </span>            : #endif  // LBCRYPTO_LATTICE_HAL_DCRTPOLYINTERFACE_H</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
