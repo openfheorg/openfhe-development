@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">64</td>
-            <td class="headerCovTableEntry">102</td>
-            <td class="headerCovTableEntryLo">62.7 %</td>
+            <td class="headerCovTableEntry">81</td>
+            <td class="headerCovTableEntry">183</td>
+            <td class="headerCovTableEntryLo">44.3 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">8</td>
-            <td class="headerCovTableEntry">13</td>
-            <td class="headerCovTableEntryLo">61.5 %</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">44</td>
+            <td class="headerCovTableEntryLo">20.5 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -125,26 +125,26 @@
 <a name="63"><span class="lineNum">      63 </span>            :     /**</a>
 <a name="64"><span class="lineNum">      64 </span>            :    * Copy constructor.</a>
 <a name="65"><span class="lineNum">      65 </span>            :    */</a>
-<a name="66"><span class="lineNum">      66 </span>            :     CryptoParametersRLWE(const CryptoParametersRLWE&amp; rhs)</a>
-<a name="67"><span class="lineNum">      67 </span>            :         : CryptoParametersBase&lt;Element&gt;(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {</a>
-<a name="68"><span class="lineNum">      68 </span>            :         m_distributionParameter         = rhs.m_distributionParameter;</a>
-<a name="69"><span class="lineNum">      69 </span>            :         m_assuranceMeasure              = rhs.m_assuranceMeasure;</a>
-<a name="70"><span class="lineNum">      70 </span>            :         m_noiseScale                    = rhs.m_noiseScale;</a>
-<a name="71"><span class="lineNum">      71 </span>            :         m_digitSize                     = rhs.m_digitSize;</a>
-<a name="72"><span class="lineNum">      72 </span>            :         m_maxRelinSkDeg                 = rhs.m_maxRelinSkDeg;</a>
-<a name="73"><span class="lineNum">      73 </span>            :         m_secretKeyDist                 = rhs.m_secretKeyDist;</a>
-<a name="74"><span class="lineNum">      74 </span>            :         m_stdLevel                      = rhs.m_stdLevel;</a>
-<a name="75"><span class="lineNum">      75 </span>            :         m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;</a>
-<a name="76"><span class="lineNum">      76 </span>            :         m_dgg.SetStd(m_distributionParameter);</a>
-<a name="77"><span class="lineNum">      77 </span>            :         m_dggFlooding.SetStd(m_floodingDistributionParameter);</a>
-<a name="78"><span class="lineNum">      78 </span>            :         m_PREMode               = rhs.m_PREMode;</a>
-<a name="79"><span class="lineNum">      79 </span>            :         m_multipartyMode        = rhs.m_multipartyMode;</a>
-<a name="80"><span class="lineNum">      80 </span>            :         m_executionMode         = rhs.m_executionMode;</a>
-<a name="81"><span class="lineNum">      81 </span>            :         m_decryptionNoiseMode   = rhs.m_decryptionNoiseMode;</a>
-<a name="82"><span class="lineNum">      82 </span>            :         m_statisticalSecurity   = rhs.m_statisticalSecurity;</a>
-<a name="83"><span class="lineNum">      83 </span>            :         m_numAdversarialQueries = rhs.m_numAdversarialQueries;</a>
-<a name="84"><span class="lineNum">      84 </span>            :         m_thresholdNumOfParties = rhs.m_thresholdNumOfParties;</a>
-<a name="85"><span class="lineNum">      85 </span>            :     }</a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineNoCov">          0 :     CryptoParametersRLWE(const CryptoParametersRLWE&amp; rhs)</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :         : CryptoParametersBase&lt;Element&gt;(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineNoCov">          0 :         m_distributionParameter         = rhs.m_distributionParameter;</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineNoCov">          0 :         m_assuranceMeasure              = rhs.m_assuranceMeasure;</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineNoCov">          0 :         m_noiseScale                    = rhs.m_noiseScale;</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineNoCov">          0 :         m_digitSize                     = rhs.m_digitSize;</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineNoCov">          0 :         m_maxRelinSkDeg                 = rhs.m_maxRelinSkDeg;</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineNoCov">          0 :         m_secretKeyDist                 = rhs.m_secretKeyDist;</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineNoCov">          0 :         m_stdLevel                      = rhs.m_stdLevel;</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineNoCov">          0 :         m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineNoCov">          0 :         m_dgg.SetStd(m_distributionParameter);</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 :         m_dggFlooding.SetStd(m_floodingDistributionParameter);</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineNoCov">          0 :         m_PREMode               = rhs.m_PREMode;</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineNoCov">          0 :         m_multipartyMode        = rhs.m_multipartyMode;</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineNoCov">          0 :         m_executionMode         = rhs.m_executionMode;</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :         m_decryptionNoiseMode   = rhs.m_decryptionNoiseMode;</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :         m_statisticalSecurity   = rhs.m_statisticalSecurity;</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineNoCov">          0 :         m_numAdversarialQueries = rhs.m_numAdversarialQueries;</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineNoCov">          0 :         m_thresholdNumOfParties = rhs.m_thresholdNumOfParties;</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="86"><span class="lineNum">      86 </span>            : </a>
 <a name="87"><span class="lineNum">      87 </span>            :     /**</a>
 <a name="88"><span class="lineNum">      88 </span>            :    * Constructor that initializes values - uses HomomorphicEncryption.org</a>
@@ -198,8 +198,8 @@
 <a name="136"><span class="lineNum">     136 </span>            :    *</a>
 <a name="137"><span class="lineNum">     137 </span>            :    * @return the standard deviation r.</a>
 <a name="138"><span class="lineNum">     138 </span>            :    */</a>
-<a name="139"><span class="lineNum">     139 </span>            :     float GetDistributionParameter() const {</a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineNoCov">          0 :         return m_distributionParameter;</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineNoCov">          0 :     float GetDistributionParameter() const {</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">       2378 :         return m_distributionParameter;</span></a>
 <a name="141"><span class="lineNum">     141 </span>            :     }</a>
 <a name="142"><span class="lineNum">     142 </span>            : </a>
 <a name="143"><span class="lineNum">     143 </span>            :     /**</a>
@@ -208,8 +208,8 @@
 <a name="146"><span class="lineNum">     146 </span>            :    *</a>
 <a name="147"><span class="lineNum">     147 </span>            :    * @return the flooding standard deviation r.</a>
 <a name="148"><span class="lineNum">     148 </span>            :    */</a>
-<a name="149"><span class="lineNum">     149 </span>            :     double GetFloodingDistributionParameter() const {</a>
-<a name="150"><span class="lineNum">     150 </span><span class="lineNoCov">          0 :         return m_floodingDistributionParameter;</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :     double GetFloodingDistributionParameter() const {</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">          8 :         return m_floodingDistributionParameter;</span></a>
 <a name="151"><span class="lineNum">     151 </span>            :     }</a>
 <a name="152"><span class="lineNum">     152 </span>            : </a>
 <a name="153"><span class="lineNum">     153 </span>            :     /**</a>
@@ -217,8 +217,8 @@
 <a name="155"><span class="lineNum">     155 </span>            :    *</a>
 <a name="156"><span class="lineNum">     156 </span>            :    * @return the assurance measure.</a>
 <a name="157"><span class="lineNum">     157 </span>            :    */</a>
-<a name="158"><span class="lineNum">     158 </span>            :     float GetAssuranceMeasure() const {</a>
-<a name="159"><span class="lineNum">     159 </span><span class="lineNoCov">          0 :         return m_assuranceMeasure;</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineNoCov">          0 :     float GetAssuranceMeasure() const {</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">       3037 :         return m_assuranceMeasure;</span></a>
 <a name="160"><span class="lineNum">     160 </span>            :     }</a>
 <a name="161"><span class="lineNum">     161 </span>            : </a>
 <a name="162"><span class="lineNum">     162 </span>            :     /**</a>
@@ -226,8 +226,8 @@
 <a name="164"><span class="lineNum">     164 </span>            :    *</a>
 <a name="165"><span class="lineNum">     165 </span>            :    * @return the noise scale.</a>
 <a name="166"><span class="lineNum">     166 </span>            :    */</a>
-<a name="167"><span class="lineNum">     167 </span>            :     PlaintextModulus GetNoiseScale() const {</a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :         return m_noiseScale;</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :     PlaintextModulus GetNoiseScale() const {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">      28019 :         return m_noiseScale;</span></a>
 <a name="169"><span class="lineNum">     169 </span>            :     }</a>
 <a name="170"><span class="lineNum">     170 </span>            : </a>
 <a name="171"><span class="lineNum">     171 </span>            :     /**</a>
@@ -235,8 +235,8 @@
 <a name="173"><span class="lineNum">     173 </span>            :    *</a>
 <a name="174"><span class="lineNum">     174 </span>            :    * @return the digit size.</a>
 <a name="175"><span class="lineNum">     175 </span>            :    */</a>
-<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :     usint GetDigitSize() const {</span></a>
-<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :         return m_digitSize;</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineCov">      10556 :     usint GetDigitSize() const {</span></a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineCov">      10556 :         return m_digitSize;</span></a>
 <a name="178"><span class="lineNum">     178 </span>            :     }</a>
 <a name="179"><span class="lineNum">     179 </span>            : </a>
 <a name="180"><span class="lineNum">     180 </span>            :     /**</a>
@@ -254,8 +254,8 @@
 <a name="192"><span class="lineNum">     192 </span>            :    *</a>
 <a name="193"><span class="lineNum">     193 </span>            :    * @return the secretKeyDist setting.</a>
 <a name="194"><span class="lineNum">     194 </span>            :    */</a>
-<a name="195"><span class="lineNum">     195 </span>            :     SecretKeyDist GetSecretKeyDist() const {</a>
-<a name="196"><span class="lineNum">     196 </span><span class="lineNoCov">          0 :         return m_secretKeyDist;</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineNoCov">          0 :     SecretKeyDist GetSecretKeyDist() const {</span></a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineCov">      12082 :         return m_secretKeyDist;</span></a>
 <a name="197"><span class="lineNum">     197 </span>            :     }</a>
 <a name="198"><span class="lineNum">     198 </span>            : </a>
 <a name="199"><span class="lineNum">     199 </span>            :     /**</a>
@@ -264,8 +264,8 @@
 <a name="202"><span class="lineNum">     202 </span>            :    *</a>
 <a name="203"><span class="lineNum">     203 </span>            :    * @return the pre security mode setting.</a>
 <a name="204"><span class="lineNum">     204 </span>            :    */</a>
-<a name="205"><span class="lineNum">     205 </span>            :     ProxyReEncryptionMode GetPREMode() const {</a>
-<a name="206"><span class="lineNum">     206 </span><span class="lineNoCov">          0 :         return m_PREMode;</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :     ProxyReEncryptionMode GetPREMode() const {</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">       4805 :         return m_PREMode;</span></a>
 <a name="207"><span class="lineNum">     207 </span>            :     }</a>
 <a name="208"><span class="lineNum">     208 </span>            : </a>
 <a name="209"><span class="lineNum">     209 </span>            :     /**</a>
@@ -273,8 +273,8 @@
 <a name="211"><span class="lineNum">     211 </span>            :    *</a>
 <a name="212"><span class="lineNum">     212 </span>            :    * @return the multiparty security mode setting.</a>
 <a name="213"><span class="lineNum">     213 </span>            :    */</a>
-<a name="214"><span class="lineNum">     214 </span>            :     MultipartyMode GetMultipartyMode() const {</a>
-<a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :         return m_multipartyMode;</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :     MultipartyMode GetMultipartyMode() const {</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">       7685 :         return m_multipartyMode;</span></a>
 <a name="216"><span class="lineNum">     216 </span>            :     }</a>
 <a name="217"><span class="lineNum">     217 </span>            : </a>
 <a name="218"><span class="lineNum">     218 </span>            :     /**</a>
@@ -282,8 +282,8 @@
 <a name="220"><span class="lineNum">     220 </span>            :    *</a>
 <a name="221"><span class="lineNum">     221 </span>            :    * @return the execution mode setting.</a>
 <a name="222"><span class="lineNum">     222 </span>            :    */</a>
-<a name="223"><span class="lineNum">     223 </span>            :     ExecutionMode GetExecutionMode() const {</a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineNoCov">          0 :         return m_executionMode;</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineNoCov">          0 :     ExecutionMode GetExecutionMode() const {</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">       5308 :         return m_executionMode;</span></a>
 <a name="225"><span class="lineNum">     225 </span>            :     }</a>
 <a name="226"><span class="lineNum">     226 </span>            : </a>
 <a name="227"><span class="lineNum">     227 </span>            :     /**</a>
@@ -291,8 +291,8 @@
 <a name="229"><span class="lineNum">     229 </span>            :    *</a>
 <a name="230"><span class="lineNum">     230 </span>            :    * @return the decryption noise mode setting.</a>
 <a name="231"><span class="lineNum">     231 </span>            :    */</a>
-<a name="232"><span class="lineNum">     232 </span>            :     DecryptionNoiseMode GetDecryptionNoiseMode() {</a>
-<a name="233"><span class="lineNum">     233 </span>            :         return m_decryptionNoiseMode;</a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineNoCov">          0 :     DecryptionNoiseMode GetDecryptionNoiseMode() {</span></a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineCov">       3824 :         return m_decryptionNoiseMode;</span></a>
 <a name="234"><span class="lineNum">     234 </span>            :     }</a>
 <a name="235"><span class="lineNum">     235 </span>            : </a>
 <a name="236"><span class="lineNum">     236 </span>            :     /**</a>
@@ -300,8 +300,8 @@
 <a name="238"><span class="lineNum">     238 </span>            :    *</a>
 <a name="239"><span class="lineNum">     239 </span>            :    * @return the security level.</a>
 <a name="240"><span class="lineNum">     240 </span>            :    */</a>
-<a name="241"><span class="lineNum">     241 </span>            :     SecurityLevel GetStdLevel() const {</a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineNoCov">          0 :         return m_stdLevel;</span></a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :     SecurityLevel GetStdLevel() const {</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">       3679 :         return m_stdLevel;</span></a>
 <a name="243"><span class="lineNum">     243 </span>            :     }</a>
 <a name="244"><span class="lineNum">     244 </span>            : </a>
 <a name="245"><span class="lineNum">     245 </span>            :     /**</a>
@@ -309,8 +309,8 @@
 <a name="247"><span class="lineNum">     247 </span>            :    *</a>
 <a name="248"><span class="lineNum">     248 </span>            :    * @return reference to Discrete Gaussian Generaror.</a>
 <a name="249"><span class="lineNum">     249 </span>            :    */</a>
-<a name="250"><span class="lineNum">     250 </span>            :     const typename Element::DggType&amp; GetDiscreteGaussianGenerator() const {</a>
-<a name="251"><span class="lineNum">     251 </span>            :         return m_dgg;</a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineNoCov">          0 :     const typename Element::DggType&amp; GetDiscreteGaussianGenerator() const {</span></a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineCov">      17980 :         return m_dgg;</span></a>
 <a name="252"><span class="lineNum">     252 </span>            :     }</a>
 <a name="253"><span class="lineNum">     253 </span>            : </a>
 <a name="254"><span class="lineNum">     254 </span>            :     /**</a>
@@ -319,8 +319,8 @@
 <a name="257"><span class="lineNum">     257 </span>            :    * @return reference to Discrete Gaussian Generaror with flooding for PRE.</a>
 <a name="258"><span class="lineNum">     258 </span>            :    * The Std dev for this generator changes based on the PRE mode, so it is not const</a>
 <a name="259"><span class="lineNum">     259 </span>            :    */</a>
-<a name="260"><span class="lineNum">     260 </span>            :     typename Element::DggType&amp; GetFloodingDiscreteGaussianGenerator() {</a>
-<a name="261"><span class="lineNum">     261 </span>            :         return m_dggFlooding;</a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineNoCov">          0 :     typename Element::DggType&amp; GetFloodingDiscreteGaussianGenerator() {</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">         39 :         return m_dggFlooding;</span></a>
 <a name="262"><span class="lineNum">     262 </span>            :     }</a>
 <a name="263"><span class="lineNum">     263 </span>            : </a>
 <a name="264"><span class="lineNum">     264 </span>            :     /**</a>
@@ -328,8 +328,8 @@
 <a name="266"><span class="lineNum">     266 </span>            :    *</a>
 <a name="267"><span class="lineNum">     267 </span>            :    * @return the statistical security level.</a>
 <a name="268"><span class="lineNum">     268 </span>            :    */</a>
-<a name="269"><span class="lineNum">     269 </span>            :     double GetStatisticalSecurity() const {</a>
-<a name="270"><span class="lineNum">     270 </span><span class="lineNoCov">          0 :         return m_statisticalSecurity;</span></a>
+<a name="269"><span class="lineNum">     269 </span><span class="lineNoCov">          0 :     double GetStatisticalSecurity() const {</span></a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">        659 :         return m_statisticalSecurity;</span></a>
 <a name="271"><span class="lineNum">     271 </span>            :     }</a>
 <a name="272"><span class="lineNum">     272 </span>            : </a>
 <a name="273"><span class="lineNum">     273 </span>            :     /**</a>
@@ -337,8 +337,8 @@
 <a name="275"><span class="lineNum">     275 </span>            :    *</a>
 <a name="276"><span class="lineNum">     276 </span>            :    * @return the number of adversarial queries.</a>
 <a name="277"><span class="lineNum">     277 </span>            :    */</a>
-<a name="278"><span class="lineNum">     278 </span>            :     double GetNumAdversarialQueries() const {</a>
-<a name="279"><span class="lineNum">     279 </span><span class="lineNoCov">          0 :         return m_numAdversarialQueries;</span></a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineNoCov">          0 :     double GetNumAdversarialQueries() const {</span></a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineCov">        659 :         return m_numAdversarialQueries;</span></a>
 <a name="280"><span class="lineNum">     280 </span>            :     }</a>
 <a name="281"><span class="lineNum">     281 </span>            : </a>
 <a name="282"><span class="lineNum">     282 </span>            :     /**</a>
@@ -346,8 +346,8 @@
 <a name="284"><span class="lineNum">     284 </span>            :    *</a>
 <a name="285"><span class="lineNum">     285 </span>            :    * @return the threshold number of parties.</a>
 <a name="286"><span class="lineNum">     286 </span>            :    */</a>
-<a name="287"><span class="lineNum">     287 </span>            :     uint32_t GetThresholdNumOfParties() const {</a>
-<a name="288"><span class="lineNum">     288 </span><span class="lineNoCov">          0 :         return m_thresholdNumOfParties;</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineNoCov">          0 :     uint32_t GetThresholdNumOfParties() const {</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineCov">       3037 :         return m_thresholdNumOfParties;</span></a>
 <a name="289"><span class="lineNum">     289 </span>            :     }</a>
 <a name="290"><span class="lineNum">     290 </span>            : </a>
 <a name="291"><span class="lineNum">     291 </span>            :     // @Set Properties</a>
@@ -356,124 +356,124 @@
 <a name="294"><span class="lineNum">     294 </span>            :    * Sets the value of standard deviation r for discrete Gaussian distribution</a>
 <a name="295"><span class="lineNum">     295 </span>            :    * @param distributionParameter</a>
 <a name="296"><span class="lineNum">     296 </span>            :    */</a>
-<a name="297"><span class="lineNum">     297 </span>            :     void SetDistributionParameter(float distributionParameter) {</a>
-<a name="298"><span class="lineNum">     298 </span>            :         m_distributionParameter = distributionParameter;</a>
-<a name="299"><span class="lineNum">     299 </span>            :         m_dgg.SetStd(m_distributionParameter);</a>
-<a name="300"><span class="lineNum">     300 </span>            :     }</a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineNoCov">          0 :     void SetDistributionParameter(float distributionParameter) {</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineNoCov">          0 :         m_distributionParameter = distributionParameter;</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineNoCov">          0 :         m_dgg.SetStd(m_distributionParameter);</span></a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="301"><span class="lineNum">     301 </span>            : </a>
 <a name="302"><span class="lineNum">     302 </span>            :     /**</a>
 <a name="303"><span class="lineNum">     303 </span>            :    * Sets the value of flooding standard deviation r for discrete Gaussian distribution with flooding</a>
 <a name="304"><span class="lineNum">     304 </span>            :    * @param distributionParameter</a>
 <a name="305"><span class="lineNum">     305 </span>            :    */</a>
-<a name="306"><span class="lineNum">     306 </span>            :     void SetFloodingDistributionParameter(double distributionParameter) {</a>
-<a name="307"><span class="lineNum">     307 </span><span class="lineCov">        998 :         m_floodingDistributionParameter = distributionParameter;</span></a>
-<a name="308"><span class="lineNum">     308 </span><span class="lineCov">        998 :         m_dggFlooding.SetStd(m_floodingDistributionParameter);</span></a>
-<a name="309"><span class="lineNum">     309 </span><span class="lineCov">        998 :     }</span></a>
+<a name="306"><span class="lineNum">     306 </span><span class="lineNoCov">          0 :     void SetFloodingDistributionParameter(double distributionParameter) {</span></a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineCov">       1657 :         m_floodingDistributionParameter = distributionParameter;</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineCov">       1657 :         m_dggFlooding.SetStd(m_floodingDistributionParameter);</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">       1657 :     }</span></a>
 <a name="310"><span class="lineNum">     310 </span>            : </a>
 <a name="311"><span class="lineNum">     311 </span>            :     /**</a>
 <a name="312"><span class="lineNum">     312 </span>            :    * Sets the values of assurance measure alpha</a>
 <a name="313"><span class="lineNum">     313 </span>            :    * @param assuranceMeasure</a>
 <a name="314"><span class="lineNum">     314 </span>            :    */</a>
-<a name="315"><span class="lineNum">     315 </span>            :     void SetAssuranceMeasure(float assuranceMeasure) {</a>
-<a name="316"><span class="lineNum">     316 </span>            :         m_assuranceMeasure = assuranceMeasure;</a>
-<a name="317"><span class="lineNum">     317 </span>            :     }</a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :     void SetAssuranceMeasure(float assuranceMeasure) {</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineNoCov">          0 :         m_assuranceMeasure = assuranceMeasure;</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="318"><span class="lineNum">     318 </span>            : </a>
 <a name="319"><span class="lineNum">     319 </span>            :     /**</a>
 <a name="320"><span class="lineNum">     320 </span>            :    * Sets the standard security level</a>
 <a name="321"><span class="lineNum">     321 </span>            :    * @param standard security level</a>
 <a name="322"><span class="lineNum">     322 </span>            :    */</a>
-<a name="323"><span class="lineNum">     323 </span>            :     void SetStdLevel(SecurityLevel securityLevel) {</a>
-<a name="324"><span class="lineNum">     324 </span>            :         m_stdLevel = securityLevel;</a>
-<a name="325"><span class="lineNum">     325 </span>            :     }</a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineNoCov">          0 :     void SetStdLevel(SecurityLevel securityLevel) {</span></a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :         m_stdLevel = securityLevel;</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="326"><span class="lineNum">     326 </span>            : </a>
 <a name="327"><span class="lineNum">     327 </span>            :     /**</a>
 <a name="328"><span class="lineNum">     328 </span>            :    * Sets the value of noise scale</a>
 <a name="329"><span class="lineNum">     329 </span>            :    * @param noiseScale</a>
 <a name="330"><span class="lineNum">     330 </span>            :    */</a>
-<a name="331"><span class="lineNum">     331 </span>            :     void SetNoiseScale(PlaintextModulus noiseScale) {</a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineNoCov">          0 :     void SetNoiseScale(PlaintextModulus noiseScale) {</span></a>
 <a name="332"><span class="lineNum">     332 </span><span class="lineCov">       2173 :         m_noiseScale = noiseScale;</span></a>
-<a name="333"><span class="lineNum">     333 </span>            :     }</a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="334"><span class="lineNum">     334 </span>            : </a>
 <a name="335"><span class="lineNum">     335 </span>            :     /**</a>
 <a name="336"><span class="lineNum">     336 </span>            :    * Sets the value of digit size</a>
 <a name="337"><span class="lineNum">     337 </span>            :    * @param digitSize</a>
 <a name="338"><span class="lineNum">     338 </span>            :    */</a>
-<a name="339"><span class="lineNum">     339 </span>            :     void SetDigitSize(usint digitSize) {</a>
-<a name="340"><span class="lineNum">     340 </span>            :         m_digitSize = digitSize;</a>
-<a name="341"><span class="lineNum">     341 </span>            :     }</a>
+<a name="339"><span class="lineNum">     339 </span><span class="lineNoCov">          0 :     void SetDigitSize(usint digitSize) {</span></a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineNoCov">          0 :         m_digitSize = digitSize;</span></a>
+<a name="341"><span class="lineNum">     341 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="342"><span class="lineNum">     342 </span>            : </a>
 <a name="343"><span class="lineNum">     343 </span>            :     /**</a>
 <a name="344"><span class="lineNum">     344 </span>            :    * Sets the value of the maximum power of secret key for which the</a>
 <a name="345"><span class="lineNum">     345 </span>            :    * relinearization key is generated</a>
 <a name="346"><span class="lineNum">     346 </span>            :    * @param maxRelinSkDeg</a>
 <a name="347"><span class="lineNum">     347 </span>            :    */</a>
-<a name="348"><span class="lineNum">     348 </span>            :     void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg) {</a>
-<a name="349"><span class="lineNum">     349 </span>            :         m_maxRelinSkDeg = maxRelinSkDeg;</a>
-<a name="350"><span class="lineNum">     350 </span>            :     }</a>
+<a name="348"><span class="lineNum">     348 </span><span class="lineNoCov">          0 :     void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg) {</span></a>
+<a name="349"><span class="lineNum">     349 </span><span class="lineNoCov">          0 :         m_maxRelinSkDeg = maxRelinSkDeg;</span></a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="351"><span class="lineNum">     351 </span>            : </a>
 <a name="352"><span class="lineNum">     352 </span>            :     /**</a>
 <a name="353"><span class="lineNum">     353 </span>            :    * Configures the secretKeyDist for generating the secret key polynomial</a>
 <a name="354"><span class="lineNum">     354 </span>            :    * @param secretKeyDist is GAUSSIAN or UNIFORM_TERNARY</a>
 <a name="355"><span class="lineNum">     355 </span>            :    */</a>
-<a name="356"><span class="lineNum">     356 </span>            :     void SetSecretKeyDist(SecretKeyDist secretKeyDist) {</a>
-<a name="357"><span class="lineNum">     357 </span>            :         m_secretKeyDist = secretKeyDist;</a>
-<a name="358"><span class="lineNum">     358 </span>            :     }</a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineNoCov">          0 :     void SetSecretKeyDist(SecretKeyDist secretKeyDist) {</span></a>
+<a name="357"><span class="lineNum">     357 </span><span class="lineNoCov">          0 :         m_secretKeyDist = secretKeyDist;</span></a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="359"><span class="lineNum">     359 </span>            : </a>
 <a name="360"><span class="lineNum">     360 </span>            :     /**</a>
 <a name="361"><span class="lineNum">     361 </span>            :    * Configures the security mode for pre</a>
 <a name="362"><span class="lineNum">     362 </span>            :    * @param PREMode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.</a>
 <a name="363"><span class="lineNum">     363 </span>            :    */</a>
-<a name="364"><span class="lineNum">     364 </span>            :     void SetPREMode(ProxyReEncryptionMode PREMode) {</a>
-<a name="365"><span class="lineNum">     365 </span>            :         m_PREMode = PREMode;</a>
-<a name="366"><span class="lineNum">     366 </span>            :     }</a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineNoCov">          0 :     void SetPREMode(ProxyReEncryptionMode PREMode) {</span></a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineNoCov">          0 :         m_PREMode = PREMode;</span></a>
+<a name="366"><span class="lineNum">     366 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="367"><span class="lineNum">     367 </span>            : </a>
 <a name="368"><span class="lineNum">     368 </span>            :     /**</a>
 <a name="369"><span class="lineNum">     369 </span>            :    * Configures the security mode for multiparty</a>
 <a name="370"><span class="lineNum">     370 </span>            :    * @param multipartyMode Security mode for multiparty decryption.</a>
 <a name="371"><span class="lineNum">     371 </span>            :    */</a>
-<a name="372"><span class="lineNum">     372 </span>            :     void SetMultipartyMode(MultipartyMode multipartyMode) {</a>
-<a name="373"><span class="lineNum">     373 </span>            :         m_multipartyMode = multipartyMode;</a>
-<a name="374"><span class="lineNum">     374 </span>            :     }</a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineNoCov">          0 :     void SetMultipartyMode(MultipartyMode multipartyMode) {</span></a>
+<a name="373"><span class="lineNum">     373 </span><span class="lineNoCov">          0 :         m_multipartyMode = multipartyMode;</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="375"><span class="lineNum">     375 </span>            : </a>
 <a name="376"><span class="lineNum">     376 </span>            :     /**</a>
 <a name="377"><span class="lineNum">     377 </span>            :    * Configures the execution for CKKS noise flooding</a>
 <a name="378"><span class="lineNum">     378 </span>            :    * @param executionMode Execution mode.</a>
 <a name="379"><span class="lineNum">     379 </span>            :    */</a>
-<a name="380"><span class="lineNum">     380 </span>            :     void SetExecutionMode(ExecutionMode executionMode) {</a>
-<a name="381"><span class="lineNum">     381 </span>            :         m_executionMode = executionMode;</a>
-<a name="382"><span class="lineNum">     382 </span>            :     }</a>
+<a name="380"><span class="lineNum">     380 </span><span class="lineNoCov">          0 :     void SetExecutionMode(ExecutionMode executionMode) {</span></a>
+<a name="381"><span class="lineNum">     381 </span><span class="lineNoCov">          0 :         m_executionMode = executionMode;</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="383"><span class="lineNum">     383 </span>            : </a>
 <a name="384"><span class="lineNum">     384 </span>            :     /**</a>
 <a name="385"><span class="lineNum">     385 </span>            :    * Configures the decryption noise mode for CKKS noise flooding</a>
 <a name="386"><span class="lineNum">     386 </span>            :    * @param decryptionNoiseMode Decryption noise mode.</a>
 <a name="387"><span class="lineNum">     387 </span>            :    */</a>
-<a name="388"><span class="lineNum">     388 </span>            :     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode) {</a>
-<a name="389"><span class="lineNum">     389 </span>            :         m_decryptionNoiseMode = decryptionNoiseMode;</a>
-<a name="390"><span class="lineNum">     390 </span>            :     }</a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineNoCov">          0 :     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode) {</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineNoCov">          0 :         m_decryptionNoiseMode = decryptionNoiseMode;</span></a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="391"><span class="lineNum">     391 </span>            : </a>
 <a name="392"><span class="lineNum">     392 </span>            :     /**</a>
 <a name="393"><span class="lineNum">     393 </span>            :    * Configures the decryption noise mode for CKKS noise flooding and PRE</a>
 <a name="394"><span class="lineNum">     394 </span>            :    * @param statisticalSecurity.</a>
 <a name="395"><span class="lineNum">     395 </span>            :    */</a>
-<a name="396"><span class="lineNum">     396 </span>            :     void SetStatisticalSecurity(uint32_t statisticalSecurity) {</a>
-<a name="397"><span class="lineNum">     397 </span>            :         m_statisticalSecurity = statisticalSecurity;</a>
-<a name="398"><span class="lineNum">     398 </span>            :     }</a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineNoCov">          0 :     void SetStatisticalSecurity(uint32_t statisticalSecurity) {</span></a>
+<a name="397"><span class="lineNum">     397 </span><span class="lineNoCov">          0 :         m_statisticalSecurity = statisticalSecurity;</span></a>
+<a name="398"><span class="lineNum">     398 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="399"><span class="lineNum">     399 </span>            : </a>
 <a name="400"><span class="lineNum">     400 </span>            :     /**</a>
 <a name="401"><span class="lineNum">     401 </span>            :    * Configures the decryption noise mode for CKKS noise flooding and PRE</a>
 <a name="402"><span class="lineNum">     402 </span>            :    * @param numAdversarialQueries.</a>
 <a name="403"><span class="lineNum">     403 </span>            :    */</a>
-<a name="404"><span class="lineNum">     404 </span>            :     void SetNumAdversarialQueries(uint32_t numAdversarialQueries) {</a>
-<a name="405"><span class="lineNum">     405 </span>            :         m_numAdversarialQueries = numAdversarialQueries;</a>
-<a name="406"><span class="lineNum">     406 </span>            :     }</a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineNoCov">          0 :     void SetNumAdversarialQueries(uint32_t numAdversarialQueries) {</span></a>
+<a name="405"><span class="lineNum">     405 </span><span class="lineNoCov">          0 :         m_numAdversarialQueries = numAdversarialQueries;</span></a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="407"><span class="lineNum">     407 </span>            : </a>
 <a name="408"><span class="lineNum">     408 </span>            :     /**</a>
 <a name="409"><span class="lineNum">     409 </span>            :    * Configures the number of parties in thresholdFHE</a>
 <a name="410"><span class="lineNum">     410 </span>            :    * @param thresholdNumOfParties.</a>
 <a name="411"><span class="lineNum">     411 </span>            :    */</a>
-<a name="412"><span class="lineNum">     412 </span>            :     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties) {</a>
-<a name="413"><span class="lineNum">     413 </span>            :         m_thresholdNumOfParties = thresholdNumOfParties;</a>
-<a name="414"><span class="lineNum">     414 </span>            :     }</a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineNoCov">          0 :     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties) {</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineNoCov">          0 :         m_thresholdNumOfParties = thresholdNumOfParties;</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="415"><span class="lineNum">     415 </span>            : </a>
 <a name="416"><span class="lineNum">     416 </span>            :     /**</a>
 <a name="417"><span class="lineNum">     417 </span>            :    * == operator to compare to this instance of CryptoParametersRLWE object.</a>

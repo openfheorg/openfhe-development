@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">19</td>
             <td class="headerCovTableEntry">27</td>
-            <td class="headerCovTableEntryLo">33.3 %</td>
+            <td class="headerCovTableEntryLo">70.4 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">4</td>
-            <td class="headerCovTableEntry">11</td>
-            <td class="headerCovTableEntryLo">36.4 %</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntryMed">76.9 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -115,8 +115,8 @@
 <a name="53"><span class="lineNum">      53 </span>            :                                                       std::is_same&lt;T, NativePoly::Params&gt;::value ||</a>
 <a name="54"><span class="lineNum">      54 </span>            :                                                       std::is_same&lt;T, DCRTPoly::Params&gt;::value,</a>
 <a name="55"><span class="lineNum">      55 </span>            :                                                   bool&gt;::type = true&gt;</a>
-<a name="56"><span class="lineNum">      56 </span><span class="lineCov">        740 :     CoefPackedEncoding(std::shared_ptr&lt;T&gt; vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)</span></a>
-<a name="57"><span class="lineNum">      57 </span><span class="lineCov">       1480 :         : PlaintextImpl(vp, ep, schemeId) {}</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">       1459 :     CoefPackedEncoding(std::shared_ptr&lt;T&gt; vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">       2918 :         : PlaintextImpl(vp, ep, schemeId) {}</span></a>
 <a name="58"><span class="lineNum">      58 </span>            : </a>
 <a name="59"><span class="lineNum">      59 </span>            :     template &lt;typename T, typename std::enable_if&lt;std::is_same&lt;T, Poly::Params&gt;::value ||</a>
 <a name="60"><span class="lineNum">      60 </span>            :                                                       std::is_same&lt;T, NativePoly::Params&gt;::value ||</a>
@@ -140,9 +140,9 @@
 <a name="78"><span class="lineNum">      78 </span>            :    * SetIntVectorValue</a>
 <a name="79"><span class="lineNum">      79 </span>            :    * @param val integer vector to initialize the plaintext</a>
 <a name="80"><span class="lineNum">      80 </span>            :    */</a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :     void SetIntVectorValue(const std::vector&lt;int64_t&gt;&amp; val) {</span></a>
-<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :         value = val;</span></a>
-<a name="83"><span class="lineNum">      83 </span><span class="lineNoCov">          0 :     }</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">        740 :     void SetIntVectorValue(const std::vector&lt;int64_t&gt;&amp; val) {</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">        740 :         value = val;</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">        740 :     }</span></a>
 <a name="84"><span class="lineNum">      84 </span>            : </a>
 <a name="85"><span class="lineNum">      85 </span>            :     /**</a>
 <a name="86"><span class="lineNum">      86 </span>            :    * Encode the plaintext into the Poly</a>
@@ -160,8 +160,8 @@
 <a name="98"><span class="lineNum">      98 </span>            :    * GetEncodingType</a>
 <a name="99"><span class="lineNum">      99 </span>            :    * @return this is a COEF_PACKED_ENCODING encoding</a>
 <a name="100"><span class="lineNum">     100 </span>            :    */</a>
-<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :     PlaintextEncodings GetEncodingType() const {</span></a>
-<a name="102"><span class="lineNum">     102 </span><span class="lineNoCov">          0 :         return COEF_PACKED_ENCODING;</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">        555 :     PlaintextEncodings GetEncodingType() const {</span></a>
+<a name="102"><span class="lineNum">     102 </span><span class="lineCov">        555 :         return COEF_PACKED_ENCODING;</span></a>
 <a name="103"><span class="lineNum">     103 </span>            :     }</a>
 <a name="104"><span class="lineNum">     104 </span>            : </a>
 <a name="105"><span class="lineNum">     105 </span>            :     /**</a>
@@ -169,17 +169,17 @@
 <a name="107"><span class="lineNum">     107 </span>            :    *</a>
 <a name="108"><span class="lineNum">     108 </span>            :    * @return number of elements in this plaintext</a>
 <a name="109"><span class="lineNum">     109 </span>            :    */</a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineNoCov">          0 :     size_t GetLength() const {</span></a>
-<a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :         return value.size();</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">        609 :     size_t GetLength() const {</span></a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">        609 :         return value.size();</span></a>
 <a name="112"><span class="lineNum">     112 </span>            :     }</a>
 <a name="113"><span class="lineNum">     113 </span>            : </a>
 <a name="114"><span class="lineNum">     114 </span>            :     /**</a>
 <a name="115"><span class="lineNum">     115 </span>            :    * SetLength of the plaintext to the given size</a>
 <a name="116"><span class="lineNum">     116 </span>            :    * @param siz</a>
 <a name="117"><span class="lineNum">     117 </span>            :    */</a>
-<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 :     void SetLength(size_t siz) {</span></a>
-<a name="119"><span class="lineNum">     119 </span><span class="lineCov">          1 :         value.resize(siz);</span></a>
-<a name="120"><span class="lineNum">     120 </span><span class="lineCov">          1 :     }</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">        609 :     void SetLength(size_t siz) {</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">        610 :         value.resize(siz);</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">        610 :     }</span></a>
 <a name="121"><span class="lineNum">     121 </span>            : </a>
 <a name="122"><span class="lineNum">     122 </span>            :     /**</a>
 <a name="123"><span class="lineNum">     123 </span>            :    * Method to compare two plaintext to test for equivalence</a>
@@ -188,9 +188,9 @@
 <a name="126"><span class="lineNum">     126 </span>            :    * @param other - the other plaintext to compare to.</a>
 <a name="127"><span class="lineNum">     127 </span>            :    * @return whether the two plaintext are equivalent.</a>
 <a name="128"><span class="lineNum">     128 </span>            :    */</a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineNoCov">          0 :     bool CompareTo(const PlaintextImpl&amp; other) const {</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">         36 :     bool CompareTo(const PlaintextImpl&amp; other) const {</span></a>
 <a name="130"><span class="lineNum">     130 </span>            :         const auto&amp; oth = static_cast&lt;const CoefPackedEncoding&amp;&gt;(other);</a>
-<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :         return oth.value == this-&gt;value;</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">         36 :         return oth.value == this-&gt;value;</span></a>
 <a name="132"><span class="lineNum">     132 </span>            :     }</a>
 <a name="133"><span class="lineNum">     133 </span>            : </a>
 <a name="134"><span class="lineNum">     134 </span>            :     /**</a>

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">15</td>
@@ -133,10 +133,10 @@
 <a name="71"><span class="lineNum">      71 </span>            :  */</a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">     530951 : class mubintvec final : public lbcrypto::BigVectorInterface&lt;mubintvec&lt;ubint_el_t&gt;, ubint_el_t&gt;,</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">     711069 : class mubintvec final : public lbcrypto::BigVectorInterface&lt;mubintvec&lt;ubint_el_t&gt;, ubint_el_t&gt;,</span></a>
 <a name="75"><span class="lineNum">      75 </span>            :                         public lbcrypto::Serializable {</a>
 <a name="76"><span class="lineNum">      76 </span>            : public:</a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">         76 :     mubintvec() = default;</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">         79 :     mubintvec() = default;</span></a>
 <a name="78"><span class="lineNum">      78 </span>            : </a>
 <a name="79"><span class="lineNum">      79 </span><span class="lineNoCov">          0 :     static mubintvec Single(const ubint_el_t&amp; val, const ubint_el_t&amp; modulus) {</span></a>
 <a name="80"><span class="lineNum">      80 </span><span class="lineCov">          3 :         mubintvec vec(1, modulus);</span></a>
@@ -149,7 +149,7 @@
 <a name="87"><span class="lineNum">      87 </span>            :    *</a>
 <a name="88"><span class="lineNum">      88 </span>            :    * @param length initial size in terms of the number of entries.</a>
 <a name="89"><span class="lineNum">      89 </span>            :    */</a>
-<a name="90"><span class="lineNum">      90 </span><span class="lineCov">        127 :     explicit mubintvec(usint length) noexcept : m_data(length) {}</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">        128 :     explicit mubintvec(usint length) noexcept : m_data(length) {}</span></a>
 <a name="91"><span class="lineNum">      91 </span>            : </a>
 <a name="92"><span class="lineNum">      92 </span>            :     /**</a>
 <a name="93"><span class="lineNum">      93 </span>            :    * Basic constructor for specifying the length and modulus of the vector.</a>
@@ -167,8 +167,8 @@
 <a name="105"><span class="lineNum">     105 </span>            :    * @param length initial size in terms of the number of entries.</a>
 <a name="106"><span class="lineNum">     106 </span>            :    * @param modulus ubint associated with entries in the vector.</a>
 <a name="107"><span class="lineNum">     107 </span>            :    */</a>
-<a name="108"><span class="lineNum">     108 </span><span class="lineCov">     103495 :     mubintvec(usint length, const ubint_el_t&amp; modulus) noexcept</span></a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">     103495 :         : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {}</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">     103627 :     mubintvec(usint length, const ubint_el_t&amp; modulus) noexcept</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">     103627 :         : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {}</span></a>
 <a name="110"><span class="lineNum">     110 </span>            : </a>
 <a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :     mubintvec(usint length, const ubint_el_t&amp; modulus, const ubint_el_t&amp; val) noexcept</span></a>
 <a name="112"><span class="lineNum">     112 </span><span class="lineNoCov">          0 :         : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length, val) {}</span></a>
@@ -187,16 +187,16 @@
 <a name="125"><span class="lineNum">     125 </span>            :    *</a>
 <a name="126"><span class="lineNum">     126 </span>            :    * @param rhs is the mubintvec to be copied.</a>
 <a name="127"><span class="lineNum">     127 </span>            :    */</a>
-<a name="128"><span class="lineNum">     128 </span><span class="lineCov">     428008 :     mubintvec(const mubintvec&amp; rhs) noexcept</span></a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">     428008 :         : m_modulus{rhs.m_modulus}, m_modulus_state{rhs.m_modulus_state}, m_data(rhs.m_data) {}</span></a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineCov">     494450 :     mubintvec(const mubintvec&amp; rhs) noexcept</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">     494450 :         : m_modulus{rhs.m_modulus}, m_modulus_state{rhs.m_modulus_state}, m_data(rhs.m_data) {}</span></a>
 <a name="130"><span class="lineNum">     130 </span>            : </a>
 <a name="131"><span class="lineNum">     131 </span>            :     /**</a>
 <a name="132"><span class="lineNum">     132 </span>            :    * Move constructor for moving a vector</a>
 <a name="133"><span class="lineNum">     133 </span>            :    *</a>
 <a name="134"><span class="lineNum">     134 </span>            :    * @param &amp;&amp;rhs is the mubintvec to be moved.</a>
 <a name="135"><span class="lineNum">     135 </span>            :    */</a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineCov">      29244 :     mubintvec(mubintvec&amp;&amp; rhs) noexcept</span></a>
-<a name="137"><span class="lineNum">     137 </span><span class="lineCov">        158 :         : m_modulus{std::move(rhs.m_modulus)}, m_modulus_state{rhs.m_modulus_state}, m_data(std::move(rhs.m_data)) {}</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">      58466 :     mubintvec(mubintvec&amp;&amp; rhs) noexcept</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">        294 :         : m_modulus{std::move(rhs.m_modulus)}, m_modulus_state{rhs.m_modulus_state}, m_data(std::move(rhs.m_data)) {}</span></a>
 <a name="138"><span class="lineNum">     138 </span>            : </a>
 <a name="139"><span class="lineNum">     139 </span>            :     /**</a>
 <a name="140"><span class="lineNum">     140 </span>            :    * Basic constructor for specifying the length of the vector with</a>
@@ -238,11 +238,11 @@
 <a name="176"><span class="lineNum">     176 </span>            :    * @param &amp;rhs is the mubintvec to move</a>
 <a name="177"><span class="lineNum">     177 </span>            :    * @return the return value.</a>
 <a name="178"><span class="lineNum">     178 </span>            :    */</a>
-<a name="179"><span class="lineNum">     179 </span><span class="lineCov">        103 :     mubintvec&amp; operator=(mubintvec&amp;&amp; rhs) noexcept {</span></a>
-<a name="180"><span class="lineNum">     180 </span><span class="lineCov">        103 :         m_modulus       = std::move(rhs.m_modulus);</span></a>
-<a name="181"><span class="lineNum">     181 </span><span class="lineCov">        103 :         m_modulus_state = rhs.m_modulus_state;</span></a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineCov">        103 :         m_data          = std::move(rhs.m_data);</span></a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">        103 :         return *this;</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov">        159 :     mubintvec&amp; operator=(mubintvec&amp;&amp; rhs) noexcept {</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">        159 :         m_modulus       = std::move(rhs.m_modulus);</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">        159 :         m_modulus_state = rhs.m_modulus_state;</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">        159 :         m_data          = std::move(rhs.m_data);</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">        159 :         return *this;</span></a>
 <a name="184"><span class="lineNum">     184 </span>            :     }</a>
 <a name="185"><span class="lineNum">     185 </span>            : </a>
 <a name="186"><span class="lineNum">     186 </span>            :     /**</a>
@@ -298,16 +298,16 @@
 <a name="236"><span class="lineNum">     236 </span>            :    *</a>
 <a name="237"><span class="lineNum">     237 </span>            :    * @param index is the index to set a value at.</a>
 <a name="238"><span class="lineNum">     238 </span>            :    */</a>
-<a name="239"><span class="lineNum">     239 </span><span class="lineCov">     612326 :     ubint_el_t&amp; at(size_t i) {</span></a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov">     612326 :         if (!mubintvec::IndexCheck(i))</span></a>
+<a name="239"><span class="lineNum">     239 </span><span class="lineCov">     612454 :     ubint_el_t&amp; at(size_t i) {</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">     612454 :         if (!mubintvec::IndexCheck(i))</span></a>
 <a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;index out of range&quot;);</span></a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineCov">     612326 :         return m_data[i];</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">     612454 :         return m_data[i];</span></a>
 <a name="243"><span class="lineNum">     243 </span>            :     }</a>
 <a name="244"><span class="lineNum">     244 </span>            : </a>
-<a name="245"><span class="lineNum">     245 </span><span class="lineCov">       1856 :     const ubint_el_t&amp; at(size_t i) const {</span></a>
-<a name="246"><span class="lineNum">     246 </span><span class="lineCov">       1856 :         if (!mubintvec::IndexCheck(i))</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">       2112 :     const ubint_el_t&amp; at(size_t i) const {</span></a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineCov">       2112 :         if (!mubintvec::IndexCheck(i))</span></a>
 <a name="247"><span class="lineNum">     247 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;index out of range&quot;);</span></a>
-<a name="248"><span class="lineNum">     248 </span><span class="lineCov">       1856 :         return m_data[i];</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">       2112 :         return m_data[i];</span></a>
 <a name="249"><span class="lineNum">     249 </span>            :     }</a>
 <a name="250"><span class="lineNum">     250 </span>            : </a>
 <a name="251"><span class="lineNum">     251 </span><span class="lineNoCov">          0 :     ubint_el_t&amp; operator[](size_t i) {</span></a>
@@ -343,7 +343,7 @@
 <a name="281"><span class="lineNum">     281 </span>            :    */</a>
 <a name="282"><span class="lineNum">     282 </span><span class="lineNoCov">          0 :     void SetModulus(const ubint_el_t&amp; value) noexcept {</span></a>
 <a name="283"><span class="lineNum">     283 </span>            :         m_modulus       = value;</a>
-<a name="284"><span class="lineNum">     284 </span><span class="lineCov">        183 :         m_modulus_state = State::INITIALIZED;</span></a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">        257 :         m_modulus_state = State::INITIALIZED;</span></a>
 <a name="285"><span class="lineNum">     285 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="286"><span class="lineNum">     286 </span>            : </a>
 <a name="287"><span class="lineNum">     287 </span><span class="lineNoCov">          0 :     void SetModulus(ubint_el_t&amp;&amp; value) noexcept {</span></a>

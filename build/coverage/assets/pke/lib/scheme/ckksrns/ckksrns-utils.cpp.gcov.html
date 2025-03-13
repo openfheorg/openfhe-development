@@ -1,0 +1,1012 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - pke/lib/scheme/ckksrns/ckksrns-utils.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">pke/lib/scheme/ckksrns</a> - ckksrns-utils.cpp<span style="font-size: 80%;"> (source / <a href="ckksrns-utils.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">353</td>
+            <td class="headerCovTableEntry">394</td>
+            <td class="headerCovTableEntryMed">89.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">21</td>
+            <td class="headerCovTableEntry">21</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : #include &quot;scheme/ckksrns/ckksrns-utils.h&quot;</a>
+<a name="33"><span class="lineNum">      33 </span>            : #include &quot;utils/exception.h&quot;</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : #include &lt;cmath&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : #include &lt;algorithm&gt;</a>
+<a name="37"><span class="lineNum">      37 </span>            : #include &lt;functional&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : #include &lt;vector&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : namespace lbcrypto {</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : namespace {  // this namespace should stay unnamed</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span>            : /*  Populate statically the parameter m for the Paterson-Stockmeyer algorithm up</a>
+<a name="45"><span class="lineNum">      45 </span>            :     to the degree value of upperBoundDegree.*/</a>
+<a name="46"><span class="lineNum">      46 </span>            : enum { UPPER_BOUND_PS = 2204 };</a>
+<a name="47"><span class="lineNum">      47 </span><span class="lineCov">          1 : std::vector&lt;uint32_t&gt; PopulateParameterPS(const uint32_t upperBoundDegree) {</span></a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineCov">          1 :     std::vector&lt;uint32_t&gt; mlist(upperBoundDegree);</span></a>
+<a name="49"><span class="lineNum">      49 </span>            : </a>
+<a name="50"><span class="lineNum">      50 </span>            :     std::fill(mlist.begin(), mlist.begin() + 2, 1);            // n in [1,2], m = 1</a>
+<a name="51"><span class="lineNum">      51 </span>            :     std::fill(mlist.begin() + 2, mlist.begin() + 11, 2);       // n in [3,11], m = 2</a>
+<a name="52"><span class="lineNum">      52 </span>            :     std::fill(mlist.begin() + 11, mlist.begin() + 13, 3);      // n in [12,13], m = 3</a>
+<a name="53"><span class="lineNum">      53 </span>            :     std::fill(mlist.begin() + 13, mlist.begin() + 17, 2);      // n in [14,17], m = 2</a>
+<a name="54"><span class="lineNum">      54 </span>            :     std::fill(mlist.begin() + 17, mlist.begin() + 55, 3);      // n in [18,55], m = 3</a>
+<a name="55"><span class="lineNum">      55 </span>            :     std::fill(mlist.begin() + 55, mlist.begin() + 59, 4);      // n in [56,59], m = 4</a>
+<a name="56"><span class="lineNum">      56 </span>            :     std::fill(mlist.begin() + 59, mlist.begin() + 76, 3);      // n in [60,76], m = 3</a>
+<a name="57"><span class="lineNum">      57 </span>            :     std::fill(mlist.begin() + 76, mlist.begin() + 239, 4);     // n in [77,239], m = 4</a>
+<a name="58"><span class="lineNum">      58 </span>            :     std::fill(mlist.begin() + 239, mlist.begin() + 247, 5);    // n in [240,247], m = 5</a>
+<a name="59"><span class="lineNum">      59 </span>            :     std::fill(mlist.begin() + 247, mlist.begin() + 284, 4);    // n in [248,284], m = 4</a>
+<a name="60"><span class="lineNum">      60 </span>            :     std::fill(mlist.begin() + 284, mlist.begin() + 991, 5);    // n in [285,991], m = 5</a>
+<a name="61"><span class="lineNum">      61 </span>            :     std::fill(mlist.begin() + 991, mlist.begin() + 1007, 6);   // n in [992,1007], m = 6</a>
+<a name="62"><span class="lineNum">      62 </span>            :     std::fill(mlist.begin() + 1007, mlist.begin() + 1083, 5);  // n in [1008,1083], m = 5</a>
+<a name="63"><span class="lineNum">      63 </span>            :     std::fill(mlist.begin() + 1083, mlist.begin() + 2015, 6);  // n in [1084,2015], m = 6</a>
+<a name="64"><span class="lineNum">      64 </span>            :     std::fill(mlist.begin() + 2015, mlist.begin() + 2031, 7);  // n in [2016,2031], m = 7</a>
+<a name="65"><span class="lineNum">      65 </span>            :     std::fill(mlist.begin() + 2031, mlist.end(), 6);           // n in [2032,2204], m = 6</a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">          1 :     return mlist;</span></a>
+<a name="68"><span class="lineNum">      68 </span>            : }</a>
+<a name="69"><span class="lineNum">      69 </span>            : </a>
+<a name="70"><span class="lineNum">      70 </span>            : // clang-format off</a>
+<a name="71"><span class="lineNum">      71 </span>            : // Populate the conversion table Degree-to-Multiplicative Depth</a>
+<a name="72"><span class="lineNum">      72 </span>            : enum {</a>
+<a name="73"><span class="lineNum">      73 </span>            :     LOWER_BOUND_DEGREE = 5,</a>
+<a name="74"><span class="lineNum">      74 </span>            :     UPPER_BOUND_DEGREE = 2031,</a>
+<a name="75"><span class="lineNum">      75 </span>            : };</a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">          1 : std::vector&lt;uint32_t&gt; GenerateDepthByDegreeTable() {</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">          1 :     std::vector&lt;uint32_t&gt; depthTable(UPPER_BOUND_DEGREE+1);</span></a>
+<a name="78"><span class="lineNum">      78 </span>            : </a>
+<a name="79"><span class="lineNum">      79 </span>            :     std::fill(depthTable.begin(),        depthTable.begin() + 5,     3);  // degree in [0,4], depth = 3 - the Paterson-Stockmeyer algorithm is not used when degree &lt; 5</a>
+<a name="80"><span class="lineNum">      80 </span>            :     std::fill(depthTable.begin() + 5,    depthTable.begin() + 6,     4);  // degree in [5],         depth = 4</a>
+<a name="81"><span class="lineNum">      81 </span>            :     std::fill(depthTable.begin() + 6,    depthTable.begin() + 14,    5);  // degree in [6,13],      depth = 5</a>
+<a name="82"><span class="lineNum">      82 </span>            :     std::fill(depthTable.begin() + 14,   depthTable.begin() + 28,    6);  // degree in [14,27],     depth = 6</a>
+<a name="83"><span class="lineNum">      83 </span>            :     std::fill(depthTable.begin() + 28,   depthTable.begin() + 60,    7);  // degree in [28,59],     depth = 7</a>
+<a name="84"><span class="lineNum">      84 </span>            :     std::fill(depthTable.begin() + 60,   depthTable.begin() + 120,   8);  // degree in [60,119],    depth = 8</a>
+<a name="85"><span class="lineNum">      85 </span>            :     std::fill(depthTable.begin() + 120,  depthTable.begin() + 248,   9);  // degree in [120,247],   depth = 9</a>
+<a name="86"><span class="lineNum">      86 </span>            :     std::fill(depthTable.begin() + 248,  depthTable.begin() + 496,  10);  // degree in [248,495],   depth = 10</a>
+<a name="87"><span class="lineNum">      87 </span>            :     std::fill(depthTable.begin() + 496,  depthTable.begin() + 1008, 11);  // degree in [496,1007],  depth = 11</a>
+<a name="88"><span class="lineNum">      88 </span>            :     std::fill(depthTable.begin() + 1008, depthTable.end(),          12);  // degree in [1008,2031], depth = 12</a>
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">          1 :     return depthTable;</span></a>
+<a name="91"><span class="lineNum">      91 </span>            : }</a>
+<a name="92"><span class="lineNum">      92 </span>            : // clang-format on</a>
+<a name="93"><span class="lineNum">      93 </span>            : </a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">        116 : uint32_t GetDepthByDegree(size_t degree) {</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">        116 :     static const std::vector&lt;uint32_t&gt; depthTable = GenerateDepthByDegreeTable();</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">        116 :     if (degree &gt;= LOWER_BOUND_DEGREE &amp;&amp; degree &lt;= UPPER_BOUND_DEGREE)</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">        116 :         return depthTable[degree];</span></a>
+<a name="98"><span class="lineNum">      98 </span>            : </a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineNoCov">          0 :     std::string errMsg(&quot;Polynomial degree is supported from 5 to 2031 inclusive. Its current value is &quot;);</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :     errMsg += std::to_string(degree);</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :     OPENFHE_THROW(errMsg);</span></a>
+<a name="102"><span class="lineNum">     102 </span>            : }</a>
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<a name="104"><span class="lineNum">     104 </span>            : }  // namespace</a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span>            : const std::complex&lt;double&gt; I(0.0, 1.0);</a>
+<a name="107"><span class="lineNum">     107 </span>            : double PREC = std::pow(2, -20);</a>
+<a name="108"><span class="lineNum">     108 </span>            : </a>
+<a name="109"><span class="lineNum">     109 </span>            : inline bool IsNotEqualOne(double val) {</a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">     166227 :     if (1 - PREC &gt;= val) {</span></a>
+<a name="111"><span class="lineNum">     111 </span>            :         return true;</a>
+<a name="112"><span class="lineNum">     112 </span>            :     }</a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineCov">     113234 :     if (1 + PREC &lt;= val) {</span></a>
+<a name="114"><span class="lineNum">     114 </span>            :         return true;</a>
+<a name="115"><span class="lineNum">     115 </span>            :     }</a>
+<a name="116"><span class="lineNum">     116 </span>            :     return false;</a>
+<a name="117"><span class="lineNum">     117 </span>            : }</a>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">     105744 : uint32_t Degree(const std::vector&lt;double&gt;&amp; coefficients) {</span></a>
+<a name="120"><span class="lineNum">     120 </span>            :     const size_t coefficientsSize = coefficients.size();</a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">     105744 :     if (!coefficientsSize) {</span></a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;The coefficients vector can not be empty&quot;);</span></a>
+<a name="123"><span class="lineNum">     123 </span>            :     }</a>
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">     105744 :     int32_t indx = coefficientsSize;</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">     173884 :     while (--indx &gt;= 0) {</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">     173868 :         if (coefficients[indx])</span></a>
+<a name="128"><span class="lineNum">     128 </span>            :             break;</a>
+<a name="129"><span class="lineNum">     129 </span>            :     }</a>
+<a name="130"><span class="lineNum">     130 </span>            : </a>
+<a name="131"><span class="lineNum">     131 </span>            :     // indx becomes negative (-1) only when all coefficients are zeroes. in this case we return 0</a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">     105744 :     return static_cast&lt;uint32_t&gt;((indx &lt; 0) ? 0 : indx);</span></a>
+<a name="133"><span class="lineNum">     133 </span>            : }</a>
+<a name="134"><span class="lineNum">     134 </span>            : </a>
+<a name="135"><span class="lineNum">     135 </span>            : /* f and g are vectors of coefficients of the two polynomials. We assume their dominant</a>
+<a name="136"><span class="lineNum">     136 </span>            : coefficient is not zero. LongDivisionPoly returns the vector of coefficients for the</a>
+<a name="137"><span class="lineNum">     137 </span>            : quotient and remainder of the division f/g. longDiv is a struct that contains the</a>
+<a name="138"><span class="lineNum">     138 </span>            : vectors of coefficients for the quotient and rest. */</a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">         64 : std::shared_ptr&lt;longDiv&gt; LongDivisionPoly(const std::vector&lt;double&gt;&amp; f, const std::vector&lt;double&gt;&amp; g) {</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">         64 :     uint32_t n = Degree(f);</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">         64 :     uint32_t k = Degree(g);</span></a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">         64 :     if (n != f.size() - 1) {</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;LongDivisionPoly: The dominant coefficient of the divident is zero.&quot;);</span></a>
+<a name="145"><span class="lineNum">     145 </span>            :     }</a>
+<a name="146"><span class="lineNum">     146 </span>            : </a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">         64 :     if (k != g.size() - 1) {</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;LongDivisionPoly: The dominant coefficient of the divisor is zero.&quot;);</span></a>
+<a name="149"><span class="lineNum">     149 </span>            :     }</a>
+<a name="150"><span class="lineNum">     150 </span>            : </a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineCov">         64 :     if (int32_t(n - k) &lt; 0)</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :         return std::make_shared&lt;longDiv&gt;(std::vector&lt;double&gt;(1), f);</span></a>
+<a name="153"><span class="lineNum">     153 </span>            : </a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">         64 :     std::vector&lt;double&gt; q(n - k + 1);</span></a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">         64 :     std::vector&lt;double&gt; r(f);</span></a>
+<a name="156"><span class="lineNum">     156 </span>            :     std::vector&lt;double&gt; d;</a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">         64 :     d.reserve(g.size() + n);</span></a>
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">        256 :     while (int32_t(n - k) &gt;= 0) {</span></a>
+<a name="160"><span class="lineNum">     160 </span>            :         // d is g padded with zeros before up to n</a>
+<a name="161"><span class="lineNum">     161 </span>            :         d.clear();</a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">        192 :         d.resize(n - k);</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">        192 :         d.insert(d.end(), g.begin(), g.end());</span></a>
+<a name="164"><span class="lineNum">     164 </span>            : </a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">        192 :         q[n - k] = r.back();</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">        192 :         if (IsNotEqualOne(g[k]))</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :             q[n - k] /= g.back();</span></a>
+<a name="168"><span class="lineNum">     168 </span>            : </a>
+<a name="169"><span class="lineNum">     169 </span>            :         // d *= q[n - k]</a>
+<a name="170"><span class="lineNum">     170 </span>            :         std::transform(d.begin(), d.end(), d.begin(),</a>
+<a name="171"><span class="lineNum">     171 </span>            :                        std::bind(std::multiplies&lt;double&gt;(), std::placeholders::_1, q[n - k]));</a>
+<a name="172"><span class="lineNum">     172 </span>            :         // f-=d</a>
+<a name="173"><span class="lineNum">     173 </span>            :         std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus&lt;double&gt;());</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">        192 :         if (r.size() &gt; 1) {</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">        192 :             n = Degree(r);</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineCov">        192 :             r.resize(n + 1);</span></a>
+<a name="177"><span class="lineNum">     177 </span>            :         }</a>
+<a name="178"><span class="lineNum">     178 </span>            :     }</a>
+<a name="179"><span class="lineNum">     179 </span>            :     return std::make_shared&lt;longDiv&gt;(q, r);</a>
+<a name="180"><span class="lineNum">     180 </span>            : }</a>
+<a name="181"><span class="lineNum">     181 </span>            : </a>
+<a name="182"><span class="lineNum">     182 </span>            : /* f and g are vectors of Chebyshev interpolation coefficients of the two polynomials.</a>
+<a name="183"><span class="lineNum">     183 </span>            : We assume their dominant coefficient is not zero. LongDivisionChebyshev returns the</a>
+<a name="184"><span class="lineNum">     184 </span>            : vector of Chebyshev interpolation coefficients for the quotient and remainder of the</a>
+<a name="185"><span class="lineNum">     185 </span>            : division f/g. longDiv is a struct that contains the vectors of coefficients for the</a>
+<a name="186"><span class="lineNum">     186 </span>            : quotient and rest. We assume that the zero-th coefficient is c0, not c0/2 and returns</a>
+<a name="187"><span class="lineNum">     187 </span>            : the same format.*/</a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">       4704 : std::shared_ptr&lt;longDiv&gt; LongDivisionChebyshev(const std::vector&lt;double&gt;&amp; f, const std::vector&lt;double&gt;&amp; g) {</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">       4704 :     uint32_t n = Degree(f);</span></a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">       4704 :     uint32_t k = Degree(g);</span></a>
+<a name="191"><span class="lineNum">     191 </span>            : </a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">       4704 :     if (n != f.size() - 1) {</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;LongDivisionChebyshev: The dominant coefficient of the divident is zero.&quot;);</span></a>
+<a name="194"><span class="lineNum">     194 </span>            :     }</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineCov">       4704 :     if (k != g.size() - 1) {</span></a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;LongDivisionChebyshev: The dominant coefficient of the divisor is zero.&quot;);</span></a>
+<a name="198"><span class="lineNum">     198 </span>            :     }</a>
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineCov">       4704 :     if (int32_t(n - k) &lt; 0)</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :         return std::make_shared&lt;longDiv&gt;(std::vector&lt;double&gt;(1), f);</span></a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">       4704 :     std::vector&lt;double&gt; q(n - k + 1);</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">       4704 :     std::vector&lt;double&gt; r(f);</span></a>
+<a name="205"><span class="lineNum">     205 </span>            :     std::vector&lt;double&gt; d;</a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">       4704 :     d.reserve(g.size() + n);</span></a>
+<a name="207"><span class="lineNum">     207 </span>            : </a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineCov">      55425 :     while (int32_t(n - k) &gt; 0) {</span></a>
+<a name="209"><span class="lineNum">     209 </span>            :         d.clear();</a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineCov">      50721 :         d.resize(n + 1);</span></a>
+<a name="211"><span class="lineNum">     211 </span>            : </a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">      50721 :         q[n - k] = 2 * r.back();</span></a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineCov">      50721 :         if (IsNotEqualOne(g[k]))</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">      14511 :             q[n - k] /= g.back();</span></a>
+<a name="215"><span class="lineNum">     215 </span>            : </a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">      50721 :         if (int32_t(k) == int32_t(n - k)) {</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :             d.front() = 2 * g[n - k];</span></a>
+<a name="218"><span class="lineNum">     218 </span>            : </a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineNoCov">          0 :             for (uint32_t i = 1; i &lt; 2 * k + 1; i++) {</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 d[i] = g[std::abs(int32_t(n - k - i))];</span></a>
+<a name="221"><span class="lineNum">     221 </span>            :             }</a>
+<a name="222"><span class="lineNum">     222 </span>            :         }</a>
+<a name="223"><span class="lineNum">     223 </span>            :         else {</a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">      50721 :             if (int32_t(k) &gt; int32_t(n - k)) {</span></a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">      50721 :                 d.front() = 2 * g[n - k];</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">    1065050 :                 for (uint32_t i = 1; i &lt; k - (n - k) + 1; i++) {</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">    1014320 :                     d[i] = g[std::abs(int32_t(n - k - i))] + g[int32_t(n - k + i)];</span></a>
+<a name="228"><span class="lineNum">     228 </span>            :                 }</a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">    1233600 :                 for (uint32_t i = k - (n - k) + 1; i &lt; n + 1; i++) {</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">    1182880 :                     d[i] = g[std::abs(int32_t(i - n + k))];</span></a>
+<a name="231"><span class="lineNum">     231 </span>            :                 }</a>
+<a name="232"><span class="lineNum">     232 </span>            :             }</a>
+<a name="233"><span class="lineNum">     233 </span>            :             else {</a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineNoCov">          0 :                 d[n - k] = g.front();</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineNoCov">          0 :                 for (uint32_t i = n - 2 * k; i &lt; n + 1; i++) {</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineNoCov">          0 :                     if (i != n - k) {</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 :                         d[i] = g[std::abs(int32_t(i - n + k))];</span></a>
+<a name="238"><span class="lineNum">     238 </span>            :                     }</a>
+<a name="239"><span class="lineNum">     239 </span>            :                 }</a>
+<a name="240"><span class="lineNum">     240 </span>            :             }</a>
+<a name="241"><span class="lineNum">     241 </span>            :         }</a>
+<a name="242"><span class="lineNum">     242 </span>            : </a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineCov">      50721 :         if (IsNotEqualOne(r.back())) {</span></a>
+<a name="244"><span class="lineNum">     244 </span>            :             // d *= f[n]</a>
+<a name="245"><span class="lineNum">     245 </span>            :             std::transform(d.begin(), d.end(), d.begin(),</a>
+<a name="246"><span class="lineNum">     246 </span>            :                            std::bind(std::multiplies&lt;double&gt;(), std::placeholders::_1, r.back()));</a>
+<a name="247"><span class="lineNum">     247 </span>            :         }</a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">      50721 :         if (IsNotEqualOne(g.back())) {</span></a>
+<a name="249"><span class="lineNum">     249 </span>            :             // d /= g[k]</a>
+<a name="250"><span class="lineNum">     250 </span>            :             std::transform(d.begin(), d.end(), d.begin(),</a>
+<a name="251"><span class="lineNum">     251 </span>            :                            std::bind(std::divides&lt;double&gt;(), std::placeholders::_1, g.back()));</a>
+<a name="252"><span class="lineNum">     252 </span>            :         }</a>
+<a name="253"><span class="lineNum">     253 </span>            :         // f-=d</a>
+<a name="254"><span class="lineNum">     254 </span>            :         std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus&lt;double&gt;());</a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">      50721 :         if (r.size() &gt; 1) {</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineCov">      50721 :             n = Degree(r);</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineCov">      50721 :             r.resize(n + 1);</span></a>
+<a name="258"><span class="lineNum">     258 </span>            :         }</a>
+<a name="259"><span class="lineNum">     259 </span>            :     }</a>
+<a name="260"><span class="lineNum">     260 </span>            : </a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">       4704 :     if (n == k) {</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineCov">       4624 :         d = g;</span></a>
+<a name="263"><span class="lineNum">     263 </span>            : </a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineCov">       4624 :         q.front() = r.back();</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">       4624 :         if (IsNotEqualOne(g.back())) {</span></a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineCov">       2352 :             q.front() /= g.back();  // q[0] /= g[k]</span></a>
+<a name="267"><span class="lineNum">     267 </span>            :         }</a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">       4624 :         if (IsNotEqualOne(r.back())) {</span></a>
+<a name="269"><span class="lineNum">     269 </span>            :             // d *= f[n]</a>
+<a name="270"><span class="lineNum">     270 </span>            :             std::transform(d.begin(), d.end(), d.begin(),</a>
+<a name="271"><span class="lineNum">     271 </span>            :                            std::bind(std::multiplies&lt;double&gt;(), std::placeholders::_1, r.back()));</a>
+<a name="272"><span class="lineNum">     272 </span>            :         }</a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineCov">       4624 :         if (IsNotEqualOne(g.back())) {</span></a>
+<a name="274"><span class="lineNum">     274 </span>            :             // d /= g[k]</a>
+<a name="275"><span class="lineNum">     275 </span>            :             std::transform(d.begin(), d.end(), d.begin(),</a>
+<a name="276"><span class="lineNum">     276 </span>            :                            std::bind(std::divides&lt;double&gt;(), std::placeholders::_1, g.back()));</a>
+<a name="277"><span class="lineNum">     277 </span>            :         }</a>
+<a name="278"><span class="lineNum">     278 </span>            :         // f-=d</a>
+<a name="279"><span class="lineNum">     279 </span>            :         std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus&lt;double&gt;());</a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">       4624 :         if (r.size() &gt; 1) {</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">       4624 :             n = Degree(r);</span></a>
+<a name="282"><span class="lineNum">     282 </span><span class="lineCov">       4624 :             r.resize(n + 1);</span></a>
+<a name="283"><span class="lineNum">     283 </span>            :         }</a>
+<a name="284"><span class="lineNum">     284 </span>            :     }</a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineCov">       4704 :     q.front() *= 2;  // Because we want to have [c0] in the last spot, not [c0/2]</span></a>
+<a name="286"><span class="lineNum">     286 </span>            : </a>
+<a name="287"><span class="lineNum">     287 </span>            :     return std::make_shared&lt;longDiv&gt;(q, r);</a>
+<a name="288"><span class="lineNum">     288 </span>            : }</a>
+<a name="289"><span class="lineNum">     289 </span>            : </a>
+<a name="290"><span class="lineNum">     290 </span>            : /*      Compute positive integers k,m such that n &lt; k(2^m-1), k is close to sqrt(n/2)</a>
+<a name="291"><span class="lineNum">     291 </span>            :         and the depth = ceil(log2(k))+m is minimized. Moreover, for that depth the</a>
+<a name="292"><span class="lineNum">     292 </span>            :         number of homomorphic multiplications = k+2m+2^(m-1)-4 is minimized.</a>
+<a name="293"><span class="lineNum">     293 </span>            :         Since finding these parameters involve testing many possible values, we</a>
+<a name="294"><span class="lineNum">     294 </span>            :         hardcode them for commonly used degrees, and provide a heuristic which</a>
+<a name="295"><span class="lineNum">     295 </span>            :         minimizes the number of homomorphic multiplications for the rest of the</a>
+<a name="296"><span class="lineNum">     296 </span>            :         degrees.*/</a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineCov">        460 : std::vector&lt;uint32_t&gt; ComputeDegreesPS(const uint32_t n) {</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineCov">        460 :     if (n == 0) {</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.&quot;);</span></a>
+<a name="300"><span class="lineNum">     300 </span>            :     }</a>
+<a name="301"><span class="lineNum">     301 </span>            : </a>
+<a name="302"><span class="lineNum">     302 </span>            :     // index n-1 in the vector corresponds to degree n</a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineCov">        460 :     if (n &lt;= UPPER_BOUND_PS) {  // hard-coded values</span></a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineCov">        460 :         static const std::vector&lt;uint32_t&gt; mlist = PopulateParameterPS(UPPER_BOUND_PS);</span></a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineCov">        460 :         uint32_t m                               = mlist[n - 1];</span></a>
+<a name="306"><span class="lineNum">     306 </span><span class="lineCov">        460 :         uint32_t k                               = std::floor(n / ((1 &lt;&lt; m) - 1)) + 1;</span></a>
+<a name="307"><span class="lineNum">     307 </span>            : </a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineCov">        460 :         return std::vector&lt;uint32_t&gt;{k, m};</span></a>
+<a name="309"><span class="lineNum">     309 </span>            :     }</a>
+<a name="310"><span class="lineNum">     310 </span>            :     else {  // heuristic for larger degrees</a>
+<a name="311"><span class="lineNum">     311 </span>            :         std::vector&lt;uint32_t&gt; klist;</a>
+<a name="312"><span class="lineNum">     312 </span>            :         std::vector&lt;uint32_t&gt; mlist;</a>
+<a name="313"><span class="lineNum">     313 </span>            :         std::vector&lt;uint32_t&gt; multlist;</a>
+<a name="314"><span class="lineNum">     314 </span>            : </a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :         for (uint32_t k = 1; k &lt;= n; k++) {</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineNoCov">          0 :             for (uint32_t m = 1; m &lt;= std::ceil(log2(n / k) + 1) + 1; m++) {</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineNoCov">          0 :                 if (int32_t(n) - int32_t(k * ((1 &lt;&lt; m) - 1)) &lt; 0) {</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineNoCov">          0 :                     if (std::abs(std::floor(log2(k)) - std::floor(log2(sqrt(n / 2)))) &lt;= 1) {</span></a>
+<a name="319"><span class="lineNum">     319 </span><span class="lineNoCov">          0 :                         klist.push_back(k);</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineNoCov">          0 :                         mlist.push_back(m);</span></a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineNoCov">          0 :                         multlist.push_back(k + 2 * m + (1 &lt;&lt; (m - 1)) - 4);</span></a>
+<a name="322"><span class="lineNum">     322 </span>            :                     }</a>
+<a name="323"><span class="lineNum">     323 </span>            :                 }</a>
+<a name="324"><span class="lineNum">     324 </span>            :             }</a>
+<a name="325"><span class="lineNum">     325 </span>            :         }</a>
+<a name="326"><span class="lineNum">     326 </span>            :         uint32_t minIndex = std::min_element(multlist.begin(), multlist.end()) - multlist.begin();</a>
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineNoCov">          0 :         return std::vector&lt;uint32_t&gt;{klist[minIndex], mlist[minIndex]};</span></a>
+<a name="329"><span class="lineNum">     329 </span>            :     }</a>
+<a name="330"><span class="lineNum">     330 </span>            : }</a>
+<a name="331"><span class="lineNum">     331 </span>            : </a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineCov">        116 : uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector&lt;double&gt;&amp; vec, bool isNormalized) {</span></a>
+<a name="333"><span class="lineNum">     333 </span>            :     size_t vecSize = vec.size();</a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineCov">        116 :     if (!vecSize) {</span></a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;Cannot perform operation on empty vector. vec.size() == 0&quot;);</span></a>
+<a name="336"><span class="lineNum">     336 </span>            :     }</a>
+<a name="337"><span class="lineNum">     337 </span>            : </a>
+<a name="338"><span class="lineNum">     338 </span><span class="lineCov">        116 :     size_t degree      = vecSize - 1;</span></a>
+<a name="339"><span class="lineNum">     339 </span><span class="lineCov">        116 :     uint32_t multDepth = GetDepthByDegree(degree);</span></a>
+<a name="340"><span class="lineNum">     340 </span>            : </a>
+<a name="341"><span class="lineNum">     341 </span><span class="lineCov">        116 :     return (isNormalized) ? (multDepth - 1) : multDepth;</span></a>
+<a name="342"><span class="lineNum">     342 </span>            : }</a>
+<a name="343"><span class="lineNum">     343 </span>            : </a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineCov">       3222 : std::vector&lt;std::complex&lt;double&gt;&gt; ExtractShiftedDiagonal(const std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;&amp; A,</span></a>
+<a name="345"><span class="lineNum">     345 </span>            :                                                          int index) {</a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineCov">       3222 :     uint32_t cols = A[0].size();</span></a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineCov">       3222 :     uint32_t rows = A.size();</span></a>
+<a name="348"><span class="lineNum">     348 </span>            : </a>
+<a name="349"><span class="lineNum">     349 </span><span class="lineCov">       3222 :     std::vector&lt;std::complex&lt;double&gt;&gt; result(cols);</span></a>
+<a name="350"><span class="lineNum">     350 </span>            : </a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineCov">      88182 :     for (uint32_t k = 0; k &lt; cols; k++) {</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">      84960 :         result[k] = A[k % rows][(k + index) % cols];</span></a>
+<a name="353"><span class="lineNum">     353 </span>            :     }</a>
+<a name="354"><span class="lineNum">     354 </span>            : </a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineCov">       3222 :     return result;</span></a>
+<a name="356"><span class="lineNum">     356 </span>            : }</a>
+<a name="357"><span class="lineNum">     357 </span>            : </a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">       4950 : std::vector&lt;std::complex&lt;double&gt;&gt; Rotate(const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; a, int32_t index) {</span></a>
+<a name="359"><span class="lineNum">     359 </span><span class="lineCov">       4950 :     int32_t slots = a.size();</span></a>
+<a name="360"><span class="lineNum">     360 </span>            : </a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineCov">       4950 :     std::vector&lt;std::complex&lt;double&gt;&gt; result(slots);</span></a>
+<a name="362"><span class="lineNum">     362 </span>            : </a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineCov">       4950 :     if (index &lt; 0 || index &gt; slots) {</span></a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineCov">       1000 :         index = ReduceRotation(index, slots);</span></a>
+<a name="365"><span class="lineNum">     365 </span>            :     }</a>
+<a name="366"><span class="lineNum">     366 </span>            : </a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">       4950 :     if (index == 0) {</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">       3326 :         result = a;</span></a>
+<a name="369"><span class="lineNum">     369 </span>            :     }</a>
+<a name="370"><span class="lineNum">     370 </span>            : </a>
+<a name="371"><span class="lineNum">     371 </span>            :     else {</a>
+<a name="372"><span class="lineNum">     372 </span>            :         // two cases: i+index &lt;= slots and i+index &gt; slots</a>
+<a name="373"><span class="lineNum">     373 </span><span class="lineCov">      14880 :         for (int32_t i = 0; i &lt; slots - index; i++) {</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineCov">      13256 :             result[i] = a[i + index];</span></a>
+<a name="375"><span class="lineNum">     375 </span>            :         }</a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineCov">      35344 :         for (int32_t i = slots - index; i &lt; slots; i++) {</span></a>
+<a name="377"><span class="lineNum">     377 </span><span class="lineCov">      33720 :             result[i] = a[i + index - slots];</span></a>
+<a name="378"><span class="lineNum">     378 </span>            :         }</a>
+<a name="379"><span class="lineNum">     379 </span>            :     }</a>
+<a name="380"><span class="lineNum">     380 </span>            : </a>
+<a name="381"><span class="lineNum">     381 </span><span class="lineCov">       4950 :     return result;</span></a>
+<a name="382"><span class="lineNum">     382 </span>            : }</a>
+<a name="383"><span class="lineNum">     383 </span>            : </a>
+<a name="384"><span class="lineNum">     384 </span><span class="lineCov">      25968 : uint32_t ReduceRotation(int32_t index, uint32_t slots) {</span></a>
+<a name="385"><span class="lineNum">     385 </span><span class="lineCov">      25968 :     int32_t islots = int32_t(slots);</span></a>
+<a name="386"><span class="lineNum">     386 </span>            : </a>
+<a name="387"><span class="lineNum">     387 </span>            :     // if slots is a power of 2</a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineCov">      25968 :     if ((slots &amp; (slots - 1)) == 0) {</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineCov">      25968 :         int32_t n = std::log2(slots);</span></a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineCov">      25968 :         if (index &gt;= 0) {</span></a>
+<a name="391"><span class="lineNum">     391 </span><span class="lineCov">      20716 :             return index - ((index &gt;&gt; n) &lt;&lt; n);</span></a>
+<a name="392"><span class="lineNum">     392 </span>            :         }</a>
+<a name="393"><span class="lineNum">     393 </span><span class="lineCov">       5252 :         return index + islots + ((int32_t(std::fabs(index)) &gt;&gt; n) &lt;&lt; n);</span></a>
+<a name="394"><span class="lineNum">     394 </span>            :     }</a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineNoCov">          0 :     return (islots + index % islots) % islots;</span></a>
+<a name="396"><span class="lineNum">     396 </span>            : }</a>
+<a name="397"><span class="lineNum">     397 </span>            : </a>
+<a name="398"><span class="lineNum">     398 </span><span class="lineCov">       1880 : std::vector&lt;std::complex&lt;double&gt;&gt; Fill(const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; a, int slots) {</span></a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineCov">       1880 :     int usedSlots = a.size();</span></a>
+<a name="400"><span class="lineNum">     400 </span>            : </a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">       1880 :     std::vector&lt;std::complex&lt;double&gt;&gt; result(slots);</span></a>
+<a name="402"><span class="lineNum">     402 </span>            : </a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineCov">      60096 :     for (int i = 0; i &lt; slots; i++) {</span></a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineCov">      58216 :         result[i] = a[i % usedSlots];</span></a>
+<a name="405"><span class="lineNum">     405 </span>            :     }</a>
+<a name="406"><span class="lineNum">     406 </span>            : </a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineCov">       1880 :     return result;</span></a>
+<a name="408"><span class="lineNum">     408 </span>            : }</a>
+<a name="409"><span class="lineNum">     409 </span>            : </a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">        116 : std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; CoeffEncodingOneLevel(const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; pows,</span></a>
+<a name="411"><span class="lineNum">     411 </span>            :                                                                      const std::vector&lt;uint32_t&gt;&amp; rotGroup,</a>
+<a name="412"><span class="lineNum">     412 </span>            :                                                                      bool flag_i) {</a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineCov">        116 :     uint32_t dim   = pows.size() - 1;</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">        116 :     uint32_t slots = rotGroup.size();</span></a>
+<a name="415"><span class="lineNum">     415 </span>            : </a>
+<a name="416"><span class="lineNum">     416 </span>            :     // Each outer iteration from the FFT algorithm can be written a weighted sum of</a>
+<a name="417"><span class="lineNum">     417 </span>            :     // three terms: the input shifted right by a power of two, the unshifted input,</a>
+<a name="418"><span class="lineNum">     418 </span>            :     // and the input shifted left by a power of two. For each outer iteration</a>
+<a name="419"><span class="lineNum">     419 </span>            :     // (log2(size) in total), the matrix coeff stores the coefficients in the</a>
+<a name="420"><span class="lineNum">     420 </span>            :     // following order: the coefficients associated to the input shifted right,</a>
+<a name="421"><span class="lineNum">     421 </span>            :     // the coefficients for the non-shifted input and the coefficients associated</a>
+<a name="422"><span class="lineNum">     422 </span>            :     // to the input shifted left.</a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineCov">        116 :     std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; coeff(3 * std::log2(slots));</span></a>
+<a name="424"><span class="lineNum">     424 </span>            : </a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineCov">       1400 :     for (uint32_t i = 0; i &lt; 3 * std::log2(slots); i++) {</span></a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineCov">       2568 :         coeff[i] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="427"><span class="lineNum">     427 </span>            :     }</a>
+<a name="428"><span class="lineNum">     428 </span>            : </a>
+<a name="429"><span class="lineNum">     429 </span><span class="lineCov">        544 :     for (uint32_t m = slots; m &gt; 1; m &gt;&gt;= 1) {</span></a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineCov">        428 :         uint32_t s = std::log2(m) - 1;</span></a>
+<a name="431"><span class="lineNum">     431 </span>            : </a>
+<a name="432"><span class="lineNum">     432 </span><span class="lineCov">       2104 :         for (uint32_t k = 0; k &lt; slots; k += m) {</span></a>
+<a name="433"><span class="lineNum">     433 </span><span class="lineCov">       1676 :             uint32_t lenh = m &gt;&gt; 1;</span></a>
+<a name="434"><span class="lineNum">     434 </span><span class="lineCov">       1676 :             uint32_t lenq = m &lt;&lt; 2;</span></a>
+<a name="435"><span class="lineNum">     435 </span>            : </a>
+<a name="436"><span class="lineNum">     436 </span><span class="lineCov">       5452 :             for (uint32_t j = 0; j &lt; lenh; j++) {</span></a>
+<a name="437"><span class="lineNum">     437 </span><span class="lineCov">       3776 :                 uint32_t jTwiddle = (lenq - (rotGroup[j] % lenq)) * (dim / lenq);</span></a>
+<a name="438"><span class="lineNum">     438 </span>            : </a>
+<a name="439"><span class="lineNum">     439 </span><span class="lineCov">       3776 :                 if (flag_i &amp;&amp; (m == 2)) {</span></a>
+<a name="440"><span class="lineNum">     440 </span><span class="lineCov">        224 :                     std::complex&lt;double&gt; w                    = std::exp(-M_PI / 2 * I) * pows[jTwiddle];</span></a>
+<a name="441"><span class="lineNum">     441 </span><span class="lineCov">        224 :                     coeff[s + std::log2(slots)][j + k]        = std::exp(-M_PI / 2 * I);  // not shifted</span></a>
+<a name="442"><span class="lineNum">     442 </span><span class="lineCov">        224 :                     coeff[s + 2 * std::log2(slots)][j + k]    = std::exp(-M_PI / 2 * I);  // shifted left</span></a>
+<a name="443"><span class="lineNum">     443 </span><span class="lineCov">        224 :                     coeff[s + std::log2(slots)][j + k + lenh] = -w;                       // not shifted</span></a>
+<a name="444"><span class="lineNum">     444 </span><span class="lineCov">        224 :                     coeff[s][j + k + lenh]                    = w;                        // shifted right</span></a>
+<a name="445"><span class="lineNum">     445 </span>            :                 }</a>
+<a name="446"><span class="lineNum">     446 </span>            :                 else {</a>
+<a name="447"><span class="lineNum">     447 </span><span class="lineCov">       3552 :                     std::complex&lt;double&gt; w                    = pows[jTwiddle];</span></a>
+<a name="448"><span class="lineNum">     448 </span><span class="lineCov">       3552 :                     coeff[s + std::log2(slots)][j + k]        = 1;   // not shifted</span></a>
+<a name="449"><span class="lineNum">     449 </span><span class="lineCov">       3552 :                     coeff[s + 2 * std::log2(slots)][j + k]    = 1;   // shifted left</span></a>
+<a name="450"><span class="lineNum">     450 </span><span class="lineCov">       3552 :                     coeff[s + std::log2(slots)][j + k + lenh] = -w;  // not shifted</span></a>
+<a name="451"><span class="lineNum">     451 </span><span class="lineCov">       3552 :                     coeff[s][j + k + lenh]                    = w;   // shifted right</span></a>
+<a name="452"><span class="lineNum">     452 </span>            :                 }</a>
+<a name="453"><span class="lineNum">     453 </span>            :             }</a>
+<a name="454"><span class="lineNum">     454 </span>            :         }</a>
+<a name="455"><span class="lineNum">     455 </span>            :     }</a>
+<a name="456"><span class="lineNum">     456 </span>            : </a>
+<a name="457"><span class="lineNum">     457 </span><span class="lineCov">        116 :     return coeff;</span></a>
+<a name="458"><span class="lineNum">     458 </span>            : }</a>
+<a name="459"><span class="lineNum">     459 </span>            : </a>
+<a name="460"><span class="lineNum">     460 </span><span class="lineCov">        116 : std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; CoeffDecodingOneLevel(const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; pows,</span></a>
+<a name="461"><span class="lineNum">     461 </span>            :                                                                      const std::vector&lt;uint32_t&gt;&amp; rotGroup,</a>
+<a name="462"><span class="lineNum">     462 </span>            :                                                                      bool flag_i) {</a>
+<a name="463"><span class="lineNum">     463 </span><span class="lineCov">        116 :     uint32_t dim   = pows.size() - 1;</span></a>
+<a name="464"><span class="lineNum">     464 </span><span class="lineCov">        116 :     uint32_t slots = rotGroup.size();</span></a>
+<a name="465"><span class="lineNum">     465 </span>            : </a>
+<a name="466"><span class="lineNum">     466 </span>            :     // Each outer iteration from the FFT algorithm can be written a weighted sum of</a>
+<a name="467"><span class="lineNum">     467 </span>            :     // three terms: the input shifted right by a power of two, the unshifted input,</a>
+<a name="468"><span class="lineNum">     468 </span>            :     // and the input shifted left by a power of two. For each outer iteration</a>
+<a name="469"><span class="lineNum">     469 </span>            :     // (log2(size) in total), the matrix coeff stores the coefficients in the</a>
+<a name="470"><span class="lineNum">     470 </span>            :     // following order: the coefficients associated to the input shifted right,</a>
+<a name="471"><span class="lineNum">     471 </span>            :     // the coefficients for the non-shifted input and the coefficients associated</a>
+<a name="472"><span class="lineNum">     472 </span>            :     // to the input shifted left.</a>
+<a name="473"><span class="lineNum">     473 </span><span class="lineCov">        116 :     std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; coeff(3 * std::log2(slots));</span></a>
+<a name="474"><span class="lineNum">     474 </span>            : </a>
+<a name="475"><span class="lineNum">     475 </span><span class="lineCov">       1400 :     for (uint32_t i = 0; i &lt; 3 * std::log2(slots); i++) {</span></a>
+<a name="476"><span class="lineNum">     476 </span><span class="lineCov">       2568 :         coeff[i] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="477"><span class="lineNum">     477 </span>            :     }</a>
+<a name="478"><span class="lineNum">     478 </span>            : </a>
+<a name="479"><span class="lineNum">     479 </span><span class="lineCov">        544 :     for (uint32_t m = 2; m &lt;= slots; m &lt;&lt;= 1) {</span></a>
+<a name="480"><span class="lineNum">     480 </span><span class="lineCov">        428 :         uint32_t s = std::log2(m) - 1;</span></a>
+<a name="481"><span class="lineNum">     481 </span>            : </a>
+<a name="482"><span class="lineNum">     482 </span><span class="lineCov">       2104 :         for (uint32_t k = 0; k &lt; slots; k += m) {</span></a>
+<a name="483"><span class="lineNum">     483 </span><span class="lineCov">       1676 :             uint32_t lenh = m &gt;&gt; 1;</span></a>
+<a name="484"><span class="lineNum">     484 </span><span class="lineCov">       1676 :             uint32_t lenq = m &lt;&lt; 2;</span></a>
+<a name="485"><span class="lineNum">     485 </span>            : </a>
+<a name="486"><span class="lineNum">     486 </span><span class="lineCov">       5452 :             for (uint32_t j = 0; j &lt; lenh; j++) {</span></a>
+<a name="487"><span class="lineNum">     487 </span><span class="lineCov">       3776 :                 uint32_t jTwiddle = (rotGroup[j] % lenq) * (dim / lenq);</span></a>
+<a name="488"><span class="lineNum">     488 </span>            : </a>
+<a name="489"><span class="lineNum">     489 </span><span class="lineCov">       3776 :                 if (flag_i &amp;&amp; (m == 2)) {</span></a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineCov">        224 :                     std::complex&lt;double&gt; w                    = std::exp(M_PI / 2 * I) * pows[jTwiddle];</span></a>
+<a name="491"><span class="lineNum">     491 </span><span class="lineCov">        224 :                     coeff[s + std::log2(slots)][j + k]        = std::exp(M_PI / 2 * I);  // not shifted</span></a>
+<a name="492"><span class="lineNum">     492 </span><span class="lineCov">        224 :                     coeff[s + 2 * std::log2(slots)][j + k]    = w;                       // shifted left</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineCov">        224 :                     coeff[s + std::log2(slots)][j + k + lenh] = -w;                      // not shifted</span></a>
+<a name="494"><span class="lineNum">     494 </span><span class="lineCov">        224 :                     coeff[s][j + k + lenh]                    = std::exp(M_PI / 2 * I);  // shifted right</span></a>
+<a name="495"><span class="lineNum">     495 </span>            :                 }</a>
+<a name="496"><span class="lineNum">     496 </span>            :                 else {</a>
+<a name="497"><span class="lineNum">     497 </span><span class="lineCov">       3552 :                     std::complex&lt;double&gt; w                    = pows[jTwiddle];</span></a>
+<a name="498"><span class="lineNum">     498 </span><span class="lineCov">       3552 :                     coeff[s + std::log2(slots)][j + k]        = 1;   // not shifted</span></a>
+<a name="499"><span class="lineNum">     499 </span><span class="lineCov">       3552 :                     coeff[s + 2 * std::log2(slots)][j + k]    = w;   // shifted left</span></a>
+<a name="500"><span class="lineNum">     500 </span><span class="lineCov">       3552 :                     coeff[s + std::log2(slots)][j + k + lenh] = -w;  // not shifted</span></a>
+<a name="501"><span class="lineNum">     501 </span><span class="lineCov">       3552 :                     coeff[s][j + k + lenh]                    = 1;   // shifted right</span></a>
+<a name="502"><span class="lineNum">     502 </span>            :                 }</a>
+<a name="503"><span class="lineNum">     503 </span>            :             }</a>
+<a name="504"><span class="lineNum">     504 </span>            :         }</a>
+<a name="505"><span class="lineNum">     505 </span>            :     }</a>
+<a name="506"><span class="lineNum">     506 </span>            : </a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineCov">        116 :     return coeff;</span></a>
+<a name="508"><span class="lineNum">     508 </span>            : }</a>
+<a name="509"><span class="lineNum">     509 </span>            : </a>
+<a name="510"><span class="lineNum">     510 </span><span class="lineCov">        116 : std::vector&lt;std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;&gt; CoeffEncodingCollapse(</span></a>
+<a name="511"><span class="lineNum">     511 </span>            :     const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; pows, const std::vector&lt;uint32_t&gt;&amp; rotGroup, uint32_t levelBudget,</a>
+<a name="512"><span class="lineNum">     512 </span>            :     bool flag_i) {</a>
+<a name="513"><span class="lineNum">     513 </span><span class="lineCov">        116 :     uint32_t slots = rotGroup.size();</span></a>
+<a name="514"><span class="lineNum">     514 </span>            :     // Need to compute how many layers are collapsed in each of the level from the budget.</a>
+<a name="515"><span class="lineNum">     515 </span>            :     // If there is no exact division between the maximum number of possible levels (log(slots)) and the</a>
+<a name="516"><span class="lineNum">     516 </span>            :     // level budget, the last level will contain the remaining layers collapsed.</a>
+<a name="517"><span class="lineNum">     517 </span>            :     int32_t layersCollapse;</a>
+<a name="518"><span class="lineNum">     518 </span>            :     int32_t remCollapse;</a>
+<a name="519"><span class="lineNum">     519 </span>            : </a>
+<a name="520"><span class="lineNum">     520 </span><span class="lineCov">        116 :     std::vector&lt;uint32_t&gt; dims = SelectLayers(std::log2(slots), levelBudget);</span></a>
+<a name="521"><span class="lineNum">     521 </span><span class="lineCov">        116 :     layersCollapse             = dims[0];</span></a>
+<a name="522"><span class="lineNum">     522 </span><span class="lineCov">        116 :     remCollapse                = dims[2];</span></a>
+<a name="523"><span class="lineNum">     523 </span>            : </a>
+<a name="524"><span class="lineNum">     524 </span><span class="lineCov">        116 :     int32_t dimCollapse = int32_t(levelBudget);</span></a>
+<a name="525"><span class="lineNum">     525 </span>            :     int32_t stop        = 0;</a>
+<a name="526"><span class="lineNum">     526 </span>            :     int32_t flagRem     = 0;</a>
+<a name="527"><span class="lineNum">     527 </span>            : </a>
+<a name="528"><span class="lineNum">     528 </span><span class="lineCov">        116 :     if (remCollapse == 0) {</span></a>
+<a name="529"><span class="lineNum">     529 </span>            :         stop    = -1;</a>
+<a name="530"><span class="lineNum">     530 </span>            :         flagRem = 0;</a>
+<a name="531"><span class="lineNum">     531 </span>            :     }</a>
+<a name="532"><span class="lineNum">     532 </span>            :     else {</a>
+<a name="533"><span class="lineNum">     533 </span>            :         stop    = 0;</a>
+<a name="534"><span class="lineNum">     534 </span>            :         flagRem = 1;</a>
+<a name="535"><span class="lineNum">     535 </span>            :     }</a>
+<a name="536"><span class="lineNum">     536 </span>            : </a>
+<a name="537"><span class="lineNum">     537 </span><span class="lineCov">        116 :     uint32_t numRotations    = (1 &lt;&lt; (layersCollapse + 1)) - 1;</span></a>
+<a name="538"><span class="lineNum">     538 </span><span class="lineCov">        116 :     uint32_t numRotationsRem = (1 &lt;&lt; (remCollapse + 1)) - 1;</span></a>
+<a name="539"><span class="lineNum">     539 </span>            : </a>
+<a name="540"><span class="lineNum">     540 </span>            :     // Computing the coefficients for encoding for the given level budget</a>
+<a name="541"><span class="lineNum">     541 </span><span class="lineCov">        232 :     std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; coeff1 = CoeffEncodingOneLevel(pows, rotGroup, flag_i);</span></a>
+<a name="542"><span class="lineNum">     542 </span>            : </a>
+<a name="543"><span class="lineNum">     543 </span>            :     // Coeff stores the coefficients for the given budget of levels</a>
+<a name="544"><span class="lineNum">     544 </span><span class="lineCov">        116 :     std::vector&lt;std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;&gt; coeff(dimCollapse);</span></a>
+<a name="545"><span class="lineNum">     545 </span><span class="lineCov">        420 :     for (uint32_t i = 0; i &lt; uint32_t(dimCollapse); i++) {</span></a>
+<a name="546"><span class="lineNum">     546 </span><span class="lineCov">        304 :         if (flagRem) {</span></a>
+<a name="547"><span class="lineNum">     547 </span><span class="lineCov">        112 :             if (i &gt;= 1) {</span></a>
+<a name="548"><span class="lineNum">     548 </span>            :                 // after remainder</a>
+<a name="549"><span class="lineNum">     549 </span><span class="lineCov">         68 :                 coeff[i] = std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;(numRotations);</span></a>
+<a name="550"><span class="lineNum">     550 </span><span class="lineCov">        576 :                 for (uint32_t j = 0; j &lt; numRotations; j++) {</span></a>
+<a name="551"><span class="lineNum">     551 </span><span class="lineCov">       1016 :                     coeff[i][j] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="552"><span class="lineNum">     552 </span>            :                 }</a>
+<a name="553"><span class="lineNum">     553 </span>            :             }</a>
+<a name="554"><span class="lineNum">     554 </span>            :             else {</a>
+<a name="555"><span class="lineNum">     555 </span>            :                 // remainder corresponds to the first index in encoding and to the last one in decoding</a>
+<a name="556"><span class="lineNum">     556 </span><span class="lineCov">         44 :                 coeff[i] = std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;(numRotationsRem);</span></a>
+<a name="557"><span class="lineNum">     557 </span><span class="lineCov">        192 :                 for (uint32_t j = 0; j &lt; numRotationsRem; j++) {</span></a>
+<a name="558"><span class="lineNum">     558 </span><span class="lineCov">        296 :                     coeff[i][j] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="559"><span class="lineNum">     559 </span>            :                 }</a>
+<a name="560"><span class="lineNum">     560 </span>            :             }</a>
+<a name="561"><span class="lineNum">     561 </span>            :         }</a>
+<a name="562"><span class="lineNum">     562 </span>            :         else {</a>
+<a name="563"><span class="lineNum">     563 </span><span class="lineCov">        192 :             coeff[i] = std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;(numRotations);</span></a>
+<a name="564"><span class="lineNum">     564 </span><span class="lineCov">        960 :             for (uint32_t j = 0; j &lt; numRotations; j++) {</span></a>
+<a name="565"><span class="lineNum">     565 </span><span class="lineCov">       1536 :                 coeff[i][j] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="566"><span class="lineNum">     566 </span>            :             }</a>
+<a name="567"><span class="lineNum">     567 </span>            :         }</a>
+<a name="568"><span class="lineNum">     568 </span>            :     }</a>
+<a name="569"><span class="lineNum">     569 </span>            : </a>
+<a name="570"><span class="lineNum">     570 </span><span class="lineCov">        376 :     for (int32_t s = dimCollapse - 1; s &gt; stop; s--) {</span></a>
+<a name="571"><span class="lineNum">     571 </span><span class="lineCov">        260 :         int32_t top = int32_t(std::log2(slots)) - (dimCollapse - 1 - s) * layersCollapse - 1;</span></a>
+<a name="572"><span class="lineNum">     572 </span>            : </a>
+<a name="573"><span class="lineNum">     573 </span><span class="lineCov">        640 :         for (int32_t l = 0; l &lt; layersCollapse; l++) {</span></a>
+<a name="574"><span class="lineNum">     574 </span><span class="lineCov">        380 :             if (l == 0) {</span></a>
+<a name="575"><span class="lineNum">     575 </span><span class="lineCov">        260 :                 coeff[s][0] = coeff1[top];</span></a>
+<a name="576"><span class="lineNum">     576 </span><span class="lineCov">        260 :                 coeff[s][1] = coeff1[top + std::log2(slots)];</span></a>
+<a name="577"><span class="lineNum">     577 </span><span class="lineCov">        260 :                 coeff[s][2] = coeff1[top + 2 * std::log2(slots)];</span></a>
+<a name="578"><span class="lineNum">     578 </span>            :             }</a>
+<a name="579"><span class="lineNum">     579 </span>            :             else {</a>
+<a name="580"><span class="lineNum">     580 </span><span class="lineCov">        240 :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; temp = coeff[s];</span></a>
+<a name="581"><span class="lineNum">     581 </span>            :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; zeros(numRotations,</a>
+<a name="582"><span class="lineNum">     582 </span><span class="lineCov">        360 :                                                                      std::vector&lt;std::complex&lt;double&gt;&gt;(slots, 0.0));</span></a>
+<a name="583"><span class="lineNum">     583 </span><span class="lineCov">        120 :                 coeff[s]   = zeros;</span></a>
+<a name="584"><span class="lineNum">     584 </span>            :                 uint32_t t = 0;</a>
+<a name="585"><span class="lineNum">     585 </span>            : </a>
+<a name="586"><span class="lineNum">     586 </span><span class="lineCov">        496 :                 for (int32_t u = 0; u &lt; (1 &lt;&lt; (l + 1)) - 1; u++) {</span></a>
+<a name="587"><span class="lineNum">     587 </span><span class="lineCov">       8952 :                     for (uint32_t k = 0; k &lt; slots; k++) {</span></a>
+<a name="588"><span class="lineNum">     588 </span><span class="lineCov">       8576 :                         coeff[s][u + t][k] += coeff1[top - l][k] * temp[u][ReduceRotation(k - (1 &lt;&lt; (top - l)), slots)];</span></a>
+<a name="589"><span class="lineNum">     589 </span><span class="lineCov">       8576 :                         coeff[s][u + t + 1][k] += coeff1[top - l + std::log2(slots)][k] * temp[u][k];</span></a>
+<a name="590"><span class="lineNum">     590 </span><span class="lineCov">       8576 :                         coeff[s][u + t + 2][k] += coeff1[top - l + 2 * std::log2(slots)][k] *</span></a>
+<a name="591"><span class="lineNum">     591 </span><span class="lineCov">       8576 :                                                   temp[u][ReduceRotation(k + (1 &lt;&lt; (top - l)), slots)];</span></a>
+<a name="592"><span class="lineNum">     592 </span>            :                     }</a>
+<a name="593"><span class="lineNum">     593 </span><span class="lineCov">        376 :                     t += 1;</span></a>
+<a name="594"><span class="lineNum">     594 </span>            :                 }</a>
+<a name="595"><span class="lineNum">     595 </span>            :             }</a>
+<a name="596"><span class="lineNum">     596 </span>            :         }</a>
+<a name="597"><span class="lineNum">     597 </span>            :     }</a>
+<a name="598"><span class="lineNum">     598 </span>            : </a>
+<a name="599"><span class="lineNum">     599 </span><span class="lineCov">        116 :     if (flagRem) {</span></a>
+<a name="600"><span class="lineNum">     600 </span>            :         int32_t s   = 0;</a>
+<a name="601"><span class="lineNum">     601 </span><span class="lineCov">         44 :         int32_t top = int32_t(std::log2(slots)) - (dimCollapse - 1 - s) * layersCollapse - 1;</span></a>
+<a name="602"><span class="lineNum">     602 </span>            : </a>
+<a name="603"><span class="lineNum">     603 </span><span class="lineCov">         92 :         for (int32_t l = 0; l &lt; remCollapse; l++) {</span></a>
+<a name="604"><span class="lineNum">     604 </span><span class="lineCov">         48 :             if (l == 0) {</span></a>
+<a name="605"><span class="lineNum">     605 </span><span class="lineCov">         44 :                 coeff[s][0] = coeff1[top];</span></a>
+<a name="606"><span class="lineNum">     606 </span><span class="lineCov">         44 :                 coeff[s][1] = coeff1[top + std::log2(slots)];</span></a>
+<a name="607"><span class="lineNum">     607 </span><span class="lineCov">         44 :                 coeff[s][2] = coeff1[top + 2 * std::log2(slots)];</span></a>
+<a name="608"><span class="lineNum">     608 </span>            :             }</a>
+<a name="609"><span class="lineNum">     609 </span>            :             else {</a>
+<a name="610"><span class="lineNum">     610 </span><span class="lineCov">          8 :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; temp = coeff[s];</span></a>
+<a name="611"><span class="lineNum">     611 </span>            :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; zeros(numRotationsRem,</a>
+<a name="612"><span class="lineNum">     612 </span><span class="lineCov">         12 :                                                                      std::vector&lt;std::complex&lt;double&gt;&gt;(slots, 0.0));</span></a>
+<a name="613"><span class="lineNum">     613 </span><span class="lineCov">          4 :                 coeff[s]   = zeros;</span></a>
+<a name="614"><span class="lineNum">     614 </span>            :                 uint32_t t = 0;</a>
+<a name="615"><span class="lineNum">     615 </span>            : </a>
+<a name="616"><span class="lineNum">     616 </span><span class="lineCov">         16 :                 for (int32_t u = 0; u &lt; (1 &lt;&lt; (l + 1)) - 1; u++) {</span></a>
+<a name="617"><span class="lineNum">     617 </span><span class="lineCov">        396 :                     for (uint32_t k = 0; k &lt; slots; k++) {</span></a>
+<a name="618"><span class="lineNum">     618 </span><span class="lineCov">        384 :                         coeff[s][u + t][k] += coeff1[top - l][k] * temp[u][ReduceRotation(k - (1 &lt;&lt; (top - l)), slots)];</span></a>
+<a name="619"><span class="lineNum">     619 </span><span class="lineCov">        384 :                         coeff[s][u + t + 1][k] += coeff1[top - l + std::log2(slots)][k] * temp[u][k];</span></a>
+<a name="620"><span class="lineNum">     620 </span><span class="lineCov">        384 :                         coeff[s][u + t + 2][k] += coeff1[top - l + 2 * std::log2(slots)][k] *</span></a>
+<a name="621"><span class="lineNum">     621 </span><span class="lineCov">        384 :                                                   temp[u][ReduceRotation(k + (1 &lt;&lt; (top - l)), slots)];</span></a>
+<a name="622"><span class="lineNum">     622 </span>            :                     }</a>
+<a name="623"><span class="lineNum">     623 </span><span class="lineCov">         12 :                     t += 1;</span></a>
+<a name="624"><span class="lineNum">     624 </span>            :                 }</a>
+<a name="625"><span class="lineNum">     625 </span>            :             }</a>
+<a name="626"><span class="lineNum">     626 </span>            :         }</a>
+<a name="627"><span class="lineNum">     627 </span>            :     }</a>
+<a name="628"><span class="lineNum">     628 </span>            : </a>
+<a name="629"><span class="lineNum">     629 </span><span class="lineCov">        116 :     return coeff;</span></a>
+<a name="630"><span class="lineNum">     630 </span>            : }</a>
+<a name="631"><span class="lineNum">     631 </span>            : </a>
+<a name="632"><span class="lineNum">     632 </span><span class="lineCov">        116 : std::vector&lt;std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;&gt; CoeffDecodingCollapse(</span></a>
+<a name="633"><span class="lineNum">     633 </span>            :     const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; pows, const std::vector&lt;uint32_t&gt;&amp; rotGroup, uint32_t levelBudget,</a>
+<a name="634"><span class="lineNum">     634 </span>            :     bool flag_i) {</a>
+<a name="635"><span class="lineNum">     635 </span><span class="lineCov">        116 :     uint32_t slots = rotGroup.size();</span></a>
+<a name="636"><span class="lineNum">     636 </span>            :     // Need to compute how many layers are collapsed in each of the level from the budget.</a>
+<a name="637"><span class="lineNum">     637 </span>            :     // If there is no exact division between the maximum number of possible levels (log(slots)) and the</a>
+<a name="638"><span class="lineNum">     638 </span>            :     // level budget, the last level will contain the remaining layers collapsed.</a>
+<a name="639"><span class="lineNum">     639 </span>            :     int32_t layersCollapse;</a>
+<a name="640"><span class="lineNum">     640 </span>            :     int32_t rowsCollapse;</a>
+<a name="641"><span class="lineNum">     641 </span>            :     int32_t remCollapse;</a>
+<a name="642"><span class="lineNum">     642 </span>            : </a>
+<a name="643"><span class="lineNum">     643 </span><span class="lineCov">        116 :     std::vector&lt;uint32_t&gt; dims = SelectLayers(std::log2(slots), levelBudget);</span></a>
+<a name="644"><span class="lineNum">     644 </span><span class="lineCov">        116 :     layersCollapse             = dims[0];</span></a>
+<a name="645"><span class="lineNum">     645 </span><span class="lineCov">        116 :     rowsCollapse               = dims[1];</span></a>
+<a name="646"><span class="lineNum">     646 </span><span class="lineCov">        116 :     remCollapse                = dims[2];</span></a>
+<a name="647"><span class="lineNum">     647 </span>            : </a>
+<a name="648"><span class="lineNum">     648 </span><span class="lineCov">        116 :     int32_t dimCollapse = int32_t(levelBudget);</span></a>
+<a name="649"><span class="lineNum">     649 </span>            :     int32_t flagRem     = 0;</a>
+<a name="650"><span class="lineNum">     650 </span>            : </a>
+<a name="651"><span class="lineNum">     651 </span><span class="lineCov">        116 :     if (remCollapse == 0) {</span></a>
+<a name="652"><span class="lineNum">     652 </span>            :         flagRem = 0;</a>
+<a name="653"><span class="lineNum">     653 </span>            :     }</a>
+<a name="654"><span class="lineNum">     654 </span>            :     else {</a>
+<a name="655"><span class="lineNum">     655 </span>            :         flagRem = 1;</a>
+<a name="656"><span class="lineNum">     656 </span>            :     }</a>
+<a name="657"><span class="lineNum">     657 </span>            : </a>
+<a name="658"><span class="lineNum">     658 </span><span class="lineCov">        116 :     uint32_t numRotations    = (1 &lt;&lt; (layersCollapse + 1)) - 1;</span></a>
+<a name="659"><span class="lineNum">     659 </span><span class="lineCov">        116 :     uint32_t numRotationsRem = (1 &lt;&lt; (remCollapse + 1)) - 1;</span></a>
+<a name="660"><span class="lineNum">     660 </span>            : </a>
+<a name="661"><span class="lineNum">     661 </span>            :     // Computing the coefficients for decoding for the given level budget</a>
+<a name="662"><span class="lineNum">     662 </span><span class="lineCov">        232 :     std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; coeff1 = CoeffDecodingOneLevel(pows, rotGroup, flag_i);</span></a>
+<a name="663"><span class="lineNum">     663 </span>            : </a>
+<a name="664"><span class="lineNum">     664 </span>            :     // Coeff stores the coefficients for the given budget of levels</a>
+<a name="665"><span class="lineNum">     665 </span><span class="lineCov">        116 :     std::vector&lt;std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;&gt; coeff(dimCollapse);</span></a>
+<a name="666"><span class="lineNum">     666 </span>            : </a>
+<a name="667"><span class="lineNum">     667 </span><span class="lineCov">        356 :     for (uint32_t i = 0; i &lt; uint32_t(dimCollapse); i++) {</span></a>
+<a name="668"><span class="lineNum">     668 </span><span class="lineCov">        240 :         if (flagRem) {</span></a>
+<a name="669"><span class="lineNum">     669 </span><span class="lineCov">        192 :             if (i &lt; levelBudget - 1) {</span></a>
+<a name="670"><span class="lineNum">     670 </span>            :                 // before remainder</a>
+<a name="671"><span class="lineNum">     671 </span><span class="lineCov">        100 :                 coeff[i] = std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;(numRotations);</span></a>
+<a name="672"><span class="lineNum">     672 </span>            : </a>
+<a name="673"><span class="lineNum">     673 </span><span class="lineCov">        960 :                 for (uint32_t j = 0; j &lt; numRotations; j++) {</span></a>
+<a name="674"><span class="lineNum">     674 </span><span class="lineCov">       1720 :                     coeff[i][j] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="675"><span class="lineNum">     675 </span>            :                 }</a>
+<a name="676"><span class="lineNum">     676 </span>            :             }</a>
+<a name="677"><span class="lineNum">     677 </span>            :             else {</a>
+<a name="678"><span class="lineNum">     678 </span>            :                 // remainder corresponds to the first index in encoding and to the last one in decoding</a>
+<a name="679"><span class="lineNum">     679 </span><span class="lineCov">         92 :                 coeff[i] = std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;(numRotationsRem);</span></a>
+<a name="680"><span class="lineNum">     680 </span>            : </a>
+<a name="681"><span class="lineNum">     681 </span><span class="lineCov">        448 :                 for (uint32_t j = 0; j &lt; numRotationsRem; j++) {</span></a>
+<a name="682"><span class="lineNum">     682 </span><span class="lineCov">        712 :                     coeff[i][j] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="683"><span class="lineNum">     683 </span>            :                 }</a>
+<a name="684"><span class="lineNum">     684 </span>            :             }</a>
+<a name="685"><span class="lineNum">     685 </span>            :         }</a>
+<a name="686"><span class="lineNum">     686 </span>            :         else {</a>
+<a name="687"><span class="lineNum">     687 </span><span class="lineCov">         48 :             coeff[i] = std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt;(numRotations);</span></a>
+<a name="688"><span class="lineNum">     688 </span>            : </a>
+<a name="689"><span class="lineNum">     689 </span><span class="lineCov">        384 :             for (uint32_t j = 0; j &lt; numRotations; j++) {</span></a>
+<a name="690"><span class="lineNum">     690 </span><span class="lineCov">        672 :                 coeff[i][j] = std::vector&lt;std::complex&lt;double&gt;&gt;(slots);</span></a>
+<a name="691"><span class="lineNum">     691 </span>            :             }</a>
+<a name="692"><span class="lineNum">     692 </span>            :         }</a>
+<a name="693"><span class="lineNum">     693 </span>            :     }</a>
+<a name="694"><span class="lineNum">     694 </span>            : </a>
+<a name="695"><span class="lineNum">     695 </span><span class="lineCov">        264 :     for (int32_t s = 0; s &lt; rowsCollapse; s++) {</span></a>
+<a name="696"><span class="lineNum">     696 </span><span class="lineCov">        464 :         for (int32_t l = 0; l &lt; layersCollapse; l++) {</span></a>
+<a name="697"><span class="lineNum">     697 </span><span class="lineCov">        316 :             if (l == 0) {</span></a>
+<a name="698"><span class="lineNum">     698 </span><span class="lineCov">        148 :                 coeff[s][0] = coeff1[s * layersCollapse];</span></a>
+<a name="699"><span class="lineNum">     699 </span><span class="lineCov">        148 :                 coeff[s][1] = coeff1[std::log2(slots) + s * layersCollapse];</span></a>
+<a name="700"><span class="lineNum">     700 </span><span class="lineCov">        148 :                 coeff[s][2] = coeff1[2 * std::log2(slots) + s * layersCollapse];</span></a>
+<a name="701"><span class="lineNum">     701 </span>            :             }</a>
+<a name="702"><span class="lineNum">     702 </span>            :             else {</a>
+<a name="703"><span class="lineNum">     703 </span><span class="lineCov">        336 :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; temp = coeff[s];</span></a>
+<a name="704"><span class="lineNum">     704 </span>            :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; zeros(numRotations,</a>
+<a name="705"><span class="lineNum">     705 </span><span class="lineCov">        504 :                                                                      std::vector&lt;std::complex&lt;double&gt;&gt;(slots, 0.0));</span></a>
+<a name="706"><span class="lineNum">     706 </span><span class="lineCov">        168 :                 coeff[s] = zeros;</span></a>
+<a name="707"><span class="lineNum">     707 </span>            : </a>
+<a name="708"><span class="lineNum">     708 </span><span class="lineCov">        672 :                 for (uint32_t t = 0; t &lt; 3; t++) {</span></a>
+<a name="709"><span class="lineNum">     709 </span><span class="lineCov">       2256 :                     for (int32_t u = 0; u &lt; (1 &lt;&lt; (l + 1)) - 1; u++) {</span></a>
+<a name="710"><span class="lineNum">     710 </span><span class="lineCov">      37080 :                         for (uint32_t k = 0; k &lt; slots; k++) {</span></a>
+<a name="711"><span class="lineNum">     711 </span><span class="lineCov">      35328 :                             if (t == 0)</span></a>
+<a name="712"><span class="lineNum">     712 </span><span class="lineCov">      11776 :                                 coeff[s][u][k] += coeff1[s * layersCollapse + l][k] * temp[u][k];</span></a>
+<a name="713"><span class="lineNum">     713 </span><span class="lineCov">      35328 :                             if (t == 1)</span></a>
+<a name="714"><span class="lineNum">     714 </span><span class="lineCov">      11776 :                                 coeff[s][u + (1 &lt;&lt; l)][k] +=</span></a>
+<a name="715"><span class="lineNum">     715 </span><span class="lineCov">      11776 :                                     coeff1[s * layersCollapse + l + std::log2(slots)][k] * temp[u][k];</span></a>
+<a name="716"><span class="lineNum">     716 </span><span class="lineCov">      35328 :                             if (t == 2)</span></a>
+<a name="717"><span class="lineNum">     717 </span><span class="lineCov">      11776 :                                 coeff[s][u + (1 &lt;&lt; (l + 1))][k] +=</span></a>
+<a name="718"><span class="lineNum">     718 </span><span class="lineCov">      11776 :                                     coeff1[s * layersCollapse + l + 2 * std::log2(slots)][k] * temp[u][k];</span></a>
+<a name="719"><span class="lineNum">     719 </span>            :                         }</a>
+<a name="720"><span class="lineNum">     720 </span>            :                     }</a>
+<a name="721"><span class="lineNum">     721 </span>            :                 }</a>
+<a name="722"><span class="lineNum">     722 </span>            :             }</a>
+<a name="723"><span class="lineNum">     723 </span>            :         }</a>
+<a name="724"><span class="lineNum">     724 </span>            :     }</a>
+<a name="725"><span class="lineNum">     725 </span>            : </a>
+<a name="726"><span class="lineNum">     726 </span><span class="lineCov">        116 :     if (flagRem) {</span></a>
+<a name="727"><span class="lineNum">     727 </span>            :         int32_t s = rowsCollapse;</a>
+<a name="728"><span class="lineNum">     728 </span>            : </a>
+<a name="729"><span class="lineNum">     729 </span><span class="lineCov">        204 :         for (int32_t l = 0; l &lt; remCollapse; l++) {</span></a>
+<a name="730"><span class="lineNum">     730 </span><span class="lineCov">        112 :             if (l == 0) {</span></a>
+<a name="731"><span class="lineNum">     731 </span><span class="lineCov">         92 :                 coeff[s][0] = coeff1[s * layersCollapse];</span></a>
+<a name="732"><span class="lineNum">     732 </span><span class="lineCov">         92 :                 coeff[s][1] = coeff1[std::log2(slots) + s * layersCollapse];</span></a>
+<a name="733"><span class="lineNum">     733 </span><span class="lineCov">         92 :                 coeff[s][2] = coeff1[2 * std::log2(slots) + s * layersCollapse];</span></a>
+<a name="734"><span class="lineNum">     734 </span>            :             }</a>
+<a name="735"><span class="lineNum">     735 </span>            :             else {</a>
+<a name="736"><span class="lineNum">     736 </span><span class="lineCov">         40 :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; temp = coeff[s];</span></a>
+<a name="737"><span class="lineNum">     737 </span>            :                 std::vector&lt;std::vector&lt;std::complex&lt;double&gt;&gt;&gt; zeros(numRotationsRem,</a>
+<a name="738"><span class="lineNum">     738 </span><span class="lineCov">         60 :                                                                      std::vector&lt;std::complex&lt;double&gt;&gt;(slots, 0.0));</span></a>
+<a name="739"><span class="lineNum">     739 </span><span class="lineCov">         20 :                 coeff[s] = zeros;</span></a>
+<a name="740"><span class="lineNum">     740 </span>            : </a>
+<a name="741"><span class="lineNum">     741 </span><span class="lineCov">         80 :                 for (uint32_t t = 0; t &lt; 3; t++) {</span></a>
+<a name="742"><span class="lineNum">     742 </span><span class="lineCov">        240 :                     for (int32_t u = 0; u &lt; (1 &lt;&lt; (l + 1)) - 1; u++) {</span></a>
+<a name="743"><span class="lineNum">     743 </span><span class="lineCov">       5940 :                         for (uint32_t k = 0; k &lt; slots; k++) {</span></a>
+<a name="744"><span class="lineNum">     744 </span><span class="lineCov">       5760 :                             if (t == 0)</span></a>
+<a name="745"><span class="lineNum">     745 </span><span class="lineCov">       1920 :                                 coeff[s][u][k] += coeff1[s * layersCollapse + l][k] * temp[u][k];</span></a>
+<a name="746"><span class="lineNum">     746 </span><span class="lineCov">       5760 :                             if (t == 1)</span></a>
+<a name="747"><span class="lineNum">     747 </span><span class="lineCov">       1920 :                                 coeff[s][u + (1 &lt;&lt; l)][k] +=</span></a>
+<a name="748"><span class="lineNum">     748 </span><span class="lineCov">       1920 :                                     coeff1[s * layersCollapse + l + std::log2(slots)][k] * temp[u][k];</span></a>
+<a name="749"><span class="lineNum">     749 </span><span class="lineCov">       5760 :                             if (t == 2)</span></a>
+<a name="750"><span class="lineNum">     750 </span><span class="lineCov">       1920 :                                 coeff[s][u + (1 &lt;&lt; (l + 1))][k] +=</span></a>
+<a name="751"><span class="lineNum">     751 </span><span class="lineCov">       1920 :                                     coeff1[s * layersCollapse + l + 2 * std::log2(slots)][k] * temp[u][k];</span></a>
+<a name="752"><span class="lineNum">     752 </span>            :                         }</a>
+<a name="753"><span class="lineNum">     753 </span>            :                     }</a>
+<a name="754"><span class="lineNum">     754 </span>            :                 }</a>
+<a name="755"><span class="lineNum">     755 </span>            :             }</a>
+<a name="756"><span class="lineNum">     756 </span>            :         }</a>
+<a name="757"><span class="lineNum">     757 </span>            :     }</a>
+<a name="758"><span class="lineNum">     758 </span>            : </a>
+<a name="759"><span class="lineNum">     759 </span><span class="lineCov">        116 :     return coeff;</span></a>
+<a name="760"><span class="lineNum">     760 </span>            : }</a>
+<a name="761"><span class="lineNum">     761 </span>            : </a>
+<a name="762"><span class="lineNum">     762 </span><span class="lineCov">        488 : std::vector&lt;uint32_t&gt; SelectLayers(uint32_t logSlots, uint32_t budget) {</span></a>
+<a name="763"><span class="lineNum">     763 </span><span class="lineCov">        488 :     uint32_t layers = std::ceil(static_cast&lt;double&gt;(logSlots) / budget);</span></a>
+<a name="764"><span class="lineNum">     764 </span><span class="lineCov">        488 :     uint32_t rows   = logSlots / layers;</span></a>
+<a name="765"><span class="lineNum">     765 </span><span class="lineCov">        488 :     uint32_t rem    = logSlots % layers;</span></a>
+<a name="766"><span class="lineNum">     766 </span>            : </a>
+<a name="767"><span class="lineNum">     767 </span>            :     uint32_t dim = rows;</a>
+<a name="768"><span class="lineNum">     768 </span><span class="lineCov">        488 :     if (rem != 0) {</span></a>
+<a name="769"><span class="lineNum">     769 </span><span class="lineCov">        240 :         dim = rows + 1;</span></a>
+<a name="770"><span class="lineNum">     770 </span>            :     }</a>
+<a name="771"><span class="lineNum">     771 </span>            : </a>
+<a name="772"><span class="lineNum">     772 </span>            :     // the above choice ensures dim &lt;= budget</a>
+<a name="773"><span class="lineNum">     773 </span><span class="lineCov">        488 :     if (dim &lt; budget) {</span></a>
+<a name="774"><span class="lineNum">     774 </span><span class="lineNoCov">          0 :         layers -= 1;</span></a>
+<a name="775"><span class="lineNum">     775 </span><span class="lineNoCov">          0 :         rows = logSlots / layers;</span></a>
+<a name="776"><span class="lineNum">     776 </span>            :         rem  = logSlots - rows * layers;</a>
+<a name="777"><span class="lineNum">     777 </span>            :         dim  = rows;</a>
+<a name="778"><span class="lineNum">     778 </span>            : </a>
+<a name="779"><span class="lineNum">     779 </span><span class="lineNoCov">          0 :         if (rem != 0) {</span></a>
+<a name="780"><span class="lineNum">     780 </span><span class="lineNoCov">          0 :             dim = rows + 1;</span></a>
+<a name="781"><span class="lineNum">     781 </span>            :         }</a>
+<a name="782"><span class="lineNum">     782 </span>            : </a>
+<a name="783"><span class="lineNum">     783 </span>            :         // the above choice endures dim &gt;=budget</a>
+<a name="784"><span class="lineNum">     784 </span><span class="lineNoCov">          0 :         while (dim != budget) {</span></a>
+<a name="785"><span class="lineNum">     785 </span><span class="lineNoCov">          0 :             rows -= 1;</span></a>
+<a name="786"><span class="lineNum">     786 </span><span class="lineNoCov">          0 :             rem = logSlots - rows * layers;</span></a>
+<a name="787"><span class="lineNum">     787 </span>            :             dim = rows;</a>
+<a name="788"><span class="lineNum">     788 </span><span class="lineNoCov">          0 :             if (rem != 0) {</span></a>
+<a name="789"><span class="lineNum">     789 </span>            :                 dim = rows + 1;</a>
+<a name="790"><span class="lineNum">     790 </span>            :             }</a>
+<a name="791"><span class="lineNum">     791 </span>            :         }</a>
+<a name="792"><span class="lineNum">     792 </span>            :     }</a>
+<a name="793"><span class="lineNum">     793 </span>            : </a>
+<a name="794"><span class="lineNum">     794 </span><span class="lineCov">        488 :     return {layers, rows, rem};</span></a>
+<a name="795"><span class="lineNum">     795 </span>            : }</a>
+<a name="796"><span class="lineNum">     796 </span>            : </a>
+<a name="797"><span class="lineNum">     797 </span><span class="lineCov">        256 : std::vector&lt;int32_t&gt; GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {</span></a>
+<a name="798"><span class="lineNum">     798 </span><span class="lineCov">        256 :     uint32_t logSlots = std::log2(slots);</span></a>
+<a name="799"><span class="lineNum">     799 </span>            :     // even for the case of a single slot we need one level for rescaling</a>
+<a name="800"><span class="lineNum">     800 </span>            :     if (logSlots == 0) {</a>
+<a name="801"><span class="lineNum">     801 </span>            :         logSlots = 1;</a>
+<a name="802"><span class="lineNum">     802 </span>            :     }</a>
+<a name="803"><span class="lineNum">     803 </span>            : </a>
+<a name="804"><span class="lineNum">     804 </span><span class="lineCov">        256 :     std::vector&lt;uint32_t&gt; dims = SelectLayers(logSlots, levelBudget);</span></a>
+<a name="805"><span class="lineNum">     805 </span>            :     // Need to compute how many layers are collapsed in each of the level from the budget.</a>
+<a name="806"><span class="lineNum">     806 </span>            :     // If there is no exact division between the maximum number of possible levels (log(slots)) and the</a>
+<a name="807"><span class="lineNum">     807 </span>            :     // level budget, the last level will contain the remaining layers collapsed.</a>
+<a name="808"><span class="lineNum">     808 </span><span class="lineCov">        256 :     int32_t layersCollapse = dims[0];</span></a>
+<a name="809"><span class="lineNum">     809 </span><span class="lineCov">        256 :     int32_t remCollapse    = dims[2];</span></a>
+<a name="810"><span class="lineNum">     810 </span>            : </a>
+<a name="811"><span class="lineNum">     811 </span>            :     bool flagRem = (remCollapse == 0) ? false : true;</a>
+<a name="812"><span class="lineNum">     812 </span>            : </a>
+<a name="813"><span class="lineNum">     813 </span><span class="lineCov">        256 :     uint32_t numRotations    = (1 &lt;&lt; (layersCollapse + 1)) - 1;</span></a>
+<a name="814"><span class="lineNum">     814 </span><span class="lineCov">        256 :     uint32_t numRotationsRem = (1 &lt;&lt; (remCollapse + 1)) - 1;</span></a>
+<a name="815"><span class="lineNum">     815 </span>            : </a>
+<a name="816"><span class="lineNum">     816 </span>            :     // Computing the baby-step b and the giant-step g for the collapsed layers for decoding.</a>
+<a name="817"><span class="lineNum">     817 </span>            :     int32_t g;</a>
+<a name="818"><span class="lineNum">     818 </span><span class="lineCov">        256 :     if (dim1 == 0 || dim1 &gt; numRotations) {</span></a>
+<a name="819"><span class="lineNum">     819 </span><span class="lineCov">        194 :         if (numRotations &gt; 7) {</span></a>
+<a name="820"><span class="lineNum">     820 </span><span class="lineCov">         60 :             g = (1 &lt;&lt; (int32_t(layersCollapse / 2) + 2));</span></a>
+<a name="821"><span class="lineNum">     821 </span>            :         }</a>
+<a name="822"><span class="lineNum">     822 </span>            :         else {</a>
+<a name="823"><span class="lineNum">     823 </span><span class="lineCov">        134 :             g = (1 &lt;&lt; (int32_t(layersCollapse / 2) + 1));</span></a>
+<a name="824"><span class="lineNum">     824 </span>            :         }</a>
+<a name="825"><span class="lineNum">     825 </span>            :     }</a>
+<a name="826"><span class="lineNum">     826 </span>            :     else {</a>
+<a name="827"><span class="lineNum">     827 </span><span class="lineCov">         62 :         g = dim1;</span></a>
+<a name="828"><span class="lineNum">     828 </span>            :     }</a>
+<a name="829"><span class="lineNum">     829 </span><span class="lineCov">        256 :     int32_t b = (numRotations + 1) / g;</span></a>
+<a name="830"><span class="lineNum">     830 </span>            : </a>
+<a name="831"><span class="lineNum">     831 </span>            :     int32_t bRem = 0;</a>
+<a name="832"><span class="lineNum">     832 </span>            :     int32_t gRem = 0;</a>
+<a name="833"><span class="lineNum">     833 </span><span class="lineCov">        256 :     if (flagRem) {</span></a>
+<a name="834"><span class="lineNum">     834 </span><span class="lineCov">        104 :         if (numRotationsRem &gt; 7) {</span></a>
+<a name="835"><span class="lineNum">     835 </span><span class="lineNoCov">          0 :             gRem = (1 &lt;&lt; (int32_t(remCollapse / 2) + 2));</span></a>
+<a name="836"><span class="lineNum">     836 </span>            :         }</a>
+<a name="837"><span class="lineNum">     837 </span>            :         else {</a>
+<a name="838"><span class="lineNum">     838 </span><span class="lineCov">        104 :             gRem = (1 &lt;&lt; (int32_t(remCollapse / 2) + 1));</span></a>
+<a name="839"><span class="lineNum">     839 </span>            :         }</a>
+<a name="840"><span class="lineNum">     840 </span><span class="lineCov">        104 :         bRem = (numRotationsRem + 1) / gRem;</span></a>
+<a name="841"><span class="lineNum">     841 </span>            :     }</a>
+<a name="842"><span class="lineNum">     842 </span>            : </a>
+<a name="843"><span class="lineNum">     843 </span>            :     // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well</a>
+<a name="844"><span class="lineNum">     844 </span><span class="lineCov">        256 :     return {int32_t(levelBudget),     layersCollapse, remCollapse, int32_t(numRotations), b, g,</span></a>
+<a name="845"><span class="lineNum">     845 </span><span class="lineCov">        512 :             int32_t(numRotationsRem), bRem,           gRem};</span></a>
+<a name="846"><span class="lineNum">     846 </span>            : }</a>
+<a name="847"><span class="lineNum">     847 </span>            : </a>
+<a name="848"><span class="lineNum">     848 </span><span class="lineCov">        162 : uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two</span></a>
+<a name="849"><span class="lineNum">     849 </span><span class="lineCov">        162 :     if (slots &lt;= 1) {</span></a>
+<a name="850"><span class="lineNum">     850 </span>            :         return 1;</a>
+<a name="851"><span class="lineNum">     851 </span>            :     }</a>
+<a name="852"><span class="lineNum">     852 </span>            :     // return (1 &lt;&lt; (static_cast&lt;uint32_t&gt;(std::log2(ceil(sqrt(slots))))));</a>
+<a name="853"><span class="lineNum">     853 </span><span class="lineCov">        108 :     return (1 &lt;&lt; (static_cast&lt;uint32_t&gt;(std::log2(std::ceil(sqrt(slots))) + 1)));</span></a>
+<a name="854"><span class="lineNum">     854 </span>            : }</a>
+<a name="855"><span class="lineNum">     855 </span>            : </a>
+<a name="856"><span class="lineNum">     856 </span><span class="lineCov">         90 : std::vector&lt;int32_t&gt; FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {</span></a>
+<a name="857"><span class="lineNum">     857 </span>            :     uint32_t slots;</a>
+<a name="858"><span class="lineNum">     858 </span>            :     // Set slots depending on packing mode (fully-packed or sparsely-packed)</a>
+<a name="859"><span class="lineNum">     859 </span><span class="lineCov">         90 :     if ((blockDimension == 0) || (blockDimension == m / 4))</span></a>
+<a name="860"><span class="lineNum">     860 </span><span class="lineCov">         22 :         slots = m / 4;</span></a>
+<a name="861"><span class="lineNum">     861 </span>            :     else</a>
+<a name="862"><span class="lineNum">     862 </span>            :         slots = blockDimension;</a>
+<a name="863"><span class="lineNum">     863 </span>            : </a>
+<a name="864"><span class="lineNum">     864 </span>            :     // Computing the baby-step g and the giant-step h</a>
+<a name="865"><span class="lineNum">     865 </span><span class="lineCov">         90 :     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;</span></a>
+<a name="866"><span class="lineNum">     866 </span><span class="lineCov">         90 :     uint32_t gStep = std::ceil(static_cast&lt;double&gt;(slots) / bStep);</span></a>
+<a name="867"><span class="lineNum">     867 </span>            : </a>
+<a name="868"><span class="lineNum">     868 </span>            :     // Computing all indices for baby-step giant-step procedure</a>
+<a name="869"><span class="lineNum">     869 </span>            :     std::vector&lt;int32_t&gt; indexList;</a>
+<a name="870"><span class="lineNum">     870 </span><span class="lineCov">         90 :     indexList.reserve(bStep + gStep - 2);</span></a>
+<a name="871"><span class="lineNum">     871 </span><span class="lineCov">       1530 :     for (uint32_t i = 0; i &lt; bStep; i++)</span></a>
+<a name="872"><span class="lineNum">     872 </span><span class="lineCov">       1440 :         indexList.emplace_back(i + 1);</span></a>
+<a name="873"><span class="lineNum">     873 </span><span class="lineCov">         90 :     for (uint32_t i = 2; i &lt; gStep; i++)</span></a>
+<a name="874"><span class="lineNum">     874 </span><span class="lineNoCov">          0 :         indexList.emplace_back(bStep * i);</span></a>
+<a name="875"><span class="lineNum">     875 </span>            : </a>
+<a name="876"><span class="lineNum">     876 </span>            :     // Remove possible duplicates</a>
+<a name="877"><span class="lineNum">     877 </span><span class="lineCov">         90 :     sort(indexList.begin(), indexList.end());</span></a>
+<a name="878"><span class="lineNum">     878 </span><span class="lineCov">         90 :     indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());</span></a>
+<a name="879"><span class="lineNum">     879 </span>            : </a>
+<a name="880"><span class="lineNum">     880 </span>            :     // Remove automorphisms corresponding to 0</a>
+<a name="881"><span class="lineNum">     881 </span><span class="lineCov">         90 :     indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());</span></a>
+<a name="882"><span class="lineNum">     882 </span>            : </a>
+<a name="883"><span class="lineNum">     883 </span><span class="lineCov">         90 :     return indexList;</span></a>
+<a name="884"><span class="lineNum">     884 </span>            : }</a>
+<a name="885"><span class="lineNum">     885 </span>            : </a>
+<a name="886"><span class="lineNum">     886 </span><span class="lineCov">         18 : std::vector&lt;int32_t&gt; FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols) {</span></a>
+<a name="887"><span class="lineNum">     887 </span>            :     uint32_t slots;</a>
+<a name="888"><span class="lineNum">     888 </span>            :     // Set slots depending on packing mode (fully-packed or sparsely-packed)</a>
+<a name="889"><span class="lineNum">     889 </span><span class="lineCov">         18 :     if ((blockDimension == 0) || (blockDimension == m / 4))</span></a>
+<a name="890"><span class="lineNum">     890 </span><span class="lineNoCov">          0 :         slots = m / 4;</span></a>
+<a name="891"><span class="lineNum">     891 </span>            :     else</a>
+<a name="892"><span class="lineNum">     892 </span>            :         slots = blockDimension;</a>
+<a name="893"><span class="lineNum">     893 </span>            : </a>
+<a name="894"><span class="lineNum">     894 </span>            :     // Computing the baby-step g and the giant-step h</a>
+<a name="895"><span class="lineNum">     895 </span><span class="lineCov">         18 :     uint32_t bStep = getRatioBSGSLT(slots);</span></a>
+<a name="896"><span class="lineNum">     896 </span><span class="lineCov">         18 :     uint32_t gStep = std::ceil(static_cast&lt;double&gt;(slots) / bStep);</span></a>
+<a name="897"><span class="lineNum">     897 </span><span class="lineCov">         18 :     uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer</span></a>
+<a name="898"><span class="lineNum">     898 </span>            : </a>
+<a name="899"><span class="lineNum">     899 </span>            :     std::vector&lt;int32_t&gt; indexList;</a>
+<a name="900"><span class="lineNum">     900 </span><span class="lineCov">         18 :     indexList.reserve(bStep + gStep +</span></a>
+<a name="901"><span class="lineNum">     901 </span>            :                       cols);  // There will be a lot of intersection between the rotations, provide an upper bound</a>
+<a name="902"><span class="lineNum">     902 </span>            : </a>
+<a name="903"><span class="lineNum">     903 </span><span class="lineCov">         72 :     while (slots &gt;= 1) {</span></a>
+<a name="904"><span class="lineNum">     904 </span>            :         // Computing all indices for baby-step giant-step procedure</a>
+<a name="905"><span class="lineNum">     905 </span><span class="lineCov">        216 :         for (uint32_t i = 0; i &lt; bStep; i++)</span></a>
+<a name="906"><span class="lineNum">     906 </span><span class="lineCov">        162 :             indexList.emplace_back(i + 1);</span></a>
+<a name="907"><span class="lineNum">     907 </span><span class="lineCov">         54 :         for (uint32_t i = 2; i &lt; gStep; i++)</span></a>
+<a name="908"><span class="lineNum">     908 </span><span class="lineNoCov">          0 :             indexList.emplace_back(bStep * i);</span></a>
+<a name="909"><span class="lineNum">     909 </span>            : </a>
+<a name="910"><span class="lineNum">     910 </span>            :         // If the linear transform is wide instead of tall, we need extra rotations</a>
+<a name="911"><span class="lineNum">     911 </span><span class="lineCov">         54 :         if (slots &lt; cols) {</span></a>
+<a name="912"><span class="lineNum">     912 </span><span class="lineCov">         54 :             logl = std::log2(cols / slots);  // These are powers of two, so log(l) is integer</span></a>
+<a name="913"><span class="lineNum">     913 </span><span class="lineCov">        270 :             for (size_t j = 1; j &lt;= logl; ++j) {</span></a>
+<a name="914"><span class="lineNum">     914 </span><span class="lineCov">        216 :                 indexList.emplace_back(slots * (1 &lt;&lt; (j - 1)));</span></a>
+<a name="915"><span class="lineNum">     915 </span>            :             }</a>
+<a name="916"><span class="lineNum">     916 </span>            :         }</a>
+<a name="917"><span class="lineNum">     917 </span>            : </a>
+<a name="918"><span class="lineNum">     918 </span>            :         // Go deeper into the binary tree</a>
+<a name="919"><span class="lineNum">     919 </span><span class="lineCov">         54 :         slots /= 2;</span></a>
+<a name="920"><span class="lineNum">     920 </span>            : </a>
+<a name="921"><span class="lineNum">     921 </span>            :         // Computing the baby-step g and the giant-step h</a>
+<a name="922"><span class="lineNum">     922 </span><span class="lineCov">         54 :         bStep = getRatioBSGSLT(slots);</span></a>
+<a name="923"><span class="lineNum">     923 </span><span class="lineCov">         54 :         gStep = std::ceil(static_cast&lt;double&gt;(slots) / bStep);</span></a>
+<a name="924"><span class="lineNum">     924 </span>            :     }</a>
+<a name="925"><span class="lineNum">     925 </span>            : </a>
+<a name="926"><span class="lineNum">     926 </span>            :     // Remove possible duplicates</a>
+<a name="927"><span class="lineNum">     927 </span><span class="lineCov">         18 :     sort(indexList.begin(), indexList.end());</span></a>
+<a name="928"><span class="lineNum">     928 </span><span class="lineCov">         18 :     indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());</span></a>
+<a name="929"><span class="lineNum">     929 </span>            : </a>
+<a name="930"><span class="lineNum">     930 </span>            :     // Remove automorphisms corresponding to 0</a>
+<a name="931"><span class="lineNum">     931 </span><span class="lineCov">         18 :     indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());</span></a>
+<a name="932"><span class="lineNum">     932 </span>            : </a>
+<a name="933"><span class="lineNum">     933 </span><span class="lineCov">         18 :     return indexList;</span></a>
+<a name="934"><span class="lineNum">     934 </span>            : }</a>
+<a name="935"><span class="lineNum">     935 </span>            : </a>
+<a name="936"><span class="lineNum">     936 </span>            : }  // namespace lbcrypto</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

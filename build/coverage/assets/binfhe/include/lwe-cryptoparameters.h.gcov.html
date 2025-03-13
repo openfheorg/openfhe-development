@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">28</td>
-            <td class="headerCovTableEntry">31</td>
-            <td class="headerCovTableEntryHi">90.3 %</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntry">58</td>
+            <td class="headerCovTableEntryMed">82.8 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">4</td>
-            <td class="headerCovTableEntry">7</td>
-            <td class="headerCovTableEntryLo">57.1 %</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryLo">62.5 %</td>
           </tr>
           <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -111,7 +111,7 @@
 <a name="49"><span class="lineNum">      49 </span>            :  */</a>
 <a name="50"><span class="lineNum">      50 </span>            : class LWECryptoParams : public Serializable {</a>
 <a name="51"><span class="lineNum">      51 </span>            : public:</a>
-<a name="52"><span class="lineNum">      52 </span><span class="lineCov">          5 :     LWECryptoParams() = default;</span></a>
+<a name="52"><span class="lineNum">      52 </span><span class="lineCov">         11 :     LWECryptoParams() = default;</span></a>
 <a name="53"><span class="lineNum">      53 </span>            : </a>
 <a name="54"><span class="lineNum">      54 </span>            :     /**</a>
 <a name="55"><span class="lineNum">      55 </span>            :    * Main constructor for LWECryptoParams</a>
@@ -125,27 +125,27 @@
 <a name="63"><span class="lineNum">      63 </span>            :    * @param baseKS the base used for key switching</a>
 <a name="64"><span class="lineNum">      64 </span>            :    * @param keyDist the key distribution</a>
 <a name="65"><span class="lineNum">      65 </span>            :    */</a>
-<a name="66"><span class="lineNum">      66 </span>            :     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger&amp; q, const NativeInteger&amp; Q,</a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">        148 :     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger&amp; q, const NativeInteger&amp; Q,</span></a>
 <a name="67"><span class="lineNum">      67 </span>            :                              const NativeInteger&amp; q_KS, double std, uint32_t baseKS,</a>
 <a name="68"><span class="lineNum">      68 </span>            :                              SecretKeyDist keyDist = UNIFORM_TERNARY)</a>
-<a name="69"><span class="lineNum">      69 </span>            :         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {</a>
-<a name="70"><span class="lineNum">      70 </span>            :         if (!m_n)</a>
-<a name="71"><span class="lineNum">      71 </span>            :             OPENFHE_THROW(&quot;m_n (lattice parameter) can not be zero&quot;);</a>
-<a name="72"><span class="lineNum">      72 </span>            :         if (!m_N)</a>
-<a name="73"><span class="lineNum">      73 </span>            :             OPENFHE_THROW(&quot;m_N (ring dimension) can not be zero&quot;);</a>
-<a name="74"><span class="lineNum">      74 </span>            :         if (!m_q)</a>
-<a name="75"><span class="lineNum">      75 </span>            :             OPENFHE_THROW(&quot;m_q (modulus for additive LWE) can not be zero&quot;);</a>
-<a name="76"><span class="lineNum">      76 </span>            :         if (!m_Q)</a>
-<a name="77"><span class="lineNum">      77 </span>            :             OPENFHE_THROW(&quot;m_Q (modulus for RingGSW/RLWE) can not be zero&quot;);</a>
-<a name="78"><span class="lineNum">      78 </span>            :         if (!q_KS)</a>
-<a name="79"><span class="lineNum">      79 </span>            :             OPENFHE_THROW(&quot;q_KS (modulus for key switching) can not be zero&quot;);</a>
-<a name="80"><span class="lineNum">      80 </span>            :         if (!m_baseKS)</a>
-<a name="81"><span class="lineNum">      81 </span>            :             OPENFHE_THROW(&quot;m_baseKS (the base used for key switching) can not be zero&quot;);</a>
-<a name="82"><span class="lineNum">      82 </span>            :         if (m_Q.GetMSB() &gt; MAX_MODULUS_SIZE)</a>
-<a name="83"><span class="lineNum">      83 </span>            :             OPENFHE_THROW(&quot;Q.GetMSB() &gt; MAX_MODULUS_SIZE&quot;);</a>
-<a name="84"><span class="lineNum">      84 </span>            :         m_dgg.SetStd(std);</a>
-<a name="85"><span class="lineNum">      85 </span>            :         m_ks_dgg.SetStd(std);</a>
-<a name="86"><span class="lineNum">      86 </span>            :     }</a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">        148 :         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">        148 :         if (!m_n)</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;m_n (lattice parameter) can not be zero&quot;);</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">        148 :         if (!m_N)</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;m_N (ring dimension) can not be zero&quot;);</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">        148 :         if (!m_q)</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;m_q (modulus for additive LWE) can not be zero&quot;);</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">        148 :         if (!m_Q)</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;m_Q (modulus for RingGSW/RLWE) can not be zero&quot;);</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">        148 :         if (!q_KS)</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;q_KS (modulus for key switching) can not be zero&quot;);</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">        148 :         if (!m_baseKS)</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;m_baseKS (the base used for key switching) can not be zero&quot;);</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">        148 :         if (m_Q.GetMSB() &gt; MAX_MODULUS_SIZE)</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;Q.GetMSB() &gt; MAX_MODULUS_SIZE&quot;);</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">        148 :         m_dgg.SetStd(std);</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">        148 :         m_ks_dgg.SetStd(std);</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">        148 :     }</span></a>
 <a name="87"><span class="lineNum">      87 </span>            : </a>
 <a name="88"><span class="lineNum">      88 </span>            :     // TODO: add m_qKS, m_ks_dgg, and m_keyDist to copy/move operations?</a>
 <a name="89"><span class="lineNum">      89 </span>            : </a>
@@ -196,39 +196,39 @@
 <a name="134"><span class="lineNum">     134 </span>            :     }</a>
 <a name="135"><span class="lineNum">     135 </span>            : </a>
 <a name="136"><span class="lineNum">     136 </span>            :     uint32_t Getn() const {</a>
-<a name="137"><span class="lineNum">     137 </span>            :         return m_n;</a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">       3490 :         return m_n;</span></a>
 <a name="138"><span class="lineNum">     138 </span>            :     }</a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
 <a name="140"><span class="lineNum">     140 </span>            :     uint32_t GetN() const {</a>
-<a name="141"><span class="lineNum">     141 </span>            :         return m_N;</a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">       6351 :         return m_N;</span></a>
 <a name="142"><span class="lineNum">     142 </span>            :     }</a>
 <a name="143"><span class="lineNum">     143 </span>            : </a>
 <a name="144"><span class="lineNum">     144 </span>            :     const NativeInteger&amp; Getq() const {</a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">          6 :         return m_q;</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">        173 :         return m_q;</span></a>
 <a name="146"><span class="lineNum">     146 </span>            :     }</a>
 <a name="147"><span class="lineNum">     147 </span>            : </a>
 <a name="148"><span class="lineNum">     148 </span>            :     const NativeInteger&amp; GetQ() const {</a>
-<a name="149"><span class="lineNum">     149 </span>            :         return m_Q;</a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineCov">        166 :         return m_Q;</span></a>
 <a name="150"><span class="lineNum">     150 </span>            :     }</a>
 <a name="151"><span class="lineNum">     151 </span>            : </a>
 <a name="152"><span class="lineNum">     152 </span>            :     const NativeInteger&amp; GetqKS() const {</a>
-<a name="153"><span class="lineNum">     153 </span>            :         return m_qKS;</a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">        148 :         return m_qKS;</span></a>
 <a name="154"><span class="lineNum">     154 </span>            :     }</a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
 <a name="156"><span class="lineNum">     156 </span>            :     uint32_t GetBaseKS() const {</a>
-<a name="157"><span class="lineNum">     157 </span>            :         return m_baseKS;</a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">       3212 :         return m_baseKS;</span></a>
 <a name="158"><span class="lineNum">     158 </span>            :     }</a>
 <a name="159"><span class="lineNum">     159 </span>            : </a>
 <a name="160"><span class="lineNum">     160 </span>            :     const DiscreteGaussianGeneratorImpl&lt;NativeVector&gt;&amp; GetDgg() const {</a>
-<a name="161"><span class="lineNum">     161 </span>            :         return m_dgg;</a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">        949 :         return m_dgg;</span></a>
 <a name="162"><span class="lineNum">     162 </span>            :     }</a>
 <a name="163"><span class="lineNum">     163 </span>            : </a>
 <a name="164"><span class="lineNum">     164 </span>            :     const DiscreteGaussianGeneratorImpl&lt;NativeVector&gt;&amp; GetDggKS() const {</a>
-<a name="165"><span class="lineNum">     165 </span>            :         return m_ks_dgg;</a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">   27293700 :         return m_ks_dgg;</span></a>
 <a name="166"><span class="lineNum">     166 </span>            :     }</a>
 <a name="167"><span class="lineNum">     167 </span>            : </a>
 <a name="168"><span class="lineNum">     168 </span>            :     SecretKeyDist GetKeyDist() const {</a>
-<a name="169"><span class="lineNum">     169 </span>            :         return m_keyDist;</a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineCov">        174 :         return m_keyDist;</span></a>
 <a name="170"><span class="lineNum">     170 </span>            :     }</a>
 <a name="171"><span class="lineNum">     171 </span>            : </a>
 <a name="172"><span class="lineNum">     172 </span><span class="lineCov">          5 :     bool operator==(const LWECryptoParams&amp; other) const {</span></a>
@@ -241,37 +241,37 @@
 <a name="179"><span class="lineNum">     179 </span>            :     }</a>
 <a name="180"><span class="lineNum">     180 </span>            : </a>
 <a name="181"><span class="lineNum">     181 </span>            :     template &lt;class Archive&gt;</a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineCov">          5 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;n&quot;, m_n));</span></a>
-<a name="184"><span class="lineNum">     184 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;N&quot;, m_N));</span></a>
-<a name="185"><span class="lineNum">     185 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;q&quot;, m_q));</span></a>
-<a name="186"><span class="lineNum">     186 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;Q&quot;, m_Q));</span></a>
-<a name="187"><span class="lineNum">     187 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;qKS&quot;, m_qKS));</span></a>
-<a name="188"><span class="lineNum">     188 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;sigma&quot;, m_dgg.GetStd()));</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;sigmaKS&quot;, m_ks_dgg.GetStd()));</span></a>
-<a name="190"><span class="lineNum">     190 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;bKS&quot;, m_baseKS));</span></a>
-<a name="191"><span class="lineNum">     191 </span><span class="lineCov">          5 :     }</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">         11 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;n&quot;, m_n));</span></a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;N&quot;, m_N));</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;q&quot;, m_q));</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;Q&quot;, m_Q));</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;qKS&quot;, m_qKS));</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;sigma&quot;, m_dgg.GetStd()));</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;sigmaKS&quot;, m_ks_dgg.GetStd()));</span></a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;bKS&quot;, m_baseKS));</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineCov">         11 :     }</span></a>
 <a name="192"><span class="lineNum">     192 </span>            : </a>
 <a name="193"><span class="lineNum">     193 </span>            :     template &lt;class Archive&gt;</a>
-<a name="194"><span class="lineNum">     194 </span><span class="lineCov">          5 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
-<a name="195"><span class="lineNum">     195 </span><span class="lineCov">          5 :         if (version &gt; SerializedVersion()) {</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">         11 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">         11 :         if (version &gt; SerializedVersion()) {</span></a>
 <a name="196"><span class="lineNum">     196 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;serialized object version &quot; + std::to_string(version) +</span></a>
 <a name="197"><span class="lineNum">     197 </span>            :                           &quot; is from a later version of the library&quot;);</a>
 <a name="198"><span class="lineNum">     198 </span>            :         }</a>
 <a name="199"><span class="lineNum">     199 </span>            : </a>
-<a name="200"><span class="lineNum">     200 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;n&quot;, m_n));</span></a>
-<a name="201"><span class="lineNum">     201 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;N&quot;, m_N));</span></a>
-<a name="202"><span class="lineNum">     202 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;q&quot;, m_q));</span></a>
-<a name="203"><span class="lineNum">     203 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;Q&quot;, m_Q));</span></a>
-<a name="204"><span class="lineNum">     204 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;qKS&quot;, m_qKS));</span></a>
-<a name="205"><span class="lineNum">     205 </span><span class="lineCov">          5 :         double sigma = 0;</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;n&quot;, m_n));</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;N&quot;, m_N));</span></a>
+<a name="202"><span class="lineNum">     202 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;q&quot;, m_q));</span></a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;Q&quot;, m_Q));</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;qKS&quot;, m_qKS));</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineCov">         11 :         double sigma = 0;</span></a>
 <a name="206"><span class="lineNum">     206 </span>            :         ar(::cereal::make_nvp(&quot;sigma&quot;, sigma));</a>
-<a name="207"><span class="lineNum">     207 </span><span class="lineCov">          5 :         double sigmaKS = 0;</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">         11 :         double sigmaKS = 0;</span></a>
 <a name="208"><span class="lineNum">     208 </span>            :         ar(::cereal::make_nvp(&quot;sigmaKS&quot;, sigmaKS));</a>
-<a name="209"><span class="lineNum">     209 </span><span class="lineCov">          5 :         m_dgg.SetStd(sigma);</span></a>
-<a name="210"><span class="lineNum">     210 </span><span class="lineCov">          5 :         m_ks_dgg.SetStd(sigmaKS);</span></a>
-<a name="211"><span class="lineNum">     211 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;bKS&quot;, m_baseKS));</span></a>
-<a name="212"><span class="lineNum">     212 </span><span class="lineCov">          5 :     }</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineCov">         11 :         m_dgg.SetStd(sigma);</span></a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineCov">         11 :         m_ks_dgg.SetStd(sigmaKS);</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;bKS&quot;, m_baseKS));</span></a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">         11 :     }</span></a>
 <a name="213"><span class="lineNum">     213 </span>            : </a>
 <a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :         return &quot;LWECryptoParams&quot;;</span></a>

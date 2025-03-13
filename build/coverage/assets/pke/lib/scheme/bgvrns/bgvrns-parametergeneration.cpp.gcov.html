@@ -1,0 +1,717 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - pke/lib/scheme/bgvrns/bgvrns-parametergeneration.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">pke/lib/scheme/bgvrns</a> - bgvrns-parametergeneration.cpp<span style="font-size: 80%;"> (source / <a href="bgvrns-parametergeneration.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">227</td>
+            <td class="headerCovTableEntry">257</td>
+            <td class="headerCovTableEntryMed">88.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : /*</a>
+<a name="33"><span class="lineNum">      33 </span>            : BGV implementation. See https://eprint.iacr.org/2021/204 for details.</a>
+<a name="34"><span class="lineNum">      34 </span>            :  */</a>
+<a name="35"><span class="lineNum">      35 </span>            : </a>
+<a name="36"><span class="lineNum">      36 </span>            : #define PROFILE</a>
+<a name="37"><span class="lineNum">      37 </span>            : </a>
+<a name="38"><span class="lineNum">      38 </span>            : #include &quot;cryptocontext.h&quot;</a>
+<a name="39"><span class="lineNum">      39 </span>            : #include &quot;scheme/bgvrns/bgvrns-cryptoparameters.h&quot;</a>
+<a name="40"><span class="lineNum">      40 </span>            : #include &quot;scheme/bgvrns/bgvrns-parametergeneration.h&quot;</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : namespace lbcrypto {</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span><span class="lineCov">       1506 : uint32_t ParameterGenerationBGVRNS::computeRingDimension(</span></a>
+<a name="45"><span class="lineNum">      45 </span>            :     const std::shared_ptr&lt;CryptoParametersBase&lt;DCRTPoly&gt;&gt;&amp; cryptoParams, uint32_t qBound, uint32_t cyclOrder) const {</a>
+<a name="46"><span class="lineNum">      46 </span><span class="lineCov">       1506 :     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast&lt;CryptoParametersBGVRNS&gt;(cryptoParams);</span></a>
+<a name="47"><span class="lineNum">      47 </span>            : </a>
+<a name="48"><span class="lineNum">      48 </span>            :     // GAUSSIAN security constraint</a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">       1506 :     DistributionType distType = (cryptoParamsBGVRNS-&gt;GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;</span></a>
+<a name="50"><span class="lineNum">      50 </span>            : </a>
+<a name="51"><span class="lineNum">      51 </span>            :     // HE Standards compliance logic/check</a>
+<a name="52"><span class="lineNum">      52 </span>            :     SecurityLevel stdLevel = cryptoParamsBGVRNS-&gt;GetStdLevel();</a>
+<a name="53"><span class="lineNum">      53 </span>            : </a>
+<a name="54"><span class="lineNum">      54 </span><span class="lineCov">       1506 :     uint32_t ringDimension = cyclOrder / 2;</span></a>
+<a name="55"><span class="lineNum">      55 </span>            : </a>
+<a name="56"><span class="lineNum">      56 </span>            :     // Case 1: SecurityLevel specified as HEStd_NotSet -&gt; Do nothing</a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">       1506 :     if (stdLevel != HEStd_NotSet) {</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">        565 :         auto he_std_n = StdLatticeParm::FindRingDim(distType, stdLevel, qBound);</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">        565 :         if (ringDimension == 0) {</span></a>
+<a name="60"><span class="lineNum">      60 </span>            :             // Case 2: SecurityLevel specified, but ring dimension not specified</a>
+<a name="61"><span class="lineNum">      61 </span>            :             // Choose ring dimension based on security standards</a>
+<a name="62"><span class="lineNum">      62 </span>            :             ringDimension = he_std_n;</a>
+<a name="63"><span class="lineNum">      63 </span>            :         }</a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">         31 :         else if (ringDimension &lt; he_std_n) {</span></a>
+<a name="65"><span class="lineNum">      65 </span>            :             // Case 3: Both SecurityLevel and ring dimension specified</a>
+<a name="66"><span class="lineNum">      66 </span>            :             // Check whether particular selection is standards-compliant</a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;The specified ring dimension (&quot; + std::to_string(ringDimension) +</span></a>
+<a name="68"><span class="lineNum">      68 </span>            :                           &quot;) does not comply with HE standards recommendation (&quot; + std::to_string(he_std_n) + &quot;).&quot;);</a>
+<a name="69"><span class="lineNum">      69 </span>            :         }</a>
+<a name="70"><span class="lineNum">      70 </span>            :     }</a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">        941 :     else if (ringDimension == 0) {</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;Please specify the ring dimension or desired security level.&quot;);</span></a>
+<a name="73"><span class="lineNum">      73 </span>            :     }</a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">       1506 :     return ringDimension;</span></a>
+<a name="75"><span class="lineNum">      75 </span>            : }</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">       1326 : BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(</span></a>
+<a name="78"><span class="lineNum">      78 </span>            :     const std::shared_ptr&lt;CryptoParametersBase&lt;DCRTPoly&gt;&gt;&amp; cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,</a>
+<a name="79"><span class="lineNum">      79 </span>            :     uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const {</a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">       1326 :     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast&lt;CryptoParametersBGVRNS&gt;(cryptoParams);</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">       1326 :     uint32_t digitSize            = cryptoParamsBGVRNS-&gt;GetDigitSize();</span></a>
+<a name="82"><span class="lineNum">      82 </span>            :     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS-&gt;GetKeySwitchTechnique();</a>
+<a name="83"><span class="lineNum">      83 </span>            :     ScalingTechnique scalTech     = cryptoParamsBGVRNS-&gt;GetScalingTechnique();</a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">       1326 :     double sigma                  = cryptoParamsBGVRNS-&gt;GetDistributionParameter();</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">       1326 :     double alpha                  = cryptoParamsBGVRNS-&gt;GetAssuranceMeasure();</span></a>
+<a name="86"><span class="lineNum">      86 </span>            : </a>
+<a name="87"><span class="lineNum">      87 </span>            :     // Bound of the Gaussian error polynomial</a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">       1326 :     double Berr = sigma * std::sqrt(alpha);</span></a>
+<a name="89"><span class="lineNum">      89 </span>            :     // Bound of the key polynomial</a>
+<a name="90"><span class="lineNum">      90 </span>            :     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution</a>
+<a name="91"><span class="lineNum">      91 </span>            :     // (UNIFORM_TERNARY) cases</a>
+<a name="92"><span class="lineNum">      92 </span>            :     uint32_t thresholdParties = cryptoParamsBGVRNS-&gt;GetThresholdNumOfParties();</a>
+<a name="93"><span class="lineNum">      93 </span>            : </a>
+<a name="94"><span class="lineNum">      94 </span>            :     // Bkey set to thresholdParties * 1 for ternary distribution</a>
+<a name="95"><span class="lineNum">      95 </span>            :     double Bkey =</a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">       1326 :         (cryptoParamsBGVRNS-&gt;GetSecretKeyDist() == GAUSSIAN) ? std::sqrt(thresholdParties) * Berr : thresholdParties;</span></a>
+<a name="97"><span class="lineNum">      97 </span>            :     // delta</a>
+<a name="98"><span class="lineNum">      98 </span><span class="lineCov">       1326 :     auto expansionFactor = 2. * std::sqrt(ringDimension);</span></a>
+<a name="99"><span class="lineNum">      99 </span>            :     // Vnorm</a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">       1326 :     auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);</span></a>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<a name="102"><span class="lineNum">     102 </span>            :     double keySwitchingNoise = 0;</a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineCov">       1326 :     if (ksTech == BV) {</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">        504 :         if (digitSize == 0) {</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;digitSize is not allowed to be 0 for BV key switching in BGV when scalingModSize = 0.&quot;);</span></a>
+<a name="106"><span class="lineNum">     106 </span>            :         }</a>
+<a name="107"><span class="lineNum">     107 </span>            :         double relinBase         = std::pow(2.0, digitSize);</a>
+<a name="108"><span class="lineNum">     108 </span>            :         uint32_t modSizeEstimate = DCRT_MODULUS::MAX_SIZE;</a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">        504 :         uint32_t numWindows      = (modSizeEstimate / digitSize) + 1;</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">        504 :         keySwitchingNoise        = numWindows * numPrimes * expansionFactor * relinBase * Berr / 2.0;</span></a>
+<a name="111"><span class="lineNum">     111 </span>            :     }</a>
+<a name="112"><span class="lineNum">     112 </span>            :     else {</a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineCov">        822 :         double numTowersPerDigit = cryptoParamsBGVRNS-&gt;GetNumPerPartQ();</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">        822 :         double numDigits         = cryptoParamsBGVRNS-&gt;GetNumPartQ();</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">        822 :         keySwitchingNoise        = numTowersPerDigit * numDigits * expansionFactor * Berr / 2.0;</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">        822 :         keySwitchingNoise += auxTowers * (1 + expansionFactor * Bkey) / 2.0;</span></a>
+<a name="117"><span class="lineNum">     117 </span>            :     }</a>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<a name="119"><span class="lineNum">     119 </span>            :     // V_ms</a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">       1326 :     auto modSwitchingNoise = (1 + expansionFactor * Bkey) / 2.;</span></a>
+<a name="121"><span class="lineNum">     121 </span>            : </a>
+<a name="122"><span class="lineNum">     122 </span>            :     // V_c</a>
+<a name="123"><span class="lineNum">     123 </span>            :     double noisePerLevel = 0;</a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineCov">       1326 :     if (scalTech == FLEXIBLEAUTOEXT) {</span></a>
+<a name="125"><span class="lineNum">     125 </span>            :         noisePerLevel = 1 + expansionFactor * Bkey;</a>
+<a name="126"><span class="lineNum">     126 </span>            :     }</a>
+<a name="127"><span class="lineNum">     127 </span>            :     else {</a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineCov">        883 :         noisePerLevel = (evalAddCount + 1) * freshEncryptionNoise + (keySwitchCount + 1) * keySwitchingNoise;</span></a>
+<a name="129"><span class="lineNum">     129 </span>            :     }</a>
+<a name="130"><span class="lineNum">     130 </span>            : </a>
+<a name="131"><span class="lineNum">     131 </span>            :     return BGVNoiseEstimates(Berr, Bkey, expansionFactor, freshEncryptionNoise, keySwitchingNoise, modSwitchingNoise,</a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">       1326 :                              noisePerLevel);</span></a>
+<a name="133"><span class="lineNum">     133 </span>            : }</a>
+<a name="134"><span class="lineNum">     134 </span>            : </a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">       1805 : uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension, const int plainModulus,</span></a>
+<a name="136"><span class="lineNum">     136 </span>            :                                                    const ScalingTechnique scalTech) const {</a>
+<a name="137"><span class="lineNum">     137 </span>            :     // Moduli need to be primes that are 1 (mod 2n)</a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">       1805 :     uint32_t cyclOrder       = 2 * ringDimension;</span></a>
+<a name="139"><span class="lineNum">     139 </span>            :     uint64_t lcmCyclOrderPtm = 0;</a>
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">       1805 :     if (scalTech == FIXEDAUTO) {</span></a>
+<a name="142"><span class="lineNum">     142 </span>            :         // In FIXEDAUTO, moduli also need to be 1 (mod t)</a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">        603 :         uint32_t plaintextModulus = plainModulus;</span></a>
+<a name="144"><span class="lineNum">     144 </span>            :         uint32_t pow2ptm          = 1;  // The largest power of 2 dividing ptm (check whether it</a>
+<a name="145"><span class="lineNum">     145 </span>            :                                         // is larger than cyclOrder or not)</a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineCov">        825 :         while (plaintextModulus % 2 == 0) {</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">        222 :             plaintextModulus &gt;&gt;= 1;</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">        222 :             pow2ptm &lt;&lt;= 1;</span></a>
+<a name="149"><span class="lineNum">     149 </span>            :         }</a>
+<a name="150"><span class="lineNum">     150 </span>            : </a>
+<a name="151"><span class="lineNum">     151 </span>            :         if (pow2ptm &lt; cyclOrder)</a>
+<a name="152"><span class="lineNum">     152 </span>            :             pow2ptm = cyclOrder;</a>
+<a name="153"><span class="lineNum">     153 </span>            : </a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">        603 :         lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;</span></a>
+<a name="155"><span class="lineNum">     155 </span>            :     }</a>
+<a name="156"><span class="lineNum">     156 </span>            :     else {</a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">       1202 :         lcmCyclOrderPtm = cyclOrder;</span></a>
+<a name="158"><span class="lineNum">     158 </span>            :     }</a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">       1805 :     return lcmCyclOrderPtm;</span></a>
+<a name="160"><span class="lineNum">     160 </span>            : }</a>
+<a name="161"><span class="lineNum">     161 </span>            : </a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">       1326 : std::pair&lt;std::vector&lt;NativeInteger&gt;, uint32_t&gt; ParameterGenerationBGVRNS::computeModuli(</span></a>
+<a name="163"><span class="lineNum">     163 </span>            :     const std::shared_ptr&lt;CryptoParametersBase&lt;DCRTPoly&gt;&gt;&amp; cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,</a>
+<a name="164"><span class="lineNum">     164 </span>            :     uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const {</a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">       1326 :     if (numPrimes &lt; 1) {</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;numPrimes must be at least 1&quot;);</span></a>
+<a name="167"><span class="lineNum">     167 </span>            :     }</a>
+<a name="168"><span class="lineNum">     168 </span>            : </a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineCov">       1326 :     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast&lt;CryptoParametersBGVRNS&gt;(cryptoParams);</span></a>
+<a name="170"><span class="lineNum">     170 </span>            :     ScalingTechnique scalTech     = cryptoParamsBGVRNS-&gt;GetScalingTechnique();</a>
+<a name="171"><span class="lineNum">     171 </span>            : </a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineCov">       1326 :     size_t numModuli = scalTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">       1326 :     std::vector&lt;NativeInteger&gt; moduliQ(numModuli);</span></a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">       1326 :     uint64_t plainModulus         = cryptoParamsBGVRNS-&gt;GetPlaintextModulus();</span></a>
+<a name="176"><span class="lineNum">     176 </span>            :     NativeInteger plainModulusInt = NativeInteger(plainModulus);</a>
+<a name="177"><span class="lineNum">     177 </span>            : </a>
+<a name="178"><span class="lineNum">     178 </span>            :     BGVNoiseEstimates noiseEstimates =</a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov">       1326 :         computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount, auxTowers, numPrimes);</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">       1326 :     uint64_t cyclOrder = getCyclicOrder(ringDimension, plainModulus, scalTech);</span></a>
+<a name="181"><span class="lineNum">     181 </span>            : </a>
+<a name="182"><span class="lineNum">     182 </span>            :     double firstModLowerBound = 0;</a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">       1326 :     if (scalTech == FLEXIBLEAUTOEXT)</span></a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">        443 :         firstModLowerBound = 2.0 * plainModulus * noiseEstimates.freshEncryptionNoise - plainModulus;</span></a>
+<a name="185"><span class="lineNum">     185 </span>            :     else</a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">        883 :         firstModLowerBound = 2.0 * plainModulus * noiseEstimates.noisePerLevel - plainModulus;</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">       1326 :     uint32_t firstModSize = std::ceil(std::log2(firstModLowerBound));</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">       1326 :     if (firstModSize &gt;= DCRT_MODULUS::MAX_SIZE) {</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(</span></a>
+<a name="190"><span class="lineNum">     190 </span>            :             &quot;Change parameters! Try reducing the number of additions per level, &quot;</a>
+<a name="191"><span class="lineNum">     191 </span>            :             &quot;number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.&quot;);</a>
+<a name="192"><span class="lineNum">     192 </span>            :     }</a>
+<a name="193"><span class="lineNum">     193 </span>            : </a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">       1326 :     moduliQ[0] = FirstPrime&lt;NativeInteger&gt;(firstModSize, cyclOrder);</span></a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineCov">       1326 :     if (scalTech == FLEXIBLEAUTOEXT) {</span></a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineCov">        443 :         double extraModLowerBound =</span></a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineCov">        443 :             noiseEstimates.freshEncryptionNoise / noiseEstimates.noisePerLevel * (evalAddCount + 1);</span></a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineCov">        443 :         extraModLowerBound += keySwitchCount * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineCov">        443 :         extraModLowerBound *= 2;</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">        443 :         uint32_t extraModSize = std::ceil(std::log2(extraModLowerBound));</span></a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">        443 :         if (extraModSize &gt;= DCRT_MODULUS::MAX_SIZE) {</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(</span></a>
+<a name="205"><span class="lineNum">     205 </span>            :                 &quot;Change parameters! Try reducing the number of additions per level, &quot;</a>
+<a name="206"><span class="lineNum">     206 </span>            :                 &quot;number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.&quot;);</a>
+<a name="207"><span class="lineNum">     207 </span>            :         }</a>
+<a name="208"><span class="lineNum">     208 </span>            : </a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineCov">        443 :         moduliQ[numPrimes] = FirstPrime&lt;NativeInteger&gt;(extraModSize, cyclOrder);</span></a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineCov">        106 :         while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">        106 :             moduliQ[numPrimes] = NextPrime&lt;NativeInteger&gt;(moduliQ[numPrimes], cyclOrder);</span></a>
+<a name="212"><span class="lineNum">     212 </span>            :         }</a>
+<a name="213"><span class="lineNum">     213 </span>            :     }</a>
+<a name="214"><span class="lineNum">     214 </span>            : </a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">       1326 :     if (numPrimes &gt; 1) {</span></a>
+<a name="216"><span class="lineNum">     216 </span>            :         // Compute bounds.</a>
+<a name="217"><span class="lineNum">     217 </span>            :         double modLowerBound = 0;</a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">       1326 :         if (scalTech == FLEXIBLEAUTOEXT) {</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">        443 :             modLowerBound = 2 * noiseEstimates.noisePerLevel + 2 + 1.0 / noiseEstimates.noisePerLevel;</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">        443 :             modLowerBound *= noiseEstimates.expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineCov">        443 :             modLowerBound += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">        443 :             modLowerBound *= 2;</span></a>
+<a name="223"><span class="lineNum">     223 </span>            :         }</a>
+<a name="224"><span class="lineNum">     224 </span>            :         else {</a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">        883 :             double modLowerBoundNumerator =</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">        883 :                 2 * noiseEstimates.noisePerLevel * noiseEstimates.noisePerLevel + 2 * noiseEstimates.noisePerLevel + 1;</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">        883 :             modLowerBoundNumerator *= noiseEstimates.expansionFactor * plainModulus / 2. * (evalAddCount + 1);</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">        883 :             modLowerBoundNumerator += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise;</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">        883 :             double modLowerBoundDenom = noiseEstimates.noisePerLevel - noiseEstimates.modSwitchingNoise;</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">        883 :             modLowerBound             = modLowerBoundNumerator / modLowerBoundDenom;</span></a>
+<a name="231"><span class="lineNum">     231 </span>            :         }</a>
+<a name="232"><span class="lineNum">     232 </span>            : </a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineCov">       1326 :         uint32_t modSize = std::ceil(std::log2(modLowerBound));</span></a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineCov">       1326 :         if (modSize &gt;= DCRT_MODULUS::MAX_SIZE) {</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(</span></a>
+<a name="236"><span class="lineNum">     236 </span>            :                 &quot;Change parameters! Try reducing the number of additions per level, &quot;</a>
+<a name="237"><span class="lineNum">     237 </span>            :                 &quot;number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.&quot;);</a>
+<a name="238"><span class="lineNum">     238 </span>            :         }</a>
+<a name="239"><span class="lineNum">     239 </span>            : </a>
+<a name="240"><span class="lineNum">     240 </span>            :         // Compute moduli.</a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineCov">       1326 :         moduliQ[1] = FirstPrime&lt;NativeInteger&gt;(modSize, cyclOrder);</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">       1326 :         if (scalTech == FLEXIBLEAUTOEXT) {</span></a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineCov">        443 :             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">         40 :                 moduliQ[1] = NextPrime&lt;NativeInteger&gt;(moduliQ[1], cyclOrder);</span></a>
+<a name="245"><span class="lineNum">     245 </span>            :             }</a>
+<a name="246"><span class="lineNum">     246 </span>            : </a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov">        955 :             for (size_t i = 2; i &lt; numPrimes; i++) {</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">        512 :                 moduliQ[i] = NextPrime&lt;NativeInteger&gt;(moduliQ[i - 1], cyclOrder);</span></a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 :                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {</span></a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineNoCov">          0 :                     moduliQ[i] = NextPrime&lt;NativeInteger&gt;(moduliQ[i], cyclOrder);</span></a>
+<a name="251"><span class="lineNum">     251 </span>            :                 }</a>
+<a name="252"><span class="lineNum">     252 </span>            :             }</a>
+<a name="253"><span class="lineNum">     253 </span>            :         }</a>
+<a name="254"><span class="lineNum">     254 </span>            :         else {</a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineNoCov">          0 :             while (moduliQ[1] == moduliQ[0] || moduliQ[1] == plainModulusInt) {</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineNoCov">          0 :                 moduliQ[1] = NextPrime&lt;NativeInteger&gt;(moduliQ[1], cyclOrder);</span></a>
+<a name="257"><span class="lineNum">     257 </span>            :             }</a>
+<a name="258"><span class="lineNum">     258 </span>            : </a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineCov">       1895 :             for (size_t i = 2; i &lt; numPrimes; i++) {</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineCov">       1012 :                 moduliQ[i] = NextPrime&lt;NativeInteger&gt;(moduliQ[i - 1], cyclOrder);</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineNoCov">          0 :                 while (moduliQ[i] == moduliQ[0] || moduliQ[i] == plainModulusInt) {</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineNoCov">          0 :                     moduliQ[i] = NextPrime&lt;NativeInteger&gt;(moduliQ[i], cyclOrder);</span></a>
+<a name="263"><span class="lineNum">     263 </span>            :                 }</a>
+<a name="264"><span class="lineNum">     264 </span>            :             }</a>
+<a name="265"><span class="lineNum">     265 </span>            :         }</a>
+<a name="266"><span class="lineNum">     266 </span>            :     }</a>
+<a name="267"><span class="lineNum">     267 </span>            : </a>
+<a name="268"><span class="lineNum">     268 </span>            :     BigInteger composite(1);</a>
+<a name="269"><span class="lineNum">     269 </span><span class="lineCov">       5945 :     for (BigInteger m : moduliQ)</span></a>
+<a name="270"><span class="lineNum">     270 </span>            :         composite *= m;</a>
+<a name="271"><span class="lineNum">     271 </span>            : </a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineCov">       1326 :     return std::make_pair(moduliQ, composite.GetMSB());</span></a>
+<a name="273"><span class="lineNum">     273 </span>            : }</a>
+<a name="274"><span class="lineNum">     274 </span>            : </a>
+<a name="275"><span class="lineNum">     275 </span><span class="lineCov">        659 : void ParameterGenerationBGVRNS::InitializeFloodingDgg(</span></a>
+<a name="276"><span class="lineNum">     276 </span>            :     const std::shared_ptr&lt;CryptoParametersBase&lt;DCRTPoly&gt;&gt;&amp; cryptoParams, uint32_t numPrimes,</a>
+<a name="277"><span class="lineNum">     277 </span>            :     uint32_t ringDimension) const {</a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineCov">        659 :     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast&lt;CryptoParametersBGVRNS&gt;(cryptoParams);</span></a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span>            :     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS-&gt;GetKeySwitchTechnique();</a>
+<a name="281"><span class="lineNum">     281 </span>            :     ProxyReEncryptionMode PREMode = cryptoParamsBGVRNS-&gt;GetPREMode();</a>
+<a name="282"><span class="lineNum">     282 </span>            : </a>
+<a name="283"><span class="lineNum">     283 </span>            :     // compute the flooding distribution parameter based on the security mode for pre</a>
+<a name="284"><span class="lineNum">     284 </span>            :     // get the re-encryption level and set the level after re-encryption</a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineCov">        659 :     double sigma              = cryptoParamsBGVRNS-&gt;GetDistributionParameter();</span></a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineCov">        659 :     double alpha              = cryptoParamsBGVRNS-&gt;GetAssuranceMeasure();</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">        659 :     uint32_t r                = cryptoParamsBGVRNS-&gt;GetDigitSize();</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineCov">        659 :     double B_e                = std::sqrt(alpha) * sigma;</span></a>
+<a name="289"><span class="lineNum">     289 </span>            :     uint32_t auxBits          = DCRT_MODULUS::MAX_SIZE;</a>
+<a name="290"><span class="lineNum">     290 </span>            :     uint32_t thresholdParties = cryptoParamsBGVRNS-&gt;GetThresholdNumOfParties();</a>
+<a name="291"><span class="lineNum">     291 </span>            :     // bound on the secret key is sigma*sqrt(alpha)*sqrt(thresholdParties) if the secret is sampled from discrete gaussian distribution</a>
+<a name="292"><span class="lineNum">     292 </span>            :     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of</a>
+<a name="293"><span class="lineNum">     293 </span>            :     // parties is 1 by default but can be set to the number of parties in a threshold application.</a>
+<a name="294"><span class="lineNum">     294 </span>            :     // Bkey set to thresholdParties * 1 for ternary distribution</a>
+<a name="295"><span class="lineNum">     295 </span>            :     double Bkey =</a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">        659 :         (cryptoParamsBGVRNS-&gt;GetSecretKeyDist() == GAUSSIAN) ? B_e * std::sqrt(thresholdParties) : thresholdParties;</span></a>
+<a name="297"><span class="lineNum">     297 </span>            : </a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineCov">        659 :     double stat_sec_half = cryptoParamsBGVRNS-&gt;GetStatisticalSecurity() / 2;</span></a>
+<a name="299"><span class="lineNum">     299 </span>            :     double num_queries   = cryptoParamsBGVRNS-&gt;GetNumAdversarialQueries();</a>
+<a name="300"><span class="lineNum">     300 </span>            : </a>
+<a name="301"><span class="lineNum">     301 </span>            :     // get the flooding discrete gaussian distribution</a>
+<a name="302"><span class="lineNum">     302 </span>            :     auto dggFlooding   = cryptoParamsBGVRNS-&gt;GetFloodingDiscreteGaussianGenerator();</a>
+<a name="303"><span class="lineNum">     303 </span>            :     double noise_param = 1;</a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineCov">        659 :     if (PREMode == FIXED_NOISE_HRA) {</span></a>
+<a name="305"><span class="lineNum">     305 </span>            :         noise_param = NoiseFlooding::PRE_SD;</a>
+<a name="306"><span class="lineNum">     306 </span>            :     }</a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineCov">        655 :     else if (PREMode == NOISE_FLOODING_HRA) {</span></a>
+<a name="308"><span class="lineNum">     308 </span>            :         // expansion factor</a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">          8 :         auto expansionFactor = 2. * std::sqrt(ringDimension);</span></a>
+<a name="310"><span class="lineNum">     310 </span>            :         // re-randomization noise</a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">          8 :         auto freshEncryptionNoise = B_e * (1. + 2. * expansionFactor * Bkey);</span></a>
+<a name="312"><span class="lineNum">     312 </span>            : </a>
+<a name="313"><span class="lineNum">     313 </span><span class="lineCov">          8 :         if (ksTech == BV) {</span></a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">          4 :             if (r &gt; 0) {</span></a>
+<a name="315"><span class="lineNum">     315 </span>            :                 // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis</a>
+<a name="316"><span class="lineNum">     316 </span>            :                 // 2*freshEncryptionNoise is done because after modulus switching the noise will be</a>
+<a name="317"><span class="lineNum">     317 </span>            :                 // bounded by freshEncryptionNoise</a>
+<a name="318"><span class="lineNum">     318 </span>            :                 // Note: std::pow(2, stat_sec_half - 1) == std::pow(2, stat_sec_half) / 2.0</a>
+<a name="319"><span class="lineNum">     319 </span><span class="lineCov">          4 :                 noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half - 1) *</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">          4 :                               (2 * freshEncryptionNoise +</span></a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineCov">          4 :                                numPrimes * (auxBits / r + 1) * expansionFactor * (std::pow(2, r) - 1) * B_e);</span></a>
+<a name="322"><span class="lineNum">     322 </span>            :             }</a>
+<a name="323"><span class="lineNum">     323 </span>            :             else {</a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :                 OPENFHE_THROW(&quot;Digit size value cannot be 0 for BV keyswitching&quot;);</span></a>
+<a name="325"><span class="lineNum">     325 </span>            :             }</a>
+<a name="326"><span class="lineNum">     326 </span>            :         }</a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineCov">          4 :         else if (ksTech == HYBRID) {</span></a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov">          4 :             if (r == 0) {</span></a>
+<a name="329"><span class="lineNum">     329 </span>            :                 // 2*freshEncryptionNoise is done because after modulus switching the noise will be</a>
+<a name="330"><span class="lineNum">     330 </span>            :                 // bounded by freshEncryptionNoise</a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineCov">          4 :                 noise_param = 2 * freshEncryptionNoise;</span></a>
+<a name="332"><span class="lineNum">     332 </span>            :                 // we use numPrimes here as an approximation of numDigits * [towers per digit]</a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineCov">          4 :                 noise_param += numPrimes * expansionFactor * B_e / 2.0;</span></a>
+<a name="334"><span class="lineNum">     334 </span>            :                 // we use numPrimes (larger bound) instead of auxPrimes because we do not know auxPrimes yet</a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineCov">          4 :                 noise_param += numPrimes * (1 + expansionFactor * Bkey) / 2.0;</span></a>
+<a name="336"><span class="lineNum">     336 </span>            :                 // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis</a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineCov">          4 :                 noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half) * noise_param;</span></a>
+<a name="338"><span class="lineNum">     338 </span>            :             }</a>
+<a name="339"><span class="lineNum">     339 </span>            :             else {</a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineNoCov">          0 :                 OPENFHE_THROW(&quot;Digit size can only be zero for Hybrid keyswitching&quot;);</span></a>
+<a name="341"><span class="lineNum">     341 </span>            :             }</a>
+<a name="342"><span class="lineNum">     342 </span>            :         }</a>
+<a name="343"><span class="lineNum">     343 </span>            :     }</a>
+<a name="344"><span class="lineNum">     344 </span>            :     // set the flooding distribution parameter to the distribution.</a>
+<a name="345"><span class="lineNum">     345 </span><span class="lineCov">        659 :     dggFlooding.SetStd(noise_param);</span></a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineCov">        659 :     const auto cryptoParamsRNS = std::dynamic_pointer_cast&lt;CryptoParametersRNS&gt;(cryptoParams);</span></a>
+<a name="347"><span class="lineNum">     347 </span>            :     cryptoParamsRNS-&gt;SetFloodingDistributionParameter(noise_param);</a>
+<a name="348"><span class="lineNum">     348 </span><span class="lineCov">        659 : }</span></a>
+<a name="349"><span class="lineNum">     349 </span>            : </a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">        659 : bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr&lt;CryptoParametersBase&lt;DCRTPoly&gt;&gt; cryptoParams,</span></a>
+<a name="351"><span class="lineNum">     351 </span>            :                                                 uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder,</a>
+<a name="352"><span class="lineNum">     352 </span>            :                                                 uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,</a>
+<a name="353"><span class="lineNum">     353 </span>            :                                                 uint32_t numPartQ, uint32_t numHops) const {</a>
+<a name="354"><span class="lineNum">     354 </span><span class="lineCov">        659 :     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast&lt;CryptoParametersBGVRNS&gt;(cryptoParams);</span></a>
+<a name="355"><span class="lineNum">     355 </span>            : </a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineCov">        659 :     uint32_t ptm                     = cryptoParamsBGVRNS-&gt;GetPlaintextModulus();</span></a>
+<a name="357"><span class="lineNum">     357 </span>            :     KeySwitchTechnique ksTech        = cryptoParamsBGVRNS-&gt;GetKeySwitchTechnique();</a>
+<a name="358"><span class="lineNum">     358 </span>            :     ScalingTechnique scalTech        = cryptoParamsBGVRNS-&gt;GetScalingTechnique();</a>
+<a name="359"><span class="lineNum">     359 </span>            :     EncryptionTechnique encTech      = cryptoParamsBGVRNS-&gt;GetEncryptionTechnique();</a>
+<a name="360"><span class="lineNum">     360 </span>            :     MultiplicationTechnique multTech = cryptoParamsBGVRNS-&gt;GetMultiplicationTechnique();</a>
+<a name="361"><span class="lineNum">     361 </span>            :     ProxyReEncryptionMode PREMode    = cryptoParamsBGVRNS-&gt;GetPREMode();</a>
+<a name="362"><span class="lineNum">     362 </span>            :     MultipartyMode multipartyMode    = cryptoParamsBGVRNS-&gt;GetMultipartyMode();</a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineCov">        659 :     if (!ptm)</span></a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;plaintextModulus cannot be zero.&quot;);</span></a>
+<a name="365"><span class="lineNum">     365 </span>            : </a>
+<a name="366"><span class="lineNum">     366 </span><span class="lineCov">        659 :     if ((PREMode != INDCPA) &amp;&amp; (PREMode != FIXED_NOISE_HRA) &amp;&amp; (PREMode != NOISE_FLOODING_HRA) &amp;&amp;</span></a>
+<a name="367"><span class="lineNum">     367 </span>            :         (PREMode != NOT_SET)) {</a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineNoCov">          0 :         std::stringstream s;</span></a>
+<a name="369"><span class="lineNum">     369 </span><span class="lineNoCov">          0 :         s &lt;&lt; &quot;This PRE mode &quot; &lt;&lt; PREMode &lt;&lt; &quot; is not supported for BGVRNS&quot;;</span></a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(s.str());</span></a>
+<a name="371"><span class="lineNum">     371 </span>            :     }</a>
+<a name="372"><span class="lineNum">     372 </span>            : </a>
+<a name="373"><span class="lineNum">     373 </span><span class="lineCov">        659 :     uint32_t ringDimension = cyclOrder / 2;</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineCov">        659 :     InitializeFloodingDgg(cryptoParams, numHops, ringDimension);</span></a>
+<a name="375"><span class="lineNum">     375 </span>            : </a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineCov">        659 :     if (scalTech == FIXEDMANUAL) {</span></a>
+<a name="377"><span class="lineNum">     377 </span><span class="lineCov">        180 :         if (PREMode != NOISE_FLOODING_HRA) {</span></a>
+<a name="378"><span class="lineNum">     378 </span>            :             // Select the size of moduli according to the plaintext modulus</a>
+<a name="379"><span class="lineNum">     379 </span><span class="lineCov">        172 :             if (dcrtBits == 0) {</span></a>
+<a name="380"><span class="lineNum">     380 </span>            :                 dcrtBits =</a>
+<a name="381"><span class="lineNum">     381 </span><span class="lineCov">        172 :                     ((28 + GetMSB64(ptm)) &gt; DCRT_MODULUS::MAX_SIZE) ? DCRT_MODULUS::MAX_SIZE : (28 + GetMSB64(ptm));</span></a>
+<a name="382"><span class="lineNum">     382 </span>            :             }</a>
+<a name="383"><span class="lineNum">     383 </span>            :             // Select firstModSize to be dcrtBits if not indicated otherwise</a>
+<a name="384"><span class="lineNum">     384 </span><span class="lineCov">        172 :             if (firstModSize == 0)</span></a>
+<a name="385"><span class="lineNum">     385 </span>            :                 firstModSize = dcrtBits;</a>
+<a name="386"><span class="lineNum">     386 </span>            :         }</a>
+<a name="387"><span class="lineNum">     387 </span>            :         else {</a>
+<a name="388"><span class="lineNum">     388 </span>            :             // we only support PRE in the HRA-secure mode; no FHE operations are supported yet</a>
+<a name="389"><span class="lineNum">     389 </span>            :             numPrimes = numHops;</a>
+<a name="390"><span class="lineNum">     390 </span>            : </a>
+<a name="391"><span class="lineNum">     391 </span><span class="lineCov">          8 :             double sigma = cryptoParamsBGVRNS-&gt;GetDistributionParameter();</span></a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineCov">          8 :             double alpha = cryptoParamsBGVRNS-&gt;GetAssuranceMeasure();</span></a>
+<a name="393"><span class="lineNum">     393 </span>            : </a>
+<a name="394"><span class="lineNum">     394 </span>            :             // Bound of the Gaussian error polynomial</a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineCov">          8 :             double Berr = sigma * std::sqrt(alpha);</span></a>
+<a name="396"><span class="lineNum">     396 </span>            : </a>
+<a name="397"><span class="lineNum">     397 </span>            :             // Bound of the key polynomial supports both</a>
+<a name="398"><span class="lineNum">     398 </span>            :             // discrete Gaussian (GAUSSIAN) and ternary uniform distribution (UNIFORM_TERNARY) cases</a>
+<a name="399"><span class="lineNum">     399 </span>            :             uint32_t thresholdParties = cryptoParamsBGVRNS-&gt;GetThresholdNumOfParties();</a>
+<a name="400"><span class="lineNum">     400 </span>            :             // Bkey set to thresholdParties * 1 for ternary distribution</a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">          8 :             double Bkey = (cryptoParamsBGVRNS-&gt;GetSecretKeyDist() == GAUSSIAN) ? std::sqrt(thresholdParties) * Berr :</span></a>
+<a name="402"><span class="lineNum">     402 </span>            :                                                                                  thresholdParties;</a>
+<a name="403"><span class="lineNum">     403 </span>            :             // delta</a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineCov">          8 :             auto expansionFactor = 2. * std::sqrt(ringDimension);</span></a>
+<a name="405"><span class="lineNum">     405 </span>            :             // Vnorm</a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineCov">          8 :             auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);</span></a>
+<a name="407"><span class="lineNum">     407 </span>            : </a>
+<a name="408"><span class="lineNum">     408 </span>            :             // the logic for finding the parameters for NOISE_FLOODING_HRA</a>
+<a name="409"><span class="lineNum">     409 </span><span class="lineCov">          8 :             double floodingBound      = alpha * cryptoParamsBGVRNS-&gt;GetFloodingDistributionParameter();</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">          8 :             double firstModLowerBound = 2.0 * ptm * floodingBound - ptm;</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineCov">          8 :             firstModSize              = std::ceil(std::log2(firstModLowerBound));</span></a>
+<a name="412"><span class="lineNum">     412 </span>            : </a>
+<a name="413"><span class="lineNum">     413 </span>            :             // Use one modulus if the first hop fits in 60 bits</a>
+<a name="414"><span class="lineNum">     414 </span>            :             // Otherwise use two moduli</a>
+<a name="415"><span class="lineNum">     415 </span><span class="lineCov">          8 :             if (firstModSize &gt; DCRT_MODULUS::MAX_SIZE) {</span></a>
+<a name="416"><span class="lineNum">     416 </span>            :                 firstModSize = 20;</a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineCov">          4 :                 numPrimes++;</span></a>
+<a name="418"><span class="lineNum">     418 </span>            :             }</a>
+<a name="419"><span class="lineNum">     419 </span>            : </a>
+<a name="420"><span class="lineNum">     420 </span>            :             // selects the size of moduli for individual hops</a>
+<a name="421"><span class="lineNum">     421 </span>            :             // the noise after modulus swicthing is set to roughly the fresh encryption noise</a>
+<a name="422"><span class="lineNum">     422 </span>            :             // which is significantly less than fresh encryption noise + key switching noise that is incurred as</a>
+<a name="423"><span class="lineNum">     423 </span>            :             // part of proxy re-encryption</a>
+<a name="424"><span class="lineNum">     424 </span><span class="lineCov">          8 :             double dcrtBitsNoise = floodingBound / freshEncryptionNoise;</span></a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineCov">          8 :             dcrtBits             = std::ceil(std::log2(dcrtBitsNoise));</span></a>
+<a name="426"><span class="lineNum">     426 </span>            : </a>
+<a name="427"><span class="lineNum">     427 </span>            :             // check that the mod size needed for each hop fits in 60 bits</a>
+<a name="428"><span class="lineNum">     428 </span><span class="lineCov">          8 :             if (dcrtBits &gt; DCRT_MODULUS::MAX_SIZE) {</span></a>
+<a name="429"><span class="lineNum">     429 </span><span class="lineNoCov">          0 :                 OPENFHE_THROW(&quot;The modulus size for HRA-secure PRE (&quot; + std::to_string(dcrtBits) +</span></a>
+<a name="430"><span class="lineNum">     430 </span>            :                               &quot; bits) is above the maximum:&quot; + std::to_string(DCRT_MODULUS::MAX_SIZE) +</a>
+<a name="431"><span class="lineNum">     431 </span>            :                               &quot;. Try reducing reducing the parameters for noise flooding.&quot;);</a>
+<a name="432"><span class="lineNum">     432 </span>            :             }</a>
+<a name="433"><span class="lineNum">     433 </span>            :         }</a>
+<a name="434"><span class="lineNum">     434 </span>            :     }</a>
+<a name="435"><span class="lineNum">     435 </span>            : </a>
+<a name="436"><span class="lineNum">     436 </span>            :     // Size of modulus P</a>
+<a name="437"><span class="lineNum">     437 </span>            :     uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;</a>
+<a name="438"><span class="lineNum">     438 </span>            : </a>
+<a name="439"><span class="lineNum">     439 </span>            :     // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)</a>
+<a name="440"><span class="lineNum">     440 </span><span class="lineCov">        659 :     uint32_t extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;</span></a>
+<a name="441"><span class="lineNum">     441 </span><span class="lineCov">        659 :     uint32_t qBound       = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;</span></a>
+<a name="442"><span class="lineNum">     442 </span>            : </a>
+<a name="443"><span class="lineNum">     443 </span>            :     // estimate the extra modulus Q needed for threshold FHE flooding</a>
+<a name="444"><span class="lineNum">     444 </span><span class="lineCov">        659 :     if (multipartyMode == NOISE_FLOODING_MULTIPARTY)</span></a>
+<a name="445"><span class="lineNum">     445 </span><span class="lineCov">         32 :         qBound += cryptoParamsBGVRNS-&gt;EstimateMultipartyFloodingLogQ();</span></a>
+<a name="446"><span class="lineNum">     446 </span>            : </a>
+<a name="447"><span class="lineNum">     447 </span>            :     // we add an extra bit to account for the special logic of selecting the RNS moduli in BGV</a>
+<a name="448"><span class="lineNum">     448 </span>            :     // ignore the case when there is only one max size modulus</a>
+<a name="449"><span class="lineNum">     449 </span><span class="lineCov">        659 :     if (qBound != auxBits)</span></a>
+<a name="450"><span class="lineNum">     450 </span><span class="lineCov">        659 :         qBound++;</span></a>
+<a name="451"><span class="lineNum">     451 </span>            : </a>
+<a name="452"><span class="lineNum">     452 </span>            :     uint32_t auxTowers = 0;</a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineCov">        659 :     if (ksTech == HYBRID) {</span></a>
+<a name="454"><span class="lineNum">     454 </span>            :         auto hybridKSInfo =</a>
+<a name="455"><span class="lineNum">     455 </span><span class="lineCov">        316 :             CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits, true);</span></a>
+<a name="456"><span class="lineNum">     456 </span><span class="lineCov">        316 :         qBound += std::get&lt;0&gt;(hybridKSInfo);</span></a>
+<a name="457"><span class="lineNum">     457 </span><span class="lineCov">        316 :         auxTowers = std::get&lt;1&gt;(hybridKSInfo);</span></a>
+<a name="458"><span class="lineNum">     458 </span>            :     }</a>
+<a name="459"><span class="lineNum">     459 </span>            : </a>
+<a name="460"><span class="lineNum">     460 </span>            :     // HE Standards compliance logic/check</a>
+<a name="461"><span class="lineNum">     461 </span><span class="lineCov">        659 :     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);</span></a>
+<a name="462"><span class="lineNum">     462 </span>            : </a>
+<a name="463"><span class="lineNum">     463 </span><span class="lineCov">        659 :     uint32_t vecSize = (scalTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;</span></a>
+<a name="464"><span class="lineNum">     464 </span><span class="lineCov">        659 :     std::vector&lt;NativeInteger&gt; moduliQ(vecSize);</span></a>
+<a name="465"><span class="lineNum">     465 </span><span class="lineCov">        659 :     std::vector&lt;NativeInteger&gt; rootsQ(vecSize);</span></a>
+<a name="466"><span class="lineNum">     466 </span>            :     uint64_t modulusOrder = 0;</a>
+<a name="467"><span class="lineNum">     467 </span>            : </a>
+<a name="468"><span class="lineNum">     468 </span><span class="lineCov">        659 :     if ((dcrtBits == 0) &amp;&amp; (scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)) {</span></a>
+<a name="469"><span class="lineNum">     469 </span><span class="lineCov">        479 :         auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);</span></a>
+<a name="470"><span class="lineNum">     470 </span><span class="lineCov">        479 :         moduliQ            = std::get&lt;0&gt;(moduliInfo);</span></a>
+<a name="471"><span class="lineNum">     471 </span><span class="lineCov">        479 :         uint32_t newQBound = std::get&lt;1&gt;(moduliInfo);</span></a>
+<a name="472"><span class="lineNum">     472 </span>            : </a>
+<a name="473"><span class="lineNum">     473 </span>            :         // the loop must be executed at least once</a>
+<a name="474"><span class="lineNum">     474 </span>            :         do {</a>
+<a name="475"><span class="lineNum">     475 </span>            :             qBound          = newQBound;</a>
+<a name="476"><span class="lineNum">     476 </span><span class="lineCov">        847 :             n               = computeRingDimension(cryptoParams, newQBound, cyclOrder);</span></a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineCov">        847 :             auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);</span></a>
+<a name="478"><span class="lineNum">     478 </span><span class="lineCov">        847 :             moduliQ         = std::get&lt;0&gt;(moduliInfo);</span></a>
+<a name="479"><span class="lineNum">     479 </span><span class="lineCov">        847 :             newQBound       = std::get&lt;1&gt;(moduliInfo);</span></a>
+<a name="480"><span class="lineNum">     480 </span><span class="lineCov">        847 :             if (multipartyMode == NOISE_FLOODING_MULTIPARTY)</span></a>
+<a name="481"><span class="lineNum">     481 </span><span class="lineCov">         48 :                 newQBound += cryptoParamsBGVRNS-&gt;EstimateMultipartyFloodingLogQ();</span></a>
+<a name="482"><span class="lineNum">     482 </span><span class="lineCov">        847 :             if (ksTech == HYBRID) {</span></a>
+<a name="483"><span class="lineNum">     483 </span>            :                 auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(</a>
+<a name="484"><span class="lineNum">     484 </span>            :                     numPartQ, std::log2(moduliQ[0].ConvertToDouble()),</a>
+<a name="485"><span class="lineNum">     485 </span><span class="lineCov">        589 :                     (moduliQ.size() &gt; 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,</span></a>
+<a name="486"><span class="lineNum">     486 </span><span class="lineCov">        197 :                     (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,</span></a>
+<a name="487"><span class="lineNum">     487 </span><span class="lineCov">       1375 :                     (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, false);</span></a>
+<a name="488"><span class="lineNum">     488 </span><span class="lineCov">        589 :                 newQBound += std::get&lt;0&gt;(hybridKSInfo);</span></a>
+<a name="489"><span class="lineNum">     489 </span>            :             }</a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineCov">        847 :         } while (qBound &lt; newQBound);</span></a>
+<a name="491"><span class="lineNum">     491 </span>            : </a>
+<a name="492"><span class="lineNum">     492 </span><span class="lineCov">        479 :         cyclOrder    = 2 * n;</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineCov">        479 :         modulusOrder = getCyclicOrder(n, ptm, scalTech);</span></a>
+<a name="494"><span class="lineNum">     494 </span>            : </a>
+<a name="495"><span class="lineNum">     495 </span><span class="lineCov">       2193 :         for (size_t i = 0; i &lt; vecSize; i++) {</span></a>
+<a name="496"><span class="lineNum">     496 </span><span class="lineCov">       1714 :             rootsQ[i] = RootOfUnity&lt;NativeInteger&gt;(cyclOrder, moduliQ[i]);</span></a>
+<a name="497"><span class="lineNum">     497 </span><span class="lineCov">        479 :         }</span></a>
+<a name="498"><span class="lineNum">     498 </span>            :     }</a>
+<a name="499"><span class="lineNum">     499 </span>            :     else {</a>
+<a name="500"><span class="lineNum">     500 </span>            :         // FIXEDMANUAL mode</a>
+<a name="501"><span class="lineNum">     501 </span><span class="lineCov">        180 :         cyclOrder = 2 * n;</span></a>
+<a name="502"><span class="lineNum">     502 </span>            :         // For ModulusSwitching to work we need the moduli to be also congruent to 1 modulo ptm</a>
+<a name="503"><span class="lineNum">     503 </span>            :         uint32_t plaintextModulus = ptm;</a>
+<a name="504"><span class="lineNum">     504 </span>            :         uint32_t pow2ptm          = 1;  // The largest power of 2 dividing ptm (check whether it</a>
+<a name="505"><span class="lineNum">     505 </span>            :                                         // is larger than cyclOrder or not)</a>
+<a name="506"><span class="lineNum">     506 </span><span class="lineCov">        274 :         while (plaintextModulus % 2 == 0) {</span></a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineCov">         94 :             plaintextModulus &gt;&gt;= 1;</span></a>
+<a name="508"><span class="lineNum">     508 </span><span class="lineCov">         94 :             pow2ptm &lt;&lt;= 1;</span></a>
+<a name="509"><span class="lineNum">     509 </span>            :         }</a>
+<a name="510"><span class="lineNum">     510 </span>            : </a>
+<a name="511"><span class="lineNum">     511 </span>            :         if (pow2ptm &lt; cyclOrder)</a>
+<a name="512"><span class="lineNum">     512 </span>            :             pow2ptm = cyclOrder;</a>
+<a name="513"><span class="lineNum">     513 </span>            : </a>
+<a name="514"><span class="lineNum">     514 </span><span class="lineCov">        180 :         modulusOrder = (uint64_t)pow2ptm * plaintextModulus;</span></a>
+<a name="515"><span class="lineNum">     515 </span>            : </a>
+<a name="516"><span class="lineNum">     516 </span>            :         // Get the largest prime with size less or equal to firstModSize bits.</a>
+<a name="517"><span class="lineNum">     517 </span><span class="lineCov">        180 :         moduliQ[0] = LastPrime&lt;NativeInteger&gt;(firstModSize, modulusOrder);</span></a>
+<a name="518"><span class="lineNum">     518 </span><span class="lineCov">        180 :         rootsQ[0]  = RootOfUnity&lt;NativeInteger&gt;(cyclOrder, moduliQ[0]);</span></a>
+<a name="519"><span class="lineNum">     519 </span>            : </a>
+<a name="520"><span class="lineNum">     520 </span><span class="lineCov">        180 :         if (numPrimes &gt; 1) {</span></a>
+<a name="521"><span class="lineNum">     521 </span>            :             NativeInteger q =</a>
+<a name="522"><span class="lineNum">     522 </span><span class="lineCov">        171 :                 (firstModSize != dcrtBits) ? LastPrime&lt;NativeInteger&gt;(dcrtBits, modulusOrder) : moduliQ[0];</span></a>
+<a name="523"><span class="lineNum">     523 </span>            : </a>
+<a name="524"><span class="lineNum">     524 </span><span class="lineCov">        171 :             moduliQ[1] = PreviousPrime&lt;NativeInteger&gt;(q, modulusOrder);</span></a>
+<a name="525"><span class="lineNum">     525 </span><span class="lineCov">        171 :             rootsQ[1]  = RootOfUnity&lt;NativeInteger&gt;(cyclOrder, moduliQ[1]);</span></a>
+<a name="526"><span class="lineNum">     526 </span>            : </a>
+<a name="527"><span class="lineNum">     527 </span><span class="lineCov">        386 :             for (size_t i = 2; i &lt; numPrimes; i++) {</span></a>
+<a name="528"><span class="lineNum">     528 </span><span class="lineCov">        215 :                 moduliQ[i] = PreviousPrime&lt;NativeInteger&gt;(moduliQ[i - 1], modulusOrder);</span></a>
+<a name="529"><span class="lineNum">     529 </span><span class="lineCov">        215 :                 rootsQ[i]  = RootOfUnity&lt;NativeInteger&gt;(cyclOrder, moduliQ[i]);</span></a>
+<a name="530"><span class="lineNum">     530 </span>            :             }</a>
+<a name="531"><span class="lineNum">     531 </span>            :         }</a>
+<a name="532"><span class="lineNum">     532 </span>            :     }</a>
+<a name="533"><span class="lineNum">     533 </span><span class="lineCov">        659 :     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {</span></a>
+<a name="534"><span class="lineNum">     534 </span><span class="lineCov">         32 :         NativeInteger extraModulus = LastPrime&lt;NativeInteger&gt;(NoiseFlooding::MULTIPARTY_MOD_SIZE, modulusOrder);</span></a>
+<a name="535"><span class="lineNum">     535 </span><span class="lineCov">         32 :         std::vector&lt;NativeInteger&gt; extraModuli(NoiseFlooding::NUM_MODULI_MULTIPARTY);</span></a>
+<a name="536"><span class="lineNum">     536 </span><span class="lineCov">         32 :         std::vector&lt;NativeInteger&gt; extraRoots(NoiseFlooding::NUM_MODULI_MULTIPARTY);</span></a>
+<a name="537"><span class="lineNum">     537 </span>            : </a>
+<a name="538"><span class="lineNum">     538 </span><span class="lineCov">         96 :         for (size_t i = 0; i &lt; NoiseFlooding::NUM_MODULI_MULTIPARTY; i++) {</span></a>
+<a name="539"><span class="lineNum">     539 </span><span class="lineCov">        200 :             while (std::find(moduliQ.begin(), moduliQ.end(), extraModulus) != moduliQ.end() ||</span></a>
+<a name="540"><span class="lineNum">     540 </span><span class="lineCov">        160 :                    std::find(extraModuli.begin(), extraModuli.end(), extraModulus) != extraModuli.end()) {</span></a>
+<a name="541"><span class="lineNum">     541 </span><span class="lineCov">         40 :                 extraModulus = PreviousPrime&lt;NativeInteger&gt;(extraModulus, modulusOrder);</span></a>
+<a name="542"><span class="lineNum">     542 </span>            :             }</a>
+<a name="543"><span class="lineNum">     543 </span>            :             extraModuli[i] = extraModulus;</a>
+<a name="544"><span class="lineNum">     544 </span><span class="lineCov">         64 :             extraRoots[i]  = RootOfUnity&lt;NativeInteger&gt;(cyclOrder, extraModulus);</span></a>
+<a name="545"><span class="lineNum">     545 </span>            :         }</a>
+<a name="546"><span class="lineNum">     546 </span><span class="lineCov">         32 :         moduliQ.reserve(moduliQ.size() + extraModuli.size());</span></a>
+<a name="547"><span class="lineNum">     547 </span><span class="lineCov">         32 :         rootsQ.reserve(rootsQ.size() + extraRoots.size());</span></a>
+<a name="548"><span class="lineNum">     548 </span>            :         // We insert the extraModuli after the first modulus to improve security in multiparty decryption.</a>
+<a name="549"><span class="lineNum">     549 </span>            :         moduliQ.insert(moduliQ.begin() + 1, std::make_move_iterator(extraModuli.begin()),</a>
+<a name="550"><span class="lineNum">     550 </span><span class="lineCov">         32 :                        std::make_move_iterator(extraModuli.end()));</span></a>
+<a name="551"><span class="lineNum">     551 </span>            :         rootsQ.insert(rootsQ.begin() + 1, std::make_move_iterator(extraRoots.begin()),</a>
+<a name="552"><span class="lineNum">     552 </span><span class="lineCov">         32 :                       std::make_move_iterator(extraRoots.end()));</span></a>
+<a name="553"><span class="lineNum">     553 </span>            :     }</a>
+<a name="554"><span class="lineNum">     554 </span>            :     auto paramsDCRT = std::make_shared&lt;ILDCRTParams&lt;BigInteger&gt;&gt;(cyclOrder, moduliQ, rootsQ);</a>
+<a name="555"><span class="lineNum">     555 </span>            : </a>
+<a name="556"><span class="lineNum">     556 </span><span class="lineCov">        659 :     ChineseRemainderTransformFTT&lt;NativeVector&gt;().PreCompute(rootsQ, cyclOrder, moduliQ);</span></a>
+<a name="557"><span class="lineNum">     557 </span>            : </a>
+<a name="558"><span class="lineNum">     558 </span><span class="lineCov">       1318 :     cryptoParamsBGVRNS-&gt;SetElementParams(paramsDCRT);</span></a>
+<a name="559"><span class="lineNum">     559 </span>            : </a>
+<a name="560"><span class="lineNum">     560 </span><span class="lineCov">        659 :     const EncodingParams encodingParams = cryptoParamsBGVRNS-&gt;GetEncodingParams();</span></a>
+<a name="561"><span class="lineNum">     561 </span><span class="lineCov">        659 :     if (encodingParams-&gt;GetBatchSize() &gt; n)</span></a>
+<a name="562"><span class="lineNum">     562 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;The batch size cannot be larger than the ring dimension.&quot;);</span></a>
+<a name="563"><span class="lineNum">     563 </span>            : </a>
+<a name="564"><span class="lineNum">     564 </span><span class="lineCov">        659 :     if (encodingParams-&gt;GetBatchSize() &amp; (encodingParams-&gt;GetBatchSize() - 1))</span></a>
+<a name="565"><span class="lineNum">     565 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;The batch size can only be set to zero (for full packing) or a power of two.&quot;);</span></a>
+<a name="566"><span class="lineNum">     566 </span>            : </a>
+<a name="567"><span class="lineNum">     567 </span>            :     // if no batch size was specified compute a default value</a>
+<a name="568"><span class="lineNum">     568 </span><span class="lineCov">        659 :     if (encodingParams-&gt;GetBatchSize() == 0) {</span></a>
+<a name="569"><span class="lineNum">     569 </span>            :         // Check whether ptm and cyclOrder are coprime</a>
+<a name="570"><span class="lineNum">     570 </span>            :         uint32_t a, b, gcd;</a>
+<a name="571"><span class="lineNum">     571 </span><span class="lineCov">        365 :         if (cyclOrder &gt; ptm) {</span></a>
+<a name="572"><span class="lineNum">     572 </span>            :             a = cyclOrder;</a>
+<a name="573"><span class="lineNum">     573 </span>            :             b = ptm;</a>
+<a name="574"><span class="lineNum">     574 </span>            :         }</a>
+<a name="575"><span class="lineNum">     575 </span>            :         else {</a>
+<a name="576"><span class="lineNum">     576 </span>            :             b = cyclOrder;</a>
+<a name="577"><span class="lineNum">     577 </span>            :             a = ptm;</a>
+<a name="578"><span class="lineNum">     578 </span>            :         }</a>
+<a name="579"><span class="lineNum">     579 </span>            : </a>
+<a name="580"><span class="lineNum">     580 </span>            :         gcd = b;</a>
+<a name="581"><span class="lineNum">     581 </span><span class="lineCov">       1074 :         while (b != 0) {</span></a>
+<a name="582"><span class="lineNum">     582 </span>            :             gcd = b;</a>
+<a name="583"><span class="lineNum">     583 </span><span class="lineCov">        709 :             b   = a % b;</span></a>
+<a name="584"><span class="lineNum">     584 </span>            :             a   = gcd;</a>
+<a name="585"><span class="lineNum">     585 </span>            :         }</a>
+<a name="586"><span class="lineNum">     586 </span>            : </a>
+<a name="587"><span class="lineNum">     587 </span>            :         // if ptm and CyclOrder are not coprime we set batchSize = n by default (for full packing)</a>
+<a name="588"><span class="lineNum">     588 </span>            :         uint32_t batchSize;</a>
+<a name="589"><span class="lineNum">     589 </span><span class="lineCov">        365 :         if (gcd != 1) {</span></a>
+<a name="590"><span class="lineNum">     590 </span><span class="lineCov">         29 :             batchSize = n;</span></a>
+<a name="591"><span class="lineNum">     591 </span>            :         }</a>
+<a name="592"><span class="lineNum">     592 </span>            :         else {</a>
+<a name="593"><span class="lineNum">     593 </span>            :             // set batchsize to the actual batchsize i.e. n/d where d is the</a>
+<a name="594"><span class="lineNum">     594 </span>            :             // order of ptm mod CyclOrder</a>
+<a name="595"><span class="lineNum">     595 </span><span class="lineCov">        336 :             a = (uint64_t)ptm % cyclOrder;</span></a>
+<a name="596"><span class="lineNum">     596 </span>            :             b = 1;</a>
+<a name="597"><span class="lineNum">     597 </span><span class="lineCov">        336 :             while (a != 1) {</span></a>
+<a name="598"><span class="lineNum">     598 </span><span class="lineNoCov">          0 :                 a = ((uint64_t)(a * ptm)) % cyclOrder;</span></a>
+<a name="599"><span class="lineNum">     599 </span><span class="lineNoCov">          0 :                 b++;</span></a>
+<a name="600"><span class="lineNum">     600 </span>            :             }</a>
+<a name="601"><span class="lineNum">     601 </span>            : </a>
+<a name="602"><span class="lineNum">     602 </span><span class="lineCov">        336 :             if (n % b != 0)</span></a>
+<a name="603"><span class="lineNum">     603 </span><span class="lineNoCov">          0 :                 OPENFHE_THROW(&quot;BGVrns.ParamsGen: something went wrong when computing the batchSize&quot;);</span></a>
+<a name="604"><span class="lineNum">     604 </span>            : </a>
+<a name="605"><span class="lineNum">     605 </span><span class="lineCov">        336 :             batchSize = n / b;</span></a>
+<a name="606"><span class="lineNum">     606 </span>            :         }</a>
+<a name="607"><span class="lineNum">     607 </span>            : </a>
+<a name="608"><span class="lineNum">     608 </span>            :         EncodingParams encodingParamsNew(</a>
+<a name="609"><span class="lineNum">     609 </span>            :             std::make_shared&lt;EncodingParamsImpl&gt;(encodingParams-&gt;GetPlaintextModulus(), batchSize));</a>
+<a name="610"><span class="lineNum">     610 </span><span class="lineCov">        730 :         cryptoParamsBGVRNS-&gt;SetEncodingParams(encodingParamsNew);</span></a>
+<a name="611"><span class="lineNum">     611 </span>            :     }</a>
+<a name="612"><span class="lineNum">     612 </span><span class="lineCov">        659 :     cryptoParamsBGVRNS-&gt;PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);</span></a>
+<a name="613"><span class="lineNum">     613 </span>            : </a>
+<a name="614"><span class="lineNum">     614 </span>            :     // Validate the ring dimension found using estimated logQ(P) against actual logQ(P)</a>
+<a name="615"><span class="lineNum">     615 </span>            :     SecurityLevel stdLevel = cryptoParamsBGVRNS-&gt;GetStdLevel();</a>
+<a name="616"><span class="lineNum">     616 </span><span class="lineCov">        659 :     if (stdLevel != HEStd_NotSet) {</span></a>
+<a name="617"><span class="lineNum">     617 </span>            :         uint32_t logActualQ = 0;</a>
+<a name="618"><span class="lineNum">     618 </span><span class="lineCov">        178 :         if (ksTech == HYBRID) {</span></a>
+<a name="619"><span class="lineNum">     619 </span><span class="lineCov">        178 :             logActualQ = cryptoParamsBGVRNS-&gt;GetParamsQP()-&gt;GetModulus().GetMSB();</span></a>
+<a name="620"><span class="lineNum">     620 </span>            :         }</a>
+<a name="621"><span class="lineNum">     621 </span>            :         else {</a>
+<a name="622"><span class="lineNum">     622 </span><span class="lineNoCov">          0 :             logActualQ = cryptoParamsBGVRNS-&gt;GetElementParams()-&gt;GetModulus().GetMSB();</span></a>
+<a name="623"><span class="lineNum">     623 </span>            :         }</a>
+<a name="624"><span class="lineNum">     624 </span>            : </a>
+<a name="625"><span class="lineNum">     625 </span><span class="lineCov">        178 :         DistributionType distType = (cryptoParamsBGVRNS-&gt;GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;</span></a>
+<a name="626"><span class="lineNum">     626 </span><span class="lineCov">        178 :         uint32_t nActual          = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);</span></a>
+<a name="627"><span class="lineNum">     627 </span>            : </a>
+<a name="628"><span class="lineNum">     628 </span><span class="lineCov">        178 :         if (n &lt; nActual) {</span></a>
+<a name="629"><span class="lineNum">     629 </span><span class="lineNoCov">          0 :             std::string errMsg(&quot;The ring dimension found using estimated logQ(P) [&quot;);</span></a>
+<a name="630"><span class="lineNum">     630 </span><span class="lineNoCov">          0 :             errMsg += std::to_string(n) + &quot;] does does not meet security requirements. &quot;;</span></a>
+<a name="631"><span class="lineNum">     631 </span>            :             errMsg += &quot;Report this problem to OpenFHE developers and set the ring dimension manually to &quot;;</a>
+<a name="632"><span class="lineNum">     632 </span><span class="lineNoCov">          0 :             errMsg += std::to_string(nActual) + &quot;.&quot;;</span></a>
+<a name="633"><span class="lineNum">     633 </span>            : </a>
+<a name="634"><span class="lineNum">     634 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(errMsg);</span></a>
+<a name="635"><span class="lineNum">     635 </span>            :         }</a>
+<a name="636"><span class="lineNum">     636 </span>            :     }</a>
+<a name="637"><span class="lineNum">     637 </span>            : </a>
+<a name="638"><span class="lineNum">     638 </span><span class="lineCov">        659 :     return true;</span></a>
+<a name="639"><span class="lineNum">     639 </span>            : }</a>
+<a name="640"><span class="lineNum">     640 </span>            : </a>
+<a name="641"><span class="lineNum">     641 </span>            : }  // namespace lbcrypto</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

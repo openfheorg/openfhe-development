@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">1</td>
@@ -106,33 +106,33 @@
 <a name="44"><span class="lineNum">      44 </span>            : }</a>
 <a name="45"><span class="lineNum">      45 </span>            : </a>
 <a name="46"><span class="lineNum">      46 </span>            : static bool stringEmpty(const std::string&amp; str) noexcept {</a>
-<a name="47"><span class="lineNum">      47 </span><span class="lineCov">       7310 :     if (!str.length())</span></a>
+<a name="47"><span class="lineNum">      47 </span><span class="lineCov">      14620 :     if (!str.length())</span></a>
 <a name="48"><span class="lineNum">      48 </span>            :         return true;</a>
 <a name="49"><span class="lineNum">      49 </span>            : </a>
 <a name="50"><span class="lineNum">      50 </span>            :     // str is not empty if it has any printable character</a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">       2326 :     for (const char c : str) {</span></a>
-<a name="52"><span class="lineNum">      52 </span><span class="lineCov">       2326 :         if (c &gt;= 33 &amp;&amp; c &lt;= 126)</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">       4652 :     for (const char c : str) {</span></a>
+<a name="52"><span class="lineNum">      52 </span><span class="lineCov">       4652 :         if (c &gt;= 33 &amp;&amp; c &lt;= 126)</span></a>
 <a name="53"><span class="lineNum">      53 </span>            :             return false;</a>
 <a name="54"><span class="lineNum">      54 </span>            :     }</a>
 <a name="55"><span class="lineNum">      55 </span>            : </a>
 <a name="56"><span class="lineNum">      56 </span>            :     return true;</a>
 <a name="57"><span class="lineNum">      57 </span>            : }</a>
 <a name="58"><span class="lineNum">      58 </span>            : </a>
-<a name="59"><span class="lineNum">      59 </span><span class="lineCov">        451 : std::vector&lt;std::string&gt; get_call_stack() noexcept {</span></a>
-<a name="60"><span class="lineNum">      60 </span><span class="lineCov">        451 :     void* bt_buffer[MAX_BACKTRACE_ADDRESSES] = {NULL};</span></a>
-<a name="61"><span class="lineNum">      61 </span><span class="lineCov">        451 :     const int n                              = backtrace(bt_buffer, MAX_BACKTRACE_ADDRESSES);</span></a>
-<a name="62"><span class="lineNum">      62 </span><span class="lineCov">        451 :     if (n &lt; 1) {</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">        902 : std::vector&lt;std::string&gt; get_call_stack() noexcept {</span></a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">        902 :     void* bt_buffer[MAX_BACKTRACE_ADDRESSES] = {NULL};</span></a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">        902 :     const int n                              = backtrace(bt_buffer, MAX_BACKTRACE_ADDRESSES);</span></a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">        902 :     if (n &lt; 1) {</span></a>
 <a name="63"><span class="lineNum">      63 </span><span class="lineNoCov">          0 :         return std::vector&lt;std::string&gt;();</span></a>
 <a name="64"><span class="lineNum">      64 </span>            :     }</a>
-<a name="65"><span class="lineNum">      65 </span><span class="lineCov">        451 :     char** symbols = reinterpret_cast&lt;char**&gt;(backtrace_symbols(bt_buffer, n));</span></a>
-<a name="66"><span class="lineNum">      66 </span><span class="lineCov">        451 :     if (symbols == NULL) {</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">        902 :     char** symbols = reinterpret_cast&lt;char**&gt;(backtrace_symbols(bt_buffer, n));</span></a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">        902 :     if (symbols == NULL) {</span></a>
 <a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :         return std::vector&lt;std::string&gt;();</span></a>
 <a name="68"><span class="lineNum">      68 </span>            :     }</a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
-<a name="70"><span class="lineNum">      70 </span><span class="lineCov">        451 :     const size_t numSymbols = static_cast&lt;size_t&gt;(n);</span></a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">        902 :     std::vector&lt;std::string&gt; retVec(numSymbols);</span></a>
-<a name="72"><span class="lineNum">      72 </span><span class="lineCov">       7761 :     for (size_t i = 0; i &lt; numSymbols; ++i) {</span></a>
-<a name="73"><span class="lineNum">      73 </span><span class="lineCov">       7310 :         std::string symbol(symbols[i]);</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">        902 :     const size_t numSymbols = static_cast&lt;size_t&gt;(n);</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">       1804 :     std::vector&lt;std::string&gt; retVec(numSymbols);</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">      15522 :     for (size_t i = 0; i &lt; numSymbols; ++i) {</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">      14620 :         std::string symbol(symbols[i]);</span></a>
 <a name="74"><span class="lineNum">      74 </span>            :         // we need to get rid of anything that doesn't belong to the name</a>
 <a name="75"><span class="lineNum">      75 </span>            :         // Mangled symbol examples:</a>
 <a name="76"><span class="lineNum">      76 </span>            :         // ./lib/libOPENFHEcore.so.1(_Z14get_call_stackB5cxx11v+0x35) [0x7f1b5cdb91d5]</a>
@@ -140,16 +140,16 @@
 <a name="78"><span class="lineNum">      78 </span>            :         //  /lib/libOPENFHEpke.so.1(_ZNK8lbcrypto25ParameterGenerationBGVRNS15ParamsGenBGVRNSESt10shared_ptrINS_20CryptoParametersBaseINS_12DCRTPolyImplIN9bigintdyn9mubintvecINS4_5ubintImEEEEEEEEEjjjjjjjj+0x44a) [0x7f1b5cf6a09a]</a>
 <a name="79"><span class="lineNum">      79 </span>            :         // 1. we may have &quot;+&quot;, so we search to find the last one to trim &quot;symbol&quot; from the right</a>
 <a name="80"><span class="lineNum">      80 </span>            :         size_t pos = symbol.find_last_of(&quot;+&quot;);</a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineCov">      14620 :         symbol     = symbol.substr(0, pos);</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">      29240 :         symbol     = symbol.substr(0, pos);</span></a>
 <a name="82"><span class="lineNum">      82 </span>            :         // 2. find the last &quot;(&quot; which indicates the beginning of the actual mangled symbol enclosed in to &quot;()&quot;</a>
 <a name="83"><span class="lineNum">      83 </span>            :         pos           = symbol.find_last_of(&quot;(&quot;);</a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">       7310 :         size_t newLen = symbol.length() - pos;</span></a>
-<a name="85"><span class="lineNum">      85 </span><span class="lineCov">       7310 :         std::string mangledName(symbol.substr(pos + 1, newLen));</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">      14620 :         size_t newLen = symbol.length() - pos;</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">      14620 :         std::string mangledName(symbol.substr(pos + 1, newLen));</span></a>
 <a name="86"><span class="lineNum">      86 </span>            : </a>
-<a name="87"><span class="lineNum">      87 </span><span class="lineCov">      14620 :         retVec[i] = (stringEmpty(mangledName)) ? symbols[i] : demangle(mangledName.c_str());</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">      29240 :         retVec[i] = (stringEmpty(mangledName)) ? symbols[i] : demangle(mangledName.c_str());</span></a>
 <a name="88"><span class="lineNum">      88 </span>            :     }</a>
 <a name="89"><span class="lineNum">      89 </span>            : </a>
-<a name="90"><span class="lineNum">      90 </span><span class="lineCov">        451 :     free(symbols);</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">        902 :     free(symbols);</span></a>
 <a name="91"><span class="lineNum">      91 </span>            :     return retVec;</a>
 <a name="92"><span class="lineNum">      92 </span>            : }</a>
 <a name="93"><span class="lineNum">      93 </span>            : #else</a>

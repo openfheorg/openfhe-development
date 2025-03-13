@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">9</td>
-            <td class="headerCovTableEntryLo">0.0 %</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryLo">18.2 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -127,7 +127,7 @@
 <a name="65"><span class="lineNum">      65 </span>            : </a>
 <a name="66"><span class="lineNum">      66 </span>            :     explicit RLWECiphertextImpl(const std::vector&lt;NativePoly&gt;&amp; elements) : m_elements(elements) {}</a>
 <a name="67"><span class="lineNum">      67 </span>            : </a>
-<a name="68"><span class="lineNum">      68 </span>            :     explicit RLWECiphertextImpl(std::vector&lt;NativePoly&gt;&amp;&amp; elements) noexcept : m_elements(std::move(elements)) {}</a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">       3015 :     explicit RLWECiphertextImpl(std::vector&lt;NativePoly&gt;&amp;&amp; elements) noexcept : m_elements(std::move(elements)) {}</span></a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
 <a name="70"><span class="lineNum">      70 </span>            :     RLWECiphertextImpl(const RLWECiphertextImpl&amp; rhs) : m_elements(rhs.m_elements) {}</a>
 <a name="71"><span class="lineNum">      71 </span>            : </a>
@@ -148,7 +148,7 @@
 <a name="86"><span class="lineNum">      86 </span>            :     }</a>
 <a name="87"><span class="lineNum">      87 </span>            : </a>
 <a name="88"><span class="lineNum">      88 </span>            :     std::vector&lt;NativePoly&gt;&amp; GetElements() {</a>
-<a name="89"><span class="lineNum">      89 </span>            :         return m_elements;</a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineCov">     112557 :         return m_elements;</span></a>
 <a name="90"><span class="lineNum">      90 </span>            :     }</a>
 <a name="91"><span class="lineNum">      91 </span>            : </a>
 <a name="92"><span class="lineNum">      92 </span>            :     void SetFormat(const Format format) {</a>

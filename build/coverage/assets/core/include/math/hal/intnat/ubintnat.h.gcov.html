@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">248</td>
-            <td class="headerCovTableEntry">283</td>
-            <td class="headerCovTableEntryMed">87.6 %</td>
+            <td class="headerCovTableEntry">265</td>
+            <td class="headerCovTableEntry">301</td>
+            <td class="headerCovTableEntryMed">88.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">25</td>
-            <td class="headerCovTableEntry">26</td>
-            <td class="headerCovTableEntryHi">96.2 %</td>
+            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntryHi">96.4 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -222,16 +222,16 @@
 <a name="160"><span class="lineNum">     160 </span>            :         return m_value;</a>
 <a name="161"><span class="lineNum">     161 </span>            :     }</a>
 <a name="162"><span class="lineNum">     162 </span>            :     explicit operator bool() const {</a>
-<a name="163"><span class="lineNum">     163 </span>            :         return m_value != 0;</a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">        148 :         return m_value != 0;</span></a>
 <a name="164"><span class="lineNum">     164 </span>            :     }</a>
 <a name="165"><span class="lineNum">     165 </span>            : </a>
 <a name="166"><span class="lineNum">     166 </span><span class="lineCov">       3075 :     constexpr NativeIntegerT() = default;</span></a>
-<a name="167"><span class="lineNum">     167 </span><span class="lineCov">11546564373 :     constexpr NativeIntegerT(const NativeIntegerT&amp; val) noexcept : m_value{val.m_value} {}</span></a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov"> 1659368276 :     constexpr NativeIntegerT(NativeIntegerT&amp;&amp; val) noexcept : m_value{std::move(val.m_value)} {}</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">24104391638 :     constexpr NativeIntegerT(const NativeIntegerT&amp; val) noexcept : m_value{val.m_value} {}</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov"> 3310170145 :     constexpr NativeIntegerT(NativeIntegerT&amp;&amp; val) noexcept : m_value{std::move(val.m_value)} {}</span></a>
 <a name="169"><span class="lineNum">     169 </span>            : </a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">         92 :     NativeIntegerT(const std::string&amp; val) {</span></a>
-<a name="171"><span class="lineNum">     171 </span><span class="lineCov">         92 :         this-&gt;NativeIntegerT::SetValue(val);</span></a>
-<a name="172"><span class="lineNum">     172 </span><span class="lineCov">         92 :     }</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">        184 :     NativeIntegerT(const std::string&amp; val) {</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">        184 :         this-&gt;NativeIntegerT::SetValue(val);</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineCov">        184 :     }</span></a>
 <a name="173"><span class="lineNum">     173 </span>            : </a>
 <a name="174"><span class="lineNum">     174 </span><span class="lineCov">        308 :     explicit NativeIntegerT(const char* strval) {</span></a>
 <a name="175"><span class="lineNum">     175 </span><span class="lineCov">        308 :         this-&gt;NativeIntegerT::SetValue(std::string(strval));</span></a>
@@ -241,28 +241,28 @@
 <a name="179"><span class="lineNum">     179 </span>            :     template &lt;typename T,</a>
 <a name="180"><span class="lineNum">     180 </span>            :               std::enable_if_t&lt;std::is_integral_v&lt;T&gt; || std::is_same_v&lt;T, int128_t&gt; || std::is_same_v&lt;T, uint128_t&gt;,</a>
 <a name="181"><span class="lineNum">     181 </span>            :                                bool&gt; = true&gt;</a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineCov"> 3000008826 :     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov"> 6623091376 :     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}</span></a>
 <a name="183"><span class="lineNum">     183 </span>            : </a>
 <a name="184"><span class="lineNum">     184 </span>            :     template &lt;typename T, std::enable_if_t&lt;std::is_same_v&lt;T, M2Integer&gt; || std::is_same_v&lt;T, M4Integer&gt; ||</a>
 <a name="185"><span class="lineNum">     185 </span>            :                                                std::is_same_v&lt;T, M6Integer&gt;,</a>
 <a name="186"><span class="lineNum">     186 </span>            :                                            bool&gt; = true&gt;</a>
-<a name="187"><span class="lineNum">     187 </span><span class="lineCov">       1467 :     constexpr NativeIntegerT(T val) noexcept : m_value{val.template ConvertToInt&lt;NativeInt&gt;()} {}</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">      35470 :     constexpr NativeIntegerT(T val) noexcept : m_value{val.template ConvertToInt&lt;NativeInt&gt;()} {}</span></a>
 <a name="188"><span class="lineNum">     188 </span>            : </a>
 <a name="189"><span class="lineNum">     189 </span>            :     template &lt;typename T, std::enable_if_t&lt;std::is_floating_point_v&lt;T&gt;, bool&gt; = true&gt;</a>
 <a name="190"><span class="lineNum">     190 </span>            :     NativeIntegerT(T val) = delete;</a>
 <a name="191"><span class="lineNum">     191 </span>            : </a>
 <a name="192"><span class="lineNum">     192 </span>            :     constexpr NativeIntegerT&amp; operator=(const NativeIntegerT&amp; val) noexcept {</a>
-<a name="193"><span class="lineNum">     193 </span><span class="lineCov">  741449363 :         m_value = val.m_value;</span></a>
-<a name="194"><span class="lineNum">     194 </span><span class="lineCov">     117000 :         return *this;</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov"> 5281329097 :         m_value = val.m_value;</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">   35008223 :         return *this;</span></a>
 <a name="195"><span class="lineNum">     195 </span>            :     }</a>
 <a name="196"><span class="lineNum">     196 </span>            : </a>
 <a name="197"><span class="lineNum">     197 </span>            :     constexpr NativeIntegerT&amp; operator=(NativeIntegerT&amp;&amp; val) noexcept {</a>
-<a name="198"><span class="lineNum">     198 </span><span class="lineCov"> 1825852719 :         m_value = std::move(val.m_value);</span></a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineCov"> 3674001776 :         m_value = std::move(val.m_value);</span></a>
 <a name="199"><span class="lineNum">     199 </span>            :         return *this;</a>
 <a name="200"><span class="lineNum">     200 </span>            :     }</a>
 <a name="201"><span class="lineNum">     201 </span>            : </a>
 <a name="202"><span class="lineNum">     202 </span>            :     NativeIntegerT&amp; operator=(const std::string&amp; val) {</a>
-<a name="203"><span class="lineNum">     203 </span><span class="lineCov">        376 :         this-&gt;NativeIntegerT::SetValue(val);</span></a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">        752 :         this-&gt;NativeIntegerT::SetValue(val);</span></a>
 <a name="204"><span class="lineNum">     204 </span>            :         return *this;</a>
 <a name="205"><span class="lineNum">     205 </span>            :     }</a>
 <a name="206"><span class="lineNum">     206 </span>            : </a>
@@ -275,15 +275,15 @@
 <a name="213"><span class="lineNum">     213 </span>            :               std::enable_if_t&lt;std::is_integral_v&lt;T&gt; || std::is_same_v&lt;T, int128_t&gt; || std::is_same_v&lt;T, uint128_t&gt;,</a>
 <a name="214"><span class="lineNum">     214 </span>            :                                bool&gt; = true&gt;</a>
 <a name="215"><span class="lineNum">     215 </span>            :     constexpr NativeIntegerT&amp; operator=(T val) noexcept {</a>
-<a name="216"><span class="lineNum">     216 </span><span class="lineCov">   42324446 :         m_value = val;</span></a>
-<a name="217"><span class="lineNum">     217 </span><span class="lineCov">  745382004 :         return *this;</span></a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov"> 3532722753 :         m_value = val;</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineCov"> 1490769118 :         return *this;</span></a>
 <a name="218"><span class="lineNum">     218 </span>            :     }</a>
 <a name="219"><span class="lineNum">     219 </span>            : </a>
 <a name="220"><span class="lineNum">     220 </span>            :     template &lt;typename T, std::enable_if_t&lt;std::is_same_v&lt;T, M2Integer&gt; || std::is_same_v&lt;T, M4Integer&gt; ||</a>
 <a name="221"><span class="lineNum">     221 </span>            :                                                std::is_same_v&lt;T, M6Integer&gt;,</a>
 <a name="222"><span class="lineNum">     222 </span>            :                                            bool&gt; = true&gt;</a>
 <a name="223"><span class="lineNum">     223 </span>            :     constexpr NativeIntegerT&amp; operator=(T val) noexcept {</a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineCov">    9873320 :         m_value = val.template ConvertToInt&lt;NativeInt&gt;();</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">   19747120 :         m_value = val.template ConvertToInt&lt;NativeInt&gt;();</span></a>
 <a name="225"><span class="lineNum">     225 </span>            :         return *this;</a>
 <a name="226"><span class="lineNum">     226 </span>            :     }</a>
 <a name="227"><span class="lineNum">     227 </span>            : </a>
@@ -355,7 +355,7 @@
 <a name="293"><span class="lineNum">     293 </span>            :    * @return result of the addition operation.</a>
 <a name="294"><span class="lineNum">     294 </span>            :    */</a>
 <a name="295"><span class="lineNum">     295 </span>            :     NativeIntegerT AddFast(const NativeIntegerT&amp; b) const {</a>
-<a name="296"><span class="lineNum">     296 </span><span class="lineCov">   56507655 :         return {b.m_value + m_value};</span></a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">   56616685 :         return {b.m_value + m_value};</span></a>
 <a name="297"><span class="lineNum">     297 </span>            :     }</a>
 <a name="298"><span class="lineNum">     298 </span>            : </a>
 <a name="299"><span class="lineNum">     299 </span>            :     /**</a>
@@ -390,7 +390,7 @@
 <a name="328"><span class="lineNum">     328 </span>            :    * @return result of the addition operation.</a>
 <a name="329"><span class="lineNum">     329 </span>            :    */</a>
 <a name="330"><span class="lineNum">     330 </span>            :     NativeIntegerT&amp; AddEqFast(const NativeIntegerT&amp; b) {</a>
-<a name="331"><span class="lineNum">     331 </span><span class="lineCov"> 1747412954 :         return *this = b.m_value + m_value;</span></a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineCov">13022907305 :         return *this = b.m_value + m_value;</span></a>
 <a name="332"><span class="lineNum">     332 </span>            :     }</a>
 <a name="333"><span class="lineNum">     333 </span>            : </a>
 <a name="334"><span class="lineNum">     334 </span>            :     /**</a>
@@ -421,7 +421,7 @@
 <a name="359"><span class="lineNum">     359 </span>            :    */</a>
 <a name="360"><span class="lineNum">     360 </span>            :     // no saturated subtraction? functionality differs from BigInteger Backends</a>
 <a name="361"><span class="lineNum">     361 </span>            :     NativeIntegerT SubFast(const NativeIntegerT&amp; b) const {</a>
-<a name="362"><span class="lineNum">     362 </span><span class="lineCov">  132188522 :         return {m_value - b.m_value};</span></a>
+<a name="362"><span class="lineNum">     362 </span><span class="lineCov">  226270412 :         return {m_value - b.m_value};</span></a>
 <a name="363"><span class="lineNum">     363 </span>            :     }</a>
 <a name="364"><span class="lineNum">     364 </span>            : </a>
 <a name="365"><span class="lineNum">     365 </span>            :     /**</a>
@@ -455,7 +455,7 @@
 <a name="393"><span class="lineNum">     393 </span>            :    * @return result of the addition operation.</a>
 <a name="394"><span class="lineNum">     394 </span>            :    */</a>
 <a name="395"><span class="lineNum">     395 </span>            :     NativeIntegerT&amp; SubEqFast(const NativeIntegerT&amp; b) {</a>
-<a name="396"><span class="lineNum">     396 </span><span class="lineCov"> 5050917042 :         return *this = m_value - b.m_value;</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineCov">33326777120 :         return *this = m_value - b.m_value;</span></a>
 <a name="397"><span class="lineNum">     397 </span>            :     }</a>
 <a name="398"><span class="lineNum">     398 </span>            : </a>
 <a name="399"><span class="lineNum">     399 </span>            :     // overloaded binary operators based on integer arithmetic and comparison</a>
@@ -494,7 +494,7 @@
 <a name="432"><span class="lineNum">     432 </span>            :    * @return result of the multiplication operation.</a>
 <a name="433"><span class="lineNum">     433 </span>            :    */</a>
 <a name="434"><span class="lineNum">     434 </span>            :     NativeIntegerT MulFast(const NativeIntegerT&amp; b) const {</a>
-<a name="435"><span class="lineNum">     435 </span><span class="lineCov">    6983175 :         return {b.m_value * m_value};</span></a>
+<a name="435"><span class="lineNum">     435 </span><span class="lineCov">   17130164 :         return {b.m_value * m_value};</span></a>
 <a name="436"><span class="lineNum">     436 </span>            :     }</a>
 <a name="437"><span class="lineNum">     437 </span>            : </a>
 <a name="438"><span class="lineNum">     438 </span>            :     /**</a>
@@ -529,7 +529,7 @@
 <a name="467"><span class="lineNum">     467 </span>            :    * @return result of the multiplication operation</a>
 <a name="468"><span class="lineNum">     468 </span>            :    */</a>
 <a name="469"><span class="lineNum">     469 </span>            :     NativeIntegerT&amp; MulEqFast(const NativeIntegerT&amp; b) {</a>
-<a name="470"><span class="lineNum">     470 </span>            :         return *this = b.m_value * m_value;</a>
+<a name="470"><span class="lineNum">     470 </span><span class="lineCov">       2048 :         return *this = b.m_value * m_value;</span></a>
 <a name="471"><span class="lineNum">     471 </span>            :     }</a>
 <a name="472"><span class="lineNum">     472 </span>            : </a>
 <a name="473"><span class="lineNum">     473 </span>            :     /**</a>
@@ -538,10 +538,10 @@
 <a name="476"><span class="lineNum">     476 </span>            :    * @param &amp;b is the value to divide by.</a>
 <a name="477"><span class="lineNum">     477 </span>            :    * @return is the result of the division operation.</a>
 <a name="478"><span class="lineNum">     478 </span>            :    */</a>
-<a name="479"><span class="lineNum">     479 </span><span class="lineCov">   17476410 :     NativeIntegerT DividedBy(const NativeIntegerT&amp; b) const {</span></a>
-<a name="480"><span class="lineNum">     480 </span><span class="lineCov">   17476410 :         if (b.m_value == 0)</span></a>
+<a name="479"><span class="lineNum">     479 </span><span class="lineCov">   20207303 :     NativeIntegerT DividedBy(const NativeIntegerT&amp; b) const {</span></a>
+<a name="480"><span class="lineNum">     480 </span><span class="lineCov">   20207303 :         if (b.m_value == 0)</span></a>
 <a name="481"><span class="lineNum">     481 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeIntegerT DividedBy: zero&quot;);</span></a>
-<a name="482"><span class="lineNum">     482 </span><span class="lineCov">   17476410 :         return {m_value / b.m_value};</span></a>
+<a name="482"><span class="lineNum">     482 </span><span class="lineCov">   20207303 :         return {m_value / b.m_value};</span></a>
 <a name="483"><span class="lineNum">     483 </span>            :     }</a>
 <a name="484"><span class="lineNum">     484 </span>            : </a>
 <a name="485"><span class="lineNum">     485 </span>            :     /**</a>
@@ -550,10 +550,10 @@
 <a name="488"><span class="lineNum">     488 </span>            :    * @param &amp;b is the value to divide by.</a>
 <a name="489"><span class="lineNum">     489 </span>            :    * @return is the result of the division operation.</a>
 <a name="490"><span class="lineNum">     490 </span>            :    */</a>
-<a name="491"><span class="lineNum">     491 </span>            :     NativeIntegerT&amp; DividedByEq(const NativeIntegerT&amp; b) {</a>
-<a name="492"><span class="lineNum">     492 </span>            :         if (b.m_value == 0)</a>
-<a name="493"><span class="lineNum">     493 </span>            :             OPENFHE_THROW(&quot;NativeIntegerT DividedByEq: zero&quot;);</a>
-<a name="494"><span class="lineNum">     494 </span>            :         return *this = m_value / b.m_value;</a>
+<a name="491"><span class="lineNum">     491 </span><span class="lineCov">       8064 :     NativeIntegerT&amp; DividedByEq(const NativeIntegerT&amp; b) {</span></a>
+<a name="492"><span class="lineNum">     492 </span><span class="lineCov">       8064 :         if (b.m_value == 0)</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeIntegerT DividedByEq: zero&quot;);</span></a>
+<a name="494"><span class="lineNum">     494 </span><span class="lineCov">       8064 :         return *this = m_value / b.m_value;</span></a>
 <a name="495"><span class="lineNum">     495 </span>            :     }</a>
 <a name="496"><span class="lineNum">     496 </span>            : </a>
 <a name="497"><span class="lineNum">     497 </span>            :     /**</a>
@@ -591,10 +591,10 @@
 <a name="529"><span class="lineNum">     529 </span>            :    * @param &amp;q is the denominator to be divided.</a>
 <a name="530"><span class="lineNum">     530 </span>            :    * @return is the result of multiply and round operation.</a>
 <a name="531"><span class="lineNum">     531 </span>            :    */</a>
-<a name="532"><span class="lineNum">     532 </span><span class="lineCov">     819208 :     NativeIntegerT MultiplyAndRound(const NativeIntegerT&amp; p, const NativeIntegerT&amp; q) const {</span></a>
-<a name="533"><span class="lineNum">     533 </span><span class="lineCov">     819208 :         if (q.m_value == 0)</span></a>
+<a name="532"><span class="lineNum">     532 </span><span class="lineCov">    1638416 :     NativeIntegerT MultiplyAndRound(const NativeIntegerT&amp; p, const NativeIntegerT&amp; q) const {</span></a>
+<a name="533"><span class="lineNum">     533 </span><span class="lineCov">    1638416 :         if (q.m_value == 0)</span></a>
 <a name="534"><span class="lineNum">     534 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeIntegerT MultiplyAndRound: Divide by zero&quot;);</span></a>
-<a name="535"><span class="lineNum">     535 </span><span class="lineCov">     819208 :         return static_cast&lt;NativeInt&gt;(p.ConvertToDouble() * (this-&gt;ConvertToDouble() / q.ConvertToDouble()) + 0.5);</span></a>
+<a name="535"><span class="lineNum">     535 </span><span class="lineCov">    1638416 :         return static_cast&lt;NativeInt&gt;(p.ConvertToDouble() * (this-&gt;ConvertToDouble() / q.ConvertToDouble()) + 0.5);</span></a>
 <a name="536"><span class="lineNum">     536 </span>            :     }</a>
 <a name="537"><span class="lineNum">     537 </span>            : </a>
 <a name="538"><span class="lineNum">     538 </span>            :     /**</a>
@@ -687,7 +687,7 @@
 <a name="625"><span class="lineNum">     625 </span>            :    * @return is the result of the modulus operation.</a>
 <a name="626"><span class="lineNum">     626 </span>            :    */</a>
 <a name="627"><span class="lineNum">     627 </span>            :     NativeIntegerT Mod(const NativeIntegerT&amp; modulus) const {</a>
-<a name="628"><span class="lineNum">     628 </span><span class="lineCov">  602503582 :         return {m_value % modulus.m_value};</span></a>
+<a name="628"><span class="lineNum">     628 </span><span class="lineCov">  609340640 :         return {m_value % modulus.m_value};</span></a>
 <a name="629"><span class="lineNum">     629 </span>            :     }</a>
 <a name="630"><span class="lineNum">     630 </span>            : </a>
 <a name="631"><span class="lineNum">     631 </span>            :     /**</a>
@@ -697,7 +697,7 @@
 <a name="635"><span class="lineNum">     635 </span>            :    * @return is the result of the modulus operation.</a>
 <a name="636"><span class="lineNum">     636 </span>            :    */</a>
 <a name="637"><span class="lineNum">     637 </span>            :     NativeIntegerT&amp; ModEq(const NativeIntegerT&amp; modulus) {</a>
-<a name="638"><span class="lineNum">     638 </span><span class="lineCov">      18273 :         return *this = m_value % modulus.m_value;</span></a>
+<a name="638"><span class="lineNum">     638 </span><span class="lineCov">   27333362 :         return *this = m_value % modulus.m_value;</span></a>
 <a name="639"><span class="lineNum">     639 </span>            :     }</a>
 <a name="640"><span class="lineNum">     640 </span>            : </a>
 <a name="641"><span class="lineNum">     641 </span>            :     /**</a>
@@ -706,11 +706,11 @@
 <a name="644"><span class="lineNum">     644 </span>            :    * @return the precomputed parameter mu.</a>
 <a name="645"><span class="lineNum">     645 </span>            :    */</a>
 <a name="646"><span class="lineNum">     646 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="647"><span class="lineNum">     647 </span><span class="lineCov">    8410498 :     NativeIntegerT ComputeMu(typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</span></a>
-<a name="648"><span class="lineNum">     648 </span><span class="lineCov">    8410498 :         if (m_value == 0)</span></a>
+<a name="647"><span class="lineNum">     647 </span><span class="lineCov">    8450493 :     NativeIntegerT ComputeMu(typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</span></a>
+<a name="648"><span class="lineNum">     648 </span><span class="lineCov">    8450493 :         if (m_value == 0)</span></a>
 <a name="649"><span class="lineNum">     649 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeIntegerT ComputeMu: Divide by zero&quot;);</span></a>
-<a name="650"><span class="lineNum">     650 </span><span class="lineCov">    8410498 :         auto&amp;&amp; tmp{DNativeInt{1} &lt;&lt; (2 * lbcrypto::GetMSB(m_value) + 3)};</span></a>
-<a name="651"><span class="lineNum">     651 </span><span class="lineCov">    8410498 :         return {tmp / DNativeInt(m_value)};</span></a>
+<a name="650"><span class="lineNum">     650 </span><span class="lineCov">    8450493 :         auto&amp;&amp; tmp{DNativeInt{1} &lt;&lt; (2 * lbcrypto::GetMSB(m_value) + 3)};</span></a>
+<a name="651"><span class="lineNum">     651 </span><span class="lineCov">    8450493 :         return {tmp / DNativeInt(m_value)};</span></a>
 <a name="652"><span class="lineNum">     652 </span>            :     }</a>
 <a name="653"><span class="lineNum">     653 </span>            : </a>
 <a name="654"><span class="lineNum">     654 </span>            :     template &lt;typename T = NativeInt&gt;</a>
@@ -731,11 +731,11 @@
 <a name="669"><span class="lineNum">     669 </span>            :    * @return is the result of the modulus operation.</a>
 <a name="670"><span class="lineNum">     670 </span>            :    */</a>
 <a name="671"><span class="lineNum">     671 </span>            :     // TODO: pass modulus.GetMSB() with mu for faster vector ops?</a>
-<a name="672"><span class="lineNum">     672 </span><span class="lineCov">    6656210 :     NativeIntegerT Mod(const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu) const {</span></a>
+<a name="672"><span class="lineNum">     672 </span><span class="lineCov">   13312420 :     NativeIntegerT Mod(const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu) const {</span></a>
 <a name="673"><span class="lineNum">     673 </span>            :         typeD tmp;</a>
 <a name="674"><span class="lineNum">     674 </span>            :         NativeIntegerT ans{*this};</a>
-<a name="675"><span class="lineNum">     675 </span><span class="lineCov">    6656210 :         ModMu(tmp, ans, modulus.m_value, mu.m_value, modulus.GetMSB() - 2);</span></a>
-<a name="676"><span class="lineNum">     676 </span><span class="lineCov">    6656210 :         return ans;</span></a>
+<a name="675"><span class="lineNum">     675 </span><span class="lineCov">   13312420 :         ModMu(tmp, ans, modulus.m_value, mu.m_value, modulus.GetMSB() - 2);</span></a>
+<a name="676"><span class="lineNum">     676 </span><span class="lineCov">   13312420 :         return ans;</span></a>
 <a name="677"><span class="lineNum">     677 </span>            :     }</a>
 <a name="678"><span class="lineNum">     678 </span>            : </a>
 <a name="679"><span class="lineNum">     679 </span>            :     /**</a>
@@ -761,16 +761,16 @@
 <a name="699"><span class="lineNum">     699 </span>            :    * @return is the result of the modulus addition operation.</a>
 <a name="700"><span class="lineNum">     700 </span>            :    */</a>
 <a name="701"><span class="lineNum">     701 </span>            :     NativeIntegerT ModAdd(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) const {</a>
-<a name="702"><span class="lineNum">     702 </span><span class="lineCov">    8529403 :         auto av{m_value};</span></a>
+<a name="702"><span class="lineNum">     702 </span><span class="lineCov">   37359204 :         auto av{m_value};</span></a>
 <a name="703"><span class="lineNum">     703 </span><span class="lineCov">          4 :         auto bv{b.m_value};</span></a>
 <a name="704"><span class="lineNum">     704 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="705"><span class="lineNum">     705 </span><span class="lineCov">    8529403 :         if (av &gt;= mv)</span></a>
+<a name="705"><span class="lineNum">     705 </span><span class="lineCov">   37359204 :         if (av &gt;= mv)</span></a>
 <a name="706"><span class="lineNum">     706 </span><span class="lineCov">          2 :             av %= mv;</span></a>
-<a name="707"><span class="lineNum">     707 </span><span class="lineCov">    8529403 :         if (bv &gt;= mv)</span></a>
+<a name="707"><span class="lineNum">     707 </span><span class="lineCov">   37359204 :         if (bv &gt;= mv)</span></a>
 <a name="708"><span class="lineNum">     708 </span><span class="lineCov">          2 :             bv %= mv;</span></a>
-<a name="709"><span class="lineNum">     709 </span><span class="lineCov">    8529403 :         av += bv;</span></a>
-<a name="710"><span class="lineNum">     710 </span><span class="lineCov">    8529403 :         if (av &gt;= mv)</span></a>
-<a name="711"><span class="lineNum">     711 </span><span class="lineCov">          2 :             av -= mv;</span></a>
+<a name="709"><span class="lineNum">     709 </span><span class="lineCov">   37359204 :         av += bv;</span></a>
+<a name="710"><span class="lineNum">     710 </span><span class="lineCov">   37359204 :         if (av &gt;= mv)</span></a>
+<a name="711"><span class="lineNum">     711 </span><span class="lineCov">    7722492 :             av -= mv;</span></a>
 <a name="712"><span class="lineNum">     712 </span>            :         return {av};</a>
 <a name="713"><span class="lineNum">     713 </span>            :     }</a>
 <a name="714"><span class="lineNum">     714 </span>            : </a>
@@ -782,15 +782,15 @@
 <a name="720"><span class="lineNum">     720 </span>            :    * @return is the result of the modulus addition operation.</a>
 <a name="721"><span class="lineNum">     721 </span>            :    */</a>
 <a name="722"><span class="lineNum">     722 </span>            :     NativeIntegerT&amp; ModAddEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) {</a>
-<a name="723"><span class="lineNum">     723 </span><span class="lineCov">    4543016 :         auto bv{b.m_value};</span></a>
+<a name="723"><span class="lineNum">     723 </span><span class="lineCov">    9086032 :         auto bv{b.m_value};</span></a>
 <a name="724"><span class="lineNum">     724 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="725"><span class="lineNum">     725 </span><span class="lineCov">    8135536 :         if (m_value &gt;= mv)</span></a>
+<a name="725"><span class="lineNum">     725 </span><span class="lineCov">   12678552 :         if (m_value &gt;= mv)</span></a>
 <a name="726"><span class="lineNum">     726 </span><span class="lineNoCov">          0 :             m_value = m_value % mv;</span></a>
-<a name="727"><span class="lineNum">     727 </span><span class="lineCov">    8135536 :         if (bv &gt;= mv)</span></a>
+<a name="727"><span class="lineNum">     727 </span><span class="lineCov">   12678552 :         if (bv &gt;= mv)</span></a>
 <a name="728"><span class="lineNum">     728 </span><span class="lineCov">        149 :             bv = bv % mv;</span></a>
-<a name="729"><span class="lineNum">     729 </span><span class="lineCov">    8135536 :         m_value += bv;</span></a>
-<a name="730"><span class="lineNum">     730 </span><span class="lineCov">    8135536 :         if (m_value &gt;= mv)</span></a>
-<a name="731"><span class="lineNum">     731 </span><span class="lineCov">    1361934 :             m_value -= mv;</span></a>
+<a name="729"><span class="lineNum">     729 </span><span class="lineCov">   12678552 :         m_value += bv;</span></a>
+<a name="730"><span class="lineNum">     730 </span><span class="lineCov">   12678552 :         if (m_value &gt;= mv)</span></a>
+<a name="731"><span class="lineNum">     731 </span><span class="lineCov">    2723654 :             m_value -= mv;</span></a>
 <a name="732"><span class="lineNum">     732 </span>            :         return *this;</a>
 <a name="733"><span class="lineNum">     733 </span>            :     }</a>
 <a name="734"><span class="lineNum">     734 </span>            : </a>
@@ -802,10 +802,10 @@
 <a name="740"><span class="lineNum">     740 </span>            :    * @return is the result of the modulus addition operation.</a>
 <a name="741"><span class="lineNum">     741 </span>            :    */</a>
 <a name="742"><span class="lineNum">     742 </span>            :     NativeIntegerT ModAddFast(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) const {</a>
-<a name="743"><span class="lineNum">     743 </span><span class="lineCov">    4316610 :         auto r{m_value + b.m_value};</span></a>
+<a name="743"><span class="lineNum">     743 </span><span class="lineCov">    8633401 :         auto r{m_value + b.m_value};</span></a>
 <a name="744"><span class="lineNum">     744 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="745"><span class="lineNum">     745 </span><span class="lineCov">    4316610 :         if (r &gt;= mv)</span></a>
-<a name="746"><span class="lineNum">     746 </span><span class="lineCov">    1734220 :             r -= mv;</span></a>
+<a name="745"><span class="lineNum">     745 </span><span class="lineCov">    8633401 :         if (r &gt;= mv)</span></a>
+<a name="746"><span class="lineNum">     746 </span><span class="lineCov">    3468540 :             r -= mv;</span></a>
 <a name="747"><span class="lineNum">     747 </span>            :         return {r};</a>
 <a name="748"><span class="lineNum">     748 </span>            :     }</a>
 <a name="749"><span class="lineNum">     749 </span>            :     /**</a>
@@ -817,9 +817,9 @@
 <a name="755"><span class="lineNum">     755 </span>            :    */</a>
 <a name="756"><span class="lineNum">     756 </span>            :     NativeIntegerT&amp; ModAddFastEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) {</a>
 <a name="757"><span class="lineNum">     757 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="758"><span class="lineNum">     758 </span><span class="lineCov"> 5664941468 :         m_value += b.m_value;</span></a>
-<a name="759"><span class="lineNum">     759 </span><span class="lineCov"> 5664941468 :         if (m_value &gt;= mv)</span></a>
-<a name="760"><span class="lineNum">     760 </span><span class="lineCov"> 2700525213 :             m_value -= mv;</span></a>
+<a name="758"><span class="lineNum">     758 </span><span class="lineCov">10210724549 :         m_value += b.m_value;</span></a>
+<a name="759"><span class="lineNum">     759 </span><span class="lineCov">10210724549 :         if (m_value &gt;= mv)</span></a>
+<a name="760"><span class="lineNum">     760 </span><span class="lineCov"> 4901999925 :             m_value -= mv;</span></a>
 <a name="761"><span class="lineNum">     761 </span>            :         return *this;</a>
 <a name="762"><span class="lineNum">     762 </span>            :     }</a>
 <a name="763"><span class="lineNum">     763 </span>            : </a>
@@ -832,20 +832,20 @@
 <a name="770"><span class="lineNum">     770 </span>            :    * @return is the result of the modulus addition operation.</a>
 <a name="771"><span class="lineNum">     771 </span>            :    */</a>
 <a name="772"><span class="lineNum">     772 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="773"><span class="lineNum">     773 </span><span class="lineCov">   12568041 :     NativeIntegerT ModAdd(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="773"><span class="lineNum">     773 </span><span class="lineCov">   12569643 :     NativeIntegerT ModAdd(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="774"><span class="lineNum">     774 </span>            :                           typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</a>
 <a name="775"><span class="lineNum">     775 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="776"><span class="lineNum">     776 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="777"><span class="lineNum">     777 </span>            :         auto av{*this};</a>
 <a name="778"><span class="lineNum">     778 </span>            :         auto bv{b};</a>
-<a name="779"><span class="lineNum">     779 </span><span class="lineCov">   12568041 :         if (av.m_value &gt;= mv)</span></a>
+<a name="779"><span class="lineNum">     779 </span><span class="lineCov">   12569643 :         if (av.m_value &gt;= mv)</span></a>
 <a name="780"><span class="lineNum">     780 </span><span class="lineNoCov">          0 :             av.ModEq(modulus, mu);</span></a>
-<a name="781"><span class="lineNum">     781 </span><span class="lineCov">   12568041 :         if (bv.m_value &gt;= mv)</span></a>
+<a name="781"><span class="lineNum">     781 </span><span class="lineCov">   12569643 :         if (bv.m_value &gt;= mv)</span></a>
 <a name="782"><span class="lineNum">     782 </span><span class="lineNoCov">          0 :             bv.ModEq(modulus, mu);</span></a>
-<a name="783"><span class="lineNum">     783 </span><span class="lineCov">   12568041 :         av.m_value += bv.m_value;</span></a>
-<a name="784"><span class="lineNum">     784 </span><span class="lineCov">   12568041 :         if (av.m_value &gt;= mv)</span></a>
-<a name="785"><span class="lineNum">     785 </span><span class="lineCov">    6109078 :             av.m_value -= mv;</span></a>
-<a name="786"><span class="lineNum">     786 </span><span class="lineCov">   12568041 :         return av;</span></a>
+<a name="783"><span class="lineNum">     783 </span><span class="lineCov">   12569643 :         av.m_value += bv.m_value;</span></a>
+<a name="784"><span class="lineNum">     784 </span><span class="lineCov">   12569643 :         if (av.m_value &gt;= mv)</span></a>
+<a name="785"><span class="lineNum">     785 </span><span class="lineCov">    6109840 :             av.m_value -= mv;</span></a>
+<a name="786"><span class="lineNum">     786 </span><span class="lineCov">   12569643 :         return av;</span></a>
 <a name="787"><span class="lineNum">     787 </span>            : #else</a>
 <a name="788"><span class="lineNum">     788 </span>            :         auto bv{b.m_value};</a>
 <a name="789"><span class="lineNum">     789 </span>            :         auto av{m_value};</a>
@@ -885,20 +885,20 @@
 <a name="823"><span class="lineNum">     823 </span>            :    * @return is the result of the modulus addition operation.</a>
 <a name="824"><span class="lineNum">     824 </span>            :    */</a>
 <a name="825"><span class="lineNum">     825 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="826"><span class="lineNum">     826 </span><span class="lineCov">         15 :     NativeIntegerT&amp; ModAddEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="826"><span class="lineNum">     826 </span><span class="lineCov">         25 :     NativeIntegerT&amp; ModAddEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="827"><span class="lineNum">     827 </span>            :                              typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) {</a>
 <a name="828"><span class="lineNum">     828 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="829"><span class="lineNum">     829 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="830"><span class="lineNum">     830 </span>            :         auto av{*this};</a>
 <a name="831"><span class="lineNum">     831 </span>            :         auto bv{b};</a>
-<a name="832"><span class="lineNum">     832 </span><span class="lineCov">         15 :         if (av.m_value &gt;= mv)</span></a>
+<a name="832"><span class="lineNum">     832 </span><span class="lineCov">         25 :         if (av.m_value &gt;= mv)</span></a>
 <a name="833"><span class="lineNum">     833 </span><span class="lineNoCov">          0 :             av.ModEq(modulus, mu);</span></a>
-<a name="834"><span class="lineNum">     834 </span><span class="lineCov">         15 :         if (bv.m_value &gt;= mv)</span></a>
+<a name="834"><span class="lineNum">     834 </span><span class="lineCov">         25 :         if (bv.m_value &gt;= mv)</span></a>
 <a name="835"><span class="lineNum">     835 </span><span class="lineNoCov">          0 :             bv.ModEq(modulus, mu);</span></a>
-<a name="836"><span class="lineNum">     836 </span><span class="lineCov">         15 :         m_value = av.m_value + bv.m_value;</span></a>
-<a name="837"><span class="lineNum">     837 </span><span class="lineCov">         15 :         if (m_value &gt;= mv)</span></a>
-<a name="838"><span class="lineNum">     838 </span><span class="lineCov">         14 :             m_value -= mv;</span></a>
-<a name="839"><span class="lineNum">     839 </span><span class="lineCov">         15 :         return *this;</span></a>
+<a name="836"><span class="lineNum">     836 </span><span class="lineCov">         25 :         m_value = av.m_value + bv.m_value;</span></a>
+<a name="837"><span class="lineNum">     837 </span><span class="lineCov">         25 :         if (m_value &gt;= mv)</span></a>
+<a name="838"><span class="lineNum">     838 </span><span class="lineCov">         21 :             m_value -= mv;</span></a>
+<a name="839"><span class="lineNum">     839 </span><span class="lineCov">         25 :         return *this;</span></a>
 <a name="840"><span class="lineNum">     840 </span>            : #else</a>
 <a name="841"><span class="lineNum">     841 </span>            :         auto bv{b.m_value};</a>
 <a name="842"><span class="lineNum">     842 </span>            :         auto av{m_value};</a>
@@ -936,16 +936,16 @@
 <a name="874"><span class="lineNum">     874 </span>            :    * @return is the result of the modulus subtraction operation.</a>
 <a name="875"><span class="lineNum">     875 </span>            :    */</a>
 <a name="876"><span class="lineNum">     876 </span>            :     NativeIntegerT ModSub(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) const {</a>
-<a name="877"><span class="lineNum">     877 </span><span class="lineCov">         59 :         auto av{m_value};</span></a>
+<a name="877"><span class="lineNum">     877 </span><span class="lineCov">    5255795 :         auto av{m_value};</span></a>
 <a name="878"><span class="lineNum">     878 </span><span class="lineCov">          3 :         auto bv{b.m_value};</span></a>
 <a name="879"><span class="lineNum">     879 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="880"><span class="lineNum">     880 </span><span class="lineCov">          3 :         if (av &gt;= mv)</span></a>
-<a name="881"><span class="lineNum">     881 </span><span class="lineCov">          2 :             av %= mv;</span></a>
-<a name="882"><span class="lineNum">     882 </span><span class="lineCov">         59 :         if (bv &gt;= mv)</span></a>
-<a name="883"><span class="lineNum">     883 </span><span class="lineCov">          2 :             bv %= mv;</span></a>
-<a name="884"><span class="lineNum">     884 </span><span class="lineCov">         59 :         if (av &lt; bv)</span></a>
-<a name="885"><span class="lineNum">     885 </span><span class="lineCov">          3 :             return {av + mv - bv};</span></a>
-<a name="886"><span class="lineNum">     886 </span><span class="lineCov">          2 :         return {av - bv};</span></a>
+<a name="880"><span class="lineNum">     880 </span><span class="lineCov">    9093153 :         if (av &gt;= mv)</span></a>
+<a name="881"><span class="lineNum">     881 </span><span class="lineCov">    3837472 :             av %= mv;</span></a>
+<a name="882"><span class="lineNum">     882 </span><span class="lineCov">    9093265 :         if (bv &gt;= mv)</span></a>
+<a name="883"><span class="lineNum">     883 </span><span class="lineCov">    3837472 :             bv %= mv;</span></a>
+<a name="884"><span class="lineNum">     884 </span><span class="lineCov">    9093265 :         if (av &lt; bv)</span></a>
+<a name="885"><span class="lineNum">     885 </span><span class="lineCov">    2708953 :             return {av + mv - bv};</span></a>
+<a name="886"><span class="lineNum">     886 </span><span class="lineCov">    6384202 :         return {av - bv};</span></a>
 <a name="887"><span class="lineNum">     887 </span>            :     }</a>
 <a name="888"><span class="lineNum">     888 </span>            : </a>
 <a name="889"><span class="lineNum">     889 </span>            :     /**</a>
@@ -976,9 +976,9 @@
 <a name="914"><span class="lineNum">     914 </span>            :    * @return is the result of the modulus subtraction operation.</a>
 <a name="915"><span class="lineNum">     915 </span>            :    */</a>
 <a name="916"><span class="lineNum">     916 </span>            :     NativeIntegerT ModSubFast(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) const {</a>
-<a name="917"><span class="lineNum">     917 </span><span class="lineCov">    1820060 :         if (m_value &lt; b.m_value)</span></a>
-<a name="918"><span class="lineNum">     918 </span><span class="lineCov">     908211 :             return {m_value + modulus.m_value - b.m_value};</span></a>
-<a name="919"><span class="lineNum">     919 </span><span class="lineCov">     911853 :         return {m_value - b.m_value};</span></a>
+<a name="917"><span class="lineNum">     917 </span><span class="lineCov">    3845520 :         if (m_value &lt; b.m_value)</span></a>
+<a name="918"><span class="lineNum">     918 </span><span class="lineCov">    2021677 :             return {m_value + modulus.m_value - b.m_value};</span></a>
+<a name="919"><span class="lineNum">     919 </span><span class="lineCov">    1823714 :         return {m_value - b.m_value};</span></a>
 <a name="920"><span class="lineNum">     920 </span>            :     }</a>
 <a name="921"><span class="lineNum">     921 </span>            : </a>
 <a name="922"><span class="lineNum">     922 </span>            :     /**</a>
@@ -989,9 +989,9 @@
 <a name="927"><span class="lineNum">     927 </span>            :    * @return is the result of the modulus subtraction operation.</a>
 <a name="928"><span class="lineNum">     928 </span>            :    */</a>
 <a name="929"><span class="lineNum">     929 </span>            :     NativeIntegerT&amp; ModSubFastEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus) {</a>
-<a name="930"><span class="lineNum">     930 </span><span class="lineCov">  598559000 :         if (m_value &lt; b.m_value)</span></a>
-<a name="931"><span class="lineNum">     931 </span><span class="lineCov">  481287000 :             return *this = m_value + modulus.m_value - b.m_value;</span></a>
-<a name="932"><span class="lineNum">     932 </span><span class="lineCov">  117272000 :         return *this = m_value - b.m_value;</span></a>
+<a name="930"><span class="lineNum">     930 </span><span class="lineCov"> 2632988152 :         if (m_value &lt; b.m_value)</span></a>
+<a name="931"><span class="lineNum">     931 </span><span class="lineCov"> 1680798253 :             return *this = m_value + modulus.m_value - b.m_value;</span></a>
+<a name="932"><span class="lineNum">     932 </span><span class="lineCov">  952188899 :         return *this = m_value - b.m_value;</span></a>
 <a name="933"><span class="lineNum">     933 </span>            :     }</a>
 <a name="934"><span class="lineNum">     934 </span>            : </a>
 <a name="935"><span class="lineNum">     935 </span>            :     /**</a>
@@ -1003,19 +1003,19 @@
 <a name="941"><span class="lineNum">     941 </span>            :    * @return is the result of the modulus subtraction operation.</a>
 <a name="942"><span class="lineNum">     942 </span>            :    */</a>
 <a name="943"><span class="lineNum">     943 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="944"><span class="lineNum">     944 </span><span class="lineCov">      10356 :     NativeIntegerT ModSub(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="944"><span class="lineNum">     944 </span><span class="lineCov">      35718 :     NativeIntegerT ModSub(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="945"><span class="lineNum">     945 </span>            :                           typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</a>
 <a name="946"><span class="lineNum">     946 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="947"><span class="lineNum">     947 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="948"><span class="lineNum">     948 </span>            :         auto av{*this};</a>
 <a name="949"><span class="lineNum">     949 </span>            :         auto bv{b};</a>
-<a name="950"><span class="lineNum">     950 </span><span class="lineCov">      10356 :         if (av.m_value &gt;= mv)</span></a>
+<a name="950"><span class="lineNum">     950 </span><span class="lineCov">      35718 :         if (av.m_value &gt;= mv)</span></a>
 <a name="951"><span class="lineNum">     951 </span><span class="lineCov">       7316 :             av.ModEq(modulus, mu);</span></a>
-<a name="952"><span class="lineNum">     952 </span><span class="lineCov">      10356 :         if (bv.m_value &gt;= mv)</span></a>
+<a name="952"><span class="lineNum">     952 </span><span class="lineCov">      35718 :         if (bv.m_value &gt;= mv)</span></a>
 <a name="953"><span class="lineNum">     953 </span><span class="lineNoCov">          0 :             bv.ModEq(modulus, mu);</span></a>
-<a name="954"><span class="lineNum">     954 </span><span class="lineCov">      10356 :         if (av.m_value &lt; bv.m_value)</span></a>
-<a name="955"><span class="lineNum">     955 </span><span class="lineCov">        123 :             return {av.m_value + mv - bv.m_value};</span></a>
-<a name="956"><span class="lineNum">     956 </span><span class="lineCov">      10233 :         return {av.m_value - bv.m_value};</span></a>
+<a name="954"><span class="lineNum">     954 </span><span class="lineCov">      35718 :         if (av.m_value &lt; bv.m_value)</span></a>
+<a name="955"><span class="lineNum">     955 </span><span class="lineCov">       3005 :             return {av.m_value + mv - bv.m_value};</span></a>
+<a name="956"><span class="lineNum">     956 </span><span class="lineCov">      32713 :         return {av.m_value - bv.m_value};</span></a>
 <a name="957"><span class="lineNum">     957 </span>            : #else</a>
 <a name="958"><span class="lineNum">     958 </span>            :         auto av{m_value};</a>
 <a name="959"><span class="lineNum">     959 </span>            :         auto bv{b.m_value};</a>
@@ -1045,19 +1045,19 @@
 <a name="983"><span class="lineNum">     983 </span>            :     }</a>
 <a name="984"><span class="lineNum">     984 </span>            : </a>
 <a name="985"><span class="lineNum">     985 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="986"><span class="lineNum">     986 </span><span class="lineCov">    2191050 :     NativeIntegerT&amp; ModSubEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="986"><span class="lineNum">     986 </span><span class="lineCov">    2191060 :     NativeIntegerT&amp; ModSubEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="987"><span class="lineNum">     987 </span>            :                              typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) {</a>
 <a name="988"><span class="lineNum">     988 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="989"><span class="lineNum">     989 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="990"><span class="lineNum">     990 </span>            :         auto av{*this};</a>
 <a name="991"><span class="lineNum">     991 </span>            :         auto bv{b};</a>
-<a name="992"><span class="lineNum">     992 </span><span class="lineCov">    2191050 :         if (av.m_value &gt;= mv)</span></a>
+<a name="992"><span class="lineNum">     992 </span><span class="lineCov">    2191060 :         if (av.m_value &gt;= mv)</span></a>
 <a name="993"><span class="lineNum">     993 </span><span class="lineNoCov">          0 :             av.ModEq(modulus, mu);</span></a>
-<a name="994"><span class="lineNum">     994 </span><span class="lineCov">    2191050 :         if (bv.m_value &gt;= mv)</span></a>
+<a name="994"><span class="lineNum">     994 </span><span class="lineCov">    2191060 :         if (bv.m_value &gt;= mv)</span></a>
 <a name="995"><span class="lineNum">     995 </span><span class="lineCov">         45 :             bv.ModEq(modulus, mu);</span></a>
-<a name="996"><span class="lineNum">     996 </span><span class="lineCov">    2191050 :         if (av.m_value &lt; bv.m_value)</span></a>
-<a name="997"><span class="lineNum">     997 </span><span class="lineCov">         56 :             return *this = av.m_value + mv - bv.m_value;</span></a>
-<a name="998"><span class="lineNum">     998 </span><span class="lineCov">    2191000 :         return *this = av.m_value - bv.m_value;</span></a>
+<a name="996"><span class="lineNum">     996 </span><span class="lineCov">    2191060 :         if (av.m_value &lt; bv.m_value)</span></a>
+<a name="997"><span class="lineNum">     997 </span><span class="lineCov">         62 :             return *this = av.m_value + mv - bv.m_value;</span></a>
+<a name="998"><span class="lineNum">     998 </span><span class="lineCov">    2191004 :         return *this = av.m_value - bv.m_value;</span></a>
 <a name="999"><span class="lineNum">     999 </span>            : #else</a>
 <a name="1000"><span class="lineNum">    1000 </span>            :         auto bv{b.m_value};</a>
 <a name="1001"><span class="lineNum">    1001 </span>            :         auto av{m_value};</a>
@@ -1096,17 +1096,17 @@
 <a name="1034"><span class="lineNum">    1034 </span>            :     template &lt;typename T = NativeInt&gt;</a>
 <a name="1035"><span class="lineNum">    1035 </span>            :     NativeIntegerT ModMul(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus,</a>
 <a name="1036"><span class="lineNum">    1036 </span>            :                           typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</a>
-<a name="1037"><span class="lineNum">    1037 </span><span class="lineCov">          8 :         auto av{m_value};</span></a>
-<a name="1038"><span class="lineNum">    1038 </span><span class="lineCov">      12360 :         auto bv{b.m_value};</span></a>
+<a name="1037"><span class="lineNum">    1037 </span><span class="lineCov">   27422663 :         auto av{m_value};</span></a>
+<a name="1038"><span class="lineNum">    1038 </span><span class="lineCov">     195156 :         auto bv{b.m_value};</span></a>
 <a name="1039"><span class="lineNum">    1039 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="1040"><span class="lineNum">    1040 </span><span class="lineCov">      12360 :         if (av &gt;= mv)</span></a>
+<a name="1040"><span class="lineNum">    1040 </span><span class="lineCov">   29255225 :         if (av &gt;= mv)</span></a>
 <a name="1041"><span class="lineNum">    1041 </span><span class="lineCov">          5 :             av = av % mv;</span></a>
-<a name="1042"><span class="lineNum">    1042 </span><span class="lineCov">      12360 :         if (bv &gt;= mv)</span></a>
-<a name="1043"><span class="lineNum">    1043 </span><span class="lineCov">          5 :             bv = bv % mv;</span></a>
-<a name="1044"><span class="lineNum">    1044 </span><span class="lineCov">      12360 :         DNativeInt rv{static_cast&lt;DNativeInt&gt;(av) * bv};</span></a>
-<a name="1045"><span class="lineNum">    1045 </span><span class="lineCov">      12360 :         DNativeInt dmv{mv};</span></a>
-<a name="1046"><span class="lineNum">    1046 </span><span class="lineCov">      12360 :         if (rv &gt;= dmv)</span></a>
-<a name="1047"><span class="lineNum">    1047 </span><span class="lineCov">      12346 :             rv %= dmv;</span></a>
+<a name="1042"><span class="lineNum">    1042 </span><span class="lineCov">   29250071 :         if (bv &gt;= mv)</span></a>
+<a name="1043"><span class="lineNum">    1043 </span><span class="lineCov">     407557 :             bv = bv % mv;</span></a>
+<a name="1044"><span class="lineNum">    1044 </span><span class="lineCov">   29255225 :         DNativeInt rv{static_cast&lt;DNativeInt&gt;(av) * bv};</span></a>
+<a name="1045"><span class="lineNum">    1045 </span><span class="lineCov">   29137798 :         DNativeInt dmv{mv};</span></a>
+<a name="1046"><span class="lineNum">    1046 </span><span class="lineCov">   29255225 :         if (rv &gt;= dmv)</span></a>
+<a name="1047"><span class="lineNum">    1047 </span><span class="lineCov">   10323226 :             rv %= dmv;</span></a>
 <a name="1048"><span class="lineNum">    1048 </span>            :         return {rv};</a>
 <a name="1049"><span class="lineNum">    1049 </span>            :     }</a>
 <a name="1050"><span class="lineNum">    1050 </span>            : </a>
@@ -1190,26 +1190,26 @@
 <a name="1128"><span class="lineNum">    1128 </span>            :    * @return is the result of the modulus multiplication operation.</a>
 <a name="1129"><span class="lineNum">    1129 </span>            :    */</a>
 <a name="1130"><span class="lineNum">    1130 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="1131"><span class="lineNum">    1131 </span><span class="lineCov">   17654795 :     NativeIntegerT ModMul(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="1131"><span class="lineNum">    1131 </span><span class="lineCov">   23774187 :     NativeIntegerT ModMul(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="1132"><span class="lineNum">    1132 </span>            :                           typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</a>
 <a name="1133"><span class="lineNum">    1133 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="1134"><span class="lineNum">    1134 </span>            :         auto av{*this};</a>
 <a name="1135"><span class="lineNum">    1135 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="1136"><span class="lineNum">    1136 </span>            :         typeD tmp;</a>
-<a name="1137"><span class="lineNum">    1137 </span><span class="lineCov">   17654795 :         int64_t n{modulus.GetMSB() - 2};</span></a>
-<a name="1138"><span class="lineNum">    1138 </span><span class="lineCov">   17654795 :         if (av.m_value &gt;= mv)</span></a>
+<a name="1137"><span class="lineNum">    1137 </span><span class="lineCov">   23774187 :         int64_t n{modulus.GetMSB() - 2};</span></a>
+<a name="1138"><span class="lineNum">    1138 </span><span class="lineCov">   23774187 :         if (av.m_value &gt;= mv)</span></a>
 <a name="1139"><span class="lineNum">    1139 </span>            :             ModMu(tmp, av, mv, mu.m_value, n);</a>
 <a name="1140"><span class="lineNum">    1140 </span>            :         auto bv{b};</a>
-<a name="1141"><span class="lineNum">    1141 </span><span class="lineCov">   17654795 :         if (bv.m_value &gt;= mv)</span></a>
+<a name="1141"><span class="lineNum">    1141 </span><span class="lineCov">   23774187 :         if (bv.m_value &gt;= mv)</span></a>
 <a name="1142"><span class="lineNum">    1142 </span>            :             ModMu(tmp, bv, mv, mu.m_value, n);</a>
 <a name="1143"><span class="lineNum">    1143 </span>            :         MultD(av.m_value, bv.m_value, tmp);</a>
 <a name="1144"><span class="lineNum">    1144 </span>            :         auto rv = GetD(tmp);</a>
-<a name="1145"><span class="lineNum">    1145 </span><span class="lineCov">   17654795 :         MultD(RShiftD(tmp, n), mu.m_value, tmp);</span></a>
-<a name="1146"><span class="lineNum">    1146 </span><span class="lineCov">   17654795 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
+<a name="1145"><span class="lineNum">    1145 </span><span class="lineCov">   23774187 :         MultD(RShiftD(tmp, n), mu.m_value, tmp);</span></a>
+<a name="1146"><span class="lineNum">    1146 </span><span class="lineCov">   23774187 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
 <a name="1147"><span class="lineNum">    1147 </span>            :         NativeIntegerT r(rv);</a>
-<a name="1148"><span class="lineNum">    1148 </span><span class="lineCov">   17654795 :         if (r.m_value &gt;= mv)</span></a>
-<a name="1149"><span class="lineNum">    1149 </span><span class="lineCov">    2586434 :             r.m_value -= mv;</span></a>
-<a name="1150"><span class="lineNum">    1150 </span><span class="lineCov">   17654795 :         return r;</span></a>
+<a name="1148"><span class="lineNum">    1148 </span><span class="lineCov">   23774187 :         if (r.m_value &gt;= mv)</span></a>
+<a name="1149"><span class="lineNum">    1149 </span><span class="lineCov">    3039914 :             r.m_value -= mv;</span></a>
+<a name="1150"><span class="lineNum">    1150 </span><span class="lineCov">   23774187 :         return r;</span></a>
 <a name="1151"><span class="lineNum">    1151 </span>            : #else</a>
 <a name="1152"><span class="lineNum">    1152 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="1153"><span class="lineNum">    1153 </span>            :         auto bv{b.m_value};</a>
@@ -1257,7 +1257,7 @@
 <a name="1195"><span class="lineNum">    1195 </span>            :    * @return is the result of the modulus multiplication operation.</a>
 <a name="1196"><span class="lineNum">    1196 </span>            :    */</a>
 <a name="1197"><span class="lineNum">    1197 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="1198"><span class="lineNum">    1198 </span><span class="lineCov">   56489863 :     NativeIntegerT&amp; ModMulEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="1198"><span class="lineNum">    1198 </span><span class="lineCov">   66848905 :     NativeIntegerT&amp; ModMulEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="1199"><span class="lineNum">    1199 </span>            :                              typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) {</a>
 <a name="1200"><span class="lineNum">    1200 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="1201"><span class="lineNum">    1201 </span>            :         auto av{*this};</a>
@@ -1265,19 +1265,19 @@
 <a name="1203"><span class="lineNum">    1203 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="1204"><span class="lineNum">    1204 </span>            :         typeD tmp;</a>
 <a name="1205"><span class="lineNum">    1205 </span>            :         auto&amp; muv{mu.m_value};</a>
-<a name="1206"><span class="lineNum">    1206 </span><span class="lineCov">   56489863 :         int64_t n{modulus.GetMSB() - 2};</span></a>
-<a name="1207"><span class="lineNum">    1207 </span><span class="lineCov">   56489863 :         if (av.m_value &gt;= mv)</span></a>
+<a name="1206"><span class="lineNum">    1206 </span><span class="lineCov">   66848905 :         int64_t n{modulus.GetMSB() - 2};</span></a>
+<a name="1207"><span class="lineNum">    1207 </span><span class="lineCov">   66848905 :         if (av.m_value &gt;= mv)</span></a>
 <a name="1208"><span class="lineNum">    1208 </span>            :             ModMu(tmp, av, mv, muv, n);</a>
-<a name="1209"><span class="lineNum">    1209 </span><span class="lineCov">   56489863 :         if (bv.m_value &gt;= mv)</span></a>
+<a name="1209"><span class="lineNum">    1209 </span><span class="lineCov">   66848905 :         if (bv.m_value &gt;= mv)</span></a>
 <a name="1210"><span class="lineNum">    1210 </span>            :             ModMu(tmp, bv, mv, muv, n);</a>
 <a name="1211"><span class="lineNum">    1211 </span>            :         MultD(av.m_value, bv.m_value, tmp);</a>
 <a name="1212"><span class="lineNum">    1212 </span>            :         auto rv = GetD(tmp);</a>
-<a name="1213"><span class="lineNum">    1213 </span><span class="lineCov">   56489863 :         MultD(RShiftD(tmp, n), muv, tmp);</span></a>
-<a name="1214"><span class="lineNum">    1214 </span><span class="lineCov">   56489863 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
-<a name="1215"><span class="lineNum">    1215 </span><span class="lineCov">   56489863 :         m_value = static_cast&lt;NativeInt&gt;(rv);</span></a>
-<a name="1216"><span class="lineNum">    1216 </span><span class="lineCov">   56489863 :         if (m_value &gt;= mv)</span></a>
-<a name="1217"><span class="lineNum">    1217 </span><span class="lineCov">    8790669 :             m_value -= mv;</span></a>
-<a name="1218"><span class="lineNum">    1218 </span><span class="lineCov">   56489863 :         return *this;</span></a>
+<a name="1213"><span class="lineNum">    1213 </span><span class="lineCov">   66848905 :         MultD(RShiftD(tmp, n), muv, tmp);</span></a>
+<a name="1214"><span class="lineNum">    1214 </span><span class="lineCov">   66848905 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
+<a name="1215"><span class="lineNum">    1215 </span><span class="lineCov">   66848905 :         m_value = static_cast&lt;NativeInt&gt;(rv);</span></a>
+<a name="1216"><span class="lineNum">    1216 </span><span class="lineCov">   66848905 :         if (m_value &gt;= mv)</span></a>
+<a name="1217"><span class="lineNum">    1217 </span><span class="lineCov">   10638293 :             m_value -= mv;</span></a>
+<a name="1218"><span class="lineNum">    1218 </span><span class="lineCov">   66848905 :         return *this;</span></a>
 <a name="1219"><span class="lineNum">    1219 </span>            : #else</a>
 <a name="1220"><span class="lineNum">    1220 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="1221"><span class="lineNum">    1221 </span>            :         auto bv{b.m_value};</a>
@@ -1327,10 +1327,10 @@
 <a name="1265"><span class="lineNum">    1265 </span>            :     template &lt;typename T = NativeInt&gt;</a>
 <a name="1266"><span class="lineNum">    1266 </span>            :     NativeIntegerT ModMulFast(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus,</a>
 <a name="1267"><span class="lineNum">    1267 </span>            :                               typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</a>
-<a name="1268"><span class="lineNum">    1268 </span>            :         DNativeInt rv{static_cast&lt;DNativeInt&gt;(m_value) * b.m_value};</a>
-<a name="1269"><span class="lineNum">    1269 </span>            :         DNativeInt dmv{modulus.m_value};</a>
-<a name="1270"><span class="lineNum">    1270 </span>            :         if (rv &gt;= dmv)</a>
-<a name="1271"><span class="lineNum">    1271 </span>            :             rv %= dmv;</a>
+<a name="1268"><span class="lineNum">    1268 </span><span class="lineCov">        491 :         DNativeInt rv{static_cast&lt;DNativeInt&gt;(m_value) * b.m_value};</span></a>
+<a name="1269"><span class="lineNum">    1269 </span><span class="lineCov">        491 :         DNativeInt dmv{modulus.m_value};</span></a>
+<a name="1270"><span class="lineNum">    1270 </span><span class="lineCov">        491 :         if (rv &gt;= dmv)</span></a>
+<a name="1271"><span class="lineNum">    1271 </span><span class="lineCov">        163 :             rv %= dmv;</span></a>
 <a name="1272"><span class="lineNum">    1272 </span>            :         return {rv};</a>
 <a name="1273"><span class="lineNum">    1273 </span>            :     }</a>
 <a name="1274"><span class="lineNum">    1274 </span>            : </a>
@@ -1362,11 +1362,11 @@
 <a name="1300"><span class="lineNum">    1300 </span>            :     template &lt;typename T = NativeInt&gt;</a>
 <a name="1301"><span class="lineNum">    1301 </span>            :     NativeIntegerT ModMulFastEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus,</a>
 <a name="1302"><span class="lineNum">    1302 </span>            :                                 typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) {</a>
-<a name="1303"><span class="lineNum">    1303 </span><span class="lineCov">   35104636 :         DNativeInt rv{static_cast&lt;DNativeInt&gt;(m_value) * b.m_value};</span></a>
-<a name="1304"><span class="lineNum">    1304 </span><span class="lineCov">   35104636 :         DNativeInt dmv{modulus.m_value};</span></a>
-<a name="1305"><span class="lineNum">    1305 </span><span class="lineCov">   35104636 :         if (rv &gt;= dmv)</span></a>
-<a name="1306"><span class="lineNum">    1306 </span><span class="lineCov">   28724126 :             rv %= dmv;</span></a>
-<a name="1307"><span class="lineNum">    1307 </span><span class="lineCov">   35104636 :         return *this = static_cast&lt;NativeInt&gt;(rv);</span></a>
+<a name="1303"><span class="lineNum">    1303 </span><span class="lineCov">   50104505 :         DNativeInt rv{static_cast&lt;DNativeInt&gt;(m_value) * b.m_value};</span></a>
+<a name="1304"><span class="lineNum">    1304 </span><span class="lineCov">   50065593 :         DNativeInt dmv{modulus.m_value};</span></a>
+<a name="1305"><span class="lineNum">    1305 </span><span class="lineCov">   50104505 :         if (rv &gt;= dmv)</span></a>
+<a name="1306"><span class="lineNum">    1306 </span><span class="lineCov">   42315241 :             rv %= dmv;</span></a>
+<a name="1307"><span class="lineNum">    1307 </span><span class="lineCov">   50104505 :         return *this = static_cast&lt;NativeInt&gt;(rv);</span></a>
 <a name="1308"><span class="lineNum">    1308 </span>            :     }</a>
 <a name="1309"><span class="lineNum">    1309 </span>            : </a>
 <a name="1310"><span class="lineNum">    1310 </span>            :     template &lt;typename T = NativeInt&gt;</a>
@@ -1412,19 +1412,19 @@
 <a name="1350"><span class="lineNum">    1350 </span>            :     than 2^(2*n + 3). The value of \mu is computed by NativeVector::ComputeMu.</a>
 <a name="1351"><span class="lineNum">    1351 </span>            :     */</a>
 <a name="1352"><span class="lineNum">    1352 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="1353"><span class="lineNum">    1353 </span>            :     NativeIntegerT ModMulFast(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</a>
+<a name="1353"><span class="lineNum">    1353 </span><span class="lineCov"> 1209630000 :     NativeIntegerT ModMulFast(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="1354"><span class="lineNum">    1354 </span>            :                               typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) const {</a>
-<a name="1355"><span class="lineNum">    1355 </span>            :         int64_t n = modulus.GetMSB() - 2;</a>
+<a name="1355"><span class="lineNum">    1355 </span><span class="lineCov"> 1209630000 :         int64_t n = modulus.GetMSB() - 2;</span></a>
 <a name="1356"><span class="lineNum">    1356 </span>            :         auto&amp; mv{modulus.m_value};</a>
 <a name="1357"><span class="lineNum">    1357 </span>            :         typeD tmp;</a>
-<a name="1358"><span class="lineNum">    1358 </span>            :         MultD(m_value, b.m_value, tmp);</a>
+<a name="1358"><span class="lineNum">    1358 </span><span class="lineCov"> 1209630000 :         MultD(m_value, b.m_value, tmp);</span></a>
 <a name="1359"><span class="lineNum">    1359 </span>            :         auto rv = GetD(tmp);</a>
-<a name="1360"><span class="lineNum">    1360 </span>            :         MultD(RShiftD(tmp, n), mu.m_value, tmp);</a>
-<a name="1361"><span class="lineNum">    1361 </span>            :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</a>
+<a name="1360"><span class="lineNum">    1360 </span><span class="lineCov"> 1209630000 :         MultD(RShiftD(tmp, n), mu.m_value, tmp);</span></a>
+<a name="1361"><span class="lineNum">    1361 </span><span class="lineCov"> 1209630000 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
 <a name="1362"><span class="lineNum">    1362 </span>            :         NativeIntegerT r(rv);</a>
-<a name="1363"><span class="lineNum">    1363 </span>            :         if (r.m_value &gt;= mv)</a>
-<a name="1364"><span class="lineNum">    1364 </span>            :             r.m_value -= mv;</a>
-<a name="1365"><span class="lineNum">    1365 </span>            :         return r;</a>
+<a name="1363"><span class="lineNum">    1363 </span><span class="lineCov"> 1209630000 :         if (r.m_value &gt;= mv)</span></a>
+<a name="1364"><span class="lineNum">    1364 </span><span class="lineCov">   23949900 :             r.m_value -= mv;</span></a>
+<a name="1365"><span class="lineNum">    1365 </span><span class="lineCov"> 1209630000 :         return r;</span></a>
 <a name="1366"><span class="lineNum">    1366 </span>            :     }</a>
 <a name="1367"><span class="lineNum">    1367 </span>            : </a>
 <a name="1368"><span class="lineNum">    1368 </span>            :     template &lt;typename T = NativeInt&gt;</a>
@@ -1453,19 +1453,19 @@
 <a name="1391"><span class="lineNum">    1391 </span>            :    * @return is the result of the modulus multiplication operation.</a>
 <a name="1392"><span class="lineNum">    1392 </span>            :    */</a>
 <a name="1393"><span class="lineNum">    1393 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="1394"><span class="lineNum">    1394 </span><span class="lineCov"> 6025882968 :     NativeIntegerT&amp; ModMulFastEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
+<a name="1394"><span class="lineNum">    1394 </span><span class="lineCov"> 6040352138 :     NativeIntegerT&amp; ModMulFastEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus, const NativeIntegerT&amp; mu,</span></a>
 <a name="1395"><span class="lineNum">    1395 </span>            :                                  typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) {</a>
 <a name="1396"><span class="lineNum">    1396 </span>            :         typeD tmp;</a>
-<a name="1397"><span class="lineNum">    1397 </span><span class="lineCov"> 6025882968 :         MultD(m_value, b.m_value, tmp);</span></a>
+<a name="1397"><span class="lineNum">    1397 </span><span class="lineCov"> 6040352138 :         MultD(m_value, b.m_value, tmp);</span></a>
 <a name="1398"><span class="lineNum">    1398 </span>            :         auto rv{GetD(tmp)};</a>
-<a name="1399"><span class="lineNum">    1399 </span><span class="lineCov"> 6025882968 :         int64_t n{modulus.GetMSB() - 2};</span></a>
-<a name="1400"><span class="lineNum">    1400 </span><span class="lineCov"> 6025882968 :         MultD(RShiftD(tmp, n), mu.m_value, tmp);</span></a>
+<a name="1399"><span class="lineNum">    1399 </span><span class="lineCov"> 6040352138 :         int64_t n{modulus.GetMSB() - 2};</span></a>
+<a name="1400"><span class="lineNum">    1400 </span><span class="lineCov"> 6040352138 :         MultD(RShiftD(tmp, n), mu.m_value, tmp);</span></a>
 <a name="1401"><span class="lineNum">    1401 </span>            :         auto&amp; mv{modulus.m_value};</a>
-<a name="1402"><span class="lineNum">    1402 </span><span class="lineCov"> 6025882968 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
-<a name="1403"><span class="lineNum">    1403 </span><span class="lineCov"> 6025882968 :         m_value = NativeInt(rv);</span></a>
-<a name="1404"><span class="lineNum">    1404 </span><span class="lineCov"> 6025882968 :         if (m_value &gt;= mv)</span></a>
-<a name="1405"><span class="lineNum">    1405 </span><span class="lineCov">  821281824 :             m_value -= mv;</span></a>
-<a name="1406"><span class="lineNum">    1406 </span><span class="lineCov"> 6025882968 :         return *this;</span></a>
+<a name="1402"><span class="lineNum">    1402 </span><span class="lineCov"> 6040352138 :         rv -= DNativeInt(mv) * (GetD(tmp) &gt;&gt; (n + 7));</span></a>
+<a name="1403"><span class="lineNum">    1403 </span><span class="lineCov"> 6040352138 :         m_value = NativeInt(rv);</span></a>
+<a name="1404"><span class="lineNum">    1404 </span><span class="lineCov"> 6040352138 :         if (m_value &gt;= mv)</span></a>
+<a name="1405"><span class="lineNum">    1405 </span><span class="lineCov">  821534173 :             m_value -= mv;</span></a>
+<a name="1406"><span class="lineNum">    1406 </span><span class="lineCov"> 6040352138 :         return *this;</span></a>
 <a name="1407"><span class="lineNum">    1407 </span>            :     }</a>
 <a name="1408"><span class="lineNum">    1408 </span>            : </a>
 <a name="1409"><span class="lineNum">    1409 </span>            :     template &lt;typename T = NativeInt&gt;</a>
@@ -1501,13 +1501,13 @@
 <a name="1439"><span class="lineNum">    1439 </span>            :    * @return the precomputed factor.</a>
 <a name="1440"><span class="lineNum">    1440 </span>            :    */</a>
 <a name="1441"><span class="lineNum">    1441 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="1442"><span class="lineNum">    1442 </span><span class="lineCov">    4713912 :     NativeIntegerT PrepModMulConst(</span></a>
+<a name="1442"><span class="lineNum">    1442 </span><span class="lineCov">   20841840 :     NativeIntegerT PrepModMulConst(</span></a>
 <a name="1443"><span class="lineNum">    1443 </span>            :         const NativeIntegerT&amp; modulus,</a>
 <a name="1444"><span class="lineNum">    1444 </span>            :         typename std::enable_if&lt;!std::is_same&lt;T, DNativeInt&gt;::value, bool&gt;::type = true) const {</a>
-<a name="1445"><span class="lineNum">    1445 </span><span class="lineCov">    4713912 :         if (modulus.m_value == 0)</span></a>
+<a name="1445"><span class="lineNum">    1445 </span><span class="lineCov">   20841840 :         if (modulus.m_value == 0)</span></a>
 <a name="1446"><span class="lineNum">    1446 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;Divide by zero&quot;);</span></a>
-<a name="1447"><span class="lineNum">    1447 </span><span class="lineCov">    4713912 :         auto&amp;&amp; w{DNativeInt(m_value) &lt;&lt; NativeIntegerT::MaxBits()};</span></a>
-<a name="1448"><span class="lineNum">    1448 </span><span class="lineCov">    4713912 :         return {w / DNativeInt(modulus.m_value)};</span></a>
+<a name="1447"><span class="lineNum">    1447 </span><span class="lineCov">   20841840 :         auto&amp;&amp; w{DNativeInt(m_value) &lt;&lt; NativeIntegerT::MaxBits()};</span></a>
+<a name="1448"><span class="lineNum">    1448 </span><span class="lineCov">   20841840 :         return {w / DNativeInt(modulus.m_value)};</span></a>
 <a name="1449"><span class="lineNum">    1449 </span>            :     }</a>
 <a name="1450"><span class="lineNum">    1450 </span>            : </a>
 <a name="1451"><span class="lineNum">    1451 </span>            :     template &lt;typename T = NativeInt&gt;</a>
@@ -1530,9 +1530,9 @@
 <a name="1468"><span class="lineNum">    1468 </span>            :    */</a>
 <a name="1469"><span class="lineNum">    1469 </span>            :     NativeIntegerT ModMulFastConst(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus,</a>
 <a name="1470"><span class="lineNum">    1470 </span>            :                                    const NativeIntegerT&amp; bInv) const {</a>
-<a name="1471"><span class="lineNum">    1471 </span><span class="lineCov">    4956249 :         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;</span></a>
-<a name="1472"><span class="lineNum">    1472 </span><span class="lineCov">    4956249 :         auto yprime = static_cast&lt;SignedNativeInt&gt;(m_value * b.m_value - q * modulus.m_value);</span></a>
-<a name="1473"><span class="lineNum">    1473 </span><span class="lineCov">    4886059 :         return {yprime &gt;= 0 ? yprime : yprime + modulus.m_value};</span></a>
+<a name="1471"><span class="lineNum">    1471 </span><span class="lineCov">   10654764 :         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;</span></a>
+<a name="1472"><span class="lineNum">    1472 </span><span class="lineCov">   10654764 :         auto yprime = static_cast&lt;SignedNativeInt&gt;(m_value * b.m_value - q * modulus.m_value);</span></a>
+<a name="1473"><span class="lineNum">    1473 </span><span class="lineCov">   10514384 :         return {yprime &gt;= 0 ? yprime : yprime + modulus.m_value};</span></a>
 <a name="1474"><span class="lineNum">    1474 </span>            :     }</a>
 <a name="1475"><span class="lineNum">    1475 </span>            : </a>
 <a name="1476"><span class="lineNum">    1476 </span>            :     /**</a>
@@ -1546,9 +1546,9 @@
 <a name="1484"><span class="lineNum">    1484 </span>            :    */</a>
 <a name="1485"><span class="lineNum">    1485 </span>            :     NativeIntegerT&amp; ModMulFastConstEq(const NativeIntegerT&amp; b, const NativeIntegerT&amp; modulus,</a>
 <a name="1486"><span class="lineNum">    1486 </span>            :                                       const NativeIntegerT&amp; bInv) {</a>
-<a name="1487"><span class="lineNum">    1487 </span><span class="lineCov"> 5181021960 :         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;</span></a>
-<a name="1488"><span class="lineNum">    1488 </span><span class="lineCov"> 5181021960 :         auto yprime = static_cast&lt;SignedNativeInt&gt;(m_value * b.m_value - q * modulus.m_value);</span></a>
-<a name="1489"><span class="lineNum">    1489 </span><span class="lineCov"> 5180671990 :         m_value     = static_cast&lt;NativeInt&gt;(yprime &gt;= 0 ? yprime : yprime + modulus.m_value);</span></a>
+<a name="1487"><span class="lineNum">    1487 </span><span class="lineCov">29850161960 :         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;</span></a>
+<a name="1488"><span class="lineNum">    1488 </span><span class="lineCov">29850161960 :         auto yprime = static_cast&lt;SignedNativeInt&gt;(m_value * b.m_value - q * modulus.m_value);</span></a>
+<a name="1489"><span class="lineNum">    1489 </span><span class="lineCov">29754921990 :         m_value     = static_cast&lt;NativeInt&gt;(yprime &gt;= 0 ? yprime : yprime + modulus.m_value);</span></a>
 <a name="1490"><span class="lineNum">    1490 </span>            :         return *this;</a>
 <a name="1491"><span class="lineNum">    1491 </span>            :     }</a>
 <a name="1492"><span class="lineNum">    1492 </span>            : </a>
@@ -1560,28 +1560,28 @@
 <a name="1498"><span class="lineNum">    1498 </span>            :    * @return is the result of the modulus exponentiation operation.</a>
 <a name="1499"><span class="lineNum">    1499 </span>            :    */</a>
 <a name="1500"><span class="lineNum">    1500 </span>            :     template &lt;typename T = NativeInt&gt;</a>
-<a name="1501"><span class="lineNum">    1501 </span><span class="lineCov">    8859749 :     NativeIntegerT ModExp(const NativeIntegerT&amp; b, const NativeIntegerT&amp; mod,</span></a>
+<a name="1501"><span class="lineNum">    1501 </span><span class="lineCov">   10573207 :     NativeIntegerT ModExp(const NativeIntegerT&amp; b, const NativeIntegerT&amp; mod,</span></a>
 <a name="1502"><span class="lineNum">    1502 </span>            :                           typename std::enable_if&lt;!std::is_same&lt;T, DNativeInt&gt;::value, bool&gt;::type = true) const {</a>
-<a name="1503"><span class="lineNum">    1503 </span><span class="lineCov">    8859749 :         DNativeInt t{m_value};</span></a>
-<a name="1504"><span class="lineNum">    1504 </span><span class="lineCov">    8859749 :         DNativeInt p{b.m_value};</span></a>
-<a name="1505"><span class="lineNum">    1505 </span><span class="lineCov">    8859749 :         DNativeInt m{mod.m_value};</span></a>
+<a name="1503"><span class="lineNum">    1503 </span><span class="lineCov">   10573207 :         DNativeInt t{m_value};</span></a>
+<a name="1504"><span class="lineNum">    1504 </span><span class="lineCov">   10573207 :         DNativeInt p{b.m_value};</span></a>
+<a name="1505"><span class="lineNum">    1505 </span><span class="lineCov">   10573207 :         DNativeInt m{mod.m_value};</span></a>
 <a name="1506"><span class="lineNum">    1506 </span>            :         DNativeInt r{1};</a>
-<a name="1507"><span class="lineNum">    1507 </span><span class="lineCov">    8859749 :         if (p &amp; 0x1) {</span></a>
+<a name="1507"><span class="lineNum">    1507 </span><span class="lineCov">   10573207 :         if (p &amp; 0x1) {</span></a>
 <a name="1508"><span class="lineNum">    1508 </span>            :             r = r * t;</a>
-<a name="1509"><span class="lineNum">    1509 </span><span class="lineCov">    8589781 :             if (r &gt;= m)</span></a>
+<a name="1509"><span class="lineNum">    1509 </span><span class="lineCov">   10187939 :             if (r &gt;= m)</span></a>
 <a name="1510"><span class="lineNum">    1510 </span><span class="lineNoCov">          0 :                 r = r % m;</span></a>
 <a name="1511"><span class="lineNum">    1511 </span>            :         }</a>
-<a name="1512"><span class="lineNum">    1512 </span><span class="lineCov">  197854414 :         while (p &gt;&gt;= 1) {</span></a>
-<a name="1513"><span class="lineNum">    1513 </span><span class="lineCov">  188995005 :             t = t * t;</span></a>
-<a name="1514"><span class="lineNum">    1514 </span><span class="lineCov">  188995005 :             if (t &gt;= m)</span></a>
-<a name="1515"><span class="lineNum">    1515 </span><span class="lineCov">  187343016 :                 t = t % m;</span></a>
-<a name="1516"><span class="lineNum">    1516 </span><span class="lineCov">  188995005 :             if (p &amp; 0x1) {</span></a>
-<a name="1517"><span class="lineNum">    1517 </span><span class="lineCov">  134002965 :                 r = r * t;</span></a>
-<a name="1518"><span class="lineNum">    1518 </span><span class="lineCov">  134002965 :                 if (r &gt;= m)</span></a>
-<a name="1519"><span class="lineNum">    1519 </span><span class="lineCov">  133161102 :                     r = r % m;</span></a>
+<a name="1512"><span class="lineNum">    1512 </span><span class="lineCov">  255794536 :         while (p &gt;&gt;= 1) {</span></a>
+<a name="1513"><span class="lineNum">    1513 </span><span class="lineCov">  245221659 :             t = t * t;</span></a>
+<a name="1514"><span class="lineNum">    1514 </span><span class="lineCov">  245221659 :             if (t &gt;= m)</span></a>
+<a name="1515"><span class="lineNum">    1515 </span><span class="lineCov">  243081004 :                 t = t % m;</span></a>
+<a name="1516"><span class="lineNum">    1516 </span><span class="lineCov">  245221659 :             if (p &amp; 0x1) {</span></a>
+<a name="1517"><span class="lineNum">    1517 </span><span class="lineCov">  144237412 :                 r = r * t;</span></a>
+<a name="1518"><span class="lineNum">    1518 </span><span class="lineCov">  144237412 :                 if (r &gt;= m)</span></a>
+<a name="1519"><span class="lineNum">    1519 </span><span class="lineCov">  143113333 :                     r = r % m;</span></a>
 <a name="1520"><span class="lineNum">    1520 </span>            :             }</a>
 <a name="1521"><span class="lineNum">    1521 </span>            :         }</a>
-<a name="1522"><span class="lineNum">    1522 </span><span class="lineCov">    8859749 :         return {r};</span></a>
+<a name="1522"><span class="lineNum">    1522 </span><span class="lineCov">   10573207 :         return {r};</span></a>
 <a name="1523"><span class="lineNum">    1523 </span>            :     }</a>
 <a name="1524"><span class="lineNum">    1524 </span>            : </a>
 <a name="1525"><span class="lineNum">    1525 </span>            :     template &lt;typename T = NativeInt&gt;</a>
@@ -1618,30 +1618,30 @@
 <a name="1556"><span class="lineNum">    1556 </span>            :    * @param &amp;modulus is the modulus to perform.</a>
 <a name="1557"><span class="lineNum">    1557 </span>            :    * @return is the result of the modulus inverse operation.</a>
 <a name="1558"><span class="lineNum">    1558 </span>            :    */</a>
-<a name="1559"><span class="lineNum">    1559 </span><span class="lineCov">       2363 :     NativeIntegerT ModInverse(const NativeIntegerT&amp; mod) const {</span></a>
-<a name="1560"><span class="lineNum">    1560 </span><span class="lineCov">       2363 :         SignedNativeInt modulus(mod.m_value);</span></a>
-<a name="1561"><span class="lineNum">    1561 </span><span class="lineCov">       2363 :         SignedNativeInt a(m_value % mod.m_value);</span></a>
-<a name="1562"><span class="lineNum">    1562 </span><span class="lineCov">       2363 :         if (a == 0) {</span></a>
+<a name="1559"><span class="lineNum">    1559 </span><span class="lineCov">     253634 :     NativeIntegerT ModInverse(const NativeIntegerT&amp; mod) const {</span></a>
+<a name="1560"><span class="lineNum">    1560 </span><span class="lineCov">     253634 :         SignedNativeInt modulus(mod.m_value);</span></a>
+<a name="1561"><span class="lineNum">    1561 </span><span class="lineCov">     253634 :         SignedNativeInt a(m_value % mod.m_value);</span></a>
+<a name="1562"><span class="lineNum">    1562 </span><span class="lineCov">     253634 :         if (a == 0) {</span></a>
 <a name="1563"><span class="lineNum">    1563 </span><span class="lineCov">          2 :             std::string msg = NativeIntegerT::toString(m_value) + &quot; does not have a ModInverse using &quot; +</span></a>
 <a name="1564"><span class="lineNum">    1564 </span>            :                               NativeIntegerT::toString(mod.m_value);</a>
 <a name="1565"><span class="lineNum">    1565 </span><span class="lineCov">          4 :             OPENFHE_THROW(msg);</span></a>
 <a name="1566"><span class="lineNum">    1566 </span>            :         }</a>
-<a name="1567"><span class="lineNum">    1567 </span><span class="lineCov">       2362 :         if (modulus == 1)</span></a>
+<a name="1567"><span class="lineNum">    1567 </span><span class="lineCov">     253633 :         if (modulus == 1)</span></a>
 <a name="1568"><span class="lineNum">    1568 </span><span class="lineNoCov">          0 :             return NativeIntegerT();</span></a>
 <a name="1569"><span class="lineNum">    1569 </span>            : </a>
 <a name="1570"><span class="lineNum">    1570 </span>            :         SignedNativeInt y{0};</a>
 <a name="1571"><span class="lineNum">    1571 </span>            :         SignedNativeInt x{1};</a>
-<a name="1572"><span class="lineNum">    1572 </span><span class="lineCov">      11612 :         while (a &gt; 1) {</span></a>
+<a name="1572"><span class="lineNum">    1572 </span><span class="lineCov">    2926826 :         while (a &gt; 1) {</span></a>
 <a name="1573"><span class="lineNum">    1573 </span>            :             auto t  = modulus;</a>
-<a name="1574"><span class="lineNum">    1574 </span><span class="lineCov">       9250 :             auto q  = a / t;</span></a>
-<a name="1575"><span class="lineNum">    1575 </span><span class="lineCov">       9250 :             modulus = a % t;</span></a>
+<a name="1574"><span class="lineNum">    1574 </span><span class="lineCov">    2673194 :             auto q  = a / t;</span></a>
+<a name="1575"><span class="lineNum">    1575 </span><span class="lineCov">    2673194 :             modulus = a % t;</span></a>
 <a name="1576"><span class="lineNum">    1576 </span>            :             a       = t;</a>
 <a name="1577"><span class="lineNum">    1577 </span>            :             t       = y;</a>
-<a name="1578"><span class="lineNum">    1578 </span><span class="lineCov">       9250 :             y       = x - q * y;</span></a>
+<a name="1578"><span class="lineNum">    1578 </span><span class="lineCov">    2673194 :             y       = x - q * y;</span></a>
 <a name="1579"><span class="lineNum">    1579 </span>            :             x       = t;</a>
 <a name="1580"><span class="lineNum">    1580 </span>            :         }</a>
-<a name="1581"><span class="lineNum">    1581 </span><span class="lineCov">       2362 :         if (x &lt; 0)</span></a>
-<a name="1582"><span class="lineNum">    1582 </span><span class="lineCov">       1140 :             x += mod.m_value;</span></a>
+<a name="1581"><span class="lineNum">    1581 </span><span class="lineCov">     253633 :         if (x &lt; 0)</span></a>
+<a name="1582"><span class="lineNum">    1582 </span><span class="lineCov">     129580 :             x += mod.m_value;</span></a>
 <a name="1583"><span class="lineNum">    1583 </span>            :         return {x};</a>
 <a name="1584"><span class="lineNum">    1584 </span>            :     }</a>
 <a name="1585"><span class="lineNum">    1585 </span>            : </a>
@@ -1662,7 +1662,7 @@
 <a name="1600"><span class="lineNum">    1600 </span>            :    * @return result of the shift operation.</a>
 <a name="1601"><span class="lineNum">    1601 </span>            :    */</a>
 <a name="1602"><span class="lineNum">    1602 </span>            :     NativeIntegerT LShift(usshort shift) const {</a>
-<a name="1603"><span class="lineNum">    1603 </span><span class="lineCov"> 1148249795 :         return {m_value &lt;&lt; shift};</span></a>
+<a name="1603"><span class="lineNum">    1603 </span><span class="lineCov"> 2294673383 :         return {m_value &lt;&lt; shift};</span></a>
 <a name="1604"><span class="lineNum">    1604 </span>            :     }</a>
 <a name="1605"><span class="lineNum">    1605 </span>            : </a>
 <a name="1606"><span class="lineNum">    1606 </span>            :     /**</a>
@@ -1682,7 +1682,7 @@
 <a name="1620"><span class="lineNum">    1620 </span>            :    * @return result of the shift operation.</a>
 <a name="1621"><span class="lineNum">    1621 </span>            :    */</a>
 <a name="1622"><span class="lineNum">    1622 </span>            :     NativeIntegerT RShift(usshort shift) const {</a>
-<a name="1623"><span class="lineNum">    1623 </span><span class="lineCov">    9745242 :         return {m_value &gt;&gt; shift};</span></a>
+<a name="1623"><span class="lineNum">    1623 </span><span class="lineCov">   14883682 :         return {m_value &gt;&gt; shift};</span></a>
 <a name="1624"><span class="lineNum">    1624 </span>            :     }</a>
 <a name="1625"><span class="lineNum">    1625 </span>            : </a>
 <a name="1626"><span class="lineNum">    1626 </span>            :     /**</a>
@@ -1692,7 +1692,7 @@
 <a name="1630"><span class="lineNum">    1630 </span>            :    * @return result of the shift operation.</a>
 <a name="1631"><span class="lineNum">    1631 </span>            :    */</a>
 <a name="1632"><span class="lineNum">    1632 </span>            :     NativeIntegerT&amp; RShiftEq(usshort shift) {</a>
-<a name="1633"><span class="lineNum">    1633 </span><span class="lineCov">    3423141 :         return *this = m_value &gt;&gt; shift;</span></a>
+<a name="1633"><span class="lineNum">    1633 </span><span class="lineCov">    5639372 :         return *this = m_value &gt;&gt; shift;</span></a>
 <a name="1634"><span class="lineNum">    1634 </span>            :     }</a>
 <a name="1635"><span class="lineNum">    1635 </span>            : </a>
 <a name="1636"><span class="lineNum">    1636 </span>            :     /**</a>
@@ -1703,7 +1703,7 @@
 <a name="1641"><span class="lineNum">    1641 </span>            :    * greater than conditons.</a>
 <a name="1642"><span class="lineNum">    1642 </span>            :    */</a>
 <a name="1643"><span class="lineNum">    1643 </span>            :     int Compare(const NativeIntegerT&amp; a) const {</a>
-<a name="1644"><span class="lineNum">    1644 </span><span class="lineCov"> 9879896172 :         return (m_value &lt; a.m_value) ? -1 : (m_value &gt; a.m_value) ? 1 : 0;</span></a>
+<a name="1644"><span class="lineNum">    1644 </span><span class="lineCov">45938046833 :         return (m_value &lt; a.m_value) ? -1 : (m_value &gt; a.m_value) ? 1 : 0;</span></a>
 <a name="1645"><span class="lineNum">    1645 </span>            :     }</a>
 <a name="1646"><span class="lineNum">    1646 </span>            : </a>
 <a name="1647"><span class="lineNum">    1647 </span>            :     /**</a>
@@ -1716,7 +1716,7 @@
 <a name="1654"><span class="lineNum">    1654 </span>            :                                bool&gt; = true&gt;</a>
 <a name="1655"><span class="lineNum">    1655 </span>            :     constexpr T ConvertToInt() const noexcept {</a>
 <a name="1656"><span class="lineNum">    1656 </span>            :         // static_assert(sizeof(T) &gt;= sizeof(m_value), &quot;ConvertToInt(): Narrowing Conversion&quot;);</a>
-<a name="1657"><span class="lineNum">    1657 </span><span class="lineCov">  710173047 :         return static_cast&lt;T&gt;(m_value);</span></a>
+<a name="1657"><span class="lineNum">    1657 </span><span class="lineCov"> 1859315601 :         return static_cast&lt;T&gt;(m_value);</span></a>
 <a name="1658"><span class="lineNum">    1658 </span>            :     }</a>
 <a name="1659"><span class="lineNum">    1659 </span>            : </a>
 <a name="1660"><span class="lineNum">    1660 </span>            :     /**</a>
@@ -1725,7 +1725,7 @@
 <a name="1663"><span class="lineNum">    1663 </span>            :    * @return double representation of the value.</a>
 <a name="1664"><span class="lineNum">    1664 </span>            :    */</a>
 <a name="1665"><span class="lineNum">    1665 </span>            :     constexpr double ConvertToDouble() const noexcept {</a>
-<a name="1666"><span class="lineNum">    1666 </span><span class="lineCov">     834040 :         return static_cast&lt;double&gt;(m_value);</span></a>
+<a name="1666"><span class="lineNum">    1666 </span><span class="lineCov">    1689086 :         return static_cast&lt;double&gt;(m_value);</span></a>
 <a name="1667"><span class="lineNum">    1667 </span>            :     }</a>
 <a name="1668"><span class="lineNum">    1668 </span>            : </a>
 <a name="1669"><span class="lineNum">    1669 </span>            :     /**</a>
@@ -1753,7 +1753,7 @@
 <a name="1691"><span class="lineNum">    1691 </span>            :    * @return the index of the most significant bit.</a>
 <a name="1692"><span class="lineNum">    1692 </span>            :    */</a>
 <a name="1693"><span class="lineNum">    1693 </span>            :     usint GetMSB() const {</a>
-<a name="1694"><span class="lineNum">    1694 </span><span class="lineCov">  989172192 :         return lbcrypto::GetMSB(m_value);</span></a>
+<a name="1694"><span class="lineNum">    1694 </span><span class="lineCov"> 2224728610 :         return lbcrypto::GetMSB(m_value);</span></a>
 <a name="1695"><span class="lineNum">    1695 </span>            :     }</a>
 <a name="1696"><span class="lineNum">    1696 </span>            : </a>
 <a name="1697"><span class="lineNum">    1697 </span>            :     /**</a>
@@ -1785,14 +1785,14 @@
 <a name="1723"><span class="lineNum">    1723 </span>            :    */</a>
 <a name="1724"><span class="lineNum">    1724 </span>            : </a>
 <a name="1725"><span class="lineNum">    1725 </span>            :     // TODO: * i to &lt;&lt; i</a>
-<a name="1726"><span class="lineNum">    1726 </span><span class="lineCov">   71532904 :     usint GetDigitAtIndexForBase(usint index, usint base) const {</span></a>
-<a name="1727"><span class="lineNum">    1727 </span><span class="lineCov">   71532904 :         usint DigitLen = ceil(log2(base));</span></a>
+<a name="1726"><span class="lineNum">    1726 </span><span class="lineCov">  143065804 :     usint GetDigitAtIndexForBase(usint index, usint base) const {</span></a>
+<a name="1727"><span class="lineNum">    1727 </span><span class="lineCov">  143065804 :         usint DigitLen = ceil(log2(base));</span></a>
 <a name="1728"><span class="lineNum">    1728 </span>            :         usint digit    = 0;</a>
-<a name="1729"><span class="lineNum">    1729 </span><span class="lineCov">   71532904 :         usint newIndex = 1 + (index - 1) * DigitLen;</span></a>
-<a name="1730"><span class="lineNum">    1730 </span><span class="lineCov">  768750008 :         for (usint i = 1; i &lt; base; i &lt;&lt;= 1) {</span></a>
-<a name="1731"><span class="lineNum">    1731 </span><span class="lineCov">  697217004 :             digit += GetBitAtIndex(newIndex++) * i;</span></a>
+<a name="1729"><span class="lineNum">    1729 </span><span class="lineCov">  143065804 :         usint newIndex = 1 + (index - 1) * DigitLen;</span></a>
+<a name="1730"><span class="lineNum">    1730 </span><span class="lineCov"> 1537500008 :         for (usint i = 1; i &lt; base; i &lt;&lt;= 1) {</span></a>
+<a name="1731"><span class="lineNum">    1731 </span><span class="lineCov"> 1394434004 :             digit += GetBitAtIndex(newIndex++) * i;</span></a>
 <a name="1732"><span class="lineNum">    1732 </span>            :         }</a>
-<a name="1733"><span class="lineNum">    1733 </span><span class="lineCov">   71532904 :         return digit;</span></a>
+<a name="1733"><span class="lineNum">    1733 </span><span class="lineCov">  143065804 :         return digit;</span></a>
 <a name="1734"><span class="lineNum">    1734 </span>            :     }</a>
 <a name="1735"><span class="lineNum">    1735 </span>            : </a>
 <a name="1736"><span class="lineNum">    1736 </span>            :     /**</a>
@@ -1801,10 +1801,10 @@
 <a name="1739"><span class="lineNum">    1739 </span>            :    * @param index is the index of the bit to get.</a>
 <a name="1740"><span class="lineNum">    1740 </span>            :    * @return resulting bit.</a>
 <a name="1741"><span class="lineNum">    1741 </span>            :    */</a>
-<a name="1742"><span class="lineNum">    1742 </span><span class="lineCov">  697217056 :     uschar GetBitAtIndex(usint index) const {</span></a>
-<a name="1743"><span class="lineNum">    1743 </span><span class="lineCov">  697217056 :         if (index == 0)</span></a>
+<a name="1742"><span class="lineNum">    1742 </span><span class="lineCov"> 1394434056 :     uschar GetBitAtIndex(usint index) const {</span></a>
+<a name="1743"><span class="lineNum">    1743 </span><span class="lineCov"> 1394434056 :         if (index == 0)</span></a>
 <a name="1744"><span class="lineNum">    1744 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;Zero index in GetBitAtIndex&quot;);</span></a>
-<a name="1745"><span class="lineNum">    1745 </span><span class="lineCov">  697217058 :         return static_cast&lt;uschar&gt;((m_value &gt;&gt; (index - 1)) &amp; 0x1);</span></a>
+<a name="1745"><span class="lineNum">    1745 </span><span class="lineCov"> 1394434058 :         return static_cast&lt;uschar&gt;((m_value &gt;&gt; (index - 1)) &amp; 0x1);</span></a>
 <a name="1746"><span class="lineNum">    1746 </span>            :     }</a>
 <a name="1747"><span class="lineNum">    1747 </span>            : </a>
 <a name="1748"><span class="lineNum">    1748 </span>            :     /**</a>
@@ -1890,7 +1890,7 @@
 <a name="1828"><span class="lineNum">    1828 </span>            :     template &lt;class Archive, typename T = void&gt;</a>
 <a name="1829"><span class="lineNum">    1829 </span>            :     typename std::enable_if_t&lt;std::is_same_v&lt;NativeInt, uint64_t&gt; || std::is_same&lt;NativeInt, uint32_t&gt;::value, T&gt; save(</a>
 <a name="1830"><span class="lineNum">    1830 </span>            :         Archive&amp; ar, std::uint32_t const version) const {</a>
-<a name="1831"><span class="lineNum">    1831 </span><span class="lineCov">     715741 :         ar(::cereal::make_nvp(&quot;v&quot;, m_value));</span></a>
+<a name="1831"><span class="lineNum">    1831 </span><span class="lineCov">    6220791 :         ar(::cereal::make_nvp(&quot;v&quot;, m_value));</span></a>
 <a name="1832"><span class="lineNum">    1832 </span>            :     }</a>
 <a name="1833"><span class="lineNum">    1833 </span>            : </a>
 <a name="1834"><span class="lineNum">    1834 </span>            : #if defined(HAVE_INT128)</a>
@@ -1957,7 +1957,7 @@
 <a name="1895"><span class="lineNum">    1895 </span>            :    * @return the result of right-shifting</a>
 <a name="1896"><span class="lineNum">    1896 </span>            :    */</a>
 <a name="1897"><span class="lineNum">    1897 </span>            :     static NativeInt RShiftD(const typeD&amp; x, int64_t shift) {</a>
-<a name="1898"><span class="lineNum">    1898 </span><span class="lineCov"> 6106691911 :         return (x.lo &gt;&gt; shift) | (x.hi &lt;&lt; (NativeIntegerT::MaxBits() - shift));</span></a>
+<a name="1898"><span class="lineNum">    1898 </span><span class="lineCov"> 7353925757 :         return (x.lo &gt;&gt; shift) | (x.hi &lt;&lt; (NativeIntegerT::MaxBits() - shift));</span></a>
 <a name="1899"><span class="lineNum">    1899 </span>            :     }</a>
 <a name="1900"><span class="lineNum">    1900 </span>            : </a>
 <a name="1901"><span class="lineNum">    1901 </span>            :     /**</a>
@@ -1978,9 +1978,9 @@
 <a name="1916"><span class="lineNum">    1916 </span>            :         if constexpr (std::is_same_v&lt;NativeInt, uint64_t&gt;) {</a>
 <a name="1917"><span class="lineNum">    1917 </span>            : #if defined(HAVE_INT128)</a>
 <a name="1918"><span class="lineNum">    1918 </span>            :             // includes defined(__x86_64__), defined(__powerpc64__), defined(__riscv), defined(__s390__)</a>
-<a name="1919"><span class="lineNum">    1919 </span><span class="lineCov">17318569310 :             uint128_t c{static_cast&lt;uint128_t&gt;(a) * b};</span></a>
-<a name="1920"><span class="lineNum">    1920 </span><span class="lineCov">17277908520 :             res.hi = static_cast&lt;uint64_t&gt;(c &gt;&gt; 64);</span></a>
-<a name="1921"><span class="lineNum">    1921 </span><span class="lineCov"> 6100028250 :             res.lo = static_cast&lt;uint64_t&gt;(c);</span></a>
+<a name="1919"><span class="lineNum">    1919 </span><span class="lineCov">43255109010 :             uint128_t c{static_cast&lt;uint128_t&gt;(a) * b};</span></a>
+<a name="1920"><span class="lineNum">    1920 </span><span class="lineCov">43162478220 :             res.hi = static_cast&lt;uint64_t&gt;(c &gt;&gt; 64);</span></a>
+<a name="1921"><span class="lineNum">    1921 </span><span class="lineCov"> 7340605796 :             res.lo = static_cast&lt;uint64_t&gt;(c);</span></a>
 <a name="1922"><span class="lineNum">    1922 </span>            : #elif defined(__EMSCRIPTEN__)  // web assembly</a>
 <a name="1923"><span class="lineNum">    1923 </span>            :             uint64_t a1 = a &gt;&gt; 32;</a>
 <a name="1924"><span class="lineNum">    1924 </span>            :             uint64_t a2 = (uint32_t)a;</a>
@@ -2076,7 +2076,7 @@
 <a name="2014"><span class="lineNum">    2014 </span>            :    * @return the result as DNativeInt</a>
 <a name="2015"><span class="lineNum">    2015 </span>            :    */</a>
 <a name="2016"><span class="lineNum">    2016 </span>            :     static DNativeInt GetD(const typeD&amp; x) {</a>
-<a name="2017"><span class="lineNum">    2017 </span><span class="lineCov">12125931248 :         return (DNativeInt(x.hi) &lt;&lt; NativeIntegerT::MaxBits()) | x.lo;</span></a>
+<a name="2017"><span class="lineNum">    2017 </span><span class="lineCov">13380977964 :         return (DNativeInt(x.hi) &lt;&lt; NativeIntegerT::MaxBits()) | x.lo;</span></a>
 <a name="2018"><span class="lineNum">    2018 </span>            :     }</a>
 <a name="2019"><span class="lineNum">    2019 </span>            : </a>
 <a name="2020"><span class="lineNum">    2020 </span>            :     static std::string toString(uint32_t value) noexcept {</a>
@@ -2112,9 +2112,9 @@
 <a name="2050"><span class="lineNum">    2050 </span>            :     static void ModMu(typeD&amp; prod, NativeIntegerT&amp; a, const T&amp; mv, const T&amp; mu, int64_t n,</a>
 <a name="2051"><span class="lineNum">    2051 </span>            :                       typename std::enable_if_t&lt;!std::is_same_v&lt;T, DNativeInt&gt;, bool&gt; = true) {</a>
 <a name="2052"><span class="lineNum">    2052 </span><span class="lineCov">       7361 :         prod = {0, a.m_value};</span></a>
-<a name="2053"><span class="lineNum">    2053 </span><span class="lineCov">    6663571 :         MultD(RShiftD(prod, n), mu, prod);</span></a>
-<a name="2054"><span class="lineNum">    2054 </span><span class="lineCov">    6663571 :         a.m_value -= static_cast&lt;NativeInt&gt;((GetD(prod) &gt;&gt; (n + 7)) * mv);</span></a>
-<a name="2055"><span class="lineNum">    2055 </span><span class="lineCov">    6663571 :         if (a.m_value &gt;= mv)</span></a>
+<a name="2053"><span class="lineNum">    2053 </span><span class="lineCov">   13319781 :         MultD(RShiftD(prod, n), mu, prod);</span></a>
+<a name="2054"><span class="lineNum">    2054 </span><span class="lineCov">   13319781 :         a.m_value -= static_cast&lt;NativeInt&gt;((GetD(prod) &gt;&gt; (n + 7)) * mv);</span></a>
+<a name="2055"><span class="lineNum">    2055 </span><span class="lineCov">   13319781 :         if (a.m_value &gt;= mv)</span></a>
 <a name="2056"><span class="lineNum">    2056 </span><span class="lineCov">       7316 :             a.m_value -= mv;</span></a>
 <a name="2057"><span class="lineNum">    2057 </span>            :     }</a>
 <a name="2058"><span class="lineNum">    2058 </span>            : </a>

@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">23</td>
-            <td class="headerCovTableEntry">49</td>
-            <td class="headerCovTableEntryLo">46.9 %</td>
+            <td class="headerCovTableEntry">42</td>
+            <td class="headerCovTableEntry">68</td>
+            <td class="headerCovTableEntryLo">61.8 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">4</td>
-            <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntryLo">25.0 %</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryLo">40.0 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -148,21 +148,21 @@
 <a name="86"><span class="lineNum">      86 </span>            :     SCHEME schemeID;</a>
 <a name="87"><span class="lineNum">      87 </span>            : </a>
 <a name="88"><span class="lineNum">      88 </span>            : public:</a>
-<a name="89"><span class="lineNum">      89 </span><span class="lineCov">          5 :     PlaintextImpl(const std::shared_ptr&lt;Poly::Params&gt;&amp; vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineCov">       2839 :     PlaintextImpl(const std::shared_ptr&lt;Poly::Params&gt;&amp; vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,</span></a>
 <a name="90"><span class="lineNum">      90 </span>            :                   bool isEncoded = false)</a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov">          5 :         : isEncoded(isEncoded),</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">       2839 :         : isEncoded(isEncoded),</span></a>
 <a name="92"><span class="lineNum">      92 </span>            :           typeFlag(IsPoly),</a>
 <a name="93"><span class="lineNum">      93 </span>            :           encodingParams(std::move(ep)),</a>
 <a name="94"><span class="lineNum">      94 </span>            :           encodedVector(vp, Format::COEFFICIENT),</a>
-<a name="95"><span class="lineNum">      95 </span><span class="lineCov">          5 :           schemeID(schemeTag) {}</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">       2839 :           schemeID(schemeTag) {}</span></a>
 <a name="96"><span class="lineNum">      96 </span>            : </a>
-<a name="97"><span class="lineNum">      97 </span>            :     PlaintextImpl(const std::shared_ptr&lt;NativePoly::Params&gt;&amp; vp, EncodingParams ep,</a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">       3028 :     PlaintextImpl(const std::shared_ptr&lt;NativePoly::Params&gt;&amp; vp, EncodingParams ep,</span></a>
 <a name="98"><span class="lineNum">      98 </span>            :                   SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)</a>
-<a name="99"><span class="lineNum">      99 </span>            :         : isEncoded(isEncoded),</a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">       3028 :         : isEncoded(isEncoded),</span></a>
 <a name="100"><span class="lineNum">     100 </span>            :           typeFlag(IsNativePoly),</a>
 <a name="101"><span class="lineNum">     101 </span>            :           encodingParams(std::move(ep)),</a>
 <a name="102"><span class="lineNum">     102 </span>            :           encodedNativeVector(vp, Format::COEFFICIENT),</a>
-<a name="103"><span class="lineNum">     103 </span>            :           schemeID(schemeTag) {}</a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineCov">       6056 :           schemeID(schemeTag) {}</span></a>
 <a name="104"><span class="lineNum">     104 </span>            : </a>
 <a name="105"><span class="lineNum">     105 </span><span class="lineCov">      12205 :     PlaintextImpl(const std::shared_ptr&lt;DCRTPoly::Params&gt;&amp; vp, EncodingParams ep,</span></a>
 <a name="106"><span class="lineNum">     106 </span>            :                   SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)</a>
@@ -199,7 +199,7 @@
 <a name="137"><span class="lineNum">     137 </span>            :           slots(rhs.slots),</a>
 <a name="138"><span class="lineNum">     138 </span>            :           schemeID(rhs.schemeID) {}</a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">       6815 :     virtual ~PlaintextImpl() {}</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">      17432 :     virtual ~PlaintextImpl() {}</span></a>
 <a name="141"><span class="lineNum">     141 </span>            : </a>
 <a name="142"><span class="lineNum">     142 </span>            :     /**</a>
 <a name="143"><span class="lineNum">     143 </span>            :    * GetEncodingType</a>
@@ -211,14 +211,14 @@
 <a name="149"><span class="lineNum">     149 </span>            :    * Get the scaling factor of the plaintext for CKKS-based plaintexts.</a>
 <a name="150"><span class="lineNum">     150 </span>            :    */</a>
 <a name="151"><span class="lineNum">     151 </span>            :     double GetScalingFactor() const {</a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineCov">       3634 :         return scalingFactor;</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">      12077 :         return scalingFactor;</span></a>
 <a name="153"><span class="lineNum">     153 </span>            :     }</a>
 <a name="154"><span class="lineNum">     154 </span>            : </a>
 <a name="155"><span class="lineNum">     155 </span>            :     /**</a>
 <a name="156"><span class="lineNum">     156 </span>            :    * Set the scaling factor of the plaintext for CKKS-based plaintexts.</a>
 <a name="157"><span class="lineNum">     157 </span>            :    */</a>
 <a name="158"><span class="lineNum">     158 </span>            :     void SetScalingFactor(double sf) {</a>
-<a name="159"><span class="lineNum">     159 </span>            :         scalingFactor = sf;</a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">       6796 :         scalingFactor = sf;</span></a>
 <a name="160"><span class="lineNum">     160 </span>            :     }</a>
 <a name="161"><span class="lineNum">     161 </span>            : </a>
 <a name="162"><span class="lineNum">     162 </span>            :     /**</a>
@@ -239,7 +239,7 @@
 <a name="177"><span class="lineNum">     177 </span>            :    * Get the encryption technique of the plaintext for BFV-based plaintexts.</a>
 <a name="178"><span class="lineNum">     178 </span>            :    */</a>
 <a name="179"><span class="lineNum">     179 </span>            :     SCHEME GetSchemeID() const {</a>
-<a name="180"><span class="lineNum">     180 </span>            :         return schemeID;</a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">        741 :         return schemeID;</span></a>
 <a name="181"><span class="lineNum">     181 </span>            :     }</a>
 <a name="182"><span class="lineNum">     182 </span>            : </a>
 <a name="183"><span class="lineNum">     183 </span>            :     /**</a>
@@ -275,13 +275,13 @@
 <a name="213"><span class="lineNum">     213 </span>            :    * modulus the number to encode MUST be greater than this value</a>
 <a name="214"><span class="lineNum">     214 </span>            :    * @return floor(-p/2)</a>
 <a name="215"><span class="lineNum">     215 </span>            :    */</a>
-<a name="216"><span class="lineNum">     216 </span>            :     int64_t LowBound() const {</a>
-<a name="217"><span class="lineNum">     217 </span>            :         uint64_t half = GetEncodingParams()-&gt;GetPlaintextModulus() &gt;&gt; 1;</a>
-<a name="218"><span class="lineNum">     218 </span>            :         bool odd      = (GetEncodingParams()-&gt;GetPlaintextModulus() &amp; 0x1) == 1;</a>
-<a name="219"><span class="lineNum">     219 </span>            :         int64_t bound = -1 * half;</a>
-<a name="220"><span class="lineNum">     220 </span>            :         if (odd)</a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">        741 :     int64_t LowBound() const {</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineCov">       1482 :         uint64_t half = GetEncodingParams()-&gt;GetPlaintextModulus() &gt;&gt; 1;</span></a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">        741 :         bool odd      = (GetEncodingParams()-&gt;GetPlaintextModulus() &amp; 0x1) == 1;</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">        741 :         int64_t bound = -1 * half;</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">        741 :         if (odd)</span></a>
 <a name="221"><span class="lineNum">     221 </span>            :             bound--;</a>
-<a name="222"><span class="lineNum">     222 </span>            :         return bound;</a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">        741 :         return bound;</span></a>
 <a name="223"><span class="lineNum">     223 </span>            :     }</a>
 <a name="224"><span class="lineNum">     224 </span>            : </a>
 <a name="225"><span class="lineNum">     225 </span>            :     /**</a>
@@ -289,8 +289,8 @@
 <a name="227"><span class="lineNum">     227 </span>            :    * modulus the number to encode MUST be less than or equal to this value</a>
 <a name="228"><span class="lineNum">     228 </span>            :    * @return floor(p/2)</a>
 <a name="229"><span class="lineNum">     229 </span>            :    */</a>
-<a name="230"><span class="lineNum">     230 </span>            :     int64_t HighBound() const {</a>
-<a name="231"><span class="lineNum">     231 </span>            :         return GetEncodingParams()-&gt;GetPlaintextModulus() &gt;&gt; 1;</a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">        741 :     int64_t HighBound() const {</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineCov">        741 :         return GetEncodingParams()-&gt;GetPlaintextModulus() &gt;&gt; 1;</span></a>
 <a name="232"><span class="lineNum">     232 </span>            :     }</a>
 <a name="233"><span class="lineNum">     233 </span>            : </a>
 <a name="234"><span class="lineNum">     234 </span>            :     /**</a>
@@ -298,14 +298,14 @@
 <a name="236"><span class="lineNum">     236 </span>            :    *</a>
 <a name="237"><span class="lineNum">     237 </span>            :    * @param fmt</a>
 <a name="238"><span class="lineNum">     238 </span>            :    */</a>
-<a name="239"><span class="lineNum">     239 </span><span class="lineCov">        356 :     void SetFormat(Format fmt) const {</span></a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov">        356 :         if (typeFlag == IsPoly)</span></a>
+<a name="239"><span class="lineNum">     239 </span><span class="lineCov">       4702 :     void SetFormat(Format fmt) const {</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">       4702 :         if (typeFlag == IsPoly)</span></a>
 <a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :             encodedVector.SetFormat(fmt);</span></a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineCov">        356 :         else if (typeFlag == IsNativePoly)</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">       4702 :         else if (typeFlag == IsNativePoly)</span></a>
 <a name="243"><span class="lineNum">     243 </span><span class="lineNoCov">          0 :             encodedNativeVector.SetFormat(fmt);</span></a>
 <a name="244"><span class="lineNum">     244 </span>            :         else</a>
-<a name="245"><span class="lineNum">     245 </span><span class="lineCov">        356 :             encodedVectorDCRT.SetFormat(fmt);</span></a>
-<a name="246"><span class="lineNum">     246 </span><span class="lineCov">        356 :     }</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">       4702 :             encodedVectorDCRT.SetFormat(fmt);</span></a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineCov">       4702 :     }</span></a>
 <a name="247"><span class="lineNum">     247 </span>            : </a>
 <a name="248"><span class="lineNum">     248 </span>            :     /**</a>
 <a name="249"><span class="lineNum">     249 </span>            :    * GetElement</a>
@@ -326,8 +326,8 @@
 <a name="264"><span class="lineNum">     264 </span>            :    * @return ring dimension on the underlying element</a>
 <a name="265"><span class="lineNum">     265 </span>            :    */</a>
 <a name="266"><span class="lineNum">     266 </span>            :     usint GetElementRingDimension() const {</a>
-<a name="267"><span class="lineNum">     267 </span><span class="lineCov">       8385 :         return typeFlag == IsPoly ? encodedVector.GetRingDimension() :</span></a>
-<a name="268"><span class="lineNum">     268 </span><span class="lineCov">       8385 :                                     (typeFlag == IsNativePoly ? encodedNativeVector.GetRingDimension() :</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">      66204 :         return typeFlag == IsPoly ? encodedVector.GetRingDimension() :</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">      57559 :                                     (typeFlag == IsNativePoly ? encodedNativeVector.GetRingDimension() :</span></a>
 <a name="269"><span class="lineNum">     269 </span>            :                                                                 encodedVectorDCRT.GetRingDimension());</a>
 <a name="270"><span class="lineNum">     270 </span>            :     }</a>
 <a name="271"><span class="lineNum">     271 </span>            : </a>
@@ -335,10 +335,10 @@
 <a name="273"><span class="lineNum">     273 </span>            :    * GetElementModulus</a>
 <a name="274"><span class="lineNum">     274 </span>            :    * @return modulus on the underlying elemenbt</a>
 <a name="275"><span class="lineNum">     275 </span>            :    */</a>
-<a name="276"><span class="lineNum">     276 </span>            :     const BigInteger GetElementModulus() const {</a>
-<a name="277"><span class="lineNum">     277 </span>            :         return typeFlag == IsPoly ? encodedVector.GetModulus() :</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineCov">       2876 :     const BigInteger GetElementModulus() const {</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineCov">       2876 :         return typeFlag == IsPoly ? encodedVector.GetModulus() :</span></a>
 <a name="278"><span class="lineNum">     278 </span>            :                                     (typeFlag == IsNativePoly ? BigInteger(encodedNativeVector.GetModulus()) :</a>
-<a name="279"><span class="lineNum">     279 </span>            :                                                                 encodedVectorDCRT.GetModulus());</a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineCov">       2876 :                                                                 encodedVectorDCRT.GetModulus());</span></a>
 <a name="280"><span class="lineNum">     280 </span>            :     }</a>
 <a name="281"><span class="lineNum">     281 </span>            : </a>
 <a name="282"><span class="lineNum">     282 </span>            :     /**</a>
@@ -363,14 +363,14 @@
 <a name="301"><span class="lineNum">     301 </span>            :    * @return the degree of the scaling factor of the plaintext</a>
 <a name="302"><span class="lineNum">     302 </span>            :    */</a>
 <a name="303"><span class="lineNum">     303 </span>            :     size_t GetNoiseScaleDeg() const {</a>
-<a name="304"><span class="lineNum">     304 </span><span class="lineCov">       3634 :         return noiseScaleDeg;</span></a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineCov">      12077 :         return noiseScaleDeg;</span></a>
 <a name="305"><span class="lineNum">     305 </span>            :     }</a>
 <a name="306"><span class="lineNum">     306 </span>            : </a>
 <a name="307"><span class="lineNum">     307 </span>            :     /*</a>
 <a name="308"><span class="lineNum">     308 </span>            :    * Method to set the degree of the scaling factor of a plaintext.</a>
 <a name="309"><span class="lineNum">     309 </span>            :    */</a>
 <a name="310"><span class="lineNum">     310 </span>            :     void SetNoiseScaleDeg(size_t d) {</a>
-<a name="311"><span class="lineNum">     311 </span><span class="lineCov">       4567 :         noiseScaleDeg = d;</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">       7147 :         noiseScaleDeg = d;</span></a>
 <a name="312"><span class="lineNum">     312 </span><span class="lineCov">       1156 :     }</span></a>
 <a name="313"><span class="lineNum">     313 </span>            : </a>
 <a name="314"><span class="lineNum">     314 </span>            :     /*</a>
@@ -379,14 +379,14 @@
 <a name="317"><span class="lineNum">     317 </span>            :    * @return the level of the plaintext</a>
 <a name="318"><span class="lineNum">     318 </span>            :    */</a>
 <a name="319"><span class="lineNum">     319 </span>            :     size_t GetLevel() const {</a>
-<a name="320"><span class="lineNum">     320 </span><span class="lineCov">       3634 :         return level;</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">       4775 :         return level;</span></a>
 <a name="321"><span class="lineNum">     321 </span>            :     }</a>
 <a name="322"><span class="lineNum">     322 </span>            : </a>
 <a name="323"><span class="lineNum">     323 </span>            :     /*</a>
 <a name="324"><span class="lineNum">     324 </span>            :    * Method to set the level of a plaintext.</a>
 <a name="325"><span class="lineNum">     325 </span>            :    */</a>
 <a name="326"><span class="lineNum">     326 </span>            :     void SetLevel(size_t l) {</a>
-<a name="327"><span class="lineNum">     327 </span><span class="lineCov">       3818 :         level = l;</span></a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineCov">       6398 :         level = l;</span></a>
 <a name="328"><span class="lineNum">     328 </span>            :     }</a>
 <a name="329"><span class="lineNum">     329 </span>            : </a>
 <a name="330"><span class="lineNum">     330 </span>            :     /*</a>
@@ -395,14 +395,14 @@
 <a name="333"><span class="lineNum">     333 </span>            :    * @return the level of the plaintext</a>
 <a name="334"><span class="lineNum">     334 </span>            :    */</a>
 <a name="335"><span class="lineNum">     335 </span>            :     usint GetSlots() const {</a>
-<a name="336"><span class="lineNum">     336 </span><span class="lineCov">       3634 :         return slots;</span></a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineCov">      11816 :         return slots;</span></a>
 <a name="337"><span class="lineNum">     337 </span>            :     }</a>
 <a name="338"><span class="lineNum">     338 </span>            : </a>
 <a name="339"><span class="lineNum">     339 </span>            :     /*</a>
 <a name="340"><span class="lineNum">     340 </span>            :    * Method to set the level of a plaintext.</a>
 <a name="341"><span class="lineNum">     341 </span>            :    */</a>
 <a name="342"><span class="lineNum">     342 </span>            :     void SetSlots(usint l) {</a>
-<a name="343"><span class="lineNum">     343 </span>            :         slots = l;</a>
+<a name="343"><span class="lineNum">     343 </span><span class="lineCov">       2872 :         slots = l;</span></a>
 <a name="344"><span class="lineNum">     344 </span>            :     }</a>
 <a name="345"><span class="lineNum">     345 </span>            : </a>
 <a name="346"><span class="lineNum">     346 </span><span class="lineNoCov">          0 :     virtual double GetLogError() const {</span></a>
@@ -512,7 +512,7 @@
 <a name="450"><span class="lineNum">     450 </span>            : </a>
 <a name="451"><span class="lineNum">     451 </span>            : template &lt;&gt;</a>
 <a name="452"><span class="lineNum">     452 </span>            : inline Poly&amp; PlaintextImpl::GetElement&lt;Poly&gt;() {</a>
-<a name="453"><span class="lineNum">     453 </span>            :     return encodedVector;</a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineCov">       5672 :     return encodedVector;</span></a>
 <a name="454"><span class="lineNum">     454 </span>            : }</a>
 <a name="455"><span class="lineNum">     455 </span>            : </a>
 <a name="456"><span class="lineNum">     456 </span>            : /**</a>
@@ -526,7 +526,7 @@
 <a name="464"><span class="lineNum">     464 </span>            : </a>
 <a name="465"><span class="lineNum">     465 </span>            : template &lt;&gt;</a>
 <a name="466"><span class="lineNum">     466 </span>            : inline NativePoly&amp; PlaintextImpl::GetElement&lt;NativePoly&gt;() {</a>
-<a name="467"><span class="lineNum">     467 </span>            :     return encodedNativeVector;</a>
+<a name="467"><span class="lineNum">     467 </span><span class="lineCov">       5251 :     return encodedNativeVector;</span></a>
 <a name="468"><span class="lineNum">     468 </span>            : }</a>
 <a name="469"><span class="lineNum">     469 </span>            : </a>
 <a name="470"><span class="lineNum">     470 </span>            : /**</a>
@@ -540,7 +540,7 @@
 <a name="478"><span class="lineNum">     478 </span>            : </a>
 <a name="479"><span class="lineNum">     479 </span>            : template &lt;&gt;</a>
 <a name="480"><span class="lineNum">     480 </span>            : inline DCRTPoly&amp; PlaintextImpl::GetElement&lt;DCRTPoly&gt;() {</a>
-<a name="481"><span class="lineNum">     481 </span><span class="lineCov">       3634 :     return encodedVectorDCRT;</span></a>
+<a name="481"><span class="lineNum">     481 </span><span class="lineCov">      16599 :     return encodedVectorDCRT;</span></a>
 <a name="482"><span class="lineNum">     482 </span>            : }</a>
 <a name="483"><span class="lineNum">     483 </span>            : </a>
 <a name="484"><span class="lineNum">     484 </span>            : }  // namespace lbcrypto</a>

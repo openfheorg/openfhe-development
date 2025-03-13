@@ -32,16 +32,16 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">73</td>
+            <td class="headerCovTableEntry">95</td>
             <td class="headerCovTableEntryLo">0.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">36</td>
+            <td class="headerCovTableEntry">48</td>
             <td class="headerCovTableEntryLo">0.0 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
@@ -127,7 +127,7 @@
 <a name="65"><span class="lineNum">      65 </span>            :     using TugType  = typename Element::TugType;</a>
 <a name="66"><span class="lineNum">      66 </span>            : </a>
 <a name="67"><span class="lineNum">      67 </span>            : public:</a>
-<a name="68"><span class="lineNum">      68 </span>            :     virtual ~LeveledSHEBase() {}</a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineNoCov">          0 :     virtual ~LeveledSHEBase() {}</span></a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
 <a name="70"><span class="lineNum">      70 </span>            :     /////////////////////////////////////////</a>
 <a name="71"><span class="lineNum">      71 </span>            :     // SHE NEGATION</a>
@@ -234,12 +234,12 @@
 <a name="172"><span class="lineNum">     172 </span>            :    * @param plaintext the input plaintext.</a>
 <a name="173"><span class="lineNum">     173 </span>            :    * @return the new ciphertext.</a>
 <a name="174"><span class="lineNum">     174 </span>            :    */</a>
-<a name="175"><span class="lineNum">     175 </span>            :     virtual void EvalAddMutableInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, Plaintext plaintext) const {</a>
-<a name="176"><span class="lineNum">     176 </span>            :         OPENFHE_THROW(&quot;EvalAddMutable is not implemented for this scheme&quot;);</a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :     virtual void EvalAddMutableInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, Plaintext plaintext) const {</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalAddMutable is not implemented for this scheme&quot;);</span></a>
 <a name="177"><span class="lineNum">     177 </span>            :     }</a>
 <a name="178"><span class="lineNum">     178 </span>            : </a>
-<a name="179"><span class="lineNum">     179 </span>            :     virtual Ciphertext&lt;Element&gt; EvalAdd(ConstCiphertext&lt;Element&gt; ciphertext, const NativeInteger&amp; constant) const {</a>
-<a name="180"><span class="lineNum">     180 </span>            :         OPENFHE_THROW(&quot;integer scalar addition is not implemented for this scheme&quot;);</a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalAdd(ConstCiphertext&lt;Element&gt; ciphertext, const NativeInteger&amp; constant) const {</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;integer scalar addition is not implemented for this scheme&quot;);</span></a>
 <a name="181"><span class="lineNum">     181 </span>            :     }</a>
 <a name="182"><span class="lineNum">     182 </span>            : </a>
 <a name="183"><span class="lineNum">     183 </span><span class="lineNoCov">          0 :     virtual void EvalAddInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, const NativeInteger&amp; constant) const {</span></a>
@@ -330,8 +330,8 @@
 <a name="268"><span class="lineNum">     268 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalSubMutable is not implemented for this scheme&quot;);</span></a>
 <a name="269"><span class="lineNum">     269 </span>            :     }</a>
 <a name="270"><span class="lineNum">     270 </span>            : </a>
-<a name="271"><span class="lineNum">     271 </span>            :     virtual void EvalSubMutableInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, Plaintext plaintext) const {</a>
-<a name="272"><span class="lineNum">     272 </span>            :         OPENFHE_THROW(&quot;EvalSubMutable is not implemented for this scheme&quot;);</a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :     virtual void EvalSubMutableInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, Plaintext plaintext) const {</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalSubMutable is not implemented for this scheme&quot;);</span></a>
 <a name="273"><span class="lineNum">     273 </span>            :     }</a>
 <a name="274"><span class="lineNum">     274 </span>            : </a>
 <a name="275"><span class="lineNum">     275 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalSub(ConstCiphertext&lt;Element&gt; ciphertext, const NativeInteger&amp; constant) const {</span></a>
@@ -469,8 +469,8 @@
 <a name="407"><span class="lineNum">     407 </span>            :    * @param plaintext the input plaintext.</a>
 <a name="408"><span class="lineNum">     408 </span>            :    * @return the new ciphertext.</a>
 <a name="409"><span class="lineNum">     409 </span>            :    */</a>
-<a name="410"><span class="lineNum">     410 </span>            :     virtual void EvalMultMutableInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, Plaintext plaintext) const {</a>
-<a name="411"><span class="lineNum">     411 </span>            :         OPENFHE_THROW(&quot;EvalMultMutableInPlace C P is not implemented for this scheme&quot;);</a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineNoCov">          0 :     virtual void EvalMultMutableInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, Plaintext plaintext) const {</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalMultMutableInPlace C P is not implemented for this scheme&quot;);</span></a>
 <a name="412"><span class="lineNum">     412 </span>            :     }</a>
 <a name="413"><span class="lineNum">     413 </span>            : </a>
 <a name="414"><span class="lineNum">     414 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; MultByMonomial(ConstCiphertext&lt;Element&gt; ciphertext, usint power) const {</span></a>
@@ -481,12 +481,12 @@
 <a name="419"><span class="lineNum">     419 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;MultByMonomialInPlace is not implemented for this scheme&quot;);</span></a>
 <a name="420"><span class="lineNum">     420 </span>            :     }</a>
 <a name="421"><span class="lineNum">     421 </span>            : </a>
-<a name="422"><span class="lineNum">     422 </span>            :     virtual Ciphertext&lt;Element&gt; EvalMult(ConstCiphertext&lt;Element&gt; ciphertext, const NativeInteger&amp; constant) const {</a>
-<a name="423"><span class="lineNum">     423 </span>            :         OPENFHE_THROW(&quot;integer scalar multiplication is not implemented for this scheme&quot;);</a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalMult(ConstCiphertext&lt;Element&gt; ciphertext, const NativeInteger&amp; constant) const {</span></a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;integer scalar multiplication is not implemented for this scheme&quot;);</span></a>
 <a name="424"><span class="lineNum">     424 </span>            :     }</a>
 <a name="425"><span class="lineNum">     425 </span>            : </a>
-<a name="426"><span class="lineNum">     426 </span>            :     virtual void EvalMultInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, const NativeInteger&amp; constant) const {</a>
-<a name="427"><span class="lineNum">     427 </span>            :         OPENFHE_THROW(&quot;integer scalar multiplication is not implemented for this scheme&quot;);</a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineNoCov">          0 :     virtual void EvalMultInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext, const NativeInteger&amp; constant) const {</span></a>
+<a name="427"><span class="lineNum">     427 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;integer scalar multiplication is not implemented for this scheme&quot;);</span></a>
 <a name="428"><span class="lineNum">     428 </span>            :     }</a>
 <a name="429"><span class="lineNum">     429 </span>            : </a>
 <a name="430"><span class="lineNum">     430 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalMult(ConstCiphertext&lt;Element&gt; ciphertext, double constant) const {</span></a>
@@ -619,11 +619,11 @@
 <a name="557"><span class="lineNum">     557 </span>            :    * @param indexList list of automorphism indices to be computed</a>
 <a name="558"><span class="lineNum">     558 </span>            :    * @return returns the evaluation keys</a>
 <a name="559"><span class="lineNum">     559 </span>            :    */</a>
-<a name="560"><span class="lineNum">     560 </span>            :     virtual std::shared_ptr&lt;std::map&lt;usint, EvalKey&lt;Element&gt;&gt;&gt; EvalAutomorphismKeyGen(</a>
+<a name="560"><span class="lineNum">     560 </span><span class="lineNoCov">          0 :     virtual std::shared_ptr&lt;std::map&lt;usint, EvalKey&lt;Element&gt;&gt;&gt; EvalAutomorphismKeyGen(</span></a>
 <a name="561"><span class="lineNum">     561 </span>            :         const PublicKey&lt;Element&gt; publicKey, const PrivateKey&lt;Element&gt; privateKey,</a>
 <a name="562"><span class="lineNum">     562 </span>            :         const std::vector&lt;usint&gt;&amp; indexList) const {</a>
-<a name="563"><span class="lineNum">     563 </span>            :         std::string errMsg = &quot;EvalAutomorphismKeyGen is not implemented for this scheme.&quot;;</a>
-<a name="564"><span class="lineNum">     564 </span>            :         OPENFHE_THROW(errMsg);</a>
+<a name="563"><span class="lineNum">     563 </span><span class="lineNoCov">          0 :         std::string errMsg = &quot;EvalAutomorphismKeyGen is not implemented for this scheme.&quot;;</span></a>
+<a name="564"><span class="lineNum">     564 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(errMsg);</span></a>
 <a name="565"><span class="lineNum">     565 </span>            :     }</a>
 <a name="566"><span class="lineNum">     566 </span>            : </a>
 <a name="567"><span class="lineNum">     567 </span>            :     /**</a>
@@ -708,8 +708,8 @@
 <a name="646"><span class="lineNum">     646 </span>            :    * @param &amp;cipherText Ciphertext to perform mod reduce on.</a>
 <a name="647"><span class="lineNum">     647 </span>            :    * @param levels the number of towers to drop.</a>
 <a name="648"><span class="lineNum">     648 </span>            :    */</a>
-<a name="649"><span class="lineNum">     649 </span>            :     virtual Ciphertext&lt;Element&gt; ModReduce(ConstCiphertext&lt;Element&gt; ciphertext, size_t levels) const {</a>
-<a name="650"><span class="lineNum">     650 </span>            :         OPENFHE_THROW(&quot;ModReduce is not supported for this scheme&quot;);</a>
+<a name="649"><span class="lineNum">     649 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; ModReduce(ConstCiphertext&lt;Element&gt; ciphertext, size_t levels) const {</span></a>
+<a name="650"><span class="lineNum">     650 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ModReduce is not supported for this scheme&quot;);</span></a>
 <a name="651"><span class="lineNum">     651 </span>            :     }</a>
 <a name="652"><span class="lineNum">     652 </span>            : </a>
 <a name="653"><span class="lineNum">     653 </span>            :     /**</a>
@@ -831,12 +831,12 @@
 <a name="769"><span class="lineNum">     769 </span>            :     }</a>
 <a name="770"><span class="lineNum">     770 </span>            : </a>
 <a name="771"><span class="lineNum">     771 </span>            :     // TODO (Andrey) : Move these functions to protected or to rns?</a>
-<a name="772"><span class="lineNum">     772 </span>            :     virtual void AdjustForAddOrSubInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext1, Ciphertext&lt;Element&gt;&amp; ciphertext2) const {</a>
-<a name="773"><span class="lineNum">     773 </span>            :         OPENFHE_THROW(&quot;Mutable Operations are not supported for this scheme&quot;);</a>
+<a name="772"><span class="lineNum">     772 </span><span class="lineNoCov">          0 :     virtual void AdjustForAddOrSubInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext1, Ciphertext&lt;Element&gt;&amp; ciphertext2) const {</span></a>
+<a name="773"><span class="lineNum">     773 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;Mutable Operations are not supported for this scheme&quot;);</span></a>
 <a name="774"><span class="lineNum">     774 </span>            :     }</a>
 <a name="775"><span class="lineNum">     775 </span>            : </a>
-<a name="776"><span class="lineNum">     776 </span>            :     virtual void AdjustForMultInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext1, Ciphertext&lt;Element&gt;&amp; ciphertext2) const {</a>
-<a name="777"><span class="lineNum">     777 </span>            :         OPENFHE_THROW(&quot;Mutable Operations are not supported for this scheme&quot;);</a>
+<a name="776"><span class="lineNum">     776 </span><span class="lineNoCov">          0 :     virtual void AdjustForMultInPlace(Ciphertext&lt;Element&gt;&amp; ciphertext1, Ciphertext&lt;Element&gt;&amp; ciphertext2) const {</span></a>
+<a name="777"><span class="lineNum">     777 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;Mutable Operations are not supported for this scheme&quot;);</span></a>
 <a name="778"><span class="lineNum">     778 </span>            :     }</a>
 <a name="779"><span class="lineNum">     779 </span>            : </a>
 <a name="780"><span class="lineNum">     780 </span>            :     virtual Ciphertext&lt;Element&gt; MorphPlaintext(ConstPlaintext plaintext, ConstCiphertext&lt;Element&gt; ciphertext) const;</a>

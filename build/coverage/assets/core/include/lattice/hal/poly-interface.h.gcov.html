@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">25</td>
-            <td class="headerCovTableEntry">43</td>
-            <td class="headerCovTableEntryLo">58.1 %</td>
+            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntry">45</td>
+            <td class="headerCovTableEntryLo">60.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">9</td>
@@ -152,10 +152,10 @@
 <a name="90"><span class="lineNum">      90 </span>            :    * @param params the params to use.</a>
 <a name="91"><span class="lineNum">      91 </span>            :    * @param format - EVALUATION or COEFFICIENT</a>
 <a name="92"><span class="lineNum">      92 </span>            :    */</a>
-<a name="93"><span class="lineNum">      93 </span><span class="lineCov">        468 :     inline static std::function&lt;DerivedType()&gt; Allocator(const std::shared_ptr&lt;Params&gt;&amp; params, Format format) {</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineCov">        756 :     inline static std::function&lt;DerivedType()&gt; Allocator(const std::shared_ptr&lt;Params&gt;&amp; params, Format format) {</span></a>
 <a name="94"><span class="lineNum">      94 </span><span class="lineCov">       5026 :         return [=]() {</span></a>
 <a name="95"><span class="lineNum">      95 </span><span class="lineCov">      93118 :             return DerivedType(params, format, true);</span></a>
-<a name="96"><span class="lineNum">      96 </span><span class="lineCov">        936 :         };</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">       1512 :         };</span></a>
 <a name="97"><span class="lineNum">      97 </span>            :     }</a>
 <a name="98"><span class="lineNum">      98 </span>            : </a>
 <a name="99"><span class="lineNum">      99 </span>            :     /**</a>
@@ -166,12 +166,12 @@
 <a name="104"><span class="lineNum">     104 </span>            :    * @param stddev standard deviation for the discrete gaussian generator.</a>
 <a name="105"><span class="lineNum">     105 </span>            :    * @return the resulting vector.</a>
 <a name="106"><span class="lineNum">     106 </span>            :    */</a>
-<a name="107"><span class="lineNum">     107 </span><span class="lineCov">         11 :     inline static std::function&lt;DerivedType()&gt; MakeDiscreteGaussianCoefficientAllocator(</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">         22 :     inline static std::function&lt;DerivedType()&gt; MakeDiscreteGaussianCoefficientAllocator(</span></a>
 <a name="108"><span class="lineNum">     108 </span>            :         const std::shared_ptr&lt;Params&gt;&amp; params, Format resultFormat, double stddev) {</a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">      11838 :         return [=]() {</span></a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineCov">       5886 :             DggType dgg(stddev);</span></a>
-<a name="111"><span class="lineNum">     111 </span><span class="lineCov">      11772 :             return DerivedType(dgg, params, resultFormat);</span></a>
-<a name="112"><span class="lineNum">     112 </span><span class="lineCov">         22 :         };</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">      23676 :         return [=]() {</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">      11772 :             DggType dgg(stddev);</span></a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">      23544 :             return DerivedType(dgg, params, resultFormat);</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">         44 :         };</span></a>
 <a name="113"><span class="lineNum">     113 </span>            :     }</a>
 <a name="114"><span class="lineNum">     114 </span>            : </a>
 <a name="115"><span class="lineNum">     115 </span>            :     /**</a>
@@ -181,12 +181,12 @@
 <a name="119"><span class="lineNum">     119 </span>            :    * @param format format for the polynomials generated.</a>
 <a name="120"><span class="lineNum">     120 </span>            :    * @return the resulting vector.</a>
 <a name="121"><span class="lineNum">     121 </span>            :    */</a>
-<a name="122"><span class="lineNum">     122 </span><span class="lineCov">         24 :     inline static std::function&lt;DerivedType()&gt; MakeDiscreteUniformAllocator(const std::shared_ptr&lt;Params&gt;&amp; params,</span></a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineCov">         35 :     inline static std::function&lt;DerivedType()&gt; MakeDiscreteUniformAllocator(const std::shared_ptr&lt;Params&gt;&amp; params,</span></a>
 <a name="123"><span class="lineNum">     123 </span>            :                                                                             Format format) {</a>
 <a name="124"><span class="lineNum">     124 </span><span class="lineCov">         68 :         return [=]() {</span></a>
 <a name="125"><span class="lineNum">     125 </span><span class="lineCov">       1123 :             DugType dug;</span></a>
 <a name="126"><span class="lineNum">     126 </span><span class="lineCov">       3206 :             return DerivedType(dug, params, format);</span></a>
-<a name="127"><span class="lineNum">     127 </span><span class="lineCov">         48 :         };</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">         70 :         };</span></a>
 <a name="128"><span class="lineNum">     128 </span>            :     }</a>
 <a name="129"><span class="lineNum">     129 </span>            : </a>
 <a name="130"><span class="lineNum">     130 </span>            :     DerivedType&amp; operator=(const DerivedType&amp; rhs) override = 0;</a>
@@ -263,7 +263,7 @@
 <a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :     usint GetLength() const final {</span></a>
 <a name="202"><span class="lineNum">     202 </span>            :         //        if (this-&gt;GetDerived().IsEmpty())</a>
 <a name="203"><span class="lineNum">     203 </span>            :         //            OPENFHE_THROW(&quot;No values in PolyImpl&quot;);</a>
-<a name="204"><span class="lineNum">     204 </span><span class="lineCov">       2344 :         return this-&gt;GetDerived().GetValues().GetLength();</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">   11280494 :         return this-&gt;GetDerived().GetValues().GetLength();</span></a>
 <a name="205"><span class="lineNum">     205 </span>            :     }</a>
 <a name="206"><span class="lineNum">     206 </span>            : </a>
 <a name="207"><span class="lineNum">     207 </span>            :     /**</a>
@@ -645,7 +645,7 @@
 <a name="583"><span class="lineNum">     583 </span>            :    * @return the interpolated ring element as a Poly object.</a>
 <a name="584"><span class="lineNum">     584 </span>            :    */</a>
 <a name="585"><span class="lineNum">     585 </span>            :     DerivedType CRTInterpolate() const {</a>
-<a name="586"><span class="lineNum">     586 </span><span class="lineCov">        223 :         return this-&gt;GetDerived();</span></a>
+<a name="586"><span class="lineNum">     586 </span><span class="lineCov">        446 :         return this-&gt;GetDerived();</span></a>
 <a name="587"><span class="lineNum">     587 </span>            :     }</a>
 <a name="588"><span class="lineNum">     588 </span>            : </a>
 <a name="589"><span class="lineNum">     589 </span>            :     virtual PolyNative DecryptionCRTInterpolate(PlaintextModulus ptm) const = 0;</a>
@@ -698,7 +698,7 @@
 <a name="636"><span class="lineNum">     636 </span>            :    * @return the result of the addition operation.</a>
 <a name="637"><span class="lineNum">     637 </span>            :    */</a>
 <a name="638"><span class="lineNum">     638 </span>            :     friend inline DerivedType operator+(const DerivedType&amp; a, const DerivedType&amp; b) {</a>
-<a name="639"><span class="lineNum">     639 </span><span class="lineCov">      29173 :         return a.Plus(b);</span></a>
+<a name="639"><span class="lineNum">     639 </span><span class="lineCov">    2009093 :         return a.Plus(b);</span></a>
 <a name="640"><span class="lineNum">     640 </span>            :     }</a>
 <a name="641"><span class="lineNum">     641 </span>            :     /**</a>
 <a name="642"><span class="lineNum">     642 </span>            :    * @brief Element-integer addition operator.</a>
@@ -727,7 +727,7 @@
 <a name="665"><span class="lineNum">     665 </span>            :    * @return the result of the subtraction operation.</a>
 <a name="666"><span class="lineNum">     666 </span>            :    */</a>
 <a name="667"><span class="lineNum">     667 </span>            :     friend inline DerivedType operator-(const DerivedType&amp; a, const DerivedType&amp; b) {</a>
-<a name="668"><span class="lineNum">     668 </span><span class="lineCov">      31512 :         return a.Minus(b);</span></a>
+<a name="668"><span class="lineNum">     668 </span><span class="lineCov">      31908 :         return a.Minus(b);</span></a>
 <a name="669"><span class="lineNum">     669 </span>            :     }</a>
 <a name="670"><span class="lineNum">     670 </span>            : </a>
 <a name="671"><span class="lineNum">     671 </span>            :     /**</a>
@@ -747,7 +747,7 @@
 <a name="685"><span class="lineNum">     685 </span>            :    * @return the result of the multiplication operation.</a>
 <a name="686"><span class="lineNum">     686 </span>            :    */</a>
 <a name="687"><span class="lineNum">     687 </span>            :     friend inline DerivedType operator*(const DerivedType&amp; a, const DerivedType&amp; b) {</a>
-<a name="688"><span class="lineNum">     688 </span><span class="lineCov">       9145 :         return a.Times(b);</span></a>
+<a name="688"><span class="lineNum">     688 </span><span class="lineCov">    3371344 :         return a.Times(b);</span></a>
 <a name="689"><span class="lineNum">     689 </span>            :     }</a>
 <a name="690"><span class="lineNum">     690 </span>            : </a>
 <a name="691"><span class="lineNum">     691 </span>            :     /**</a>
@@ -757,7 +757,7 @@
 <a name="695"><span class="lineNum">     695 </span>            :    * @return the result of the multiplication operation.</a>
 <a name="696"><span class="lineNum">     696 </span>            :    */</a>
 <a name="697"><span class="lineNum">     697 </span>            :     friend inline DerivedType operator*(const DerivedType&amp; a, const Integer&amp; b) {</a>
-<a name="698"><span class="lineNum">     698 </span><span class="lineCov">     144177 :         return a.Times(b);</span></a>
+<a name="698"><span class="lineNum">     698 </span><span class="lineCov">     288614 :         return a.Times(b);</span></a>
 <a name="699"><span class="lineNum">     699 </span>            :     }</a>
 <a name="700"><span class="lineNum">     700 </span>            : </a>
 <a name="701"><span class="lineNum">     701 </span>            :     /**</a>
@@ -767,7 +767,7 @@
 <a name="705"><span class="lineNum">     705 </span>            :    * @return the result of the multiplication operation.</a>
 <a name="706"><span class="lineNum">     706 </span>            :    */</a>
 <a name="707"><span class="lineNum">     707 </span>            :     friend inline DerivedType operator*(const Integer&amp; a, const DerivedType&amp; b) {</a>
-<a name="708"><span class="lineNum">     708 </span>            :         return b.Times(a);</a>
+<a name="708"><span class="lineNum">     708 </span><span class="lineCov">      80429 :         return b.Times(a);</span></a>
 <a name="709"><span class="lineNum">     709 </span>            :     }</a>
 <a name="710"><span class="lineNum">     710 </span>            : </a>
 <a name="711"><span class="lineNum">     711 </span>            :     /**</a>
@@ -787,7 +787,7 @@
 <a name="725"><span class="lineNum">     725 </span>            :    * @return the result of the multiplication operation.</a>
 <a name="726"><span class="lineNum">     726 </span>            :    */</a>
 <a name="727"><span class="lineNum">     727 </span>            :     friend inline DerivedType operator*(int64_t a, const DerivedType&amp; b) {</a>
-<a name="728"><span class="lineNum">     728 </span>            :         return b.Times((NativeInteger::SignedNativeInt)a);</a>
+<a name="728"><span class="lineNum">     728 </span><span class="lineCov">     319266 :         return b.Times((NativeInteger::SignedNativeInt)a);</span></a>
 <a name="729"><span class="lineNum">     729 </span>            :     }</a>
 <a name="730"><span class="lineNum">     730 </span>            : };</a>
 <a name="731"><span class="lineNum">     731 </span>            : </a>

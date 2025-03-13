@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">2</td>
@@ -143,39 +143,39 @@
 <a name="81"><span class="lineNum">      81 </span>            : // coefficients because it is formed by discrete gaussians e and s; this implies</a>
 <a name="82"><span class="lineNum">      82 </span>            : // int32_t can be used This algorithm can be further improved - see the</a>
 <a name="83"><span class="lineNum">      83 </span>            : // Darmstadt paper section 4.4</a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">          1 : Matrix&lt;double&gt; Cholesky(const Matrix&lt;int32_t&gt;&amp; input) {</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">          2 : Matrix&lt;double&gt; Cholesky(const Matrix&lt;int32_t&gt;&amp; input) {</span></a>
 <a name="85"><span class="lineNum">      85 </span>            :     //  http://eprint.iacr.org/2013/297.pdf</a>
-<a name="86"><span class="lineNum">      86 </span><span class="lineCov">          1 :     if (input.GetRows() != input.GetCols()) {</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">          2 :     if (input.GetRows() != input.GetCols()) {</span></a>
 <a name="87"><span class="lineNum">      87 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;not square&quot;);</span></a>
 <a name="88"><span class="lineNum">      88 </span>            :     }</a>
 <a name="89"><span class="lineNum">      89 </span>            :     size_t rows = input.GetRows();</a>
-<a name="90"><span class="lineNum">      90 </span><span class="lineCov">          2 :     Matrix&lt;double&gt; result([]() { return 0; }, rows, rows);</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">          4 :     Matrix&lt;double&gt; result([]() { return 0; }, rows, rows);</span></a>
 <a name="91"><span class="lineNum">      91 </span>            : </a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">          3 :     for (size_t i = 0; i &lt; rows; ++i) {</span></a>
-<a name="93"><span class="lineNum">      93 </span><span class="lineCov">          6 :         for (size_t j = 0; j &lt; rows; ++j) {</span></a>
-<a name="94"><span class="lineNum">      94 </span><span class="lineCov">          4 :             result(i, j) = input(i, j);</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">          6 :     for (size_t i = 0; i &lt; rows; ++i) {</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineCov">         12 :         for (size_t j = 0; j &lt; rows; ++j) {</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">          8 :             result(i, j) = input(i, j);</span></a>
 <a name="95"><span class="lineNum">      95 </span>            :         }</a>
 <a name="96"><span class="lineNum">      96 </span>            :     }</a>
 <a name="97"><span class="lineNum">      97 </span>            : </a>
-<a name="98"><span class="lineNum">      98 </span><span class="lineCov">          3 :     for (size_t k = 0; k &lt; rows; ++k) {</span></a>
-<a name="99"><span class="lineNum">      99 </span><span class="lineCov">          2 :         result(k, k) = sqrt(result(k, k));</span></a>
+<a name="98"><span class="lineNum">      98 </span><span class="lineCov">          6 :     for (size_t k = 0; k &lt; rows; ++k) {</span></a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">          4 :         result(k, k) = sqrt(result(k, k));</span></a>
 <a name="100"><span class="lineNum">     100 </span>            :         // result(k, k) = sqrt(input(k, k));</a>
-<a name="101"><span class="lineNum">     101 </span><span class="lineCov">          3 :         for (size_t i = k + 1; i &lt; rows; ++i) {</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">          6 :         for (size_t i = k + 1; i &lt; rows; ++i) {</span></a>
 <a name="102"><span class="lineNum">     102 </span>            :             // result(i, k) = input(i, k) / result(k, k);</a>
-<a name="103"><span class="lineNum">     103 </span><span class="lineCov">          1 :             result(i, k) = result(i, k) / result(k, k);</span></a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineCov">          2 :             result(i, k) = result(i, k) / result(k, k);</span></a>
 <a name="104"><span class="lineNum">     104 </span>            :             //  zero upper-right triangle</a>
-<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          1 :             result(k, i) = 0;</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          2 :             result(k, i) = 0;</span></a>
 <a name="106"><span class="lineNum">     106 </span>            :         }</a>
-<a name="107"><span class="lineNum">     107 </span><span class="lineCov">          3 :         for (size_t j = k + 1; j &lt; rows; ++j) {</span></a>
-<a name="108"><span class="lineNum">     108 </span><span class="lineCov">          2 :             for (size_t i = j; i &lt; rows; ++i) {</span></a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          1 :                 if (result(i, k) != 0 &amp;&amp; result(j, k) != 0) {</span></a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineCov">          1 :                     result(i, j) = result(i, j) - result(i, k) * result(j, k);</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">          6 :         for (size_t j = k + 1; j &lt; rows; ++j) {</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">          4 :             for (size_t i = j; i &lt; rows; ++i) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          2 :                 if (result(i, k) != 0 &amp;&amp; result(j, k) != 0) {</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">          2 :                     result(i, j) = result(i, j) - result(i, k) * result(j, k);</span></a>
 <a name="111"><span class="lineNum">     111 </span>            :                     // result(i, j) = input(i, j) - result(i, k) * result(j, k);</a>
 <a name="112"><span class="lineNum">     112 </span>            :                 }</a>
 <a name="113"><span class="lineNum">     113 </span>            :             }</a>
 <a name="114"><span class="lineNum">     114 </span>            :         }</a>
 <a name="115"><span class="lineNum">     115 </span>            :     }</a>
-<a name="116"><span class="lineNum">     116 </span><span class="lineCov">          1 :     return result;</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">          2 :     return result;</span></a>
 <a name="117"><span class="lineNum">     117 </span>            : }</a>
 <a name="118"><span class="lineNum">     118 </span>            : </a>
 <a name="119"><span class="lineNum">     119 </span><span class="lineNoCov">          0 : void Cholesky(const Matrix&lt;int32_t&gt;&amp; input, Matrix&lt;double&gt;&amp; result) {</span></a>
@@ -214,22 +214,22 @@
 <a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 : }</span></a>
 <a name="153"><span class="lineNum">     153 </span>            : </a>
 <a name="154"><span class="lineNum">     154 </span>            : //  Convert from Z_q to [-q/2, q/2]</a>
-<a name="155"><span class="lineNum">     155 </span><span class="lineCov">        100 : Matrix&lt;int32_t&gt; ConvertToInt32(const Matrix&lt;BigInteger&gt;&amp; input, const BigInteger&amp; modulus) {</span></a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">        200 : Matrix&lt;int32_t&gt; ConvertToInt32(const Matrix&lt;BigInteger&gt;&amp; input, const BigInteger&amp; modulus) {</span></a>
 <a name="156"><span class="lineNum">     156 </span>            :     size_t rows = input.GetRows();</a>
 <a name="157"><span class="lineNum">     157 </span>            :     size_t cols = input.GetCols();</a>
-<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        100 :     BigInteger negativeThreshold(modulus / BigInteger(2));</span></a>
-<a name="159"><span class="lineNum">     159 </span><span class="lineCov">        200 :     Matrix&lt;int32_t&gt; result([]() { return 0; }, rows, cols);</span></a>
-<a name="160"><span class="lineNum">     160 </span><span class="lineCov">       1700 :     for (size_t i = 0; i &lt; rows; ++i) {</span></a>
-<a name="161"><span class="lineNum">     161 </span><span class="lineCov">       3200 :         for (size_t j = 0; j &lt; cols; ++j) {</span></a>
-<a name="162"><span class="lineNum">     162 </span><span class="lineCov">       1600 :             if (input(i, j) &gt; negativeThreshold) {</span></a>
-<a name="163"><span class="lineNum">     163 </span><span class="lineCov">        771 :                 result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        200 :     BigInteger negativeThreshold(modulus / BigInteger(2));</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">        400 :     Matrix&lt;int32_t&gt; result([]() { return 0; }, rows, cols);</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">       3400 :     for (size_t i = 0; i &lt; rows; ++i) {</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">       6400 :         for (size_t j = 0; j &lt; cols; ++j) {</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">       3200 :             if (input(i, j) &gt; negativeThreshold) {</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">       1542 :                 result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();</span></a>
 <a name="164"><span class="lineNum">     164 </span>            :             }</a>
 <a name="165"><span class="lineNum">     165 </span>            :             else {</a>
-<a name="166"><span class="lineNum">     166 </span><span class="lineCov">        829 :                 result(i, j) = input(i, j).ConvertToInt();</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">       1658 :                 result(i, j) = input(i, j).ConvertToInt();</span></a>
 <a name="167"><span class="lineNum">     167 </span>            :             }</a>
 <a name="168"><span class="lineNum">     168 </span>            :         }</a>
 <a name="169"><span class="lineNum">     169 </span>            :     }</a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">        100 :     return result;</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">        200 :     return result;</span></a>
 <a name="171"><span class="lineNum">     171 </span>            : }</a>
 <a name="172"><span class="lineNum">     172 </span>            : </a>
 <a name="173"><span class="lineNum">     173 </span><span class="lineNoCov">          0 : Matrix&lt;int32_t&gt; ConvertToInt32(const Matrix&lt;BigVector&gt;&amp; input, const BigInteger&amp; modulus) {</span></a>

@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">80</td>
-            <td class="headerCovTableEntry">137</td>
-            <td class="headerCovTableEntryLo">58.4 %</td>
+            <td class="headerCovTableEntry">82</td>
+            <td class="headerCovTableEntry">149</td>
+            <td class="headerCovTableEntryLo">55.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">34</td>
-            <td class="headerCovTableEntry">70</td>
-            <td class="headerCovTableEntryLo">48.6 %</td>
+            <td class="headerCovTableEntry">35</td>
+            <td class="headerCovTableEntry">71</td>
+            <td class="headerCovTableEntryLo">49.3 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -138,14 +138,14 @@
 <a name="76"><span class="lineNum">      76 </span>            :     using TugType           = typename PolyInterfaceType::TugType;</a>
 <a name="77"><span class="lineNum">      77 </span>            :     using BugType           = typename PolyInterfaceType::BugType;</a>
 <a name="78"><span class="lineNum">      78 </span>            : </a>
-<a name="79"><span class="lineNum">      79 </span><span class="lineCov">     468768 :     constexpr PolyImpl() = default;</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">     767561 :     constexpr PolyImpl() = default;</span></a>
 <a name="80"><span class="lineNum">      80 </span>            : </a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineCov">   18223825 :     PolyImpl(const std::shared_ptr&lt;Params&gt;&amp; params, Format format = Format::EVALUATION,</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">   28741790 :     PolyImpl(const std::shared_ptr&lt;Params&gt;&amp; params, Format format = Format::EVALUATION,</span></a>
 <a name="82"><span class="lineNum">      82 </span>            :              bool initializeElementToZero = false)</a>
-<a name="83"><span class="lineNum">      83 </span><span class="lineCov">   18223825 :         : m_format{format}, m_params{params} {</span></a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">   18223825 :         if (initializeElementToZero)</span></a>
-<a name="85"><span class="lineNum">      85 </span><span class="lineCov">    5201912 :             PolyImpl::SetValuesToZero();</span></a>
-<a name="86"><span class="lineNum">      86 </span><span class="lineCov">   18223825 :     }</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">   28741790 :         : m_format{format}, m_params{params} {</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">   28741790 :         if (initializeElementToZero)</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">    6259176 :             PolyImpl::SetValuesToZero();</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">   28741790 :     }</span></a>
 <a name="87"><span class="lineNum">      87 </span><span class="lineCov">      12205 :     PolyImpl(const std::shared_ptr&lt;ILDCRTParams&lt;Integer&gt;&gt;&amp; params, Format format = Format::EVALUATION,</span></a>
 <a name="88"><span class="lineNum">      88 </span>            :              bool initializeElementToZero = false)</a>
 <a name="89"><span class="lineNum">      89 </span><span class="lineCov">      12205 :         : m_format(format), m_params(std::make_shared&lt;Params&gt;(params-&gt;GetCyclotomicOrder(), params-&gt;GetModulus(), 1)) {</span></a>
@@ -174,38 +174,38 @@
 <a name="112"><span class="lineNum">     112 </span>            :     }</a>
 <a name="113"><span class="lineNum">     113 </span>            : </a>
 <a name="114"><span class="lineNum">     114 </span>            :     template &lt;typename T = VecType&gt;</a>
-<a name="115"><span class="lineNum">     115 </span>            :     PolyImpl(const PolyNative&amp; rhs, Format format,</a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineNoCov">          0 :     PolyImpl(const PolyNative&amp; rhs, Format format,</span></a>
 <a name="116"><span class="lineNum">     116 </span>            :              typename std::enable_if_t&lt;!std::is_same_v&lt;T, NativeVector&gt;, bool&gt; = true)</a>
-<a name="117"><span class="lineNum">     117 </span>            :         : m_format{rhs.GetFormat()} {</a>
-<a name="118"><span class="lineNum">     118 </span>            :         auto c{rhs.GetParams()-&gt;GetCyclotomicOrder()};</a>
-<a name="119"><span class="lineNum">     119 </span>            :         auto m{rhs.GetParams()-&gt;GetModulus().ConvertToInt()};</a>
-<a name="120"><span class="lineNum">     120 </span>            :         auto r{rhs.GetParams()-&gt;GetRootOfUnity().ConvertToInt()};</a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 :         : m_format{rhs.GetFormat()} {</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 :         auto c{rhs.GetParams()-&gt;GetCyclotomicOrder()};</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineNoCov">          0 :         auto m{rhs.GetParams()-&gt;GetModulus().ConvertToInt()};</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :         auto r{rhs.GetParams()-&gt;GetRootOfUnity().ConvertToInt()};</span></a>
 <a name="121"><span class="lineNum">     121 </span>            :         m_params = std::make_shared&lt;PolyImpl::Params&gt;(c, m, r);</a>
 <a name="122"><span class="lineNum">     122 </span>            : </a>
-<a name="123"><span class="lineNum">     123 </span>            :         const auto&amp; v{rhs.GetValues()};</a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineNoCov">          0 :         const auto&amp; v{rhs.GetValues()};</span></a>
 <a name="124"><span class="lineNum">     124 </span>            :         uint32_t vlen{m_params-&gt;GetRingDimension()};</a>
-<a name="125"><span class="lineNum">     125 </span>            :         VecType tmp(vlen);</a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineNoCov">          0 :         VecType tmp(vlen);</span></a>
 <a name="126"><span class="lineNum">     126 </span>            :         tmp.SetModulus(m_params-&gt;GetModulus());</a>
-<a name="127"><span class="lineNum">     127 </span>            :         for (uint32_t i{0}; i &lt; vlen; ++i)</a>
-<a name="128"><span class="lineNum">     128 </span>            :             tmp[i] = Integer(v[i]);</a>
-<a name="129"><span class="lineNum">     129 </span>            :         m_values = std::make_unique&lt;VecType&gt;(tmp);</a>
-<a name="130"><span class="lineNum">     130 </span>            :         PolyImpl&lt;VecType&gt;::SetFormat(format);</a>
-<a name="131"><span class="lineNum">     131 </span>            :     }</a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineNoCov">          0 :         for (uint32_t i{0}; i &lt; vlen; ++i)</span></a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineNoCov">          0 :             tmp[i] = Integer(v[i]);</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineNoCov">          0 :         m_values = std::make_unique&lt;VecType&gt;(tmp);</span></a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineNoCov">          0 :         PolyImpl&lt;VecType&gt;::SetFormat(format);</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="132"><span class="lineNum">     132 </span>            : </a>
-<a name="133"><span class="lineNum">     133 </span><span class="lineCov">   20075096 :     PolyImpl(const PolyType&amp; p) noexcept</span></a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineCov">   20075096 :         : m_format{p.m_format},</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">   24310460 :     PolyImpl(const PolyType&amp; p) noexcept</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">   24310460 :         : m_format{p.m_format},</span></a>
 <a name="135"><span class="lineNum">     135 </span>            :           m_params{p.m_params},</a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineCov">   20075096 :           m_values{p.m_values ? std::make_unique&lt;VecType&gt;(*p.m_values) : nullptr} {}</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">   24310460 :           m_values{p.m_values ? std::make_unique&lt;VecType&gt;(*p.m_values) : nullptr} {}</span></a>
 <a name="137"><span class="lineNum">     137 </span>            : </a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">    2979022 :     PolyImpl(PolyType&amp;&amp; p) noexcept</span></a>
-<a name="139"><span class="lineNum">     139 </span><span class="lineCov">    2979022 :         : m_format{p.m_format}, m_params{std::move(p.m_params)}, m_values{std::move(p.m_values)} {}</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">    5872009 :     PolyImpl(PolyType&amp;&amp; p) noexcept</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">    5872009 :         : m_format{p.m_format}, m_params{std::move(p.m_params)}, m_values{std::move(p.m_values)} {}</span></a>
 <a name="140"><span class="lineNum">     140 </span>            : </a>
 <a name="141"><span class="lineNum">     141 </span>            :     PolyType&amp; operator=(const PolyType&amp; rhs) noexcept override;</a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">    7909444 :     PolyType&amp; operator=(PolyType&amp;&amp; rhs) noexcept override {</span></a>
-<a name="143"><span class="lineNum">     143 </span><span class="lineCov">    7909444 :         m_format = std::move(rhs.m_format);</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">   14263641 :     PolyType&amp; operator=(PolyType&amp;&amp; rhs) noexcept override {</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">   14263641 :         m_format = std::move(rhs.m_format);</span></a>
 <a name="144"><span class="lineNum">     144 </span>            :         m_params = std::move(rhs.m_params);</a>
 <a name="145"><span class="lineNum">     145 </span>            :         m_values = std::move(rhs.m_values);</a>
-<a name="146"><span class="lineNum">     146 </span><span class="lineCov">    7909444 :         return *this;</span></a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineCov">   14263641 :         return *this;</span></a>
 <a name="147"><span class="lineNum">     147 </span>            :     }</a>
 <a name="148"><span class="lineNum">     148 </span>            :     PolyType&amp; operator=(const std::vector&lt;int32_t&gt;&amp; rhs);</a>
 <a name="149"><span class="lineNum">     149 </span>            :     PolyType&amp; operator=(const std::vector&lt;int64_t&gt;&amp; rhs);</a>
@@ -228,10 +228,10 @@
 <a name="166"><span class="lineNum">     166 </span>            :     void SetValues(const VecType&amp; values, Format format) override;</a>
 <a name="167"><span class="lineNum">     167 </span>            :     void SetValues(VecType&amp;&amp; values, Format format) override;</a>
 <a name="168"><span class="lineNum">     168 </span>            : </a>
-<a name="169"><span class="lineNum">     169 </span><span class="lineCov">    5236698 :     void SetValuesToZero() override {</span></a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">    5143928 :         usint r{m_params-&gt;GetRingDimension()};</span></a>
-<a name="171"><span class="lineNum">     171 </span><span class="lineCov">    5236698 :         m_values = std::make_unique&lt;VecType&gt;(r, m_params-&gt;GetModulus());</span></a>
-<a name="172"><span class="lineNum">     172 </span><span class="lineCov">    5236698 :     }</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineCov">    5929143 :     void SetValuesToZero() override {</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">    5836373 :         usint r{m_params-&gt;GetRingDimension()};</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">    5929143 :         m_values = std::make_unique&lt;VecType&gt;(r, m_params-&gt;GetModulus());</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineCov">    5929143 :     }</span></a>
 <a name="173"><span class="lineNum">     173 </span>            : </a>
 <a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :     void SetValuesToMax() override {</span></a>
 <a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :         usint r{m_params-&gt;GetRingDimension()};</span></a>
@@ -239,8 +239,8 @@
 <a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :         m_values = std::make_unique&lt;VecType&gt;(r, m_params-&gt;GetModulus(), max);</span></a>
 <a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="179"><span class="lineNum">     179 </span>            : </a>
-<a name="180"><span class="lineNum">     180 </span><span class="lineCov">    2705982 :     inline Format GetFormat() const final {</span></a>
-<a name="181"><span class="lineNum">     181 </span><span class="lineCov">    2478463 :         return m_format;</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">    6531991 :     inline Format GetFormat() const final {</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">    4852128 :         return m_format;</span></a>
 <a name="182"><span class="lineNum">     182 </span>            :     }</a>
 <a name="183"><span class="lineNum">     183 </span>            : </a>
 <a name="184"><span class="lineNum">     184 </span><span class="lineNoCov">          0 :     void OverrideFormat(const Format f) final {</span></a>
@@ -248,13 +248,13 @@
 <a name="186"><span class="lineNum">     186 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="187"><span class="lineNum">     187 </span>            : </a>
 <a name="188"><span class="lineNum">     188 </span><span class="lineNoCov">          0 :     inline const std::shared_ptr&lt;Params&gt;&amp; GetParams() const {</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">         19 :         return m_params;</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">         38 :         return m_params;</span></a>
 <a name="190"><span class="lineNum">     190 </span>            :     }</a>
 <a name="191"><span class="lineNum">     191 </span>            : </a>
-<a name="192"><span class="lineNum">     192 </span><span class="lineCov">   26346489 :     inline const VecType&amp; GetValues() const final {</span></a>
-<a name="193"><span class="lineNum">     193 </span><span class="lineCov">   26346489 :         if (m_values == nullptr)</span></a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">   55111235 :     inline const VecType&amp; GetValues() const final {</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov">   55111235 :         if (m_values == nullptr)</span></a>
 <a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;No values in PolyImpl&quot;);</span></a>
-<a name="195"><span class="lineNum">     195 </span><span class="lineCov">   26346489 :         return *m_values;</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">   55111235 :         return *m_values;</span></a>
 <a name="196"><span class="lineNum">     196 </span>            :     }</a>
 <a name="197"><span class="lineNum">     197 </span>            : </a>
 <a name="198"><span class="lineNum">     198 </span><span class="lineNoCov">          0 :     inline bool IsEmpty() const final {</span></a>
@@ -274,11 +274,11 @@
 <a name="212"><span class="lineNum">     212 </span>            :     }</a>
 <a name="213"><span class="lineNum">     213 </span>            : </a>
 <a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :     inline Integer&amp; operator[](usint i) final {</span></a>
-<a name="215"><span class="lineNum">     215 </span><span class="lineCov">   13947328 :         return (*m_values)[i];</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">   35982234 :         return (*m_values)[i];</span></a>
 <a name="216"><span class="lineNum">     216 </span>            :     }</a>
 <a name="217"><span class="lineNum">     217 </span>            : </a>
 <a name="218"><span class="lineNum">     218 </span><span class="lineNoCov">          0 :     inline const Integer&amp; operator[](usint i) const final {</span></a>
-<a name="219"><span class="lineNum">     219 </span><span class="lineCov">    9873320 :         return (*m_values)[i];</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">  218868640 :         return (*m_values)[i];</span></a>
 <a name="220"><span class="lineNum">     220 </span>            :     }</a>
 <a name="221"><span class="lineNum">     221 </span>            : </a>
 <a name="222"><span class="lineNum">     222 </span><span class="lineCov">    2087795 :     PolyImpl Plus(const PolyImpl&amp; rhs) const override {</span></a>
@@ -300,8 +300,8 @@
 <a name="238"><span class="lineNum">     238 </span>            :     PolyImpl&amp; operator+=(const PolyImpl&amp; element) override;</a>
 <a name="239"><span class="lineNum">     239 </span>            : </a>
 <a name="240"><span class="lineNum">     240 </span>            :     PolyImpl Plus(const Integer&amp; element) const override;</a>
-<a name="241"><span class="lineNum">     241 </span><span class="lineCov">          3 :     PolyImpl&amp; operator+=(const Integer&amp; element) override {</span></a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineCov">          3 :         return *this = this-&gt;Plus(element);  // don't change this</span></a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineCov">          4 :     PolyImpl&amp; operator+=(const Integer&amp; element) override {</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">          4 :         return *this = this-&gt;Plus(element);  // don't change this</span></a>
 <a name="243"><span class="lineNum">     243 </span>            :     }</a>
 <a name="244"><span class="lineNum">     244 </span>            : </a>
 <a name="245"><span class="lineNum">     245 </span>            :     PolyImpl Minus(const PolyImpl&amp; element) const override;</a>
@@ -324,10 +324,10 @@
 <a name="262"><span class="lineNum">     262 </span><span class="lineCov">    3620007 :         tmp.m_values-&gt;ModMulNoCheckEq(*rhs.m_values);</span></a>
 <a name="263"><span class="lineNum">     263 </span><span class="lineCov">    3620007 :         return tmp;</span></a>
 <a name="264"><span class="lineNum">     264 </span>            :     }</a>
-<a name="265"><span class="lineNum">     265 </span><span class="lineCov">    2373290 :     PolyImpl TimesNoCheck(const PolyImpl&amp; rhs) const {</span></a>
-<a name="266"><span class="lineNum">     266 </span><span class="lineCov">    2373290 :         auto tmp(*this);</span></a>
-<a name="267"><span class="lineNum">     267 </span><span class="lineCov">    2373290 :         tmp.m_values-&gt;ModMulNoCheckEq(*rhs.m_values);</span></a>
-<a name="268"><span class="lineNum">     268 </span><span class="lineCov">    2373290 :         return tmp;</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">    2373328 :     PolyImpl TimesNoCheck(const PolyImpl&amp; rhs) const {</span></a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineCov">    2373328 :         auto tmp(*this);</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">    2373328 :         tmp.m_values-&gt;ModMulNoCheckEq(*rhs.m_values);</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">    2373328 :         return tmp;</span></a>
 <a name="269"><span class="lineNum">     269 </span>            :     }</a>
 <a name="270"><span class="lineNum">     270 </span><span class="lineCov">    2506042 :     PolyImpl&amp; operator*=(const PolyImpl&amp; rhs) override {</span></a>
 <a name="271"><span class="lineNum">     271 </span><span class="lineCov">    2506042 :         if (m_params-&gt;GetRingDimension() != rhs.m_params-&gt;GetRingDimension())</span></a>
@@ -346,8 +346,8 @@
 <a name="284"><span class="lineNum">     284 </span>            : </a>
 <a name="285"><span class="lineNum">     285 </span>            :     PolyImpl Times(const Integer&amp; element) const override;</a>
 <a name="286"><span class="lineNum">     286 </span><span class="lineNoCov">          0 :     PolyImpl&amp; operator*=(const Integer&amp; element) override {</span></a>
-<a name="287"><span class="lineNum">     287 </span><span class="lineCov">       5466 :         m_values-&gt;ModMulEq(element);</span></a>
-<a name="288"><span class="lineNum">     288 </span><span class="lineCov">       5466 :         return *this;</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">      10932 :         m_values-&gt;ModMulEq(element);</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineCov">      10932 :         return *this;</span></a>
 <a name="289"><span class="lineNum">     289 </span>            :     }</a>
 <a name="290"><span class="lineNum">     290 </span>            : </a>
 <a name="291"><span class="lineNum">     291 </span>            :     PolyImpl Times(NativeInteger::SignedNativeInt element) const override;</a>
@@ -361,8 +361,8 @@
 <a name="299"><span class="lineNum">     299 </span>            :     PolyImpl DivideAndRound(const Integer&amp; q) const override;</a>
 <a name="300"><span class="lineNum">     300 </span>            : </a>
 <a name="301"><span class="lineNum">     301 </span>            :     PolyImpl Negate() const override;</a>
-<a name="302"><span class="lineNum">     302 </span><span class="lineNoCov">          0 :     inline PolyImpl operator-() const override {</span></a>
-<a name="303"><span class="lineNum">     303 </span><span class="lineNoCov">          0 :         return PolyImpl(m_params, m_format, true) -= *this;</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">     318374 :     inline PolyImpl operator-() const override {</span></a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineCov">     318374 :         return PolyImpl(m_params, m_format, true) -= *this;</span></a>
 <a name="304"><span class="lineNum">     304 </span>            :     }</a>
 <a name="305"><span class="lineNum">     305 </span>            : </a>
 <a name="306"><span class="lineNum">     306 </span><span class="lineCov">     336037 :     inline bool operator==(const PolyImpl&amp; rhs) const override {</span></a>
@@ -387,11 +387,11 @@
 <a name="325"><span class="lineNum">     325 </span>            :     std::vector&lt;PolyImpl&gt; PowersOfBase(usint baseBits) const override;</a>
 <a name="326"><span class="lineNum">     326 </span>            : </a>
 <a name="327"><span class="lineNum">     327 </span>            :     template &lt;class Archive&gt;</a>
-<a name="328"><span class="lineNum">     328 </span><span class="lineCov">     287713 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
-<a name="329"><span class="lineNum">     329 </span><span class="lineCov">     287713 :         ar(::cereal::make_nvp(&quot;v&quot;, m_values));</span></a>
-<a name="330"><span class="lineNum">     330 </span><span class="lineCov">     287713 :         ar(::cereal::make_nvp(&quot;f&quot;, m_format));</span></a>
-<a name="331"><span class="lineNum">     331 </span><span class="lineCov">     287713 :         ar(::cereal::make_nvp(&quot;p&quot;, m_params));</span></a>
-<a name="332"><span class="lineNum">     332 </span><span class="lineCov">     287713 :     }</span></a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov">     293857 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineCov">     293857 :         ar(::cereal::make_nvp(&quot;v&quot;, m_values));</span></a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineCov">     293857 :         ar(::cereal::make_nvp(&quot;f&quot;, m_format));</span></a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineCov">     293857 :         ar(::cereal::make_nvp(&quot;p&quot;, m_params));</span></a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineCov">     293857 :     }</span></a>
 <a name="333"><span class="lineNum">     333 </span>            : </a>
 <a name="334"><span class="lineNum">     334 </span>            :     template &lt;class Archive&gt;</a>
 <a name="335"><span class="lineNum">     335 </span><span class="lineCov">     293857 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>

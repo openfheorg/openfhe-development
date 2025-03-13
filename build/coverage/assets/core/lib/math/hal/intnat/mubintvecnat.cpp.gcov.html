@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">20</td>
@@ -122,39 +122,39 @@
 <a name="60"><span class="lineNum">      60 </span><span class="lineNoCov">          0 : }</span></a>
 <a name="61"><span class="lineNum">      61 </span>            : </a>
 <a name="62"><span class="lineNum">      62 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="63"><span class="lineNum">      63 </span><span class="lineCov">         94 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::operator=(std::initializer_list&lt;std::string&gt; rhs) noexcept {</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov">        188 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::operator=(std::initializer_list&lt;std::string&gt; rhs) noexcept {</span></a>
 <a name="64"><span class="lineNum">      64 </span>            :     const size_t len = rhs.size();</a>
-<a name="65"><span class="lineNum">      65 </span><span class="lineCov">         94 :     if (m_data.size() &lt; len)</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">        188 :     if (m_data.size() &lt; len)</span></a>
 <a name="66"><span class="lineNum">      66 </span><span class="lineNoCov">          0 :         m_data.resize(len);</span></a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">        470 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
-<a name="68"><span class="lineNum">      68 </span><span class="lineCov">        376 :         if (i &lt; len) {</span></a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineCov">        376 :             m_data[i] = *(rhs.begin() + i);</span></a>
-<a name="70"><span class="lineNum">      70 </span><span class="lineCov">        376 :             if (m_modulus.m_value != 0)</span></a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">        376 :                 m_data[i].m_value = m_data[i].m_value % m_modulus.m_value;</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">        940 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">        752 :         if (i &lt; len) {</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">        752 :             m_data[i] = *(rhs.begin() + i);</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">        752 :             if (m_modulus.m_value != 0)</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">        752 :                 m_data[i].m_value = m_data[i].m_value % m_modulus.m_value;</span></a>
 <a name="72"><span class="lineNum">      72 </span>            :         }</a>
 <a name="73"><span class="lineNum">      73 </span>            :         else {</a>
 <a name="74"><span class="lineNum">      74 </span><span class="lineNoCov">          0 :             m_data[i].m_value = 0;</span></a>
 <a name="75"><span class="lineNum">      75 </span>            :         }</a>
 <a name="76"><span class="lineNum">      76 </span>            :     }</a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">         94 :     return *this;</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">        188 :     return *this;</span></a>
 <a name="78"><span class="lineNum">      78 </span>            : }</a>
 <a name="79"><span class="lineNum">      79 </span>            : </a>
 <a name="80"><span class="lineNum">      80 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineCov">          6 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::operator=(std::initializer_list&lt;uint64_t&gt; rhs) noexcept {</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">         12 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::operator=(std::initializer_list&lt;uint64_t&gt; rhs) noexcept {</span></a>
 <a name="82"><span class="lineNum">      82 </span>            :     const size_t len = rhs.size();</a>
-<a name="83"><span class="lineNum">      83 </span><span class="lineCov">          6 :     if (m_data.size() &lt; len)</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">         12 :     if (m_data.size() &lt; len)</span></a>
 <a name="84"><span class="lineNum">      84 </span><span class="lineNoCov">          0 :         m_data.resize(len);</span></a>
-<a name="85"><span class="lineNum">      85 </span><span class="lineCov">       1006 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
-<a name="86"><span class="lineNum">      86 </span><span class="lineCov">       1000 :         if (i &lt; len) {</span></a>
-<a name="87"><span class="lineNum">      87 </span><span class="lineCov">         60 :             m_data[i].m_value = BasicInt(*(rhs.begin() + i));</span></a>
-<a name="88"><span class="lineNum">      88 </span><span class="lineCov">         60 :             if (m_modulus.m_value != 0)</span></a>
-<a name="89"><span class="lineNum">      89 </span><span class="lineCov">         60 :                 m_data[i].m_value = m_data[i].m_value % m_modulus.m_value;</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">       2012 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">       2000 :         if (i &lt; len) {</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">        120 :             m_data[i].m_value = BasicInt(*(rhs.begin() + i));</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">        120 :             if (m_modulus.m_value != 0)</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineCov">        120 :                 m_data[i].m_value = m_data[i].m_value % m_modulus.m_value;</span></a>
 <a name="90"><span class="lineNum">      90 </span>            :         }</a>
 <a name="91"><span class="lineNum">      91 </span>            :         else {</a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">        940 :             m_data[i].m_value = 0;</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">       1880 :             m_data[i].m_value = 0;</span></a>
 <a name="93"><span class="lineNum">      93 </span>            :         }</a>
 <a name="94"><span class="lineNum">      94 </span>            :     }</a>
-<a name="95"><span class="lineNum">      95 </span><span class="lineCov">          6 :     return *this;</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">         12 :     return *this;</span></a>
 <a name="96"><span class="lineNum">      96 </span>            : }</a>
 <a name="97"><span class="lineNum">      97 </span>            : </a>
 <a name="98"><span class="lineNum">      98 </span>            : /**Switches the integers in the vector to values corresponding to the new</a>
@@ -168,43 +168,43 @@
 <a name="106"><span class="lineNum">     106 </span>            :  *    i &gt; om/2 i' = i-delta</a>
 <a name="107"><span class="lineNum">     107 </span>            :  */</a>
 <a name="108"><span class="lineNum">     108 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">    1187140 : void NativeVectorT&lt;IntegerType&gt;::SwitchModulus(const IntegerType&amp; modulus) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">    2374280 : void NativeVectorT&lt;IntegerType&gt;::SwitchModulus(const IntegerType&amp; modulus) {</span></a>
 <a name="110"><span class="lineNum">     110 </span>            :     // TODO: #ifdef NATIVEINT_BARRET_MOD</a>
 <a name="111"><span class="lineNum">     111 </span>            :     auto size{m_data.size()};</a>
-<a name="112"><span class="lineNum">     112 </span><span class="lineCov">    1187140 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">    2374280 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
 <a name="113"><span class="lineNum">     113 </span>            :     auto om{m_modulus.m_value};</a>
-<a name="114"><span class="lineNum">     114 </span><span class="lineCov">    1187140 :     this-&gt;NativeVectorT::SetModulus(modulus);</span></a>
-<a name="115"><span class="lineNum">     115 </span><span class="lineCov">    1187140 :     auto nm{modulus.m_value};</span></a>
-<a name="116"><span class="lineNum">     116 </span><span class="lineCov">    1187140 :     if (nm &gt; om) {</span></a>
-<a name="117"><span class="lineNum">     117 </span><span class="lineCov">     542635 :         auto diff{nm - om};</span></a>
-<a name="118"><span class="lineNum">     118 </span><span class="lineCov">  193205000 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">    2374280 :     this-&gt;NativeVectorT::SetModulus(modulus);</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">    2374280 :     auto nm{modulus.m_value};</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">    2374280 :     if (nm &gt; om) {</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">    1085270 :         auto diff{nm - om};</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">  386410000 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="119"><span class="lineNum">     119 </span>            :             auto&amp; v = m_data[i].m_value;</a>
-<a name="120"><span class="lineNum">     120 </span><span class="lineCov">  192663000 :             if (v &gt; halfQ)</span></a>
-<a name="121"><span class="lineNum">     121 </span><span class="lineCov">   35457500 :                 v = v + diff;</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">  385326000 :             if (v &gt; halfQ)</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">   70915000 :                 v = v + diff;</span></a>
 <a name="122"><span class="lineNum">     122 </span>            :         }</a>
 <a name="123"><span class="lineNum">     123 </span>            :     }</a>
 <a name="124"><span class="lineNum">     124 </span>            :     else {</a>
-<a name="125"><span class="lineNum">     125 </span><span class="lineCov">     644502 :         auto diff{nm - (om % nm)};</span></a>
-<a name="126"><span class="lineNum">     126 </span><span class="lineCov">  202617000 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">    1289004 :         auto diff{nm - (om % nm)};</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">  405234000 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="127"><span class="lineNum">     127 </span>            :             auto&amp; v = m_data[i].m_value;</a>
-<a name="128"><span class="lineNum">     128 </span><span class="lineCov">  201973000 :             if (v &gt; halfQ)</span></a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">   34671900 :                 v = v + diff;</span></a>
-<a name="130"><span class="lineNum">     130 </span><span class="lineCov">  201973000 :             if (v &gt;= nm)</span></a>
-<a name="131"><span class="lineNum">     131 </span><span class="lineCov">   36258300 :                 v = v % nm;</span></a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineCov">  403946000 :             if (v &gt; halfQ)</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">   69343800 :                 v = v + diff;</span></a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineCov">  403946000 :             if (v &gt;= nm)</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">   72516600 :                 v = v % nm;</span></a>
 <a name="132"><span class="lineNum">     132 </span>            :         }</a>
 <a name="133"><span class="lineNum">     133 </span>            :     }</a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineCov">    1187140 : }</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">    2374280 : }</span></a>
 <a name="135"><span class="lineNum">     135 </span>            : </a>
 <a name="136"><span class="lineNum">     136 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="137"><span class="lineNum">     137 </span><span class="lineCov">       4182 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::Mod(const IntegerType&amp; modulus) const {</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">       8364 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::Mod(const IntegerType&amp; modulus) const {</span></a>
 <a name="138"><span class="lineNum">     138 </span>            :     auto ans(*this);</a>
-<a name="139"><span class="lineNum">     139 </span><span class="lineCov">       4182 :     if (modulus.m_value == 2)</span></a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">         72 :         return ans.ModByTwoEq();</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">       8364 :     if (modulus.m_value == 2)</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">        144 :         return ans.ModByTwoEq();</span></a>
 <a name="141"><span class="lineNum">     141 </span>            :     auto nm{modulus.m_value};</a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">       4110 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">       8220 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
 <a name="143"><span class="lineNum">     143 </span>            :     auto om{m_modulus.m_value};</a>
 <a name="144"><span class="lineNum">     144 </span>            :     auto size{m_data.size()};</a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">       4110 :     if (nm &gt; om) {</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">       8220 :     if (nm &gt; om) {</span></a>
 <a name="146"><span class="lineNum">     146 </span><span class="lineNoCov">          0 :         auto diff{nm - om};</span></a>
 <a name="147"><span class="lineNum">     147 </span><span class="lineNoCov">          0 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="148"><span class="lineNum">     148 </span>            :             auto&amp; v = ans.m_data[i].m_value;</a>
@@ -213,27 +213,27 @@
 <a name="151"><span class="lineNum">     151 </span>            :         }</a>
 <a name="152"><span class="lineNum">     152 </span>            :     }</a>
 <a name="153"><span class="lineNum">     153 </span>            :     else {</a>
-<a name="154"><span class="lineNum">     154 </span><span class="lineCov">       4110 :         auto diff{nm - (om % nm)};</span></a>
-<a name="155"><span class="lineNum">     155 </span><span class="lineCov">   12145700 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">       8220 :         auto diff{nm - (om % nm)};</span></a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">   24291400 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="156"><span class="lineNum">     156 </span>            :             auto&amp; v = ans.m_data[i].m_value;</a>
-<a name="157"><span class="lineNum">     157 </span><span class="lineCov">   12141600 :             if (v &gt; halfQ)</span></a>
-<a name="158"><span class="lineNum">     158 </span><span class="lineCov">     888861 :                 v = v + diff;</span></a>
-<a name="159"><span class="lineNum">     159 </span><span class="lineCov">   12141600 :             if (v &gt;= nm)</span></a>
-<a name="160"><span class="lineNum">     160 </span><span class="lineCov">     907150 :                 v = v % nm;</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">   24283200 :             if (v &gt; halfQ)</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">    1777722 :                 v = v + diff;</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">   24283200 :             if (v &gt;= nm)</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">    1814300 :                 v = v % nm;</span></a>
 <a name="161"><span class="lineNum">     161 </span>            :         }</a>
 <a name="162"><span class="lineNum">     162 </span>            :     }</a>
 <a name="163"><span class="lineNum">     163 </span>            :     return ans;</a>
 <a name="164"><span class="lineNum">     164 </span>            : }</a>
 <a name="165"><span class="lineNum">     165 </span>            : </a>
 <a name="166"><span class="lineNum">     166 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="167"><span class="lineNum">     167 </span><span class="lineCov">       2664 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModEq(const IntegerType&amp; modulus) {</span></a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov">       2664 :     if (modulus.m_value == 2)</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">       5328 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModEq(const IntegerType&amp; modulus) {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">       5328 :     if (modulus.m_value == 2)</span></a>
 <a name="169"><span class="lineNum">     169 </span><span class="lineNoCov">          0 :         return this-&gt;NativeVectorT::ModByTwoEq();</span></a>
 <a name="170"><span class="lineNum">     170 </span>            :     auto nm{modulus.m_value};</a>
-<a name="171"><span class="lineNum">     171 </span><span class="lineCov">       2664 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">       5328 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
 <a name="172"><span class="lineNum">     172 </span>            :     auto om{m_modulus.m_value};</a>
 <a name="173"><span class="lineNum">     173 </span>            :     auto size{m_data.size()};</a>
-<a name="174"><span class="lineNum">     174 </span><span class="lineCov">       2664 :     if (nm &gt; om) {</span></a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">       5328 :     if (nm &gt; om) {</span></a>
 <a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :         auto diff{nm - om};</span></a>
 <a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="177"><span class="lineNum">     177 </span>            :             auto&amp; v = m_data[i].m_value;</a>
@@ -242,28 +242,28 @@
 <a name="180"><span class="lineNum">     180 </span>            :         }</a>
 <a name="181"><span class="lineNum">     181 </span>            :     }</a>
 <a name="182"><span class="lineNum">     182 </span>            :     else {</a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">       2664 :         auto diff{nm - (om % nm)};</span></a>
-<a name="184"><span class="lineNum">     184 </span><span class="lineCov">     162710 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">       5328 :         auto diff{nm - (om % nm)};</span></a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">     325420 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="185"><span class="lineNum">     185 </span>            :             auto&amp; v = m_data[i].m_value;</a>
-<a name="186"><span class="lineNum">     186 </span><span class="lineCov">     160046 :             if (v &gt; halfQ)</span></a>
-<a name="187"><span class="lineNum">     187 </span><span class="lineCov">     105729 :                 v = v + diff;</span></a>
-<a name="188"><span class="lineNum">     188 </span><span class="lineCov">     160046 :             if (v &gt;= nm)</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">     136750 :                 v = v % nm;</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">     320092 :             if (v &gt; halfQ)</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">     211458 :                 v = v + diff;</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">     320092 :             if (v &gt;= nm)</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">     273500 :                 v = v % nm;</span></a>
 <a name="190"><span class="lineNum">     190 </span>            :         }</a>
 <a name="191"><span class="lineNum">     191 </span>            :     }</a>
 <a name="192"><span class="lineNum">     192 </span>            :     return *this;</a>
 <a name="193"><span class="lineNum">     193 </span>            : }</a>
 <a name="194"><span class="lineNum">     194 </span>            : </a>
 <a name="195"><span class="lineNum">     195 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="196"><span class="lineNum">     196 </span><span class="lineCov">      34605 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModAdd(const IntegerType&amp; b) const {</span></a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineCov">      69210 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModAdd(const IntegerType&amp; b) const {</span></a>
 <a name="197"><span class="lineNum">     197 </span>            :     auto ans(*this);</a>
 <a name="198"><span class="lineNum">     198 </span>            :     auto mv{m_modulus};</a>
 <a name="199"><span class="lineNum">     199 </span>            :     auto bv{b};</a>
-<a name="200"><span class="lineNum">     200 </span><span class="lineCov">      34605 :     if (bv.m_value &gt;= mv.m_value)</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineCov">      69210 :     if (bv.m_value &gt;= mv.m_value)</span></a>
 <a name="201"><span class="lineNum">     201 </span>            :         bv.ModEq(mv);</a>
-<a name="202"><span class="lineNum">     202 </span><span class="lineCov">    4351210 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="202"><span class="lineNum">     202 </span><span class="lineCov">    8702420 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
 <a name="203"><span class="lineNum">     203 </span>            :         ans.m_data[i] = ans.m_data[i].ModAddFast(bv, mv);</a>
-<a name="204"><span class="lineNum">     204 </span><span class="lineCov">      34605 :     return ans;</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">      69210 :     return ans;</span></a>
 <a name="205"><span class="lineNum">     205 </span>            : }</a>
 <a name="206"><span class="lineNum">     206 </span>            : </a>
 <a name="207"><span class="lineNum">     207 </span>            : template &lt;class IntegerType&gt;</a>
@@ -278,10 +278,10 @@
 <a name="216"><span class="lineNum">     216 </span>            : }</a>
 <a name="217"><span class="lineNum">     217 </span>            : </a>
 <a name="218"><span class="lineNum">     218 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="219"><span class="lineNum">     219 </span><span class="lineCov">          6 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModAddAtIndex(size_t i, const IntegerType&amp; b) const {</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">         12 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModAddAtIndex(size_t i, const IntegerType&amp; b) const {</span></a>
 <a name="220"><span class="lineNum">     220 </span>            :     auto ans(*this);</a>
-<a name="221"><span class="lineNum">     221 </span><span class="lineCov">          6 :     ans.at(i).ModAddEq(b, m_modulus);</span></a>
-<a name="222"><span class="lineNum">     222 </span><span class="lineCov">          6 :     return ans;</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineCov">         12 :     ans.at(i).ModAddEq(b, m_modulus);</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">         12 :     return ans;</span></a>
 <a name="223"><span class="lineNum">     223 </span>            : }</a>
 <a name="224"><span class="lineNum">     224 </span>            : </a>
 <a name="225"><span class="lineNum">     225 </span>            : template &lt;class IntegerType&gt;</a>
@@ -302,133 +302,133 @@
 <a name="240"><span class="lineNum">     240 </span>            : }</a>
 <a name="241"><span class="lineNum">     241 </span>            : </a>
 <a name="242"><span class="lineNum">     242 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="243"><span class="lineNum">     243 </span><span class="lineCov">    7082390 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModAddEq(const NativeVectorT&amp; b) {</span></a>
-<a name="244"><span class="lineNum">     244 </span><span class="lineCov">    7082390 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineCov">   14164780 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModAddEq(const NativeVectorT&amp; b) {</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">   14164780 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
 <a name="245"><span class="lineNum">     245 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ModAddEq called on NativeVectorT's with different parameters.&quot;);</span></a>
 <a name="246"><span class="lineNum">     246 </span>            :     auto mv{m_modulus};</a>
-<a name="247"><span class="lineNum">     247 </span><span class="lineCov"> 4545610000 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov"> 9091220000 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
 <a name="248"><span class="lineNum">     248 </span>            :         m_data[i].ModAddFastEq(b[i], mv);</a>
-<a name="249"><span class="lineNum">     249 </span><span class="lineCov">    7082390 :     return *this;</span></a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineCov">   14164780 :     return *this;</span></a>
 <a name="250"><span class="lineNum">     250 </span>            : }</a>
 <a name="251"><span class="lineNum">     251 </span>            : </a>
 <a name="252"><span class="lineNum">     252 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="253"><span class="lineNum">     253 </span><span class="lineCov">      99356 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModSub(const IntegerType&amp; b) const {</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineCov">     198712 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModSub(const IntegerType&amp; b) const {</span></a>
 <a name="254"><span class="lineNum">     254 </span>            :     auto mv{m_modulus};</a>
 <a name="255"><span class="lineNum">     255 </span>            :     auto bv{b};</a>
 <a name="256"><span class="lineNum">     256 </span>            :     auto ans(*this);</a>
-<a name="257"><span class="lineNum">     257 </span><span class="lineCov">      99356 :     if (bv.m_value &gt;= mv.m_value)</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineCov">     198712 :     if (bv.m_value &gt;= mv.m_value)</span></a>
 <a name="258"><span class="lineNum">     258 </span>            :         bv.ModEq(mv);</a>
-<a name="259"><span class="lineNum">     259 </span><span class="lineCov">   11753100 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineCov">   23506200 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
 <a name="260"><span class="lineNum">     260 </span>            :         ans[i].ModSubFastEq(bv, mv);</a>
-<a name="261"><span class="lineNum">     261 </span><span class="lineCov">      99356 :     return ans;</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">     198712 :     return ans;</span></a>
 <a name="262"><span class="lineNum">     262 </span>            : }</a>
 <a name="263"><span class="lineNum">     263 </span>            : </a>
 <a name="264"><span class="lineNum">     264 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="265"><span class="lineNum">     265 </span><span class="lineCov">          2 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModSubEq(const IntegerType&amp; b) {</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">          4 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModSubEq(const IntegerType&amp; b) {</span></a>
 <a name="266"><span class="lineNum">     266 </span>            :     auto mv{m_modulus};</a>
 <a name="267"><span class="lineNum">     267 </span>            :     auto bv{b};</a>
-<a name="268"><span class="lineNum">     268 </span><span class="lineCov">          2 :     if (bv.m_value &gt;= mv.m_value)</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">          4 :     if (bv.m_value &gt;= mv.m_value)</span></a>
 <a name="269"><span class="lineNum">     269 </span>            :         bv.ModEq(mv);</a>
-<a name="270"><span class="lineNum">     270 </span><span class="lineCov">         10 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">         20 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
 <a name="271"><span class="lineNum">     271 </span>            :         m_data[i].ModSubFastEq(bv, mv);</a>
-<a name="272"><span class="lineNum">     272 </span><span class="lineCov">          2 :     return *this;</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineCov">          4 :     return *this;</span></a>
 <a name="273"><span class="lineNum">     273 </span>            : }</a>
 <a name="274"><span class="lineNum">     274 </span>            : </a>
 <a name="275"><span class="lineNum">     275 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="276"><span class="lineNum">     276 </span><span class="lineCov">    1099860 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModSub(const NativeVectorT&amp; b) const {</span></a>
-<a name="277"><span class="lineNum">     277 </span><span class="lineCov">    1099860 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineCov">    2199720 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModSub(const NativeVectorT&amp; b) const {</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineCov">    2199720 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
 <a name="278"><span class="lineNum">     278 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ModSub called on NativeVectorT's with different parameters.&quot;);</span></a>
 <a name="279"><span class="lineNum">     279 </span>            :     auto mv{m_modulus};</a>
 <a name="280"><span class="lineNum">     280 </span>            :     auto ans(*this);</a>
-<a name="281"><span class="lineNum">     281 </span><span class="lineCov">  496221000 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">  992442000 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
 <a name="282"><span class="lineNum">     282 </span>            :         ans[i].ModSubFastEq(b[i], mv);</a>
-<a name="283"><span class="lineNum">     283 </span><span class="lineCov">    1099860 :     return ans;</span></a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineCov">    2199720 :     return ans;</span></a>
 <a name="284"><span class="lineNum">     284 </span>            : }</a>
 <a name="285"><span class="lineNum">     285 </span>            : </a>
 <a name="286"><span class="lineNum">     286 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="287"><span class="lineNum">     287 </span><span class="lineCov">     414240 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModSubEq(const NativeVectorT&amp; b) {</span></a>
-<a name="288"><span class="lineNum">     288 </span><span class="lineCov">     414240 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">     828480 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModSubEq(const NativeVectorT&amp; b) {</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineCov">     828480 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
 <a name="289"><span class="lineNum">     289 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ModSubEq called on NativeVectorT's with different parameters.&quot;);</span></a>
-<a name="290"><span class="lineNum">     290 </span><span class="lineCov">   92198500 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="290"><span class="lineNum">     290 </span><span class="lineCov">  184397000 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
 <a name="291"><span class="lineNum">     291 </span>            :         m_data[i].ModSubFastEq(b[i], m_modulus);</a>
-<a name="292"><span class="lineNum">     292 </span><span class="lineCov">     414240 :     return *this;</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineCov">     828480 :     return *this;</span></a>
 <a name="293"><span class="lineNum">     293 </span>            : }</a>
 <a name="294"><span class="lineNum">     294 </span>            : </a>
 <a name="295"><span class="lineNum">     295 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="296"><span class="lineNum">     296 </span><span class="lineCov">    3110440 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModMul(const IntegerType&amp; b) const {</span></a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">    6220880 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModMul(const IntegerType&amp; b) const {</span></a>
 <a name="297"><span class="lineNum">     297 </span>            :     auto mv{m_modulus};</a>
 <a name="298"><span class="lineNum">     298 </span>            :     auto bv{b};</a>
 <a name="299"><span class="lineNum">     299 </span>            :     auto ans(*this);</a>
-<a name="300"><span class="lineNum">     300 </span><span class="lineCov">    3110440 :     if (bv.m_value &gt;= mv.m_value)</span></a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineCov">    6220880 :     if (bv.m_value &gt;= mv.m_value)</span></a>
 <a name="301"><span class="lineNum">     301 </span>            :         bv.ModEq(mv);</a>
-<a name="302"><span class="lineNum">     302 </span><span class="lineCov">    3110440 :     auto bconst{bv.PrepModMulConst(mv)};</span></a>
-<a name="303"><span class="lineNum">     303 </span><span class="lineCov"> 1093340000 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">    6220880 :     auto bconst{bv.PrepModMulConst(mv)};</span></a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineCov"> 2186680000 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
 <a name="304"><span class="lineNum">     304 </span>            :         ans[i].ModMulFastConstEq(bv, mv, bconst);</a>
-<a name="305"><span class="lineNum">     305 </span><span class="lineCov">    3110440 :     return ans;</span></a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineCov">    6220880 :     return ans;</span></a>
 <a name="306"><span class="lineNum">     306 </span>            : }</a>
 <a name="307"><span class="lineNum">     307 </span>            : </a>
 <a name="308"><span class="lineNum">     308 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="309"><span class="lineNum">     309 </span><span class="lineCov">    1498880 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModMulEq(const IntegerType&amp; b) {</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">    2997760 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModMulEq(const IntegerType&amp; b) {</span></a>
 <a name="310"><span class="lineNum">     310 </span>            :     auto mv{m_modulus};</a>
 <a name="311"><span class="lineNum">     311 </span>            :     auto bv{b};</a>
-<a name="312"><span class="lineNum">     312 </span><span class="lineCov">    1498880 :     if (bv.m_value &gt;= mv.m_value)</span></a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineCov">    2997760 :     if (bv.m_value &gt;= mv.m_value)</span></a>
 <a name="313"><span class="lineNum">     313 </span>            :         bv.ModEq(mv);</a>
-<a name="314"><span class="lineNum">     314 </span><span class="lineCov">    1498880 :     auto bconst{bv.PrepModMulConst(mv)};</span></a>
-<a name="315"><span class="lineNum">     315 </span><span class="lineCov">  294250000 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">    2997760 :     auto bconst{bv.PrepModMulConst(mv)};</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineCov">  588500000 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
 <a name="316"><span class="lineNum">     316 </span>            :         m_data[i].ModMulFastConstEq(bv, mv, bconst);</a>
-<a name="317"><span class="lineNum">     317 </span><span class="lineCov">    1498880 :     return *this;</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">    2997760 :     return *this;</span></a>
 <a name="318"><span class="lineNum">     318 </span>            : }</a>
 <a name="319"><span class="lineNum">     319 </span>            : </a>
 <a name="320"><span class="lineNum">     320 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="321"><span class="lineNum">     321 </span><span class="lineCov">        145 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModMul(const NativeVectorT&amp; b) const {</span></a>
-<a name="322"><span class="lineNum">     322 </span><span class="lineCov">        145 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineCov">        290 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModMul(const NativeVectorT&amp; b) const {</span></a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineCov">        290 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
 <a name="323"><span class="lineNum">     323 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ModMul called on NativeVectorT's with different parameters.&quot;);</span></a>
 <a name="324"><span class="lineNum">     324 </span>            :     auto ans(*this);</a>
-<a name="325"><span class="lineNum">     325 </span><span class="lineCov">        145 :     uint32_t size(m_data.size());</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineCov">        290 :     uint32_t size(m_data.size());</span></a>
 <a name="326"><span class="lineNum">     326 </span>            :     auto mv{m_modulus};</a>
 <a name="327"><span class="lineNum">     327 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
-<a name="328"><span class="lineNum">     328 </span><span class="lineCov">        145 :     auto mu{m_modulus.ComputeMu()};</span></a>
-<a name="329"><span class="lineNum">     329 </span><span class="lineCov">     264611 :     for (uint32_t i = 0; i &lt; size; ++i)</span></a>
-<a name="330"><span class="lineNum">     330 </span><span class="lineCov">     264466 :         ans[i].ModMulFastEq(b[i], mv, mu);</span></a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov">        290 :     auto mu{m_modulus.ComputeMu()};</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineCov">     529222 :     for (uint32_t i = 0; i &lt; size; ++i)</span></a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineCov">     528932 :         ans[i].ModMulFastEq(b[i], mv, mu);</span></a>
 <a name="331"><span class="lineNum">     331 </span>            : #else</a>
 <a name="332"><span class="lineNum">     332 </span>            :     for (uint32_t i = 0; i &lt; size; ++i)</a>
 <a name="333"><span class="lineNum">     333 </span>            :         ans[i].ModMulFastEq(b[i], mv);</a>
 <a name="334"><span class="lineNum">     334 </span>            : #endif</a>
-<a name="335"><span class="lineNum">     335 </span><span class="lineCov">        145 :     return ans;</span></a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineCov">        290 :     return ans;</span></a>
 <a name="336"><span class="lineNum">     336 </span>            : }</a>
 <a name="337"><span class="lineNum">     337 </span>            : </a>
 <a name="338"><span class="lineNum">     338 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="339"><span class="lineNum">     339 </span><span class="lineCov">          2 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModMulEq(const NativeVectorT&amp; b) {</span></a>
-<a name="340"><span class="lineNum">     340 </span><span class="lineCov">          2 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
+<a name="339"><span class="lineNum">     339 </span><span class="lineCov">          4 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModMulEq(const NativeVectorT&amp; b) {</span></a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineCov">          4 :     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)</span></a>
 <a name="341"><span class="lineNum">     341 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ModMulEq called on NativeVectorT's with different parameters.&quot;);</span></a>
 <a name="342"><span class="lineNum">     342 </span>            :     auto mv{m_modulus};</a>
 <a name="343"><span class="lineNum">     343 </span>            :     size_t size{m_data.size()};</a>
 <a name="344"><span class="lineNum">     344 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
-<a name="345"><span class="lineNum">     345 </span><span class="lineCov">          2 :     auto mu{m_modulus.ComputeMu()};</span></a>
-<a name="346"><span class="lineNum">     346 </span><span class="lineCov">       8194 :     for (size_t i = 0; i &lt; size; ++i)</span></a>
-<a name="347"><span class="lineNum">     347 </span><span class="lineCov">       8192 :         m_data[i].ModMulFastEq(b[i], mv, mu);</span></a>
+<a name="345"><span class="lineNum">     345 </span><span class="lineCov">          4 :     auto mu{m_modulus.ComputeMu()};</span></a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineCov">      16388 :     for (size_t i = 0; i &lt; size; ++i)</span></a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineCov">      16384 :         m_data[i].ModMulFastEq(b[i], mv, mu);</span></a>
 <a name="348"><span class="lineNum">     348 </span>            : #else</a>
 <a name="349"><span class="lineNum">     349 </span>            :     for (size_t i = 0; i &lt; size; ++i)</a>
 <a name="350"><span class="lineNum">     350 </span>            :         m_data[i].ModMulFastEq(b[i], mv);</a>
 <a name="351"><span class="lineNum">     351 </span>            : #endif</a>
-<a name="352"><span class="lineNum">     352 </span><span class="lineCov">          2 :     return *this;</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">          4 :     return *this;</span></a>
 <a name="353"><span class="lineNum">     353 </span>            : }</a>
 <a name="354"><span class="lineNum">     354 </span>            : </a>
 <a name="355"><span class="lineNum">     355 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="356"><span class="lineNum">     356 </span><span class="lineCov">          1 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModByTwo() const {</span></a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineCov">          2 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::ModByTwo() const {</span></a>
 <a name="357"><span class="lineNum">     357 </span>            :     auto ans(*this);</a>
-<a name="358"><span class="lineNum">     358 </span><span class="lineCov">          1 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
-<a name="359"><span class="lineNum">     359 </span><span class="lineCov">          5 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="360"><span class="lineNum">     360 </span><span class="lineCov">          4 :         ans[i].m_value = 0x1 &amp; (ans[i].m_value ^ (ans[i].m_value &gt; halfQ));</span></a>
-<a name="361"><span class="lineNum">     361 </span><span class="lineCov">          1 :     return ans;</span></a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">          2 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
+<a name="359"><span class="lineNum">     359 </span><span class="lineCov">         10 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="360"><span class="lineNum">     360 </span><span class="lineCov">          8 :         ans[i].m_value = 0x1 &amp; (ans[i].m_value ^ (ans[i].m_value &gt; halfQ));</span></a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineCov">          2 :     return ans;</span></a>
 <a name="362"><span class="lineNum">     362 </span>            : }</a>
 <a name="363"><span class="lineNum">     363 </span>            : </a>
 <a name="364"><span class="lineNum">     364 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="365"><span class="lineNum">     365 </span><span class="lineCov">         72 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModByTwoEq() {</span></a>
-<a name="366"><span class="lineNum">     366 </span><span class="lineCov">         72 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
-<a name="367"><span class="lineNum">     367 </span><span class="lineCov">     348236 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="368"><span class="lineNum">     368 </span><span class="lineCov">     348164 :         m_data[i].m_value = 0x1 &amp; (m_data[i].m_value ^ (m_data[i].m_value &gt; halfQ));</span></a>
-<a name="369"><span class="lineNum">     369 </span><span class="lineCov">         72 :     return *this;</span></a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineCov">        144 : NativeVectorT&lt;IntegerType&gt;&amp; NativeVectorT&lt;IntegerType&gt;::ModByTwoEq() {</span></a>
+<a name="366"><span class="lineNum">     366 </span><span class="lineCov">        144 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">     696472 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">     696328 :         m_data[i].m_value = 0x1 &amp; (m_data[i].m_value ^ (m_data[i].m_value &gt; halfQ));</span></a>
+<a name="369"><span class="lineNum">     369 </span><span class="lineCov">        144 :     return *this;</span></a>
 <a name="370"><span class="lineNum">     370 </span>            : }</a>
 <a name="371"><span class="lineNum">     371 </span>            : </a>
 <a name="372"><span class="lineNum">     372 </span>            : template &lt;class IntegerType&gt;</a>
@@ -465,21 +465,21 @@
 <a name="403"><span class="lineNum">     403 </span>            : }</a>
 <a name="404"><span class="lineNum">     404 </span>            : </a>
 <a name="405"><span class="lineNum">     405 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="406"><span class="lineNum">     406 </span><span class="lineCov">         66 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::MultiplyAndRound(const IntegerType&amp; p,</span></a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineCov">        132 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::MultiplyAndRound(const IntegerType&amp; p,</span></a>
 <a name="407"><span class="lineNum">     407 </span>            :                                                                         const IntegerType&amp; q) const {</a>
-<a name="408"><span class="lineNum">     408 </span><span class="lineCov">         66 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineCov">        132 :     auto halfQ{m_modulus.m_value &gt;&gt; 1};</span></a>
 <a name="409"><span class="lineNum">     409 </span>            :     auto mv{m_modulus};</a>
 <a name="410"><span class="lineNum">     410 </span>            :     auto ans(*this);</a>
-<a name="411"><span class="lineNum">     411 </span><span class="lineCov">     819274 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i) {</span></a>
-<a name="412"><span class="lineNum">     412 </span><span class="lineCov">     819208 :         if (ans[i].m_value &gt; halfQ) {</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineCov">    1638548 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i) {</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">    1638416 :         if (ans[i].m_value &gt; halfQ) {</span></a>
 <a name="413"><span class="lineNum">     413 </span>            :             auto&amp;&amp; tmp{mv - ans[i]};</a>
-<a name="414"><span class="lineNum">     414 </span><span class="lineCov">     407442 :             ans[i] = mv - tmp.MultiplyAndRound(p, q);</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">     814884 :             ans[i] = mv - tmp.MultiplyAndRound(p, q);</span></a>
 <a name="415"><span class="lineNum">     415 </span>            :         }</a>
 <a name="416"><span class="lineNum">     416 </span>            :         else {</a>
-<a name="417"><span class="lineNum">     417 </span><span class="lineCov">     411766 :             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(mv);</span></a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineCov">     823532 :             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(mv);</span></a>
 <a name="418"><span class="lineNum">     418 </span>            :         }</a>
 <a name="419"><span class="lineNum">     419 </span>            :     }</a>
-<a name="420"><span class="lineNum">     420 </span><span class="lineCov">         66 :     return ans;</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineCov">        132 :     return ans;</span></a>
 <a name="421"><span class="lineNum">     421 </span>            : }</a>
 <a name="422"><span class="lineNum">     422 </span>            : </a>
 <a name="423"><span class="lineNum">     423 </span>            : template &lt;class IntegerType&gt;</a>
@@ -532,11 +532,11 @@
 <a name="470"><span class="lineNum">     470 </span>            : }</a>
 <a name="471"><span class="lineNum">     471 </span>            : </a>
 <a name="472"><span class="lineNum">     472 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="473"><span class="lineNum">     473 </span><span class="lineCov">      70547 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::GetDigitAtIndexForBase(usint index, usint base) const {</span></a>
+<a name="473"><span class="lineNum">     473 </span><span class="lineCov">     141094 : NativeVectorT&lt;IntegerType&gt; NativeVectorT&lt;IntegerType&gt;::GetDigitAtIndexForBase(usint index, usint base) const {</span></a>
 <a name="474"><span class="lineNum">     474 </span>            :     auto ans(*this);</a>
-<a name="475"><span class="lineNum">     475 </span><span class="lineCov">   71603400 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="476"><span class="lineNum">     476 </span><span class="lineCov">   71532900 :         ans[i].m_value = static_cast&lt;BasicInt&gt;(ans[i].GetDigitAtIndexForBase(index, base));</span></a>
-<a name="477"><span class="lineNum">     477 </span><span class="lineCov">      70547 :     return ans;</span></a>
+<a name="475"><span class="lineNum">     475 </span><span class="lineCov">  143206800 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="476"><span class="lineNum">     476 </span><span class="lineCov">  143065800 :         ans[i].m_value = static_cast&lt;BasicInt&gt;(ans[i].GetDigitAtIndexForBase(index, base));</span></a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineCov">     141094 :     return ans;</span></a>
 <a name="478"><span class="lineNum">     478 </span>            : }</a>
 <a name="479"><span class="lineNum">     479 </span>            : </a>
 <a name="480"><span class="lineNum">     480 </span>            : template class NativeVectorT&lt;NativeInteger&gt;;</a>

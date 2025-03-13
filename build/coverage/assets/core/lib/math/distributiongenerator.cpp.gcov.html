@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">2</td>
@@ -110,13 +110,13 @@
 <a name="48"><span class="lineNum">      48 </span>            : std::shared_ptr&lt;PRNG&gt; PseudoRandomNumberGenerator::m_prng                                    = nullptr;</a>
 <a name="49"><span class="lineNum">      49 </span>            : PseudoRandomNumberGenerator::GenPRNGEngineFuncPtr PseudoRandomNumberGenerator::genPRNGEngine = nullptr;</a>
 <a name="50"><span class="lineNum">      50 </span>            : </a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">          3 : void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string&amp; libPath) {</span></a>
-<a name="52"><span class="lineNum">      52 </span><span class="lineCov">          3 :     if (genPRNGEngine)  // if genPRNGEngine has already been initialized</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">          6 : void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string&amp; libPath) {</span></a>
+<a name="52"><span class="lineNum">      52 </span><span class="lineCov">          6 :     if (genPRNGEngine)  // if genPRNGEngine has already been initialized</span></a>
 <a name="53"><span class="lineNum">      53 </span>            :         return;</a>
 <a name="54"><span class="lineNum">      54 </span>            : </a>
-<a name="55"><span class="lineNum">      55 </span><span class="lineCov">          3 :     if (libPath.empty()) {</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">          6 :     if (libPath.empty()) {</span></a>
 <a name="56"><span class="lineNum">      56 </span>            :         // use the default OpenFHE PRNG that comes with the library</a>
-<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          3 :         genPRNGEngine = default_prng::createEngineInstance;</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          6 :         genPRNGEngine = default_prng::createEngineInstance;</span></a>
 <a name="58"><span class="lineNum">      58 </span>            :         if (!genPRNGEngine)</a>
 <a name="59"><span class="lineNum">      59 </span>            :             OPENFHE_THROW(&quot;Cannot find symbol: default_prng::createEngineInstance&quot;);</a>
 <a name="60"><span class="lineNum">      60 </span>            :         // std::cerr &lt;&lt; &quot;InitPRNGEngine: using local PRNG&quot; &lt;&lt; std::endl;</a>
@@ -148,23 +148,23 @@
 <a name="86"><span class="lineNum">      86 </span>            :     }</a>
 <a name="87"><span class="lineNum">      87 </span>            : }</a>
 <a name="88"><span class="lineNum">      88 </span>            : </a>
-<a name="89"><span class="lineNum">      89 </span><span class="lineCov"> 3266790000 : PRNG&amp; PseudoRandomNumberGenerator::GetPRNG() {</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineCov"> 6533580000 : PRNG&amp; PseudoRandomNumberGenerator::GetPRNG() {</span></a>
 <a name="90"><span class="lineNum">      90 </span>            :     // initialization of PRNGs</a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov"> 3266790000 :     if (m_prng == nullptr) {</span></a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">       3410 : #pragma omp critical</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov"> 6533580000 :     if (m_prng == nullptr) {</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">       6820 : #pragma omp critical</span></a>
 <a name="93"><span class="lineNum">      93 </span>            :         {</a>
 <a name="94"><span class="lineNum">      94 </span>            :             // we would like to believe that the block of code below is a good defense line</a>
-<a name="95"><span class="lineNum">      95 </span><span class="lineCov">       3410 :             if (!genPRNGEngine)</span></a>
-<a name="96"><span class="lineNum">      96 </span><span class="lineCov">          6 :                 InitPRNGEngine();</span></a>
-<a name="97"><span class="lineNum">      97 </span><span class="lineCov">       3410 :             if (!genPRNGEngine)</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">       6820 :             if (!genPRNGEngine)</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">         12 :                 InitPRNGEngine();</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">       6820 :             if (!genPRNGEngine)</span></a>
 <a name="98"><span class="lineNum">      98 </span><span class="lineNoCov">          0 :                 OPENFHE_THROW(&quot;Failure to initialize the PRNG engine&quot;);</span></a>
 <a name="99"><span class="lineNum">      99 </span>            : </a>
-<a name="100"><span class="lineNum">     100 </span><span class="lineCov">       6820 :             m_prng = std::shared_ptr&lt;PRNG&gt;(genPRNGEngine());</span></a>
-<a name="101"><span class="lineNum">     101 </span><span class="lineCov">       3410 :             if (!m_prng)</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">      13640 :             m_prng = std::shared_ptr&lt;PRNG&gt;(genPRNGEngine());</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">       6820 :             if (!m_prng)</span></a>
 <a name="102"><span class="lineNum">     102 </span><span class="lineNoCov">          0 :                 OPENFHE_THROW(&quot;Cannot create a PRNG engine&quot;);</span></a>
 <a name="103"><span class="lineNum">     103 </span>            :         }  // pragma omp critical</a>
 <a name="104"><span class="lineNum">     104 </span>            :     }</a>
-<a name="105"><span class="lineNum">     105 </span><span class="lineCov"> 3266790000 :     return *m_prng;</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov"> 6533580000 :     return *m_prng;</span></a>
 <a name="106"><span class="lineNum">     106 </span>            : }</a>
 <a name="107"><span class="lineNum">     107 </span>            : </a>
 <a name="108"><span class="lineNum">     108 </span>            : }  // namespace lbcrypto</a>

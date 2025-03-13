@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">13</td>
-            <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntryMed">81.2 %</td>
+            <td class="headerCovTableEntry">18</td>
+            <td class="headerCovTableEntry">21</td>
+            <td class="headerCovTableEntryMed">85.7 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">2</td>
-            <td class="headerCovTableEntry">4</td>
-            <td class="headerCovTableEntryLo">50.0 %</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">60.0 %</td>
           </tr>
           <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -121,16 +121,16 @@
 <a name="59"><span class="lineNum">      59 </span>            :  * @brief Class that stores a RingGSW ciphertext; a two-dimensional vector of</a>
 <a name="60"><span class="lineNum">      60 </span>            :  * ring elements</a>
 <a name="61"><span class="lineNum">      61 </span>            :  */</a>
-<a name="62"><span class="lineNum">      62 </span>            : class RingGSWEvalKeyImpl : public Serializable {</a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">      71362 : class RingGSWEvalKeyImpl : public Serializable {</span></a>
 <a name="63"><span class="lineNum">      63 </span>            : public:</a>
-<a name="64"><span class="lineNum">      64 </span><span class="lineCov">       5962 :     RingGSWEvalKeyImpl() = default;</span></a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">       6730 :     RingGSWEvalKeyImpl() = default;</span></a>
 <a name="65"><span class="lineNum">      65 </span>            : </a>
-<a name="66"><span class="lineNum">      66 </span>            :     RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) noexcept</a>
-<a name="67"><span class="lineNum">      67 </span>            :         : m_elements(rowSize, std::vector&lt;NativePoly&gt;(colSize)) {}</a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">      71362 :     RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) noexcept</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">      71362 :         : m_elements(rowSize, std::vector&lt;NativePoly&gt;(colSize)) {}</span></a>
 <a name="68"><span class="lineNum">      68 </span>            : </a>
 <a name="69"><span class="lineNum">      69 </span>            :     explicit RingGSWEvalKeyImpl(const std::vector&lt;std::vector&lt;NativePoly&gt;&gt;&amp; elements) : m_elements(elements) {}</a>
 <a name="70"><span class="lineNum">      70 </span>            : </a>
-<a name="71"><span class="lineNum">      71 </span>            :     RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl&amp; rhs) : m_elements(rhs.m_elements) {}</a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">      71362 :     RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl&amp; rhs) : m_elements(rhs.m_elements) {}</span></a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            :     RingGSWEvalKeyImpl(RingGSWEvalKeyImpl&amp;&amp; rhs) noexcept : m_elements(std::move(rhs.m_elements)) {}</a>
 <a name="74"><span class="lineNum">      74 </span>            : </a>
@@ -165,7 +165,7 @@
 <a name="103"><span class="lineNum">     103 </span>            :     }</a>
 <a name="104"><span class="lineNum">     104 </span>            : </a>
 <a name="105"><span class="lineNum">     105 </span>            :     std::vector&lt;NativePoly&gt;&amp; operator[](uint32_t i) {</a>
-<a name="106"><span class="lineNum">     106 </span>            :         return m_elements[i];</a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">        260 :         return m_elements[i];</span></a>
 <a name="107"><span class="lineNum">     107 </span>            :     }</a>
 <a name="108"><span class="lineNum">     108 </span>            : </a>
 <a name="109"><span class="lineNum">     109 </span>            :     const std::vector&lt;NativePoly&gt;&amp; operator[](uint32_t i) const {</a>
@@ -194,17 +194,17 @@
 <a name="132"><span class="lineNum">     132 </span>            : </a>
 <a name="133"><span class="lineNum">     133 </span>            :     template &lt;class Archive&gt;</a>
 <a name="134"><span class="lineNum">     134 </span>            :     void save(Archive&amp; ar, std::uint32_t const version) const {</a>
-<a name="135"><span class="lineNum">     135 </span><span class="lineCov">       5962 :         ar(::cereal::make_nvp(&quot;elements&quot;, m_elements));</span></a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">       6730 :         ar(::cereal::make_nvp(&quot;elements&quot;, m_elements));</span></a>
 <a name="136"><span class="lineNum">     136 </span>            :     }</a>
 <a name="137"><span class="lineNum">     137 </span>            : </a>
 <a name="138"><span class="lineNum">     138 </span>            :     template &lt;class Archive&gt;</a>
-<a name="139"><span class="lineNum">     139 </span><span class="lineCov">       5962 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">       5962 :         if (version &gt; SerializedVersion()) {</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">       6730 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">       6730 :         if (version &gt; SerializedVersion()) {</span></a>
 <a name="141"><span class="lineNum">     141 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;serialized object version &quot; + std::to_string(version) +</span></a>
 <a name="142"><span class="lineNum">     142 </span>            :                           &quot; is from a later version of the library&quot;);</a>
 <a name="143"><span class="lineNum">     143 </span>            :         }</a>
-<a name="144"><span class="lineNum">     144 </span><span class="lineCov">       5962 :         ar(::cereal::make_nvp(&quot;elements&quot;, m_elements));</span></a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">       5962 :     }</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">       6730 :         ar(::cereal::make_nvp(&quot;elements&quot;, m_elements));</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">       6730 :     }</span></a>
 <a name="146"><span class="lineNum">     146 </span>            : </a>
 <a name="147"><span class="lineNum">     147 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :         return &quot;RingGSWEvalKey&quot;;</span></a>

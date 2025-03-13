@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">27</td>
@@ -114,28 +114,28 @@
 <a name="52"><span class="lineNum">      52 </span>            : namespace bigintdyn {</a>
 <a name="53"><span class="lineNum">      53 </span>            : </a>
 <a name="54"><span class="lineNum">      54 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="55"><span class="lineNum">      55 </span><span class="lineCov">          1 : mubintvec&lt;ubint_el_t&gt;::mubintvec(usint length, const ubint_el_t&amp; modulus,</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt;::mubintvec(usint length, const ubint_el_t&amp; modulus,</span></a>
 <a name="56"><span class="lineNum">      56 </span>            :                                  std::initializer_list&lt;std::string&gt; rhs) noexcept</a>
-<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          1 :     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          2 :     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {</span></a>
 <a name="58"><span class="lineNum">      58 </span>            :     const size_t len = (rhs.size() &lt; m_data.size()) ? rhs.size() : m_data.size();</a>
-<a name="59"><span class="lineNum">      59 </span><span class="lineCov">         11 :     for (size_t i = 0; i &lt; len; ++i)</span></a>
-<a name="60"><span class="lineNum">      60 </span><span class="lineCov">         30 :         m_data[i] = ubint_el_t(*(rhs.begin() + i)) % m_modulus;</span></a>
-<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          1 : }</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">         22 :     for (size_t i = 0; i &lt; len; ++i)</span></a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">         60 :         m_data[i] = ubint_el_t(*(rhs.begin() + i)) % m_modulus;</span></a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          2 : }</span></a>
 <a name="62"><span class="lineNum">      62 </span>            : </a>
 <a name="63"><span class="lineNum">      63 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          1 : mubintvec&lt;ubint_el_t&gt;::mubintvec(usint length, const ubint_el_t&amp; modulus, std::initializer_list&lt;uint64_t&gt; rhs) noexcept</span></a>
-<a name="65"><span class="lineNum">      65 </span><span class="lineCov">          1 :     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {</span></a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt;::mubintvec(usint length, const ubint_el_t&amp; modulus, std::initializer_list&lt;uint64_t&gt; rhs) noexcept</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">          2 :     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {</span></a>
 <a name="66"><span class="lineNum">      66 </span>            :     const size_t len = (rhs.size() &lt; m_data.size()) ? rhs.size() : m_data.size();</a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">         11 :     for (size_t i = 0; i &lt; len; ++i)</span></a>
-<a name="68"><span class="lineNum">      68 </span><span class="lineCov">         30 :         m_data[i] = ubint_el_t(*(rhs.begin() + i)) % m_modulus;</span></a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          1 : }</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">         22 :     for (size_t i = 0; i &lt; len; ++i)</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">         60 :         m_data[i] = ubint_el_t(*(rhs.begin() + i)) % m_modulus;</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          2 : }</span></a>
 <a name="70"><span class="lineNum">      70 </span>            : </a>
 <a name="71"><span class="lineNum">      71 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="72"><span class="lineNum">      72 </span><span class="lineCov">          8 : mubintvec&lt;ubint_el_t&gt;::mubintvec(const std::vector&lt;std::string&gt;&amp; s, const ubint_el_t&amp; modulus) noexcept</span></a>
-<a name="73"><span class="lineNum">      73 </span><span class="lineCov">          8 :     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(s.size()) {</span></a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">        136 :     for (size_t i = 0; i &lt; s.size(); ++i)</span></a>
-<a name="75"><span class="lineNum">      75 </span><span class="lineCov">        384 :         m_data[i] = ubint_el_t(s[i]) % m_modulus;</span></a>
-<a name="76"><span class="lineNum">      76 </span><span class="lineCov">          8 : }</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">         16 : mubintvec&lt;ubint_el_t&gt;::mubintvec(const std::vector&lt;std::string&gt;&amp; s, const ubint_el_t&amp; modulus) noexcept</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">         16 :     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(s.size()) {</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">        272 :     for (size_t i = 0; i &lt; s.size(); ++i)</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">        768 :         m_data[i] = ubint_el_t(s[i]) % m_modulus;</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">         16 : }</span></a>
 <a name="77"><span class="lineNum">      77 </span>            : </a>
 <a name="78"><span class="lineNum">      78 </span>            : template &lt;class ubint_el_t&gt;</a>
 <a name="79"><span class="lineNum">      79 </span><span class="lineNoCov">          0 : mubintvec&lt;ubint_el_t&gt;::mubintvec(const std::vector&lt;std::string&gt;&amp; s, const std::string&amp; modulus) noexcept</span></a>
@@ -147,55 +147,55 @@
 <a name="85"><span class="lineNum">      85 </span>            : // if two vectors are different sized, then it will resize target vector</a>
 <a name="86"><span class="lineNum">      86 </span>            : // will overwrite target modulus</a>
 <a name="87"><span class="lineNum">      87 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="88"><span class="lineNum">      88 </span><span class="lineCov">     108190 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::operator=(const mubintvec&amp; rhs) noexcept {</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">     216380 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::operator=(const mubintvec&amp; rhs) noexcept {</span></a>
 <a name="89"><span class="lineNum">      89 </span>            :     m_modulus       = rhs.m_modulus;</a>
-<a name="90"><span class="lineNum">      90 </span><span class="lineCov">     108190 :     m_modulus_state = rhs.m_modulus_state;</span></a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov">     108190 :     if (rhs.m_data.size() &gt; m_data.size()) {</span></a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">         67 :         m_data = rhs.m_data;</span></a>
-<a name="93"><span class="lineNum">      93 </span><span class="lineCov">         67 :         return *this;</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">     216380 :     m_modulus_state = rhs.m_modulus_state;</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">     216380 :     if (rhs.m_data.size() &gt; m_data.size()) {</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">        134 :         m_data = rhs.m_data;</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineCov">        134 :         return *this;</span></a>
 <a name="94"><span class="lineNum">      94 </span>            :     }</a>
-<a name="95"><span class="lineNum">      95 </span><span class="lineCov">     108123 :     std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());</span></a>
-<a name="96"><span class="lineNum">      96 </span><span class="lineCov">     108123 :     if (m_data.size() &gt; rhs.m_data.size())</span></a>
-<a name="97"><span class="lineNum">      97 </span><span class="lineCov">          6 :         m_data.resize(rhs.m_data.size());</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">     216246 :     std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">     216246 :     if (m_data.size() &gt; rhs.m_data.size())</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">         12 :         m_data.resize(rhs.m_data.size());</span></a>
 <a name="98"><span class="lineNum">      98 </span>            :     return *this;</a>
 <a name="99"><span class="lineNum">      99 </span>            : }</a>
 <a name="100"><span class="lineNum">     100 </span>            : </a>
 <a name="101"><span class="lineNum">     101 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="102"><span class="lineNum">     102 </span><span class="lineCov">         75 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::operator=(std::initializer_list&lt;std::string&gt; rhs) noexcept {</span></a>
+<a name="102"><span class="lineNum">     102 </span><span class="lineCov">        150 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::operator=(std::initializer_list&lt;std::string&gt; rhs) noexcept {</span></a>
 <a name="103"><span class="lineNum">     103 </span>            :     const size_t len = rhs.size();</a>
-<a name="104"><span class="lineNum">     104 </span><span class="lineCov">         75 :     if (m_data.size() &lt; len)</span></a>
-<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          7 :         m_data.resize(len);</span></a>
-<a name="106"><span class="lineNum">     106 </span><span class="lineCov">         75 :     const auto reduce = (m_modulus_state == State::INITIALIZED &amp;&amp; m_modulus);</span></a>
-<a name="107"><span class="lineNum">     107 </span><span class="lineCov">        441 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
-<a name="108"><span class="lineNum">     108 </span><span class="lineCov">        366 :         if (i &lt; len) {</span></a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">        366 :             m_data[i] = ubint_el_t(*(rhs.begin() + i));</span></a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineCov">        366 :             if (reduce)</span></a>
-<a name="111"><span class="lineNum">     111 </span><span class="lineCov">        337 :                 m_data[i].ModEq(m_modulus);</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">        150 :     if (m_data.size() &lt; len)</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">         14 :         m_data.resize(len);</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">        150 :     const auto reduce = (m_modulus_state == State::INITIALIZED &amp;&amp; m_modulus);</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">        882 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">        732 :         if (i &lt; len) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">        732 :             m_data[i] = ubint_el_t(*(rhs.begin() + i));</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">        732 :             if (reduce)</span></a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">        674 :                 m_data[i].ModEq(m_modulus);</span></a>
 <a name="112"><span class="lineNum">     112 </span>            :         }</a>
 <a name="113"><span class="lineNum">     113 </span>            :         else {</a>
 <a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 :             m_data[i] = 0;</span></a>
 <a name="115"><span class="lineNum">     115 </span>            :         }</a>
 <a name="116"><span class="lineNum">     116 </span>            :     }</a>
-<a name="117"><span class="lineNum">     117 </span><span class="lineCov">         75 :     return *this;</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">        150 :     return *this;</span></a>
 <a name="118"><span class="lineNum">     118 </span>            : }</a>
 <a name="119"><span class="lineNum">     119 </span>            : </a>
 <a name="120"><span class="lineNum">     120 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="121"><span class="lineNum">     121 </span><span class="lineCov">         11 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::operator=(std::initializer_list&lt;uint64_t&gt; rhs) noexcept {</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">         22 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::operator=(std::initializer_list&lt;uint64_t&gt; rhs) noexcept {</span></a>
 <a name="122"><span class="lineNum">     122 </span>            :     const size_t len = rhs.size();</a>
-<a name="123"><span class="lineNum">     123 </span><span class="lineCov">         11 :     if (m_data.size() &lt; len)</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">         22 :     if (m_data.size() &lt; len)</span></a>
 <a name="124"><span class="lineNum">     124 </span><span class="lineNoCov">          0 :         m_data.resize(len);</span></a>
-<a name="125"><span class="lineNum">     125 </span><span class="lineCov">         11 :     const auto reduce = (m_modulus_state == State::INITIALIZED &amp;&amp; m_modulus);</span></a>
-<a name="126"><span class="lineNum">     126 </span><span class="lineCov">       8695 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
-<a name="127"><span class="lineNum">     127 </span><span class="lineCov">       8684 :         if (i &lt; len) {</span></a>
-<a name="128"><span class="lineNum">     128 </span><span class="lineCov">        100 :             m_data[i] = ubint_el_t(*(rhs.begin() + i));</span></a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">        100 :             if (reduce)</span></a>
-<a name="130"><span class="lineNum">     130 </span><span class="lineCov">        100 :                 m_data[i].ModEq(m_modulus);</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">         22 :     const auto reduce = (m_modulus_state == State::INITIALIZED &amp;&amp; m_modulus);</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">      17390 :     for (size_t i = 0; i &lt; m_data.size(); ++i) {</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">      17368 :         if (i &lt; len) {</span></a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineCov">        200 :             m_data[i] = ubint_el_t(*(rhs.begin() + i));</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">        200 :             if (reduce)</span></a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineCov">        200 :                 m_data[i].ModEq(m_modulus);</span></a>
 <a name="131"><span class="lineNum">     131 </span>            :         }</a>
 <a name="132"><span class="lineNum">     132 </span>            :         else {</a>
-<a name="133"><span class="lineNum">     133 </span><span class="lineCov">       8584 :             m_data[i] = 0;</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">      17168 :             m_data[i] = 0;</span></a>
 <a name="134"><span class="lineNum">     134 </span>            :         }</a>
 <a name="135"><span class="lineNum">     135 </span>            :     }</a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineCov">         11 :     return *this;</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">         22 :     return *this;</span></a>
 <a name="137"><span class="lineNum">     137 </span>            : }</a>
 <a name="138"><span class="lineNum">     138 </span>            : </a>
 <a name="139"><span class="lineNum">     139 </span>            : /**Switches the integers in the vector to values corresponding to the new</a>
@@ -204,36 +204,36 @@
 <a name="142"><span class="lineNum">     142 </span>            :  * &gt; om/2 i' = i-delta</a>
 <a name="143"><span class="lineNum">     143 </span>            :  */</a>
 <a name="144"><span class="lineNum">     144 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">          9 : void mubintvec&lt;ubint_el_t&gt;::SwitchModulus(const ubint_el_t&amp; modulus) {</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">         18 : void mubintvec&lt;ubint_el_t&gt;::SwitchModulus(const ubint_el_t&amp; modulus) {</span></a>
 <a name="146"><span class="lineNum">     146 </span>            :     auto size{m_data.size()};</a>
-<a name="147"><span class="lineNum">     147 </span><span class="lineCov">          9 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
-<a name="148"><span class="lineNum">     148 </span><span class="lineCov">          9 :     if (modulus &gt; m_modulus) {</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">         18 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">         18 :     if (modulus &gt; m_modulus) {</span></a>
 <a name="149"><span class="lineNum">     149 </span>            :         auto diff{modulus - m_modulus};</a>
-<a name="150"><span class="lineNum">     150 </span><span class="lineCov">      32787 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
-<a name="151"><span class="lineNum">     151 </span><span class="lineCov">      32780 :             if (m_data[i] &gt; halfQ)</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">      65574 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineCov">      65560 :             if (m_data[i] &gt; halfQ)</span></a>
 <a name="152"><span class="lineNum">     152 </span>            :                 m_data[i] += diff;</a>
 <a name="153"><span class="lineNum">     153 </span>            :         }</a>
 <a name="154"><span class="lineNum">     154 </span>            :     }</a>
 <a name="155"><span class="lineNum">     155 </span>            :     else {</a>
-<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          2 :         auto diff{modulus - (m_modulus % modulus)};</span></a>
-<a name="157"><span class="lineNum">     157 </span><span class="lineCov">         10 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
-<a name="158"><span class="lineNum">     158 </span><span class="lineCov">          8 :             if (m_data[i] &gt; halfQ)</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          4 :         auto diff{modulus - (m_modulus % modulus)};</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">         20 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">         16 :             if (m_data[i] &gt; halfQ)</span></a>
 <a name="159"><span class="lineNum">     159 </span>            :                 m_data[i] += diff;</a>
-<a name="160"><span class="lineNum">     160 </span><span class="lineCov">          8 :             if (m_data[i] &gt;= modulus)</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">         16 :             if (m_data[i] &gt;= modulus)</span></a>
 <a name="161"><span class="lineNum">     161 </span>            :                 m_data[i] %= modulus;</a>
 <a name="162"><span class="lineNum">     162 </span>            :         }</a>
 <a name="163"><span class="lineNum">     163 </span>            :     }</a>
 <a name="164"><span class="lineNum">     164 </span>            :     this-&gt;SetModulus(modulus);</a>
-<a name="165"><span class="lineNum">     165 </span><span class="lineCov">          9 : }</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">         18 : }</span></a>
 <a name="166"><span class="lineNum">     166 </span>            : </a>
 <a name="167"><span class="lineNum">     167 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov">          5 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::Mod(const ubint_el_t&amp; modulus) const {</span></a>
-<a name="169"><span class="lineNum">     169 </span><span class="lineCov">         10 :     auto ans(*this);</span></a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">          5 :     if (modulus == 2)</span></a>
-<a name="171"><span class="lineNum">     171 </span><span class="lineCov">          1 :         return ans.ModByTwoEq();</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">         10 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::Mod(const ubint_el_t&amp; modulus) const {</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineCov">         20 :     auto ans(*this);</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">         10 :     if (modulus == 2)</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">          2 :         return ans.ModByTwoEq();</span></a>
 <a name="172"><span class="lineNum">     172 </span>            :     auto size{m_data.size()};</a>
-<a name="173"><span class="lineNum">     173 </span><span class="lineCov">          4 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
-<a name="174"><span class="lineNum">     174 </span><span class="lineCov">          4 :     if (modulus &gt; m_modulus) {</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">          8 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">          8 :     if (modulus &gt; m_modulus) {</span></a>
 <a name="175"><span class="lineNum">     175 </span>            :         auto diff{modulus - m_modulus};</a>
 <a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :             if (ans.m_data[i] &gt; halfQ)</span></a>
@@ -241,11 +241,11 @@
 <a name="179"><span class="lineNum">     179 </span>            :         }</a>
 <a name="180"><span class="lineNum">     180 </span>            :     }</a>
 <a name="181"><span class="lineNum">     181 </span>            :     else {</a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineCov">          4 :         auto diff{modulus - (m_modulus % modulus)};</span></a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">         38 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
-<a name="184"><span class="lineNum">     184 </span><span class="lineCov">         34 :             if (ans.m_data[i] &gt; halfQ)</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">          8 :         auto diff{modulus - (m_modulus % modulus)};</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">         76 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">         68 :             if (ans.m_data[i] &gt; halfQ)</span></a>
 <a name="185"><span class="lineNum">     185 </span>            :                 ans.m_data[i] += diff;</a>
-<a name="186"><span class="lineNum">     186 </span><span class="lineCov">         34 :             if (ans.m_data[i] &gt;= modulus)</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">         68 :             if (ans.m_data[i] &gt;= modulus)</span></a>
 <a name="187"><span class="lineNum">     187 </span>            :                 ans.m_data[i] %= modulus;</a>
 <a name="188"><span class="lineNum">     188 </span>            :         }</a>
 <a name="189"><span class="lineNum">     189 </span>            :     }</a>
@@ -253,12 +253,12 @@
 <a name="191"><span class="lineNum">     191 </span>            : }</a>
 <a name="192"><span class="lineNum">     192 </span>            : </a>
 <a name="193"><span class="lineNum">     193 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="194"><span class="lineNum">     194 </span><span class="lineCov">         24 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModEq(const ubint_el_t&amp; modulus) {</span></a>
-<a name="195"><span class="lineNum">     195 </span><span class="lineCov">         24 :     if (modulus == 2)</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">         48 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModEq(const ubint_el_t&amp; modulus) {</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">         48 :     if (modulus == 2)</span></a>
 <a name="196"><span class="lineNum">     196 </span><span class="lineNoCov">          0 :         return this-&gt;ModByTwoEq();</span></a>
 <a name="197"><span class="lineNum">     197 </span>            :     auto size{m_data.size()};</a>
-<a name="198"><span class="lineNum">     198 </span><span class="lineCov">         24 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
-<a name="199"><span class="lineNum">     199 </span><span class="lineCov">         24 :     if (modulus &gt; m_modulus) {</span></a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineCov">         48 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineCov">         48 :     if (modulus &gt; m_modulus) {</span></a>
 <a name="200"><span class="lineNum">     200 </span>            :         auto diff{modulus - m_modulus};</a>
 <a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
 <a name="202"><span class="lineNum">     202 </span><span class="lineNoCov">          0 :             if (m_data[i] &gt; halfQ)</span></a>
@@ -266,11 +266,11 @@
 <a name="204"><span class="lineNum">     204 </span>            :         }</a>
 <a name="205"><span class="lineNum">     205 </span>            :     }</a>
 <a name="206"><span class="lineNum">     206 </span>            :     else {</a>
-<a name="207"><span class="lineNum">     207 </span><span class="lineCov">         24 :         auto diff{modulus - (m_modulus % modulus)};</span></a>
-<a name="208"><span class="lineNum">     208 </span><span class="lineCov">      47620 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
-<a name="209"><span class="lineNum">     209 </span><span class="lineCov">      47596 :             if (m_data[i] &gt; halfQ)</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">         48 :         auto diff{modulus - (m_modulus % modulus)};</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineCov">      95240 :         for (size_t i = 0; i &lt; size; ++i) {</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineCov">      95192 :             if (m_data[i] &gt; halfQ)</span></a>
 <a name="210"><span class="lineNum">     210 </span>            :                 m_data[i] += diff;</a>
-<a name="211"><span class="lineNum">     211 </span><span class="lineCov">      47596 :             if (m_data[i] &gt;= modulus)</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">      95192 :             if (m_data[i] &gt;= modulus)</span></a>
 <a name="212"><span class="lineNum">     212 </span>            :                 m_data[i] %= modulus;</a>
 <a name="213"><span class="lineNum">     213 </span>            :         }</a>
 <a name="214"><span class="lineNum">     214 </span>            :     }</a>
@@ -278,15 +278,15 @@
 <a name="216"><span class="lineNum">     216 </span>            : }</a>
 <a name="217"><span class="lineNum">     217 </span>            : </a>
 <a name="218"><span class="lineNum">     218 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="219"><span class="lineNum">     219 </span><span class="lineCov">          3 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModAdd(const ubint_el_t&amp; b) const {</span></a>
-<a name="220"><span class="lineNum">     220 </span><span class="lineCov">          3 :     auto ans(*this);</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">          6 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModAdd(const ubint_el_t&amp; b) const {</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">          6 :     auto ans(*this);</span></a>
 <a name="221"><span class="lineNum">     221 </span>            :     auto modulus(m_modulus);</a>
 <a name="222"><span class="lineNum">     222 </span>            :     auto bLocal(b);</a>
-<a name="223"><span class="lineNum">     223 </span><span class="lineCov">          3 :     if (bLocal &gt;= modulus)</span></a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineCov">          1 :         bLocal.ModEq(modulus);</span></a>
-<a name="225"><span class="lineNum">     225 </span><span class="lineCov">         29 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="226"><span class="lineNum">     226 </span><span class="lineCov">         26 :         ans[i].ModAddFastEq(bLocal, modulus);</span></a>
-<a name="227"><span class="lineNum">     227 </span><span class="lineCov">          3 :     return ans;</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">          6 :     if (bLocal &gt;= modulus)</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">          2 :         bLocal.ModEq(modulus);</span></a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">         58 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">         52 :         ans[i].ModAddFastEq(bLocal, modulus);</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">          6 :     return ans;</span></a>
 <a name="228"><span class="lineNum">     228 </span>            : }</a>
 <a name="229"><span class="lineNum">     229 </span>            : </a>
 <a name="230"><span class="lineNum">     230 </span>            : template &lt;class ubint_el_t&gt;</a>
@@ -301,10 +301,10 @@
 <a name="239"><span class="lineNum">     239 </span>            : }</a>
 <a name="240"><span class="lineNum">     240 </span>            : </a>
 <a name="241"><span class="lineNum">     241 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModAddAtIndex(size_t i, const ubint_el_t&amp; b) const {</span></a>
-<a name="243"><span class="lineNum">     243 </span><span class="lineCov">          2 :     auto ans(*this);</span></a>
-<a name="244"><span class="lineNum">     244 </span><span class="lineCov">          2 :     ans.at(i).ModAddEq(b, m_modulus);</span></a>
-<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          2 :     return ans;</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">          4 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModAddAtIndex(size_t i, const ubint_el_t&amp; b) const {</span></a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineCov">          4 :     auto ans(*this);</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">          4 :     ans.at(i).ModAddEq(b, m_modulus);</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          4 :     return ans;</span></a>
 <a name="246"><span class="lineNum">     246 </span>            : }</a>
 <a name="247"><span class="lineNum">     247 </span>            : </a>
 <a name="248"><span class="lineNum">     248 </span>            : template &lt;class ubint_el_t&gt;</a>
@@ -314,96 +314,96 @@
 <a name="252"><span class="lineNum">     252 </span>            : }</a>
 <a name="253"><span class="lineNum">     253 </span>            : </a>
 <a name="254"><span class="lineNum">     254 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="255"><span class="lineNum">     255 </span><span class="lineCov">          9 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModAdd(const mubintvec&amp; b) const {</span></a>
-<a name="256"><span class="lineNum">     256 </span><span class="lineCov">          9 :     if (m_modulus != b.m_modulus)</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">         18 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModAdd(const mubintvec&amp; b) const {</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineCov">         18 :     if (m_modulus != b.m_modulus)</span></a>
 <a name="257"><span class="lineNum">     257 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec adding vectors of different moduli&quot;);</span></a>
-<a name="258"><span class="lineNum">     258 </span><span class="lineCov">          9 :     if (m_data.size() != b.m_data.size())</span></a>
+<a name="258"><span class="lineNum">     258 </span><span class="lineCov">         18 :     if (m_data.size() != b.m_data.size())</span></a>
 <a name="259"><span class="lineNum">     259 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec adding vectors of different lengths&quot;);</span></a>
-<a name="260"><span class="lineNum">     260 </span><span class="lineCov">          9 :     auto ans(*this);</span></a>
-<a name="261"><span class="lineNum">     261 </span><span class="lineCov">        104 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="262"><span class="lineNum">     262 </span><span class="lineCov">         95 :         ans[i].ModAddEq(b.m_data[i], ans.m_modulus);</span></a>
-<a name="263"><span class="lineNum">     263 </span><span class="lineCov">          9 :     return ans;</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineCov">         18 :     auto ans(*this);</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">        208 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineCov">        190 :         ans[i].ModAddEq(b.m_data[i], ans.m_modulus);</span></a>
+<a name="263"><span class="lineNum">     263 </span><span class="lineCov">         18 :     return ans;</span></a>
 <a name="264"><span class="lineNum">     264 </span>            : }</a>
 <a name="265"><span class="lineNum">     265 </span>            : </a>
 <a name="266"><span class="lineNum">     266 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="267"><span class="lineNum">     267 </span><span class="lineCov">     213071 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModAddEq(const mubintvec&amp; b) {</span></a>
-<a name="268"><span class="lineNum">     268 </span><span class="lineCov">     213071 :     if (m_modulus != b.m_modulus)</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">     426142 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModAddEq(const mubintvec&amp; b) {</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">     426142 :     if (m_modulus != b.m_modulus)</span></a>
 <a name="269"><span class="lineNum">     269 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec adding vectors of different moduli&quot;);</span></a>
-<a name="270"><span class="lineNum">     270 </span><span class="lineCov">     213071 :     if (m_data.size() != b.m_data.size())</span></a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">     426142 :     if (m_data.size() != b.m_data.size())</span></a>
 <a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec adding vectors of different lengths&quot;);</span></a>
-<a name="272"><span class="lineNum">     272 </span><span class="lineCov">    1943480 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="273"><span class="lineNum">     273 </span><span class="lineCov">    1730410 :         m_data[i].ModAddEq(b.m_data[i], m_modulus);</span></a>
-<a name="274"><span class="lineNum">     274 </span><span class="lineCov">     213071 :     return *this;</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineCov">    3886960 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineCov">    3460820 :         m_data[i].ModAddEq(b.m_data[i], m_modulus);</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineCov">     426142 :     return *this;</span></a>
 <a name="275"><span class="lineNum">     275 </span>            : }</a>
 <a name="276"><span class="lineNum">     276 </span>            : </a>
 <a name="277"><span class="lineNum">     277 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="278"><span class="lineNum">     278 </span><span class="lineCov">      15493 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModAddNoCheckEq(const mubintvec&amp; b) {</span></a>
-<a name="279"><span class="lineNum">     279 </span><span class="lineCov">     139429 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="280"><span class="lineNum">     280 </span><span class="lineCov">     123936 :         m_data[i].ModAddEq(b.m_data[i], m_modulus);</span></a>
-<a name="281"><span class="lineNum">     281 </span><span class="lineCov">      15493 :     return *this;</span></a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineCov">      30986 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModAddNoCheckEq(const mubintvec&amp; b) {</span></a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineCov">     278858 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">     247872 :         m_data[i].ModAddEq(b.m_data[i], m_modulus);</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">      30986 :     return *this;</span></a>
 <a name="282"><span class="lineNum">     282 </span>            : }</a>
 <a name="283"><span class="lineNum">     283 </span>            : </a>
 <a name="284"><span class="lineNum">     284 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="285"><span class="lineNum">     285 </span><span class="lineCov">          5 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModSub(const ubint_el_t&amp; b) const {</span></a>
-<a name="286"><span class="lineNum">     286 </span><span class="lineCov">          5 :     auto ans(*this);</span></a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineCov">         10 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModSub(const ubint_el_t&amp; b) const {</span></a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineCov">         10 :     auto ans(*this);</span></a>
 <a name="287"><span class="lineNum">     287 </span>            :     auto modulus{m_modulus};</a>
 <a name="288"><span class="lineNum">     288 </span>            :     auto bLocal{b};</a>
-<a name="289"><span class="lineNum">     289 </span><span class="lineCov">          5 :     if (bLocal &gt;= modulus)</span></a>
-<a name="290"><span class="lineNum">     290 </span><span class="lineCov">          2 :         bLocal.ModEq(modulus);</span></a>
-<a name="291"><span class="lineNum">     291 </span><span class="lineCov">         39 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="292"><span class="lineNum">     292 </span><span class="lineCov">         34 :         ans[i].ModSubFastEq(bLocal, modulus);</span></a>
-<a name="293"><span class="lineNum">     293 </span><span class="lineCov">          5 :     return ans;</span></a>
+<a name="289"><span class="lineNum">     289 </span><span class="lineCov">         10 :     if (bLocal &gt;= modulus)</span></a>
+<a name="290"><span class="lineNum">     290 </span><span class="lineCov">          4 :         bLocal.ModEq(modulus);</span></a>
+<a name="291"><span class="lineNum">     291 </span><span class="lineCov">         78 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineCov">         68 :         ans[i].ModSubFastEq(bLocal, modulus);</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineCov">         10 :     return ans;</span></a>
 <a name="294"><span class="lineNum">     294 </span>            : }</a>
 <a name="295"><span class="lineNum">     295 </span>            : </a>
 <a name="296"><span class="lineNum">     296 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="297"><span class="lineNum">     297 </span><span class="lineCov">          1 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModSubEq(const ubint_el_t&amp; b) {</span></a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModSubEq(const ubint_el_t&amp; b) {</span></a>
 <a name="298"><span class="lineNum">     298 </span>            :     auto modulus{m_modulus};</a>
 <a name="299"><span class="lineNum">     299 </span>            :     auto bLocal{b};</a>
-<a name="300"><span class="lineNum">     300 </span><span class="lineCov">          1 :     if (bLocal &gt;= modulus)</span></a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineCov">          2 :     if (bLocal &gt;= modulus)</span></a>
 <a name="301"><span class="lineNum">     301 </span><span class="lineNoCov">          0 :         bLocal.ModEq(modulus);</span></a>
-<a name="302"><span class="lineNum">     302 </span><span class="lineCov">          5 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="303"><span class="lineNum">     303 </span><span class="lineCov">          4 :         m_data[i].ModSubFastEq(bLocal, modulus);</span></a>
-<a name="304"><span class="lineNum">     304 </span><span class="lineCov">          1 :     return *this;</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">         10 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineCov">          8 :         m_data[i].ModSubFastEq(bLocal, modulus);</span></a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineCov">          2 :     return *this;</span></a>
 <a name="305"><span class="lineNum">     305 </span>            : }</a>
 <a name="306"><span class="lineNum">     306 </span>            : </a>
 <a name="307"><span class="lineNum">     307 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="308"><span class="lineNum">     308 </span><span class="lineCov">      18757 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModSub(const mubintvec&amp; b) const {</span></a>
-<a name="309"><span class="lineNum">     309 </span><span class="lineCov">      18757 :     if (m_modulus != b.m_modulus)</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineCov">      37514 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModSub(const mubintvec&amp; b) const {</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">      37514 :     if (m_modulus != b.m_modulus)</span></a>
 <a name="310"><span class="lineNum">     310 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec subtractiong vectors of different moduli&quot;);</span></a>
-<a name="311"><span class="lineNum">     311 </span><span class="lineCov">      18757 :     if (m_data.size() != b.m_data.size())</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">      37514 :     if (m_data.size() != b.m_data.size())</span></a>
 <a name="312"><span class="lineNum">     312 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec subtractiong vectors of different lengths&quot;);</span></a>
-<a name="313"><span class="lineNum">     313 </span><span class="lineCov">      18757 :     auto ans(*this);</span></a>
-<a name="314"><span class="lineNum">     314 </span><span class="lineCov">     172485 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="315"><span class="lineNum">     315 </span><span class="lineCov">     153728 :         ans[i].ModSubEq(b.m_data[i], ans.m_modulus);</span></a>
-<a name="316"><span class="lineNum">     316 </span><span class="lineCov">      18757 :     return ans;</span></a>
+<a name="313"><span class="lineNum">     313 </span><span class="lineCov">      37514 :     auto ans(*this);</span></a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">     344970 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineCov">     307456 :         ans[i].ModSubEq(b.m_data[i], ans.m_modulus);</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineCov">      37514 :     return ans;</span></a>
 <a name="317"><span class="lineNum">     317 </span>            : }</a>
 <a name="318"><span class="lineNum">     318 </span>            : </a>
 <a name="319"><span class="lineNum">     319 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="320"><span class="lineNum">     320 </span><span class="lineCov">          4 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModSubEq(const mubintvec&amp; b) {</span></a>
-<a name="321"><span class="lineNum">     321 </span><span class="lineCov">          4 :     if (m_modulus != b.m_modulus)</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">          8 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModSubEq(const mubintvec&amp; b) {</span></a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineCov">          8 :     if (m_modulus != b.m_modulus)</span></a>
 <a name="322"><span class="lineNum">     322 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec subtractiong vectors of different moduli&quot;);</span></a>
-<a name="323"><span class="lineNum">     323 </span><span class="lineCov">          4 :     if (m_data.size() != b.m_data.size())</span></a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineCov">          8 :     if (m_data.size() != b.m_data.size())</span></a>
 <a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec subtractiong vectors of different lengths&quot;);</span></a>
-<a name="325"><span class="lineNum">     325 </span><span class="lineCov">         48 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="326"><span class="lineNum">     326 </span><span class="lineCov">         44 :         m_data[i].ModSubEq(b.m_data[i], m_modulus);</span></a>
-<a name="327"><span class="lineNum">     327 </span><span class="lineCov">          4 :     return *this;</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineCov">         96 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="326"><span class="lineNum">     326 </span><span class="lineCov">         88 :         m_data[i].ModSubEq(b.m_data[i], m_modulus);</span></a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineCov">          8 :     return *this;</span></a>
 <a name="328"><span class="lineNum">     328 </span>            : }</a>
 <a name="329"><span class="lineNum">     329 </span>            : </a>
 <a name="330"><span class="lineNum">     330 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="331"><span class="lineNum">     331 </span><span class="lineCov">         21 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModMul(const ubint_el_t&amp; b) const {</span></a>
-<a name="332"><span class="lineNum">     332 </span><span class="lineCov">         21 :     auto ans(*this);</span></a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineCov">         42 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModMul(const ubint_el_t&amp; b) const {</span></a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineCov">         42 :     auto ans(*this);</span></a>
 <a name="333"><span class="lineNum">     333 </span>            :     auto bLocal{b};</a>
-<a name="334"><span class="lineNum">     334 </span><span class="lineCov">         21 :     if (bLocal &gt;= ans.m_modulus)</span></a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineCov">         42 :     if (bLocal &gt;= ans.m_modulus)</span></a>
 <a name="335"><span class="lineNum">     335 </span><span class="lineNoCov">          0 :         bLocal.ModEq(ans.m_modulus);</span></a>
 <a name="336"><span class="lineNum">     336 </span>            :     #ifdef NO_BARRETT</a>
-<a name="337"><span class="lineNum">     337 </span><span class="lineCov">      15914 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="338"><span class="lineNum">     338 </span><span class="lineCov">      15893 :         ans[i].ModMulFastEq(bLocal, ans.m_modulus);</span></a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineCov">      31828 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="338"><span class="lineNum">     338 </span><span class="lineCov">      31786 :         ans[i].ModMulFastEq(bLocal, ans.m_modulus);</span></a>
 <a name="339"><span class="lineNum">     339 </span>            :     #else</a>
 <a name="340"><span class="lineNum">     340 </span>            :     auto mu(ans.m_modulus.ComputeMu());</a>
 <a name="341"><span class="lineNum">     341 </span>            :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</a>
 <a name="342"><span class="lineNum">     342 </span>            :         ans[i].ModMulFastEq(bLocal, ans.m_modulus, mu);</a>
 <a name="343"><span class="lineNum">     343 </span>            :     #endif</a>
-<a name="344"><span class="lineNum">     344 </span><span class="lineCov">         21 :     return ans;</span></a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineCov">         42 :     return ans;</span></a>
 <a name="345"><span class="lineNum">     345 </span>            : }</a>
 <a name="346"><span class="lineNum">     346 </span>            : </a>
 <a name="347"><span class="lineNum">     347 </span>            : template &lt;class ubint_el_t&gt;</a>
@@ -423,63 +423,63 @@
 <a name="361"><span class="lineNum">     361 </span>            : }</a>
 <a name="362"><span class="lineNum">     362 </span>            : </a>
 <a name="363"><span class="lineNum">     363 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="364"><span class="lineNum">     364 </span><span class="lineCov">         72 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModMul(const mubintvec&amp; b) const {</span></a>
-<a name="365"><span class="lineNum">     365 </span><span class="lineCov">         72 :     if (m_modulus != b.m_modulus)</span></a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineCov">        144 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModMul(const mubintvec&amp; b) const {</span></a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineCov">        144 :     if (m_modulus != b.m_modulus)</span></a>
 <a name="366"><span class="lineNum">     366 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec multiplying vectors of different moduli&quot;);</span></a>
-<a name="367"><span class="lineNum">     367 </span><span class="lineCov">         72 :     if (m_data.size() != b.m_data.size())</span></a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">        144 :     if (m_data.size() != b.m_data.size())</span></a>
 <a name="368"><span class="lineNum">     368 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec multiplying vectors of different lengths&quot;);</span></a>
-<a name="369"><span class="lineNum">     369 </span><span class="lineCov">         72 :     auto ans(*this);</span></a>
+<a name="369"><span class="lineNum">     369 </span><span class="lineCov">        144 :     auto ans(*this);</span></a>
 <a name="370"><span class="lineNum">     370 </span>            :     #ifdef NO_BARRETT</a>
-<a name="371"><span class="lineNum">     371 </span><span class="lineCov">     171729 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="372"><span class="lineNum">     372 </span><span class="lineCov">     171657 :         ans[i].ModMulFastEq(b[i], ans.m_modulus);</span></a>
+<a name="371"><span class="lineNum">     371 </span><span class="lineCov">     343458 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineCov">     343314 :         ans[i].ModMulFastEq(b[i], ans.m_modulus);</span></a>
 <a name="373"><span class="lineNum">     373 </span>            :     #else</a>
 <a name="374"><span class="lineNum">     374 </span>            :     auto mu(ans.m_modulus.ComputeMu());</a>
 <a name="375"><span class="lineNum">     375 </span>            :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</a>
 <a name="376"><span class="lineNum">     376 </span>            :         ans[i].ModMulFastEq(b[i], ans.m_modulus, mu);</a>
 <a name="377"><span class="lineNum">     377 </span>            :     #endif</a>
-<a name="378"><span class="lineNum">     378 </span><span class="lineCov">         72 :     return ans;</span></a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineCov">        144 :     return ans;</span></a>
 <a name="379"><span class="lineNum">     379 </span>            : }</a>
 <a name="380"><span class="lineNum">     380 </span>            : </a>
 <a name="381"><span class="lineNum">     381 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="382"><span class="lineNum">     382 </span><span class="lineCov">          5 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModMulEq(const mubintvec&amp; b) {</span></a>
-<a name="383"><span class="lineNum">     383 </span><span class="lineCov">          5 :     if (m_modulus != b.m_modulus)</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineCov">         10 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModMulEq(const mubintvec&amp; b) {</span></a>
+<a name="383"><span class="lineNum">     383 </span><span class="lineCov">         10 :     if (m_modulus != b.m_modulus)</span></a>
 <a name="384"><span class="lineNum">     384 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec multiplying vectors of different moduli&quot;);</span></a>
-<a name="385"><span class="lineNum">     385 </span><span class="lineCov">          5 :     if (m_data.size() != b.m_data.size())</span></a>
+<a name="385"><span class="lineNum">     385 </span><span class="lineCov">         10 :     if (m_data.size() != b.m_data.size())</span></a>
 <a name="386"><span class="lineNum">     386 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;mubintvec multiplying vectors of different lengths&quot;);</span></a>
 <a name="387"><span class="lineNum">     387 </span>            :     #ifdef NO_BARRETT</a>
-<a name="388"><span class="lineNum">     388 </span><span class="lineCov">       8237 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="389"><span class="lineNum">     389 </span><span class="lineCov">       8232 :         m_data[i].ModMulFastEq(b[i], m_modulus);</span></a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineCov">      16474 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineCov">      16464 :         m_data[i].ModMulFastEq(b[i], m_modulus);</span></a>
 <a name="390"><span class="lineNum">     390 </span>            :     #else</a>
 <a name="391"><span class="lineNum">     391 </span>            :     auto mu(m_modulus.ComputeMu());</a>
 <a name="392"><span class="lineNum">     392 </span>            :     for (size_t i = 0; i &lt; m_data.size(); ++i)</a>
 <a name="393"><span class="lineNum">     393 </span>            :         m_data[i].ModMulFastEq(b[i], m_modulus, mu);</a>
 <a name="394"><span class="lineNum">     394 </span>            :     #endif</a>
-<a name="395"><span class="lineNum">     395 </span><span class="lineCov">          5 :     return *this;</span></a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineCov">         10 :     return *this;</span></a>
 <a name="396"><span class="lineNum">     396 </span>            : }</a>
 <a name="397"><span class="lineNum">     397 </span>            : </a>
 <a name="398"><span class="lineNum">     398 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="399"><span class="lineNum">     399 </span><span class="lineCov">     219556 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModMulNoCheckEq(const mubintvec&amp; b) {</span></a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineCov">     439112 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModMulNoCheckEq(const mubintvec&amp; b) {</span></a>
 <a name="400"><span class="lineNum">     400 </span>            :     #ifdef NO_BARRETT</a>
-<a name="401"><span class="lineNum">     401 </span><span class="lineCov">    2038560 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="402"><span class="lineNum">     402 </span><span class="lineCov">    1819000 :         m_data[i].ModMulFastEq(b[i], m_modulus);</span></a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">    4077120 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineCov">    3638000 :         m_data[i].ModMulFastEq(b[i], m_modulus);</span></a>
 <a name="403"><span class="lineNum">     403 </span>            :     #else</a>
 <a name="404"><span class="lineNum">     404 </span>            :     auto mu(m_modulus.ComputeMu());</a>
 <a name="405"><span class="lineNum">     405 </span>            :     for (size_t i = 0; i &lt; m_data.size(); ++i)</a>
 <a name="406"><span class="lineNum">     406 </span>            :         m_data[i].ModMulFastEq(b[i], m_modulus, mu);</a>
 <a name="407"><span class="lineNum">     407 </span>            :     #endif</a>
-<a name="408"><span class="lineNum">     408 </span><span class="lineCov">     219556 :     return *this;</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineCov">     439112 :     return *this;</span></a>
 <a name="409"><span class="lineNum">     409 </span>            : }</a>
 <a name="410"><span class="lineNum">     410 </span>            : </a>
 <a name="411"><span class="lineNum">     411 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="412"><span class="lineNum">     412 </span><span class="lineCov">          1 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModExp(const ubint_el_t&amp; b) const {</span></a>
-<a name="413"><span class="lineNum">     413 </span><span class="lineCov">          1 :     auto ans(*this);</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModExp(const ubint_el_t&amp; b) const {</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineCov">          2 :     auto ans(*this);</span></a>
 <a name="414"><span class="lineNum">     414 </span>            :     auto modulus{m_modulus};</a>
 <a name="415"><span class="lineNum">     415 </span>            :     auto bLocal{b};</a>
-<a name="416"><span class="lineNum">     416 </span><span class="lineCov">          1 :     if (bLocal &gt;= modulus)</span></a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineCov">          2 :     if (bLocal &gt;= modulus)</span></a>
 <a name="417"><span class="lineNum">     417 </span><span class="lineNoCov">          0 :         bLocal.ModEq(modulus);</span></a>
-<a name="418"><span class="lineNum">     418 </span><span class="lineCov">          6 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="419"><span class="lineNum">     419 </span><span class="lineCov">          5 :         ans[i].ModExpEq(bLocal, modulus);</span></a>
-<a name="420"><span class="lineNum">     420 </span><span class="lineCov">          1 :     return ans;</span></a>
+<a name="418"><span class="lineNum">     418 </span><span class="lineCov">         12 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="419"><span class="lineNum">     419 </span><span class="lineCov">         10 :         ans[i].ModExpEq(bLocal, modulus);</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineCov">          2 :     return ans;</span></a>
 <a name="421"><span class="lineNum">     421 </span>            : }</a>
 <a name="422"><span class="lineNum">     422 </span>            : </a>
 <a name="423"><span class="lineNum">     423 </span>            : template &lt;class ubint_el_t&gt;</a>
@@ -494,11 +494,11 @@
 <a name="432"><span class="lineNum">     432 </span>            : }</a>
 <a name="433"><span class="lineNum">     433 </span>            : </a>
 <a name="434"><span class="lineNum">     434 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="435"><span class="lineNum">     435 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModInverse() const {</span></a>
-<a name="436"><span class="lineNum">     436 </span><span class="lineCov">          2 :     auto ans(*this);</span></a>
-<a name="437"><span class="lineNum">     437 </span><span class="lineCov">         11 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="438"><span class="lineNum">     438 </span><span class="lineCov">          9 :         ans[i].ModInverseEq(ans.m_modulus);</span></a>
-<a name="439"><span class="lineNum">     439 </span><span class="lineCov">          2 :     return ans;</span></a>
+<a name="435"><span class="lineNum">     435 </span><span class="lineCov">          4 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModInverse() const {</span></a>
+<a name="436"><span class="lineNum">     436 </span><span class="lineCov">          4 :     auto ans(*this);</span></a>
+<a name="437"><span class="lineNum">     437 </span><span class="lineCov">         22 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="438"><span class="lineNum">     438 </span><span class="lineCov">         18 :         ans[i].ModInverseEq(ans.m_modulus);</span></a>
+<a name="439"><span class="lineNum">     439 </span><span class="lineCov">          4 :     return ans;</span></a>
 <a name="440"><span class="lineNum">     440 </span>            : }</a>
 <a name="441"><span class="lineNum">     441 </span>            : </a>
 <a name="442"><span class="lineNum">     442 </span>            : template &lt;class ubint_el_t&gt;</a>
@@ -509,37 +509,37 @@
 <a name="447"><span class="lineNum">     447 </span>            : }</a>
 <a name="448"><span class="lineNum">     448 </span>            : </a>
 <a name="449"><span class="lineNum">     449 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="450"><span class="lineNum">     450 </span><span class="lineCov">          1 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModByTwo() const {</span></a>
-<a name="451"><span class="lineNum">     451 </span><span class="lineCov">          1 :     auto ans(*this);</span></a>
-<a name="452"><span class="lineNum">     452 </span><span class="lineCov">          1 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
-<a name="453"><span class="lineNum">     453 </span><span class="lineCov">          5 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
-<a name="454"><span class="lineNum">     454 </span><span class="lineCov">          8 :         ans[i] = ubint_el_t((ans[i].m_value[0] &amp; 0x1) ^ (ans[i] &gt; halfQ));</span></a>
-<a name="455"><span class="lineNum">     455 </span><span class="lineCov">          1 :     return ans;</span></a>
+<a name="450"><span class="lineNum">     450 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::ModByTwo() const {</span></a>
+<a name="451"><span class="lineNum">     451 </span><span class="lineCov">          2 :     auto ans(*this);</span></a>
+<a name="452"><span class="lineNum">     452 </span><span class="lineCov">          2 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineCov">         10 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i)</span></a>
+<a name="454"><span class="lineNum">     454 </span><span class="lineCov">         16 :         ans[i] = ubint_el_t((ans[i].m_value[0] &amp; 0x1) ^ (ans[i] &gt; halfQ));</span></a>
+<a name="455"><span class="lineNum">     455 </span><span class="lineCov">          2 :     return ans;</span></a>
 <a name="456"><span class="lineNum">     456 </span>            : }</a>
 <a name="457"><span class="lineNum">     457 </span>            : </a>
 <a name="458"><span class="lineNum">     458 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="459"><span class="lineNum">     459 </span><span class="lineCov">          1 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModByTwoEq() {</span></a>
-<a name="460"><span class="lineNum">     460 </span><span class="lineCov">          1 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
-<a name="461"><span class="lineNum">     461 </span><span class="lineCov">          5 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
-<a name="462"><span class="lineNum">     462 </span><span class="lineCov">          8 :         m_data[i] = ubint_el_t((m_data[i].m_value[0] &amp; 0x1) ^ (m_data[i] &gt; halfQ));</span></a>
-<a name="463"><span class="lineNum">     463 </span><span class="lineCov">          1 :     return *this;</span></a>
+<a name="459"><span class="lineNum">     459 </span><span class="lineCov">          2 : mubintvec&lt;ubint_el_t&gt;&amp; mubintvec&lt;ubint_el_t&gt;::ModByTwoEq() {</span></a>
+<a name="460"><span class="lineNum">     460 </span><span class="lineCov">          2 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
+<a name="461"><span class="lineNum">     461 </span><span class="lineCov">         10 :     for (size_t i = 0; i &lt; m_data.size(); ++i)</span></a>
+<a name="462"><span class="lineNum">     462 </span><span class="lineCov">         16 :         m_data[i] = ubint_el_t((m_data[i].m_value[0] &amp; 0x1) ^ (m_data[i] &gt; halfQ));</span></a>
+<a name="463"><span class="lineNum">     463 </span><span class="lineCov">          2 :     return *this;</span></a>
 <a name="464"><span class="lineNum">     464 </span>            : }</a>
 <a name="465"><span class="lineNum">     465 </span>            : </a>
 <a name="466"><span class="lineNum">     466 </span>            : template &lt;class ubint_el_t&gt;</a>
-<a name="467"><span class="lineNum">     467 </span><span class="lineCov">          4 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::MultiplyAndRound(const ubint_el_t&amp; p, const ubint_el_t&amp; q) const {</span></a>
-<a name="468"><span class="lineNum">     468 </span><span class="lineCov">          4 :     auto ans(*this);</span></a>
+<a name="467"><span class="lineNum">     467 </span><span class="lineCov">          8 : mubintvec&lt;ubint_el_t&gt; mubintvec&lt;ubint_el_t&gt;::MultiplyAndRound(const ubint_el_t&amp; p, const ubint_el_t&amp; q) const {</span></a>
+<a name="468"><span class="lineNum">     468 </span><span class="lineCov">          8 :     auto ans(*this);</span></a>
 <a name="469"><span class="lineNum">     469 </span>            :     auto mv(m_modulus);</a>
-<a name="470"><span class="lineNum">     470 </span><span class="lineCov">          4 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
-<a name="471"><span class="lineNum">     471 </span><span class="lineCov">      16396 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i) {</span></a>
-<a name="472"><span class="lineNum">     472 </span><span class="lineCov">      16392 :         if (ans.m_data[i] &gt; halfQ) {</span></a>
+<a name="470"><span class="lineNum">     470 </span><span class="lineCov">          8 :     auto halfQ{m_modulus &gt;&gt; 1};</span></a>
+<a name="471"><span class="lineNum">     471 </span><span class="lineCov">      32792 :     for (size_t i = 0; i &lt; ans.m_data.size(); ++i) {</span></a>
+<a name="472"><span class="lineNum">     472 </span><span class="lineCov">      32784 :         if (ans.m_data[i] &gt; halfQ) {</span></a>
 <a name="473"><span class="lineNum">     473 </span>            :             auto&amp;&amp; tmp{mv - ans[i]};</a>
-<a name="474"><span class="lineNum">     474 </span><span class="lineCov">      24228 :             ans[i] = mv - tmp.MultiplyAndRound(p, q);</span></a>
+<a name="474"><span class="lineNum">     474 </span><span class="lineCov">      48456 :             ans[i] = mv - tmp.MultiplyAndRound(p, q);</span></a>
 <a name="475"><span class="lineNum">     475 </span>            :         }</a>
 <a name="476"><span class="lineNum">     476 </span>            :         else {</a>
-<a name="477"><span class="lineNum">     477 </span><span class="lineCov">      24948 :             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(mv);</span></a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineCov">      49896 :             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(mv);</span></a>
 <a name="478"><span class="lineNum">     478 </span>            :         }</a>
 <a name="479"><span class="lineNum">     479 </span>            :     }</a>
-<a name="480"><span class="lineNum">     480 </span><span class="lineCov">          4 :     return ans;</span></a>
+<a name="480"><span class="lineNum">     480 </span><span class="lineCov">          8 :     return ans;</span></a>
 <a name="481"><span class="lineNum">     481 </span>            : }</a>
 <a name="482"><span class="lineNum">     482 </span>            : </a>
 <a name="483"><span class="lineNum">     483 </span>            : template &lt;class ubint_el_t&gt;</a>

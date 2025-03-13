@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -136,10 +136,10 @@
 <a name="74"><span class="lineNum">      74 </span>            : </a>
 <a name="75"><span class="lineNum">      75 </span>            :     /// inline operators for the addition operation.</a>
 <a name="76"><span class="lineNum">      76 </span>            :     friend T operator+(const T&amp; a, const T&amp; b) {</a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">   51734848 :         return a.Add(b);</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">  103294041 :         return a.Add(b);</span></a>
 <a name="78"><span class="lineNum">      78 </span>            :     }</a>
 <a name="79"><span class="lineNum">      79 </span>            :     friend T&amp; operator+=(T&amp; a, const T&amp; b) {</a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov"> 1695468812 :         return a.AddEq(b);</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">11159459826 :         return a.AddEq(b);</span></a>
 <a name="81"><span class="lineNum">      81 </span>            :     }</a>
 <a name="82"><span class="lineNum">      82 </span>            : </a>
 <a name="83"><span class="lineNum">      83 </span>            :     /**</a>
@@ -153,10 +153,10 @@
 <a name="91"><span class="lineNum">      91 </span>            : </a>
 <a name="92"><span class="lineNum">      92 </span>            :     /// inline operators for the subtraction operation.</a>
 <a name="93"><span class="lineNum">      93 </span>            :     friend T operator-(const T&amp; a, const T&amp; b) {</a>
-<a name="94"><span class="lineNum">      94 </span><span class="lineCov">    5569362 :         return a.Sub(b);</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">    7044971 :         return a.Sub(b);</span></a>
 <a name="95"><span class="lineNum">      95 </span>            :     }</a>
 <a name="96"><span class="lineNum">      96 </span>            :     friend T&amp; operator-=(T&amp; a, const T&amp; b) {</a>
-<a name="97"><span class="lineNum">      97 </span><span class="lineCov"> 1696882055 :         return a.SubEq(b);</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">11059552133 :         return a.SubEq(b);</span></a>
 <a name="98"><span class="lineNum">      98 </span>            :     }</a>
 <a name="99"><span class="lineNum">      99 </span>            : </a>
 <a name="100"><span class="lineNum">     100 </span>            :     /**</a>
@@ -177,10 +177,10 @@
 <a name="115"><span class="lineNum">     115 </span>            : </a>
 <a name="116"><span class="lineNum">     116 </span>            :     /// inline operators for the multiplication operation.</a>
 <a name="117"><span class="lineNum">     117 </span>            :     friend T operator*(const T&amp; a, const T&amp; b) {</a>
-<a name="118"><span class="lineNum">     118 </span><span class="lineCov">   63141249 :         return a.Mul(b);</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">  115776261 :         return a.Mul(b);</span></a>
 <a name="119"><span class="lineNum">     119 </span>            :     }</a>
 <a name="120"><span class="lineNum">     120 </span>            :     friend T&amp; operator*=(T&amp; a, const T&amp; b) {</a>
-<a name="121"><span class="lineNum">     121 </span><span class="lineCov">         64 :         return a.MulEq(b);</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">     813797 :         return a.MulEq(b);</span></a>
 <a name="122"><span class="lineNum">     122 </span>            :     }</a>
 <a name="123"><span class="lineNum">     123 </span>            : </a>
 <a name="124"><span class="lineNum">     124 </span>            :     /**</a>
@@ -201,10 +201,10 @@
 <a name="139"><span class="lineNum">     139 </span>            : </a>
 <a name="140"><span class="lineNum">     140 </span>            :     /// inline operators for the division operation.</a>
 <a name="141"><span class="lineNum">     141 </span>            :     friend T operator/(const T&amp; a, const T&amp; b) {</a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">   17323595 :         return a.DividedBy(b);</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">   22149317 :         return a.DividedBy(b);</span></a>
 <a name="143"><span class="lineNum">     143 </span>            :     }</a>
 <a name="144"><span class="lineNum">     144 </span>            :     friend T&amp; operator/=(T&amp; a, const T&amp; b) {</a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">     207879 :         return a.DividedByEq(b);</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">     354633 :         return a.DividedByEq(b);</span></a>
 <a name="146"><span class="lineNum">     146 </span>            :     }</a>
 <a name="147"><span class="lineNum">     147 </span>            : </a>
 <a name="148"><span class="lineNum">     148 </span>            :     /**</a>
@@ -241,10 +241,10 @@
 <a name="179"><span class="lineNum">     179 </span>            : </a>
 <a name="180"><span class="lineNum">     180 </span>            :     // inline operators for the modulus operation.</a>
 <a name="181"><span class="lineNum">     181 </span>            :     friend T operator%(const T&amp; a, const T&amp; b) {</a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineCov">    1635188 :         return a.Mod(b);</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">    1636832 :         return a.Mod(b);</span></a>
 <a name="183"><span class="lineNum">     183 </span>            :     }</a>
 <a name="184"><span class="lineNum">     184 </span>            :     friend T&amp; operator%=(T&amp; a, const T&amp; b) {</a>
-<a name="185"><span class="lineNum">     185 </span><span class="lineCov">      35257 :         return a.ModEq(b);</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineCov">      70466 :         return a.ModEq(b);</span></a>
 <a name="186"><span class="lineNum">     186 </span>            :     }</a>
 <a name="187"><span class="lineNum">     187 </span>            : </a>
 <a name="188"><span class="lineNum">     188 </span>            :     /**</a>
@@ -414,7 +414,7 @@
 <a name="352"><span class="lineNum">     352 </span>            : </a>
 <a name="353"><span class="lineNum">     353 </span>            :     /// inline operators for the left shift operations.</a>
 <a name="354"><span class="lineNum">     354 </span>            :     friend T operator&lt;&lt;(const T&amp; a, usshort shift) {</a>
-<a name="355"><span class="lineNum">     355 </span><span class="lineCov">     861877 :         return a.LShift(shift);</span></a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineCov">    1697265 :         return a.LShift(shift);</span></a>
 <a name="356"><span class="lineNum">     356 </span>            :     }</a>
 <a name="357"><span class="lineNum">     357 </span>            :     friend T&amp; operator&lt;&lt;=(T&amp; a, usshort shift) {</a>
 <a name="358"><span class="lineNum">     358 </span><span class="lineCov">          4 :         return a.LShiftEq(shift);</span></a>
@@ -431,10 +431,10 @@
 <a name="369"><span class="lineNum">     369 </span>            : </a>
 <a name="370"><span class="lineNum">     370 </span>            :     /// inline operators for the right shift operations.</a>
 <a name="371"><span class="lineNum">     371 </span>            :     friend T operator&gt;&gt;(const T&amp; a, usshort shift) {</a>
-<a name="372"><span class="lineNum">     372 </span><span class="lineCov">      48740 :         return a.RShift(shift);</span></a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineCov">    1352872 :         return a.RShift(shift);</span></a>
 <a name="373"><span class="lineNum">     373 </span>            :     }</a>
 <a name="374"><span class="lineNum">     374 </span>            :     friend T&amp; operator&gt;&gt;=(T&amp; a, usshort shift) {</a>
-<a name="375"><span class="lineNum">     375 </span><span class="lineCov">     725219 :         return a.RShiftEq(shift);</span></a>
+<a name="375"><span class="lineNum">     375 </span><span class="lineCov">    1450436 :         return a.RShiftEq(shift);</span></a>
 <a name="376"><span class="lineNum">     376 </span>            :     }</a>
 <a name="377"><span class="lineNum">     377 </span>            : </a>
 <a name="378"><span class="lineNum">     378 </span>            :     /**</a>
@@ -448,22 +448,22 @@
 <a name="386"><span class="lineNum">     386 </span>            : </a>
 <a name="387"><span class="lineNum">     387 </span>            :     //// relational operators, using Compare</a>
 <a name="388"><span class="lineNum">     388 </span>            :     friend bool operator==(const T&amp; a, const T&amp; b) {</a>
-<a name="389"><span class="lineNum">     389 </span><span class="lineCov">     805045 :         return a.Compare(b) == 0;</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineCov">    1237883 :         return a.Compare(b) == 0;</span></a>
 <a name="390"><span class="lineNum">     390 </span>            :     }</a>
 <a name="391"><span class="lineNum">     391 </span>            :     friend bool operator!=(const T&amp; a, const T&amp; b) {</a>
-<a name="392"><span class="lineNum">     392 </span><span class="lineCov">   11230855 :         return a.Compare(b) != 0;</span></a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineCov">   13020901 :         return a.Compare(b) != 0;</span></a>
 <a name="393"><span class="lineNum">     393 </span>            :     }</a>
 <a name="394"><span class="lineNum">     394 </span>            :     friend bool operator&gt;(const T&amp; a, const T&amp; b) {</a>
-<a name="395"><span class="lineNum">     395 </span><span class="lineCov">     166717 :         return a.Compare(b) &gt; 0;</span></a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineCov">     785602 :         return a.Compare(b) &gt; 0;</span></a>
 <a name="396"><span class="lineNum">     396 </span>            :     }</a>
 <a name="397"><span class="lineNum">     397 </span>            :     friend bool operator&gt;=(const T&amp; a, const T&amp; b) {</a>
-<a name="398"><span class="lineNum">     398 </span><span class="lineCov">   31927146 :         return a.Compare(b) &gt;= 0;</span></a>
+<a name="398"><span class="lineNum">     398 </span><span class="lineCov">   58924391 :         return a.Compare(b) &gt;= 0;</span></a>
 <a name="399"><span class="lineNum">     399 </span>            :     }</a>
 <a name="400"><span class="lineNum">     400 </span>            :     friend bool operator&lt;(const T&amp; a, const T&amp; b) {</a>
-<a name="401"><span class="lineNum">     401 </span><span class="lineCov">   36935937 :         return a.Compare(b) &lt; 0;</span></a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">   71162640 :         return a.Compare(b) &lt; 0;</span></a>
 <a name="402"><span class="lineNum">     402 </span>            :     }</a>
 <a name="403"><span class="lineNum">     403 </span>            :     friend bool operator&lt;=(const T&amp; a, const T&amp; b) {</a>
-<a name="404"><span class="lineNum">     404 </span><span class="lineCov">   11164900 :         return a.Compare(b) &lt;= 0;</span></a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineCov">   22329800 :         return a.Compare(b) &lt;= 0;</span></a>
 <a name="405"><span class="lineNum">     405 </span>            :     }</a>
 <a name="406"><span class="lineNum">     406 </span>            : </a>
 <a name="407"><span class="lineNum">     407 </span>            :     /**</a>

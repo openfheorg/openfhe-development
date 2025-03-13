@@ -32,16 +32,16 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">19</td>
             <td class="headerCovTableEntryLo">0.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">10</td>
             <td class="headerCovTableEntryLo">0.0 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
@@ -127,7 +127,7 @@
 <a name="65"><span class="lineNum">      65 </span>            :     using TugType  = typename Element::TugType;</a>
 <a name="66"><span class="lineNum">      66 </span>            : </a>
 <a name="67"><span class="lineNum">      67 </span>            : public:</a>
-<a name="68"><span class="lineNum">      68 </span>            :     virtual ~AdvancedSHEBase() {}</a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineNoCov">          0 :     virtual ~AdvancedSHEBase() {}</span></a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
 <a name="70"><span class="lineNum">      70 </span>            :     /**</a>
 <a name="71"><span class="lineNum">      71 </span>            :    * Virtual function for evaluating addition of a list of ciphertexts.</a>
@@ -225,8 +225,8 @@
 <a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalPolyLinear is not supported for the scheme.&quot;);</span></a>
 <a name="164"><span class="lineNum">     164 </span>            :     }</a>
 <a name="165"><span class="lineNum">     165 </span>            : </a>
-<a name="166"><span class="lineNum">     166 </span>            :     virtual Ciphertext&lt;Element&gt; EvalPolyPS(ConstCiphertext&lt;Element&gt; x, const std::vector&lt;double&gt;&amp; coefficients) const {</a>
-<a name="167"><span class="lineNum">     167 </span>            :         OPENFHE_THROW(&quot;EvalPolyPS is not supported for the scheme.&quot;);</a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalPolyPS(ConstCiphertext&lt;Element&gt; x, const std::vector&lt;double&gt;&amp; coefficients) const {</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalPolyPS is not supported for the scheme.&quot;);</span></a>
 <a name="168"><span class="lineNum">     168 </span>            :     }</a>
 <a name="169"><span class="lineNum">     169 </span>            : </a>
 <a name="170"><span class="lineNum">     170 </span>            :     //------------------------------------------------------------------------------</a>
@@ -250,16 +250,16 @@
 <a name="188"><span class="lineNum">     188 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalChebyshevSeries is not supported for the scheme.&quot;);</span></a>
 <a name="189"><span class="lineNum">     189 </span>            :     }</a>
 <a name="190"><span class="lineNum">     190 </span>            : </a>
-<a name="191"><span class="lineNum">     191 </span>            :     virtual Ciphertext&lt;Element&gt; EvalChebyshevSeriesLinear(ConstCiphertext&lt;Element&gt; ciphertext,</a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalChebyshevSeriesLinear(ConstCiphertext&lt;Element&gt; ciphertext,</span></a>
 <a name="192"><span class="lineNum">     192 </span>            :                                                           const std::vector&lt;double&gt;&amp; coefficients, double a,</a>
 <a name="193"><span class="lineNum">     193 </span>            :                                                           double b) const {</a>
-<a name="194"><span class="lineNum">     194 </span>            :         OPENFHE_THROW(&quot;EvalChebyshevSeriesLinear is not supported for the scheme.&quot;);</a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalChebyshevSeriesLinear is not supported for the scheme.&quot;);</span></a>
 <a name="195"><span class="lineNum">     195 </span>            :     }</a>
 <a name="196"><span class="lineNum">     196 </span>            : </a>
-<a name="197"><span class="lineNum">     197 </span>            :     virtual Ciphertext&lt;Element&gt; EvalChebyshevSeriesPS(ConstCiphertext&lt;Element&gt; ciphertext,</a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineNoCov">          0 :     virtual Ciphertext&lt;Element&gt; EvalChebyshevSeriesPS(ConstCiphertext&lt;Element&gt; ciphertext,</span></a>
 <a name="198"><span class="lineNum">     198 </span>            :                                                       const std::vector&lt;double&gt;&amp; coefficients, double a,</a>
 <a name="199"><span class="lineNum">     199 </span>            :                                                       double b) const {</a>
-<a name="200"><span class="lineNum">     200 </span>            :         OPENFHE_THROW(&quot;EvalChebyshevSeriesPS is not supported for the scheme.&quot;);</a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;EvalChebyshevSeriesPS is not supported for the scheme.&quot;);</span></a>
 <a name="201"><span class="lineNum">     201 </span>            :     }</a>
 <a name="202"><span class="lineNum">     202 </span>            : </a>
 <a name="203"><span class="lineNum">     203 </span>            :     //------------------------------------------------------------------------------</a>

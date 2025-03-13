@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntry">19</td>
-            <td class="headerCovTableEntryMed">84.2 %</td>
+            <td class="headerCovTableEntry">17</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryMed">85.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">2</td>
-            <td class="headerCovTableEntry">4</td>
-            <td class="headerCovTableEntryLo">50.0 %</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">60.0 %</td>
           </tr>
           <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -124,9 +124,9 @@
 <a name="62"><span class="lineNum">      62 </span>            :  */</a>
 <a name="63"><span class="lineNum">      63 </span>            : class RingGSWACCKeyImpl : public Serializable {</a>
 <a name="64"><span class="lineNum">      64 </span>            : public:</a>
-<a name="65"><span class="lineNum">      65 </span><span class="lineCov">          5 :     RingGSWACCKeyImpl() = default;</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">         17 :     RingGSWACCKeyImpl() = default;</span></a>
 <a name="66"><span class="lineNum">      66 </span>            : </a>
-<a name="67"><span class="lineNum">      67 </span>            :     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}</a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">        111 :     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}</span></a>
 <a name="68"><span class="lineNum">      68 </span>            : </a>
 <a name="69"><span class="lineNum">      69 </span>            :     explicit RingGSWACCKeyImpl(const std::vector&lt;std::vector&lt;std::vector&lt;RingGSWEvalKey&gt;&gt;&gt;&amp; key) : m_key(key) {}</a>
 <a name="70"><span class="lineNum">      70 </span>            : </a>
@@ -197,17 +197,17 @@
 <a name="135"><span class="lineNum">     135 </span>            : </a>
 <a name="136"><span class="lineNum">     136 </span>            :     template &lt;class Archive&gt;</a>
 <a name="137"><span class="lineNum">     137 </span>            :     void save(Archive&amp; ar, std::uint32_t const version) const {</a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;k&quot;, m_key));</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">         17 :         ar(::cereal::make_nvp(&quot;k&quot;, m_key));</span></a>
 <a name="139"><span class="lineNum">     139 </span>            :     }</a>
 <a name="140"><span class="lineNum">     140 </span>            : </a>
 <a name="141"><span class="lineNum">     141 </span>            :     template &lt;class Archive&gt;</a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">          5 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
-<a name="143"><span class="lineNum">     143 </span><span class="lineCov">          5 :         if (version &gt; SerializedVersion()) {</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">         17 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">         17 :         if (version &gt; SerializedVersion()) {</span></a>
 <a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;serialized object version &quot; + std::to_string(version) +</span></a>
 <a name="145"><span class="lineNum">     145 </span>            :                           &quot; is from a later version of the library&quot;);</a>
 <a name="146"><span class="lineNum">     146 </span>            :         }</a>
-<a name="147"><span class="lineNum">     147 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;k&quot;, m_key));</span></a>
-<a name="148"><span class="lineNum">     148 </span><span class="lineCov">          5 :     }</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">         17 :         ar(::cereal::make_nvp(&quot;k&quot;, m_key));</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">         17 :     }</span></a>
 <a name="149"><span class="lineNum">     149 </span>            : </a>
 <a name="150"><span class="lineNum">     150 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="151"><span class="lineNum">     151 </span><span class="lineNoCov">          0 :         return &quot;RingGSWACCKey&quot;;</span></a>

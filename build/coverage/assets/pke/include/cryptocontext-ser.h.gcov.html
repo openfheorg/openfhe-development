@@ -31,17 +31,17 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">11</td>
-            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">21</td>
+            <td class="headerCovTableEntry">21</td>
             <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">3</td>
-            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">5</td>
             <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
@@ -108,7 +108,7 @@
 <a name="46"><span class="lineNum">      46 </span>            : #include &lt;string&gt;</a>
 <a name="47"><span class="lineNum">      47 </span>            : #include &lt;vector&gt;</a>
 <a name="48"><span class="lineNum">      48 </span>            : </a>
-<a name="49"><span class="lineNum">      49 </span><span class="lineCov">          5 : CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl&lt;lbcrypto::DCRTPoly&gt;,</span></a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl&lt;lbcrypto::DCRTPoly&gt;,</span></a>
 <a name="50"><span class="lineNum">      50 </span>            :                      lbcrypto::CryptoContextImpl&lt;lbcrypto::DCRTPoly&gt;::SerializedVersion());</a>
 <a name="51"><span class="lineNum">      51 </span>            : </a>
 <a name="52"><span class="lineNum">      52 </span>            : // the routines below are only instantiated if the user includes the appropriate</a>
@@ -206,22 +206,22 @@
 <a name="144"><span class="lineNum">     144 </span><span class="lineCov">         69 : }</span></a>
 <a name="145"><span class="lineNum">     145 </span>            : </a>
 <a name="146"><span class="lineNum">     146 </span>            : template &lt;typename T&gt;</a>
-<a name="147"><span class="lineNum">     147 </span>            : bool SerializeToFile(const std::string&amp; filename, const CryptoContext&lt;T&gt;&amp; obj, const SerType::SERBINARY&amp; sertype) {</a>
-<a name="148"><span class="lineNum">     148 </span>            :     std::ofstream file(filename, std::ios::out | std::ios::binary);</a>
-<a name="149"><span class="lineNum">     149 </span>            :     if (file.is_open()) {</a>
-<a name="150"><span class="lineNum">     150 </span>            :         Serial::Serialize(obj, file, sertype);</a>
-<a name="151"><span class="lineNum">     151 </span>            :         file.close();</a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">          6 : bool SerializeToFile(const std::string&amp; filename, const CryptoContext&lt;T&gt;&amp; obj, const SerType::SERBINARY&amp; sertype) {</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">         12 :     std::ofstream file(filename, std::ios::out | std::ios::binary);</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineCov">          6 :     if (file.is_open()) {</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">          6 :         Serial::Serialize(obj, file, sertype);</span></a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineCov">          6 :         file.close();</span></a>
 <a name="152"><span class="lineNum">     152 </span>            :         return true;</a>
 <a name="153"><span class="lineNum">     153 </span>            :     }</a>
 <a name="154"><span class="lineNum">     154 </span>            :     return false;</a>
 <a name="155"><span class="lineNum">     155 </span>            : }</a>
 <a name="156"><span class="lineNum">     156 </span>            : </a>
 <a name="157"><span class="lineNum">     157 </span>            : template &lt;typename T&gt;</a>
-<a name="158"><span class="lineNum">     158 </span>            : bool DeserializeFromFile(const std::string&amp; filename, CryptoContext&lt;T&gt;&amp; obj, const SerType::SERBINARY&amp; sertype) {</a>
-<a name="159"><span class="lineNum">     159 </span>            :     std::ifstream file(filename, std::ios::in | std::ios::binary);</a>
-<a name="160"><span class="lineNum">     160 </span>            :     if (file.is_open()) {</a>
-<a name="161"><span class="lineNum">     161 </span>            :         Serial::Deserialize(obj, file, sertype);</a>
-<a name="162"><span class="lineNum">     162 </span>            :         file.close();</a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">          6 : bool DeserializeFromFile(const std::string&amp; filename, CryptoContext&lt;T&gt;&amp; obj, const SerType::SERBINARY&amp; sertype) {</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">         12 :     std::ifstream file(filename, std::ios::in | std::ios::binary);</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">          6 :     if (file.is_open()) {</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          6 :         Serial::Deserialize(obj, file, sertype);</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">          6 :         file.close();</span></a>
 <a name="163"><span class="lineNum">     163 </span>            :         return true;</a>
 <a name="164"><span class="lineNum">     164 </span>            :     }</a>
 <a name="165"><span class="lineNum">     165 </span>            :     return false;</a>

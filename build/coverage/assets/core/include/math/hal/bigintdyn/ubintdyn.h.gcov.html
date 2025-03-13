@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">95</td>
-            <td class="headerCovTableEntry">147</td>
-            <td class="headerCovTableEntryLo">64.6 %</td>
+            <td class="headerCovTableEntry">105</td>
+            <td class="headerCovTableEntry">159</td>
+            <td class="headerCovTableEntryLo">66.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">27</td>
-            <td class="headerCovTableEntry">54</td>
-            <td class="headerCovTableEntryLo">50.0 %</td>
+            <td class="headerCovTableEntry">32</td>
+            <td class="headerCovTableEntry">59</td>
+            <td class="headerCovTableEntryLo">54.2 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -201,7 +201,7 @@
 <a name="139"><span class="lineNum">     139 </span>            :         #endif</a>
 <a name="140"><span class="lineNum">     140 </span>            : </a>
 <a name="141"><span class="lineNum">     141 </span>            : template &lt;typename limb_t&gt;</a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">  571536378 : class ubint final : public lbcrypto::BigIntegerInterface&lt;ubint&lt;limb_t&gt;&gt; {</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov"> 1115395519 : class ubint final : public lbcrypto::BigIntegerInterface&lt;ubint&lt;limb_t&gt;&gt; {</span></a>
 <a name="143"><span class="lineNum">     143 </span>            : private:</a>
 <a name="144"><span class="lineNum">     144 </span>            :     // variable that stores the MOST SIGNIFICANT BIT position in the</a>
 <a name="145"><span class="lineNum">     145 </span>            :     usint m_MSB{0};</a>
@@ -222,17 +222,17 @@
 <a name="160"><span class="lineNum">     160 </span>            :     using Dlimb_t  = typename DataTypes&lt;limb_t&gt;::DoubleType;</a>
 <a name="161"><span class="lineNum">     161 </span>            :     using SDlimb_t = typename DataTypes&lt;limb_t&gt;::SignedDoubleType;</a>
 <a name="162"><span class="lineNum">     162 </span>            : </a>
-<a name="163"><span class="lineNum">     163 </span><span class="lineCov">  155333543 :     ubint() = default;</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">  299158190 :     ubint() = default;</span></a>
 <a name="164"><span class="lineNum">     164 </span>            : </a>
 <a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 :     explicit operator bool() noexcept {</span></a>
-<a name="166"><span class="lineNum">     166 </span><span class="lineCov">         83 :         return m_MSB != 0;</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">        166 :         return m_MSB != 0;</span></a>
 <a name="167"><span class="lineNum">     167 </span>            :     }</a>
 <a name="168"><span class="lineNum">     168 </span>            : </a>
 <a name="169"><span class="lineNum">     169 </span>            :     /**</a>
 <a name="170"><span class="lineNum">     170 </span>            :    * Copy constructor.</a>
 <a name="171"><span class="lineNum">     171 </span>            :    * @param &amp;val is the ubint to be copied.</a>
 <a name="172"><span class="lineNum">     172 </span>            :    */</a>
-<a name="173"><span class="lineNum">     173 </span><span class="lineCov">   98832068 :     ubint(const ubint&amp; val) noexcept : m_MSB{val.m_MSB}, m_value{val.m_value} {}</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">  189880799 :     ubint(const ubint&amp; val) noexcept : m_MSB{val.m_MSB}, m_value{val.m_value} {}</span></a>
 <a name="174"><span class="lineNum">     174 </span>            : </a>
 <a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :     ubint(const std::vector&lt;limb_t&gt;&amp; v) noexcept : m_value{v} {</span></a>
 <a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :         this-&gt;ubint::NormalizeLimbs();</span></a>
@@ -242,19 +242,19 @@
 <a name="180"><span class="lineNum">     180 </span>            :    * Move constructor.</a>
 <a name="181"><span class="lineNum">     181 </span>            :    * @param &amp;&amp;val is the ubint to be copied.</a>
 <a name="182"><span class="lineNum">     182 </span>            :    */</a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">  190087285 :     ubint(ubint&amp;&amp; val) noexcept : m_MSB{std::move(val.m_MSB)}, m_value{std::move(val.m_value)} {}</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">  379683793 :     ubint(ubint&amp;&amp; val) noexcept : m_MSB{std::move(val.m_MSB)}, m_value{std::move(val.m_value)} {}</span></a>
 <a name="184"><span class="lineNum">     184 </span>            : </a>
-<a name="185"><span class="lineNum">     185 </span><span class="lineCov">  149669000 :     ubint(std::vector&lt;limb_t&gt;&amp;&amp; v) noexcept : m_value{std::move(v)} {</span></a>
-<a name="186"><span class="lineNum">     186 </span><span class="lineCov">  149669000 :         this-&gt;ubint::NormalizeLimbs();</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineCov">  299338000 :     ubint(std::vector&lt;limb_t&gt;&amp;&amp; v) noexcept : m_value{std::move(v)} {</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">  299338000 :         this-&gt;ubint::NormalizeLimbs();</span></a>
 <a name="187"><span class="lineNum">     187 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="188"><span class="lineNum">     188 </span>            : </a>
 <a name="189"><span class="lineNum">     189 </span>            :     /**</a>
 <a name="190"><span class="lineNum">     190 </span>            :    * Constructor from a string.</a>
 <a name="191"><span class="lineNum">     191 </span>            :    * @param &amp;strval is the initial integer represented as a string.</a>
 <a name="192"><span class="lineNum">     192 </span>            :    */</a>
-<a name="193"><span class="lineNum">     193 </span><span class="lineCov">        510 :     explicit ubint(const std::string&amp; strval) {</span></a>
-<a name="194"><span class="lineNum">     194 </span><span class="lineCov">        510 :         this-&gt;ubint::SetValue(strval);</span></a>
-<a name="195"><span class="lineNum">     195 </span><span class="lineCov">        510 :     }</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov">       1014 :     explicit ubint(const std::string&amp; strval) {</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">       1014 :         this-&gt;ubint::SetValue(strval);</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">       1014 :     }</span></a>
 <a name="196"><span class="lineNum">     196 </span><span class="lineCov">        492 :     explicit ubint(const char* strval) {</span></a>
 <a name="197"><span class="lineNum">     197 </span><span class="lineCov">        492 :         this-&gt;ubint::SetValue(std::string(strval));</span></a>
 <a name="198"><span class="lineNum">     198 </span><span class="lineCov">        492 :     }</span></a>
@@ -265,7 +265,7 @@
 <a name="203"><span class="lineNum">     203 </span>            :    * @param val is the initial integer represented as a uint64_t.</a>
 <a name="204"><span class="lineNum">     204 </span>            :    */</a>
 <a name="205"><span class="lineNum">     205 </span>            :     template &lt;typename T, std::enable_if_t&lt;std::is_integral_v&lt;T&gt;, bool&gt; = true&gt;</a>
-<a name="206"><span class="lineNum">     206 </span><span class="lineCov">   26410022 :     ubint(T val) : m_MSB{lbcrypto::GetMSB(val)}, m_value{limb_t(val)} {</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">   66376304 :     ubint(T val) : m_MSB{lbcrypto::GetMSB(val)}, m_value{limb_t(val)} {</span></a>
 <a name="207"><span class="lineNum">     207 </span>            :         if constexpr (sizeof(T) &gt; sizeof(limb_t)) {</a>
 <a name="208"><span class="lineNum">     208 </span>            :             if ((val &gt;&gt;= m_limbBitLength) &gt; 0) {</a>
 <a name="209"><span class="lineNum">     209 </span>            :                 m_value.resize(ubint::MSBToLimbs(m_MSB));</a>
@@ -273,13 +273,13 @@
 <a name="211"><span class="lineNum">     211 </span>            :                     m_value[i] = limb_t(val);</a>
 <a name="212"><span class="lineNum">     212 </span>            :             }</a>
 <a name="213"><span class="lineNum">     213 </span>            :         }</a>
-<a name="214"><span class="lineNum">     214 </span><span class="lineCov">   11402807 :     }</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">   30327253 :     }</span></a>
 <a name="215"><span class="lineNum">     215 </span>            : </a>
 <a name="216"><span class="lineNum">     216 </span>            :     template &lt;typename T, std::enable_if_t&lt;std::is_floating_point_v&lt;T&gt;, bool&gt; = true&gt;</a>
 <a name="217"><span class="lineNum">     217 </span>            :     ubint(T val) = delete;</a>
 <a name="218"><span class="lineNum">     218 </span>            : </a>
 <a name="219"><span class="lineNum">     219 </span>            :     template &lt;typename T, std::enable_if_t&lt;!std::is_integral_v&lt;T&gt; &amp;&amp; !std::is_floating_point_v&lt;T&gt;, bool&gt; = true&gt;</a>
-<a name="220"><span class="lineNum">     220 </span><span class="lineCov">    9873486 :     ubint(T val) : ubint(BasicInteger(val)) {}</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">   24866796 :     ubint(T val) : ubint(BasicInteger(val)) {}</span></a>
 <a name="221"><span class="lineNum">     221 </span>            : </a>
 <a name="222"><span class="lineNum">     222 </span>            :     /**</a>
 <a name="223"><span class="lineNum">     223 </span>            :    * Copy assignment operator</a>
@@ -288,22 +288,22 @@
 <a name="226"><span class="lineNum">     226 </span>            :    * @return assigned ubint ref.</a>
 <a name="227"><span class="lineNum">     227 </span>            :    */</a>
 <a name="228"><span class="lineNum">     228 </span><span class="lineNoCov">          0 :     ubint&amp; operator=(const ubint&amp; val) noexcept {</span></a>
-<a name="229"><span class="lineNum">     229 </span><span class="lineCov">  235233650 :         m_MSB   = val.m_MSB;</span></a>
-<a name="230"><span class="lineNum">     230 </span><span class="lineCov">  126045390 :         m_value = val.m_value;</span></a>
-<a name="231"><span class="lineNum">     231 </span><span class="lineCov">       8250 :         return *this;</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">  445683042 :         m_MSB   = val.m_MSB;</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">  234584813 :         m_value = val.m_value;</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineCov">      16450 :         return *this;</span></a>
 <a name="232"><span class="lineNum">     232 </span>            :     }</a>
 <a name="233"><span class="lineNum">     233 </span>            : </a>
 <a name="234"><span class="lineNum">     234 </span><span class="lineNoCov">          0 :     ubint&amp; operator=(const limb_t&amp; val) noexcept {</span></a>
-<a name="235"><span class="lineNum">     235 </span><span class="lineCov">      20819 :         m_MSB = lbcrypto::GetMSB(val);</span></a>
-<a name="236"><span class="lineNum">     236 </span><span class="lineCov">      20819 :         m_value.resize(1);</span></a>
-<a name="237"><span class="lineNum">     237 </span><span class="lineCov">      20819 :         m_value[0] = val;</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineCov">     644983 :         m_MSB = lbcrypto::GetMSB(val);</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineCov">     644983 :         m_value.resize(1);</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineCov">     644983 :         m_value[0] = val;</span></a>
 <a name="238"><span class="lineNum">     238 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="239"><span class="lineNum">     239 </span>            :     }</a>
 <a name="240"><span class="lineNum">     240 </span>            : </a>
 <a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :     ubint&amp; operator=(ubint&amp;&amp; val) noexcept {</span></a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineCov">     802403 :         if (this != &amp;val) {</span></a>
-<a name="243"><span class="lineNum">     243 </span><span class="lineCov">  125375998 :             m_MSB   = std::move(val.m_MSB);</span></a>
-<a name="244"><span class="lineNum">     244 </span><span class="lineCov">   16163062 :             m_value = std::move(val.m_value);</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">    1639044 :         if (this != &amp;val) {</span></a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineCov">  248688742 :             m_MSB   = std::move(val.m_MSB);</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">   33955013 :             m_value = std::move(val.m_value);</span></a>
 <a name="245"><span class="lineNum">     245 </span>            :         }</a>
 <a name="246"><span class="lineNum">     246 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="247"><span class="lineNum">     247 </span>            :     }</a>
@@ -315,8 +315,8 @@
 <a name="253"><span class="lineNum">     253 </span>            :    * @return the assigned BigInteger ref.</a>
 <a name="254"><span class="lineNum">     254 </span>            :    */</a>
 <a name="255"><span class="lineNum">     255 </span>            :     template &lt;typename T, std::enable_if_t&lt;!std::is_same_v&lt;T, const ubint&gt;, bool&gt; = true&gt;</a>
-<a name="256"><span class="lineNum">     256 </span><span class="lineCov">       8667 :     ubint&amp; operator=(T val) {</span></a>
-<a name="257"><span class="lineNum">     257 </span><span class="lineCov">       8667 :         return *this = ubint(val);</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineCov">    1267369 :     ubint&amp; operator=(T val) {</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineCov">    1267369 :         return *this = ubint(val);</span></a>
 <a name="258"><span class="lineNum">     258 </span>            :     }</a>
 <a name="259"><span class="lineNum">     259 </span>            : </a>
 <a name="260"><span class="lineNum">     260 </span>            :     /**</a>
@@ -372,8 +372,8 @@
 <a name="310"><span class="lineNum">     310 </span>            :    * @return is the result of the multiplication operation.</a>
 <a name="311"><span class="lineNum">     311 </span>            :    */</a>
 <a name="312"><span class="lineNum">     312 </span>            :     ubint Mul(const ubint&amp; b) const;</a>
-<a name="313"><span class="lineNum">     313 </span><span class="lineCov">         64 :     ubint&amp; MulEq(const ubint&amp; b) {</span></a>
-<a name="314"><span class="lineNum">     314 </span><span class="lineCov">         64 :         return *this = this-&gt;ubint::Mul(b);</span></a>
+<a name="313"><span class="lineNum">     313 </span><span class="lineCov">     813797 :     ubint&amp; MulEq(const ubint&amp; b) {</span></a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">     813797 :         return *this = this-&gt;ubint::Mul(b);</span></a>
 <a name="315"><span class="lineNum">     315 </span>            :     }</a>
 <a name="316"><span class="lineNum">     316 </span>            : </a>
 <a name="317"><span class="lineNum">     317 </span>            :     /**</a>
@@ -451,7 +451,7 @@
 <a name="389"><span class="lineNum">     389 </span>            :     template &lt;typename T = limb_t&gt;</a>
 <a name="390"><span class="lineNum">     390 </span>            :     ubint Mod(const ubint&amp; modulus, const ubint&amp; mu,</a>
 <a name="391"><span class="lineNum">     391 </span>            :               typename std::enable_if_t&lt;!std::is_same_v&lt;T, Dlimb_t&gt;, bool&gt; = true) const {</a>
-<a name="392"><span class="lineNum">     392 </span><span class="lineCov">    3115678 :         return this-&gt;ubint::Mod(modulus);</span></a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineCov">    3467934 :         return this-&gt;ubint::Mod(modulus);</span></a>
 <a name="393"><span class="lineNum">     393 </span>            :     }</a>
 <a name="394"><span class="lineNum">     394 </span>            : </a>
 <a name="395"><span class="lineNum">     395 </span>            :     template &lt;typename T = limb_t&gt;</a>
@@ -619,15 +619,15 @@
 <a name="557"><span class="lineNum">     557 </span>            :    * @return is the result of the modulus multiplication operation.</a>
 <a name="558"><span class="lineNum">     558 </span>            :    */</a>
 <a name="559"><span class="lineNum">     559 </span>            :     template &lt;typename T = limb_t&gt;</a>
-<a name="560"><span class="lineNum">     560 </span><span class="lineCov">      53320 :     ubint ModMul(const ubint&amp; b, const ubint&amp; modulus,</span></a>
+<a name="560"><span class="lineNum">     560 </span><span class="lineCov">     106297 :     ubint ModMul(const ubint&amp; b, const ubint&amp; modulus,</span></a>
 <a name="561"><span class="lineNum">     561 </span>            :                  typename std::enable_if_t&lt;!std::is_same_v&lt;T, Dlimb_t&gt;, bool&gt; = true) const {</a>
 <a name="562"><span class="lineNum">     562 </span>            :         auto bv(b);</a>
 <a name="563"><span class="lineNum">     563 </span>            :         auto av(*this);</a>
-<a name="564"><span class="lineNum">     564 </span><span class="lineCov">      53320 :         if (bv &gt;= modulus)</span></a>
+<a name="564"><span class="lineNum">     564 </span><span class="lineCov">     106297 :         if (bv &gt;= modulus)</span></a>
 <a name="565"><span class="lineNum">     565 </span><span class="lineCov">          5 :             bv.ModEq(modulus);</span></a>
-<a name="566"><span class="lineNum">     566 </span><span class="lineCov">      53320 :         if (av &gt;= modulus)</span></a>
-<a name="567"><span class="lineNum">     567 </span><span class="lineCov">          5 :             av.ModEq(modulus);</span></a>
-<a name="568"><span class="lineNum">     568 </span><span class="lineCov">     106640 :         return av.ModMulFast(bv, modulus);</span></a>
+<a name="566"><span class="lineNum">     566 </span><span class="lineCov">     106297 :         if (av &gt;= modulus)</span></a>
+<a name="567"><span class="lineNum">     567 </span><span class="lineCov">      50604 :             av.ModEq(modulus);</span></a>
+<a name="568"><span class="lineNum">     568 </span><span class="lineCov">     212594 :         return av.ModMulFast(bv, modulus);</span></a>
 <a name="569"><span class="lineNum">     569 </span>            :     }</a>
 <a name="570"><span class="lineNum">     570 </span>            : </a>
 <a name="571"><span class="lineNum">     571 </span>            :     template &lt;typename T = limb_t&gt;</a>
@@ -637,14 +637,14 @@
 <a name="575"><span class="lineNum">     575 </span>            :     }</a>
 <a name="576"><span class="lineNum">     576 </span>            : </a>
 <a name="577"><span class="lineNum">     577 </span>            :     template &lt;typename T = limb_t&gt;</a>
-<a name="578"><span class="lineNum">     578 </span>            :     ubint&amp; ModMulEq(const ubint&amp; b, const ubint&amp; modulus,</a>
+<a name="578"><span class="lineNum">     578 </span><span class="lineCov">        827 :     ubint&amp; ModMulEq(const ubint&amp; b, const ubint&amp; modulus,</span></a>
 <a name="579"><span class="lineNum">     579 </span>            :                     typename std::enable_if_t&lt;!std::is_same_v&lt;T, Dlimb_t&gt;, bool&gt; = true) {</a>
 <a name="580"><span class="lineNum">     580 </span>            :         auto bv(b);</a>
-<a name="581"><span class="lineNum">     581 </span>            :         if (bv &gt;= modulus)</a>
-<a name="582"><span class="lineNum">     582 </span>            :             bv.ModEq(modulus);</a>
-<a name="583"><span class="lineNum">     583 </span>            :         if (*this &gt;= modulus)</a>
-<a name="584"><span class="lineNum">     584 </span>            :             this-&gt;ubint::ModEq(modulus);</a>
-<a name="585"><span class="lineNum">     585 </span>            :         return *this = bv.ModMulFast(*this, modulus);</a>
+<a name="581"><span class="lineNum">     581 </span><span class="lineCov">        827 :         if (bv &gt;= modulus)</span></a>
+<a name="582"><span class="lineNum">     582 </span><span class="lineNoCov">          0 :             bv.ModEq(modulus);</span></a>
+<a name="583"><span class="lineNum">     583 </span><span class="lineCov">        827 :         if (*this &gt;= modulus)</span></a>
+<a name="584"><span class="lineNum">     584 </span><span class="lineNoCov">          0 :             this-&gt;ubint::ModEq(modulus);</span></a>
+<a name="585"><span class="lineNum">     585 </span><span class="lineCov">       2481 :         return *this = bv.ModMulFast(*this, modulus);</span></a>
 <a name="586"><span class="lineNum">     586 </span>            :     }</a>
 <a name="587"><span class="lineNum">     587 </span>            : </a>
 <a name="588"><span class="lineNum">     588 </span>            :     template &lt;typename T = limb_t&gt;</a>
@@ -671,13 +671,13 @@
 <a name="609"><span class="lineNum">     609 </span><span class="lineCov">    6979585 :         return av.Mul(bv).Mod(modulus, mu);</span></a>
 <a name="610"><span class="lineNum">     610 </span>            :     }</a>
 <a name="611"><span class="lineNum">     611 </span>            : </a>
-<a name="612"><span class="lineNum">     612 </span><span class="lineCov">     145047 :     ubint&amp; ModMulEq(const ubint&amp; b, const ubint&amp; modulus, ubint&amp; mu) {</span></a>
+<a name="612"><span class="lineNum">     612 </span><span class="lineCov">     161431 :     ubint&amp; ModMulEq(const ubint&amp; b, const ubint&amp; modulus, ubint&amp; mu) {</span></a>
 <a name="613"><span class="lineNum">     613 </span>            :         auto bv(b);</a>
-<a name="614"><span class="lineNum">     614 </span><span class="lineCov">     145047 :         if (bv &gt;= modulus)</span></a>
+<a name="614"><span class="lineNum">     614 </span><span class="lineCov">     161431 :         if (bv &gt;= modulus)</span></a>
 <a name="615"><span class="lineNum">     615 </span>            :             bv.ModEq(modulus, mu);</a>
-<a name="616"><span class="lineNum">     616 </span><span class="lineCov">     145047 :         if (*this &gt;= modulus)</span></a>
+<a name="616"><span class="lineNum">     616 </span><span class="lineCov">     161431 :         if (*this &gt;= modulus)</span></a>
 <a name="617"><span class="lineNum">     617 </span>            :             this-&gt;ubint::ModEq(modulus, mu);</a>
-<a name="618"><span class="lineNum">     618 </span><span class="lineCov">     580188 :         return *this = bv.Mul(*this).Mod(modulus, mu);</span></a>
+<a name="618"><span class="lineNum">     618 </span><span class="lineCov">     645724 :         return *this = bv.Mul(*this).Mod(modulus, mu);</span></a>
 <a name="619"><span class="lineNum">     619 </span>            :     }</a>
 <a name="620"><span class="lineNum">     620 </span>            : </a>
 <a name="621"><span class="lineNum">     621 </span>            :     /**</a>
@@ -688,8 +688,8 @@
 <a name="626"><span class="lineNum">     626 </span>            :    * @return is the result of the modulus multiplication operation.</a>
 <a name="627"><span class="lineNum">     627 </span>            :    */</a>
 <a name="628"><span class="lineNum">     628 </span>            :     ubint ModMulFast(const ubint&amp; b, const ubint&amp; modulus) const;</a>
-<a name="629"><span class="lineNum">     629 </span><span class="lineCov">    2047769 :     ubint&amp; ModMulFastEq(const ubint&amp; b, const ubint&amp; modulus) {</span></a>
-<a name="630"><span class="lineNum">     630 </span><span class="lineCov">    2047769 :         return *this = this-&gt;ubint::ModMulFast(b, modulus);</span></a>
+<a name="629"><span class="lineNum">     629 </span><span class="lineCov">    4062549 :     ubint&amp; ModMulFastEq(const ubint&amp; b, const ubint&amp; modulus) {</span></a>
+<a name="630"><span class="lineNum">     630 </span><span class="lineCov">    4062549 :         return *this = this-&gt;ubint::ModMulFast(b, modulus);</span></a>
 <a name="631"><span class="lineNum">     631 </span>            :     }</a>
 <a name="632"><span class="lineNum">     632 </span>            : </a>
 <a name="633"><span class="lineNum">     633 </span>            :     /**</a>
@@ -704,8 +704,8 @@
 <a name="642"><span class="lineNum">     642 </span><span class="lineNoCov">          0 :         return b.Mul(*this).Mod(modulus, mu);</span></a>
 <a name="643"><span class="lineNum">     643 </span>            :     }</a>
 <a name="644"><span class="lineNum">     644 </span>            : </a>
-<a name="645"><span class="lineNum">     645 </span><span class="lineCov">     644100 :     ubint&amp; ModMulFastEq(const ubint&amp; b, const ubint&amp; modulus, const ubint&amp; mu) {</span></a>
-<a name="646"><span class="lineNum">     646 </span><span class="lineCov">    1932304 :         return *this = b.Mul(*this).Mod(modulus, mu);</span></a>
+<a name="645"><span class="lineNum">     645 </span><span class="lineCov">     979972 :     ubint&amp; ModMulFastEq(const ubint&amp; b, const ubint&amp; modulus, const ubint&amp; mu) {</span></a>
+<a name="646"><span class="lineNum">     646 </span><span class="lineCov">    2939924 :         return *this = b.Mul(*this).Mod(modulus, mu);</span></a>
 <a name="647"><span class="lineNum">     647 </span>            :     }</a>
 <a name="648"><span class="lineNum">     648 </span>            : </a>
 <a name="649"><span class="lineNum">     649 </span><span class="lineNoCov">          0 :     ubint ModMulFastConst(const ubint&amp; b, const ubint&amp; modulus, const ubint&amp; bInv) const {</span></a>
@@ -723,8 +723,8 @@
 <a name="661"><span class="lineNum">     661 </span>            :    * @return is the result of the modulus exponentiation operation.</a>
 <a name="662"><span class="lineNum">     662 </span>            :    */</a>
 <a name="663"><span class="lineNum">     663 </span>            :     ubint ModExp(const ubint&amp; b, const ubint&amp; modulus) const;</a>
-<a name="664"><span class="lineNum">     664 </span><span class="lineCov">          5 :     ubint&amp; ModExpEq(const ubint&amp; b, const ubint&amp; modulus) {</span></a>
-<a name="665"><span class="lineNum">     665 </span><span class="lineCov">          5 :         return *this = this-&gt;ubint::ModExp(b, modulus);</span></a>
+<a name="664"><span class="lineNum">     664 </span><span class="lineCov">         10 :     ubint&amp; ModExpEq(const ubint&amp; b, const ubint&amp; modulus) {</span></a>
+<a name="665"><span class="lineNum">     665 </span><span class="lineCov">         10 :         return *this = this-&gt;ubint::ModExp(b, modulus);</span></a>
 <a name="666"><span class="lineNum">     666 </span>            :     }</a>
 <a name="667"><span class="lineNum">     667 </span>            : </a>
 <a name="668"><span class="lineNum">     668 </span>            :     /**</a>
@@ -734,8 +734,8 @@
 <a name="672"><span class="lineNum">     672 </span>            :    * @return is the result of the modulus inverse operation.</a>
 <a name="673"><span class="lineNum">     673 </span>            :    */</a>
 <a name="674"><span class="lineNum">     674 </span>            :     ubint ModInverse(const ubint&amp; modulus) const;</a>
-<a name="675"><span class="lineNum">     675 </span><span class="lineCov">          9 :     ubint&amp; ModInverseEq(const ubint&amp; modulus) {</span></a>
-<a name="676"><span class="lineNum">     676 </span><span class="lineCov">          9 :         return *this = this-&gt;ubint::ModInverse(modulus);</span></a>
+<a name="675"><span class="lineNum">     675 </span><span class="lineCov">         18 :     ubint&amp; ModInverseEq(const ubint&amp; modulus) {</span></a>
+<a name="676"><span class="lineNum">     676 </span><span class="lineCov">         18 :         return *this = this-&gt;ubint::ModInverse(modulus);</span></a>
 <a name="677"><span class="lineNum">     677 </span>            :     }</a>
 <a name="678"><span class="lineNum">     678 </span>            : </a>
 <a name="679"><span class="lineNum">     679 </span>            :     /**</a>
@@ -763,32 +763,32 @@
 <a name="701"><span class="lineNum">     701 </span>            :    * @return  -1 for strictly less than, 0 for equal to and 1 for strictly</a>
 <a name="702"><span class="lineNum">     702 </span>            :    * greater than conditons.</a>
 <a name="703"><span class="lineNum">     703 </span>            :    */</a>
-<a name="704"><span class="lineNum">     704 </span><span class="lineCov">  100545935 :     int Compare(const ubint&amp; a) const noexcept {</span></a>
-<a name="705"><span class="lineNum">     705 </span><span class="lineCov">  100545935 :         if (m_MSB &lt; a.m_MSB)</span></a>
+<a name="704"><span class="lineNum">     704 </span><span class="lineCov">  182860334 :     int Compare(const ubint&amp; a) const noexcept {</span></a>
+<a name="705"><span class="lineNum">     705 </span><span class="lineCov">  182860334 :         if (m_MSB &lt; a.m_MSB)</span></a>
 <a name="706"><span class="lineNum">     706 </span>            :             return -1;</a>
-<a name="707"><span class="lineNum">     707 </span><span class="lineCov">   44654676 :         if (m_MSB &gt; a.m_MSB)</span></a>
+<a name="707"><span class="lineNum">     707 </span><span class="lineCov">   78250554 :         if (m_MSB &gt; a.m_MSB)</span></a>
 <a name="708"><span class="lineNum">     708 </span>            :             return 1;</a>
-<a name="709"><span class="lineNum">     709 </span><span class="lineCov">   32386185 :         for (int i = m_value.size() - 1; i &gt;= 0; --i) {</span></a>
-<a name="710"><span class="lineNum">     710 </span><span class="lineCov">   19659361 :             if (m_value[i] &lt; a.m_value[i])</span></a>
+<a name="709"><span class="lineNum">     709 </span><span class="lineCov">   59157137 :         for (int i = m_value.size() - 1; i &gt;= 0; --i) {</span></a>
+<a name="710"><span class="lineNum">     710 </span><span class="lineCov">   35419142 :             if (m_value[i] &lt; a.m_value[i])</span></a>
 <a name="711"><span class="lineNum">     711 </span>            :                 return -1;</a>
-<a name="712"><span class="lineNum">     712 </span><span class="lineCov">   18263541 :             if (m_value[i] &gt; a.m_value[i])</span></a>
+<a name="712"><span class="lineNum">     712 </span><span class="lineCov">   33564826 :             if (m_value[i] &gt; a.m_value[i])</span></a>
 <a name="713"><span class="lineNum">     713 </span>            :                 return 1;</a>
 <a name="714"><span class="lineNum">     714 </span>            :         }</a>
 <a name="715"><span class="lineNum">     715 </span>            :         return 0;</a>
 <a name="716"><span class="lineNum">     716 </span>            :     }</a>
 <a name="717"><span class="lineNum">     717 </span>            : </a>
 <a name="718"><span class="lineNum">     718 </span>            :     template &lt;typename T = BasicInteger&gt;</a>
-<a name="719"><span class="lineNum">     719 </span>            :     T ConvertToInt() const noexcept {</a>
+<a name="719"><span class="lineNum">     719 </span><span class="lineCov">     267638 :     T ConvertToInt() const noexcept {</span></a>
 <a name="720"><span class="lineNum">     720 </span>            :         constexpr usint limblen{sizeof(T) * 8};</a>
 <a name="721"><span class="lineNum">     721 </span>            :         if constexpr (m_limbBitLength &gt;= limblen) {</a>
-<a name="722"><span class="lineNum">     722 </span><span class="lineCov">   10081881 :             return static_cast&lt;T&gt;(m_value[0]);</span></a>
+<a name="722"><span class="lineNum">     722 </span><span class="lineCov">   25355308 :             return static_cast&lt;T&gt;(m_value[0]);</span></a>
 <a name="723"><span class="lineNum">     723 </span>            :         }</a>
 <a name="724"><span class="lineNum">     724 </span>            :         if constexpr (m_limbBitLength &lt; limblen) {</a>
-<a name="725"><span class="lineNum">     725 </span>            :             auto ceilInt = MSBToLimbs(limblen &gt; m_MSB ? m_MSB : limblen);</a>
-<a name="726"><span class="lineNum">     726 </span>            :             auto result  = static_cast&lt;T&gt;(m_value[0]);</a>
-<a name="727"><span class="lineNum">     727 </span>            :             for (usint i{1}; i &lt; ceilInt; ++i)</a>
-<a name="728"><span class="lineNum">     728 </span>            :                 result |= static_cast&lt;T&gt;(m_value[i]) &lt;&lt; (i * m_limbBitLength);</a>
-<a name="729"><span class="lineNum">     729 </span>            :             return result;</a>
+<a name="725"><span class="lineNum">     725 </span><span class="lineCov">     267638 :             auto ceilInt = MSBToLimbs(limblen &gt; m_MSB ? m_MSB : limblen);</span></a>
+<a name="726"><span class="lineNum">     726 </span><span class="lineCov">     267638 :             auto result  = static_cast&lt;T&gt;(m_value[0]);</span></a>
+<a name="727"><span class="lineNum">     727 </span><span class="lineCov">     535276 :             for (usint i{1}; i &lt; ceilInt; ++i)</span></a>
+<a name="728"><span class="lineNum">     728 </span><span class="lineCov">     267638 :                 result |= static_cast&lt;T&gt;(m_value[i]) &lt;&lt; (i * m_limbBitLength);</span></a>
+<a name="729"><span class="lineNum">     729 </span><span class="lineCov">     267638 :             return result;</span></a>
 <a name="730"><span class="lineNum">     730 </span>            :         }</a>
 <a name="731"><span class="lineNum">     731 </span>            :     }</a>
 <a name="732"><span class="lineNum">     732 </span>            : </a>
@@ -814,7 +814,7 @@
 <a name="752"><span class="lineNum">     752 </span>            :    * @return the index of the most significant bit.</a>
 <a name="753"><span class="lineNum">     753 </span>            :    */</a>
 <a name="754"><span class="lineNum">     754 </span><span class="lineNoCov">          0 :     usint GetMSB() const {</span></a>
-<a name="755"><span class="lineNum">     755 </span><span class="lineCov">       7845 :         return m_MSB;</span></a>
+<a name="755"><span class="lineNum">     755 </span><span class="lineCov">      14068 :         return m_MSB;</span></a>
 <a name="756"><span class="lineNum">     756 </span>            :     }</a>
 <a name="757"><span class="lineNum">     757 </span>            : </a>
 <a name="758"><span class="lineNum">     758 </span>            :     /**</a>
@@ -989,8 +989,8 @@
 <a name="927"><span class="lineNum">     927 </span>            :    * Sets the MSB to the correct value as computed from the internal value.</a>
 <a name="928"><span class="lineNum">     928 </span>            :    */</a>
 <a name="929"><span class="lineNum">     929 </span><span class="lineNoCov">          0 :     void SetMSB() {</span></a>
-<a name="930"><span class="lineNum">     930 </span><span class="lineCov">          1 :         m_MSB = m_limbBitLength * static_cast&lt;usint&gt;(m_value.size() - 1);</span></a>
-<a name="931"><span class="lineNum">     931 </span><span class="lineCov">          2 :         m_MSB += lbcrypto::GetMSB(m_value.back());</span></a>
+<a name="930"><span class="lineNum">     930 </span><span class="lineCov">          2 :         m_MSB = m_limbBitLength * static_cast&lt;usint&gt;(m_value.size() - 1);</span></a>
+<a name="931"><span class="lineNum">     931 </span><span class="lineCov">          4 :         m_MSB += lbcrypto::GetMSB(m_value.back());</span></a>
 <a name="932"><span class="lineNum">     932 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="933"><span class="lineNum">     933 </span>            : </a>
 <a name="934"><span class="lineNum">     934 </span>            :     /**</a>
@@ -1000,13 +1000,13 @@
 <a name="938"><span class="lineNum">     938 </span>            :    *</a>
 <a name="939"><span class="lineNum">     939 </span>            :    * @return resulting bit.</a>
 <a name="940"><span class="lineNum">     940 </span>            :    */</a>
-<a name="941"><span class="lineNum">     941 </span><span class="lineCov">  236729000 :     void NormalizeLimbs() {</span></a>
-<a name="942"><span class="lineNum">     942 </span><span class="lineCov">  236729000 :         auto size = m_value.size() - 1;</span></a>
-<a name="943"><span class="lineNum">     943 </span><span class="lineCov">  393921000 :         while (size &gt; 0 &amp;&amp; m_value[size--] == 0)</span></a>
+<a name="941"><span class="lineNum">     941 </span><span class="lineCov">  473458000 :     void NormalizeLimbs() {</span></a>
+<a name="942"><span class="lineNum">     942 </span><span class="lineCov">  473458000 :         auto size = m_value.size() - 1;</span></a>
+<a name="943"><span class="lineNum">     943 </span><span class="lineCov">  787842000 :         while (size &gt; 0 &amp;&amp; m_value[size--] == 0)</span></a>
 <a name="944"><span class="lineNum">     944 </span>            :             m_value.pop_back();</a>
-<a name="945"><span class="lineNum">     945 </span><span class="lineCov">  236729000 :         m_MSB = m_limbBitLength * static_cast&lt;usint&gt;(m_value.size() - 1);</span></a>
-<a name="946"><span class="lineNum">     946 </span><span class="lineCov">  236729000 :         m_MSB += lbcrypto::GetMSB(m_value.back());</span></a>
-<a name="947"><span class="lineNum">     947 </span><span class="lineCov">  236729000 :     }</span></a>
+<a name="945"><span class="lineNum">     945 </span><span class="lineCov">  473458000 :         m_MSB = m_limbBitLength * static_cast&lt;usint&gt;(m_value.size() - 1);</span></a>
+<a name="946"><span class="lineNum">     946 </span><span class="lineCov">  473458000 :         m_MSB += lbcrypto::GetMSB(m_value.back());</span></a>
+<a name="947"><span class="lineNum">     947 </span><span class="lineCov">  473458000 :     }</span></a>
 <a name="948"><span class="lineNum">     948 </span>            : </a>
 <a name="949"><span class="lineNum">     949 </span>            :     /**</a>
 <a name="950"><span class="lineNum">     950 </span>            :    * helper function for Div</a>
@@ -1025,9 +1025,9 @@
 <a name="963"><span class="lineNum">     963 </span>            :    */</a>
 <a name="964"><span class="lineNum">     964 </span><span class="lineNoCov">          0 :     static constexpr usint MSBToLimbs(usint msb) noexcept {</span></a>
 <a name="965"><span class="lineNum">     965 </span>            :         constexpr usint mask{m_limbBitLength - 1};</a>
-<a name="966"><span class="lineNum">     966 </span><span class="lineCov">    1850760 :         if (msb == 0)</span></a>
+<a name="966"><span class="lineNum">     966 </span><span class="lineCov">    3969158 :         if (msb == 0)</span></a>
 <a name="967"><span class="lineNum">     967 </span>            :             return 1;</a>
-<a name="968"><span class="lineNum">     968 </span><span class="lineCov">    1850700 :         return (msb &gt;&gt; m_log2LimbBitLength) + ((msb &amp; mask) != 0);</span></a>
+<a name="968"><span class="lineNum">     968 </span><span class="lineCov">    3969038 :         return (msb &gt;&gt; m_log2LimbBitLength) + ((msb &amp; mask) != 0);</span></a>
 <a name="969"><span class="lineNum">     969 </span>            :     }</a>
 <a name="970"><span class="lineNum">     970 </span>            : };</a>
 <a name="971"><span class="lineNum">     971 </span>            : </a>

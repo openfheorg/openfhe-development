@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">152</td>
+            <td class="headerCovTableEntry">164</td>
             <td class="headerCovTableEntry">210</td>
-            <td class="headerCovTableEntryLo">72.4 %</td>
+            <td class="headerCovTableEntryMed">78.1 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntry">32</td>
             <td class="headerCovTableEntry">47</td>
-            <td class="headerCovTableEntryLo">66.0 %</td>
+            <td class="headerCovTableEntryLo">68.1 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -122,23 +122,23 @@
 <a name="60"><span class="lineNum">      60 </span>            :  Output: Randomly generated BigInteger  between 0 and n.</a>
 <a name="61"><span class="lineNum">      61 </span>            :  */</a>
 <a name="62"><span class="lineNum">      62 </span>            : template &lt;typename IntType&gt;</a>
-<a name="63"><span class="lineNum">      63 </span><span class="lineCov">    8742420 : static IntType RNG(const IntType&amp; modulus) {</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov">   10279378 : static IntType RNG(const IntType&amp; modulus) {</span></a>
 <a name="64"><span class="lineNum">      64 </span>            :     constexpr uint32_t chunk_min{0};</a>
 <a name="65"><span class="lineNum">      65 </span>            :     constexpr uint32_t chunk_max{std::numeric_limits&lt;uint32_t&gt;::max()};</a>
 <a name="66"><span class="lineNum">      66 </span>            :     constexpr uint32_t chunk_width{std::numeric_limits&lt;uint32_t&gt;::digits};</a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">    8742420 :     static std::uniform_int_distribution&lt;uint32_t&gt; distribution(chunk_min, chunk_max);</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">   10279378 :     static std::uniform_int_distribution&lt;uint32_t&gt; distribution(chunk_min, chunk_max);</span></a>
 <a name="68"><span class="lineNum">      68 </span>            : </a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineCov">    8742420 :     uint32_t chunksPerValue{(modulus.GetMSB() - 1) / chunk_width};</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">   10279378 :     uint32_t chunksPerValue{(modulus.GetMSB() - 1) / chunk_width};</span></a>
 <a name="70"><span class="lineNum">      70 </span>            :     uint32_t shiftChunk{chunksPerValue * chunk_width};</a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">    8742420 :     std::uniform_int_distribution&lt;uint32_t&gt;::param_type bound(chunk_min, (modulus &gt;&gt; shiftChunk).ConvertToInt());</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">   10279378 :     std::uniform_int_distribution&lt;uint32_t&gt;::param_type bound(chunk_min, (modulus &gt;&gt; shiftChunk).ConvertToInt());</span></a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            :     while (true) {</a>
 <a name="74"><span class="lineNum">      74 </span><span class="lineCov">       6935 :         IntType result{};</span></a>
-<a name="75"><span class="lineNum">      75 </span><span class="lineCov">   12075506 :         for (uint32_t i{0}, shift{0}; i &lt; chunksPerValue; ++i, shift += chunk_width)</span></a>
-<a name="76"><span class="lineNum">      76 </span><span class="lineCov">    6207704 :             result += IntType{distribution(PseudoRandomNumberGenerator::GetPRNG())} &lt;&lt; shift;</span></a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">    8987526 :         result += IntType{distribution(PseudoRandomNumberGenerator::GetPRNG(), bound)} &lt;&lt; shiftChunk;</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">   14931750 :         for (uint32_t i{0}, shift{0}; i &lt; chunksPerValue; ++i, shift += chunk_width)</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">    8752522 :             result += IntType{distribution(PseudoRandomNumberGenerator::GetPRNG())} &lt;&lt; shift;</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">   10571366 :         result += IntType{distribution(PseudoRandomNumberGenerator::GetPRNG(), bound)} &lt;&lt; shiftChunk;</span></a>
 <a name="78"><span class="lineNum">      78 </span><span class="lineCov">       6935 :         if (result &lt; modulus)</span></a>
-<a name="79"><span class="lineNum">      79 </span><span class="lineCov">    8742420 :             return result;</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">   10279378 :             return result;</span></a>
 <a name="80"><span class="lineNum">      80 </span>            :     }</a>
 <a name="81"><span class="lineNum">      81 </span>            : }</a>
 <a name="82"><span class="lineNum">      82 </span>            : /*</a>
@@ -150,13 +150,13 @@
 <a name="88"><span class="lineNum">      88 </span>            :  false if p is likely prime</a>
 <a name="89"><span class="lineNum">      89 </span>            :  */</a>
 <a name="90"><span class="lineNum">      90 </span>            : template &lt;typename IntType&gt;</a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov">    8535936 : static bool WitnessFunction(const IntType&amp; a, const IntType&amp; d, usint s, const IntType&amp; p) {</span></a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">    8535936 :     IntType mod  = a.ModExp(d, p);</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">   10072037 : static bool WitnessFunction(const IntType&amp; a, const IntType&amp; d, usint s, const IntType&amp; p) {</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">   10072037 :     IntType mod  = a.ModExp(d, p);</span></a>
 <a name="93"><span class="lineNum">      93 </span>            :     bool prevMod = false;</a>
-<a name="94"><span class="lineNum">      94 </span><span class="lineCov">   43672604 :     for (usint i = 0; i &lt; s; ++i) {</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">   60169665 :     for (usint i = 0; i &lt; s; ++i) {</span></a>
 <a name="95"><span class="lineNum">      95 </span><span class="lineCov">     122948 :         prevMod = (mod != IntType(1) &amp;&amp; mod != p - IntType(1));</span></a>
 <a name="96"><span class="lineNum">      96 </span><span class="lineCov">      32989 :         mod.ModMulFastEq(mod, p);</span></a>
-<a name="97"><span class="lineNum">      97 </span><span class="lineCov">   12093258 :         if (mod == IntType(1) &amp;&amp; prevMod)</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">   14740799 :         if (mod == IntType(1) &amp;&amp; prevMod)</span></a>
 <a name="98"><span class="lineNum">      98 </span>            :             return true;</a>
 <a name="99"><span class="lineNum">      99 </span>            :     }</a>
 <a name="100"><span class="lineNum">     100 </span><span class="lineCov">       6537 :     return (mod != IntType(1));</span></a>
@@ -167,22 +167,22 @@
 <a name="105"><span class="lineNum">     105 </span>            :  prime q. Input: BigInteger q which is a prime. Output: A generator of prime q</a>
 <a name="106"><span class="lineNum">     106 </span>            :  */</a>
 <a name="107"><span class="lineNum">     107 </span>            : template &lt;typename IntType&gt;</a>
-<a name="108"><span class="lineNum">     108 </span><span class="lineCov">      22875 : static IntType FindGenerator(const IntType&amp; q) {</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">      22953 : static IntType FindGenerator(const IntType&amp; q) {</span></a>
 <a name="109"><span class="lineNum">     109 </span><span class="lineCov">         13 :     IntType qm1(q - IntType(1));</span></a>
 <a name="110"><span class="lineNum">     110 </span><span class="lineCov">         13 :     IntType qm2(q - IntType(2));</span></a>
 <a name="111"><span class="lineNum">     111 </span>            :     std::set&lt;IntType&gt; primeFactors;</a>
-<a name="112"><span class="lineNum">     112 </span><span class="lineCov">      22888 :     PrimeFactorize&lt;IntType&gt;(qm1, primeFactors);</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">      22966 :     PrimeFactorize&lt;IntType&gt;(qm1, primeFactors);</span></a>
 <a name="113"><span class="lineNum">     113 </span>            :     usint cnt;</a>
-<a name="114"><span class="lineNum">     114 </span><span class="lineCov">      22862 :     IntType gen;</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">      22940 :     IntType gen;</span></a>
 <a name="115"><span class="lineNum">     115 </span>            :     do {</a>
 <a name="116"><span class="lineNum">     116 </span>            :         cnt = 0;</a>
-<a name="117"><span class="lineNum">     117 </span><span class="lineCov">      64796 :         gen = RNG(qm2) + IntType(1);</span></a>
-<a name="118"><span class="lineNum">     118 </span><span class="lineCov">     178995 :         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</span></a>
-<a name="119"><span class="lineNum">     119 </span><span class="lineCov">     312418 :             if (gen.ModExp(qm1 / (*it), q) == IntType(1))</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">      65101 :         gen = RNG(qm2) + IntType(1);</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">     179822 :         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">     313916 :             if (gen.ModExp(qm1 / (*it), q) == IntType(1))</span></a>
 <a name="120"><span class="lineNum">     120 </span>            :                 break;</a>
 <a name="121"><span class="lineNum">     121 </span>            :         }</a>
-<a name="122"><span class="lineNum">     122 </span><span class="lineCov">      64670 :     } while (cnt != primeFactors.size());</span></a>
-<a name="123"><span class="lineNum">     123 </span><span class="lineCov">      22875 :     return gen;</span></a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineCov">      64975 :     } while (cnt != primeFactors.size());</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">      22953 :     return gen;</span></a>
 <a name="124"><span class="lineNum">     124 </span>            : }</a>
 <a name="125"><span class="lineNum">     125 </span>            : </a>
 <a name="126"><span class="lineNum">     126 </span>            : /*</a>
@@ -191,28 +191,28 @@
 <a name="129"><span class="lineNum">     129 </span>            :  generator of q</a>
 <a name="130"><span class="lineNum">     130 </span>            :  */</a>
 <a name="131"><span class="lineNum">     131 </span>            : template &lt;typename IntType&gt;</a>
-<a name="132"><span class="lineNum">     132 </span><span class="lineNoCov">          0 : IntType FindGeneratorCyclic(const IntType&amp; q) {</span></a>
-<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :     IntType phi_q(GetTotient(q.ConvertToInt()));</span></a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :     IntType phi_q_m1(GetTotient(q.ConvertToInt()));</span></a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">          4 : IntType FindGeneratorCyclic(const IntType&amp; q) {</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">          4 :     IntType phi_q(GetTotient(q.ConvertToInt()));</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">          4 :     IntType phi_q_m1(GetTotient(q.ConvertToInt()));</span></a>
 <a name="135"><span class="lineNum">     135 </span>            :     std::set&lt;IntType&gt; primeFactors;</a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineNoCov">          0 :     PrimeFactorize&lt;IntType&gt;(phi_q, primeFactors);</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">          4 :     PrimeFactorize&lt;IntType&gt;(phi_q, primeFactors);</span></a>
 <a name="137"><span class="lineNum">     137 </span>            :     usint cnt;</a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineNoCov">          0 :     IntType gen;</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          4 :     IntType gen;</span></a>
 <a name="139"><span class="lineNum">     139 </span>            :     do {</a>
 <a name="140"><span class="lineNum">     140 </span>            :         cnt = 0;</a>
-<a name="141"><span class="lineNum">     141 </span><span class="lineNoCov">          0 :         gen = RNG(phi_q_m1) + IntType(1);  // gen is random in [1, phi(q)]</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">         18 :         gen = RNG(phi_q_m1) + IntType(1);  // gen is random in [1, phi(q)]</span></a>
 <a name="142"><span class="lineNum">     142 </span>            : </a>
 <a name="143"><span class="lineNum">     143 </span>            :         // Generator must lie in the group!</a>
-<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :         if (GreatestCommonDivisor&lt;IntType&gt;(gen, q) != IntType(1))</span></a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :             continue;</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">          7 :         if (GreatestCommonDivisor&lt;IntType&gt;(gen, q) != IntType(1))</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">          7 :             continue;</span></a>
 <a name="146"><span class="lineNum">     146 </span>            : </a>
 <a name="147"><span class="lineNum">     147 </span>            :         // Order of a generator cannot divide any co-factor</a>
-<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</span></a>
-<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :             if (gen.ModExp(phi_q / (*it), q) == IntType(1))</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">         22 :         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineCov">         36 :             if (gen.ModExp(phi_q / (*it), q) == IntType(1))</span></a>
 <a name="150"><span class="lineNum">     150 </span>            :                 break;</a>
 <a name="151"><span class="lineNum">     151 </span>            :         }</a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :     } while (cnt != primeFactors.size());</span></a>
-<a name="153"><span class="lineNum">     153 </span><span class="lineNoCov">          0 :     return gen;</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">         18 :     } while (cnt != primeFactors.size());</span></a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">          4 :     return gen;</span></a>
 <a name="154"><span class="lineNum">     154 </span>            : }</a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
 <a name="156"><span class="lineNum">     156 </span>            : /*</a>
@@ -242,7 +242,7 @@
 <a name="180"><span class="lineNum">     180 </span>            :  output:  root of unity (in format of BigInteger)</a>
 <a name="181"><span class="lineNum">     181 </span>            :  */</a>
 <a name="182"><span class="lineNum">     182 </span>            : template &lt;typename IntType&gt;</a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">      22875 : IntType RootOfUnity(usint m, const IntType&amp; modulo) {</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">      22953 : IntType RootOfUnity(usint m, const IntType&amp; modulo) {</span></a>
 <a name="184"><span class="lineNum">     184 </span><span class="lineCov">         13 :     IntType M(m);</span></a>
 <a name="185"><span class="lineNum">     185 </span><span class="lineCov">         65 :     if ((modulo - IntType(1)).Mod(M) != IntType(0)) {</span></a>
 <a name="186"><span class="lineNum">     186 </span><span class="lineNoCov">          0 :         std::string errMsg =</span></a>
@@ -253,8 +253,8 @@
 <a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(errMsg);</span></a>
 <a name="192"><span class="lineNum">     192 </span>            :     }</a>
 <a name="193"><span class="lineNum">     193 </span>            : </a>
-<a name="194"><span class="lineNum">     194 </span><span class="lineCov">      22875 :     IntType gen    = FindGenerator(modulo);</span></a>
-<a name="195"><span class="lineNum">     195 </span><span class="lineCov">      22914 :     IntType result = gen.ModExp((modulo - IntType(1)).DividedBy(M), modulo);</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">      22953 :     IntType gen    = FindGenerator(modulo);</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">      22992 :     IntType result = gen.ModExp((modulo - IntType(1)).DividedBy(M), modulo);</span></a>
 <a name="196"><span class="lineNum">     196 </span><span class="lineCov">         13 :     if (result == IntType(1))</span></a>
 <a name="197"><span class="lineNum">     197 </span><span class="lineNoCov">          0 :         result = RootOfUnity(m, modulo);</span></a>
 <a name="198"><span class="lineNum">     198 </span>            : </a>
@@ -273,23 +273,23 @@
 <a name="211"><span class="lineNum">     211 </span>            :    *</a>
 <a name="212"><span class="lineNum">     212 </span>            :    */</a>
 <a name="213"><span class="lineNum">     213 </span>            : </a>
-<a name="214"><span class="lineNum">     214 </span><span class="lineCov">      22875 :     IntType mu(modulo.ComputeMu());</span></a>
-<a name="215"><span class="lineNum">     215 </span><span class="lineCov">      22862 :     IntType x(1);</span></a>
-<a name="216"><span class="lineNum">     216 </span><span class="lineCov">      22875 :     x.ModMulEq(result, modulo, mu);</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">      22953 :     IntType mu(modulo.ComputeMu());</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">      22940 :     IntType x(1);</span></a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">      22953 :     x.ModMulEq(result, modulo, mu);</span></a>
 <a name="217"><span class="lineNum">     217 </span>            : </a>
-<a name="218"><span class="lineNum">     218 </span><span class="lineCov">      22901 :     std::vector&lt;IntType&gt; coprimes = GetTotientList&lt;IntType&gt;(m);</span></a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">      22979 :     std::vector&lt;IntType&gt; coprimes = GetTotientList&lt;IntType&gt;(m);</span></a>
 <a name="219"><span class="lineNum">     219 </span>            :     IntType minRU(x);</a>
 <a name="220"><span class="lineNum">     220 </span>            :     IntType curPowIdx(1);</a>
-<a name="221"><span class="lineNum">     221 </span><span class="lineCov">   28261012 :     for (size_t i = 0; i &lt; coprimes.size(); ++i) {</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineCov">   28311266 :     for (size_t i = 0; i &lt; coprimes.size(); ++i) {</span></a>
 <a name="222"><span class="lineNum">     222 </span>            :         auto nextPowIdx = coprimes[i];</a>
 <a name="223"><span class="lineNum">     223 </span>            :         IntType diffPow(nextPowIdx - curPowIdx);</a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineCov">   56435614 :         for (IntType j(0); j &lt; diffPow; j += IntType(1))</span></a>
-<a name="225"><span class="lineNum">     225 </span><span class="lineCov">   56430424 :             x.ModMulEq(result, modulo, mu);</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">   56535810 :         for (IntType j(0); j &lt; diffPow; j += IntType(1))</span></a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">   56530620 :             x.ModMulEq(result, modulo, mu);</span></a>
 <a name="226"><span class="lineNum">     226 </span><span class="lineCov">       5274 :         if (x &lt; minRU &amp;&amp; x != IntType(1))</span></a>
 <a name="227"><span class="lineNum">     227 </span>            :             minRU = x;</a>
 <a name="228"><span class="lineNum">     228 </span>            :         curPowIdx = nextPowIdx;</a>
 <a name="229"><span class="lineNum">     229 </span>            :     }</a>
-<a name="230"><span class="lineNum">     230 </span><span class="lineCov">      22875 :     return minRU;</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">      22953 :     return minRU;</span></a>
 <a name="231"><span class="lineNum">     231 </span>            : }</a>
 <a name="232"><span class="lineNum">     232 </span>            : </a>
 <a name="233"><span class="lineNum">     233 </span>            : template &lt;typename IntType&gt;</a>
@@ -305,9 +305,9 @@
 <a name="243"><span class="lineNum">     243 </span><span class="lineCov">      47577 :     static const IntType ZERO(0);</span></a>
 <a name="244"><span class="lineNum">     244 </span>            :     auto m_a(a);</a>
 <a name="245"><span class="lineNum">     245 </span>            :     auto m_b(b);</a>
-<a name="246"><span class="lineNum">     246 </span><span class="lineCov">  604105170 :     while (m_b != ZERO) {</span></a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineCov">  605294315 :     while (m_b != ZERO) {</span></a>
 <a name="247"><span class="lineNum">     247 </span>            :         auto tmp(m_b);</a>
-<a name="248"><span class="lineNum">     248 </span><span class="lineCov">    1942164 :         m_b = m_a % m_b;</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">    2365410 :         m_b = m_a % m_b;</span></a>
 <a name="249"><span class="lineNum">     249 </span>            :         m_a = tmp;</a>
 <a name="250"><span class="lineNum">     250 </span>            :     }</a>
 <a name="251"><span class="lineNum">     251 </span><span class="lineCov">      47575 :     return m_a;</span></a>
@@ -320,7 +320,7 @@
 <a name="258"><span class="lineNum">     258 </span>            :  false if p is not prime</a>
 <a name="259"><span class="lineNum">     259 </span>            :  */</a>
 <a name="260"><span class="lineNum">     260 </span>            : template &lt;typename IntType&gt;</a>
-<a name="261"><span class="lineNum">     261 </span><span class="lineCov">   31264161 : bool MillerRabinPrimalityTest(const IntType&amp; p, const usint niter) {</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">   31481631 : bool MillerRabinPrimalityTest(const IntType&amp; p, const usint niter) {</span></a>
 <a name="262"><span class="lineNum">     262 </span><span class="lineCov">        608 :     static const IntType ZERO(0);</span></a>
 <a name="263"><span class="lineNum">     263 </span><span class="lineCov">        608 :     static const IntType TWO(2);</span></a>
 <a name="264"><span class="lineNum">     264 </span><span class="lineCov">        608 :     static const IntType THREE(3);</span></a>
@@ -333,13 +333,13 @@
 <a name="271"><span class="lineNum">     271 </span>            : </a>
 <a name="272"><span class="lineNum">     272 </span><span class="lineCov">        399 :     IntType d(p - IntType(1));</span></a>
 <a name="273"><span class="lineNum">     273 </span>            :     usint s(0);</a>
-<a name="274"><span class="lineNum">     274 </span><span class="lineCov">    3429921 :     while (d.Mod(TWO) == ZERO) {</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineCov">    5646152 :     while (d.Mod(TWO) == ZERO) {</span></a>
 <a name="275"><span class="lineNum">     275 </span>            :         // d.DividedByEq(TWO);</a>
 <a name="276"><span class="lineNum">     276 </span><span class="lineCov">       2992 :         d.RShiftEq(1);</span></a>
-<a name="277"><span class="lineNum">     277 </span><span class="lineCov">    3426131 :         ++s;</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineCov">    5642362 :         ++s;</span></a>
 <a name="278"><span class="lineNum">     278 </span>            :     }</a>
-<a name="279"><span class="lineNum">     279 </span><span class="lineCov">    8617395 :     for (usint i = 0; i &lt; niter; ++i) {</span></a>
-<a name="280"><span class="lineNum">     280 </span><span class="lineCov">   17084966 :         if (WitnessFunction(RNG(p - THREE).ModAdd(TWO, p), d, s, p))</span></a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineCov">   10166850 :     for (usint i = 0; i &lt; niter; ++i) {</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">   20157168 :         if (WitnessFunction(RNG(p - THREE).ModAdd(TWO, p), d, s, p))</span></a>
 <a name="281"><span class="lineNum">     281 </span>            :             return false;</a>
 <a name="282"><span class="lineNum">     282 </span>            :     }</a>
 <a name="283"><span class="lineNum">     283 </span>            :     return true;</a>
@@ -351,18 +351,18 @@
 <a name="289"><span class="lineNum">     289 </span>            :  Output: a factor of n.</a>
 <a name="290"><span class="lineNum">     290 </span>            :  */</a>
 <a name="291"><span class="lineNum">     291 </span>            : template &lt;typename IntType&gt;</a>
-<a name="292"><span class="lineNum">     292 </span><span class="lineCov">   14422541 : const IntType PollardRhoFactorization(const IntType&amp; n) {</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineCov">   14424398 : const IntType PollardRhoFactorization(const IntType&amp; n) {</span></a>
 <a name="293"><span class="lineNum">     293 </span><span class="lineCov">        560 :     if (n.Mod(IntType(2)) == IntType(0))</span></a>
 <a name="294"><span class="lineNum">     294 </span>            :         return IntType(2);</a>
 <a name="295"><span class="lineNum">     295 </span>            :     IntType divisor(1);</a>
-<a name="296"><span class="lineNum">     296 </span><span class="lineCov">      70906 :     IntType c(RNG(n));</span></a>
-<a name="297"><span class="lineNum">     297 </span><span class="lineCov">      70906 :     IntType x(RNG(n));</span></a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">      71173 :     IntType c(RNG(n));</span></a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineCov">      71173 :     IntType x(RNG(n));</span></a>
 <a name="298"><span class="lineNum">     298 </span>            :     IntType xx(x);</a>
-<a name="299"><span class="lineNum">     299 </span><span class="lineCov">      70906 :     IntType mu(n.ComputeMu());</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineCov">      71173 :     IntType mu(n.ComputeMu());</span></a>
 <a name="300"><span class="lineNum">     300 </span>            :     do {</a>
-<a name="301"><span class="lineNum">     301 </span><span class="lineCov">    4263767 :         x       = x.ModMul(x, n, mu).ModAdd(c, n, mu);</span></a>
-<a name="302"><span class="lineNum">     302 </span><span class="lineCov">    4263767 :         xx      = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);</span></a>
-<a name="303"><span class="lineNum">     303 </span><span class="lineCov">    4300972 :         xx      = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineCov">    4264301 :         x       = x.ModMul(x, n, mu).ModAdd(c, n, mu);</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">    4264301 :         xx      = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);</span></a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineCov">    4301506 :         xx      = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);</span></a>
 <a name="304"><span class="lineNum">     304 </span><span class="lineCov">     148820 :         divisor = GreatestCommonDivisor((x &gt; xx) ? x - xx : xx - x, n);</span></a>
 <a name="305"><span class="lineNum">     305 </span><span class="lineCov">      37205 :     } while (divisor == IntType(1));</span></a>
 <a name="306"><span class="lineNum">     306 </span>            :     return divisor;</a>
@@ -374,74 +374,74 @@
 <a name="312"><span class="lineNum">     312 </span>            :  primeFactors is a set of prime factors of n.</a>
 <a name="313"><span class="lineNum">     313 </span>            :  */</a>
 <a name="314"><span class="lineNum">     314 </span>            : template &lt;typename IntType&gt;</a>
-<a name="315"><span class="lineNum">     315 </span><span class="lineCov">   31590860 : void PrimeFactorize(IntType n, std::set&lt;IntType&gt;&amp; primeFactors) {</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineCov">   31594730 : void PrimeFactorize(IntType n, std::set&lt;IntType&gt;&amp; primeFactors) {</span></a>
 <a name="316"><span class="lineNum">     316 </span><span class="lineCov">       1176 :     if (n == IntType(0) || n == IntType(1))</span></a>
-<a name="317"><span class="lineNum">     317 </span><span class="lineCov">   17168319 :         return;</span></a>
-<a name="318"><span class="lineNum">     318 </span><span class="lineCov">   30928150 :     if (MillerRabinPrimalityTest(n)) {</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">   17170332 :         return;</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">   30931995 :     if (MillerRabinPrimalityTest(n)) {</span></a>
 <a name="319"><span class="lineNum">     319 </span>            :         primeFactors.insert(n);</a>
-<a name="320"><span class="lineNum">     320 </span><span class="lineCov">   16505609 :         return;</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">   16507597 :         return;</span></a>
 <a name="321"><span class="lineNum">     321 </span>            :     }</a>
 <a name="322"><span class="lineNum">     322 </span>            : </a>
-<a name="323"><span class="lineNum">     323 </span><span class="lineCov">   14422541 :     IntType divisor(PollardRhoFactorization(n));</span></a>
-<a name="324"><span class="lineNum">     324 </span><span class="lineCov">   14422681 :     PrimeFactorize(divisor, primeFactors);</span></a>
-<a name="325"><span class="lineNum">     325 </span><span class="lineCov">   14422681 :     PrimeFactorize(n / divisor, primeFactors);</span></a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineCov">   14424398 :     IntType divisor(PollardRhoFactorization(n));</span></a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineCov">   14424538 :     PrimeFactorize(divisor, primeFactors);</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineCov">   14424538 :     PrimeFactorize(n / divisor, primeFactors);</span></a>
 <a name="326"><span class="lineNum">     326 </span>            : }</a>
 <a name="327"><span class="lineNum">     327 </span>            : </a>
 <a name="328"><span class="lineNum">     328 </span>            : template &lt;typename IntType&gt;</a>
-<a name="329"><span class="lineNum">     329 </span><span class="lineCov">          3 : IntType FirstPrime(uint32_t nBits, uint64_t m) {</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineCov">       5692 : IntType FirstPrime(uint32_t nBits, uint64_t m) {</span></a>
 <a name="330"><span class="lineNum">     330 </span>            :     if constexpr (std::is_same_v&lt;IntType, NativeInteger&gt;) {</a>
-<a name="331"><span class="lineNum">     331 </span><span class="lineCov">          2 :         if (nBits &gt; MAX_MODULUS_SIZE)</span></a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineCov">       5691 :         if (nBits &gt; MAX_MODULUS_SIZE)</span></a>
 <a name="332"><span class="lineNum">     332 </span><span class="lineCov">          4 :             OPENFHE_THROW(std::string(__func__) + &quot;: Requested bit length &quot; + std::to_string(nBits) +</span></a>
 <a name="333"><span class="lineNum">     333 </span>            :                           &quot; exceeds maximum allowed length &quot; + std::to_string(MAX_MODULUS_SIZE));</a>
 <a name="334"><span class="lineNum">     334 </span>            :     }</a>
 <a name="335"><span class="lineNum">     335 </span>            : </a>
 <a name="336"><span class="lineNum">     336 </span><span class="lineCov">          1 :     IntType M(m);</span></a>
-<a name="337"><span class="lineNum">     337 </span><span class="lineCov">          2 :     IntType q(IntType(1) &lt;&lt; nBits);</span></a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineCov">       5691 :     IntType q(IntType(1) &lt;&lt; nBits);</span></a>
 <a name="338"><span class="lineNum">     338 </span><span class="lineCov">          1 :     IntType r(q.Mod(M));</span></a>
 <a name="339"><span class="lineNum">     339 </span><span class="lineCov">          2 :     IntType qNew(q + IntType(1) - r);</span></a>
 <a name="340"><span class="lineNum">     340 </span><span class="lineCov">          1 :     if (r &gt; IntType(0))</span></a>
 <a name="341"><span class="lineNum">     341 </span>            :         qNew += M;</a>
-<a name="342"><span class="lineNum">     342 </span><span class="lineCov">         14 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
+<a name="342"><span class="lineNum">     342 </span><span class="lineCov">      76642 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
 <a name="343"><span class="lineNum">     343 </span><span class="lineCov">          6 :         if ((qNew += M) &lt; q)</span></a>
 <a name="344"><span class="lineNum">     344 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(std::string(__func__) + &quot;: overflow growing candidate&quot;);</span></a>
 <a name="345"><span class="lineNum">     345 </span>            :     }</a>
-<a name="346"><span class="lineNum">     346 </span><span class="lineCov">          2 :     return qNew;</span></a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineCov">       5691 :     return qNew;</span></a>
 <a name="347"><span class="lineNum">     347 </span>            : }</a>
 <a name="348"><span class="lineNum">     348 </span>            : </a>
 <a name="349"><span class="lineNum">     349 </span>            : template &lt;typename IntType&gt;</a>
-<a name="350"><span class="lineNum">     350 </span><span class="lineCov">       1914 : IntType LastPrime(uint32_t nBits, uint64_t m) {</span></a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">       1992 : IntType LastPrime(uint32_t nBits, uint64_t m) {</span></a>
 <a name="351"><span class="lineNum">     351 </span>            :     if constexpr (std::is_same_v&lt;IntType, NativeInteger&gt;) {</a>
-<a name="352"><span class="lineNum">     352 </span><span class="lineCov">       1901 :         if (nBits &gt; MAX_MODULUS_SIZE)</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">       1979 :         if (nBits &gt; MAX_MODULUS_SIZE)</span></a>
 <a name="353"><span class="lineNum">     353 </span><span class="lineCov">          4 :             OPENFHE_THROW(std::string(__func__) + &quot;: Requested bit length &quot; + std::to_string(nBits) +</span></a>
 <a name="354"><span class="lineNum">     354 </span>            :                           &quot; exceeds maximum allowed length &quot; + std::to_string(MAX_MODULUS_SIZE));</a>
 <a name="355"><span class="lineNum">     355 </span>            :     }</a>
 <a name="356"><span class="lineNum">     356 </span>            : </a>
 <a name="357"><span class="lineNum">     357 </span><span class="lineCov">         13 :     IntType M(m);</span></a>
-<a name="358"><span class="lineNum">     358 </span><span class="lineCov">       1913 :     IntType q(IntType(1) &lt;&lt; nBits);</span></a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">       1991 :     IntType q(IntType(1) &lt;&lt; nBits);</span></a>
 <a name="359"><span class="lineNum">     359 </span><span class="lineCov">         13 :     IntType r(q.Mod(M));</span></a>
 <a name="360"><span class="lineNum">     360 </span><span class="lineCov">         26 :     IntType qNew(q + IntType(1) - r);</span></a>
 <a name="361"><span class="lineNum">     361 </span><span class="lineCov">         13 :     if (r &lt; IntType(2))</span></a>
 <a name="362"><span class="lineNum">     362 </span>            :         qNew -= M;</a>
-<a name="363"><span class="lineNum">     363 </span><span class="lineCov">      32402 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineCov">      32720 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
 <a name="364"><span class="lineNum">     364 </span><span class="lineCov">        220 :         if ((qNew -= M) &gt; q)</span></a>
 <a name="365"><span class="lineNum">     365 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(std::string(__func__) + &quot;: overflow shrinking candidate&quot;);</span></a>
 <a name="366"><span class="lineNum">     366 </span>            :     }</a>
 <a name="367"><span class="lineNum">     367 </span>            : </a>
-<a name="368"><span class="lineNum">     368 </span><span class="lineCov">       1913 :     if (qNew.GetMSB() != nBits)</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">       1991 :     if (qNew.GetMSB() != nBits)</span></a>
 <a name="369"><span class="lineNum">     369 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(std::string(__func__) + &quot;: Requested &quot; + std::to_string(nBits) + &quot; bits, but returned &quot; +</span></a>
 <a name="370"><span class="lineNum">     370 </span>            :                       std::to_string(qNew.GetMSB()) + &quot;. Please adjust parameters.&quot;);</a>
 <a name="371"><span class="lineNum">     371 </span>            : </a>
-<a name="372"><span class="lineNum">     372 </span><span class="lineCov">       1913 :     return qNew;</span></a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineCov">       1991 :     return qNew;</span></a>
 <a name="373"><span class="lineNum">     373 </span>            : }</a>
 <a name="374"><span class="lineNum">     374 </span>            : </a>
 <a name="375"><span class="lineNum">     375 </span>            : template &lt;typename IntType&gt;</a>
-<a name="376"><span class="lineNum">     376 </span><span class="lineCov">         20 : IntType NextPrime(const IntType&amp; q, uint64_t m) {</span></a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineCov">       7321 : IntType NextPrime(const IntType&amp; q, uint64_t m) {</span></a>
 <a name="377"><span class="lineNum">     377 </span><span class="lineCov">         10 :     IntType M(m), qNew(q + M);</span></a>
-<a name="378"><span class="lineNum">     378 </span><span class="lineCov">        150 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineCov">     136699 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
 <a name="379"><span class="lineNum">     379 </span><span class="lineCov">         65 :         if ((qNew += M) &lt; q)</span></a>
 <a name="380"><span class="lineNum">     380 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(std::string(__func__) + &quot;: overflow growing candidate&quot;);</span></a>
 <a name="381"><span class="lineNum">     381 </span>            :     }</a>
-<a name="382"><span class="lineNum">     382 </span><span class="lineCov">         20 :     return qNew;</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineCov">       7321 :     return qNew;</span></a>
 <a name="383"><span class="lineNum">     383 </span>            : }</a>
 <a name="384"><span class="lineNum">     384 </span>            : </a>
 <a name="385"><span class="lineNum">     385 </span>            : template &lt;typename IntType&gt;</a>
@@ -462,14 +462,14 @@
 <a name="400"><span class="lineNum">     400 </span>            : </a>
 <a name="401"><span class="lineNum">     401 </span>            : /*Naive Loop to find coprimes to n*/</a>
 <a name="402"><span class="lineNum">     402 </span>            : template &lt;typename IntType&gt;</a>
-<a name="403"><span class="lineNum">     403 </span><span class="lineCov">      22904 : std::vector&lt;IntType&gt; GetTotientList(const IntType&amp; n) {</span></a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineCov">      23018 : std::vector&lt;IntType&gt; GetTotientList(const IntType&amp; n) {</span></a>
 <a name="404"><span class="lineNum">     404 </span>            :     std::vector&lt;IntType&gt; result;</a>
 <a name="405"><span class="lineNum">     405 </span><span class="lineCov">         15 :     static const IntType one(1);</span></a>
-<a name="406"><span class="lineNum">     406 </span><span class="lineCov">   56493738 :     for (IntType i = one; i &lt; n; i = i + one) {</span></a>
-<a name="407"><span class="lineNum">     407 </span><span class="lineCov">      61056 :         if (GreatestCommonDivisor(i, n) == one)</span></a>
-<a name="408"><span class="lineNum">     408 </span><span class="lineCov">   28256618 :             result.push_back(i);</span></a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineCov">   56648474 :     for (IntType i = one; i &lt; n; i = i + one) {</span></a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineCov">     115482 :         if (GreatestCommonDivisor(i, n) == one)</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineCov">   28361154 :             result.push_back(i);</span></a>
 <a name="409"><span class="lineNum">     409 </span>            :     }</a>
-<a name="410"><span class="lineNum">     410 </span><span class="lineCov">      22904 :     return result;</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">      23018 :     return result;</span></a>
 <a name="411"><span class="lineNum">     411 </span>            : }</a>
 <a name="412"><span class="lineNum">     412 </span>            : </a>
 <a name="413"><span class="lineNum">     413 </span>            : /* Calculate the remainder from polynomial division */</a>

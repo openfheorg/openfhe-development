@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">16</td>
@@ -115,45 +115,45 @@
 <a name="53"><span class="lineNum">      53 </span>            : // https://eprint.iacr.org/2017/308.pdf</a>
 <a name="54"><span class="lineNum">      54 </span>            : </a>
 <a name="55"><span class="lineNum">      55 </span>            : template &lt;class Element&gt;</a>
-<a name="56"><span class="lineNum">      56 </span><span class="lineCov">          2 : void LatticeGaussSampUtility&lt;Element&gt;::GaussSampGq(const Element&amp; syndrome, double stddev, size_t k,</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">          4 : void LatticeGaussSampUtility&lt;Element&gt;::GaussSampGq(const Element&amp; syndrome, double stddev, size_t k,</span></a>
 <a name="57"><span class="lineNum">      57 </span>            :                                                    const typename Element::Integer&amp; q, int64_t base,</a>
 <a name="58"><span class="lineNum">      58 </span>            :                                                    typename Element::DggType&amp; dgg, Matrix&lt;int64_t&gt;* z) {</a>
 <a name="59"><span class="lineNum">      59 </span>            :     // If DCRT is used, the polynomial is first converted from DCRT to large</a>
 <a name="60"><span class="lineNum">      60 </span>            :     // polynomial (in COEFFICIENT representation)</a>
-<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          4 :     typename Element::PolyLargeType u = syndrome.CRTInterpolate();</span></a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          8 :     typename Element::PolyLargeType u = syndrome.CRTInterpolate();</span></a>
 <a name="62"><span class="lineNum">      62 </span>            : </a>
 <a name="63"><span class="lineNum">      63 </span>            :     const typename Poly::Integer&amp; modulus = u.GetParams()-&gt;GetModulus();</a>
-<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          2 :     double sigma                          = stddev / (base + 1);</span></a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          4 :     double sigma                          = stddev / (base + 1);</span></a>
 <a name="65"><span class="lineNum">      65 </span>            : </a>
-<a name="66"><span class="lineNum">      66 </span><span class="lineCov">          2 :     std::vector&lt;int64_t&gt; m_digits = *(GetDigits(modulus, base, k));</span></a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">          4 :     std::vector&lt;int64_t&gt; m_digits = *(GetDigits(modulus, base, k));</span></a>
 <a name="67"><span class="lineNum">      67 </span>            : </a>
 <a name="68"><span class="lineNum">      68 </span>            :     // main diagonal of matrix L</a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          2 :     std::vector&lt;double&gt; l(k);</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          4 :     std::vector&lt;double&gt; l(k);</span></a>
 <a name="70"><span class="lineNum">      70 </span>            :     // upper diagonal of matrix L</a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">          2 :     std::vector&lt;double&gt; h(k);</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">          4 :     std::vector&lt;double&gt; h(k);</span></a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            :     // Matrix&lt;double&gt; a([]() { return 0.0; }, k, 1);</a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">          2 :     Matrix&lt;double&gt; c([]() { return 0.0; }, k, 1);</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">          4 :     Matrix&lt;double&gt; c([]() { return 0.0; }, k, 1);</span></a>
 <a name="75"><span class="lineNum">      75 </span>            : </a>
 <a name="76"><span class="lineNum">      76 </span>            :     //  set the values of matrix L</a>
 <a name="77"><span class="lineNum">      77 </span>            :     // (double) is added to avoid integer division</a>
-<a name="78"><span class="lineNum">      78 </span><span class="lineCov">          2 :     l[0] = sqrt(base * (1 + 1 / k) + 1);</span></a>
-<a name="79"><span class="lineNum">      79 </span><span class="lineCov">         30 :     for (size_t i = 1; i &lt; k; i++)</span></a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov">         28 :         l[i] = sqrt(base * (1 + 1 / static_cast&lt;double&gt;(k - i)));</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">          4 :     l[0] = sqrt(base * (1 + 1 / k) + 1);</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">         60 :     for (size_t i = 1; i &lt; k; i++)</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">         56 :         l[i] = sqrt(base * (1 + 1 / static_cast&lt;double&gt;(k - i)));</span></a>
 <a name="81"><span class="lineNum">      81 </span>            : </a>
-<a name="82"><span class="lineNum">      82 </span><span class="lineCov">          2 :     h[0] = 0;</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">          4 :     h[0] = 0;</span></a>
 <a name="83"><span class="lineNum">      83 </span>            :     // (double) is added to avoid integer division</a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">         30 :     for (size_t i = 1; i &lt; k; i++)</span></a>
-<a name="85"><span class="lineNum">      85 </span><span class="lineCov">         28 :         h[i] = sqrt(base * (1 - 1 / static_cast&lt;double&gt;(k - (i - 1))));</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">         60 :     for (size_t i = 1; i &lt; k; i++)</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">         56 :         h[i] = sqrt(base * (1 - 1 / static_cast&lt;double&gt;(k - (i - 1))));</span></a>
 <a name="86"><span class="lineNum">      86 </span>            : </a>
 <a name="87"><span class="lineNum">      87 </span>            :     // c can be pre-computed as it only depends on the modulus</a>
 <a name="88"><span class="lineNum">      88 </span>            :     // (double) is added to avoid integer division</a>
-<a name="89"><span class="lineNum">      89 </span><span class="lineCov">          2 :     c(0, 0) = m_digits[0] / static_cast&lt;double&gt;(base);</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineCov">          4 :     c(0, 0) = m_digits[0] / static_cast&lt;double&gt;(base);</span></a>
 <a name="90"><span class="lineNum">      90 </span>            : </a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov">         30 :     for (size_t i = 1; i &lt; k; i++)</span></a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">         28 :         c(i, 0) = (c(i - 1, 0) + m_digits[i]) / base;</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">         60 :     for (size_t i = 1; i &lt; k; i++)</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">         56 :         c(i, 0) = (c(i - 1, 0) + m_digits[i]) / base;</span></a>
 <a name="93"><span class="lineNum">      93 </span>            : </a>
-<a name="94"><span class="lineNum">      94 </span><span class="lineCov">          2 : #pragma omp parallel for</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">          4 : #pragma omp parallel for</span></a>
 <a name="95"><span class="lineNum">      95 </span>            :     for (size_t j = 0; j &lt; u.GetLength(); j++) {</a>
 <a name="96"><span class="lineNum">      96 </span>            :         typename Element::Integer v(u.at(j));</a>
 <a name="97"><span class="lineNum">      97 </span>            : </a>
@@ -184,52 +184,52 @@
 <a name="122"><span class="lineNum">     122 </span>            :         }</a>
 <a name="123"><span class="lineNum">     123 </span>            :         (*z)(k - 1, j) = (int64_t)(m_digits[k - 1]) * zj[k - 1] - zj[k - 2] + (int64_t)(v_digits[k - 1]);</a>
 <a name="124"><span class="lineNum">     124 </span>            :     }</a>
-<a name="125"><span class="lineNum">     125 </span><span class="lineCov">          2 : }</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">          4 : }</span></a>
 <a name="126"><span class="lineNum">     126 </span>            : </a>
 <a name="127"><span class="lineNum">     127 </span>            : // Gaussian sampling from lattice for gagdet matrix G, syndrome u, and arbitrary</a>
 <a name="128"><span class="lineNum">     128 </span>            : // modulus q Continuous sampling variant As described in Algorithm 3 of</a>
 <a name="129"><span class="lineNum">     129 </span>            : // https://eprint.iacr.org/2017/844.pdf</a>
 <a name="130"><span class="lineNum">     130 </span>            : </a>
 <a name="131"><span class="lineNum">     131 </span>            : template &lt;class Element&gt;</a>
-<a name="132"><span class="lineNum">     132 </span><span class="lineCov">        221 : void LatticeGaussSampUtility&lt;Element&gt;::GaussSampGqArbBase(const Element&amp; syndrome, double stddev, size_t k,</span></a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">        442 : void LatticeGaussSampUtility&lt;Element&gt;::GaussSampGqArbBase(const Element&amp; syndrome, double stddev, size_t k,</span></a>
 <a name="133"><span class="lineNum">     133 </span>            :                                                           const typename Element::Integer&amp; q, int64_t base,</a>
 <a name="134"><span class="lineNum">     134 </span>            :                                                           typename Element::DggType&amp; dgg, Matrix&lt;int64_t&gt;* z) {</a>
 <a name="135"><span class="lineNum">     135 </span>            :     // If DCRT is used, the polynomial is first converted from DCRT to large</a>
 <a name="136"><span class="lineNum">     136 </span>            :     // polynomial (in Format::COEFFICIENT representation)</a>
-<a name="137"><span class="lineNum">     137 </span><span class="lineCov">        442 :     typename Element::PolyLargeType u = syndrome.CRTInterpolate();</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">        884 :     typename Element::PolyLargeType u = syndrome.CRTInterpolate();</span></a>
 <a name="138"><span class="lineNum">     138 </span>            : </a>
 <a name="139"><span class="lineNum">     139 </span>            :     const typename Poly::Integer&amp; modulus = u.GetParams()-&gt;GetModulus();</a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">        221 :     double sigma                          = stddev / (base + 1);</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">        442 :     double sigma                          = stddev / (base + 1);</span></a>
 <a name="141"><span class="lineNum">     141 </span>            : </a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">        221 :     std::vector&lt;int64_t&gt; m_digits = *(GetDigits(modulus, base, k));</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">        442 :     std::vector&lt;int64_t&gt; m_digits = *(GetDigits(modulus, base, k));</span></a>
 <a name="143"><span class="lineNum">     143 </span>            : </a>
 <a name="144"><span class="lineNum">     144 </span>            :     // main diagonal of matrix L</a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">        221 :     std::vector&lt;double&gt; l(k);</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">        442 :     std::vector&lt;double&gt; l(k);</span></a>
 <a name="146"><span class="lineNum">     146 </span>            :     // upper diagonal of matrix L</a>
-<a name="147"><span class="lineNum">     147 </span><span class="lineCov">        221 :     std::vector&lt;double&gt; h(k);</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">        442 :     std::vector&lt;double&gt; h(k);</span></a>
 <a name="148"><span class="lineNum">     148 </span>            : </a>
 <a name="149"><span class="lineNum">     149 </span>            :     // Matrix&lt;double&gt; a([]() { return 0.0; }, k, 1);</a>
-<a name="150"><span class="lineNum">     150 </span><span class="lineCov">        221 :     Matrix&lt;double&gt; c([]() { return 0.0; }, k, 1);</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">        442 :     Matrix&lt;double&gt; c([]() { return 0.0; }, k, 1);</span></a>
 <a name="151"><span class="lineNum">     151 </span>            : </a>
 <a name="152"><span class="lineNum">     152 </span>            :     //  set the values of matrix L</a>
 <a name="153"><span class="lineNum">     153 </span>            :     // (double) is added to avoid integer division</a>
-<a name="154"><span class="lineNum">     154 </span><span class="lineCov">        221 :     l[0] = sqrt(base * (1 + 1 / k) + 1);</span></a>
-<a name="155"><span class="lineNum">     155 </span><span class="lineCov">      10787 :     for (size_t i = 1; i &lt; k; i++)</span></a>
-<a name="156"><span class="lineNum">     156 </span><span class="lineCov">      10566 :         l[i] = sqrt(base * (1 + 1 / static_cast&lt;double&gt;(k - i)));</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">        442 :     l[0] = sqrt(base * (1 + 1 / k) + 1);</span></a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">      21574 :     for (size_t i = 1; i &lt; k; i++)</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">      21132 :         l[i] = sqrt(base * (1 + 1 / static_cast&lt;double&gt;(k - i)));</span></a>
 <a name="157"><span class="lineNum">     157 </span>            : </a>
-<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        221 :     h[0] = 0;</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        442 :     h[0] = 0;</span></a>
 <a name="159"><span class="lineNum">     159 </span>            :     // (double) is added to avoid integer division</a>
-<a name="160"><span class="lineNum">     160 </span><span class="lineCov">      10787 :     for (size_t i = 1; i &lt; k; i++)</span></a>
-<a name="161"><span class="lineNum">     161 </span><span class="lineCov">      10566 :         h[i] = sqrt(base * (1 - 1 / static_cast&lt;double&gt;(k - (i - 1))));</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">      21574 :     for (size_t i = 1; i &lt; k; i++)</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">      21132 :         h[i] = sqrt(base * (1 - 1 / static_cast&lt;double&gt;(k - (i - 1))));</span></a>
 <a name="162"><span class="lineNum">     162 </span>            : </a>
 <a name="163"><span class="lineNum">     163 </span>            :     // c can be pre-computed as it only depends on the modulus</a>
 <a name="164"><span class="lineNum">     164 </span>            :     // (double) is added to avoid integer division</a>
-<a name="165"><span class="lineNum">     165 </span><span class="lineCov">        221 :     c(0, 0) = ((int64_t)m_digits[0]) / static_cast&lt;double&gt;(base);</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">        442 :     c(0, 0) = ((int64_t)m_digits[0]) / static_cast&lt;double&gt;(base);</span></a>
 <a name="166"><span class="lineNum">     166 </span>            : </a>
-<a name="167"><span class="lineNum">     167 </span><span class="lineCov">      10787 :     for (size_t i = 1; i &lt; k; i++)</span></a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov">      10566 :         c(i, 0) = (c(i - 1, 0) + (int64_t)m_digits[i]) / static_cast&lt;double&gt;(base);</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">      21574 :     for (size_t i = 1; i &lt; k; i++)</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">      21132 :         c(i, 0) = (c(i - 1, 0) + (int64_t)m_digits[i]) / static_cast&lt;double&gt;(base);</span></a>
 <a name="169"><span class="lineNum">     169 </span>            : </a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">        221 : #pragma omp parallel for</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">        442 : #pragma omp parallel for</span></a>
 <a name="171"><span class="lineNum">     171 </span>            :     for (size_t j = 0; j &lt; u.GetLength(); j++) {</a>
 <a name="172"><span class="lineNum">     172 </span>            :         typename Element::Integer v(u.at(j));</a>
 <a name="173"><span class="lineNum">     173 </span>            : </a>
@@ -260,77 +260,77 @@
 <a name="198"><span class="lineNum">     198 </span>            :         }</a>
 <a name="199"><span class="lineNum">     199 </span>            :         (*z)(k - 1, j) = (int64_t)(m_digits[k - 1]) * zj[k - 1] - zj[k - 2] + (int64_t)(v_digits[k - 1]);</a>
 <a name="200"><span class="lineNum">     200 </span>            :     }</a>
-<a name="201"><span class="lineNum">     201 </span><span class="lineCov">        221 : }</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">        442 : }</span></a>
 <a name="202"><span class="lineNum">     202 </span>            : </a>
 <a name="203"><span class="lineNum">     203 </span>            : // subroutine used by GaussSampGq</a>
 <a name="204"><span class="lineNum">     204 </span>            : // Discrete sampling variant</a>
 <a name="205"><span class="lineNum">     205 </span>            : // As described in Figure 2 of https://eprint.iacr.org/2017/308.pdf</a>
 <a name="206"><span class="lineNum">     206 </span>            : </a>
 <a name="207"><span class="lineNum">     207 </span>            : template &lt;class Element&gt;</a>
-<a name="208"><span class="lineNum">     208 </span><span class="lineCov">        520 : void LatticeGaussSampUtility&lt;Element&gt;::Perturb(double sigma, size_t k, size_t n, const std::vector&lt;double&gt;&amp; l,</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineCov">       1040 : void LatticeGaussSampUtility&lt;Element&gt;::Perturb(double sigma, size_t k, size_t n, const std::vector&lt;double&gt;&amp; l,</span></a>
 <a name="209"><span class="lineNum">     209 </span>            :                                                const std::vector&lt;double&gt;&amp; h, int64_t base,</a>
 <a name="210"><span class="lineNum">     210 </span>            :                                                typename Element::DggType&amp; dgg, std::vector&lt;int64_t&gt;* p) {</a>
-<a name="211"><span class="lineNum">     211 </span><span class="lineCov">        520 :     std::vector&lt;int32_t&gt; z(k);</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">       1040 :     std::vector&lt;int32_t&gt; z(k);</span></a>
 <a name="212"><span class="lineNum">     212 </span>            :     double d = 0;</a>
 <a name="213"><span class="lineNum">     213 </span>            : </a>
-<a name="214"><span class="lineNum">     214 </span><span class="lineCov">       2272 :     for (size_t i = 0; i &lt; k; i++) {</span></a>
-<a name="215"><span class="lineNum">     215 </span><span class="lineCov">       1752 :         z[i] = dgg.GenerateIntegerKarney(d / l[i], sigma / l[i]);</span></a>
-<a name="216"><span class="lineNum">     216 </span><span class="lineCov">       1752 :         d    = -z[i] * h[i];</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">       4544 :     for (size_t i = 0; i &lt; k; i++) {</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">       3504 :         z[i] = dgg.GenerateIntegerKarney(d / l[i], sigma / l[i]);</span></a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">       3504 :         d    = -z[i] * h[i];</span></a>
 <a name="217"><span class="lineNum">     217 </span>            :     }</a>
 <a name="218"><span class="lineNum">     218 </span>            : </a>
-<a name="219"><span class="lineNum">     219 </span><span class="lineCov">        520 :     (*p)[0] = (2 * base + 1) * z[0] + base * z[1];</span></a>
-<a name="220"><span class="lineNum">     220 </span><span class="lineCov">       1232 :     for (size_t i = 1; i &lt; k - 1; i++)</span></a>
-<a name="221"><span class="lineNum">     221 </span><span class="lineCov">        712 :         (*p)[i] = base * (z[i - 1] + 2 * z[i] + z[i + 1]);</span></a>
-<a name="222"><span class="lineNum">     222 </span><span class="lineCov">        520 :     (*p)[k - 1] = base * (z[k - 2] + 2 * z[k - 1]);</span></a>
-<a name="223"><span class="lineNum">     223 </span><span class="lineCov">        520 : }</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">       1040 :     (*p)[0] = (2 * base + 1) * z[0] + base * z[1];</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">       2464 :     for (size_t i = 1; i &lt; k - 1; i++)</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineCov">       1424 :         (*p)[i] = base * (z[i - 1] + 2 * z[i] + z[i + 1]);</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">       1040 :     (*p)[k - 1] = base * (z[k - 2] + 2 * z[k - 1]);</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">       1040 : }</span></a>
 <a name="224"><span class="lineNum">     224 </span>            : </a>
 <a name="225"><span class="lineNum">     225 </span>            : // subroutine used by GaussSampGqArbBase</a>
 <a name="226"><span class="lineNum">     226 </span>            : // Continuous sampling variant</a>
 <a name="227"><span class="lineNum">     227 </span>            : // As described in Algorithm 3 of https://eprint.iacr.org/2017/844.pdf</a>
 <a name="228"><span class="lineNum">     228 </span>            : </a>
 <a name="229"><span class="lineNum">     229 </span>            : template &lt;class Element&gt;</a>
-<a name="230"><span class="lineNum">     230 </span><span class="lineCov">       1800 : void LatticeGaussSampUtility&lt;Element&gt;::PerturbFloat(double sigma, size_t k, size_t n, const std::vector&lt;double&gt;&amp; l,</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">       3600 : void LatticeGaussSampUtility&lt;Element&gt;::PerturbFloat(double sigma, size_t k, size_t n, const std::vector&lt;double&gt;&amp; l,</span></a>
 <a name="231"><span class="lineNum">     231 </span>            :                                                     const std::vector&lt;double&gt;&amp; h, int64_t base,</a>
 <a name="232"><span class="lineNum">     232 </span>            :                                                     typename Element::DggType&amp; dgg, std::vector&lt;double&gt;* p) {</a>
 <a name="233"><span class="lineNum">     233 </span>            :     std::normal_distribution&lt;&gt; d(0, sigma);</a>
 <a name="234"><span class="lineNum">     234 </span>            : </a>
-<a name="235"><span class="lineNum">     235 </span><span class="lineCov">       1800 :     PRNG&amp; g = PseudoRandomNumberGenerator::GetPRNG();</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineCov">       3600 :     PRNG&amp; g = PseudoRandomNumberGenerator::GetPRNG();</span></a>
 <a name="236"><span class="lineNum">     236 </span>            : </a>
-<a name="237"><span class="lineNum">     237 </span><span class="lineCov">       1800 :     std::vector&lt;double&gt; z(k);</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineCov">       3600 :     std::vector&lt;double&gt; z(k);</span></a>
 <a name="238"><span class="lineNum">     238 </span>            : </a>
 <a name="239"><span class="lineNum">     239 </span>            :     // Generate a vector using continuous Gaussian distribution</a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov">      88640 :     for (size_t i = 0; i &lt; k; i++)</span></a>
-<a name="241"><span class="lineNum">     241 </span><span class="lineCov">      86840 :         z[i] = d(g);</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">     177280 :     for (size_t i = 0; i &lt; k; i++)</span></a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineCov">     173680 :         z[i] = d(g);</span></a>
 <a name="242"><span class="lineNum">     242 </span>            : </a>
 <a name="243"><span class="lineNum">     243 </span>            :     // Compute matrix-vector product Lz (apply linear transformation)</a>
-<a name="244"><span class="lineNum">     244 </span><span class="lineCov">      86840 :     for (size_t i = 0; i &lt; k - 1; i++) {</span></a>
-<a name="245"><span class="lineNum">     245 </span><span class="lineCov">      85040 :         p-&gt;at(i) = l[i] * z[i] + h[i + 1] * z[i + 1];</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">     173680 :     for (size_t i = 0; i &lt; k - 1; i++) {</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">     170080 :         p-&gt;at(i) = l[i] * z[i] + h[i + 1] * z[i + 1];</span></a>
 <a name="246"><span class="lineNum">     246 </span>            :     }</a>
 <a name="247"><span class="lineNum">     247 </span>            : </a>
-<a name="248"><span class="lineNum">     248 </span><span class="lineCov">       1800 :     p-&gt;at(k - 1) = h[k - 1] * z[k - 1];</span></a>
-<a name="249"><span class="lineNum">     249 </span><span class="lineCov">       1800 : }</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">       3600 :     p-&gt;at(k - 1) = h[k - 1] * z[k - 1];</span></a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineCov">       3600 : }</span></a>
 <a name="250"><span class="lineNum">     250 </span>            : </a>
 <a name="251"><span class="lineNum">     251 </span>            : // subroutine used by GaussSampGq</a>
 <a name="252"><span class="lineNum">     252 </span>            : // As described in Algorithm 3 of https://eprint.iacr.org/2017/844.pdf</a>
 <a name="253"><span class="lineNum">     253 </span>            : </a>
 <a name="254"><span class="lineNum">     254 </span>            : template &lt;class Element&gt;</a>
-<a name="255"><span class="lineNum">     255 </span><span class="lineCov">       2320 : void LatticeGaussSampUtility&lt;Element&gt;::SampleC(const Matrix&lt;double&gt;&amp; c, size_t k, size_t n, double sigma,</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">       4640 : void LatticeGaussSampUtility&lt;Element&gt;::SampleC(const Matrix&lt;double&gt;&amp; c, size_t k, size_t n, double sigma,</span></a>
 <a name="256"><span class="lineNum">     256 </span>            :                                                typename Element::DggType&amp; dgg, Matrix&lt;double&gt;* a,</a>
 <a name="257"><span class="lineNum">     257 </span>            :                                                std::vector&lt;int64_t&gt;* z) {</a>
-<a name="258"><span class="lineNum">     258 </span><span class="lineCov">       2320 :     (*z)[k - 1] = dgg.GenerateIntegerKarney(-(*a)(k - 1, 0) / c(k - 1, 0), sigma / c(k - 1, 0));</span></a>
-<a name="259"><span class="lineNum">     259 </span><span class="lineCov">       4640 :     *a          = *a + (static_cast&lt;double&gt;((*z)[k - 1])) * c;</span></a>
+<a name="258"><span class="lineNum">     258 </span><span class="lineCov">       4640 :     (*z)[k - 1] = dgg.GenerateIntegerKarney(-(*a)(k - 1, 0) / c(k - 1, 0), sigma / c(k - 1, 0));</span></a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineCov">       9280 :     *a          = *a + (static_cast&lt;double&gt;((*z)[k - 1])) * c;</span></a>
 <a name="260"><span class="lineNum">     260 </span>            : </a>
-<a name="261"><span class="lineNum">     261 </span><span class="lineCov">      88592 :     for (size_t i = 0; i &lt; k - 1; i++) {</span></a>
-<a name="262"><span class="lineNum">     262 </span><span class="lineCov">      86272 :         (*z)[i] = dgg.GenerateIntegerKarney(-(*a)(i, 0), sigma);</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">     177184 :     for (size_t i = 0; i &lt; k - 1; i++) {</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineCov">     172544 :         (*z)[i] = dgg.GenerateIntegerKarney(-(*a)(i, 0), sigma);</span></a>
 <a name="263"><span class="lineNum">     263 </span>            :     }</a>
-<a name="264"><span class="lineNum">     264 </span><span class="lineCov">       2320 : }</span></a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineCov">       4640 : }</span></a>
 <a name="265"><span class="lineNum">     265 </span>            : </a>
 <a name="266"><span class="lineNum">     266 </span>            : // Subroutine used by ZSampleSigmaP as described Algorithm 4 in</a>
 <a name="267"><span class="lineNum">     267 </span>            : // https://eprint.iacr.org/2017/844.pdf a - field element in DFT format b -</a>
 <a name="268"><span class="lineNum">     268 </span>            : // field element in DFT format d - field element in DFT format c - vector of</a>
 <a name="269"><span class="lineNum">     269 </span>            : // field elements in Format::COEFFICIENT format</a>
 <a name="270"><span class="lineNum">     270 </span>            : template &lt;class Element&gt;</a>
-<a name="271"><span class="lineNum">     271 </span><span class="lineCov">       3150 : void LatticeGaussSampUtility&lt;Element&gt;::ZSampleSigma2x2(const Field2n&amp; a, const Field2n&amp; b, const Field2n&amp; d,</span></a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineCov">       6300 : void LatticeGaussSampUtility&lt;Element&gt;::ZSampleSigma2x2(const Field2n&amp; a, const Field2n&amp; b, const Field2n&amp; d,</span></a>
 <a name="272"><span class="lineNum">     272 </span>            :                                                        const Matrix&lt;Field2n&gt;&amp; c, const typename Element::DggType&amp; dgg,</a>
 <a name="273"><span class="lineNum">     273 </span>            :                                                        std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; q) {</a>
 <a name="274"><span class="lineNum">     274 </span>            :     // size of the the lattice</a>
@@ -339,161 +339,161 @@
 <a name="277"><span class="lineNum">     277 </span>            :     Field2n dCoeff = d;</a>
 <a name="278"><span class="lineNum">     278 </span>            :     dCoeff.SetFormat(Format::COEFFICIENT);</a>
 <a name="279"><span class="lineNum">     279 </span>            : </a>
-<a name="280"><span class="lineNum">     280 </span><span class="lineCov">       3150 :     std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; q2Int = ZSampleF(dCoeff, c(1, 0), dgg, n);</span></a>
-<a name="281"><span class="lineNum">     281 </span><span class="lineCov">       3150 :     Field2n q2(*q2Int);</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">       6300 :     std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; q2Int = ZSampleF(dCoeff, c(1, 0), dgg, n);</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">       6300 :     Field2n q2(*q2Int);</span></a>
 <a name="282"><span class="lineNum">     282 </span>            : </a>
 <a name="283"><span class="lineNum">     283 </span>            :     Field2n q2Minusc2 = q2 - c(1, 0);</a>
 <a name="284"><span class="lineNum">     284 </span>            :     // Convert to DFT representation prior to multiplication</a>
-<a name="285"><span class="lineNum">     285 </span><span class="lineCov">       3150 :     q2Minusc2.SwitchFormat();</span></a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineCov">       6300 :     q2Minusc2.SwitchFormat();</span></a>
 <a name="286"><span class="lineNum">     286 </span>            : </a>
-<a name="287"><span class="lineNum">     287 </span><span class="lineCov">       9450 :     Field2n product = b * d.Inverse() * q2Minusc2;</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">      18900 :     Field2n product = b * d.Inverse() * q2Minusc2;</span></a>
 <a name="288"><span class="lineNum">     288 </span>            :     product.SetFormat(Format::COEFFICIENT);</a>
 <a name="289"><span class="lineNum">     289 </span>            : </a>
 <a name="290"><span class="lineNum">     290 </span>            :     // Computes c1 in Format::COEFFICIENT format</a>
 <a name="291"><span class="lineNum">     291 </span>            :     Field2n c1 = c(0, 0) + product;</a>
 <a name="292"><span class="lineNum">     292 </span>            : </a>
-<a name="293"><span class="lineNum">     293 </span><span class="lineCov">      15750 :     Field2n f = a - b * d.Inverse() * b.Transpose();</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineCov">      31500 :     Field2n f = a - b * d.Inverse() * b.Transpose();</span></a>
 <a name="294"><span class="lineNum">     294 </span>            :     f.SetFormat(Format::COEFFICIENT);</a>
 <a name="295"><span class="lineNum">     295 </span>            : </a>
-<a name="296"><span class="lineNum">     296 </span><span class="lineCov">       3150 :     std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; q1Int = ZSampleF(f, c1, dgg, n);</span></a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">       6300 :     std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; q1Int = ZSampleF(f, c1, dgg, n);</span></a>
 <a name="297"><span class="lineNum">     297 </span>            : </a>
-<a name="298"><span class="lineNum">     298 </span><span class="lineCov">       9790 :     for (size_t i = 0; i &lt; q1Int-&gt;GetRows(); i++) {</span></a>
-<a name="299"><span class="lineNum">     299 </span><span class="lineCov">       6640 :         (*q)(i, 0) = (*q1Int)(i, 0);</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineCov">      19580 :     for (size_t i = 0; i &lt; q1Int-&gt;GetRows(); i++) {</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineCov">      13280 :         (*q)(i, 0) = (*q1Int)(i, 0);</span></a>
 <a name="300"><span class="lineNum">     300 </span>            :     }</a>
 <a name="301"><span class="lineNum">     301 </span>            : </a>
-<a name="302"><span class="lineNum">     302 </span><span class="lineCov">       9790 :     for (size_t i = 0; i &lt; q2Int-&gt;GetRows(); i++) {</span></a>
-<a name="303"><span class="lineNum">     303 </span><span class="lineCov">       6640 :         (*q)(i + q1Int-&gt;GetRows(), 0) = (*q2Int)(i, 0);</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">      19580 :     for (size_t i = 0; i &lt; q2Int-&gt;GetRows(); i++) {</span></a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineCov">      13280 :         (*q)(i + q1Int-&gt;GetRows(), 0) = (*q2Int)(i, 0);</span></a>
 <a name="304"><span class="lineNum">     304 </span>            :     }</a>
-<a name="305"><span class="lineNum">     305 </span><span class="lineCov">       3150 : }</span></a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineCov">       6300 : }</span></a>
 <a name="306"><span class="lineNum">     306 </span>            : </a>
 <a name="307"><span class="lineNum">     307 </span>            : // Subroutine used by SamplePertSquareMat as described in &quot;Implementing</a>
 <a name="308"><span class="lineNum">     308 </span>            : // Token-Based Obfuscation under (Ring) LWE&quot;</a>
 <a name="309"><span class="lineNum">     309 </span>            : </a>
 <a name="310"><span class="lineNum">     310 </span>            : template &lt;class Element&gt;</a>
-<a name="311"><span class="lineNum">     311 </span><span class="lineCov">        148 : void LatticeGaussSampUtility&lt;Element&gt;::SampleMat(const Matrix&lt;Field2n&gt;&amp; A, const Matrix&lt;Field2n&gt;&amp; B,</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">        296 : void LatticeGaussSampUtility&lt;Element&gt;::SampleMat(const Matrix&lt;Field2n&gt;&amp; A, const Matrix&lt;Field2n&gt;&amp; B,</span></a>
 <a name="312"><span class="lineNum">     312 </span>            :                                                  const Matrix&lt;Field2n&gt;&amp; D, const Matrix&lt;Field2n&gt;&amp; C,</a>
 <a name="313"><span class="lineNum">     313 </span>            :                                                  const typename Element::DggType&amp; dgg,</a>
 <a name="314"><span class="lineNum">     314 </span>            :                                                  std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; p) {</a>
 <a name="315"><span class="lineNum">     315 </span>            :     size_t d = C.GetRows();</a>
 <a name="316"><span class="lineNum">     316 </span>            : </a>
-<a name="317"><span class="lineNum">     317 </span><span class="lineCov">        148 :     if (d == 2) {</span></a>
-<a name="318"><span class="lineNum">     318 </span><span class="lineCov">         52 :         ZSampleSigma2x2(A(0, 0), B(0, 0), D(0, 0), C, dgg, p);</span></a>
-<a name="319"><span class="lineNum">     319 </span><span class="lineCov">         52 :         return;</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">        296 :     if (d == 2) {</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">        104 :         ZSampleSigma2x2(A(0, 0), B(0, 0), D(0, 0), C, dgg, p);</span></a>
+<a name="319"><span class="lineNum">     319 </span><span class="lineCov">        104 :         return;</span></a>
 <a name="320"><span class="lineNum">     320 </span>            :     }</a>
 <a name="321"><span class="lineNum">     321 </span>            : </a>
-<a name="322"><span class="lineNum">     322 </span><span class="lineCov">         96 :     size_t n = D(0, 0).Size();</span></a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineCov">        192 :     size_t n = D(0, 0).Size();</span></a>
 <a name="323"><span class="lineNum">     323 </span>            : </a>
 <a name="324"><span class="lineNum">     324 </span>            :     size_t dimA = A.GetRows();</a>
 <a name="325"><span class="lineNum">     325 </span>            :     size_t dimD = D.GetRows();</a>
 <a name="326"><span class="lineNum">     326 </span>            : </a>
-<a name="327"><span class="lineNum">     327 </span><span class="lineCov">         96 :     auto q1 = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * dimD, 1);</span></a>
-<a name="328"><span class="lineNum">     328 </span><span class="lineCov">        288 :     Matrix&lt;Field2n&gt; c0([]() { return Field2n(Format::COEFFICIENT); }, dimA, 1);</span></a>
-<a name="329"><span class="lineNum">     329 </span><span class="lineCov">        288 :     Matrix&lt;Field2n&gt; c1([]() { return Field2n(Format::COEFFICIENT); }, dimD, 1);</span></a>
-<a name="330"><span class="lineNum">     330 </span><span class="lineCov">        288 :     Matrix&lt;Field2n&gt; qF1([]() { return Field2n(Format::COEFFICIENT); }, dimD, 1);</span></a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineCov">        192 :     auto q1 = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * dimD, 1);</span></a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov">        576 :     Matrix&lt;Field2n&gt; c0([]() { return Field2n(Format::COEFFICIENT); }, dimA, 1);</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineCov">        576 :     Matrix&lt;Field2n&gt; c1([]() { return Field2n(Format::COEFFICIENT); }, dimD, 1);</span></a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineCov">        576 :     Matrix&lt;Field2n&gt; qF1([]() { return Field2n(Format::COEFFICIENT); }, dimD, 1);</span></a>
 <a name="331"><span class="lineNum">     331 </span>            : </a>
-<a name="332"><span class="lineNum">     332 </span><span class="lineCov">        192 :     Matrix&lt;Field2n&gt; Dinverse([]() { return Field2n(Format::EVALUATION); }, dimD, dimD);</span></a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineCov">        384 :     Matrix&lt;Field2n&gt; Dinverse([]() { return Field2n(Format::EVALUATION); }, dimD, dimD);</span></a>
 <a name="333"><span class="lineNum">     333 </span>            : </a>
-<a name="334"><span class="lineNum">     334 </span><span class="lineCov">         96 :     if (dimD == 1) {</span></a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineCov">        192 :     if (dimD == 1) {</span></a>
 <a name="335"><span class="lineNum">     335 </span>            :         Field2n dEval = D(0, 0);</a>
 <a name="336"><span class="lineNum">     336 </span>            :         dEval.SetFormat(Format::COEFFICIENT);</a>
-<a name="337"><span class="lineNum">     337 </span><span class="lineCov">         32 :         c1(0, 0) = C(d - 1, 0);</span></a>
-<a name="338"><span class="lineNum">     338 </span><span class="lineCov">         64 :         c0       = C.ExtractRows(0, d - 2);</span></a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineCov">         64 :         c1(0, 0) = C(d - 1, 0);</span></a>
+<a name="338"><span class="lineNum">     338 </span><span class="lineCov">        128 :         c0       = C.ExtractRows(0, d - 2);</span></a>
 <a name="339"><span class="lineNum">     339 </span>            : </a>
-<a name="340"><span class="lineNum">     340 </span><span class="lineCov">         64 :         q1 = ZSampleF(dEval, c1(0, 0), dgg, dEval.Size());</span></a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineCov">        128 :         q1 = ZSampleF(dEval, c1(0, 0), dgg, dEval.Size());</span></a>
 <a name="341"><span class="lineNum">     341 </span>            : </a>
-<a name="342"><span class="lineNum">     342 </span><span class="lineCov">         64 :         Dinverse(0, 0) = D(0, 0).Inverse();</span></a>
+<a name="342"><span class="lineNum">     342 </span><span class="lineCov">        128 :         Dinverse(0, 0) = D(0, 0).Inverse();</span></a>
 <a name="343"><span class="lineNum">     343 </span>            : </a>
-<a name="344"><span class="lineNum">     344 </span><span class="lineCov">         64 :         qF1(0, 0) = Field2n(*q1);</span></a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineCov">        128 :         qF1(0, 0) = Field2n(*q1);</span></a>
 <a name="345"><span class="lineNum">     345 </span>            :     }</a>
-<a name="346"><span class="lineNum">     346 </span><span class="lineCov">         64 :     else if (dimD == 2) {  // dimD == 2</span></a>
-<a name="347"><span class="lineNum">     347 </span><span class="lineCov">         80 :         c1 = C.ExtractRows(dimA, d - 1);</span></a>
-<a name="348"><span class="lineNum">     348 </span><span class="lineCov">         80 :         c0 = C.ExtractRows(0, dimA - 1);</span></a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineCov">        128 :     else if (dimD == 2) {  // dimD == 2</span></a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineCov">        160 :         c1 = C.ExtractRows(dimA, d - 1);</span></a>
+<a name="348"><span class="lineNum">     348 </span><span class="lineCov">        160 :         c0 = C.ExtractRows(0, dimA - 1);</span></a>
 <a name="349"><span class="lineNum">     349 </span>            : </a>
-<a name="350"><span class="lineNum">     350 </span><span class="lineCov">         80 :         ZSampleSigma2x2(D(0, 0), D(0, 1), D(1, 1), c1, dgg, q1);</span></a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">        160 :         ZSampleSigma2x2(D(0, 0), D(0, 1), D(1, 1), c1, dgg, q1);</span></a>
 <a name="351"><span class="lineNum">     351 </span>            : </a>
-<a name="352"><span class="lineNum">     352 </span><span class="lineCov">        120 :         for (size_t i = 0; i &lt; dimD; i++)</span></a>
-<a name="353"><span class="lineNum">     353 </span><span class="lineCov">        160 :             qF1(i, 0) = Field2n(q1-&gt;ExtractRows(i * n, i * n + n - 1));</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">        240 :         for (size_t i = 0; i &lt; dimD; i++)</span></a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineCov">        320 :             qF1(i, 0) = Field2n(q1-&gt;ExtractRows(i * n, i * n + n - 1));</span></a>
 <a name="354"><span class="lineNum">     354 </span>            : </a>
-<a name="355"><span class="lineNum">     355 </span><span class="lineCov">         40 :         Field2n det        = D(0, 0) * D(1, 1) - D(0, 1) * D(1, 0);</span></a>
-<a name="356"><span class="lineNum">     356 </span><span class="lineCov">         40 :         Field2n detInverse = det.Inverse();</span></a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineCov">         80 :         Field2n det        = D(0, 0) * D(1, 1) - D(0, 1) * D(1, 0);</span></a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineCov">         80 :         Field2n detInverse = det.Inverse();</span></a>
 <a name="357"><span class="lineNum">     357 </span>            : </a>
-<a name="358"><span class="lineNum">     358 </span><span class="lineCov">         40 :         Dinverse(0, 0) = D(1, 1) * detInverse;</span></a>
-<a name="359"><span class="lineNum">     359 </span><span class="lineCov">        120 :         Dinverse(0, 1) = -D(0, 1) * detInverse;</span></a>
-<a name="360"><span class="lineNum">     360 </span><span class="lineCov">        120 :         Dinverse(1, 0) = -D(1, 0) * detInverse;</span></a>
-<a name="361"><span class="lineNum">     361 </span><span class="lineCov">         40 :         Dinverse(1, 1) = D(0, 0) * detInverse;</span></a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">         80 :         Dinverse(0, 0) = D(1, 1) * detInverse;</span></a>
+<a name="359"><span class="lineNum">     359 </span><span class="lineCov">        240 :         Dinverse(0, 1) = -D(0, 1) * detInverse;</span></a>
+<a name="360"><span class="lineNum">     360 </span><span class="lineCov">        240 :         Dinverse(1, 0) = -D(1, 0) * detInverse;</span></a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineCov">         80 :         Dinverse(1, 1) = D(0, 0) * detInverse;</span></a>
 <a name="362"><span class="lineNum">     362 </span>            :     }</a>
 <a name="363"><span class="lineNum">     363 </span>            :     else {  // dimD &gt; 2</a>
-<a name="364"><span class="lineNum">     364 </span><span class="lineCov">         48 :         c1 = C.ExtractRows(dimA, d - 1);</span></a>
-<a name="365"><span class="lineNum">     365 </span><span class="lineCov">         48 :         c0 = C.ExtractRows(0, dimA - 1);</span></a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineCov">         96 :         c1 = C.ExtractRows(dimA, d - 1);</span></a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineCov">         96 :         c0 = C.ExtractRows(0, dimA - 1);</span></a>
 <a name="366"><span class="lineNum">     366 </span>            : </a>
-<a name="367"><span class="lineNum">     367 </span><span class="lineCov">         24 :         size_t newDimA = static_cast&lt;size_t&gt;(std::ceil(static_cast&lt;double&gt;(dimD) / 2));</span></a>
-<a name="368"><span class="lineNum">     368 </span><span class="lineCov">         24 :         size_t newDimD = static_cast&lt;size_t&gt;(std::floor(static_cast&lt;double&gt;(dimD) / 2));</span></a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">         48 :         size_t newDimA = static_cast&lt;size_t&gt;(std::ceil(static_cast&lt;double&gt;(dimD) / 2));</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">         48 :         size_t newDimD = static_cast&lt;size_t&gt;(std::floor(static_cast&lt;double&gt;(dimD) / 2));</span></a>
 <a name="369"><span class="lineNum">     369 </span>            : </a>
-<a name="370"><span class="lineNum">     370 </span><span class="lineCov">        364 :         Matrix&lt;Field2n&gt; newA([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimA);</span></a>
-<a name="371"><span class="lineNum">     371 </span><span class="lineCov">        692 :         Matrix&lt;Field2n&gt; newB([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimD);</span></a>
-<a name="372"><span class="lineNum">     372 </span><span class="lineCov">        150 :         Matrix&lt;Field2n&gt; newD([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimD, newDimD);</span></a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineCov">        728 :         Matrix&lt;Field2n&gt; newA([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimA);</span></a>
+<a name="371"><span class="lineNum">     371 </span><span class="lineCov">       1384 :         Matrix&lt;Field2n&gt; newB([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimD);</span></a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineCov">        300 :         Matrix&lt;Field2n&gt; newD([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimD, newDimD);</span></a>
 <a name="373"><span class="lineNum">     373 </span>            : </a>
-<a name="374"><span class="lineNum">     374 </span><span class="lineCov">         82 :         for (size_t i = 0; i &lt; newDimA; i++)</span></a>
-<a name="375"><span class="lineNum">     375 </span><span class="lineCov">        204 :             for (size_t j = 0; j &lt; newDimA; j++)</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineCov">        164 :         for (size_t i = 0; i &lt; newDimA; i++)</span></a>
+<a name="375"><span class="lineNum">     375 </span><span class="lineCov">        408 :             for (size_t j = 0; j &lt; newDimA; j++)</span></a>
 <a name="376"><span class="lineNum">     376 </span>            :                 newA(i, j) = D(i, j);</a>
 <a name="377"><span class="lineNum">     377 </span>            : </a>
-<a name="378"><span class="lineNum">     378 </span><span class="lineCov">         82 :         for (size_t i = 0; i &lt; newDimA; i++)</span></a>
-<a name="379"><span class="lineNum">     379 </span><span class="lineCov">        162 :             for (size_t j = 0; j &lt; newDimD; j++)</span></a>
-<a name="380"><span class="lineNum">     380 </span><span class="lineCov">        104 :                 newB(i, j) = D(i, j + newDimA);</span></a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineCov">        164 :         for (size_t i = 0; i &lt; newDimA; i++)</span></a>
+<a name="379"><span class="lineNum">     379 </span><span class="lineCov">        324 :             for (size_t j = 0; j &lt; newDimD; j++)</span></a>
+<a name="380"><span class="lineNum">     380 </span><span class="lineCov">        208 :                 newB(i, j) = D(i, j + newDimA);</span></a>
 <a name="381"><span class="lineNum">     381 </span>            : </a>
-<a name="382"><span class="lineNum">     382 </span><span class="lineCov">         66 :         for (size_t i = 0; i &lt; newDimD; i++)</span></a>
-<a name="383"><span class="lineNum">     383 </span><span class="lineCov">        120 :             for (size_t j = 0; j &lt; newDimD; j++)</span></a>
-<a name="384"><span class="lineNum">     384 </span><span class="lineCov">         78 :                 newD(i, j) = D(i + newDimA, j + newDimA);</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineCov">        132 :         for (size_t i = 0; i &lt; newDimD; i++)</span></a>
+<a name="383"><span class="lineNum">     383 </span><span class="lineCov">        240 :             for (size_t j = 0; j &lt; newDimD; j++)</span></a>
+<a name="384"><span class="lineNum">     384 </span><span class="lineCov">        156 :                 newD(i, j) = D(i + newDimA, j + newDimA);</span></a>
 <a name="385"><span class="lineNum">     385 </span>            : </a>
-<a name="386"><span class="lineNum">     386 </span><span class="lineCov">         48 :         SampleMat(newA, newB, newD, c1, dgg, q1);</span></a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineCov">         96 :         SampleMat(newA, newB, newD, c1, dgg, q1);</span></a>
 <a name="387"><span class="lineNum">     387 </span>            : </a>
-<a name="388"><span class="lineNum">     388 </span><span class="lineCov">        124 :         for (size_t i = 0; i &lt; dimD; i++)</span></a>
-<a name="389"><span class="lineNum">     389 </span><span class="lineCov">        200 :             qF1(i, 0) = Field2n(q1-&gt;ExtractRows(i * n, i * n + n - 1));</span></a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineCov">        248 :         for (size_t i = 0; i &lt; dimD; i++)</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineCov">        400 :             qF1(i, 0) = Field2n(q1-&gt;ExtractRows(i * n, i * n + n - 1));</span></a>
 <a name="390"><span class="lineNum">     390 </span>            : </a>
-<a name="391"><span class="lineNum">     391 </span><span class="lineCov">         24 :         Field2n det(n, Format::EVALUATION, true);</span></a>
-<a name="392"><span class="lineNum">     392 </span><span class="lineCov">         24 :         D.Determinant(&amp;det);</span></a>
+<a name="391"><span class="lineNum">     391 </span><span class="lineCov">         48 :         Field2n det(n, Format::EVALUATION, true);</span></a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineCov">         48 :         D.Determinant(&amp;det);</span></a>
 <a name="393"><span class="lineNum">     393 </span>            : </a>
-<a name="394"><span class="lineNum">     394 </span><span class="lineCov">         24 :         Field2n detInverse = det.Inverse();</span></a>
+<a name="394"><span class="lineNum">     394 </span><span class="lineCov">         48 :         Field2n detInverse = det.Inverse();</span></a>
 <a name="395"><span class="lineNum">     395 </span>            : </a>
-<a name="396"><span class="lineNum">     396 </span><span class="lineCov">         48 :         Dinverse = (D.CofactorMatrix()).Transpose() * detInverse;</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineCov">         96 :         Dinverse = (D.CofactorMatrix()).Transpose() * detInverse;</span></a>
 <a name="397"><span class="lineNum">     397 </span>            :     }</a>
 <a name="398"><span class="lineNum">     398 </span>            : </a>
-<a name="399"><span class="lineNum">     399 </span><span class="lineCov">        288 :     Matrix&lt;Field2n&gt; sigma = A - B * Dinverse * (B.Transpose());</span></a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineCov">        576 :     Matrix&lt;Field2n&gt; sigma = A - B * Dinverse * (B.Transpose());</span></a>
 <a name="400"><span class="lineNum">     400 </span>            : </a>
-<a name="401"><span class="lineNum">     401 </span><span class="lineCov">         96 :     Matrix&lt;Field2n&gt; diff = qF1 - c1;</span></a>
-<a name="402"><span class="lineNum">     402 </span><span class="lineCov">         96 :     diff.SetFormat(Format::EVALUATION);</span></a>
-<a name="403"><span class="lineNum">     403 </span><span class="lineCov">         96 :     c0.SetFormat(Format::EVALUATION);</span></a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">        192 :     Matrix&lt;Field2n&gt; diff = qF1 - c1;</span></a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineCov">        192 :     diff.SetFormat(Format::EVALUATION);</span></a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineCov">        192 :     c0.SetFormat(Format::EVALUATION);</span></a>
 <a name="404"><span class="lineNum">     404 </span>            : </a>
-<a name="405"><span class="lineNum">     405 </span><span class="lineCov">        192 :     Matrix&lt;Field2n&gt; cNew = c0 + B * Dinverse * diff;</span></a>
+<a name="405"><span class="lineNum">     405 </span><span class="lineCov">        384 :     Matrix&lt;Field2n&gt; cNew = c0 + B * Dinverse * diff;</span></a>
 <a name="406"><span class="lineNum">     406 </span>            : </a>
-<a name="407"><span class="lineNum">     407 </span><span class="lineCov">         96 :     cNew.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineCov">        192 :     cNew.SetFormat(Format::COEFFICIENT);</span></a>
 <a name="408"><span class="lineNum">     408 </span>            : </a>
-<a name="409"><span class="lineNum">     409 </span><span class="lineCov">         96 :     size_t newDimA = static_cast&lt;size_t&gt;(std::ceil(static_cast&lt;double&gt;(dimA) / 2));</span></a>
-<a name="410"><span class="lineNum">     410 </span><span class="lineCov">         96 :     size_t newDimD = static_cast&lt;size_t&gt;(std::floor(static_cast&lt;double&gt;(dimA) / 2));</span></a>
+<a name="409"><span class="lineNum">     409 </span><span class="lineCov">        192 :     size_t newDimA = static_cast&lt;size_t&gt;(std::ceil(static_cast&lt;double&gt;(dimA) / 2));</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">        192 :     size_t newDimD = static_cast&lt;size_t&gt;(std::floor(static_cast&lt;double&gt;(dimA) / 2));</span></a>
 <a name="411"><span class="lineNum">     411 </span>            : </a>
-<a name="412"><span class="lineNum">     412 </span><span class="lineCov">        792 :     Matrix&lt;Field2n&gt; newA([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimA);</span></a>
-<a name="413"><span class="lineNum">     413 </span><span class="lineCov">       1240 :     Matrix&lt;Field2n&gt; newB([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimD);</span></a>
-<a name="414"><span class="lineNum">     414 </span><span class="lineCov">        438 :     Matrix&lt;Field2n&gt; newD([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimD, newDimD);</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">       1584 :     Matrix&lt;Field2n&gt; newA([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimA);</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineCov">       2480 :     Matrix&lt;Field2n&gt; newB([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimA, newDimD);</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">        876 :     Matrix&lt;Field2n&gt; newD([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, newDimD, newDimD);</span></a>
 <a name="415"><span class="lineNum">     415 </span>            : </a>
-<a name="416"><span class="lineNum">     416 </span><span class="lineCov">        246 :     for (size_t i = 0; i &lt; newDimA; i++)</span></a>
-<a name="417"><span class="lineNum">     417 </span><span class="lineCov">        428 :         for (size_t j = 0; j &lt; newDimA; j++)</span></a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineCov">        492 :     for (size_t i = 0; i &lt; newDimA; i++)</span></a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineCov">        856 :         for (size_t j = 0; j &lt; newDimA; j++)</span></a>
 <a name="418"><span class="lineNum">     418 </span>            :             newA(i, j) = sigma(i, j);</a>
 <a name="419"><span class="lineNum">     419 </span>            : </a>
-<a name="420"><span class="lineNum">     420 </span><span class="lineCov">        246 :     for (size_t i = 0; i &lt; newDimA; i++)</span></a>
-<a name="421"><span class="lineNum">     421 </span><span class="lineCov">        346 :         for (size_t j = 0; j &lt; newDimD; j++)</span></a>
-<a name="422"><span class="lineNum">     422 </span><span class="lineCov">        196 :             newB(i, j) = sigma(i, j + newDimA);</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineCov">        492 :     for (size_t i = 0; i &lt; newDimA; i++)</span></a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineCov">        692 :         for (size_t j = 0; j &lt; newDimD; j++)</span></a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineCov">        392 :             newB(i, j) = sigma(i, j + newDimA);</span></a>
 <a name="423"><span class="lineNum">     423 </span>            : </a>
-<a name="424"><span class="lineNum">     424 </span><span class="lineCov">        210 :     for (size_t i = 0; i &lt; newDimD; i++)</span></a>
-<a name="425"><span class="lineNum">     425 </span><span class="lineCov">        264 :         for (size_t j = 0; j &lt; newDimD; j++)</span></a>
-<a name="426"><span class="lineNum">     426 </span><span class="lineCov">        150 :             newD(i, j) = sigma(i + newDimA, j + newDimA);</span></a>
+<a name="424"><span class="lineNum">     424 </span><span class="lineCov">        420 :     for (size_t i = 0; i &lt; newDimD; i++)</span></a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineCov">        528 :         for (size_t j = 0; j &lt; newDimD; j++)</span></a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineCov">        300 :             newD(i, j) = sigma(i + newDimA, j + newDimA);</span></a>
 <a name="427"><span class="lineNum">     427 </span>            : </a>
-<a name="428"><span class="lineNum">     428 </span><span class="lineCov">         96 :     auto q0 = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * dimA, 1);</span></a>
+<a name="428"><span class="lineNum">     428 </span><span class="lineCov">        192 :     auto q0 = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * dimA, 1);</span></a>
 <a name="429"><span class="lineNum">     429 </span>            : </a>
-<a name="430"><span class="lineNum">     430 </span><span class="lineCov">        192 :     SampleMat(newA, newB, newD, cNew, dgg, q0);</span></a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineCov">        384 :     SampleMat(newA, newB, newD, cNew, dgg, q0);</span></a>
 <a name="431"><span class="lineNum">     431 </span>            : </a>
 <a name="432"><span class="lineNum">     432 </span>            :     *p = *q0;</a>
 <a name="433"><span class="lineNum">     433 </span>            : </a>
-<a name="434"><span class="lineNum">     434 </span><span class="lineCov">         96 :     p-&gt;VStack(*q1);</span></a>
+<a name="434"><span class="lineNum">     434 </span><span class="lineCov">        192 :     p-&gt;VStack(*q1);</span></a>
 <a name="435"><span class="lineNum">     435 </span>            : </a>
 <a name="436"><span class="lineNum">     436 </span>            :     return;</a>
 <a name="437"><span class="lineNum">     437 </span>            : }</a>
@@ -502,31 +502,31 @@
 <a name="440"><span class="lineNum">     440 </span>            : // https://eprint.iacr.org/2017/844.pdf f is in Format::COEFFICIENT</a>
 <a name="441"><span class="lineNum">     441 </span>            : // representation c is in Format::COEFFICIENT representation</a>
 <a name="442"><span class="lineNum">     442 </span>            : template &lt;class Element&gt;</a>
-<a name="443"><span class="lineNum">     443 </span><span class="lineCov">       6332 : std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; LatticeGaussSampUtility&lt;Element&gt;::ZSampleF(const Field2n&amp; f, const Field2n&amp; c,</span></a>
+<a name="443"><span class="lineNum">     443 </span><span class="lineCov">      12664 : std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; LatticeGaussSampUtility&lt;Element&gt;::ZSampleF(const Field2n&amp; f, const Field2n&amp; c,</span></a>
 <a name="444"><span class="lineNum">     444 </span>            :                                                                             const typename Element::DggType&amp; dgg,</a>
 <a name="445"><span class="lineNum">     445 </span>            :                                                                             size_t n) {</a>
-<a name="446"><span class="lineNum">     446 </span><span class="lineCov">       6332 :     if (f.Size() == 1) {</span></a>
-<a name="447"><span class="lineNum">     447 </span><span class="lineCov">       3376 :         auto p     = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, 1, 1);</span></a>
-<a name="448"><span class="lineNum">     448 </span><span class="lineCov">       3376 :         (*p)(0, 0) = dgg.GenerateIntegerKarney(c[0].real(), sqrt(f[0].real()));</span></a>
+<a name="446"><span class="lineNum">     446 </span><span class="lineCov">      12664 :     if (f.Size() == 1) {</span></a>
+<a name="447"><span class="lineNum">     447 </span><span class="lineCov">       6752 :         auto p     = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, 1, 1);</span></a>
+<a name="448"><span class="lineNum">     448 </span><span class="lineCov">       6752 :         (*p)(0, 0) = dgg.GenerateIntegerKarney(c[0].real(), sqrt(f[0].real()));</span></a>
 <a name="449"><span class="lineNum">     449 </span>            :         return p;</a>
 <a name="450"><span class="lineNum">     450 </span>            :     }</a>
 <a name="451"><span class="lineNum">     451 </span>            : </a>
-<a name="452"><span class="lineNum">     452 </span><span class="lineCov">       2956 :     Field2n f0 = f.ExtractEven();</span></a>
-<a name="453"><span class="lineNum">     453 </span><span class="lineCov">       2956 :     Field2n f1 = f.ExtractOdd();</span></a>
+<a name="452"><span class="lineNum">     452 </span><span class="lineCov">       5912 :     Field2n f0 = f.ExtractEven();</span></a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineCov">       5912 :     Field2n f1 = f.ExtractOdd();</span></a>
 <a name="454"><span class="lineNum">     454 </span>            : </a>
 <a name="455"><span class="lineNum">     455 </span>            :     f0.SetFormat(Format::EVALUATION);</a>
 <a name="456"><span class="lineNum">     456 </span>            :     f1.SetFormat(Format::EVALUATION);</a>
 <a name="457"><span class="lineNum">     457 </span>            : </a>
-<a name="458"><span class="lineNum">     458 </span><span class="lineCov">       2956 :     usint f0_size = f0.Size();</span></a>
+<a name="458"><span class="lineNum">     458 </span><span class="lineCov">       5912 :     usint f0_size = f0.Size();</span></a>
 <a name="459"><span class="lineNum">     459 </span>            : </a>
-<a name="460"><span class="lineNum">     460 </span><span class="lineCov">       2956 :     auto qZVector = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, f0_size * 2, 1);</span></a>
+<a name="460"><span class="lineNum">     460 </span><span class="lineCov">       5912 :     auto qZVector = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, f0_size * 2, 1);</span></a>
 <a name="461"><span class="lineNum">     461 </span>            : </a>
-<a name="462"><span class="lineNum">     462 </span><span class="lineCov">      10252 :     Matrix&lt;Field2n&gt; cPermuted([]() { return Field2n(); }, 2, 1);</span></a>
+<a name="462"><span class="lineNum">     462 </span><span class="lineCov">      20504 :     Matrix&lt;Field2n&gt; cPermuted([]() { return Field2n(); }, 2, 1);</span></a>
 <a name="463"><span class="lineNum">     463 </span>            : </a>
-<a name="464"><span class="lineNum">     464 </span><span class="lineCov">       2956 :     cPermuted(0, 0) = c.ExtractEven();</span></a>
-<a name="465"><span class="lineNum">     465 </span><span class="lineCov">       5912 :     cPermuted(1, 0) = c.ExtractOdd();</span></a>
-<a name="466"><span class="lineNum">     466 </span><span class="lineCov">       5912 :     LatticeGaussSampUtility&lt;Element&gt;::ZSampleSigma2x2(f0, f1, f0, cPermuted, dgg, qZVector);</span></a>
-<a name="467"><span class="lineNum">     467 </span><span class="lineCov">       5912 :     InversePermute(qZVector);</span></a>
+<a name="464"><span class="lineNum">     464 </span><span class="lineCov">       5912 :     cPermuted(0, 0) = c.ExtractEven();</span></a>
+<a name="465"><span class="lineNum">     465 </span><span class="lineCov">      11824 :     cPermuted(1, 0) = c.ExtractOdd();</span></a>
+<a name="466"><span class="lineNum">     466 </span><span class="lineCov">      11824 :     LatticeGaussSampUtility&lt;Element&gt;::ZSampleSigma2x2(f0, f1, f0, cPermuted, dgg, qZVector);</span></a>
+<a name="467"><span class="lineNum">     467 </span><span class="lineCov">      11824 :     InversePermute(qZVector);</span></a>
 <a name="468"><span class="lineNum">     468 </span>            : </a>
 <a name="469"><span class="lineNum">     469 </span>            :     return qZVector;</a>
 <a name="470"><span class="lineNum">     470 </span>            : }</a>
@@ -556,25 +556,25 @@
 <a name="494"><span class="lineNum">     494 </span>            : // Algorithm utilizes the same permutation algorithm as discussed in</a>
 <a name="495"><span class="lineNum">     495 </span>            : // https://eprint.iacr.org/2017/844.pdf</a>
 <a name="496"><span class="lineNum">     496 </span>            : template &lt;class Element&gt;</a>
-<a name="497"><span class="lineNum">     497 </span><span class="lineCov">       2956 : void LatticeGaussSampUtility&lt;Element&gt;::InversePermute(std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; p) {</span></a>
+<a name="497"><span class="lineNum">     497 </span><span class="lineCov">       5912 : void LatticeGaussSampUtility&lt;Element&gt;::InversePermute(std::shared_ptr&lt;Matrix&lt;int64_t&gt;&gt; p) {</span></a>
 <a name="498"><span class="lineNum">     498 </span>            :     // a vector of int64_t is used for intermediate storage because it is faster</a>
 <a name="499"><span class="lineNum">     499 </span>            :     // than a Matrix of unique pointers to int64_t</a>
 <a name="500"><span class="lineNum">     500 </span>            : </a>
-<a name="501"><span class="lineNum">     501 </span><span class="lineCov">       2956 :     std::vector&lt;int64_t&gt; vectorPermuted(p-&gt;GetRows());</span></a>
+<a name="501"><span class="lineNum">     501 </span><span class="lineCov">       5912 :     std::vector&lt;int64_t&gt; vectorPermuted(p-&gt;GetRows());</span></a>
 <a name="502"><span class="lineNum">     502 </span>            : </a>
 <a name="503"><span class="lineNum">     503 </span>            :     size_t evenPtr = 0;</a>
-<a name="504"><span class="lineNum">     504 </span><span class="lineCov">       2956 :     size_t oddPtr  = vectorPermuted.size() / 2;</span></a>
-<a name="505"><span class="lineNum">     505 </span><span class="lineCov">       8036 :     for (size_t i = 0; evenPtr &lt; vectorPermuted.size() / 2; i += 2) {</span></a>
-<a name="506"><span class="lineNum">     506 </span><span class="lineCov">       5080 :         vectorPermuted[i]     = (*p)(evenPtr, 0);</span></a>
-<a name="507"><span class="lineNum">     507 </span><span class="lineCov">       5080 :         vectorPermuted[i + 1] = (*p)(oddPtr, 0);</span></a>
-<a name="508"><span class="lineNum">     508 </span><span class="lineCov">       5080 :         evenPtr++;</span></a>
-<a name="509"><span class="lineNum">     509 </span><span class="lineCov">       5080 :         oddPtr++;</span></a>
+<a name="504"><span class="lineNum">     504 </span><span class="lineCov">       5912 :     size_t oddPtr  = vectorPermuted.size() / 2;</span></a>
+<a name="505"><span class="lineNum">     505 </span><span class="lineCov">      16072 :     for (size_t i = 0; evenPtr &lt; vectorPermuted.size() / 2; i += 2) {</span></a>
+<a name="506"><span class="lineNum">     506 </span><span class="lineCov">      10160 :         vectorPermuted[i]     = (*p)(evenPtr, 0);</span></a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineCov">      10160 :         vectorPermuted[i + 1] = (*p)(oddPtr, 0);</span></a>
+<a name="508"><span class="lineNum">     508 </span><span class="lineCov">      10160 :         evenPtr++;</span></a>
+<a name="509"><span class="lineNum">     509 </span><span class="lineCov">      10160 :         oddPtr++;</span></a>
 <a name="510"><span class="lineNum">     510 </span>            :     }</a>
 <a name="511"><span class="lineNum">     511 </span>            : </a>
-<a name="512"><span class="lineNum">     512 </span><span class="lineCov">      13116 :     for (size_t i = 0; i &lt; vectorPermuted.size(); i++) {</span></a>
-<a name="513"><span class="lineNum">     513 </span><span class="lineCov">      10160 :         (*p)(i, 0) = vectorPermuted[i];</span></a>
+<a name="512"><span class="lineNum">     512 </span><span class="lineCov">      26232 :     for (size_t i = 0; i &lt; vectorPermuted.size(); i++) {</span></a>
+<a name="513"><span class="lineNum">     513 </span><span class="lineCov">      20320 :         (*p)(i, 0) = vectorPermuted[i];</span></a>
 <a name="514"><span class="lineNum">     514 </span>            :     }</a>
-<a name="515"><span class="lineNum">     515 </span><span class="lineCov">       2956 : }</span></a>
+<a name="515"><span class="lineNum">     515 </span><span class="lineCov">       5912 : }</span></a>
 <a name="516"><span class="lineNum">     516 </span>            : </a>
 <a name="517"><span class="lineNum">     517 </span>            : }  // namespace lbcrypto</a>
 <a name="518"><span class="lineNum">     518 </span>            : </a>

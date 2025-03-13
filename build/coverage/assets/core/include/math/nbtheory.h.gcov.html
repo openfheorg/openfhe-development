@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">3</td>
@@ -188,20 +188,20 @@
 <a name="126"><span class="lineNum">     126 </span>            :         0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7, 0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef, 0x1f, 0x9f, 0x5f, 0xdf,</a>
 <a name="127"><span class="lineNum">     127 </span>            :         0x3f, 0xbf, 0x7f, 0xff,</a>
 <a name="128"><span class="lineNum">     128 </span>            :     };</a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">   39187574 :     return table[x];</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">   94192404 :     return table[x];</span></a>
 <a name="130"><span class="lineNum">     130 </span>            : }</a>
 <a name="131"><span class="lineNum">     131 </span>            : </a>
 <a name="132"><span class="lineNum">     132 </span>            : static int shift_trick[] = {0, 7, 6, 5, 4, 3, 2, 1};</a>
 <a name="133"><span class="lineNum">     133 </span>            : </a>
 <a name="134"><span class="lineNum">     134 </span>            : /* Function to reverse bits of num */</a>
-<a name="135"><span class="lineNum">     135 </span><span class="lineCov">   39187574 : inline usint ReverseBits(usint num, usint msb) {</span></a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineCov">   39187574 :     usint msbb = (msb &gt;&gt; 3) + (msb &amp; 0x7 ? 1 : 0);</span></a>
-<a name="137"><span class="lineNum">     137 </span><span class="lineCov">   39187574 :     switch (msbb) {</span></a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">    2185636 :         case 1:</span></a>
-<a name="139"><span class="lineNum">     139 </span><span class="lineCov">    2185636 :             return (reverse_byte((num)&amp;0xff) &gt;&gt; shift_trick[msb &amp; 0x7]);</span></a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">   94192404 : inline usint ReverseBits(usint num, usint msb) {</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">   94192404 :     usint msbb = (msb &gt;&gt; 3) + (msb &amp; 0x7 ? 1 : 0);</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">   94192404 :     switch (msbb) {</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">    4249248 :         case 1:</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">    4249248 :             return (reverse_byte((num)&amp;0xff) &gt;&gt; shift_trick[msb &amp; 0x7]);</span></a>
 <a name="140"><span class="lineNum">     140 </span>            : </a>
-<a name="141"><span class="lineNum">     141 </span><span class="lineCov">   36905990 :         case 2:</span></a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">   36905990 :             return (reverse_byte((num)&amp;0xff) &lt;&lt; 8 | reverse_byte((num &gt;&gt; 8) &amp; 0xff)) &gt;&gt; shift_trick[msb &amp; 0x7];</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">   89847320 :         case 2:</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">   89847320 :             return (reverse_byte((num)&amp;0xff) &lt;&lt; 8 | reverse_byte((num &gt;&gt; 8) &amp; 0xff)) &gt;&gt; shift_trick[msb &amp; 0x7];</span></a>
 <a name="143"><span class="lineNum">     143 </span>            : </a>
 <a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :         case 3:</span></a>
 <a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :             return (reverse_byte((num)&amp;0xff) &lt;&lt; 16 | reverse_byte((num &gt;&gt; 8) &amp; 0xff) &lt;&lt; 8 |</span></a>
@@ -230,7 +230,7 @@
 <a name="168"><span class="lineNum">     168 </span>            :     std::enable_if_t&lt;std::is_integral_v&lt;T&gt; || std::is_same_v&lt;T, int128_t&gt; || std::is_same_v&lt;T, uint128_t&gt;, bool&gt; = true&gt;</a>
 <a name="169"><span class="lineNum">     169 </span>            : inline constexpr usint GetMSB(T x) {</a>
 <a name="170"><span class="lineNum">     170 </span>            :     if constexpr (sizeof(T) &lt;= 8) {</a>
-<a name="171"><span class="lineNum">     171 </span><span class="lineCov"> 6432854149 :         if (x == 0)</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov"> 8013255872 :         if (x == 0)</span></a>
 <a name="172"><span class="lineNum">     172 </span>            :             return 0;</a>
 <a name="173"><span class="lineNum">     173 </span>            : #if defined(_MSC_VER)</a>
 <a name="174"><span class="lineNum">     174 </span>            :         unsigned long msb;  // NOLINT</a>
@@ -238,8 +238,8 @@
 <a name="176"><span class="lineNum">     176 </span>            :         return msb + 1;</a>
 <a name="177"><span class="lineNum">     177 </span>            : #else</a>
 <a name="178"><span class="lineNum">     178 </span>            :         // a wrapper for GCC</a>
-<a name="179"><span class="lineNum">     179 </span><span class="lineCov"> 6441052687 :         return 64 -</span></a>
-<a name="180"><span class="lineNum">     180 </span><span class="lineCov"> 6441052671 :                (sizeof(unsigned long) == 8 ? __builtin_clzl(uint64_t(x)) : __builtin_clzll(uint64_t(x)));  // NOLINT</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov"> 8021199487 :         return 64 -</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov"> 8021199507 :                (sizeof(unsigned long) == 8 ? __builtin_clzl(uint64_t(x)) : __builtin_clzll(uint64_t(x)));  // NOLINT</span></a>
 <a name="181"><span class="lineNum">     181 </span>            : #endif</a>
 <a name="182"><span class="lineNum">     182 </span>            :     }</a>
 <a name="183"><span class="lineNum">     183 </span>            : #if defined(HAVE_INT128)</a>
@@ -268,20 +268,20 @@
 <a name="206"><span class="lineNum">     206 </span>            : }</a>
 <a name="207"><span class="lineNum">     207 </span>            : </a>
 <a name="208"><span class="lineNum">     208 </span>            : template &lt;typename IntType&gt;</a>
-<a name="209"><span class="lineNum">     209 </span><span class="lineCov">       2543 : std::shared_ptr&lt;std::vector&lt;int64_t&gt;&gt; GetDigits(const IntType&amp; u, uint64_t base, uint32_t k) {</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineCov">       5086 : std::shared_ptr&lt;std::vector&lt;int64_t&gt;&gt; GetDigits(const IntType&amp; u, uint64_t base, uint32_t k) {</span></a>
 <a name="210"><span class="lineNum">     210 </span>            :     auto u_vec = std::make_shared&lt;std::vector&lt;int64_t&gt;&gt;(k);</a>
 <a name="211"><span class="lineNum">     211 </span>            : </a>
-<a name="212"><span class="lineNum">     212 </span><span class="lineCov">       2543 :     size_t baseDigits = (uint32_t)(std::round(log2(base)));  // ?</span></a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">       5086 :     size_t baseDigits = (uint32_t)(std::round(log2(base)));  // ?</span></a>
 <a name="213"><span class="lineNum">     213 </span>            : </a>
 <a name="214"><span class="lineNum">     214 </span>            :     // if (!(base &amp; (base - 1)))</a>
 <a name="215"><span class="lineNum">     215 </span>            :     IntType uu = u;</a>
 <a name="216"><span class="lineNum">     216 </span>            :     IntType uTemp;</a>
-<a name="217"><span class="lineNum">     217 </span><span class="lineCov">     101952 :     for (size_t i = 0; i &lt; k; i++) {  // ****************4/1/2018 This loop is correct.</span></a>
-<a name="218"><span class="lineNum">     218 </span><span class="lineCov">     123858 :         uTemp       = uu &gt;&gt; baseDigits;</span></a>
-<a name="219"><span class="lineNum">     219 </span><span class="lineCov">     123858 :         (*u_vec)[i] = (uu - (uTemp &lt;&lt; baseDigits)).ConvertToInt();</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineCov">     203904 :     for (size_t i = 0; i &lt; k; i++) {  // ****************4/1/2018 This loop is correct.</span></a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">     247716 :         uTemp       = uu &gt;&gt; baseDigits;</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">     247716 :         (*u_vec)[i] = (uu - (uTemp &lt;&lt; baseDigits)).ConvertToInt();</span></a>
 <a name="220"><span class="lineNum">     220 </span>            :         uu          = uTemp;</a>
 <a name="221"><span class="lineNum">     221 </span>            :     }</a>
-<a name="222"><span class="lineNum">     222 </span><span class="lineCov">       2543 :     return u_vec;</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">       5086 :     return u_vec;</span></a>
 <a name="223"><span class="lineNum">     223 </span>            : }</a>
 <a name="224"><span class="lineNum">     224 </span>            : </a>
 <a name="225"><span class="lineNum">     225 </span>            : /**</a>

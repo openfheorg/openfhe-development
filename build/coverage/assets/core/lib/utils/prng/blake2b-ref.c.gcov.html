@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">5</td>
@@ -105,38 +105,38 @@
 <a name="43"><span class="lineNum">      43 </span><span class="lineNoCov">          0 : static void blake2b_set_lastnode(blake2b_state *S) { S-&gt;f[1] = (uint64_t)-1; }</span></a>
 <a name="44"><span class="lineNum">      44 </span>            : </a>
 <a name="45"><span class="lineNum">      45 </span>            : /* Some helper functions, not necessarily useful */</a>
-<a name="46"><span class="lineNum">      46 </span><span class="lineCov">  235240000 : static int blake2b_is_lastblock(const blake2b_state *S) { return S-&gt;f[0] != 0; }</span></a>
+<a name="46"><span class="lineNum">      46 </span><span class="lineCov">  470480000 : static int blake2b_is_lastblock(const blake2b_state *S) { return S-&gt;f[0] != 0; }</span></a>
 <a name="47"><span class="lineNum">      47 </span>            : </a>
 <a name="48"><span class="lineNum">      48 </span>            : static void blake2b_set_lastblock(blake2b_state *S) {</a>
-<a name="49"><span class="lineNum">      49 </span><span class="lineCov">  235240000 :   if (S-&gt;last_node) blake2b_set_lastnode(S);</span></a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">  470480000 :   if (S-&gt;last_node) blake2b_set_lastnode(S);</span></a>
 <a name="50"><span class="lineNum">      50 </span>            : </a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">  235240000 :   S-&gt;f[0] = (uint64_t)-1;</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">  470480000 :   S-&gt;f[0] = (uint64_t)-1;</span></a>
 <a name="52"><span class="lineNum">      52 </span>            : }</a>
 <a name="53"><span class="lineNum">      53 </span>            : </a>
 <a name="54"><span class="lineNum">      54 </span>            : static void blake2b_increment_counter(blake2b_state *S, const uint64_t inc) {</a>
-<a name="55"><span class="lineNum">      55 </span><span class="lineCov">  238859000 :   S-&gt;t[0] += inc;</span></a>
-<a name="56"><span class="lineNum">      56 </span><span class="lineCov">  238859000 :   S-&gt;t[1] += (S-&gt;t[0] &lt; inc);</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">  477718000 :   S-&gt;t[0] += inc;</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">  477718000 :   S-&gt;t[1] += (S-&gt;t[0] &lt; inc);</span></a>
 <a name="57"><span class="lineNum">      57 </span>            : }</a>
 <a name="58"><span class="lineNum">      58 </span>            : </a>
-<a name="59"><span class="lineNum">      59 </span><span class="lineCov">  235240000 : static void blake2b_init0(blake2b_state *S) {</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">  470480000 : static void blake2b_init0(blake2b_state *S) {</span></a>
 <a name="60"><span class="lineNum">      60 </span>            :   size_t i;</a>
 <a name="61"><span class="lineNum">      61 </span>            :   memset(S, 0, sizeof(blake2b_state));</a>
 <a name="62"><span class="lineNum">      62 </span>            : </a>
-<a name="63"><span class="lineNum">      63 </span><span class="lineCov"> 2117160000 :   for (i = 0; i &lt; 8; ++i) S-&gt;h[i] = blake2b_IV[i];</span></a>
-<a name="64"><span class="lineNum">      64 </span><span class="lineCov">  235240000 : }</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov"> 4234320000 :   for (i = 0; i &lt; 8; ++i) S-&gt;h[i] = blake2b_IV[i];</span></a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">  470480000 : }</span></a>
 <a name="65"><span class="lineNum">      65 </span>            : </a>
 <a name="66"><span class="lineNum">      66 </span>            : /* init xors IV with input parameter block */</a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">  235240000 : int blake2b_init_param(blake2b_state *S, const blake2b_param *P) {</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">  470480000 : int blake2b_init_param(blake2b_state *S, const blake2b_param *P) {</span></a>
 <a name="68"><span class="lineNum">      68 </span>            :   const uint8_t *p = (const uint8_t *)(P);</a>
 <a name="69"><span class="lineNum">      69 </span>            :   size_t i;</a>
 <a name="70"><span class="lineNum">      70 </span>            : </a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">  235240000 :   blake2b_init0(S);</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">  470480000 :   blake2b_init0(S);</span></a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            :   /* IV XOR ParamBlock */</a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov"> 2117160000 :   for (i = 0; i &lt; 8; ++i) S-&gt;h[i] ^= load64(p + sizeof(S-&gt;h[i]) * i);</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov"> 4234320000 :   for (i = 0; i &lt; 8; ++i) S-&gt;h[i] ^= load64(p + sizeof(S-&gt;h[i]) * i);</span></a>
 <a name="75"><span class="lineNum">      75 </span>            : </a>
-<a name="76"><span class="lineNum">      76 </span><span class="lineCov">  235240000 :   S-&gt;outlen = P-&gt;digest_length;</span></a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">  235240000 :   return 0;</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">  470480000 :   S-&gt;outlen = P-&gt;digest_length;</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">  470480000 :   return 0;</span></a>
 <a name="78"><span class="lineNum">      78 </span>            : }</a>
 <a name="79"><span class="lineNum">      79 </span>            : </a>
 <a name="80"><span class="lineNum">      80 </span><span class="lineNoCov">          0 : int blake2b_init(blake2b_state *S, size_t outlen) {</span></a>
@@ -216,94 +216,94 @@
 <a name="154"><span class="lineNum">     154 </span>            :     G(r, 7, v[3], v[4], v[9], v[14]);  \</a>
 <a name="155"><span class="lineNum">     155 </span>            :   } while (0)</a>
 <a name="156"><span class="lineNum">     156 </span>            : </a>
-<a name="157"><span class="lineNum">     157 </span><span class="lineCov">  238859000 : static void blake2b_compress(blake2b_state *S,</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">  477718000 : static void blake2b_compress(blake2b_state *S,</span></a>
 <a name="158"><span class="lineNum">     158 </span>            :                              const uint8_t block[BLAKE2B_BLOCKBYTES]) {</a>
 <a name="159"><span class="lineNum">     159 </span>            :   uint64_t m[16];</a>
 <a name="160"><span class="lineNum">     160 </span>            :   uint64_t v[16];</a>
 <a name="161"><span class="lineNum">     161 </span>            :   size_t i;</a>
 <a name="162"><span class="lineNum">     162 </span>            : </a>
-<a name="163"><span class="lineNum">     163 </span><span class="lineCov"> 4060610000 :   for (i = 0; i &lt; 16; ++i) {</span></a>
-<a name="164"><span class="lineNum">     164 </span><span class="lineCov"> 3821750000 :     m[i] = load64(block + i * sizeof(m[i]));</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov"> 8121220000 :   for (i = 0; i &lt; 16; ++i) {</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineCov"> 7643500000 :     m[i] = load64(block + i * sizeof(m[i]));</span></a>
 <a name="165"><span class="lineNum">     165 </span>            :   }</a>
 <a name="166"><span class="lineNum">     166 </span>            : </a>
-<a name="167"><span class="lineNum">     167 </span><span class="lineCov"> 2149730000 :   for (i = 0; i &lt; 8; ++i) {</span></a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov"> 1910880000 :     v[i] = S-&gt;h[i];</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov"> 4299460000 :   for (i = 0; i &lt; 8; ++i) {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov"> 3821760000 :     v[i] = S-&gt;h[i];</span></a>
 <a name="169"><span class="lineNum">     169 </span>            :   }</a>
 <a name="170"><span class="lineNum">     170 </span>            : </a>
 <a name="171"><span class="lineNum">     171 </span>            :   v[8] = blake2b_IV[0];</a>
 <a name="172"><span class="lineNum">     172 </span>            :   v[9] = blake2b_IV[1];</a>
 <a name="173"><span class="lineNum">     173 </span>            :   v[10] = blake2b_IV[2];</a>
 <a name="174"><span class="lineNum">     174 </span>            :   v[11] = blake2b_IV[3];</a>
-<a name="175"><span class="lineNum">     175 </span><span class="lineCov">  238859000 :   v[12] = blake2b_IV[4] ^ S-&gt;t[0];</span></a>
-<a name="176"><span class="lineNum">     176 </span><span class="lineCov">  238859000 :   v[13] = blake2b_IV[5] ^ S-&gt;t[1];</span></a>
-<a name="177"><span class="lineNum">     177 </span><span class="lineCov">  238859000 :   v[14] = blake2b_IV[6] ^ S-&gt;f[0];</span></a>
-<a name="178"><span class="lineNum">     178 </span><span class="lineCov">  238859000 :   v[15] = blake2b_IV[7] ^ S-&gt;f[1];</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">  477718000 :   v[12] = blake2b_IV[4] ^ S-&gt;t[0];</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineCov">  477718000 :   v[13] = blake2b_IV[5] ^ S-&gt;t[1];</span></a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineCov">  477718000 :   v[14] = blake2b_IV[6] ^ S-&gt;f[0];</span></a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineCov">  477718000 :   v[15] = blake2b_IV[7] ^ S-&gt;f[1];</span></a>
 <a name="179"><span class="lineNum">     179 </span>            : </a>
-<a name="180"><span class="lineNum">     180 </span><span class="lineCov">  238859000 :   ROUND(0);</span></a>
-<a name="181"><span class="lineNum">     181 </span><span class="lineCov">  238859000 :   ROUND(1);</span></a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineCov">  238859000 :   ROUND(2);</span></a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineCov">  238859000 :   ROUND(3);</span></a>
-<a name="184"><span class="lineNum">     184 </span><span class="lineCov">  238859000 :   ROUND(4);</span></a>
-<a name="185"><span class="lineNum">     185 </span><span class="lineCov">  238859000 :   ROUND(5);</span></a>
-<a name="186"><span class="lineNum">     186 </span><span class="lineCov">  238859000 :   ROUND(6);</span></a>
-<a name="187"><span class="lineNum">     187 </span><span class="lineCov">  238859000 :   ROUND(7);</span></a>
-<a name="188"><span class="lineNum">     188 </span><span class="lineCov">  238859000 :   ROUND(8);</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">  238859000 :   ROUND(9);</span></a>
-<a name="190"><span class="lineNum">     190 </span><span class="lineCov">  238859000 :   ROUND(10);</span></a>
-<a name="191"><span class="lineNum">     191 </span><span class="lineCov">  238859000 :   ROUND(11);</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">  477718000 :   ROUND(0);</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">  477718000 :   ROUND(1);</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">  477718000 :   ROUND(2);</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">  477718000 :   ROUND(3);</span></a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">  477718000 :   ROUND(4);</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineCov">  477718000 :   ROUND(5);</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">  477718000 :   ROUND(6);</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">  477718000 :   ROUND(7);</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">  477718000 :   ROUND(8);</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">  477718000 :   ROUND(9);</span></a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">  477718000 :   ROUND(10);</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineCov">  477718000 :   ROUND(11);</span></a>
 <a name="192"><span class="lineNum">     192 </span>            : </a>
-<a name="193"><span class="lineNum">     193 </span><span class="lineCov"> 2149730000 :   for (i = 0; i &lt; 8; ++i) {</span></a>
-<a name="194"><span class="lineNum">     194 </span><span class="lineCov"> 1910880000 :     S-&gt;h[i] = S-&gt;h[i] ^ v[i] ^ v[i + 8];</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov"> 4299460000 :   for (i = 0; i &lt; 8; ++i) {</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov"> 3821760000 :     S-&gt;h[i] = S-&gt;h[i] ^ v[i] ^ v[i + 8];</span></a>
 <a name="195"><span class="lineNum">     195 </span>            :   }</a>
-<a name="196"><span class="lineNum">     196 </span><span class="lineCov">  238859000 : }</span></a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineCov">  477718000 : }</span></a>
 <a name="197"><span class="lineNum">     197 </span>            : </a>
 <a name="198"><span class="lineNum">     198 </span>            : #undef G</a>
 <a name="199"><span class="lineNum">     199 </span>            : #undef ROUND</a>
 <a name="200"><span class="lineNum">     200 </span>            : </a>
-<a name="201"><span class="lineNum">     201 </span><span class="lineCov">  238859000 : int blake2b_update(blake2b_state *S, const void *pin, size_t inlen) {</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">  477718000 : int blake2b_update(blake2b_state *S, const void *pin, size_t inlen) {</span></a>
 <a name="202"><span class="lineNum">     202 </span>            :   const unsigned char *in = (const unsigned char *)pin;</a>
-<a name="203"><span class="lineNum">     203 </span><span class="lineCov">  238859000 :   if (inlen &gt; 0) {</span></a>
-<a name="204"><span class="lineNum">     204 </span><span class="lineCov">  238859000 :     size_t left = S-&gt;buflen;</span></a>
-<a name="205"><span class="lineNum">     205 </span><span class="lineCov">  238859000 :     size_t fill = BLAKE2B_BLOCKBYTES - left;</span></a>
-<a name="206"><span class="lineNum">     206 </span><span class="lineCov">  238859000 :     if (inlen &gt; fill) {</span></a>
-<a name="207"><span class="lineNum">     207 </span><span class="lineCov">    3619080 :       S-&gt;buflen = 0;</span></a>
-<a name="208"><span class="lineNum">     208 </span><span class="lineCov">    3619080 :       memcpy(S-&gt;buf + left, in, fill); /* Fill buffer */</span></a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">  477718000 :   if (inlen &gt; 0) {</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">  477718000 :     size_t left = S-&gt;buflen;</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineCov">  477718000 :     size_t fill = BLAKE2B_BLOCKBYTES - left;</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">  477718000 :     if (inlen &gt; fill) {</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">    7238160 :       S-&gt;buflen = 0;</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineCov">    7238160 :       memcpy(S-&gt;buf + left, in, fill); /* Fill buffer */</span></a>
 <a name="209"><span class="lineNum">     209 </span>            :       blake2b_increment_counter(S, BLAKE2B_BLOCKBYTES);</a>
-<a name="210"><span class="lineNum">     210 </span><span class="lineCov">    3619080 :       blake2b_compress(S, S-&gt;buf); /* Compress */</span></a>
-<a name="211"><span class="lineNum">     211 </span><span class="lineCov">    3619080 :       in += fill;</span></a>
-<a name="212"><span class="lineNum">     212 </span><span class="lineCov">    3619080 :       inlen -= fill;</span></a>
-<a name="213"><span class="lineNum">     213 </span><span class="lineCov">    3619080 :       while (inlen &gt; BLAKE2B_BLOCKBYTES) {</span></a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineCov">    7238160 :       blake2b_compress(S, S-&gt;buf); /* Compress */</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">    7238160 :       in += fill;</span></a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">    7238160 :       inlen -= fill;</span></a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineCov">    7238160 :       while (inlen &gt; BLAKE2B_BLOCKBYTES) {</span></a>
 <a name="214"><span class="lineNum">     214 </span>            :         blake2b_increment_counter(S, BLAKE2B_BLOCKBYTES);</a>
 <a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :         blake2b_compress(S, in);</span></a>
 <a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :         in += BLAKE2B_BLOCKBYTES;</span></a>
 <a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :         inlen -= BLAKE2B_BLOCKBYTES;</span></a>
 <a name="218"><span class="lineNum">     218 </span>            :       }</a>
 <a name="219"><span class="lineNum">     219 </span>            :     }</a>
-<a name="220"><span class="lineNum">     220 </span><span class="lineCov">  238859000 :     memcpy(S-&gt;buf + S-&gt;buflen, in, inlen);</span></a>
-<a name="221"><span class="lineNum">     221 </span><span class="lineCov">  238859000 :     S-&gt;buflen += inlen;</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">  477718000 :     memcpy(S-&gt;buf + S-&gt;buflen, in, inlen);</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineCov">  477718000 :     S-&gt;buflen += inlen;</span></a>
 <a name="222"><span class="lineNum">     222 </span>            :   }</a>
-<a name="223"><span class="lineNum">     223 </span><span class="lineCov">  238859000 :   return 0;</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">  477718000 :   return 0;</span></a>
 <a name="224"><span class="lineNum">     224 </span>            : }</a>
 <a name="225"><span class="lineNum">     225 </span>            : </a>
-<a name="226"><span class="lineNum">     226 </span><span class="lineCov">  235240000 : int blake2b_final(blake2b_state *S, void *out, size_t outlen) {</span></a>
-<a name="227"><span class="lineNum">     227 </span><span class="lineCov">  235240000 :   uint8_t buffer[BLAKE2B_OUTBYTES] = {0};</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">  470480000 : int blake2b_final(blake2b_state *S, void *out, size_t outlen) {</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">  470480000 :   uint8_t buffer[BLAKE2B_OUTBYTES] = {0};</span></a>
 <a name="228"><span class="lineNum">     228 </span>            :   size_t i;</a>
 <a name="229"><span class="lineNum">     229 </span>            : </a>
-<a name="230"><span class="lineNum">     230 </span><span class="lineCov">  235240000 :   if (out == NULL || outlen &lt; S-&gt;outlen) return -1;</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">  470480000 :   if (out == NULL || outlen &lt; S-&gt;outlen) return -1;</span></a>
 <a name="231"><span class="lineNum">     231 </span>            : </a>
-<a name="232"><span class="lineNum">     232 </span><span class="lineCov">  235240000 :   if (blake2b_is_lastblock(S)) return -1;</span></a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineCov">  470480000 :   if (blake2b_is_lastblock(S)) return -1;</span></a>
 <a name="233"><span class="lineNum">     233 </span>            : </a>
-<a name="234"><span class="lineNum">     234 </span><span class="lineCov">  235240000 :   blake2b_increment_counter(S, S-&gt;buflen);</span></a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineCov">  470480000 :   blake2b_increment_counter(S, S-&gt;buflen);</span></a>
 <a name="235"><span class="lineNum">     235 </span>            :   blake2b_set_lastblock(S);</a>
-<a name="236"><span class="lineNum">     236 </span><span class="lineCov">  235240000 :   memset(S-&gt;buf + S-&gt;buflen, 0, BLAKE2B_BLOCKBYTES - S-&gt;buflen); /* Padding */</span></a>
-<a name="237"><span class="lineNum">     237 </span><span class="lineCov">  235240000 :   blake2b_compress(S, S-&gt;buf);</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineCov">  470480000 :   memset(S-&gt;buf + S-&gt;buflen, 0, BLAKE2B_BLOCKBYTES - S-&gt;buflen); /* Padding */</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineCov">  470480000 :   blake2b_compress(S, S-&gt;buf);</span></a>
 <a name="238"><span class="lineNum">     238 </span>            : </a>
-<a name="239"><span class="lineNum">     239 </span><span class="lineCov"> 2117160000 :   for (i = 0; i &lt; 8; ++i) /* Output full hash to temp buffer */</span></a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov"> 1881920000 :     store64(buffer + sizeof(S-&gt;h[i]) * i, S-&gt;h[i]);</span></a>
+<a name="239"><span class="lineNum">     239 </span><span class="lineCov"> 4234320000 :   for (i = 0; i &lt; 8; ++i) /* Output full hash to temp buffer */</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov"> 3763840000 :     store64(buffer + sizeof(S-&gt;h[i]) * i, S-&gt;h[i]);</span></a>
 <a name="241"><span class="lineNum">     241 </span>            : </a>
-<a name="242"><span class="lineNum">     242 </span><span class="lineCov">  235240000 :   memcpy(out, buffer, S-&gt;outlen);</span></a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">  470480000 :   memcpy(out, buffer, S-&gt;outlen);</span></a>
 <a name="243"><span class="lineNum">     243 </span>            :   secure_zero_memory(buffer, sizeof(buffer));</a>
-<a name="244"><span class="lineNum">     244 </span><span class="lineCov">  235240000 :   return 0;</span></a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">  470480000 :   return 0;</span></a>
 <a name="245"><span class="lineNum">     245 </span>            : }</a>
 <a name="246"><span class="lineNum">     246 </span>            : </a>
 <a name="247"><span class="lineNum">     247 </span>            : /* inlen, at least, should be uint64_t. Others can be size_t. */</a>

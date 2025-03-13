@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">1</td>
@@ -107,7 +107,7 @@
 <a name="45"><span class="lineNum">      45 </span>            :  * @return result: 128-bit result = a * b</a>
 <a name="46"><span class="lineNum">      46 </span>            :  */</a>
 <a name="47"><span class="lineNum">      47 </span>            : inline DoubleNativeInt Mul128(uint64_t a, uint64_t b) {</a>
-<a name="48"><span class="lineNum">      48 </span><span class="lineCov">  249052000 :     return DoubleNativeInt(a) * DoubleNativeInt(b);</span></a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineCov">  498104000 :     return DoubleNativeInt(a) * DoubleNativeInt(b);</span></a>
 <a name="49"><span class="lineNum">      49 </span>            : }</a>
 <a name="50"><span class="lineNum">      50 </span>            : </a>
 <a name="51"><span class="lineNum">      51 </span>            : /**</a>
@@ -119,46 +119,46 @@
 <a name="57"><span class="lineNum">      57 </span>            :  * @param mu: 2^128/modulus (128-bit)</a>
 <a name="58"><span class="lineNum">      58 </span>            :  * @return result: 64-bit result = a mod m</a>
 <a name="59"><span class="lineNum">      59 </span>            :  */</a>
-<a name="60"><span class="lineNum">      60 </span><span class="lineCov">  249052000 : inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt&amp; a, uint64_t modulus, const DoubleNativeInt&amp; mu) {</span></a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">  498104000 : inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt&amp; a, uint64_t modulus, const DoubleNativeInt&amp; mu) {</span></a>
 <a name="61"><span class="lineNum">      61 </span>            :     // (a * mu)/2^128 // we need the upper 128-bit of (256-bit product)</a>
 <a name="62"><span class="lineNum">      62 </span>            :     uint64_t result = 0, a_lo = 0, a_hi = 0, mu_lo = 0, mu_hi = 0, left_hi = 0, middle_lo = 0, middle_hi = 0, tmp1 = 0,</a>
 <a name="63"><span class="lineNum">      63 </span>            :              tmp2 = 0, carry = 0;</a>
 <a name="64"><span class="lineNum">      64 </span>            :     DoubleNativeInt middle = 0;</a>
 <a name="65"><span class="lineNum">      65 </span>            : </a>
-<a name="66"><span class="lineNum">      66 </span><span class="lineCov">  249052000 :     a_lo  = (uint64_t)a;</span></a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">  249052000 :     a_hi  = a &gt;&gt; 64;</span></a>
-<a name="68"><span class="lineNum">      68 </span><span class="lineCov">  249052000 :     mu_lo = (uint64_t)mu;</span></a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineCov">  249052000 :     mu_hi = mu &gt;&gt; 64;</span></a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">  498104000 :     a_lo  = (uint64_t)a;</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">  498104000 :     a_hi  = a &gt;&gt; 64;</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">  498104000 :     mu_lo = (uint64_t)mu;</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">  498104000 :     mu_hi = mu &gt;&gt; 64;</span></a>
 <a name="70"><span class="lineNum">      70 </span>            : </a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">  249052000 :     left_hi = (Mul128(a_lo, mu_lo)) &gt;&gt; 64;  // mul left parts, discard lower word</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">  498104000 :     left_hi = (Mul128(a_lo, mu_lo)) &gt;&gt; 64;  // mul left parts, discard lower word</span></a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            :     middle    = Mul128(a_lo, mu_hi);  // mul middle first</a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">  249052000 :     middle_lo = (uint64_t)middle;</span></a>
-<a name="75"><span class="lineNum">      75 </span><span class="lineCov">  249052000 :     middle_hi = middle &gt;&gt; 64;</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">  498104000 :     middle_lo = (uint64_t)middle;</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">  498104000 :     middle_hi = middle &gt;&gt; 64;</span></a>
 <a name="76"><span class="lineNum">      76 </span>            : </a>
 <a name="77"><span class="lineNum">      77 </span>            :     // accumulate and check carry</a>
 <a name="78"><span class="lineNum">      78 </span>            :     carry = AdditionWithCarryOut(middle_lo, left_hi, tmp1);</a>
 <a name="79"><span class="lineNum">      79 </span>            : </a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov">  249052000 :     tmp2 = middle_hi + carry;  // accumulate</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">  498104000 :     tmp2 = middle_hi + carry;  // accumulate</span></a>
 <a name="81"><span class="lineNum">      81 </span>            : </a>
 <a name="82"><span class="lineNum">      82 </span>            :     middle    = Mul128(a_hi, mu_lo);  // mul middle second</a>
-<a name="83"><span class="lineNum">      83 </span><span class="lineCov">  249052000 :     middle_lo = (uint64_t)middle;</span></a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">  249052000 :     middle_hi = middle &gt;&gt; 64;</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">  498104000 :     middle_lo = (uint64_t)middle;</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">  498104000 :     middle_hi = middle &gt;&gt; 64;</span></a>
 <a name="85"><span class="lineNum">      85 </span>            : </a>
 <a name="86"><span class="lineNum">      86 </span>            :     carry = IsAdditionOverflow(middle_lo, tmp1);  // check carry</a>
 <a name="87"><span class="lineNum">      87 </span>            : </a>
-<a name="88"><span class="lineNum">      88 </span><span class="lineCov">  249052000 :     left_hi = middle_hi + carry;  // accumulate</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">  498104000 :     left_hi = middle_hi + carry;  // accumulate</span></a>
 <a name="89"><span class="lineNum">      89 </span>            : </a>
 <a name="90"><span class="lineNum">      90 </span>            :     // now we have the lower word of (a * mu)/2^128, no need for higher word</a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov">  249052000 :     tmp1 = a_hi * mu_hi + tmp2 + left_hi;</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">  498104000 :     tmp1 = a_hi * mu_hi + tmp2 + left_hi;</span></a>
 <a name="92"><span class="lineNum">      92 </span>            : </a>
 <a name="93"><span class="lineNum">      93 </span>            :     // subtract lower words only, higher words should be the same</a>
-<a name="94"><span class="lineNum">      94 </span><span class="lineCov">  249052000 :     result = a_lo - tmp1 * modulus;</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">  498104000 :     result = a_lo - tmp1 * modulus;</span></a>
 <a name="95"><span class="lineNum">      95 </span>            : </a>
-<a name="96"><span class="lineNum">      96 </span><span class="lineCov">  249053000 :     while (result &gt;= modulus)</span></a>
-<a name="97"><span class="lineNum">      97 </span><span class="lineCov">       1058 :         result -= modulus;</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">  498106000 :     while (result &gt;= modulus)</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">       2116 :         result -= modulus;</span></a>
 <a name="98"><span class="lineNum">      98 </span>            : </a>
-<a name="99"><span class="lineNum">      99 </span><span class="lineCov">  249052000 :     return result;</span></a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">  498104000 :     return result;</span></a>
 <a name="100"><span class="lineNum">     100 </span>            : }</a>
 <a name="101"><span class="lineNum">     101 </span>            : #endif</a>
 <a name="102"><span class="lineNum">     102 </span>            : </a>

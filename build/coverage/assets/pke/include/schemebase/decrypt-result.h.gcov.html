@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">1</td>
-            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">4</td>
             <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -122,24 +122,24 @@
 <a name="60"><span class="lineNum">      60 </span>            :  * decoding/decryption can be performed eventually. This is intended to be</a>
 <a name="61"><span class="lineNum">      61 </span>            :  * returned with the output of a decryption operation.</a>
 <a name="62"><span class="lineNum">      62 </span>            :  */</a>
-<a name="63"><span class="lineNum">      63 </span><span class="lineCov">         80 : struct DecryptResult {</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov">       5942 : struct DecryptResult {</span></a>
 <a name="64"><span class="lineNum">      64 </span>            :     /**</a>
 <a name="65"><span class="lineNum">      65 </span>            :    * Constructor that initializes all message lengths to 0.</a>
 <a name="66"><span class="lineNum">      66 </span>            :    */</a>
-<a name="67"><span class="lineNum">      67 </span>            :     DecryptResult() : isValid(false), messageLength(0), scalingFactorInt(1) {}</a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">       5862 :     DecryptResult() : isValid(false), messageLength(0), scalingFactorInt(1) {}</span></a>
 <a name="68"><span class="lineNum">      68 </span>            : </a>
 <a name="69"><span class="lineNum">      69 </span>            :     /**</a>
 <a name="70"><span class="lineNum">      70 </span>            :    * Constructor that initializes all message lengths.</a>
 <a name="71"><span class="lineNum">      71 </span>            :    * @param len the new length.</a>
 <a name="72"><span class="lineNum">      72 </span>            :    */</a>
-<a name="73"><span class="lineNum">      73 </span>            :     explicit DecryptResult(size_t len) : isValid(true), messageLength(len), scalingFactorInt(1) {}</a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">       4588 :     explicit DecryptResult(size_t len) : isValid(true), messageLength(len), scalingFactorInt(1) {}</span></a>
 <a name="74"><span class="lineNum">      74 </span>            : </a>
 <a name="75"><span class="lineNum">      75 </span>            :     /**</a>
 <a name="76"><span class="lineNum">      76 </span>            :    * Constructor that initializes all message lengths.</a>
 <a name="77"><span class="lineNum">      77 </span>            :    * @param len the new length.</a>
 <a name="78"><span class="lineNum">      78 </span>            :    * @param scf the new scaling factor.</a>
 <a name="79"><span class="lineNum">      79 </span>            :    */</a>
-<a name="80"><span class="lineNum">      80 </span>            :     explicit DecryptResult(size_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}</a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">       1274 :     explicit DecryptResult(size_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}</span></a>
 <a name="81"><span class="lineNum">      81 </span>            : </a>
 <a name="82"><span class="lineNum">      82 </span>            :     bool isValid;                   /**&lt; whether the decryption was successful */</a>
 <a name="83"><span class="lineNum">      83 </span>            :     usint messageLength;            /**&lt; the length of the decrypted plaintext message */</a>

@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">23</td>
             <td class="headerCovTableEntry">24</td>
-            <td class="headerCovTableEntryHi">91.7 %</td>
+            <td class="headerCovTableEntryHi">95.8 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">3</td>
@@ -168,14 +168,14 @@
 <a name="106"><span class="lineNum">     106 </span>            :     StdLatticeParm(DistributionType distType, usint ringDim, SecurityLevel minSecLev, usint maxLogQ)</a>
 <a name="107"><span class="lineNum">     107 </span>            :         : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}</a>
 <a name="108"><span class="lineNum">     108 </span>            : </a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          1 :     static void initializeLookups() {</span></a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineCov">        133 :         for (size_t i = 0; i &lt; StandardLatticeParmSets.size(); i++) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          3 :     static void initializeLookups() {</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">        399 :         for (size_t i = 0; i &lt; StandardLatticeParmSets.size(); i++) {</span></a>
 <a name="111"><span class="lineNum">     111 </span>            :             StdLatticeParm&amp; s                                                              = StandardLatticeParmSets[i];</a>
-<a name="112"><span class="lineNum">     112 </span><span class="lineCov">        132 :             byRing[static_cast&lt;int&gt;(s.distType)][static_cast&lt;int&gt;(s.minSecLev)][s.ringDim] = &amp;s;</span></a>
-<a name="113"><span class="lineNum">     113 </span><span class="lineCov">        132 :             byLogQ[static_cast&lt;int&gt;(s.distType)][static_cast&lt;int&gt;(s.minSecLev)][s.maxLogQ] = &amp;s;</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">        396 :             byRing[static_cast&lt;int&gt;(s.distType)][static_cast&lt;int&gt;(s.minSecLev)][s.ringDim] = &amp;s;</span></a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineCov">        396 :             byLogQ[static_cast&lt;int&gt;(s.distType)][static_cast&lt;int&gt;(s.minSecLev)][s.maxLogQ] = &amp;s;</span></a>
 <a name="114"><span class="lineNum">     114 </span>            :         }</a>
-<a name="115"><span class="lineNum">     115 </span><span class="lineCov">          1 :         initialized = true;</span></a>
-<a name="116"><span class="lineNum">     116 </span><span class="lineCov">          1 :     }</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">          3 :         initialized = true;</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">          3 :     }</span></a>
 <a name="117"><span class="lineNum">     117 </span>            : </a>
 <a name="118"><span class="lineNum">     118 </span><span class="lineCov">          1 :     static usint FindMaxQ(DistributionType distType, SecurityLevel minSecLev, usint ringDim) {</span></a>
 <a name="119"><span class="lineNum">     119 </span><span class="lineCov">          1 :         int distTypeIdx  = static_cast&lt;int&gt;(distType);</span></a>
@@ -188,16 +188,16 @@
 <a name="126"><span class="lineNum">     126 </span><span class="lineCov">          1 :         return it-&gt;second-&gt;getMaxLogQ();</span></a>
 <a name="127"><span class="lineNum">     127 </span>            :     }</a>
 <a name="128"><span class="lineNum">     128 </span>            : </a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">          3 :     static usint FindRingDim(DistributionType distType, SecurityLevel minSecLev, usint curLogQ) {</span></a>
-<a name="130"><span class="lineNum">     130 </span><span class="lineCov">          3 :         if (!initialized)</span></a>
-<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :             initializeLookups();</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">       3266 :     static usint FindRingDim(DistributionType distType, SecurityLevel minSecLev, usint curLogQ) {</span></a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineCov">       3266 :         if (!initialized)</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">          2 :             initializeLookups();</span></a>
 <a name="132"><span class="lineNum">     132 </span>            :         usint prev = 0;</a>
 <a name="133"><span class="lineNum">     133 </span>            : </a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineCov">          3 :         int distTypeIdx  = static_cast&lt;int&gt;(distType);</span></a>
-<a name="135"><span class="lineNum">     135 </span><span class="lineCov">          3 :         int minSecLevIdx = static_cast&lt;int&gt;(minSecLev);</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">       3266 :         int distTypeIdx  = static_cast&lt;int&gt;(distType);</span></a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">       3266 :         int minSecLevIdx = static_cast&lt;int&gt;(minSecLev);</span></a>
 <a name="136"><span class="lineNum">     136 </span>            :         usint n          = 0;</a>
-<a name="137"><span class="lineNum">     137 </span><span class="lineCov">         10 :         for (std::pair&lt;const unsigned int, StdLatticeParm*&gt;&amp; it : byLogQ[distTypeIdx][minSecLevIdx]) {</span></a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          3 :             if ((curLogQ &lt;= it.second-&gt;getMaxLogQ()) &amp;&amp; (curLogQ &gt; prev))</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">      11015 :         for (std::pair&lt;const unsigned int, StdLatticeParm*&gt;&amp; it : byLogQ[distTypeIdx][minSecLevIdx]) {</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">       3266 :             if ((curLogQ &lt;= it.second-&gt;getMaxLogQ()) &amp;&amp; (curLogQ &gt; prev))</span></a>
 <a name="139"><span class="lineNum">     139 </span>            :                 return it.second-&gt;getRingDim();</a>
 <a name="140"><span class="lineNum">     140 </span>            :             prev = it.second-&gt;getMaxLogQ();</a>
 <a name="141"><span class="lineNum">     141 </span>            :             n    = it.second-&gt;getRingDim();</a>
@@ -209,13 +209,13 @@
 <a name="147"><span class="lineNum">     147 </span>            :         return distType;</a>
 <a name="148"><span class="lineNum">     148 </span>            :     }</a>
 <a name="149"><span class="lineNum">     149 </span>            :     usint getRingDim() const {</a>
-<a name="150"><span class="lineNum">     150 </span><span class="lineCov">         10 :         return ringDim;</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">      11015 :         return ringDim;</span></a>
 <a name="151"><span class="lineNum">     151 </span>            :     }</a>
 <a name="152"><span class="lineNum">     152 </span>            :     SecurityLevel getMinSecLev() const {</a>
 <a name="153"><span class="lineNum">     153 </span>            :         return minSecLev;</a>
 <a name="154"><span class="lineNum">     154 </span>            :     }</a>
 <a name="155"><span class="lineNum">     155 </span>            :     usint getMaxLogQ() const {</a>
-<a name="156"><span class="lineNum">     156 </span><span class="lineCov">         11 :         return maxLogQ;</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">      11016 :         return maxLogQ;</span></a>
 <a name="157"><span class="lineNum">     157 </span>            :     }</a>
 <a name="158"><span class="lineNum">     158 </span>            : };</a>
 <a name="159"><span class="lineNum">     159 </span>            : </a>

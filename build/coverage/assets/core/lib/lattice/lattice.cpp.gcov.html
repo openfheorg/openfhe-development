@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">13</td>
@@ -133,10 +133,10 @@
 <a name="71"><span class="lineNum">      71 </span>            : </a>
 <a name="72"><span class="lineNum">      72 </span>            : }  // namespace lbcrypto</a>
 <a name="73"><span class="lineNum">      73 </span>            : </a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::ElemParams&lt;NativeInteger&gt;, lbcrypto::ElemParams&lt;NativeInteger&gt;::SerializedVersion());</span></a>
-<a name="75"><span class="lineNum">      75 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::ILNativeParams, lbcrypto::ILNativeParams::SerializedVersion());</span></a>
-<a name="76"><span class="lineNum">      76 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());</span></a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::Field2n, lbcrypto::Field2n::SerializedVersion());</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::ElemParams&lt;NativeInteger&gt;, lbcrypto::ElemParams&lt;NativeInteger&gt;::SerializedVersion());</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::ILNativeParams, lbcrypto::ILNativeParams::SerializedVersion());</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::Field2n, lbcrypto::Field2n::SerializedVersion());</span></a>
 <a name="78"><span class="lineNum">      78 </span>            : </a>
 <a name="79"><span class="lineNum">      79 </span>            : //---------------------------------------------------------------------------------------------</a>
 <a name="80"><span class="lineNum">      80 </span>            : #ifdef WITH_BE2</a>
@@ -184,26 +184,26 @@
 <a name="122"><span class="lineNum">     122 </span>            : MAKE_DCRTPOLY_TYPE(M4Vector)</a>
 <a name="123"><span class="lineNum">     123 </span>            : </a>
 <a name="124"><span class="lineNum">     124 </span>            : template class Matrix&lt;M4Poly&gt;;</a>
-<a name="125"><span class="lineNum">     125 </span><span class="lineCov">      41145 : SPLIT64_FOR_TYPE(M4Poly)</span></a>
-<a name="126"><span class="lineNum">     126 </span><span class="lineCov">      15318 : SPLIT64ALT_FOR_TYPE(M4Poly)</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">      82290 : SPLIT64_FOR_TYPE(M4Poly)</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">      30636 : SPLIT64ALT_FOR_TYPE(M4Poly)</span></a>
 <a name="127"><span class="lineNum">     127 </span><span class="lineNoCov">          0 : SPLIT32ALT_FOR_TYPE(M4Poly)</span></a>
 <a name="128"><span class="lineNum">     128 </span>            : template Matrix&lt;M4Vector&gt; RotateVecResult(Matrix&lt;M4Poly&gt; const&amp; inMat);</a>
 <a name="129"><span class="lineNum">     129 </span>            : template Matrix&lt;M4Integer&gt; Rotate(Matrix&lt;M4Poly&gt; const&amp; inMat);</a>
 <a name="130"><span class="lineNum">     130 </span>            : </a>
 <a name="131"><span class="lineNum">     131 </span>            : template class Matrix&lt;M4DCRTPoly&gt;;</a>
-<a name="132"><span class="lineNum">     132 </span><span class="lineCov">      85358 : SPLIT64_FOR_TYPE(M4DCRTPoly)</span></a>
-<a name="133"><span class="lineNum">     133 </span><span class="lineCov">      84427 : SPLIT64ALT_FOR_TYPE(M4DCRTPoly)</span></a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">     170716 : SPLIT64_FOR_TYPE(M4DCRTPoly)</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">     168854 : SPLIT64ALT_FOR_TYPE(M4DCRTPoly)</span></a>
 <a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 : SPLIT32ALT_FOR_TYPE(M4DCRTPoly)</span></a>
 <a name="135"><span class="lineNum">     135 </span>            : template Matrix&lt;M4Vector&gt; RotateVecResult(Matrix&lt;M4DCRTPoly&gt; const&amp; inMat);</a>
 <a name="136"><span class="lineNum">     136 </span>            : template Matrix&lt;M4Integer&gt; Rotate(Matrix&lt;M4DCRTPoly&gt; const&amp; inMat);</a>
 <a name="137"><span class="lineNum">     137 </span>            : </a>
 <a name="138"><span class="lineNum">     138 </span>            : }  // namespace lbcrypto</a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::ElemParams&lt;M4Integer&gt;, lbcrypto::ElemParams&lt;M4Integer&gt;::SerializedVersion());</span></a>
-<a name="141"><span class="lineNum">     141 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::M4Params, lbcrypto::M4Params::SerializedVersion());</span></a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::M4DCRTParams, lbcrypto::M4DCRTParams::SerializedVersion());</span></a>
-<a name="143"><span class="lineNum">     143 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::M4Poly, lbcrypto::M4Poly::SerializedVersion());</span></a>
-<a name="144"><span class="lineNum">     144 </span><span class="lineCov">          3 : CEREAL_CLASS_VERSION(lbcrypto::M4DCRTPoly, lbcrypto::M4DCRTPoly::SerializedVersion());</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::ElemParams&lt;M4Integer&gt;, lbcrypto::ElemParams&lt;M4Integer&gt;::SerializedVersion());</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::M4Params, lbcrypto::M4Params::SerializedVersion());</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::M4DCRTParams, lbcrypto::M4DCRTParams::SerializedVersion());</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::M4Poly, lbcrypto::M4Poly::SerializedVersion());</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">          6 : CEREAL_CLASS_VERSION(lbcrypto::M4DCRTPoly, lbcrypto::M4DCRTPoly::SerializedVersion());</span></a>
 <a name="145"><span class="lineNum">     145 </span>            : #endif</a>
 <a name="146"><span class="lineNum">     146 </span>            : </a>
 <a name="147"><span class="lineNum">     147 </span>            : //---------------------------------------------------------------------------------------------</a>

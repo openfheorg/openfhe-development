@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">1</td>
@@ -177,7 +177,7 @@
 <a name="115"><span class="lineNum">     115 </span>            : }</a>
 <a name="116"><span class="lineNum">     116 </span>            : </a>
 <a name="117"><span class="lineNum">     117 </span>            : template &lt;&gt;</a>
-<a name="118"><span class="lineNum">     118 </span><span class="lineCov">          1 : inline void RLWETrapdoorUtility&lt;DCRTPoly&gt;::ZSampleSigmaP(size_t n, double s, double sigma,</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">          2 : inline void RLWETrapdoorUtility&lt;DCRTPoly&gt;::ZSampleSigmaP(size_t n, double s, double sigma,</span></a>
 <a name="119"><span class="lineNum">     119 </span>            :                                                          const RLWETrapdoorPair&lt;DCRTPoly&gt;&amp; Tprime,</a>
 <a name="120"><span class="lineNum">     120 </span>            :                                                          const DCRTPoly::DggType&amp; dgg,</a>
 <a name="121"><span class="lineNum">     121 </span>            :                                                          const DCRTPoly::DggType&amp; dggLargeSigma,</a>
@@ -185,29 +185,29 @@
 <a name="123"><span class="lineNum">     123 </span>            :     OPENFHE_DEBUG_FLAG(false);</a>
 <a name="124"><span class="lineNum">     124 </span>            :     TimeVar t1, t1_tot;</a>
 <a name="125"><span class="lineNum">     125 </span>            : </a>
-<a name="126"><span class="lineNum">     126 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
-<a name="127"><span class="lineNum">     127 </span><span class="lineCov">          1 :     TIC(t1_tot);</span></a>
-<a name="128"><span class="lineNum">     128 </span><span class="lineCov">          2 :     Matrix&lt;DCRTPoly&gt; Tprime0 = Tprime.m_e;</span></a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">          2 :     Matrix&lt;DCRTPoly&gt; Tprime1 = Tprime.m_r;</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">          2 :     TIC(t1_tot);</span></a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineCov">          4 :     Matrix&lt;DCRTPoly&gt; Tprime0 = Tprime.m_e;</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">          4 :     Matrix&lt;DCRTPoly&gt; Tprime1 = Tprime.m_r;</span></a>
 <a name="130"><span class="lineNum">     130 </span>            :     // k is the bit length</a>
 <a name="131"><span class="lineNum">     131 </span>            :     size_t k = Tprime0.GetCols();</a>
 <a name="132"><span class="lineNum">     132 </span>            : </a>
 <a name="133"><span class="lineNum">     133 </span>            :     const std::shared_ptr&lt;DCRTPoly::Params&gt; params = Tprime0(0, 0).GetParams();</a>
 <a name="134"><span class="lineNum">     134 </span>            : </a>
 <a name="135"><span class="lineNum">     135 </span>            :     OPENFHE_DEBUG(&quot;z1a: &quot; &lt;&lt; TOC(t1));  // 0</a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="137"><span class="lineNum">     137 </span>            :     // all three Polynomials are initialized with &quot;0&quot; coefficients</a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          2 :     NativePoly va((*params)[0], Format::EVALUATION, 1);</span></a>
-<a name="139"><span class="lineNum">     139 </span><span class="lineCov">          2 :     NativePoly vb((*params)[0], Format::EVALUATION, 1);</span></a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">          2 :     NativePoly vd((*params)[0], Format::EVALUATION, 1);</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          4 :     NativePoly va((*params)[0], Format::EVALUATION, 1);</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">          4 :     NativePoly vb((*params)[0], Format::EVALUATION, 1);</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">          4 :     NativePoly vd((*params)[0], Format::EVALUATION, 1);</span></a>
 <a name="141"><span class="lineNum">     141 </span>            : </a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">         69 :     for (size_t i = 0; i &lt; k; i++) {</span></a>
-<a name="143"><span class="lineNum">     143 </span><span class="lineCov">        136 :         va += (NativePoly)Tprime0(0, i).GetElementAtIndex(0) * Tprime0(0, i).Transpose().GetElementAtIndex(0);</span></a>
-<a name="144"><span class="lineNum">     144 </span><span class="lineCov">        136 :         vb += (NativePoly)Tprime1(0, i).GetElementAtIndex(0) * Tprime0(0, i).Transpose().GetElementAtIndex(0);</span></a>
-<a name="145"><span class="lineNum">     145 </span><span class="lineCov">        136 :         vd += (NativePoly)Tprime1(0, i).GetElementAtIndex(0) * Tprime1(0, i).Transpose().GetElementAtIndex(0);</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">        138 :     for (size_t i = 0; i &lt; k; i++) {</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">        272 :         va += (NativePoly)Tprime0(0, i).GetElementAtIndex(0) * Tprime0(0, i).Transpose().GetElementAtIndex(0);</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">        272 :         vb += (NativePoly)Tprime1(0, i).GetElementAtIndex(0) * Tprime0(0, i).Transpose().GetElementAtIndex(0);</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">        272 :         vd += (NativePoly)Tprime1(0, i).GetElementAtIndex(0) * Tprime1(0, i).Transpose().GetElementAtIndex(0);</span></a>
 <a name="146"><span class="lineNum">     146 </span>            :     }</a>
 <a name="147"><span class="lineNum">     147 </span>            :     OPENFHE_DEBUG(&quot;z1b: &quot; &lt;&lt; TOC(t1));  // 9</a>
-<a name="148"><span class="lineNum">     148 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="149"><span class="lineNum">     149 </span>            : </a>
 <a name="150"><span class="lineNum">     150 </span>            :     // Switch the ring elements (Polynomials) to coefficient representation</a>
 <a name="151"><span class="lineNum">     151 </span>            :     va.SetFormat(Format::COEFFICIENT);</a>
@@ -215,40 +215,40 @@
 <a name="153"><span class="lineNum">     153 </span>            :     vd.SetFormat(Format::COEFFICIENT);</a>
 <a name="154"><span class="lineNum">     154 </span>            : </a>
 <a name="155"><span class="lineNum">     155 </span>            :     OPENFHE_DEBUG(&quot;z1c: &quot; &lt;&lt; TOC(t1));  // 5</a>
-<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="157"><span class="lineNum">     157 </span>            : </a>
 <a name="158"><span class="lineNum">     158 </span>            :     // Create field elements from ring elements</a>
-<a name="159"><span class="lineNum">     159 </span><span class="lineCov">          1 :     Field2n a(va), b(vb), d(vd);</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">          2 :     Field2n a(va), b(vb), d(vd);</span></a>
 <a name="160"><span class="lineNum">     160 </span>            : </a>
-<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          1 :     double scalarFactor = -s * s * sigma * sigma / (s * s - sigma * sigma);</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          2 :     double scalarFactor = -s * s * sigma * sigma / (s * s - sigma * sigma);</span></a>
 <a name="162"><span class="lineNum">     162 </span>            : </a>
-<a name="163"><span class="lineNum">     163 </span><span class="lineCov">          1 :     a = a.ScalarMult(scalarFactor);</span></a>
-<a name="164"><span class="lineNum">     164 </span><span class="lineCov">          1 :     b = b.ScalarMult(scalarFactor);</span></a>
-<a name="165"><span class="lineNum">     165 </span><span class="lineCov">          2 :     d = d.ScalarMult(scalarFactor);</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">          2 :     a = a.ScalarMult(scalarFactor);</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineCov">          2 :     b = b.ScalarMult(scalarFactor);</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">          4 :     d = d.ScalarMult(scalarFactor);</span></a>
 <a name="166"><span class="lineNum">     166 </span>            : </a>
-<a name="167"><span class="lineNum">     167 </span><span class="lineCov">          1 :     a = a + s * s;</span></a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov">          1 :     d = d + s * s;</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">          2 :     a = a + s * s;</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">          2 :     d = d + s * s;</span></a>
 <a name="169"><span class="lineNum">     169 </span>            :     OPENFHE_DEBUG(&quot;z1d: &quot; &lt;&lt; TOC(t1));  // 0</a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="171"><span class="lineNum">     171 </span>            : </a>
 <a name="172"><span class="lineNum">     172 </span>            :     // converts the field elements to DFT representation</a>
 <a name="173"><span class="lineNum">     173 </span>            :     a.SetFormat(Format::EVALUATION);</a>
 <a name="174"><span class="lineNum">     174 </span>            :     b.SetFormat(Format::EVALUATION);</a>
 <a name="175"><span class="lineNum">     175 </span>            :     d.SetFormat(Format::EVALUATION);</a>
 <a name="176"><span class="lineNum">     176 </span>            :     OPENFHE_DEBUG(&quot;z1e: &quot; &lt;&lt; TOC(t1));  // 0</a>
-<a name="177"><span class="lineNum">     177 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="178"><span class="lineNum">     178 </span>            : </a>
-<a name="179"><span class="lineNum">     179 </span><span class="lineCov">          2 :     Matrix&lt;int64_t&gt; p2ZVector([]() { return 0; }, n * k, 1);</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov">          4 :     Matrix&lt;int64_t&gt; p2ZVector([]() { return 0; }, n * k, 1);</span></a>
 <a name="180"><span class="lineNum">     180 </span>            : </a>
-<a name="181"><span class="lineNum">     181 </span><span class="lineCov">          1 :     double sigmaLarge = sqrt(s * s - sigma * sigma);</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">          2 :     double sigmaLarge = sqrt(s * s - sigma * sigma);</span></a>
 <a name="182"><span class="lineNum">     182 </span>            : </a>
 <a name="183"><span class="lineNum">     183 </span>            :     // for distribution parameters up to KARNEY_THRESHOLD (experimentally found</a>
 <a name="184"><span class="lineNum">     184 </span>            :     // threshold) use the Peikert's inversion method otherwise, use Karney's</a>
 <a name="185"><span class="lineNum">     185 </span>            :     // method</a>
-<a name="186"><span class="lineNum">     186 </span><span class="lineCov">          1 :     if (sigmaLarge &gt; KARNEY_THRESHOLD) {</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">          2 :     if (sigmaLarge &gt; KARNEY_THRESHOLD) {</span></a>
 <a name="187"><span class="lineNum">     187 </span>            :         // Karney rejection sampling method</a>
-<a name="188"><span class="lineNum">     188 </span><span class="lineCov">       1089 :         for (size_t i = 0; i &lt; n * k; i++) {</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">       1088 :             p2ZVector(i, 0) = dgg.GenerateIntegerKarney(0, sigmaLarge);</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">       2178 :         for (size_t i = 0; i &lt; n * k; i++) {</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">       2176 :             p2ZVector(i, 0) = dgg.GenerateIntegerKarney(0, sigmaLarge);</span></a>
 <a name="190"><span class="lineNum">     190 </span>            :         }</a>
 <a name="191"><span class="lineNum">     191 </span>            :     }</a>
 <a name="192"><span class="lineNum">     192 </span>            :     else {</a>
@@ -260,61 +260,61 @@
 <a name="198"><span class="lineNum">     198 </span>            :         }</a>
 <a name="199"><span class="lineNum">     199 </span>            :     }</a>
 <a name="200"><span class="lineNum">     200 </span>            :     OPENFHE_DEBUG(&quot;z1f1: &quot; &lt;&lt; TOC(t1));</a>
-<a name="201"><span class="lineNum">     201 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="202"><span class="lineNum">     202 </span>            : </a>
 <a name="203"><span class="lineNum">     203 </span>            :     // create k ring elements in coefficient representation</a>
-<a name="204"><span class="lineNum">     204 </span><span class="lineCov">          2 :     Matrix&lt;DCRTPoly&gt; p2 = SplitInt64IntoElements&lt;DCRTPoly&gt;(p2ZVector, n, params);</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">          4 :     Matrix&lt;DCRTPoly&gt; p2 = SplitInt64IntoElements&lt;DCRTPoly&gt;(p2ZVector, n, params);</span></a>
 <a name="205"><span class="lineNum">     205 </span>            :     OPENFHE_DEBUG(&quot;z1f2: &quot; &lt;&lt; TOC(t1));</a>
-<a name="206"><span class="lineNum">     206 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="207"><span class="lineNum">     207 </span>            : </a>
 <a name="208"><span class="lineNum">     208 </span>            :     // now converting to Format::EVALUATION representation before multiplication</a>
-<a name="209"><span class="lineNum">     209 </span><span class="lineCov">          1 :     p2.SetFormat(Format::EVALUATION);</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineCov">          2 :     p2.SetFormat(Format::EVALUATION);</span></a>
 <a name="210"><span class="lineNum">     210 </span>            : </a>
 <a name="211"><span class="lineNum">     211 </span>            :     OPENFHE_DEBUG(&quot;z1g: &quot; &lt;&lt; TOC(t1));  // 17</a>
 <a name="212"><span class="lineNum">     212 </span>            : </a>
-<a name="213"><span class="lineNum">     213 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="214"><span class="lineNum">     214 </span>            : </a>
-<a name="215"><span class="lineNum">     215 </span><span class="lineCov">          1 :     auto zero_alloc = NativePoly::Allocator((*params)[0], Format::EVALUATION);</span></a>
-<a name="216"><span class="lineNum">     216 </span><span class="lineCov">          3 :     Matrix&lt;NativePoly&gt; Tp2(zero_alloc, 2, 1);</span></a>
-<a name="217"><span class="lineNum">     217 </span><span class="lineCov">         69 :     for (unsigned int i = 0; i &lt; k; i++) {</span></a>
-<a name="218"><span class="lineNum">     218 </span><span class="lineCov">        136 :         Tp2(0, 0) += Tprime0(0, i).GetElementAtIndex(0) * (NativePoly)p2(i, 0).GetElementAtIndex(0);</span></a>
-<a name="219"><span class="lineNum">     219 </span><span class="lineCov">        136 :         Tp2(1, 0) += Tprime1(0, i).GetElementAtIndex(0) * (NativePoly)p2(i, 0).GetElementAtIndex(0);</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">          2 :     auto zero_alloc = NativePoly::Allocator((*params)[0], Format::EVALUATION);</span></a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">          6 :     Matrix&lt;NativePoly&gt; Tp2(zero_alloc, 2, 1);</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineCov">        138 :     for (unsigned int i = 0; i &lt; k; i++) {</span></a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">        272 :         Tp2(0, 0) += Tprime0(0, i).GetElementAtIndex(0) * (NativePoly)p2(i, 0).GetElementAtIndex(0);</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">        272 :         Tp2(1, 0) += Tprime1(0, i).GetElementAtIndex(0) * (NativePoly)p2(i, 0).GetElementAtIndex(0);</span></a>
 <a name="220"><span class="lineNum">     220 </span>            :     }</a>
 <a name="221"><span class="lineNum">     221 </span>            : </a>
 <a name="222"><span class="lineNum">     222 </span>            :     OPENFHE_DEBUG(&quot;z1h2: &quot; &lt;&lt; TOC(t1));</a>
-<a name="223"><span class="lineNum">     223 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="224"><span class="lineNum">     224 </span>            :     // change to coefficient representation before converting to field elements</a>
-<a name="225"><span class="lineNum">     225 </span><span class="lineCov">          1 :     Tp2.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">          2 :     Tp2.SetFormat(Format::COEFFICIENT);</span></a>
 <a name="226"><span class="lineNum">     226 </span>            :     OPENFHE_DEBUG(&quot;z1h3: &quot; &lt;&lt; TOC(t1));</a>
-<a name="227"><span class="lineNum">     227 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="228"><span class="lineNum">     228 </span>            : </a>
-<a name="229"><span class="lineNum">     229 </span><span class="lineCov">          3 :     Matrix&lt;Field2n&gt; c([]() { return Field2n(); }, 2, 1);</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">          6 :     Matrix&lt;Field2n&gt; c([]() { return Field2n(); }, 2, 1);</span></a>
 <a name="230"><span class="lineNum">     230 </span>            : </a>
-<a name="231"><span class="lineNum">     231 </span><span class="lineCov">          3 :     c(0, 0) = Field2n(Tp2(0, 0)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
-<a name="232"><span class="lineNum">     232 </span><span class="lineCov">          2 :     c(1, 0) = Field2n(Tp2(1, 0)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineCov">          6 :     c(0, 0) = Field2n(Tp2(0, 0)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineCov">          4 :     c(1, 0) = Field2n(Tp2(1, 0)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
 <a name="233"><span class="lineNum">     233 </span>            : </a>
-<a name="234"><span class="lineNum">     234 </span><span class="lineCov">          1 :     auto p1ZVector = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * 2, 1);</span></a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineCov">          2 :     auto p1ZVector = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * 2, 1);</span></a>
 <a name="235"><span class="lineNum">     235 </span>            :     OPENFHE_DEBUG(&quot;z1i: &quot; &lt;&lt; TOC(t1));</a>
-<a name="236"><span class="lineNum">     236 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="237"><span class="lineNum">     237 </span>            : </a>
-<a name="238"><span class="lineNum">     238 </span><span class="lineCov">          1 :     LatticeGaussSampUtility&lt;DCRTPoly&gt;::ZSampleSigma2x2(a, b, d, c, dgg, p1ZVector);</span></a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineCov">          2 :     LatticeGaussSampUtility&lt;DCRTPoly&gt;::ZSampleSigma2x2(a, b, d, c, dgg, p1ZVector);</span></a>
 <a name="239"><span class="lineNum">     239 </span>            :     OPENFHE_DEBUG(&quot;z1j1: &quot; &lt;&lt; TOC(t1));  // 14</a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="241"><span class="lineNum">     241 </span>            : </a>
 <a name="242"><span class="lineNum">     242 </span>            :     // create 2 ring elements in coefficient representation</a>
-<a name="243"><span class="lineNum">     243 </span><span class="lineCov">          2 :     Matrix&lt;DCRTPoly&gt; p1 = SplitInt64IntoElements&lt;DCRTPoly&gt;(*p1ZVector, n, params);</span></a>
+<a name="243"><span class="lineNum">     243 </span><span class="lineCov">          4 :     Matrix&lt;DCRTPoly&gt; p1 = SplitInt64IntoElements&lt;DCRTPoly&gt;(*p1ZVector, n, params);</span></a>
 <a name="244"><span class="lineNum">     244 </span>            :     OPENFHE_DEBUG(&quot;z1j2: &quot; &lt;&lt; TOC(t1));</a>
-<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="246"><span class="lineNum">     246 </span>            : </a>
-<a name="247"><span class="lineNum">     247 </span><span class="lineCov">          1 :     p1.SetFormat(Format::EVALUATION);</span></a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov">          2 :     p1.SetFormat(Format::EVALUATION);</span></a>
 <a name="248"><span class="lineNum">     248 </span>            :     OPENFHE_DEBUG(&quot;z1j3: &quot; &lt;&lt; TOC(t1));</a>
-<a name="249"><span class="lineNum">     249 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="250"><span class="lineNum">     250 </span>            : </a>
-<a name="251"><span class="lineNum">     251 </span><span class="lineCov">          1 :     *perturbationVector = p1.VStack(p2);</span></a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineCov">          2 :     *perturbationVector = p1.VStack(p2);</span></a>
 <a name="252"><span class="lineNum">     252 </span>            :     OPENFHE_DEBUG(&quot;z1j4: &quot; &lt;&lt; TOC(t1));</a>
-<a name="253"><span class="lineNum">     253 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="254"><span class="lineNum">     254 </span>            :     OPENFHE_DEBUG(&quot;z1tot: &quot; &lt;&lt; TOC(t1_tot));</a>
-<a name="255"><span class="lineNum">     255 </span><span class="lineCov">          1 : }</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">          2 : }</span></a>
 <a name="256"><span class="lineNum">     256 </span>            : </a>
 <a name="257"><span class="lineNum">     257 </span>            : }  // namespace lbcrypto</a>
 <a name="258"><span class="lineNum">     258 </span>            : </a>

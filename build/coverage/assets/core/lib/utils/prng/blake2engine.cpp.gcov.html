@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">5</td>
@@ -101,21 +101,21 @@
 <a name="39"><span class="lineNum">      39 </span>            : </a>
 <a name="40"><span class="lineNum">      40 </span>            : namespace default_prng {</a>
 <a name="41"><span class="lineNum">      41 </span>            : </a>
-<a name="42"><span class="lineNum">      42 </span><span class="lineCov">      10214 : Blake2Engine::~Blake2Engine() {</span></a>
+<a name="42"><span class="lineNum">      42 </span><span class="lineCov">      20428 : Blake2Engine::~Blake2Engine() {</span></a>
 <a name="43"><span class="lineNum">      43 </span>            :     // IMPORTANT: re-init seed for security reasons</a>
 <a name="44"><span class="lineNum">      44 </span>            :     const size_t bytes_to_clear = (m_seed.size() * sizeof(m_seed[0]));</a>
-<a name="45"><span class="lineNum">      45 </span><span class="lineCov">       6812 :     lbcrypto::secure_memset(m_seed.data(), 0, bytes_to_clear);</span></a>
-<a name="46"><span class="lineNum">      46 </span><span class="lineCov">      10214 : }</span></a>
+<a name="45"><span class="lineNum">      45 </span><span class="lineCov">      13624 :     lbcrypto::secure_memset(m_seed.data(), 0, bytes_to_clear);</span></a>
+<a name="46"><span class="lineNum">      46 </span><span class="lineCov">      20428 : }</span></a>
 <a name="47"><span class="lineNum">      47 </span>            : </a>
-<a name="48"><span class="lineNum">      48 </span><span class="lineCov">    3619080 : void Blake2Engine::Generate() {</span></a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineCov">    7238160 : void Blake2Engine::Generate() {</span></a>
 <a name="49"><span class="lineNum">      49 </span>            :     // m_counter is the input to the hash function</a>
 <a name="50"><span class="lineNum">      50 </span>            :     // m_buffer is the output</a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">    3619080 :     if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(PRNG::result_type), &amp;m_counter, sizeof(m_counter),</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">    7238160 :     if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(PRNG::result_type), &amp;m_counter, sizeof(m_counter),</span></a>
 <a name="52"><span class="lineNum">      52 </span>            :                  m_seed.cbegin(), m_seed.size() * sizeof(PRNG::result_type)) != 0) {</a>
 <a name="53"><span class="lineNum">      53 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;PRNG: blake2xb failed&quot;);</span></a>
 <a name="54"><span class="lineNum">      54 </span>            :     }</a>
-<a name="55"><span class="lineNum">      55 </span><span class="lineCov">    3619080 :     m_counter++;</span></a>
-<a name="56"><span class="lineNum">      56 </span><span class="lineCov">    3619080 : }</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">    7238160 :     m_counter++;</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">    7238160 : }</span></a>
 <a name="57"><span class="lineNum">      57 </span>            : </a>
 <a name="58"><span class="lineNum">      58 </span>            : extern &quot;C&quot; {</a>
 <a name="59"><span class="lineNum">      59 </span>            : // if FIXED_SEED is defined, then PRNG uses a fixed seed number for reproducible results during debug.</a>
@@ -126,7 +126,7 @@
 <a name="64"><span class="lineNum">      64 </span>            :  * @brief Blake2SeedGenerator generates the seed array for the Blake2 PRNG engine used by OpenFHE.</a>
 <a name="65"><span class="lineNum">      65 </span>            :  *        This function should be declared as static to make it local to this source file.</a>
 <a name="66"><span class="lineNum">      66 </span>            :  */</a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">       3410 : static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t&amp; seed) {</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">       6820 : static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t&amp; seed) {</span></a>
 <a name="68"><span class="lineNum">      68 </span>            : #if defined(FIXED_SEED)</a>
 <a name="69"><span class="lineNum">      69 </span>            :     // Only used for debugging in the single-threaded mode.</a>
 <a name="70"><span class="lineNum">      70 </span>            :     std::cerr &lt;&lt; &quot;**FOR DEBUGGING ONLY!!!!  Using fixed initializer for PRNG. &quot;</a>
@@ -152,33 +152,33 @@
 <a name="90"><span class="lineNum">      90 </span>            :     // high-resolution clock typically has a nanosecond tick period</a>
 <a name="91"><span class="lineNum">      91 </span>            :     // Arguably this may give up to 32 bits of entropy as the clock gets</a>
 <a name="92"><span class="lineNum">      92 </span>            :     // recycled every 4.3 seconds</a>
-<a name="93"><span class="lineNum">      93 </span><span class="lineCov">       3410 :     initKey[0] = std::chrono::high_resolution_clock::now().time_since_epoch().count();</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineCov">       6820 :     initKey[0] = std::chrono::high_resolution_clock::now().time_since_epoch().count();</span></a>
 <a name="94"><span class="lineNum">      94 </span>            :     // A thread id is often close to being random (on most systems)</a>
-<a name="95"><span class="lineNum">      95 </span><span class="lineCov">       3410 :     initKey[1] = std::hash&lt;std::thread::id&gt;{}(std::this_thread::get_id());</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">       6820 :     initKey[1] = std::hash&lt;std::thread::id&gt;{}(std::this_thread::get_id());</span></a>
 <a name="96"><span class="lineNum">      96 </span>            :     // On a 64-bit machine, the thread id is 64 bits long</a>
 <a name="97"><span class="lineNum">      97 </span>            :     // skip on 32-bit arm architectures</a>
 <a name="98"><span class="lineNum">      98 </span>            :     #if !defined(__arm__) &amp;&amp; !defined(__EMSCRIPTEN__)</a>
 <a name="99"><span class="lineNum">      99 </span>            :     if (sizeof(size_t) == 8)</a>
-<a name="100"><span class="lineNum">     100 </span><span class="lineCov">       3410 :         initKey[2] = (std::hash&lt;std::thread::id&gt;{}(std::this_thread::get_id()) &gt;&gt; 32);</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">       6820 :         initKey[2] = (std::hash&lt;std::thread::id&gt;{}(std::this_thread::get_id()) &gt;&gt; 32);</span></a>
 <a name="101"><span class="lineNum">     101 </span>            :     #endif</a>
 <a name="102"><span class="lineNum">     102 </span>            :     // heap variable; we are going to use up to 64 bits of its memory location as the counter.</a>
 <a name="103"><span class="lineNum">     103 </span>            :     // This will increase the entropy of the PRNG sample</a>
-<a name="104"><span class="lineNum">     104 </span><span class="lineCov">       3410 :     void* mem        = malloc(1);</span></a>
-<a name="105"><span class="lineNum">     105 </span><span class="lineCov">       3410 :     uint64_t counter = reinterpret_cast&lt;uint64_t&gt;(mem);</span></a>
-<a name="106"><span class="lineNum">     106 </span><span class="lineCov">       3410 :     free(mem);</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">       6820 :     void* mem        = malloc(1);</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">       6820 :     uint64_t counter = reinterpret_cast&lt;uint64_t&gt;(mem);</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">       6820 :     free(mem);</span></a>
 <a name="107"><span class="lineNum">     107 </span>            : </a>
 <a name="108"><span class="lineNum">     108 </span>            :     std::uniform_int_distribution&lt;uint32_t&gt; distribution(0);</a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">       3410 :     Blake2Engine gen(initKey, counter);</span></a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineCov">      57970 :     for (auto&amp; s : seed)</span></a>
-<a name="111"><span class="lineNum">     111 </span><span class="lineCov">      54560 :         s = distribution(gen);</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">       6820 :     Blake2Engine gen(initKey, counter);</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">     115940 :     for (auto&amp; s : seed)</span></a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">     109120 :         s = distribution(gen);</span></a>
 <a name="112"><span class="lineNum">     112 </span>            : </a>
-<a name="113"><span class="lineNum">     113 </span><span class="lineCov">       3410 :     Blake2Engine::blake2_seed_array_t rdseed{};</span></a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineCov">       6820 :     Blake2Engine::blake2_seed_array_t rdseed{};</span></a>
 <a name="114"><span class="lineNum">     114 </span>            :     size_t attempts  = 3;</a>
 <a name="115"><span class="lineNum">     115 </span>            :     bool rdGenPassed = false;</a>
-<a name="116"><span class="lineNum">     116 </span><span class="lineCov">       6820 :     for (size_t i = 0; i &lt; attempts &amp;&amp; !rdGenPassed; ++i) {</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">      13640 :     for (size_t i = 0; i &lt; attempts &amp;&amp; !rdGenPassed; ++i) {</span></a>
 <a name="117"><span class="lineNum">     117 </span>            :         try {</a>
-<a name="118"><span class="lineNum">     118 </span><span class="lineCov">       3410 :             std::random_device genR;</span></a>
-<a name="119"><span class="lineNum">     119 </span><span class="lineCov">      57970 :             for (auto&amp; rds : rdseed) {</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">       6820 :             std::random_device genR;</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">     115940 :             for (auto&amp; rds : rdseed) {</span></a>
 <a name="120"><span class="lineNum">     120 </span>            :                 // we use the fact that there is no overflow for unsigned integers</a>
 <a name="121"><span class="lineNum">     121 </span>            :                 // (from C++ standard) i.e., arithmetic mod 2^32 is performed. For</a>
 <a name="122"><span class="lineNum">     122 </span>            :                 // the seed to be random, it is sufficient for one of the two</a>
@@ -186,36 +186,36 @@
 <a name="124"><span class="lineNum">     124 </span>            :                 // distribution(genR) is random. We add distribution(gen) just in</a>
 <a name="125"><span class="lineNum">     125 </span>            :                 // case there is an implementation issue with random_device (as in</a>
 <a name="126"><span class="lineNum">     126 </span>            :                 // older MinGW systems).</a>
-<a name="127"><span class="lineNum">     127 </span><span class="lineCov">      54560 :                 rds = distribution(genR);</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">     109120 :                 rds = distribution(genR);</span></a>
 <a name="128"><span class="lineNum">     128 </span>            :             }</a>
 <a name="129"><span class="lineNum">     129 </span>            :             rdGenPassed = true;</a>
 <a name="130"><span class="lineNum">     130 </span>            :         }</a>
 <a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :         catch (std::exception&amp; e) {</span></a>
 <a name="132"><span class="lineNum">     132 </span>            :         }</a>
 <a name="133"><span class="lineNum">     133 </span>            :     }</a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineCov">       3410 :     if (!rdGenPassed)</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">       6820 :     if (!rdGenPassed)</span></a>
 <a name="135"><span class="lineNum">     135 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;std::random_device failed&quot;);</span></a>
 <a name="136"><span class="lineNum">     136 </span>            : </a>
-<a name="137"><span class="lineNum">     137 </span><span class="lineCov">      57970 :     for (uint32_t i = 0; i &lt; Blake2Engine::MAX_SEED_GENS; ++i)</span></a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">      54560 :         seed[i] += rdseed[i];</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">     115940 :     for (uint32_t i = 0; i &lt; Blake2Engine::MAX_SEED_GENS; ++i)</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">     109120 :         seed[i] += rdseed[i];</span></a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
 <a name="140"><span class="lineNum">     140 </span>            :     // IMPORTANT: re-init rdseed for security reasons</a>
 <a name="141"><span class="lineNum">     141 </span>            :     const size_t bytes_to_clear = (rdseed.size() * sizeof(rdseed[0]));</a>
-<a name="142"><span class="lineNum">     142 </span><span class="lineCov">       3410 :     lbcrypto::secure_memset(rdseed.data(), 0, bytes_to_clear);</span></a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">       6820 :     lbcrypto::secure_memset(rdseed.data(), 0, bytes_to_clear);</span></a>
 <a name="143"><span class="lineNum">     143 </span>            : #endif  // FIXED_SEED</a>
-<a name="144"><span class="lineNum">     144 </span><span class="lineCov">       3410 : }</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">       6820 : }</span></a>
 <a name="145"><span class="lineNum">     145 </span>            : }</a>
 <a name="146"><span class="lineNum">     146 </span>            : </a>
-<a name="147"><span class="lineNum">     147 </span><span class="lineCov">       3410 : PRNG* createEngineInstance() {</span></a>
-<a name="148"><span class="lineNum">     148 </span><span class="lineCov">       3410 :     Blake2Engine::blake2_seed_array_t seed{};</span></a>
-<a name="149"><span class="lineNum">     149 </span><span class="lineCov">       3410 :     Blake2SeedGenerator(seed);</span></a>
-<a name="150"><span class="lineNum">     150 </span><span class="lineCov">       3410 :     PRNG* ptr = new Blake2Engine(seed, 0);</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">       6820 : PRNG* createEngineInstance() {</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">       6820 :     Blake2Engine::blake2_seed_array_t seed{};</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineCov">       6820 :     Blake2SeedGenerator(seed);</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">       6820 :     PRNG* ptr = new Blake2Engine(seed, 0);</span></a>
 <a name="151"><span class="lineNum">     151 </span>            : </a>
 <a name="152"><span class="lineNum">     152 </span>            :     // IMPORTANT: re-init seed for security reasons</a>
 <a name="153"><span class="lineNum">     153 </span>            :     const size_t bytes_to_clear = (seed.size() * sizeof(seed[0]));</a>
-<a name="154"><span class="lineNum">     154 </span><span class="lineCov">       3410 :     lbcrypto::secure_memset(seed.data(), 0, bytes_to_clear);</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">       6820 :     lbcrypto::secure_memset(seed.data(), 0, bytes_to_clear);</span></a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
-<a name="156"><span class="lineNum">     156 </span><span class="lineCov">       3410 :     return ptr;</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">       6820 :     return ptr;</span></a>
 <a name="157"><span class="lineNum">     157 </span>            : }</a>
 <a name="158"><span class="lineNum">     158 </span>            : </a>
 <a name="159"><span class="lineNum">     159 </span>            : }  // namespace default_prng</a>

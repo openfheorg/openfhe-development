@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">4</td>
@@ -108,42 +108,42 @@
 <a name="46"><span class="lineNum">      46 </span>            : namespace lbcrypto {</a>
 <a name="47"><span class="lineNum">      47 </span>            : </a>
 <a name="48"><span class="lineNum">      48 </span>            : template &lt;&gt;</a>
-<a name="49"><span class="lineNum">      49 </span><span class="lineCov">          5 : std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt; RLWETrapdoorUtility&lt;Poly&gt;::TrapdoorGen(</span></a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">         10 : std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt; RLWETrapdoorUtility&lt;Poly&gt;::TrapdoorGen(</span></a>
 <a name="50"><span class="lineNum">      50 </span>            :     std::shared_ptr&lt;typename Poly::Params&gt; params, double stddev, int64_t base, bool bal) {</a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">          5 :     auto zero_alloc     = Poly::Allocator(params, EVALUATION);</span></a>
-<a name="52"><span class="lineNum">      52 </span><span class="lineCov">          5 :     auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);</span></a>
-<a name="53"><span class="lineNum">      53 </span><span class="lineCov">          5 :     auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">         10 :     auto zero_alloc     = Poly::Allocator(params, EVALUATION);</span></a>
+<a name="52"><span class="lineNum">      52 </span><span class="lineCov">         10 :     auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);</span></a>
+<a name="53"><span class="lineNum">      53 </span><span class="lineCov">         10 :     auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);</span></a>
 <a name="54"><span class="lineNum">      54 </span>            : </a>
-<a name="55"><span class="lineNum">      55 </span><span class="lineCov">          5 :     double val   = params-&gt;GetModulus().ConvertToDouble();</span></a>
-<a name="56"><span class="lineNum">      56 </span><span class="lineCov">          5 :     double nBits = floor(log2(val - 1.0) + 1.0);</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">         10 :     double val   = params-&gt;GetModulus().ConvertToDouble();</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">         10 :     double nBits = floor(log2(val - 1.0) + 1.0);</span></a>
 <a name="57"><span class="lineNum">      57 </span>            : </a>
-<a name="58"><span class="lineNum">      58 </span><span class="lineCov">          5 :     size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">         10 :     size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */</span></a>
 <a name="59"><span class="lineNum">      59 </span>            : </a>
-<a name="60"><span class="lineNum">      60 </span><span class="lineCov">          5 :     if (bal == true) {</span></a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">         10 :     if (bal == true) {</span></a>
 <a name="61"><span class="lineNum">      61 </span><span class="lineNoCov">          0 :         k++;  // for a balanced digit representation, there is an extra digit</span></a>
 <a name="62"><span class="lineNum">      62 </span>            :               // required</a>
 <a name="63"><span class="lineNum">      63 </span>            :     }</a>
 <a name="64"><span class="lineNum">      64 </span>            : </a>
-<a name="65"><span class="lineNum">      65 </span><span class="lineCov">          5 :     auto a = uniform_alloc();</span></a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">         10 :     auto a = uniform_alloc();</span></a>
 <a name="66"><span class="lineNum">      66 </span>            : </a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineCov">         15 :     Matrix&lt;Poly&gt; r(zero_alloc, 1, k, gaussian_alloc);</span></a>
-<a name="68"><span class="lineNum">      68 </span><span class="lineCov">         15 :     Matrix&lt;Poly&gt; e(zero_alloc, 1, k, gaussian_alloc);</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">         30 :     Matrix&lt;Poly&gt; r(zero_alloc, 1, k, gaussian_alloc);</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">         30 :     Matrix&lt;Poly&gt; e(zero_alloc, 1, k, gaussian_alloc);</span></a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
 <a name="70"><span class="lineNum">      70 </span>            :     // Converts discrete gaussians to Evaluation representation</a>
-<a name="71"><span class="lineNum">      71 </span><span class="lineCov">          5 :     r.SetFormat(Format::EVALUATION);</span></a>
-<a name="72"><span class="lineNum">      72 </span><span class="lineCov">          5 :     e.SetFormat(Format::EVALUATION);</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">         10 :     r.SetFormat(Format::EVALUATION);</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">         10 :     e.SetFormat(Format::EVALUATION);</span></a>
 <a name="73"><span class="lineNum">      73 </span>            : </a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">         15 :     Matrix&lt;Poly&gt; g = Matrix&lt;Poly&gt;(zero_alloc, 1, k).GadgetVector(base);</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">         30 :     Matrix&lt;Poly&gt; g = Matrix&lt;Poly&gt;(zero_alloc, 1, k).GadgetVector(base);</span></a>
 <a name="75"><span class="lineNum">      75 </span>            : </a>
-<a name="76"><span class="lineNum">      76 </span><span class="lineCov">         10 :     Matrix&lt;Poly&gt; A(zero_alloc, 1, k + 2);</span></a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">          5 :     A(0, 0) = 1;</span></a>
-<a name="78"><span class="lineNum">      78 </span><span class="lineCov">          5 :     A(0, 1) = a;</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">         20 :     Matrix&lt;Poly&gt; A(zero_alloc, 1, k + 2);</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">         10 :     A(0, 0) = 1;</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">         10 :     A(0, 1) = a;</span></a>
 <a name="79"><span class="lineNum">      79 </span>            : </a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov">        140 :     for (size_t i = 0; i &lt; k; ++i) {</span></a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineCov">        135 :         A(0, i + 2) = g(0, i) - (a * r(0, i) + e(0, i));</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">        280 :     for (size_t i = 0; i &lt; k; ++i) {</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">        270 :         A(0, i + 2) = g(0, i) - (a * r(0, i) + e(0, i));</span></a>
 <a name="82"><span class="lineNum">      82 </span>            :     }</a>
 <a name="83"><span class="lineNum">      83 </span>            : </a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">         15 :     return std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt;(A, RLWETrapdoorPair&lt;Poly&gt;(r, e));</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">         30 :     return std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt;(A, RLWETrapdoorPair&lt;Poly&gt;(r, e));</span></a>
 <a name="85"><span class="lineNum">      85 </span>            : }</a>
 <a name="86"><span class="lineNum">      86 </span>            : </a>
 <a name="87"><span class="lineNum">      87 </span>            : template &lt;&gt;</a>
@@ -186,50 +186,50 @@
 <a name="124"><span class="lineNum">     124 </span>            : }</a>
 <a name="125"><span class="lineNum">     125 </span>            : </a>
 <a name="126"><span class="lineNum">     126 </span>            : template &lt;&gt;</a>
-<a name="127"><span class="lineNum">     127 </span><span class="lineCov">          6 : std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt; RLWETrapdoorUtility&lt;Poly&gt;::TrapdoorGenSquareMat(</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">         12 : std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt; RLWETrapdoorUtility&lt;Poly&gt;::TrapdoorGenSquareMat(</span></a>
 <a name="128"><span class="lineNum">     128 </span>            :     std::shared_ptr&lt;typename Poly::Params&gt; params, double stddev, size_t d, int64_t base, bool bal) {</a>
-<a name="129"><span class="lineNum">     129 </span><span class="lineCov">          6 :     auto zero_alloc     = Poly::Allocator(params, EVALUATION);</span></a>
-<a name="130"><span class="lineNum">     130 </span><span class="lineCov">          6 :     auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);</span></a>
-<a name="131"><span class="lineNum">     131 </span><span class="lineCov">          6 :     auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">         12 :     auto zero_alloc     = Poly::Allocator(params, EVALUATION);</span></a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineCov">         12 :     auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">         12 :     auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);</span></a>
 <a name="132"><span class="lineNum">     132 </span>            : </a>
-<a name="133"><span class="lineNum">     133 </span><span class="lineCov">          6 :     double val   = params-&gt;GetModulus().ConvertToDouble();</span></a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineCov">          6 :     double nBits = ceil(log2(val));</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">         12 :     double val   = params-&gt;GetModulus().ConvertToDouble();</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">         12 :     double nBits = ceil(log2(val));</span></a>
 <a name="135"><span class="lineNum">     135 </span>            : </a>
-<a name="136"><span class="lineNum">     136 </span><span class="lineCov">          6 :     size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">         12 :     size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */</span></a>
 <a name="137"><span class="lineNum">     137 </span>            : </a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          6 :     if (bal == true) {</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">         12 :     if (bal == true) {</span></a>
 <a name="139"><span class="lineNum">     139 </span><span class="lineNoCov">          0 :         k++;  // for a balanced digit representation, there is an extra digit</span></a>
 <a name="140"><span class="lineNum">     140 </span>            :               // required</a>
 <a name="141"><span class="lineNum">     141 </span>            :     }</a>
 <a name="142"><span class="lineNum">     142 </span>            : </a>
-<a name="143"><span class="lineNum">     143 </span><span class="lineCov">         18 :     Matrix&lt;Poly&gt; R(zero_alloc, d, d * k, gaussian_alloc);</span></a>
-<a name="144"><span class="lineNum">     144 </span><span class="lineCov">         18 :     Matrix&lt;Poly&gt; E(zero_alloc, d, d * k, gaussian_alloc);</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">         36 :     Matrix&lt;Poly&gt; R(zero_alloc, d, d * k, gaussian_alloc);</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">         36 :     Matrix&lt;Poly&gt; E(zero_alloc, d, d * k, gaussian_alloc);</span></a>
 <a name="145"><span class="lineNum">     145 </span>            : </a>
-<a name="146"><span class="lineNum">     146 </span><span class="lineCov">         18 :     Matrix&lt;Poly&gt; Abar(zero_alloc, d, d, uniform_alloc);</span></a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineCov">         36 :     Matrix&lt;Poly&gt; Abar(zero_alloc, d, d, uniform_alloc);</span></a>
 <a name="147"><span class="lineNum">     147 </span>            : </a>
 <a name="148"><span class="lineNum">     148 </span>            :     // Converts discrete gaussians to Evaluation representation</a>
-<a name="149"><span class="lineNum">     149 </span><span class="lineCov">          6 :     R.SetFormat(Format::EVALUATION);</span></a>
-<a name="150"><span class="lineNum">     150 </span><span class="lineCov">          6 :     E.SetFormat(Format::EVALUATION);</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineCov">         12 :     R.SetFormat(Format::EVALUATION);</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineCov">         12 :     E.SetFormat(Format::EVALUATION);</span></a>
 <a name="151"><span class="lineNum">     151 </span>            : </a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineCov">         18 :     Matrix&lt;Poly&gt; G = Matrix&lt;Poly&gt;(zero_alloc, d, d * k).GadgetVector(base);</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">         36 :     Matrix&lt;Poly&gt; G = Matrix&lt;Poly&gt;(zero_alloc, d, d * k).GadgetVector(base);</span></a>
 <a name="153"><span class="lineNum">     153 </span>            : </a>
-<a name="154"><span class="lineNum">     154 </span><span class="lineCov">         18 :     Matrix&lt;Poly&gt; A(zero_alloc, d, d * 2);</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">         36 :     Matrix&lt;Poly&gt; A(zero_alloc, d, d * 2);</span></a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
-<a name="156"><span class="lineNum">     156 </span><span class="lineCov">         30 :     for (size_t i = 0; i &lt; d; i++) {</span></a>
-<a name="157"><span class="lineNum">     157 </span><span class="lineCov">        128 :         for (size_t j = 0; j &lt; d; j++) {</span></a>
-<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        104 :             A(i, j) = Abar(i, j);</span></a>
-<a name="159"><span class="lineNum">     159 </span><span class="lineCov">        104 :             if (i == j)</span></a>
-<a name="160"><span class="lineNum">     160 </span><span class="lineCov">         24 :                 A(i, j + d) = 1;</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">         60 :     for (size_t i = 0; i &lt; d; i++) {</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">        256 :         for (size_t j = 0; j &lt; d; j++) {</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        208 :             A(i, j) = Abar(i, j);</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">        208 :             if (i == j)</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">         48 :                 A(i, j + d) = 1;</span></a>
 <a name="161"><span class="lineNum">     161 </span>            :             else</a>
-<a name="162"><span class="lineNum">     162 </span><span class="lineCov">         80 :                 A(i, j + d) = 0;</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">        160 :                 A(i, j + d) = 0;</span></a>
 <a name="163"><span class="lineNum">     163 </span>            :         }</a>
 <a name="164"><span class="lineNum">     164 </span>            :     }</a>
 <a name="165"><span class="lineNum">     165 </span>            : </a>
-<a name="166"><span class="lineNum">     166 </span><span class="lineCov">          6 :     Matrix&lt;Poly&gt; A1 = G - (Abar * R + E);</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">         12 :     Matrix&lt;Poly&gt; A1 = G - (Abar * R + E);</span></a>
 <a name="167"><span class="lineNum">     167 </span>            : </a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineCov">          6 :     A.HStack(A1);</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">         12 :     A.HStack(A1);</span></a>
 <a name="169"><span class="lineNum">     169 </span>            : </a>
-<a name="170"><span class="lineNum">     170 </span><span class="lineCov">         18 :     return std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt;(A, RLWETrapdoorPair&lt;Poly&gt;(R, E));</span></a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">         36 :     return std::pair&lt;Matrix&lt;Poly&gt;, RLWETrapdoorPair&lt;Poly&gt;&gt;(A, RLWETrapdoorPair&lt;Poly&gt;(R, E));</span></a>
 <a name="171"><span class="lineNum">     171 </span>            : }</a>
 <a name="172"><span class="lineNum">     172 </span>            : </a>
 <a name="173"><span class="lineNum">     173 </span>            : template &lt;&gt;</a>
@@ -283,69 +283,69 @@
 <a name="221"><span class="lineNum">     221 </span>            : // https://eprint.iacr.org/2017/844.pdf</a>
 <a name="222"><span class="lineNum">     222 </span>            : </a>
 <a name="223"><span class="lineNum">     223 </span>            : template &lt;&gt;</a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineCov">          1 : Matrix&lt;Poly&gt; RLWETrapdoorUtility&lt;Poly&gt;::GaussSamp(size_t n, size_t k, const Matrix&lt;Poly&gt;&amp; A,</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">          2 : Matrix&lt;Poly&gt; RLWETrapdoorUtility&lt;Poly&gt;::GaussSamp(size_t n, size_t k, const Matrix&lt;Poly&gt;&amp; A,</span></a>
 <a name="225"><span class="lineNum">     225 </span>            :                                                   const RLWETrapdoorPair&lt;Poly&gt;&amp; T, const Poly&amp; u,</a>
 <a name="226"><span class="lineNum">     226 </span>            :                                                   typename Poly::DggType&amp; dgg, typename Poly::DggType&amp; dggLargeSigma,</a>
 <a name="227"><span class="lineNum">     227 </span>            :                                                   int64_t base) {</a>
 <a name="228"><span class="lineNum">     228 </span>            :     OPENFHE_DEBUG_FLAG(false);</a>
 <a name="229"><span class="lineNum">     229 </span>            :     TimeVar t1, t1_tot, t2, t2_tot;</a>
-<a name="230"><span class="lineNum">     230 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
-<a name="231"><span class="lineNum">     231 </span><span class="lineCov">          1 :     TIC(t1_tot);</span></a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineCov">          2 :     TIC(t1_tot);</span></a>
 <a name="232"><span class="lineNum">     232 </span>            :     const std::shared_ptr&lt;typename Poly::Params&gt; params = u.GetParams();</a>
-<a name="233"><span class="lineNum">     233 </span><span class="lineCov">          1 :     auto zero_alloc                                     = Poly::Allocator(params, EVALUATION);</span></a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineCov">          2 :     auto zero_alloc                                     = Poly::Allocator(params, EVALUATION);</span></a>
 <a name="234"><span class="lineNum">     234 </span>            : </a>
-<a name="235"><span class="lineNum">     235 </span><span class="lineCov">          1 :     double c = (base + 1) * SIGMA;</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineCov">          2 :     double c = (base + 1) * SIGMA;</span></a>
 <a name="236"><span class="lineNum">     236 </span>            : </a>
 <a name="237"><span class="lineNum">     237 </span>            :     const typename Poly::Integer&amp; modulus = A(0, 0).GetModulus();</a>
 <a name="238"><span class="lineNum">     238 </span>            : </a>
 <a name="239"><span class="lineNum">     239 </span>            :     // spectral bound s</a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov">          1 :     double s = SPECTRAL_BOUND(n, k, base);</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">          2 :     double s = SPECTRAL_BOUND(n, k, base);</span></a>
 <a name="241"><span class="lineNum">     241 </span>            : </a>
 <a name="242"><span class="lineNum">     242 </span>            :     OPENFHE_DEBUG(&quot;c &quot; &lt;&lt; c &lt;&lt; &quot; s &quot; &lt;&lt; s);</a>
 <a name="243"><span class="lineNum">     243 </span>            : </a>
 <a name="244"><span class="lineNum">     244 </span>            :     // perturbation vector in evaluation representation</a>
-<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          1 :     auto pHat = std::make_shared&lt;Matrix&lt;Poly&gt;&gt;(zero_alloc, k + 2, 1);</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          2 :     auto pHat = std::make_shared&lt;Matrix&lt;Poly&gt;&gt;(zero_alloc, k + 2, 1);</span></a>
 <a name="246"><span class="lineNum">     246 </span>            :     OPENFHE_DEBUG(&quot;t1a: &quot; &lt;&lt; TOC(t1));</a>
-<a name="247"><span class="lineNum">     247 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
-<a name="248"><span class="lineNum">     248 </span><span class="lineCov">          1 :     ZSampleSigmaP(n, s, c, T, dgg, dggLargeSigma, pHat);</span></a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">          2 :     ZSampleSigmaP(n, s, c, T, dgg, dggLargeSigma, pHat);</span></a>
 <a name="249"><span class="lineNum">     249 </span>            :     OPENFHE_DEBUG(&quot;t1b: &quot; &lt;&lt; TOC(t1));  // this takes the most time 61</a>
-<a name="250"><span class="lineNum">     250 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
 <a name="251"><span class="lineNum">     251 </span>            :     // It is assumed that A has dimension 1 x (k + 2) and pHat has the dimension</a>
 <a name="252"><span class="lineNum">     252 </span>            :     // of (k + 2) x 1 perturbedSyndrome is in the evaluation representation</a>
-<a name="253"><span class="lineNum">     253 </span><span class="lineCov">          2 :     Poly perturbedSyndrome = u - (A.Mult(*pHat))(0, 0);</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineCov">          4 :     Poly perturbedSyndrome = u - (A.Mult(*pHat))(0, 0);</span></a>
 <a name="254"><span class="lineNum">     254 </span>            : </a>
 <a name="255"><span class="lineNum">     255 </span>            :     OPENFHE_DEBUG(&quot;t1c: &quot; &lt;&lt; TOC(t1));  // takes 2</a>
-<a name="256"><span class="lineNum">     256 </span><span class="lineCov">          1 :     TIC(t1);</span></a>
-<a name="257"><span class="lineNum">     257 </span><span class="lineCov">          2 :     Matrix&lt;int64_t&gt; zHatBBI([]() { return 0; }, k, n);</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineCov">          2 :     TIC(t1);</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineCov">          4 :     Matrix&lt;int64_t&gt; zHatBBI([]() { return 0; }, k, n);</span></a>
 <a name="258"><span class="lineNum">     258 </span>            :     OPENFHE_DEBUG(&quot;t1d: &quot; &lt;&lt; TOC(t1));     // takes 0</a>
 <a name="259"><span class="lineNum">     259 </span>            :     OPENFHE_DEBUG(&quot;t1: &quot; &lt;&lt; TOC(t1_tot));  // takes 64</a>
-<a name="260"><span class="lineNum">     260 </span><span class="lineCov">          1 :     TIC(t2);</span></a>
-<a name="261"><span class="lineNum">     261 </span><span class="lineCov">          1 :     TIC(t2_tot);</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineCov">          2 :     TIC(t2);</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">          2 :     TIC(t2_tot);</span></a>
 <a name="262"><span class="lineNum">     262 </span>            :     perturbedSyndrome.SetFormat(Format::COEFFICIENT);</a>
 <a name="263"><span class="lineNum">     263 </span>            :     OPENFHE_DEBUG(&quot;t2a: &quot; &lt;&lt; TOC(t2));  // takes 1</a>
-<a name="264"><span class="lineNum">     264 </span><span class="lineCov">          1 :     TIC(t2);</span></a>
-<a name="265"><span class="lineNum">     265 </span><span class="lineCov">          1 :     LatticeGaussSampUtility&lt;Poly&gt;::GaussSampGqArbBase(perturbedSyndrome, c, k, modulus, base, dgg, &amp;zHatBBI);</span></a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineCov">          2 :     TIC(t2);</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">          2 :     LatticeGaussSampUtility&lt;Poly&gt;::GaussSampGqArbBase(perturbedSyndrome, c, k, modulus, base, dgg, &amp;zHatBBI);</span></a>
 <a name="266"><span class="lineNum">     266 </span>            :     OPENFHE_DEBUG(&quot;t2b: &quot; &lt;&lt; TOC(t2));  // takes 36</a>
-<a name="267"><span class="lineNum">     267 </span><span class="lineCov">          1 :     TIC(t2);</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">          2 :     TIC(t2);</span></a>
 <a name="268"><span class="lineNum">     268 </span>            :     // Convert zHat from a matrix of BBI to a vector of Element ring elements</a>
 <a name="269"><span class="lineNum">     269 </span>            :     // zHat is in the coefficient representation</a>
-<a name="270"><span class="lineNum">     270 </span><span class="lineCov">          2 :     Matrix&lt;Poly&gt; zHat = SplitInt64AltIntoElements&lt;Poly&gt;(zHatBBI, n, params);</span></a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">          4 :     Matrix&lt;Poly&gt; zHat = SplitInt64AltIntoElements&lt;Poly&gt;(zHatBBI, n, params);</span></a>
 <a name="271"><span class="lineNum">     271 </span>            : </a>
 <a name="272"><span class="lineNum">     272 </span>            :     OPENFHE_DEBUG(&quot;t2c: &quot; &lt;&lt; TOC(t2));  // takes 0</a>
 <a name="273"><span class="lineNum">     273 </span>            :     // Now converting it to the evaluation representation before multiplication</a>
-<a name="274"><span class="lineNum">     274 </span><span class="lineCov">          1 :     zHat.SetFormat(Format::EVALUATION);</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineCov">          2 :     zHat.SetFormat(Format::EVALUATION);</span></a>
 <a name="275"><span class="lineNum">     275 </span>            :     OPENFHE_DEBUG(&quot;t2d: &quot; &lt;&lt; TOC(t2));  // takes 17</a>
 <a name="276"><span class="lineNum">     276 </span>            :     OPENFHE_DEBUG(&quot;t2: &quot; &lt;&lt; TOC(t2_tot));</a>
 <a name="277"><span class="lineNum">     277 </span>            :     // TIC(t3); seems trivial</a>
-<a name="278"><span class="lineNum">     278 </span><span class="lineCov">          1 :     Matrix&lt;Poly&gt; zHatPrime(zero_alloc, k + 2, 1);</span></a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineCov">          2 :     Matrix&lt;Poly&gt; zHatPrime(zero_alloc, k + 2, 1);</span></a>
 <a name="279"><span class="lineNum">     279 </span>            : </a>
-<a name="280"><span class="lineNum">     280 </span><span class="lineCov">          2 :     zHatPrime(0, 0) = (*pHat)(0, 0) + T.m_e.Mult(zHat)(0, 0);</span></a>
-<a name="281"><span class="lineNum">     281 </span><span class="lineCov">          2 :     zHatPrime(1, 0) = (*pHat)(1, 0) + T.m_r.Mult(zHat)(0, 0);</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">          4 :     zHatPrime(0, 0) = (*pHat)(0, 0) + T.m_e.Mult(zHat)(0, 0);</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">          4 :     zHatPrime(1, 0) = (*pHat)(1, 0) + T.m_r.Mult(zHat)(0, 0);</span></a>
 <a name="282"><span class="lineNum">     282 </span>            : </a>
-<a name="283"><span class="lineNum">     283 </span><span class="lineCov">         28 :     for (size_t row = 2; row &lt; k + 2; ++row)</span></a>
-<a name="284"><span class="lineNum">     284 </span><span class="lineCov">         27 :         zHatPrime(row, 0) = (*pHat)(row, 0) + zHat(row - 2, 0);</span></a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineCov">         56 :     for (size_t row = 2; row &lt; k + 2; ++row)</span></a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">         54 :         zHatPrime(row, 0) = (*pHat)(row, 0) + zHat(row - 2, 0);</span></a>
 <a name="285"><span class="lineNum">     285 </span>            : </a>
-<a name="286"><span class="lineNum">     286 </span><span class="lineCov">          1 :     return zHatPrime;</span></a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineCov">          2 :     return zHatPrime;</span></a>
 <a name="287"><span class="lineNum">     287 </span>            : }</a>
 <a name="288"><span class="lineNum">     288 </span>            : </a>
 <a name="289"><span class="lineNum">     289 </span>            : // Gaussian sampling as described in Alogorithm 2 of</a>
@@ -422,72 +422,72 @@
 <a name="360"><span class="lineNum">     360 </span>            : // Ring (LWE)&quot;</a>
 <a name="361"><span class="lineNum">     361 </span>            : </a>
 <a name="362"><span class="lineNum">     362 </span>            : template &lt;&gt;</a>
-<a name="363"><span class="lineNum">     363 </span><span class="lineCov">          4 : Matrix&lt;Poly&gt; RLWETrapdoorUtility&lt;Poly&gt;::GaussSampSquareMat(size_t n, size_t k, const Matrix&lt;Poly&gt;&amp; A,</span></a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineCov">          8 : Matrix&lt;Poly&gt; RLWETrapdoorUtility&lt;Poly&gt;::GaussSampSquareMat(size_t n, size_t k, const Matrix&lt;Poly&gt;&amp; A,</span></a>
 <a name="364"><span class="lineNum">     364 </span>            :                                                            const RLWETrapdoorPair&lt;Poly&gt;&amp; T, const Matrix&lt;Poly&gt;&amp; U,</a>
 <a name="365"><span class="lineNum">     365 </span>            :                                                            typename Poly::DggType&amp; dgg,</a>
 <a name="366"><span class="lineNum">     366 </span>            :                                                            typename Poly::DggType&amp; dggLargeSigma, int64_t base) {</a>
 <a name="367"><span class="lineNum">     367 </span>            :     const std::shared_ptr&lt;typename Poly::Params&gt; params = U(0, 0).GetParams();</a>
-<a name="368"><span class="lineNum">     368 </span><span class="lineCov">          4 :     auto zero_alloc                                     = Poly::Allocator(params, EVALUATION);</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">          8 :     auto zero_alloc                                     = Poly::Allocator(params, EVALUATION);</span></a>
 <a name="369"><span class="lineNum">     369 </span>            : </a>
-<a name="370"><span class="lineNum">     370 </span><span class="lineCov">          4 :     double c = (base + 1) * SIGMA;</span></a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineCov">          8 :     double c = (base + 1) * SIGMA;</span></a>
 <a name="371"><span class="lineNum">     371 </span>            : </a>
 <a name="372"><span class="lineNum">     372 </span>            :     const typename Poly::Integer&amp; modulus = A(0, 0).GetModulus();</a>
 <a name="373"><span class="lineNum">     373 </span>            : </a>
-<a name="374"><span class="lineNum">     374 </span><span class="lineCov">          4 :     size_t d = T.m_r.GetRows();</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineCov">          8 :     size_t d = T.m_r.GetRows();</span></a>
 <a name="375"><span class="lineNum">     375 </span>            : </a>
 <a name="376"><span class="lineNum">     376 </span>            :     // spectral bound s</a>
-<a name="377"><span class="lineNum">     377 </span><span class="lineCov">          4 :     double s = SPECTRAL_BOUND_D(n, k, base, d);</span></a>
+<a name="377"><span class="lineNum">     377 </span><span class="lineCov">          8 :     double s = SPECTRAL_BOUND_D(n, k, base, d);</span></a>
 <a name="378"><span class="lineNum">     378 </span>            : </a>
 <a name="379"><span class="lineNum">     379 </span>            :     // perturbation vector in evaluation representation</a>
-<a name="380"><span class="lineNum">     380 </span><span class="lineCov">          4 :     auto pHat = std::make_shared&lt;Matrix&lt;Poly&gt;&gt;(zero_alloc, d * (k + 2), d);</span></a>
+<a name="380"><span class="lineNum">     380 </span><span class="lineCov">          8 :     auto pHat = std::make_shared&lt;Matrix&lt;Poly&gt;&gt;(zero_alloc, d * (k + 2), d);</span></a>
 <a name="381"><span class="lineNum">     381 </span>            : </a>
-<a name="382"><span class="lineNum">     382 </span><span class="lineCov">          8 :     SamplePertSquareMat(n, s, c, T, dgg, dggLargeSigma, pHat);</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineCov">         16 :     SamplePertSquareMat(n, s, c, T, dgg, dggLargeSigma, pHat);</span></a>
 <a name="383"><span class="lineNum">     383 </span>            : </a>
 <a name="384"><span class="lineNum">     384 </span>            :     // It is assumed that A has dimension d x d*(k + 2) and pHat has the dimension</a>
 <a name="385"><span class="lineNum">     385 </span>            :     // of d*(k + 2) x d perturbedSyndrome is in the evaluation representation</a>
-<a name="386"><span class="lineNum">     386 </span><span class="lineCov">          8 :     Matrix&lt;Poly&gt; perturbedSyndrome = U - (A.Mult(*pHat));</span></a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineCov">         16 :     Matrix&lt;Poly&gt; perturbedSyndrome = U - (A.Mult(*pHat));</span></a>
 <a name="387"><span class="lineNum">     387 </span>            : </a>
-<a name="388"><span class="lineNum">     388 </span><span class="lineCov">          4 :     perturbedSyndrome.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineCov">          8 :     perturbedSyndrome.SetFormat(Format::COEFFICIENT);</span></a>
 <a name="389"><span class="lineNum">     389 </span>            : </a>
-<a name="390"><span class="lineNum">     390 </span><span class="lineCov">         12 :     Matrix&lt;Poly&gt; zHatMat(zero_alloc, d * k, d);</span></a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineCov">         24 :     Matrix&lt;Poly&gt; zHatMat(zero_alloc, d * k, d);</span></a>
 <a name="391"><span class="lineNum">     391 </span>            : </a>
-<a name="392"><span class="lineNum">     392 </span><span class="lineCov">         18 :     for (size_t i = 0; i &lt; d; i++) {</span></a>
-<a name="393"><span class="lineNum">     393 </span><span class="lineCov">         68 :         for (size_t j = 0; j &lt; d; j++) {</span></a>
-<a name="394"><span class="lineNum">     394 </span><span class="lineCov">        162 :             Matrix&lt;int64_t&gt; zHatBBI([]() { return 0; }, k, n);</span></a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineCov">         36 :     for (size_t i = 0; i &lt; d; i++) {</span></a>
+<a name="393"><span class="lineNum">     393 </span><span class="lineCov">        136 :         for (size_t j = 0; j &lt; d; j++) {</span></a>
+<a name="394"><span class="lineNum">     394 </span><span class="lineCov">        324 :             Matrix&lt;int64_t&gt; zHatBBI([]() { return 0; }, k, n);</span></a>
 <a name="395"><span class="lineNum">     395 </span>            : </a>
-<a name="396"><span class="lineNum">     396 </span><span class="lineCov">         54 :             LatticeGaussSampUtility&lt;Poly&gt;::GaussSampGqArbBase(perturbedSyndrome(i, j), c, k, modulus, base, dgg,</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineCov">        108 :             LatticeGaussSampUtility&lt;Poly&gt;::GaussSampGqArbBase(perturbedSyndrome(i, j), c, k, modulus, base, dgg,</span></a>
 <a name="397"><span class="lineNum">     397 </span>            :                                                               &amp;zHatBBI);</a>
 <a name="398"><span class="lineNum">     398 </span>            : </a>
 <a name="399"><span class="lineNum">     399 </span>            :             // Convert zHat from a matrix of BBI to a vector of Poly ring elements</a>
 <a name="400"><span class="lineNum">     400 </span>            :             // zHat is in the coefficient representation</a>
-<a name="401"><span class="lineNum">     401 </span><span class="lineCov">        108 :             Matrix&lt;Poly&gt; zHat = SplitInt64AltIntoElements&lt;Poly&gt;(zHatBBI, n, params);</span></a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">        216 :             Matrix&lt;Poly&gt; zHat = SplitInt64AltIntoElements&lt;Poly&gt;(zHatBBI, n, params);</span></a>
 <a name="402"><span class="lineNum">     402 </span>            : </a>
 <a name="403"><span class="lineNum">     403 </span>            :             // Now converting it to the evaluation representation before</a>
 <a name="404"><span class="lineNum">     404 </span>            :             // multiplication</a>
-<a name="405"><span class="lineNum">     405 </span><span class="lineCov">         54 :             zHat.SetFormat(Format::EVALUATION);</span></a>
+<a name="405"><span class="lineNum">     405 </span><span class="lineCov">        108 :             zHat.SetFormat(Format::EVALUATION);</span></a>
 <a name="406"><span class="lineNum">     406 </span>            : </a>
-<a name="407"><span class="lineNum">     407 </span><span class="lineCov">       1512 :             for (size_t p = 0; p &lt; k; p++)</span></a>
-<a name="408"><span class="lineNum">     408 </span><span class="lineCov">       1458 :                 zHatMat(i * k + p, j) = zHat(p, 0);</span></a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineCov">       3024 :             for (size_t p = 0; p &lt; k; p++)</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineCov">       2916 :                 zHatMat(i * k + p, j) = zHat(p, 0);</span></a>
 <a name="409"><span class="lineNum">     409 </span>            :         }</a>
 <a name="410"><span class="lineNum">     410 </span>            :     }</a>
 <a name="411"><span class="lineNum">     411 </span>            : </a>
-<a name="412"><span class="lineNum">     412 </span><span class="lineCov">          4 :     Matrix&lt;Poly&gt; zHatPrime(zero_alloc, d * (k + 2), d);</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">          8 :     Matrix&lt;Poly&gt; zHatPrime(zero_alloc, d * (k + 2), d);</span></a>
 <a name="413"><span class="lineNum">     413 </span>            : </a>
-<a name="414"><span class="lineNum">     414 </span><span class="lineCov">          8 :     Matrix&lt;Poly&gt; rZhat = T.m_r.Mult(zHatMat);  // d x d</span></a>
-<a name="415"><span class="lineNum">     415 </span><span class="lineCov">          8 :     Matrix&lt;Poly&gt; eZhat = T.m_e.Mult(zHatMat);  // d x d</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">         16 :     Matrix&lt;Poly&gt; rZhat = T.m_r.Mult(zHatMat);  // d x d</span></a>
+<a name="415"><span class="lineNum">     415 </span><span class="lineCov">         16 :     Matrix&lt;Poly&gt; eZhat = T.m_e.Mult(zHatMat);  // d x d</span></a>
 <a name="416"><span class="lineNum">     416 </span>            : </a>
-<a name="417"><span class="lineNum">     417 </span><span class="lineCov">         18 :     for (size_t j = 0; j &lt; d; j++) {  // columns</span></a>
-<a name="418"><span class="lineNum">     418 </span><span class="lineCov">         68 :         for (size_t i = 0; i &lt; d; i++) {</span></a>
-<a name="419"><span class="lineNum">     419 </span><span class="lineCov">         54 :             zHatPrime(i, j)     = (*pHat)(i, j) + rZhat(i, j);</span></a>
-<a name="420"><span class="lineNum">     420 </span><span class="lineCov">         54 :             zHatPrime(i + d, j) = (*pHat)(i + d, j) + eZhat(i, j);</span></a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineCov">         36 :     for (size_t j = 0; j &lt; d; j++) {  // columns</span></a>
+<a name="418"><span class="lineNum">     418 </span><span class="lineCov">        136 :         for (size_t i = 0; i &lt; d; i++) {</span></a>
+<a name="419"><span class="lineNum">     419 </span><span class="lineCov">        108 :             zHatPrime(i, j)     = (*pHat)(i, j) + rZhat(i, j);</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineCov">        108 :             zHatPrime(i + d, j) = (*pHat)(i + d, j) + eZhat(i, j);</span></a>
 <a name="421"><span class="lineNum">     421 </span>            : </a>
-<a name="422"><span class="lineNum">     422 </span><span class="lineCov">       1512 :             for (size_t p = 0; p &lt; k; p++) {</span></a>
-<a name="423"><span class="lineNum">     423 </span><span class="lineCov">       1458 :                 zHatPrime(i * k + p + 2 * d, j) = (*pHat)(i * k + p + 2 * d, j) + zHatMat(i * k + p, j);</span></a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineCov">       3024 :             for (size_t p = 0; p &lt; k; p++) {</span></a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineCov">       2916 :                 zHatPrime(i * k + p + 2 * d, j) = (*pHat)(i * k + p + 2 * d, j) + zHatMat(i * k + p, j);</span></a>
 <a name="424"><span class="lineNum">     424 </span>            :             }</a>
 <a name="425"><span class="lineNum">     425 </span>            :         }</a>
 <a name="426"><span class="lineNum">     426 </span>            :     }</a>
 <a name="427"><span class="lineNum">     427 </span>            : </a>
-<a name="428"><span class="lineNum">     428 </span><span class="lineCov">          4 :     return zHatPrime;</span></a>
+<a name="428"><span class="lineNum">     428 </span><span class="lineCov">          8 :     return zHatPrime;</span></a>
 <a name="429"><span class="lineNum">     429 </span>            : }</a>
 <a name="430"><span class="lineNum">     430 </span>            : </a>
 <a name="431"><span class="lineNum">     431 </span>            : template &lt;&gt;</a>

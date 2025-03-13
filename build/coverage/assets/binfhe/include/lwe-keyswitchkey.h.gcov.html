@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">12</td>
-            <td class="headerCovTableEntry">15</td>
-            <td class="headerCovTableEntryMed">80.0 %</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryMed">81.2 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">3</td>
@@ -110,7 +110,7 @@
 <a name="48"><span class="lineNum">      48 </span>            :  */</a>
 <a name="49"><span class="lineNum">      49 </span>            : class LWESwitchingKeyImpl : public Serializable {</a>
 <a name="50"><span class="lineNum">      50 </span>            : public:</a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">          5 :     LWESwitchingKeyImpl() = default;</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">         17 :     LWESwitchingKeyImpl() = default;</span></a>
 <a name="52"><span class="lineNum">      52 </span>            : </a>
 <a name="53"><span class="lineNum">      53 </span>            :     LWESwitchingKeyImpl(const std::vector&lt;std::vector&lt;std::vector&lt;NativeVector&gt;&gt;&gt;&amp; keyA,</a>
 <a name="54"><span class="lineNum">      54 </span>            :                         const std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt;&amp; keyB)</a>
@@ -118,7 +118,7 @@
 <a name="56"><span class="lineNum">      56 </span>            : </a>
 <a name="57"><span class="lineNum">      57 </span>            :     LWESwitchingKeyImpl(std::vector&lt;std::vector&lt;std::vector&lt;NativeVector&gt;&gt;&gt;&amp;&amp; keyA,</a>
 <a name="58"><span class="lineNum">      58 </span>            :                         std::vector&lt;std::vector&lt;std::vector&lt;NativeInteger&gt;&gt;&gt;&amp;&amp; keyB)</a>
-<a name="59"><span class="lineNum">      59 </span>            :         : m_keyA(std::move(keyA)), m_keyB(std::move(keyB)) {}</a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">        114 :         : m_keyA(std::move(keyA)), m_keyB(std::move(keyB)) {}</span></a>
 <a name="60"><span class="lineNum">      60 </span>            : </a>
 <a name="61"><span class="lineNum">      61 </span>            :     LWESwitchingKeyImpl(const LWESwitchingKeyImpl&amp; rhs) : m_keyA(rhs.m_keyA), m_keyB(rhs.m_keyB) {}</a>
 <a name="62"><span class="lineNum">      62 </span>            : </a>
@@ -162,21 +162,21 @@
 <a name="100"><span class="lineNum">     100 </span>            :     }</a>
 <a name="101"><span class="lineNum">     101 </span>            : </a>
 <a name="102"><span class="lineNum">     102 </span>            :     template &lt;class Archive&gt;</a>
-<a name="103"><span class="lineNum">     103 </span><span class="lineCov">          5 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
-<a name="104"><span class="lineNum">     104 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;a&quot;, m_keyA));</span></a>
-<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;b&quot;, m_keyB));</span></a>
-<a name="106"><span class="lineNum">     106 </span><span class="lineCov">          5 :     }</span></a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineCov">         17 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">         17 :         ar(::cereal::make_nvp(&quot;a&quot;, m_keyA));</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">         17 :         ar(::cereal::make_nvp(&quot;b&quot;, m_keyB));</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">         17 :     }</span></a>
 <a name="107"><span class="lineNum">     107 </span>            : </a>
 <a name="108"><span class="lineNum">     108 </span>            :     template &lt;class Archive&gt;</a>
-<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          5 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
-<a name="110"><span class="lineNum">     110 </span><span class="lineCov">          5 :         if (version &gt; SerializedVersion()) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">         17 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">         17 :         if (version &gt; SerializedVersion()) {</span></a>
 <a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;serialized object version &quot; + std::to_string(version) +</span></a>
 <a name="112"><span class="lineNum">     112 </span>            :                           &quot; is from a later version of the library&quot;);</a>
 <a name="113"><span class="lineNum">     113 </span>            :         }</a>
 <a name="114"><span class="lineNum">     114 </span>            : </a>
-<a name="115"><span class="lineNum">     115 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;a&quot;, m_keyA));</span></a>
-<a name="116"><span class="lineNum">     116 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;b&quot;, m_keyB));</span></a>
-<a name="117"><span class="lineNum">     117 </span><span class="lineCov">          5 :     }</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">         17 :         ar(::cereal::make_nvp(&quot;a&quot;, m_keyA));</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">         17 :         ar(::cereal::make_nvp(&quot;b&quot;, m_keyB));</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">         17 :     }</span></a>
 <a name="118"><span class="lineNum">     118 </span>            : </a>
 <a name="119"><span class="lineNum">     119 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :         return &quot;LWEPrivateKey&quot;;</span></a>

@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">14</td>
-            <td class="headerCovTableEntry">14</td>
-            <td class="headerCovTableEntryHi">100.0 %</td>
+            <td class="headerCovTableEntry">54</td>
+            <td class="headerCovTableEntry">55</td>
+            <td class="headerCovTableEntryHi">98.2 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -141,12 +141,12 @@
 <a name="79"><span class="lineNum">      79 </span>            :     uint32_t scalingModSize{0};</a>
 <a name="80"><span class="lineNum">      80 </span>            :     uint32_t batchSize{0};</a>
 <a name="81"><span class="lineNum">      81 </span>            : </a>
-<a name="82"><span class="lineNum">      82 </span>            :     void VerifyObjectData() const {</a>
-<a name="83"><span class="lineNum">      83 </span>            :         if (!setParamsFromCKKSCryptocontextCalled) {</a>
-<a name="84"><span class="lineNum">      84 </span>            :             OPENFHE_THROW(</a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">       1470 :     void VerifyObjectData() const {</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">       1470 :         if (!setParamsFromCKKSCryptocontextCalled) {</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(</span></a>
 <a name="85"><span class="lineNum">      85 </span>            :                 &quot;Objects of class SchSwchParams may be used only after having called SetParamsFromCKKSCryptocontext()&quot;);</a>
 <a name="86"><span class="lineNum">      86 </span>            :         }</a>
-<a name="87"><span class="lineNum">      87 </span>            :     }</a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">       1470 :     }</span></a>
 <a name="88"><span class="lineNum">      88 </span>            : </a>
 <a name="89"><span class="lineNum">      89 </span>            : public:</a>
 <a name="90"><span class="lineNum">      90 </span>            :     friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; s, const SchSwchParams&amp; obj);</a>
@@ -213,80 +213,80 @@
 <a name="151"><span class="lineNum">     151 </span>            :     }</a>
 <a name="152"><span class="lineNum">     152 </span>            :     //=================================================================================================================</a>
 <a name="153"><span class="lineNum">     153 </span>            :     SecurityLevel GetSecurityLevelCKKS() const {</a>
-<a name="154"><span class="lineNum">     154 </span>            :         VerifyObjectData();</a>
-<a name="155"><span class="lineNum">     155 </span>            :         return securityLevelCKKS;</a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">         54 :         return securityLevelCKKS;</span></a>
 <a name="156"><span class="lineNum">     156 </span>            :     }</a>
 <a name="157"><span class="lineNum">     157 </span>            :     BINFHE_PARAMSET GetSecurityLevelFHEW() const {</a>
-<a name="158"><span class="lineNum">     158 </span>            :         VerifyObjectData();</a>
-<a name="159"><span class="lineNum">     159 </span>            :         return securityLevelFHEW;</a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">        108 :         VerifyObjectData();</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">        108 :         return securityLevelFHEW;</span></a>
 <a name="160"><span class="lineNum">     160 </span>            :     }</a>
 <a name="161"><span class="lineNum">     161 </span>            :     bool GetArbitraryFunctionEvaluation() const {</a>
-<a name="162"><span class="lineNum">     162 </span>            :         VerifyObjectData();</a>
-<a name="163"><span class="lineNum">     163 </span>            :         return arbitraryFunctionEvaluation;</a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">        108 :         return arbitraryFunctionEvaluation;</span></a>
 <a name="164"><span class="lineNum">     164 </span>            :     }</a>
 <a name="165"><span class="lineNum">     165 </span>            :     bool GetUseDynamicModeFHEW() const {</a>
-<a name="166"><span class="lineNum">     166 </span>            :         VerifyObjectData();</a>
-<a name="167"><span class="lineNum">     167 </span>            :         return useDynamicModeFHEW;</a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">         54 :         return useDynamicModeFHEW;</span></a>
 <a name="168"><span class="lineNum">     168 </span>            :     }</a>
 <a name="169"><span class="lineNum">     169 </span>            :     bool GetComputeArgmin() const {</a>
-<a name="170"><span class="lineNum">     170 </span>            :         VerifyObjectData();</a>
-<a name="171"><span class="lineNum">     171 </span>            :         return computeArgmin;</a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">         38 :         VerifyObjectData();</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">         38 :         return computeArgmin;</span></a>
 <a name="172"><span class="lineNum">     172 </span>            :     }</a>
 <a name="173"><span class="lineNum">     173 </span>            :     bool GetOneHotEncoding() const {</a>
-<a name="174"><span class="lineNum">     174 </span>            :         VerifyObjectData();</a>
-<a name="175"><span class="lineNum">     175 </span>            :         return oneHotEncoding;</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">         38 :         VerifyObjectData();</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">         38 :         return oneHotEncoding;</span></a>
 <a name="176"><span class="lineNum">     176 </span>            :     }</a>
 <a name="177"><span class="lineNum">     177 </span>            :     bool GetUseAltArgmin() const {</a>
-<a name="178"><span class="lineNum">     178 </span>            :         VerifyObjectData();</a>
-<a name="179"><span class="lineNum">     179 </span>            :         return useAltArgmin;</a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineCov">         38 :         VerifyObjectData();</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov">         38 :         return useAltArgmin;</span></a>
 <a name="180"><span class="lineNum">     180 </span>            :     }</a>
 <a name="181"><span class="lineNum">     181 </span>            :     uint32_t GetNumSlotsCKKS() const {</a>
-<a name="182"><span class="lineNum">     182 </span>            :         VerifyObjectData();</a>
-<a name="183"><span class="lineNum">     183 </span>            :         return numSlotsCKKS;</a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">         86 :         VerifyObjectData();</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">        140 :         return numSlotsCKKS;</span></a>
 <a name="184"><span class="lineNum">     184 </span>            :     }</a>
 <a name="185"><span class="lineNum">     185 </span>            :     uint32_t GetNumValues() const {</a>
-<a name="186"><span class="lineNum">     186 </span>            :         VerifyObjectData();</a>
-<a name="187"><span class="lineNum">     187 </span>            :         return numValues;</a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineCov">         76 :         VerifyObjectData();</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">         76 :         return numValues;</span></a>
 <a name="188"><span class="lineNum">     188 </span>            :     }</a>
 <a name="189"><span class="lineNum">     189 </span>            :     uint32_t GetCtxtModSizeFHEWLargePrec() const {</a>
-<a name="190"><span class="lineNum">     190 </span>            :         VerifyObjectData();</a>
-<a name="191"><span class="lineNum">     191 </span>            :         return ctxtModSizeFHEWLargePrec;</a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">        108 :         VerifyObjectData();</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineCov">        162 :         return ctxtModSizeFHEWLargePrec;</span></a>
 <a name="192"><span class="lineNum">     192 </span>            :     }</a>
 <a name="193"><span class="lineNum">     193 </span>            :     uint32_t GetCtxtModSizeFHEWIntermedSwch() const {</a>
-<a name="194"><span class="lineNum">     194 </span>            :         VerifyObjectData();</a>
-<a name="195"><span class="lineNum">     195 </span>            :         return ctxtModSizeFHEWIntermedSwch;</a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">        162 :         VerifyObjectData();</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">        162 :         return ctxtModSizeFHEWIntermedSwch;</span></a>
 <a name="196"><span class="lineNum">     196 </span>            :     }</a>
 <a name="197"><span class="lineNum">     197 </span>            :     uint32_t GetBStepLTrCKKStoFHEW() const {</a>
-<a name="198"><span class="lineNum">     198 </span>            :         VerifyObjectData();</a>
-<a name="199"><span class="lineNum">     199 </span>            :         return bStepLTrCKKStoFHEW;</a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineCov">        108 :         VerifyObjectData();</span></a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineCov">        108 :         return bStepLTrCKKStoFHEW;</span></a>
 <a name="200"><span class="lineNum">     200 </span>            :     }</a>
 <a name="201"><span class="lineNum">     201 </span>            :     uint32_t GetBStepLTrFHEWtoCKKS() const {</a>
-<a name="202"><span class="lineNum">     202 </span>            :         VerifyObjectData();</a>
-<a name="203"><span class="lineNum">     203 </span>            :         return bStepLTrFHEWtoCKKS;</a>
+<a name="202"><span class="lineNum">     202 </span><span class="lineCov">         76 :         VerifyObjectData();</span></a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">         76 :         return bStepLTrFHEWtoCKKS;</span></a>
 <a name="204"><span class="lineNum">     204 </span>            :     }</a>
 <a name="205"><span class="lineNum">     205 </span>            :     uint32_t GetLevelLTrCKKStoFHEW() const {</a>
-<a name="206"><span class="lineNum">     206 </span>            :         VerifyObjectData();</a>
-<a name="207"><span class="lineNum">     207 </span>            :         return levelLTrCKKStoFHEW;</a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">         54 :         return levelLTrCKKStoFHEW;</span></a>
 <a name="208"><span class="lineNum">     208 </span>            :     }</a>
 <a name="209"><span class="lineNum">     209 </span>            :     uint32_t GetLevelLTrFHEWtoCKKS() const {</a>
-<a name="210"><span class="lineNum">     210 </span>            :         VerifyObjectData();</a>
-<a name="211"><span class="lineNum">     211 </span>            :         return levelLTrFHEWtoCKKS;</a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineCov">         38 :         VerifyObjectData();</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineCov">         38 :         return levelLTrFHEWtoCKKS;</span></a>
 <a name="212"><span class="lineNum">     212 </span>            :     }</a>
 <a name="213"><span class="lineNum">     213 </span>            :     NativeInteger GetInitialCKKSModulus() const {</a>
-<a name="214"><span class="lineNum">     214 </span>            :         VerifyObjectData();</a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
 <a name="215"><span class="lineNum">     215 </span>            :         return initialCKKSModulus;</a>
 <a name="216"><span class="lineNum">     216 </span>            :     }</a>
 <a name="217"><span class="lineNum">     217 </span>            :     uint32_t GetRingDimension() const {</a>
-<a name="218"><span class="lineNum">     218 </span>            :         VerifyObjectData();</a>
-<a name="219"><span class="lineNum">     219 </span>            :         return ringDimension;</a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">         54 :         return ringDimension;</span></a>
 <a name="220"><span class="lineNum">     220 </span>            :     }</a>
 <a name="221"><span class="lineNum">     221 </span>            :     uint32_t GetScalingModSize() const {</a>
-<a name="222"><span class="lineNum">     222 </span>            :         VerifyObjectData();</a>
-<a name="223"><span class="lineNum">     223 </span>            :         return scalingModSize;</a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">         54 :         return scalingModSize;</span></a>
 <a name="224"><span class="lineNum">     224 </span>            :     }</a>
 <a name="225"><span class="lineNum">     225 </span>            :     uint32_t GetBatchSize() const {</a>
-<a name="226"><span class="lineNum">     226 </span>            :         VerifyObjectData();</a>
-<a name="227"><span class="lineNum">     227 </span>            :         return batchSize;</a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">         54 :         VerifyObjectData();</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">         54 :         return batchSize;</span></a>
 <a name="228"><span class="lineNum">     228 </span>            :     }</a>
 <a name="229"><span class="lineNum">     229 </span>            : };</a>
 <a name="230"><span class="lineNum">     230 </span>            : </a>

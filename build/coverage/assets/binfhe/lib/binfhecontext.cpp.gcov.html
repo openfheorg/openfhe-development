@@ -1,0 +1,417 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - binfhe/lib/binfhecontext.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">binfhe/lib</a> - binfhecontext.cpp<span style="font-size: 80%;"> (source / <a href="binfhecontext.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">94</td>
+            <td class="headerCovTableEntry">127</td>
+            <td class="headerCovTableEntryLo">74.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntryMed">79.2 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : /*</a>
+<a name="33"><span class="lineNum">      33 </span>            :   Implementation file for Boolean Circuit FHE context class</a>
+<a name="34"><span class="lineNum">      34 </span>            :  */</a>
+<a name="35"><span class="lineNum">      35 </span>            : </a>
+<a name="36"><span class="lineNum">      36 </span>            : #include &quot;binfhecontext.h&quot;</a>
+<a name="37"><span class="lineNum">      37 </span>            : #include &lt;string&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : #include &lt;unordered_map&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : static constexpr double STD_DEV = 3.19;</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : namespace lbcrypto {</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span><span class="lineNoCov">          0 : void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger&amp; q, const NativeInteger&amp; Q,</span></a>
+<a name="45"><span class="lineNum">      45 </span>            :                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,</a>
+<a name="46"><span class="lineNum">      46 </span>            :                                           SecretKeyDist keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {</a>
+<a name="47"><span class="lineNum">      47 </span>            :     auto lweparams = std::make_shared&lt;LWECryptoParams&gt;(n, N, q, Q, Q, std, baseKS);</a>
+<a name="48"><span class="lineNum">      48 </span>            :     auto rgswparams =</a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineNoCov">          0 :         std::make_shared&lt;RingGSWCryptoParams&gt;(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);</span></a>
+<a name="50"><span class="lineNum">      50 </span><span class="lineNoCov">          0 :     m_params       = std::make_shared&lt;BinFHECryptoParams&gt;(lweparams, rgswparams);</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineNoCov">          0 :     m_binfhescheme = std::make_shared&lt;BinFHEScheme&gt;(method);</span></a>
+<a name="52"><span class="lineNum">      52 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="53"><span class="lineNum">      53 </span>            : </a>
+<a name="54"><span class="lineNum">      54 </span><span class="lineCov">         76 : void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ, uint32_t N,</span></a>
+<a name="55"><span class="lineNum">      55 </span>            :                                           BINFHE_METHOD method, bool timeOptimization) {</a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">         76 :     if (method != GINX)</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;CGGI is the only supported method&quot;);</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">         76 :     if (set != STD128 &amp;&amp; set != TOY)</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;STD128 and TOY are the only supported sets&quot;);</span></a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">         76 :     if (logQ &gt; 29)</span></a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;logQ &gt; 29 is not supported&quot;);</span></a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">         76 :     if (logQ &lt; 11)</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;logQ &lt; 11 is not supported&quot;);</span></a>
+<a name="64"><span class="lineNum">      64 </span>            : </a>
+<a name="65"><span class="lineNum">      65 </span>            :     auto logQprime = 54;</a>
+<a name="66"><span class="lineNum">      66 </span>            :     uint32_t baseG = 0;</a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">         76 :     if (logQ &gt; 25) {</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">          4 :         baseG = 1 &lt;&lt; 14;</span></a>
+<a name="69"><span class="lineNum">      69 </span>            :     }</a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">         72 :     else if (logQ &gt; 16) {</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">         70 :         baseG = 1 &lt;&lt; 18;</span></a>
+<a name="72"><span class="lineNum">      72 </span>            :     }</a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">          2 :     else if (logQ &gt; 11) {</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">          2 :         baseG = 1 &lt;&lt; 27;</span></a>
+<a name="75"><span class="lineNum">      75 </span>            :     }</a>
+<a name="76"><span class="lineNum">      76 </span>            :     else {  // if (logQ == 11)</a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 :         baseG     = 1 &lt;&lt; 5;</span></a>
+<a name="78"><span class="lineNum">      78 </span>            :         logQprime = 27;</a>
+<a name="79"><span class="lineNum">      79 </span>            :     }</a>
+<a name="80"><span class="lineNum">      80 </span>            : </a>
+<a name="81"><span class="lineNum">      81 </span>            :     // choose minimum ringD satisfying sl and Q</a>
+<a name="82"><span class="lineNum">      82 </span>            :     // if specified some larger N, security is also satisfied</a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">         76 :     auto minRingDim  = StdLatticeParm::FindRingDim(HEStd_ternary, HEStd_128_classic, logQprime);</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">         76 :     uint32_t ringDim = N &gt; minRingDim ? N : minRingDim;</span></a>
+<a name="85"><span class="lineNum">      85 </span>            : </a>
+<a name="86"><span class="lineNum">      86 </span>            :     // find prime Q for NTT</a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">         76 :     NativeInteger Q = LastPrime&lt;NativeInteger&gt;(logQprime, 2 * ringDim);</span></a>
+<a name="88"><span class="lineNum">      88 </span>            : </a>
+<a name="89"><span class="lineNum">      89 </span>            :     // q = 2*ringDim by default for maximum plaintext space, if needed for arbitrary function evaluation, q = ringDim</a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">         76 :     uint32_t q = arbFunc ? ringDim : 2 * ringDim;</span></a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">         76 :     uint64_t qKS = uint64_t(1) &lt;&lt; 35;</span></a>
+<a name="93"><span class="lineNum">      93 </span>            : </a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">         76 :     uint32_t n      = (set == TOY) ? 32 : 1305;</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">         76 :     auto lweparams  = std::make_shared&lt;LWECryptoParams&gt;(n, ringDim, q, Q, qKS, STD_DEV, 32);</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">        152 :     auto rgswparams = std::make_shared&lt;RingGSWCryptoParams&gt;(ringDim, Q, q, baseG, 23, method, STD_DEV, UNIFORM_TERNARY,</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">         76 :                                                             ((logQ != 11) &amp;&amp; timeOptimization));</span></a>
+<a name="98"><span class="lineNum">      98 </span>            : </a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">         76 :     m_params           = std::make_shared&lt;BinFHECryptoParams&gt;(lweparams, rgswparams);</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">         76 :     m_binfhescheme     = std::make_shared&lt;BinFHEScheme&gt;(method);</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">         76 :     m_timeOptimization = timeOptimization;</span></a>
+<a name="102"><span class="lineNum">     102 </span><span class="lineCov">         76 : }</span></a>
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">         72 : void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {</span></a>
+<a name="105"><span class="lineNum">     105 </span>            :     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching</a>
+<a name="106"><span class="lineNum">     106 </span>            :     // clang-format off</a>
+<a name="107"><span class="lineNum">     107 </span>            :     static const std::unordered_map&lt;BINFHE_PARAMSET, BinFHEContextParams&gt; paramsMap{</a>
+<a name="108"><span class="lineNum">     108 </span>            :     //  { BINFHE_PARAMSET      { bits, cycOrder, latParam, modq,   modKS,  stdDev, Bks,        Bg, Brk, autoKeys,         keyDist } },</a>
+<a name="109"><span class="lineNum">     109 </span>            :         { TOY,                 {   27,     1024,       64,  512,   PRIME, STD_DEV,  25,       512,  23,        9, UNIFORM_TERNARY } },</a>
+<a name="110"><span class="lineNum">     110 </span>            :         { MEDIUM,              {   28,     2048,      422, 1024,   16384, STD_DEV, 128,      1024,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="111"><span class="lineNum">     111 </span>            :         { STD128_AP,           {   27,     2048,      503, 1024,   16384, STD_DEV,  32,       512,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="112"><span class="lineNum">     112 </span>            :         { STD128,              {   27,     2048,      503, 1024,   16384, STD_DEV,  32,       512,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="113"><span class="lineNum">     113 </span>            :         { STD128_3,            {   27,     2048,      595, 1024,   65536, STD_DEV,  64,       128,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="114"><span class="lineNum">     114 </span>            :         { STD128_4,            {   27,     2048,      595, 2048,   65536, STD_DEV,  64,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="115"><span class="lineNum">     115 </span>            :         { STD128Q,             {   25,     2048,      534, 1024,   16384, STD_DEV,  32,       128,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="116"><span class="lineNum">     116 </span>            :         { STD128Q_3,           {   50,     4096,      600, 2048,   32768, STD_DEV,  32,  33554432,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="117"><span class="lineNum">     117 </span>            :         { STD128Q_4,           {   50,     4096,      641, 2048,   65536, STD_DEV,  64,  33554432,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="118"><span class="lineNum">     118 </span>            :         { STD192,              {   37,     4096,      790, 2048,   16384, STD_DEV,  32,    524288,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="119"><span class="lineNum">     119 </span>            :         { STD192_3,            {   37,     4096,      875, 4096,   65536, STD_DEV,  64,    524288,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="120"><span class="lineNum">     120 </span>            :         { STD192_4,            {   37,     4096,      875, 4096,   65536, STD_DEV,  64,      8192,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="121"><span class="lineNum">     121 </span>            :         { STD192Q,             {   35,     4096,      875, 1024,   32768, STD_DEV,  32,      4096,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="122"><span class="lineNum">     122 </span>            :         { STD192Q_3,           {   34,     4096,      922, 2048,   65536, STD_DEV,  16,      4096,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="123"><span class="lineNum">     123 </span>            :         { STD192Q_4,           {   34,     4096,      980, 2048,  131072, STD_DEV,  16,      4096,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="124"><span class="lineNum">     124 </span>            :         { STD256,              {   29,     4096,     1076, 2048,   32768, STD_DEV,  32,      1024,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="125"><span class="lineNum">     125 </span>            :         { STD256_3,            {   29,     4096,     1145, 2048,   65536, STD_DEV,  64,       256,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="126"><span class="lineNum">     126 </span>            :         { STD256_4,            {   29,     4096,     1145, 4096,   65536, STD_DEV,  64,       256,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="127"><span class="lineNum">     127 </span>            :         { STD256Q,             {   27,     4096,     1225, 1024,   65536, STD_DEV,  16,       128,  32,       10, UNIFORM_TERNARY } },</a>
+<a name="128"><span class="lineNum">     128 </span>            :         { STD256Q_3,           {   27,     4096,     1400, 4096,   65536, STD_DEV,  21,        64,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="129"><span class="lineNum">     129 </span>            :         { STD256Q_4,           {   27,     4096,     1625, 4096, 2097152, STD_DEV,  16,        64,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="130"><span class="lineNum">     130 </span>            :         { STD128_LMKCDEY,      {   28,     2048,      447, 2048,   16384, STD_DEV,  32,      1024,  64,       10,        GAUSSIAN } },</a>
+<a name="131"><span class="lineNum">     131 </span>            :         { STD128_3_LMKCDEY,    {   27,     2048,      556, 2048,   32768, STD_DEV,  32,       512,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="132"><span class="lineNum">     132 </span>            :         { STD128_4_LMKCDEY,    {   27,     2048,      595, 2048,   65536, STD_DEV,  64,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="133"><span class="lineNum">     133 </span>            :         { STD128Q_LMKCDEY,     {   27,     2048,      483, 2048,   16384, STD_DEV,  32,       512,  64,       10,        GAUSSIAN } },</a>
+<a name="134"><span class="lineNum">     134 </span>            :         { STD128Q_3_LMKCDEY,   {   25,     2048,      643, 2048,   65536, STD_DEV,  64,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="135"><span class="lineNum">     135 </span>            :         { STD128Q_4_LMKCDEY,   {   50,     4096,      641, 4096,   65536, STD_DEV,  64,  33554432,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="136"><span class="lineNum">     136 </span>            :         { STD192_LMKCDEY,      {   39,     4096,      716, 2048,   32768, STD_DEV,  32,   1048576,  64,       10,        GAUSSIAN } },</a>
+<a name="137"><span class="lineNum">     137 </span>            :         { STD192_3_LMKCDEY,    {   39,     4096,      771, 4096,   65536, STD_DEV,  64,   1048576,  64,       10,        GAUSSIAN } },</a>
+<a name="138"><span class="lineNum">     138 </span>            :         { STD192_4_LMKCDEY,    {   37,     4096,      875, 4096,   65536, STD_DEV,  64,      8192,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="139"><span class="lineNum">     139 </span>            :         { STD192Q_LMKCDEY,     {   36,     4096,      776, 4096,   32768, STD_DEV,  32,    262144,  64,       10,        GAUSSIAN } },</a>
+<a name="140"><span class="lineNum">     140 </span>            :         { STD192Q_3_LMKCDEY,   {   36,     4096,      834, 4096,   65536, STD_DEV,  64,      4096,  64,       10,        GAUSSIAN } },</a>
+<a name="141"><span class="lineNum">     141 </span>            :         { STD192Q_4_LMKCDEY,   {   34,     4096,      949, 4096,   65536, STD_DEV,  64,      4096,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="142"><span class="lineNum">     142 </span>            :         { STD256_LMKCDEY,      {   30,     4096,      939, 2048,   32768, STD_DEV,  32,      1024,  64,       10,        GAUSSIAN } },</a>
+<a name="143"><span class="lineNum">     143 </span>            :         { STD256_3_LMKCDEY,    {   29,     4096,     1076, 4096,   32768, STD_DEV,  32,       256,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="144"><span class="lineNum">     144 </span>            :         { STD256_4_LMKCDEY,    {   29,     4096,     1145, 4096,   65536, STD_DEV,  64,       256,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="145"><span class="lineNum">     145 </span>            :         { STD256Q_LMKCDEY,     {   28,     4096,     1019, 4096,   32768, STD_DEV,  32,      1024,  64,       10,        GAUSSIAN } },</a>
+<a name="146"><span class="lineNum">     146 </span>            :         { STD256Q_3_LMKCDEY,   {   26,     4096,     1242, 4096,   65536, STD_DEV,  64,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="147"><span class="lineNum">     147 </span>            :         { STD256Q_4_LMKCDEY,   {   26,     4096,     1320, 4096,  131072, STD_DEV,  64,        64,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="148"><span class="lineNum">     148 </span>            :         { LPF_STD128,          {   27,     2048,      556, 2048,   32768, STD_DEV,  32,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="149"><span class="lineNum">     149 </span>            :         { LPF_STD128Q,         {   25,     2048,      645, 2048,   65536, STD_DEV,  64,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="150"><span class="lineNum">     150 </span>            :         { LPF_STD128_LMKCDEY,  {   27,     2048,      556, 2048,   32768, STD_DEV,  32,       512,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="151"><span class="lineNum">     151 </span>            :         { LPF_STD128Q_LMKCDEY, {   25,     2048,      600, 2048,   32768, STD_DEV,  32,       128,  64,       10, UNIFORM_TERNARY } },</a>
+<a name="152"><span class="lineNum">     152 </span>            :         { SIGNED_MOD_TEST,     {   28,     2048,      512, 1024,   PRIME, STD_DEV,  25,       128,  23,       10, UNIFORM_TERNARY } },</a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">         72 :     };</span></a>
+<a name="154"><span class="lineNum">     154 </span>            :     // clang-format on</a>
+<a name="155"><span class="lineNum">     155 </span>            : </a>
+<a name="156"><span class="lineNum">     156 </span>            :     auto search = paramsMap.find(set);</a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">         72 :     if (paramsMap.end() == search)</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;unknown parameter set&quot;);</span></a>
+<a name="159"><span class="lineNum">     159 </span>            :     auto&amp; params = search-&gt;second;</a>
+<a name="160"><span class="lineNum">     160 </span>            : </a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">         72 :     auto Q         = LastPrime&lt;NativeInteger&gt;(params.numberBits, params.cyclOrder);</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">         72 :     auto ringDim   = params.cyclOrder &gt;&gt; 1;</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">         72 :     auto lweparams = std::make_shared&lt;LWECryptoParams&gt;(params.latticeParam, ringDim, params.mod, Q,</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineCov">        144 :                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">         72 :                                                        params.baseKS, params.keyDist);</span></a>
+<a name="166"><span class="lineNum">     166 </span>            :     auto rgswparams =</a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">         72 :         std::make_shared&lt;RingGSWCryptoParams&gt;(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">         72 :                                               params.stdDev, params.keyDist, false, params.numAutoKeys);</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineCov">         72 :     m_params = std::make_shared&lt;BinFHECryptoParams&gt;(lweparams, rgswparams);</span></a>
+<a name="170"><span class="lineNum">     170 </span>            : </a>
+<a name="171"><span class="lineNum">     171 </span>            :     // TODO: add check that (method == LMKCDEY) for LMKCDEY-optimized BINFHE_PARAMSETs</a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineCov">         72 :     m_binfhescheme = std::make_shared&lt;BinFHEScheme&gt;(method);</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">         72 : }</span></a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 : void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams&amp; params, BINFHE_METHOD method) {</span></a>
+<a name="176"><span class="lineNum">     176 </span>            :     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching</a>
+<a name="177"><span class="lineNum">     177 </span>            : </a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :     auto Q         = LastPrime&lt;NativeInteger&gt;(params.numberBits, params.cyclOrder);</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :     auto ringDim   = params.cyclOrder &gt;&gt; 1;</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineNoCov">          0 :     auto lweparams = std::make_shared&lt;LWECryptoParams&gt;(params.latticeParam, ringDim, params.mod, Q,</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineNoCov">          0 :                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 :                                                        params.baseKS, params.keyDist);</span></a>
+<a name="183"><span class="lineNum">     183 </span>            :     auto rgswparams =</a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineNoCov">          0 :         std::make_shared&lt;RingGSWCryptoParams&gt;(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineNoCov">          0 :                                               params.stdDev, params.keyDist, false, params.numAutoKeys);</span></a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineNoCov">          0 :     m_params       = std::make_shared&lt;BinFHECryptoParams&gt;(lweparams, rgswparams);</span></a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineNoCov">          0 :     m_binfhescheme = std::make_shared&lt;BinFHEScheme&gt;(method);</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="189"><span class="lineNum">     189 </span>            : </a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">        148 : LWEPrivateKey BinFHEContext::KeyGen() const {</span></a>
+<a name="191"><span class="lineNum">     191 </span>            :     auto&amp;&amp; LWEParams = m_params-&gt;GetLWEParams();</a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">        148 :     if (LWEParams-&gt;GetKeyDist() == GAUSSIAN)</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineNoCov">          0 :         return m_LWEscheme-&gt;KeyGenGaussian(LWEParams-&gt;Getn(), LWEParams-&gt;GetqKS());</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">        148 :     return m_LWEscheme-&gt;KeyGen(LWEParams-&gt;Getn(), LWEParams-&gt;GetqKS());</span></a>
+<a name="195"><span class="lineNum">     195 </span>            : }</a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineCov">          3 : LWEPrivateKey BinFHEContext::KeyGenN() const {</span></a>
+<a name="198"><span class="lineNum">     198 </span>            :     auto&amp;&amp; LWEParams = m_params-&gt;GetLWEParams();</a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineCov">          3 :     if (LWEParams-&gt;GetKeyDist() == GAUSSIAN)</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :         return m_LWEscheme-&gt;KeyGenGaussian(LWEParams-&gt;GetN(), LWEParams-&gt;GetQ());</span></a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineCov">          3 :     return m_LWEscheme-&gt;KeyGen(LWEParams-&gt;GetN(), LWEParams-&gt;GetQ());</span></a>
+<a name="202"><span class="lineNum">     202 </span>            : }</a>
+<a name="203"><span class="lineNum">     203 </span>            : </a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineNoCov">          0 : LWEKeyPair BinFHEContext::KeyGenPair() const {</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :     return m_LWEscheme-&gt;KeyGenPair(m_params-&gt;GetLWEParams());</span></a>
+<a name="206"><span class="lineNum">     206 </span>            : }</a>
+<a name="207"><span class="lineNum">     207 </span>            : </a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 : LWEPublicKey BinFHEContext::PubKeyGen(ConstLWEPrivateKey&amp; sk) const {</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineNoCov">          0 :     return m_LWEscheme-&gt;PubKeyGen(m_params-&gt;GetLWEParams(), sk);</span></a>
+<a name="210"><span class="lineNum">     210 </span>            : }</a>
+<a name="211"><span class="lineNum">     211 </span>            : </a>
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">        851 : LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey&amp; sk, LWEPlaintext m, BINFHE_OUTPUT output,</span></a>
+<a name="213"><span class="lineNum">     213 </span>            :                                      LWEPlaintextModulus p, const NativeInteger&amp; mod) const {</a>
+<a name="214"><span class="lineNum">     214 </span>            :     auto&amp;&amp; LWEParams = m_params-&gt;GetLWEParams();</a>
+<a name="215"><span class="lineNum">     215 </span>            : </a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">        851 :     auto ct = m_LWEscheme-&gt;Encrypt(LWEParams, sk, m, p, (mod == 0 ? LWEParams-&gt;Getq() : mod));</span></a>
+<a name="217"><span class="lineNum">     217 </span>            : </a>
+<a name="218"><span class="lineNum">     218 </span>            :     // BINFHE_OUTPUT is kept as it is for backward compatibility but</a>
+<a name="219"><span class="lineNum">     219 </span>            :     // this logic is obsolete now and commented out</a>
+<a name="220"><span class="lineNum">     220 </span>            :     // if ((output != FRESH) &amp;&amp; (p == 4)) {</a>
+<a name="221"><span class="lineNum">     221 </span>            :     //    ct = m_binfhescheme-&gt;Bootstrap(m_params, m_BTKey, ct);</a>
+<a name="222"><span class="lineNum">     222 </span>            :     //}</a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">        851 :     return ct;</span></a>
+<a name="224"><span class="lineNum">     224 </span>            : }</a>
+<a name="225"><span class="lineNum">     225 </span>            : </a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">         75 : LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey&amp; pk, LWEPlaintext m, BINFHE_OUTPUT output, LWEPlaintextModulus p,</span></a>
+<a name="227"><span class="lineNum">     227 </span>            :                                      const NativeInteger&amp; mod) const {</a>
+<a name="228"><span class="lineNum">     228 </span>            :     auto&amp;&amp; LWEParams = m_params-&gt;GetLWEParams();</a>
+<a name="229"><span class="lineNum">     229 </span>            : </a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">         75 :     auto ct = m_LWEscheme-&gt;EncryptN(LWEParams, pk, m, p, (mod == 0 ? LWEParams-&gt;GetQ() : mod));</span></a>
+<a name="231"><span class="lineNum">     231 </span>            : </a>
+<a name="232"><span class="lineNum">     232 </span>            :     // Switch from ct of modulus Q and dimension N to smaller q and n</a>
+<a name="233"><span class="lineNum">     233 </span>            :     // This is done by default while calling Encrypt but the output could</a>
+<a name="234"><span class="lineNum">     234 </span>            :     // be set to LARGE_DIM to skip this switching</a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineCov">         75 :     if (output == SMALL_DIM) {</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineCov">        280 :         ct = SwitchCTtoqn(m_BTKey.KSkey, ct);</span></a>
+<a name="237"><span class="lineNum">     237 </span>            :         ct-&gt;SetptModulus(p);</a>
+<a name="238"><span class="lineNum">     238 </span>            :     }</a>
+<a name="239"><span class="lineNum">     239 </span><span class="lineCov">         75 :     return ct;</span></a>
+<a name="240"><span class="lineNum">     240 </span>            : }</a>
+<a name="241"><span class="lineNum">     241 </span>            : </a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">         70 : LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey&amp; ksk, ConstLWECiphertext&amp; ct) const {</span></a>
+<a name="243"><span class="lineNum">     243 </span>            :     auto&amp;&amp; LWEParams = m_params-&gt;GetLWEParams();</a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineCov">         70 :     if ((ct-&gt;GetLength() != LWEParams-&gt;GetN()) &amp;&amp; (ct-&gt;GetModulus() != LWEParams-&gt;GetQ()))</span></a>
+<a name="245"><span class="lineNum">     245 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;ciphertext dimension and modulus are not large N and Q&quot;);</span></a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineCov">         70 :     return m_LWEscheme-&gt;SwitchCTtoqn(LWEParams, ksk, ct);</span></a>
+<a name="247"><span class="lineNum">     247 </span>            : }</a>
+<a name="248"><span class="lineNum">     248 </span>            : </a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineCov">        439 : void BinFHEContext::Decrypt(ConstLWEPrivateKey&amp; sk, ConstLWECiphertext&amp; ct, LWEPlaintext* result,</span></a>
+<a name="250"><span class="lineNum">     250 </span>            :                             LWEPlaintextModulus p) const {</a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineCov">        439 :     m_LWEscheme-&gt;Decrypt(m_params-&gt;GetLWEParams(), sk, ct, result, p);</span></a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineCov">        439 : }</span></a>
+<a name="253"><span class="lineNum">     253 </span>            : </a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineCov">          3 : LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey&amp; sk, ConstLWEPrivateKey&amp; skN) const {</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">          3 :     return m_LWEscheme-&gt;KeySwitchGen(m_params-&gt;GetLWEParams(), sk, skN);</span></a>
+<a name="256"><span class="lineNum">     256 </span>            : }</a>
+<a name="257"><span class="lineNum">     257 </span>            : </a>
+<a name="258"><span class="lineNum">     258 </span><span class="lineCov">        115 : void BinFHEContext::BTKeyGen(ConstLWEPrivateKey&amp; sk, KEYGEN_MODE keygenMode) {</span></a>
+<a name="259"><span class="lineNum">     259 </span>            :     auto&amp;&amp; RGSWParams = m_params-&gt;GetRingGSWParams();</a>
+<a name="260"><span class="lineNum">     260 </span>            : </a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">        115 :     auto temp = RGSWParams-&gt;GetBaseG();</span></a>
+<a name="262"><span class="lineNum">     262 </span>            : </a>
+<a name="263"><span class="lineNum">     263 </span><span class="lineCov">        115 :     if (m_timeOptimization) {</span></a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineCov">          8 :         for (auto&amp;&amp; [k, v] : RGSWParams-&gt;GetGPowerMap()) {</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">          6 :             RGSWParams-&gt;Change_BaseG(k);</span></a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineCov">          6 :             m_BTKey_map[k] = m_binfhescheme-&gt;KeyGen(m_params, sk, keygenMode);</span></a>
+<a name="267"><span class="lineNum">     267 </span>            :         }</a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">          2 :         RGSWParams-&gt;Change_BaseG(temp);</span></a>
+<a name="269"><span class="lineNum">     269 </span>            :     }</a>
+<a name="270"><span class="lineNum">     270 </span>            : </a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineCov">        115 :     if (m_BTKey_map.size() != 0) {</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineCov">         10 :         m_BTKey = m_BTKey_map[temp];</span></a>
+<a name="273"><span class="lineNum">     273 </span>            :     }</a>
+<a name="274"><span class="lineNum">     274 </span>            :     else {</a>
+<a name="275"><span class="lineNum">     275 </span><span class="lineCov">        105 :         m_BTKey           = m_binfhescheme-&gt;KeyGen(m_params, sk, keygenMode);</span></a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineCov">        105 :         m_BTKey_map[temp] = m_BTKey;</span></a>
+<a name="277"><span class="lineNum">     277 </span>            :     }</a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineCov">        115 : }</span></a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">        138 : LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext&amp; ct1, ConstLWECiphertext&amp; ct2, bool extended) const {</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">        138 :     return m_binfhescheme-&gt;EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, extended);</span></a>
+<a name="282"><span class="lineNum">     282 </span>            : }</a>
+<a name="283"><span class="lineNum">     283 </span>            : </a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">         25 : LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector&lt;LWECiphertext&gt;&amp; ctvector, bool extended) const {</span></a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineCov">         25 :     return m_binfhescheme-&gt;EvalBinGate(m_params, gate, m_BTKey, ctvector, extended);</span></a>
+<a name="286"><span class="lineNum">     286 </span>            : }</a>
+<a name="287"><span class="lineNum">     287 </span>            : </a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineCov">          6 : LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext&amp; ct, bool extended) const {</span></a>
+<a name="289"><span class="lineNum">     289 </span><span class="lineCov">          6 :     return m_binfhescheme-&gt;Bootstrap(m_params, m_BTKey, ct, extended);</span></a>
+<a name="290"><span class="lineNum">     290 </span>            : }</a>
+<a name="291"><span class="lineNum">     291 </span>            : </a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineCov">         10 : LWECiphertext BinFHEContext::EvalNOT(ConstLWECiphertext&amp; ct) const {</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineCov">         10 :     return m_binfhescheme-&gt;EvalNOT(m_params, ct);</span></a>
+<a name="294"><span class="lineNum">     294 </span>            : }</a>
+<a name="295"><span class="lineNum">     295 </span>            : </a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineNoCov">          0 : LWECiphertext BinFHEContext::EvalConstant(bool value) const {</span></a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineNoCov">          0 :     return m_LWEscheme-&gt;NoiselessEmbedding(m_params-&gt;GetLWEParams(), value);</span></a>
+<a name="298"><span class="lineNum">     298 </span>            : }</a>
+<a name="299"><span class="lineNum">     299 </span>            : </a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineCov">          8 : LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext&amp; ct, const std::vector&lt;NativeInteger&gt;&amp; LUT) const {</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineCov">          8 :     return m_binfhescheme-&gt;EvalFunc(m_params, m_BTKey, ct, LUT, GetBeta());</span></a>
+<a name="302"><span class="lineNum">     302 </span>            : }</a>
+<a name="303"><span class="lineNum">     303 </span>            : </a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineCov">          8 : LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext&amp; ct, uint32_t roundbits) const {</span></a>
+<a name="305"><span class="lineNum">     305 </span>            :     //    auto q = m_params-&gt;GetLWEParams()-&gt;Getq().ConvertToInt();</a>
+<a name="306"><span class="lineNum">     306 </span>            :     //    if (roundbits != 0) {</a>
+<a name="307"><span class="lineNum">     307 </span>            :     //        NativeInteger newp = this-&gt;GetMaxPlaintextSpace();</a>
+<a name="308"><span class="lineNum">     308 </span>            :     //        SetQ(q / newp * (1 &lt;&lt; roundbits));</a>
+<a name="309"><span class="lineNum">     309 </span>            :     //    }</a>
+<a name="310"><span class="lineNum">     310 </span>            :     //    SetQ(q);</a>
+<a name="311"><span class="lineNum">     311 </span>            :     //    return res;</a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineCov">          8 :     return m_binfhescheme-&gt;EvalFloor(m_params, m_BTKey, ct, GetBeta(), roundbits);</span></a>
+<a name="313"><span class="lineNum">     313 </span>            : }</a>
+<a name="314"><span class="lineNum">     314 </span>            : </a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineCov">        290 : LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext&amp; ct, bool schemeSwitch) {</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineCov">        290 :     return m_binfhescheme-&gt;EvalSign(std::make_shared&lt;BinFHECryptoParams&gt;(*m_params), m_BTKey_map, ct, GetBeta(),</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">        580 :                                     schemeSwitch);</span></a>
+<a name="318"><span class="lineNum">     318 </span>            : }</a>
+<a name="319"><span class="lineNum">     319 </span>            : </a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">         16 : std::vector&lt;LWECiphertext&gt; BinFHEContext::EvalDecomp(ConstLWECiphertext&amp; ct) {</span></a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineCov">         16 :     return m_binfhescheme-&gt;EvalDecomp(m_params, m_BTKey_map, ct, GetBeta());</span></a>
+<a name="322"><span class="lineNum">     322 </span>            : }</a>
+<a name="323"><span class="lineNum">     323 </span>            : </a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineCov">          1 : std::vector&lt;NativeInteger&gt; BinFHEContext::GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),</span></a>
+<a name="325"><span class="lineNum">     325 </span>            :                                                                  NativeInteger p) {</a>
+<a name="326"><span class="lineNum">     326 </span>            :     if (!IsPowerOfTwo(p.ConvertToInt&lt;BasicInteger&gt;()))</a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;plaintext p not power of two&quot;);</span></a>
+<a name="328"><span class="lineNum">     328 </span>            : </a>
+<a name="329"><span class="lineNum">     329 </span>            :     NativeInteger q{GetParams()-&gt;GetLWEParams()-&gt;Getq()};</a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineCov">          1 :     NativeInteger x{0};</span></a>
+<a name="331"><span class="lineNum">     331 </span>            : </a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineCov">          1 :     std::vector&lt;NativeInteger&gt; vec(q.ConvertToInt(), q / p);</span></a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineCov">       2049 :     for (size_t i = 0; i &lt; vec.size(); ++i, x += p) {</span></a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineCov">       2048 :         vec[i] *= f(x / q, p);  // x/q = (i*p)/q = i/(q/p)</span></a>
+<a name="335"><span class="lineNum">     335 </span>            :         if (vec[i] &gt;= q)        // (f(x/q, p) &gt;= p) --&gt; (f(x/q, p)*(q/p) &gt;= q)</a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;input function should output in Z_{p_output}&quot;);</span></a>
+<a name="337"><span class="lineNum">     337 </span>            :     }</a>
+<a name="338"><span class="lineNum">     338 </span><span class="lineCov">          1 :     return vec;</span></a>
+<a name="339"><span class="lineNum">     339 </span>            : }</a>
+<a name="340"><span class="lineNum">     340 </span>            : </a>
+<a name="341"><span class="lineNum">     341 </span>            : }  // namespace lbcrypto</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

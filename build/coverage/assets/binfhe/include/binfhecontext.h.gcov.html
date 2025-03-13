@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">9</td>
-            <td class="headerCovTableEntry">12</td>
-            <td class="headerCovTableEntryMed">75.0 %</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryMed">81.2 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">2</td>
@@ -141,7 +141,7 @@
 <a name="79"><span class="lineNum">      79 </span>            :  */</a>
 <a name="80"><span class="lineNum">      80 </span>            : class BinFHEContext : public Serializable {</a>
 <a name="81"><span class="lineNum">      81 </span>            : public:</a>
-<a name="82"><span class="lineNum">      82 </span><span class="lineCov">         99 :     BinFHEContext() = default;</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">        159 :     BinFHEContext() = default;</span></a>
 <a name="83"><span class="lineNum">      83 </span>            : </a>
 <a name="84"><span class="lineNum">      84 </span>            :     /**</a>
 <a name="85"><span class="lineNum">      85 </span>            :    * Creates a crypto context using custom parameters.</a>
@@ -206,7 +206,7 @@
 <a name="144"><span class="lineNum">     144 </span>            :    * @return a shared pointer to the refresh key</a>
 <a name="145"><span class="lineNum">     145 </span>            :    */</a>
 <a name="146"><span class="lineNum">     146 </span>            :     const RingGSWACCKey&amp; GetRefreshKey() const {</a>
-<a name="147"><span class="lineNum">     147 </span>            :         return m_BTKey.BSkey;</a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">          6 :         return m_BTKey.BSkey;</span></a>
 <a name="148"><span class="lineNum">     148 </span>            :     }</a>
 <a name="149"><span class="lineNum">     149 </span>            : </a>
 <a name="150"><span class="lineNum">     150 </span>            :     /**</a>
@@ -215,7 +215,7 @@
 <a name="153"><span class="lineNum">     153 </span>            :    * @return a shared pointer to the switching key</a>
 <a name="154"><span class="lineNum">     154 </span>            :    */</a>
 <a name="155"><span class="lineNum">     155 </span>            :     const LWESwitchingKey&amp; GetSwitchKey() const {</a>
-<a name="156"><span class="lineNum">     156 </span>            :         return m_BTKey.KSkey;</a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          6 :         return m_BTKey.KSkey;</span></a>
 <a name="157"><span class="lineNum">     157 </span>            :     }</a>
 <a name="158"><span class="lineNum">     158 </span>            : </a>
 <a name="159"><span class="lineNum">     159 </span>            :     /**</a>
@@ -233,7 +233,7 @@
 <a name="171"><span class="lineNum">     171 </span>            :     * @return a shared pointer to the bootstrapping key map</a>
 <a name="172"><span class="lineNum">     172 </span>            :     */</a>
 <a name="173"><span class="lineNum">     173 </span>            :     const std::shared_ptr&lt;std::map&lt;uint32_t, RingGSWBTKey&gt;&gt; GetBTKeyMap() const {</a>
-<a name="174"><span class="lineNum">     174 </span>            :         return std::make_shared&lt;std::map&lt;uint32_t, RingGSWBTKey&gt;&gt;(m_BTKey_map);</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">          6 :         return std::make_shared&lt;std::map&lt;uint32_t, RingGSWBTKey&gt;&gt;(m_BTKey_map);</span></a>
 <a name="175"><span class="lineNum">     175 </span>            :     }</a>
 <a name="176"><span class="lineNum">     176 </span>            : </a>
 <a name="177"><span class="lineNum">     177 </span>            :     /**</a>
@@ -333,7 +333,7 @@
 <a name="271"><span class="lineNum">     271 </span>            :    * @param key struct with the bootstrapping keys</a>
 <a name="272"><span class="lineNum">     272 </span>            :    */</a>
 <a name="273"><span class="lineNum">     273 </span>            :     void BTKeyLoad(const RingGSWBTKey&amp; key) {</a>
-<a name="274"><span class="lineNum">     274 </span><span class="lineCov">          5 :         m_BTKey = key;</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineCov">         11 :         m_BTKey = key;</span></a>
 <a name="275"><span class="lineNum">     275 </span>            :     }</a>
 <a name="276"><span class="lineNum">     276 </span>            : </a>
 <a name="277"><span class="lineNum">     277 </span>            :     /**</a>
@@ -343,7 +343,7 @@
 <a name="281"><span class="lineNum">     281 </span>            :    * @param key struct with the bootstrapping keys</a>
 <a name="282"><span class="lineNum">     282 </span>            :    */</a>
 <a name="283"><span class="lineNum">     283 </span>            :     void BTKeyMapLoadSingleElement(uint32_t baseG, const RingGSWBTKey&amp; key) {</a>
-<a name="284"><span class="lineNum">     284 </span>            :         m_BTKey_map[baseG] = key;</a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">          6 :         m_BTKey_map[baseG] = key;</span></a>
 <a name="285"><span class="lineNum">     285 </span>            :     }</a>
 <a name="286"><span class="lineNum">     286 </span>            : </a>
 <a name="287"><span class="lineNum">     287 </span>            :     /**</a>
@@ -470,18 +470,18 @@
 <a name="408"><span class="lineNum">     408 </span>            : </a>
 <a name="409"><span class="lineNum">     409 </span>            :     template &lt;class Archive&gt;</a>
 <a name="410"><span class="lineNum">     410 </span>            :     void save(Archive&amp; ar, std::uint32_t const version) const {</a>
-<a name="411"><span class="lineNum">     411 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;params&quot;, m_params));</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;params&quot;, m_params));</span></a>
 <a name="412"><span class="lineNum">     412 </span>            :     }</a>
 <a name="413"><span class="lineNum">     413 </span>            : </a>
 <a name="414"><span class="lineNum">     414 </span>            :     template &lt;class Archive&gt;</a>
-<a name="415"><span class="lineNum">     415 </span><span class="lineCov">          5 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
-<a name="416"><span class="lineNum">     416 </span><span class="lineCov">          5 :         if (version &gt; SerializedVersion()) {</span></a>
+<a name="415"><span class="lineNum">     415 </span><span class="lineCov">         11 :     void load(Archive&amp; ar, std::uint32_t const version) {</span></a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineCov">         11 :         if (version &gt; SerializedVersion()) {</span></a>
 <a name="417"><span class="lineNum">     417 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;serialized object version &quot; + std::to_string(version) +</span></a>
 <a name="418"><span class="lineNum">     418 </span>            :                           &quot; is from a later version of the library&quot;);</a>
 <a name="419"><span class="lineNum">     419 </span>            :         }</a>
-<a name="420"><span class="lineNum">     420 </span><span class="lineCov">          5 :         ar(::cereal::make_nvp(&quot;params&quot;, m_params));</span></a>
-<a name="421"><span class="lineNum">     421 </span><span class="lineCov">          5 :         m_binfhescheme = std::make_shared&lt;BinFHEScheme&gt;(m_params-&gt;GetRingGSWParams()-&gt;GetMethod());</span></a>
-<a name="422"><span class="lineNum">     422 </span><span class="lineCov">          5 :     }</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineCov">         11 :         ar(::cereal::make_nvp(&quot;params&quot;, m_params));</span></a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineCov">         11 :         m_binfhescheme = std::make_shared&lt;BinFHEScheme&gt;(m_params-&gt;GetRingGSWParams()-&gt;GetMethod());</span></a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineCov">         11 :     }</span></a>
 <a name="423"><span class="lineNum">     423 </span>            : </a>
 <a name="424"><span class="lineNum">     424 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="425"><span class="lineNum">     425 </span><span class="lineNoCov">          0 :         return &quot;BinFHEContext&quot;;</span></a>

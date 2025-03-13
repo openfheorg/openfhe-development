@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">5</td>
@@ -118,7 +118,7 @@
 <a name="56"><span class="lineNum">      56 </span>            :  * based on the hardness of Ring-LWE problem</a>
 <a name="57"><span class="lineNum">      57 </span>            :  */</a>
 <a name="58"><span class="lineNum">      58 </span>            : template &lt;class Element&gt;</a>
-<a name="59"><span class="lineNum">      59 </span><span class="lineCov">         16 : class RLWETrapdoorPair {</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">         32 : class RLWETrapdoorPair {</span></a>
 <a name="60"><span class="lineNum">      60 </span>            : public:</a>
 <a name="61"><span class="lineNum">      61 </span>            :     // matrix of noise polynomials</a>
 <a name="62"><span class="lineNum">      62 </span>            :     Matrix&lt;Element&gt; m_r;</a>
@@ -129,7 +129,7 @@
 <a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :         : m_r(Matrix&lt;Element&gt;([]() { return Element(); }, 0, 0)),</span></a>
 <a name="68"><span class="lineNum">      68 </span><span class="lineNoCov">          0 :           m_e(Matrix&lt;Element&gt;([]() { return Element(); }, 0, 0)) {}</span></a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
-<a name="70"><span class="lineNum">      70 </span><span class="lineCov">         16 :     RLWETrapdoorPair(const Matrix&lt;Element&gt;&amp; r, const Matrix&lt;Element&gt;&amp; e) : m_r(r), m_e(e) {}</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">         32 :     RLWETrapdoorPair(const Matrix&lt;Element&gt;&amp; r, const Matrix&lt;Element&gt;&amp; e) : m_r(r), m_e(e) {}</span></a>
 <a name="71"><span class="lineNum">      71 </span>            : </a>
 <a name="72"><span class="lineNum">      72 </span>            :     template &lt;class Archive&gt;</a>
 <a name="73"><span class="lineNum">      73 </span>            :     void save(Archive&amp; ar, std::uint32_t const version) const {</a>
@@ -423,11 +423,11 @@
 <a name="361"><span class="lineNum">     361 </span>            :    *sampling</a>
 <a name="362"><span class="lineNum">     362 </span>            :    *@param *perturbationVector perturbation vector;output of the function</a>
 <a name="363"><span class="lineNum">     363 </span>            :    */</a>
-<a name="364"><span class="lineNum">     364 </span><span class="lineCov">          8 :     static void SamplePertSquareMat(size_t n, double s, double sigma, const RLWETrapdoorPair&lt;Element&gt;&amp; Tprime,</span></a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineCov">         16 :     static void SamplePertSquareMat(size_t n, double s, double sigma, const RLWETrapdoorPair&lt;Element&gt;&amp; Tprime,</span></a>
 <a name="365"><span class="lineNum">     365 </span>            :                                     const DggType&amp; dgg, const DggType&amp; dggLargeSigma,</a>
 <a name="366"><span class="lineNum">     366 </span>            :                                     std::shared_ptr&lt;Matrix&lt;Element&gt;&gt; perturbationVector) {</a>
-<a name="367"><span class="lineNum">     367 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; R = Tprime.m_r;</span></a>
-<a name="368"><span class="lineNum">     368 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; E = Tprime.m_e;</span></a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; R = Tprime.m_r;</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; E = Tprime.m_e;</span></a>
 <a name="369"><span class="lineNum">     369 </span>            : </a>
 <a name="370"><span class="lineNum">     370 </span>            :         const std::shared_ptr&lt;ParmType&gt; params = R(0, 0).GetParams();</a>
 <a name="371"><span class="lineNum">     371 </span>            : </a>
@@ -435,17 +435,17 @@
 <a name="373"><span class="lineNum">     373 </span>            :         size_t k = R.GetCols();</a>
 <a name="374"><span class="lineNum">     374 </span>            :         size_t d = R.GetRows();</a>
 <a name="375"><span class="lineNum">     375 </span>            : </a>
-<a name="376"><span class="lineNum">     376 </span><span class="lineCov">         16 :         Matrix&lt;int64_t&gt; p2ZVector([]() { return 0; }, n * k, d);</span></a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineCov">         32 :         Matrix&lt;int64_t&gt; p2ZVector([]() { return 0; }, n * k, d);</span></a>
 <a name="377"><span class="lineNum">     377 </span>            : </a>
-<a name="378"><span class="lineNum">     378 </span><span class="lineCov">          8 :         double sigmaLarge = sqrt(s * s - sigma * sigma);</span></a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineCov">         16 :         double sigmaLarge = sqrt(s * s - sigma * sigma);</span></a>
 <a name="379"><span class="lineNum">     379 </span>            : </a>
 <a name="380"><span class="lineNum">     380 </span>            :         // for distribution parameters up to the experimentally found threshold, use</a>
 <a name="381"><span class="lineNum">     381 </span>            :         // the Peikert's inversion method otherwise, use Karney's method</a>
-<a name="382"><span class="lineNum">     382 </span><span class="lineCov">          8 :         if (sigmaLarge &gt; KARNEY_THRESHOLD) {</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineCov">         16 :         if (sigmaLarge &gt; KARNEY_THRESHOLD) {</span></a>
 <a name="383"><span class="lineNum">     383 </span>            :             // Karney rejection sampling method</a>
-<a name="384"><span class="lineNum">     384 </span><span class="lineCov">      22184 :             for (size_t i = 0; i &lt; n * k; i++) {</span></a>
-<a name="385"><span class="lineNum">     385 </span><span class="lineCov">     107712 :                 for (size_t j = 0; j &lt; d; j++) {</span></a>
-<a name="386"><span class="lineNum">     386 </span><span class="lineCov">      85536 :                     p2ZVector(i, j) = dgg.GenerateIntegerKarney(0, sigmaLarge);</span></a>
+<a name="384"><span class="lineNum">     384 </span><span class="lineCov">      44368 :             for (size_t i = 0; i &lt; n * k; i++) {</span></a>
+<a name="385"><span class="lineNum">     385 </span><span class="lineCov">     215424 :                 for (size_t j = 0; j &lt; d; j++) {</span></a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineCov">     171072 :                     p2ZVector(i, j) = dgg.GenerateIntegerKarney(0, sigmaLarge);</span></a>
 <a name="387"><span class="lineNum">     387 </span>            :                 }</a>
 <a name="388"><span class="lineNum">     388 </span>            :             }</a>
 <a name="389"><span class="lineNum">     389 </span>            :         }</a>
@@ -461,83 +461,83 @@
 <a name="399"><span class="lineNum">     399 </span>            :         }</a>
 <a name="400"><span class="lineNum">     400 </span>            : </a>
 <a name="401"><span class="lineNum">     401 </span>            :         // create a matrix of d*k x d ring elements in coefficient representation</a>
-<a name="402"><span class="lineNum">     402 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; p2 = SplitInt64IntoElements&lt;Element&gt;(p2ZVector.ExtractCol(0), n, params);</span></a>
-<a name="403"><span class="lineNum">     403 </span><span class="lineCov">         28 :         for (size_t i = 1; i &lt; d; i++) {</span></a>
-<a name="404"><span class="lineNum">     404 </span><span class="lineCov">         40 :             p2.HStack(SplitInt64IntoElements&lt;Element&gt;(p2ZVector.ExtractCol(i), n, params));</span></a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineCov">         64 :         Matrix&lt;Element&gt; p2 = SplitInt64IntoElements&lt;Element&gt;(p2ZVector.ExtractCol(0), n, params);</span></a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineCov">         56 :         for (size_t i = 1; i &lt; d; i++) {</span></a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineCov">         80 :             p2.HStack(SplitInt64IntoElements&lt;Element&gt;(p2ZVector.ExtractCol(i), n, params));</span></a>
 <a name="405"><span class="lineNum">     405 </span>            :         }</a>
 <a name="406"><span class="lineNum">     406 </span>            : </a>
 <a name="407"><span class="lineNum">     407 </span>            :         // now converting to Format::EVALUATION representation before multiplication</a>
-<a name="408"><span class="lineNum">     408 </span><span class="lineCov">          8 :         p2.SetFormat(Format::EVALUATION);</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineCov">         16 :         p2.SetFormat(Format::EVALUATION);</span></a>
 <a name="409"><span class="lineNum">     409 </span>            : </a>
-<a name="410"><span class="lineNum">     410 </span><span class="lineCov">          8 :         auto zero_alloc = Element::Allocator(params, Format::EVALUATION);</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">         16 :         auto zero_alloc = Element::Allocator(params, Format::EVALUATION);</span></a>
 <a name="411"><span class="lineNum">     411 </span>            : </a>
-<a name="412"><span class="lineNum">     412 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; A = R * (R.Transpose());  // d x d</span></a>
-<a name="413"><span class="lineNum">     413 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; B = R * (E.Transpose());  // d x d</span></a>
-<a name="414"><span class="lineNum">     414 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; D = E * (E.Transpose());  // d x d</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; A = R * (R.Transpose());  // d x d</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; B = R * (E.Transpose());  // d x d</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; D = E * (E.Transpose());  // d x d</span></a>
 <a name="415"><span class="lineNum">     415 </span>            : </a>
 <a name="416"><span class="lineNum">     416 </span>            :         // Switch the ring elements (Polynomials) to coefficient representation</a>
-<a name="417"><span class="lineNum">     417 </span><span class="lineCov">          8 :         A.SetFormat(Format::COEFFICIENT);</span></a>
-<a name="418"><span class="lineNum">     418 </span><span class="lineCov">          8 :         B.SetFormat(Format::COEFFICIENT);</span></a>
-<a name="419"><span class="lineNum">     419 </span><span class="lineCov">          8 :         D.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineCov">         16 :         A.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="418"><span class="lineNum">     418 </span><span class="lineCov">         16 :         B.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="419"><span class="lineNum">     419 </span><span class="lineCov">         16 :         D.SetFormat(Format::COEFFICIENT);</span></a>
 <a name="420"><span class="lineNum">     420 </span>            : </a>
-<a name="421"><span class="lineNum">     421 </span><span class="lineCov">        580 :         Matrix&lt;Field2n&gt; AF([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, d, d);</span></a>
-<a name="422"><span class="lineNum">     422 </span><span class="lineCov">       2032 :         Matrix&lt;Field2n&gt; BF([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, d, d);</span></a>
-<a name="423"><span class="lineNum">     423 </span><span class="lineCov">      20564 :         Matrix&lt;Field2n&gt; DF([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, d, d);</span></a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineCov">       1160 :         Matrix&lt;Field2n&gt; AF([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, d, d);</span></a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineCov">       4064 :         Matrix&lt;Field2n&gt; BF([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, d, d);</span></a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineCov">      41128 :         Matrix&lt;Field2n&gt; DF([&amp;]() { return Field2n(n, Format::EVALUATION, true); }, d, d);</span></a>
 <a name="424"><span class="lineNum">     424 </span>            : </a>
-<a name="425"><span class="lineNum">     425 </span><span class="lineCov">          8 :         double scalarFactor = -sigma * sigma;</span></a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineCov">         16 :         double scalarFactor = -sigma * sigma;</span></a>
 <a name="426"><span class="lineNum">     426 </span>            : </a>
-<a name="427"><span class="lineNum">     427 </span><span class="lineCov">         36 :         for (size_t i = 0; i &lt; d; i++) {</span></a>
-<a name="428"><span class="lineNum">     428 </span><span class="lineCov">        136 :             for (size_t j = 0; j &lt; d; j++) {</span></a>
-<a name="429"><span class="lineNum">     429 </span><span class="lineCov">        216 :                 AF(i, j) = Field2n(A(i, j));</span></a>
-<a name="430"><span class="lineNum">     430 </span><span class="lineCov">        216 :                 AF(i, j) = AF(i, j).ScalarMult(scalarFactor);</span></a>
-<a name="431"><span class="lineNum">     431 </span><span class="lineCov">        216 :                 BF(i, j) = Field2n(B(i, j));</span></a>
-<a name="432"><span class="lineNum">     432 </span><span class="lineCov">        216 :                 BF(i, j) = BF(i, j).ScalarMult(scalarFactor);</span></a>
-<a name="433"><span class="lineNum">     433 </span><span class="lineCov">        216 :                 DF(i, j) = Field2n(D(i, j));</span></a>
-<a name="434"><span class="lineNum">     434 </span><span class="lineCov">        108 :                 DF(i, j) = DF(i, j).ScalarMult(scalarFactor);</span></a>
-<a name="435"><span class="lineNum">     435 </span><span class="lineCov">        108 :                 if (i == j) {</span></a>
-<a name="436"><span class="lineNum">     436 </span><span class="lineCov">         28 :                     AF(i, j) = AF(i, j) + s * s;</span></a>
-<a name="437"><span class="lineNum">     437 </span><span class="lineCov">         28 :                     DF(i, j) = DF(i, j) + s * s;</span></a>
+<a name="427"><span class="lineNum">     427 </span><span class="lineCov">         72 :         for (size_t i = 0; i &lt; d; i++) {</span></a>
+<a name="428"><span class="lineNum">     428 </span><span class="lineCov">        272 :             for (size_t j = 0; j &lt; d; j++) {</span></a>
+<a name="429"><span class="lineNum">     429 </span><span class="lineCov">        432 :                 AF(i, j) = Field2n(A(i, j));</span></a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineCov">        432 :                 AF(i, j) = AF(i, j).ScalarMult(scalarFactor);</span></a>
+<a name="431"><span class="lineNum">     431 </span><span class="lineCov">        432 :                 BF(i, j) = Field2n(B(i, j));</span></a>
+<a name="432"><span class="lineNum">     432 </span><span class="lineCov">        432 :                 BF(i, j) = BF(i, j).ScalarMult(scalarFactor);</span></a>
+<a name="433"><span class="lineNum">     433 </span><span class="lineCov">        432 :                 DF(i, j) = Field2n(D(i, j));</span></a>
+<a name="434"><span class="lineNum">     434 </span><span class="lineCov">        216 :                 DF(i, j) = DF(i, j).ScalarMult(scalarFactor);</span></a>
+<a name="435"><span class="lineNum">     435 </span><span class="lineCov">        216 :                 if (i == j) {</span></a>
+<a name="436"><span class="lineNum">     436 </span><span class="lineCov">         56 :                     AF(i, j) = AF(i, j) + s * s;</span></a>
+<a name="437"><span class="lineNum">     437 </span><span class="lineCov">         56 :                     DF(i, j) = DF(i, j) + s * s;</span></a>
 <a name="438"><span class="lineNum">     438 </span>            :                 }</a>
 <a name="439"><span class="lineNum">     439 </span>            :             }</a>
 <a name="440"><span class="lineNum">     440 </span>            :         }</a>
 <a name="441"><span class="lineNum">     441 </span>            : </a>
 <a name="442"><span class="lineNum">     442 </span>            :         // converts the field elements to DFT representation</a>
-<a name="443"><span class="lineNum">     443 </span><span class="lineCov">          8 :         AF.SetFormat(Format::EVALUATION);</span></a>
-<a name="444"><span class="lineNum">     444 </span><span class="lineCov">          8 :         BF.SetFormat(Format::EVALUATION);</span></a>
-<a name="445"><span class="lineNum">     445 </span><span class="lineCov">          8 :         DF.SetFormat(Format::EVALUATION);</span></a>
+<a name="443"><span class="lineNum">     443 </span><span class="lineCov">         16 :         AF.SetFormat(Format::EVALUATION);</span></a>
+<a name="444"><span class="lineNum">     444 </span><span class="lineCov">         16 :         BF.SetFormat(Format::EVALUATION);</span></a>
+<a name="445"><span class="lineNum">     445 </span><span class="lineCov">         16 :         DF.SetFormat(Format::EVALUATION);</span></a>
 <a name="446"><span class="lineNum">     446 </span>            : </a>
 <a name="447"><span class="lineNum">     447 </span>            :         // the dimension is 2d x d</a>
-<a name="448"><span class="lineNum">     448 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; Tp2 = (R.VStack(E)) * p2;</span></a>
+<a name="448"><span class="lineNum">     448 </span><span class="lineCov">         32 :         Matrix&lt;Element&gt; Tp2 = (R.VStack(E)) * p2;</span></a>
 <a name="449"><span class="lineNum">     449 </span>            : </a>
 <a name="450"><span class="lineNum">     450 </span>            :         // change to coefficient representation before converting to field elements</a>
-<a name="451"><span class="lineNum">     451 </span><span class="lineCov">          8 :         Tp2.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="451"><span class="lineNum">     451 </span><span class="lineCov">         16 :         Tp2.SetFormat(Format::COEFFICIENT);</span></a>
 <a name="452"><span class="lineNum">     452 </span>            : </a>
-<a name="453"><span class="lineNum">     453 </span><span class="lineCov">         24 :         Matrix&lt;Element&gt; p1(zero_alloc, 1, 1);</span></a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineCov">         48 :         Matrix&lt;Element&gt; p1(zero_alloc, 1, 1);</span></a>
 <a name="454"><span class="lineNum">     454 </span>            : </a>
-<a name="455"><span class="lineNum">     455 </span><span class="lineCov">         36 :         for (size_t j = 0; j &lt; d; j++) {</span></a>
-<a name="456"><span class="lineNum">     456 </span><span class="lineCov">        516 :             Matrix&lt;Field2n&gt; c([&amp;]() { return Field2n(n, Format::COEFFICIENT); }, 2 * d, 1);</span></a>
+<a name="455"><span class="lineNum">     455 </span><span class="lineCov">         72 :         for (size_t j = 0; j &lt; d; j++) {</span></a>
+<a name="456"><span class="lineNum">     456 </span><span class="lineCov">       1032 :             Matrix&lt;Field2n&gt; c([&amp;]() { return Field2n(n, Format::COEFFICIENT); }, 2 * d, 1);</span></a>
 <a name="457"><span class="lineNum">     457 </span>            : </a>
-<a name="458"><span class="lineNum">     458 </span><span class="lineCov">        136 :             for (size_t i = 0; i &lt; d; i++) {</span></a>
-<a name="459"><span class="lineNum">     459 </span><span class="lineCov">        216 :                 c(i, 0)     = Field2n(Tp2(i, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
-<a name="460"><span class="lineNum">     460 </span><span class="lineCov">        324 :                 c(i + d, 0) = Field2n(Tp2(i + d, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
+<a name="458"><span class="lineNum">     458 </span><span class="lineCov">        272 :             for (size_t i = 0; i &lt; d; i++) {</span></a>
+<a name="459"><span class="lineNum">     459 </span><span class="lineCov">        432 :                 c(i, 0)     = Field2n(Tp2(i, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
+<a name="460"><span class="lineNum">     460 </span><span class="lineCov">        648 :                 c(i + d, 0) = Field2n(Tp2(i + d, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));</span></a>
 <a name="461"><span class="lineNum">     461 </span>            :             }</a>
 <a name="462"><span class="lineNum">     462 </span>            : </a>
-<a name="463"><span class="lineNum">     463 </span><span class="lineCov">         28 :             auto p1ZVector = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * 2 * d, 1);</span></a>
+<a name="463"><span class="lineNum">     463 </span><span class="lineCov">         56 :             auto p1ZVector = std::make_shared&lt;Matrix&lt;int64_t&gt;&gt;([]() { return 0; }, n * 2 * d, 1);</span></a>
 <a name="464"><span class="lineNum">     464 </span>            : </a>
-<a name="465"><span class="lineNum">     465 </span><span class="lineCov">         28 :             LatticeGaussSampUtility&lt;Element&gt;::SampleMat(AF, BF, DF, c, dgg, p1ZVector);</span></a>
+<a name="465"><span class="lineNum">     465 </span><span class="lineCov">         56 :             LatticeGaussSampUtility&lt;Element&gt;::SampleMat(AF, BF, DF, c, dgg, p1ZVector);</span></a>
 <a name="466"><span class="lineNum">     466 </span>            : </a>
-<a name="467"><span class="lineNum">     467 </span><span class="lineCov">         28 :             if (j == 0)</span></a>
-<a name="468"><span class="lineNum">     468 </span><span class="lineCov">         24 :                 p1 = SplitInt64IntoElements&lt;Element&gt;(*p1ZVector, n, params);</span></a>
+<a name="467"><span class="lineNum">     467 </span><span class="lineCov">         56 :             if (j == 0)</span></a>
+<a name="468"><span class="lineNum">     468 </span><span class="lineCov">         48 :                 p1 = SplitInt64IntoElements&lt;Element&gt;(*p1ZVector, n, params);</span></a>
 <a name="469"><span class="lineNum">     469 </span>            :             else</a>
-<a name="470"><span class="lineNum">     470 </span><span class="lineCov">         40 :                 p1.HStack(SplitInt64IntoElements&lt;Element&gt;(*p1ZVector, n, params));</span></a>
+<a name="470"><span class="lineNum">     470 </span><span class="lineCov">         80 :                 p1.HStack(SplitInt64IntoElements&lt;Element&gt;(*p1ZVector, n, params));</span></a>
 <a name="471"><span class="lineNum">     471 </span>            :         }</a>
 <a name="472"><span class="lineNum">     472 </span>            : </a>
-<a name="473"><span class="lineNum">     473 </span><span class="lineCov">          8 :         p1.SetFormat(Format::EVALUATION);</span></a>
+<a name="473"><span class="lineNum">     473 </span><span class="lineCov">         16 :         p1.SetFormat(Format::EVALUATION);</span></a>
 <a name="474"><span class="lineNum">     474 </span>            : </a>
-<a name="475"><span class="lineNum">     475 </span><span class="lineCov">          8 :         *perturbationVector = p1.VStack(p2);</span></a>
+<a name="475"><span class="lineNum">     475 </span><span class="lineCov">         16 :         *perturbationVector = p1.VStack(p2);</span></a>
 <a name="476"><span class="lineNum">     476 </span>            : </a>
-<a name="477"><span class="lineNum">     477 </span><span class="lineCov">          8 :         p1.SetFormat(Format::COEFFICIENT);</span></a>
-<a name="478"><span class="lineNum">     478 </span><span class="lineCov">          8 :     }</span></a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineCov">         16 :         p1.SetFormat(Format::COEFFICIENT);</span></a>
+<a name="478"><span class="lineNum">     478 </span><span class="lineCov">         16 :     }</span></a>
 <a name="479"><span class="lineNum">     479 </span>            : };</a>
 <a name="480"><span class="lineNum">     480 </span>            : </a>
 <a name="481"><span class="lineNum">     481 </span>            : }  // namespace lbcrypto</a>

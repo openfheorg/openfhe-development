@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">1</td>
@@ -96,28 +96,28 @@
 <a name="34"><span class="lineNum">      34 </span>            : #if defined(__clang__) || defined(__GNUC__)</a>
 <a name="35"><span class="lineNum">      35 </span>            :     #include &lt;cxxabi.h&gt;</a>
 <a name="36"><span class="lineNum">      36 </span>            : </a>
-<a name="37"><span class="lineNum">      37 </span><span class="lineCov">       2326 : std::string demangle(const char* const name) noexcept {</span></a>
+<a name="37"><span class="lineNum">      37 </span><span class="lineCov">       4652 : std::string demangle(const char* const name) noexcept {</span></a>
 <a name="38"><span class="lineNum">      38 </span>            :     // output_buffer must be malloc'ed</a>
-<a name="39"><span class="lineNum">      39 </span><span class="lineCov">       2326 :     size_t output_buffer_size = 512;</span></a>
-<a name="40"><span class="lineNum">      40 </span><span class="lineCov">       2326 :     auto output_buffer        = reinterpret_cast&lt;char*&gt;(std::malloc(output_buffer_size));</span></a>
-<a name="41"><span class="lineNum">      41 </span><span class="lineCov">       2326 :     int status                = -1;</span></a>
+<a name="39"><span class="lineNum">      39 </span><span class="lineCov">       4652 :     size_t output_buffer_size = 512;</span></a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineCov">       4652 :     auto output_buffer        = reinterpret_cast&lt;char*&gt;(std::malloc(output_buffer_size));</span></a>
+<a name="41"><span class="lineNum">      41 </span><span class="lineCov">       4652 :     int status                = -1;</span></a>
 <a name="42"><span class="lineNum">      42 </span>            : </a>
-<a name="43"><span class="lineNum">      43 </span><span class="lineCov">       2326 :     char* ptr = abi::__cxa_demangle(name, output_buffer, &amp;output_buffer_size, &amp;status);</span></a>
+<a name="43"><span class="lineNum">      43 </span><span class="lineCov">       4652 :     char* ptr = abi::__cxa_demangle(name, output_buffer, &amp;output_buffer_size, &amp;status);</span></a>
 <a name="44"><span class="lineNum">      44 </span>            :     std::string result;</a>
-<a name="45"><span class="lineNum">      45 </span><span class="lineCov">       2326 :     if (status == 0 &amp;&amp; ptr != nullptr) {</span></a>
+<a name="45"><span class="lineNum">      45 </span><span class="lineCov">       4652 :     if (status == 0 &amp;&amp; ptr != nullptr) {</span></a>
 <a name="46"><span class="lineNum">      46 </span>            :         result = ptr;</a>
 <a name="47"><span class="lineNum">      47 </span>            :         // If ptr is different from output_buffer, free ptr as it points to the newly allocated (realloc) buffer</a>
-<a name="48"><span class="lineNum">      48 </span><span class="lineCov">       1875 :         if (ptr != output_buffer)</span></a>
-<a name="49"><span class="lineNum">      49 </span><span class="lineCov">        182 :             std::free(ptr);</span></a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineCov">       3750 :         if (ptr != output_buffer)</span></a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">        364 :             std::free(ptr);</span></a>
 <a name="50"><span class="lineNum">      50 </span>            :         else</a>
-<a name="51"><span class="lineNum">      51 </span><span class="lineCov">       1693 :             std::free(output_buffer);</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">       3386 :             std::free(output_buffer);</span></a>
 <a name="52"><span class="lineNum">      52 </span>            :     }</a>
 <a name="53"><span class="lineNum">      53 </span>            :     else {</a>
-<a name="54"><span class="lineNum">      54 </span><span class="lineCov">        902 :         result = &quot;Cannot demangle symbol: &quot; + std::string(name);</span></a>
-<a name="55"><span class="lineNum">      55 </span><span class="lineCov">        451 :         std::free(output_buffer);</span></a>
+<a name="54"><span class="lineNum">      54 </span><span class="lineCov">       1804 :         result = &quot;Cannot demangle symbol: &quot; + std::string(name);</span></a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">        902 :         std::free(output_buffer);</span></a>
 <a name="56"><span class="lineNum">      56 </span>            :     }</a>
 <a name="57"><span class="lineNum">      57 </span>            : </a>
-<a name="58"><span class="lineNum">      58 </span><span class="lineCov">       2326 :     return result;</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">       4652 :     return result;</span></a>
 <a name="59"><span class="lineNum">      59 </span>            : }</a>
 <a name="60"><span class="lineNum">      60 </span>            : #else</a>
 <a name="61"><span class="lineNum">      61 </span>            : std::string demangle(const char* const name) noexcept {</a>

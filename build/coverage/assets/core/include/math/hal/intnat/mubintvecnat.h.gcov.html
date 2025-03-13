@@ -31,13 +31,13 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">76</td>
+            <td class="headerCovTableEntry">77</td>
             <td class="headerCovTableEntry">114</td>
-            <td class="headerCovTableEntryLo">66.7 %</td>
+            <td class="headerCovTableEntryLo">67.5 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">16</td>
@@ -179,7 +179,7 @@
 <a name="117"><span class="lineNum">     117 </span>            : #endif</a>
 <a name="118"><span class="lineNum">     118 </span>            : </a>
 <a name="119"><span class="lineNum">     119 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="120"><span class="lineNum">     120 </span><span class="lineCov">   27382121 : class NativeVectorT final : public lbcrypto::BigVectorInterface&lt;NativeVectorT&lt;IntegerType&gt;, IntegerType&gt;,</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">   61811948 : class NativeVectorT final : public lbcrypto::BigVectorInterface&lt;NativeVectorT&lt;IntegerType&gt;, IntegerType&gt;,</span></a>
 <a name="121"><span class="lineNum">     121 </span>            :                             public lbcrypto::Serializable {</a>
 <a name="122"><span class="lineNum">     122 </span>            : private:</a>
 <a name="123"><span class="lineNum">     123 </span>            :     // m_modulus stores the internal modulus of the vector.</a>
@@ -199,7 +199,7 @@
 <a name="137"><span class="lineNum">     137 </span>            : public:</a>
 <a name="138"><span class="lineNum">     138 </span>            :     using BasicInt = typename IntegerType::Integer;</a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">     631375 :     constexpr NativeVectorT() = default;</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">    6139971 :     constexpr NativeVectorT() = default;</span></a>
 <a name="141"><span class="lineNum">     141 </span>            : </a>
 <a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 :     static constexpr NativeVectorT Single(const IntegerType&amp; val, const IntegerType&amp; modulus) noexcept {</span></a>
 <a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :         return NativeVectorT(1, modulus, val);</span></a>
@@ -211,7 +211,7 @@
 <a name="149"><span class="lineNum">     149 </span>            :    * @param length is the length of the native vector, in terms of the number of</a>
 <a name="150"><span class="lineNum">     150 </span>            :    * entries.</a>
 <a name="151"><span class="lineNum">     151 </span>            :    */</a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineCov">        716 :     explicit constexpr NativeVectorT(usint length) noexcept : m_data(length) {}</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">       1466 :     explicit constexpr NativeVectorT(usint length) noexcept : m_data(length) {}</span></a>
 <a name="153"><span class="lineNum">     153 </span>            : </a>
 <a name="154"><span class="lineNum">     154 </span>            :     /**</a>
 <a name="155"><span class="lineNum">     155 </span>            :    * Basic constructor for specifying the length of the vector and the modulus.</a>
@@ -220,15 +220,15 @@
 <a name="158"><span class="lineNum">     158 </span>            :    * entries.</a>
 <a name="159"><span class="lineNum">     159 </span>            :    * @param modulus is the modulus of the ring.</a>
 <a name="160"><span class="lineNum">     160 </span>            :    */</a>
-<a name="161"><span class="lineNum">     161 </span><span class="lineCov">   34932951 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus) noexcept : m_modulus{modulus}, m_data(length) {</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">   65581967 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus) noexcept : m_modulus{modulus}, m_data(length) {</span></a>
 <a name="162"><span class="lineNum">     162 </span>            :         // TODO: better performance if this check is done at poly level</a>
 <a name="163"><span class="lineNum">     163 </span>            :         //        if (modulus.GetMSB() &gt; MAX_MODULUS_SIZE)</a>
 <a name="164"><span class="lineNum">     164 </span>            :         //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +</a>
 <a name="165"><span class="lineNum">     165 </span>            :         //                              &quot; bits larger than max modulus bits &quot; + std::to_string(MAX_MODULUS_SIZE));</a>
 <a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="167"><span class="lineNum">     167 </span>            : </a>
-<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus, const IntegerType&amp; val) noexcept</span></a>
-<a name="169"><span class="lineNum">     169 </span><span class="lineCov">          2 :         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">        114 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus, const IntegerType&amp; val) noexcept</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineCov">        116 :         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {</span></a>
 <a name="170"><span class="lineNum">     170 </span>            :         // TODO: better performance if this check is done at poly level</a>
 <a name="171"><span class="lineNum">     171 </span>            :         //        if (modulus.GetMSB() &gt; MAX_MODULUS_SIZE)</a>
 <a name="172"><span class="lineNum">     172 </span>            :         //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +</a>
@@ -240,15 +240,15 @@
 <a name="178"><span class="lineNum">     178 </span>            :    *</a>
 <a name="179"><span class="lineNum">     179 </span>            :    * @param bigVector is the native vector to be copied.</a>
 <a name="180"><span class="lineNum">     180 </span>            :    */</a>
-<a name="181"><span class="lineNum">     181 </span><span class="lineCov">   24248133 :     constexpr NativeVectorT(const NativeVectorT&amp; v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">   32588778 :     constexpr NativeVectorT(const NativeVectorT&amp; v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}</span></a>
 <a name="182"><span class="lineNum">     182 </span>            : </a>
 <a name="183"><span class="lineNum">     183 </span>            :     /**</a>
 <a name="184"><span class="lineNum">     184 </span>            :    * Basic move constructor for moving a vector</a>
 <a name="185"><span class="lineNum">     185 </span>            :    *</a>
 <a name="186"><span class="lineNum">     186 </span>            :    * @param &amp;&amp;bigVector is the native vector to be moved.</a>
 <a name="187"><span class="lineNum">     187 </span>            :    */</a>
-<a name="188"><span class="lineNum">     188 </span><span class="lineCov">    7004996 :     constexpr NativeVectorT(NativeVectorT&amp;&amp; v) noexcept</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">       4264 :         : m_modulus{std::move(v.m_modulus)}, m_data{std::move(v.m_data)} {}</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">   41328290 :     constexpr NativeVectorT(NativeVectorT&amp;&amp; v) noexcept</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">   27315326 :         : m_modulus{std::move(v.m_modulus)}, m_data{std::move(v.m_data)} {}</span></a>
 <a name="190"><span class="lineNum">     190 </span>            : </a>
 <a name="191"><span class="lineNum">     191 </span>            :     /**</a>
 <a name="192"><span class="lineNum">     192 </span>            :    * Basic constructor for specifying the length of the vector</a>
@@ -279,16 +279,16 @@
 <a name="217"><span class="lineNum">     217 </span>            :    * @param &amp;rhs is the native vector to be assigned from.</a>
 <a name="218"><span class="lineNum">     218 </span>            :    * @return Assigned NativeVectorT.</a>
 <a name="219"><span class="lineNum">     219 </span>            :    */</a>
-<a name="220"><span class="lineNum">     220 </span><span class="lineCov">     227668 :     NativeVectorT&amp; operator=(const NativeVectorT&amp; rhs) noexcept {</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">    1630498 :     NativeVectorT&amp; operator=(const NativeVectorT&amp; rhs) noexcept {</span></a>
 <a name="221"><span class="lineNum">     221 </span>            :         m_modulus = rhs.m_modulus;</a>
-<a name="222"><span class="lineNum">     222 </span><span class="lineCov">     227668 :         if (m_data.size() &gt;= rhs.m_data.size()) {</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">    1630498 :         if (m_data.size() &gt;= rhs.m_data.size()) {</span></a>
 <a name="223"><span class="lineNum">     223 </span>            :             std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());</a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineCov">     227510 :             if (m_data.size() &gt; rhs.m_data.size())</span></a>
-<a name="225"><span class="lineNum">     225 </span><span class="lineCov">         12 :                 m_data.resize(rhs.m_data.size());</span></a>
-<a name="226"><span class="lineNum">     226 </span><span class="lineCov">     227510 :             return *this;</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">    1625122 :             if (m_data.size() &gt; rhs.m_data.size())</span></a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">       1398 :                 m_data.resize(rhs.m_data.size());</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">    1625122 :             return *this;</span></a>
 <a name="227"><span class="lineNum">     227 </span>            :         }</a>
-<a name="228"><span class="lineNum">     228 </span><span class="lineCov">        158 :         m_data = rhs.m_data;</span></a>
-<a name="229"><span class="lineNum">     229 </span><span class="lineCov">        158 :         return *this;</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">       5378 :         m_data = rhs.m_data;</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">       5378 :         return *this;</span></a>
 <a name="230"><span class="lineNum">     230 </span>            :     }</a>
 <a name="231"><span class="lineNum">     231 </span>            : </a>
 <a name="232"><span class="lineNum">     232 </span>            :     /**</a>
@@ -299,7 +299,7 @@
 <a name="237"><span class="lineNum">     237 </span>            :    */</a>
 <a name="238"><span class="lineNum">     238 </span><span class="lineNoCov">          0 :     NativeVectorT&amp; operator=(NativeVectorT&amp;&amp; rhs) noexcept {</span></a>
 <a name="239"><span class="lineNum">     239 </span>            :         m_modulus = std::move(rhs.m_modulus);</a>
-<a name="240"><span class="lineNum">     240 </span><span class="lineCov">         56 :         m_data    = std::move(rhs.m_data);</span></a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">        122 :         m_data    = std::move(rhs.m_data);</span></a>
 <a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="242"><span class="lineNum">     242 </span>            :     }</a>
 <a name="243"><span class="lineNum">     243 </span>            : </a>
@@ -339,16 +339,16 @@
 <a name="277"><span class="lineNum">     277 </span>            :    *</a>
 <a name="278"><span class="lineNum">     278 </span>            :    * @param index is the index to set a value at.</a>
 <a name="279"><span class="lineNum">     279 </span>            :    */</a>
-<a name="280"><span class="lineNum">     280 </span><span class="lineCov">     204109 :     IntegerType&amp; at(size_t i) {</span></a>
-<a name="281"><span class="lineNum">     281 </span><span class="lineCov">     204109 :         if (!NativeVectorT::IndexCheck(i))</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">     204243 :     IntegerType&amp; at(size_t i) {</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">     204243 :         if (!NativeVectorT::IndexCheck(i))</span></a>
 <a name="282"><span class="lineNum">     282 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeVectorT index out of range&quot;);</span></a>
-<a name="283"><span class="lineNum">     283 </span><span class="lineCov">     204109 :         return m_data[i];</span></a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineCov">     204243 :         return m_data[i];</span></a>
 <a name="284"><span class="lineNum">     284 </span>            :     }</a>
 <a name="285"><span class="lineNum">     285 </span>            : </a>
-<a name="286"><span class="lineNum">     286 </span><span class="lineCov">        256 :     const IntegerType&amp; at(size_t i) const {</span></a>
-<a name="287"><span class="lineNum">     287 </span><span class="lineCov">        256 :         if (!NativeVectorT::IndexCheck(i))</span></a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineCov">        512 :     const IntegerType&amp; at(size_t i) const {</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">        512 :         if (!NativeVectorT::IndexCheck(i))</span></a>
 <a name="288"><span class="lineNum">     288 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeVectorT index out of range&quot;);</span></a>
-<a name="289"><span class="lineNum">     289 </span><span class="lineCov">        256 :         return m_data[i];</span></a>
+<a name="289"><span class="lineNum">     289 </span><span class="lineCov">        512 :         return m_data[i];</span></a>
 <a name="290"><span class="lineNum">     290 </span>            :     }</a>
 <a name="291"><span class="lineNum">     291 </span>            : </a>
 <a name="292"><span class="lineNum">     292 </span>            :     /**</a>
@@ -370,14 +370,14 @@
 <a name="308"><span class="lineNum">     308 </span>            :    * @param value is the value to set.</a>
 <a name="309"><span class="lineNum">     309 </span>            :    * @param value is the modulus value to set.</a>
 <a name="310"><span class="lineNum">     310 </span>            :    */</a>
-<a name="311"><span class="lineNum">     311 </span><span class="lineCov">       1280 :     void SetModulus(const IntegerType&amp; value) {</span></a>
-<a name="312"><span class="lineNum">     312 </span><span class="lineCov">       1280 :         if (value.GetMSB() &gt; MAX_MODULUS_SIZE) {</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">    1199987 :     void SetModulus(const IntegerType&amp; value) {</span></a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineCov">    1199987 :         if (value.GetMSB() &gt; MAX_MODULUS_SIZE) {</span></a>
 <a name="313"><span class="lineNum">     313 </span><span class="lineNoCov">          0 :             std::string errMsg{&quot;Requested modulus' size &quot; + std::to_string(value.GetMSB()) + &quot; is not supported.&quot;};</span></a>
 <a name="314"><span class="lineNum">     314 </span><span class="lineNoCov">          0 :             errMsg += &quot; NativeVectorT supports only modulus size &lt;=  &quot; + std::to_string(MAX_MODULUS_SIZE);</span></a>
 <a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(errMsg);</span></a>
 <a name="316"><span class="lineNum">     316 </span>            :         }</a>
-<a name="317"><span class="lineNum">     317 </span><span class="lineCov">       1280 :         m_modulus.m_value = value.m_value;</span></a>
-<a name="318"><span class="lineNum">     318 </span><span class="lineCov">       1280 :     }</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">    1199987 :         m_modulus.m_value = value.m_value;</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">    1199987 :     }</span></a>
 <a name="319"><span class="lineNum">     319 </span>            : </a>
 <a name="320"><span class="lineNum">     320 </span>            :     /**</a>
 <a name="321"><span class="lineNum">     321 </span>            :    * Sets the vector modulus and changes the values to match the new modulus.</a>
@@ -392,7 +392,7 @@
 <a name="330"><span class="lineNum">     330 </span>            :    * @return the vector modulus.</a>
 <a name="331"><span class="lineNum">     331 </span>            :    */</a>
 <a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :     const IntegerType&amp; GetModulus() const {</span></a>
-<a name="333"><span class="lineNum">     333 </span><span class="lineCov">         47 :         return m_modulus;</span></a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineCov">       3591 :         return m_modulus;</span></a>
 <a name="334"><span class="lineNum">     334 </span>            :     }</a>
 <a name="335"><span class="lineNum">     335 </span>            : </a>
 <a name="336"><span class="lineNum">     336 </span>            :     /**</a>
@@ -548,18 +548,18 @@
 <a name="486"><span class="lineNum">     486 </span>            :    * @return is the result of the modulus multiplication operation.</a>
 <a name="487"><span class="lineNum">     487 </span>            :    */</a>
 <a name="488"><span class="lineNum">     488 </span>            :     NativeVectorT&amp; ModMulEq(const NativeVectorT&amp; b);</a>
-<a name="489"><span class="lineNum">     489 </span><span class="lineCov">    8279788 :     NativeVectorT&amp; ModMulNoCheckEq(const NativeVectorT&amp; b) {</span></a>
+<a name="489"><span class="lineNum">     489 </span><span class="lineCov">    8279826 :     NativeVectorT&amp; ModMulNoCheckEq(const NativeVectorT&amp; b) {</span></a>
 <a name="490"><span class="lineNum">     490 </span>            :         size_t size{m_data.size()};</a>
 <a name="491"><span class="lineNum">     491 </span>            :         auto mv{m_modulus};</a>
 <a name="492"><span class="lineNum">     492 </span>            : #ifdef NATIVEINT_BARRET_MOD</a>
-<a name="493"><span class="lineNum">     493 </span><span class="lineCov">    8279788 :         auto mu{m_modulus.ComputeMu()};</span></a>
-<a name="494"><span class="lineNum">     494 </span><span class="lineCov"> 6019726600 :         for (size_t i = 0; i &lt; size; ++i)</span></a>
-<a name="495"><span class="lineNum">     495 </span><span class="lineCov"> 6011452710 :             m_data[i].ModMulFastEq(b[i], mv, mu);</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineCov">    8279826 :         auto mu{m_modulus.ComputeMu()};</span></a>
+<a name="494"><span class="lineNum">     494 </span><span class="lineCov"> 6019765550 :         for (size_t i = 0; i &lt; size; ++i)</span></a>
+<a name="495"><span class="lineNum">     495 </span><span class="lineCov"> 6011491622 :             m_data[i].ModMulFastEq(b[i], mv, mu);</span></a>
 <a name="496"><span class="lineNum">     496 </span>            : #else</a>
 <a name="497"><span class="lineNum">     497 </span>            :         for (size_t i = 0; i &lt; size; ++i)</a>
 <a name="498"><span class="lineNum">     498 </span>            :             m_data[i].ModMulFastEq(b[i], mv);</a>
 <a name="499"><span class="lineNum">     499 </span>            : #endif</a>
-<a name="500"><span class="lineNum">     500 </span><span class="lineCov">    8279788 :         return *this;</span></a>
+<a name="500"><span class="lineNum">     500 </span><span class="lineCov">    8279826 :         return *this;</span></a>
 <a name="501"><span class="lineNum">     501 </span>            :     }</a>
 <a name="502"><span class="lineNum">     502 </span>            : </a>
 <a name="503"><span class="lineNum">     503 </span>            :     /**</a>
@@ -593,13 +593,13 @@
 <a name="531"><span class="lineNum">     531 </span>            :    *</a>
 <a name="532"><span class="lineNum">     532 </span>            :    * @return a new vector which is the result of the modulus inverse operation.</a>
 <a name="533"><span class="lineNum">     533 </span>            :    */</a>
-<a name="534"><span class="lineNum">     534 </span><span class="lineCov">          5 :     NativeVectorT ModInverse() const {</span></a>
+<a name="534"><span class="lineNum">     534 </span><span class="lineCov">         10 :     NativeVectorT ModInverse() const {</span></a>
 <a name="535"><span class="lineNum">     535 </span>            :         size_t size{m_data.size()};</a>
 <a name="536"><span class="lineNum">     536 </span>            :         auto mv{m_modulus};</a>
 <a name="537"><span class="lineNum">     537 </span>            :         NativeVectorT ans(size, mv);</a>
-<a name="538"><span class="lineNum">     538 </span><span class="lineCov">         24 :         for (size_t i{0}; i &lt; size; ++i)</span></a>
-<a name="539"><span class="lineNum">     539 </span><span class="lineCov">         20 :             ans[i] = m_data[i].ModInverse(mv);</span></a>
-<a name="540"><span class="lineNum">     540 </span><span class="lineCov">          4 :         return ans;</span></a>
+<a name="538"><span class="lineNum">     538 </span><span class="lineCov">         48 :         for (size_t i{0}; i &lt; size; ++i)</span></a>
+<a name="539"><span class="lineNum">     539 </span><span class="lineCov">         40 :             ans[i] = m_data[i].ModInverse(mv);</span></a>
+<a name="540"><span class="lineNum">     540 </span><span class="lineCov">          8 :         return ans;</span></a>
 <a name="541"><span class="lineNum">     541 </span>            :     }</a>
 <a name="542"><span class="lineNum">     542 </span>            : </a>
 <a name="543"><span class="lineNum">     543 </span>            :     /**</a>
@@ -713,15 +713,15 @@
 <a name="651"><span class="lineNum">     651 </span>            :     }</a>
 <a name="652"><span class="lineNum">     652 </span>            : </a>
 <a name="653"><span class="lineNum">     653 </span>            :     template &lt;class Archive&gt;</a>
-<a name="654"><span class="lineNum">     654 </span><span class="lineCov">     583337 :     typename std::enable_if&lt;!cereal::traits::is_text_archive&lt;Archive&gt;::value, void&gt;::type save(</span></a>
+<a name="654"><span class="lineNum">     654 </span><span class="lineCov">    6088357 :     typename std::enable_if&lt;!cereal::traits::is_text_archive&lt;Archive&gt;::value, void&gt;::type save(</span></a>
 <a name="655"><span class="lineNum">     655 </span>            :         Archive&amp; ar, std::uint32_t const version) const {</a>
-<a name="656"><span class="lineNum">     656 </span><span class="lineCov">     583337 :         ::cereal::size_type size = m_data.size();</span></a>
+<a name="656"><span class="lineNum">     656 </span><span class="lineCov">    6088357 :         ::cereal::size_type size = m_data.size();</span></a>
 <a name="657"><span class="lineNum">     657 </span>            :         ar(size);</a>
-<a name="658"><span class="lineNum">     658 </span><span class="lineCov">     583337 :         if (size &gt; 0) {</span></a>
-<a name="659"><span class="lineNum">     659 </span><span class="lineCov">     583337 :             ar(::cereal::binary_data(m_data.data(), size * sizeof(IntegerType)));</span></a>
+<a name="658"><span class="lineNum">     658 </span><span class="lineCov">    6088357 :         if (size &gt; 0) {</span></a>
+<a name="659"><span class="lineNum">     659 </span><span class="lineCov">    6088357 :             ar(::cereal::binary_data(m_data.data(), size * sizeof(IntegerType)));</span></a>
 <a name="660"><span class="lineNum">     660 </span>            :         }</a>
-<a name="661"><span class="lineNum">     661 </span><span class="lineCov">     583337 :         ar(m_modulus);</span></a>
-<a name="662"><span class="lineNum">     662 </span><span class="lineCov">     583337 :     }</span></a>
+<a name="661"><span class="lineNum">     661 </span><span class="lineCov">    6088357 :         ar(m_modulus);</span></a>
+<a name="662"><span class="lineNum">     662 </span><span class="lineCov">    6088357 :     }</span></a>
 <a name="663"><span class="lineNum">     663 </span>            : </a>
 <a name="664"><span class="lineNum">     664 </span>            :     template &lt;class Archive&gt;</a>
 <a name="665"><span class="lineNum">     665 </span><span class="lineCov">      95554 :     typename std::enable_if&lt;cereal::traits::is_text_archive&lt;Archive&gt;::value, void&gt;::type save(</span></a>
@@ -778,12 +778,12 @@
 <a name="716"><span class="lineNum">     716 </span>            : //! Serialization for vector of NativeInteger</a>
 <a name="717"><span class="lineNum">     717 </span>            : </a>
 <a name="718"><span class="lineNum">     718 </span>            : template &lt;class Archive, class A&gt;</a>
-<a name="719"><span class="lineNum">     719 </span><span class="lineCov">     159558 : inline void CEREAL_SAVE_FUNCTION_NAME(Archive&amp; ar, std::vector&lt;intnat::NativeIntegerT&lt;uint64_t&gt;, A&gt; const&amp; vec) {</span></a>
-<a name="720"><span class="lineNum">     720 </span><span class="lineCov">      64004 :     ar(make_size_tag(static_cast&lt;cereal::size_type&gt;(vec.size())));  // number of elements</span></a>
-<a name="721"><span class="lineNum">     721 </span><span class="lineCov">    3636834 :     for (const auto&amp; v : vec) {</span></a>
-<a name="722"><span class="lineNum">     722 </span><span class="lineCov">    3477284 :         ar(v.ConvertToInt());</span></a>
+<a name="719"><span class="lineNum">     719 </span><span class="lineCov">     945990 : inline void CEREAL_SAVE_FUNCTION_NAME(Archive&amp; ar, std::vector&lt;intnat::NativeIntegerT&lt;uint64_t&gt;, A&gt; const&amp; vec) {</span></a>
+<a name="720"><span class="lineNum">     720 </span><span class="lineCov">     850436 :     ar(make_size_tag(static_cast&lt;cereal::size_type&gt;(vec.size())));  // number of elements</span></a>
+<a name="721"><span class="lineNum">     721 </span><span class="lineCov">    9928294 :     for (const auto&amp; v : vec) {</span></a>
+<a name="722"><span class="lineNum">     722 </span><span class="lineCov">    8982304 :         ar(v.ConvertToInt());</span></a>
 <a name="723"><span class="lineNum">     723 </span>            :     }</a>
-<a name="724"><span class="lineNum">     724 </span><span class="lineCov">     159558 : }</span></a>
+<a name="724"><span class="lineNum">     724 </span><span class="lineCov">     945990 : }</span></a>
 <a name="725"><span class="lineNum">     725 </span>            : </a>
 <a name="726"><span class="lineNum">     726 </span>            : #if defined(HAVE_INT128)</a>
 <a name="727"><span class="lineNum">     727 </span>            : template &lt;class Archive, class A&gt;</a>
@@ -803,16 +803,16 @@
 <a name="741"><span class="lineNum">     741 </span>            : //! Deserialization for vector of NativeInteger</a>
 <a name="742"><span class="lineNum">     742 </span>            : </a>
 <a name="743"><span class="lineNum">     743 </span>            : template &lt;class Archive, class A&gt;</a>
-<a name="744"><span class="lineNum">     744 </span><span class="lineCov">     159558 : inline void CEREAL_LOAD_FUNCTION_NAME(Archive&amp; ar, std::vector&lt;intnat::NativeIntegerT&lt;uint64_t&gt;, A&gt;&amp; vec) {</span></a>
+<a name="744"><span class="lineNum">     744 </span><span class="lineCov">     945990 : inline void CEREAL_LOAD_FUNCTION_NAME(Archive&amp; ar, std::vector&lt;intnat::NativeIntegerT&lt;uint64_t&gt;, A&gt;&amp; vec) {</span></a>
 <a name="745"><span class="lineNum">     745 </span>            :     cereal::size_type size;</a>
 <a name="746"><span class="lineNum">     746 </span>            :     ar(make_size_tag(size));</a>
-<a name="747"><span class="lineNum">     747 </span><span class="lineCov">     159558 :     vec.resize(static_cast&lt;size_t&gt;(size));</span></a>
-<a name="748"><span class="lineNum">     748 </span><span class="lineCov">    3636834 :     for (auto&amp; v : vec) {</span></a>
+<a name="747"><span class="lineNum">     747 </span><span class="lineCov">     945990 :     vec.resize(static_cast&lt;size_t&gt;(size));</span></a>
+<a name="748"><span class="lineNum">     748 </span><span class="lineCov">    9928294 :     for (auto&amp; v : vec) {</span></a>
 <a name="749"><span class="lineNum">     749 </span>            :         uint64_t b;</a>
 <a name="750"><span class="lineNum">     750 </span>            :         ar(b);</a>
-<a name="751"><span class="lineNum">     751 </span><span class="lineCov">    3477284 :         v = b;</span></a>
+<a name="751"><span class="lineNum">     751 </span><span class="lineCov">    8982304 :         v = b;</span></a>
 <a name="752"><span class="lineNum">     752 </span>            :     }</a>
-<a name="753"><span class="lineNum">     753 </span><span class="lineCov">     159558 : }</span></a>
+<a name="753"><span class="lineNum">     753 </span><span class="lineCov">     945990 : }</span></a>
 <a name="754"><span class="lineNum">     754 </span>            : </a>
 <a name="755"><span class="lineNum">     755 </span>            : #if defined(HAVE_INT128)</a>
 <a name="756"><span class="lineNum">     756 </span>            : template &lt;class Archive, class A&gt;</a>

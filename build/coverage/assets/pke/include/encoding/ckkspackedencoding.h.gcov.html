@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">20</td>
-            <td class="headerCovTableEntry">45</td>
-            <td class="headerCovTableEntryLo">44.4 %</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntry">59</td>
+            <td class="headerCovTableEntryLo">52.5 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td class="headerValue">2025-03-12 21:03:40</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">5</td>
-            <td class="headerCovTableEntry">11</td>
-            <td class="headerCovTableEntryLo">45.5 %</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryLo">62.5 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -126,12 +126,12 @@
 <a name="64"><span class="lineNum">      64 </span>            :                                                       std::is_same&lt;T, NativePoly::Params&gt;::value ||</a>
 <a name="65"><span class="lineNum">      65 </span>            :                                                       std::is_same&lt;T, DCRTPoly::Params&gt;::value,</a>
 <a name="66"><span class="lineNum">      66 </span>            :                                                   bool&gt;::type = true&gt;</a>
-<a name="67"><span class="lineNum">      67 </span><span class="lineNoCov">          0 :     CKKSPackedEncoding(std::shared_ptr&lt;T&gt; vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {</span></a>
-<a name="68"><span class="lineNum">      68 </span><span class="lineNoCov">          0 :         this-&gt;slots = GetDefaultSlotSize();</span></a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineNoCov">          0 :         if (this-&gt;slots &gt; (GetElementRingDimension() / 2)) {</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">       5744 :     CKKSPackedEncoding(std::shared_ptr&lt;T&gt; vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {</span></a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">       2872 :         this-&gt;slots = GetDefaultSlotSize();</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">       2872 :         if (this-&gt;slots &gt; (GetElementRingDimension() / 2)) {</span></a>
 <a name="70"><span class="lineNum">      70 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;The number of slots cannot be larger than half of ring dimension&quot;);</span></a>
 <a name="71"><span class="lineNum">      71 </span>            :         }</a>
-<a name="72"><span class="lineNum">      72 </span><span class="lineNoCov">          0 :     }</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">       2872 :     }</span></a>
 <a name="73"><span class="lineNum">      73 </span>            : </a>
 <a name="74"><span class="lineNum">      74 </span>            :     /*</a>
 <a name="75"><span class="lineNum">      75 </span>            :    * @param noiseScaleDeg degree of the scaling factor of a plaintext</a>
@@ -205,14 +205,14 @@
 <a name="143"><span class="lineNum">     143 </span>            : </a>
 <a name="144"><span class="lineNum">     144 </span>            :     bool Encode() override;</a>
 <a name="145"><span class="lineNum">     145 </span>            : </a>
-<a name="146"><span class="lineNum">     146 </span>            :     bool Decode() override {</a>
-<a name="147"><span class="lineNum">     147 </span>            :         OPENFHE_THROW(&quot;CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.&quot;);</a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineNoCov">          0 :     bool Decode() override {</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.&quot;);</span></a>
 <a name="148"><span class="lineNum">     148 </span>            :     }</a>
 <a name="149"><span class="lineNum">     149 </span>            : </a>
 <a name="150"><span class="lineNum">     150 </span>            :     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);</a>
 <a name="151"><span class="lineNum">     151 </span>            : </a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineCov">       7437 :     const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; GetCKKSPackedValue() const override {</span></a>
-<a name="153"><span class="lineNum">     153 </span><span class="lineCov">       7437 :         return value;</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">      11606 :     const std::vector&lt;std::complex&lt;double&gt;&gt;&amp; GetCKKSPackedValue() const override {</span></a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">      11606 :         return value;</span></a>
 <a name="154"><span class="lineNum">     154 </span>            :     }</a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
 <a name="156"><span class="lineNum">     156 </span><span class="lineCov">         51 :     std::vector&lt;double&gt; GetRealPackedValue() const override {</span></a>
@@ -241,8 +241,8 @@
 <a name="179"><span class="lineNum">     179 </span>            :    * GetEncodingType</a>
 <a name="180"><span class="lineNum">     180 </span>            :    * @return CKKS_PACKED_ENCODING</a>
 <a name="181"><span class="lineNum">     181 </span>            :    */</a>
-<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 :     PlaintextEncodings GetEncodingType() const override {</span></a>
-<a name="183"><span class="lineNum">     183 </span><span class="lineNoCov">          0 :         return CKKS_PACKED_ENCODING;</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineCov">       2390 :     PlaintextEncodings GetEncodingType() const override {</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">       2390 :         return CKKS_PACKED_ENCODING;</span></a>
 <a name="184"><span class="lineNum">     184 </span>            :     }</a>
 <a name="185"><span class="lineNum">     185 </span>            : </a>
 <a name="186"><span class="lineNum">     186 </span>            :     /**</a>
@@ -250,8 +250,8 @@
 <a name="188"><span class="lineNum">     188 </span>            :    *</a>
 <a name="189"><span class="lineNum">     189 </span>            :    * @return the length of the plaintext in terms of the number of bits.</a>
 <a name="190"><span class="lineNum">     190 </span>            :    */</a>
-<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 :     size_t GetLength() const override {</span></a>
-<a name="192"><span class="lineNum">     192 </span><span class="lineNoCov">          0 :         return value.size();</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineCov">       2221 :     size_t GetLength() const override {</span></a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">       2221 :         return value.size();</span></a>
 <a name="193"><span class="lineNum">     193 </span>            :     }</a>
 <a name="194"><span class="lineNum">     194 </span>            : </a>
 <a name="195"><span class="lineNum">     195 </span>            :     /**</a>
@@ -265,17 +265,17 @@
 <a name="203"><span class="lineNum">     203 </span>            :     /**</a>
 <a name="204"><span class="lineNum">     204 </span>            :    * Get method to return log2 of estimated precision</a>
 <a name="205"><span class="lineNum">     205 </span>            :    */</a>
-<a name="206"><span class="lineNum">     206 </span>            :     double GetLogPrecision() const override {</a>
-<a name="207"><span class="lineNum">     207 </span>            :         return encodingParams-&gt;GetPlaintextModulus() - m_logError;</a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineNoCov">          0 :     double GetLogPrecision() const override {</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineNoCov">          0 :         return encodingParams-&gt;GetPlaintextModulus() - m_logError;</span></a>
 <a name="208"><span class="lineNum">     208 </span>            :     }</a>
 <a name="209"><span class="lineNum">     209 </span>            : </a>
 <a name="210"><span class="lineNum">     210 </span>            :     /**</a>
 <a name="211"><span class="lineNum">     211 </span>            :    * SetLength of the plaintext to the given size</a>
 <a name="212"><span class="lineNum">     212 </span>            :    * @param siz</a>
 <a name="213"><span class="lineNum">     213 </span>            :    */</a>
-<a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :     void SetLength(size_t siz) override {</span></a>
-<a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :         value.resize(siz);</span></a>
-<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :     }</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">       2928 :     void SetLength(size_t siz) override {</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">       2928 :         value.resize(siz);</span></a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">       2928 :     }</span></a>
 <a name="217"><span class="lineNum">     217 </span>            : </a>
 <a name="218"><span class="lineNum">     218 </span>            :     /**</a>
 <a name="219"><span class="lineNum">     219 </span>            :    * Method to compare two plaintext to test for equivalence.  This method does</a>
@@ -311,28 +311,28 @@
 <a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 :         out &lt;&lt; &quot;Estimated precision: &quot; &lt;&lt; encodingParams-&gt;GetPlaintextModulus() - m_logError &lt;&lt; &quot; bits&quot; &lt;&lt; std::endl;</span></a>
 <a name="250"><span class="lineNum">     250 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="251"><span class="lineNum">     251 </span>            : </a>
-<a name="252"><span class="lineNum">     252 </span>            :     std::string GetFormattedValues(int64_t precision) const override {</a>
-<a name="253"><span class="lineNum">     253 </span>            :         std::stringstream ss;</a>
-<a name="254"><span class="lineNum">     254 </span>            :         ss &lt;&lt; &quot;(&quot;;</a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineNoCov">          0 :     std::string GetFormattedValues(int64_t precision) const override {</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :         std::stringstream ss;</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineNoCov">          0 :         ss &lt;&lt; &quot;(&quot;;</span></a>
 <a name="255"><span class="lineNum">     255 </span>            : </a>
 <a name="256"><span class="lineNum">     256 </span>            :         // for sanity's sake: get rid of all trailing zeroes and print &quot;...&quot; instead</a>
 <a name="257"><span class="lineNum">     257 </span>            :         size_t i       = value.size();</a>
 <a name="258"><span class="lineNum">     258 </span>            :         bool allZeroes = true;</a>
-<a name="259"><span class="lineNum">     259 </span>            :         while (i &gt; 0) {</a>
-<a name="260"><span class="lineNum">     260 </span>            :             --i;</a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineNoCov">          0 :         while (i &gt; 0) {</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineNoCov">          0 :             --i;</span></a>
 <a name="261"><span class="lineNum">     261 </span>            :             if (value[i] != std::complex&lt;double&gt;(0, 0)) {</a>
 <a name="262"><span class="lineNum">     262 </span>            :                 allZeroes = false;</a>
 <a name="263"><span class="lineNum">     263 </span>            :                 break;</a>
 <a name="264"><span class="lineNum">     264 </span>            :             }</a>
 <a name="265"><span class="lineNum">     265 </span>            :         }</a>
 <a name="266"><span class="lineNum">     266 </span>            : </a>
-<a name="267"><span class="lineNum">     267 </span>            :         if (allZeroes == false) {</a>
-<a name="268"><span class="lineNum">     268 </span>            :             for (size_t j = 0; j &lt;= i; ++j)</a>
-<a name="269"><span class="lineNum">     269 </span>            :                 ss &lt;&lt; std::setprecision(precision) &lt;&lt; value[j].real() &lt;&lt; &quot;, &quot;;</a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineNoCov">          0 :         if (allZeroes == false) {</span></a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineNoCov">          0 :             for (size_t j = 0; j &lt;= i; ++j)</span></a>
+<a name="269"><span class="lineNum">     269 </span><span class="lineNoCov">          0 :                 ss &lt;&lt; std::setprecision(precision) &lt;&lt; value[j].real() &lt;&lt; &quot;, &quot;;</span></a>
 <a name="270"><span class="lineNum">     270 </span>            :         }</a>
-<a name="271"><span class="lineNum">     271 </span>            :         ss &lt;&lt; &quot;... ); Estimated precision: &quot; &lt;&lt; GetLogPrecision() &lt;&lt; &quot; bits&quot;;</a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :         ss &lt;&lt; &quot;... ); Estimated precision: &quot; &lt;&lt; GetLogPrecision() &lt;&lt; &quot; bits&quot;;</span></a>
 <a name="272"><span class="lineNum">     272 </span>            : </a>
-<a name="273"><span class="lineNum">     273 </span>            :         return ss.str();</a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineNoCov">          0 :         return ss.str();</span></a>
 <a name="274"><span class="lineNum">     274 </span>            :     }</a>
 <a name="275"><span class="lineNum">     275 </span>            : </a>
 <a name="276"><span class="lineNum">     276 </span>            : private:</a>
@@ -341,9 +341,9 @@
 <a name="279"><span class="lineNum">     279 </span>            :     double m_logError = 0;</a>
 <a name="280"><span class="lineNum">     280 </span>            : </a>
 <a name="281"><span class="lineNum">     281 </span>            : protected:</a>
-<a name="282"><span class="lineNum">     282 </span><span class="lineCov">       1618 :     usint GetDefaultSlotSize() {</span></a>
-<a name="283"><span class="lineNum">     283 </span><span class="lineCov">       1618 :         auto batchSize = GetEncodingParams()-&gt;GetBatchSize();</span></a>
-<a name="284"><span class="lineNum">     284 </span><span class="lineCov">       1618 :         return (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;</span></a>
+<a name="282"><span class="lineNum">     282 </span><span class="lineCov">       4490 :     usint GetDefaultSlotSize() {</span></a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineCov">       4490 :         auto batchSize = GetEncodingParams()-&gt;GetBatchSize();</span></a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">       4490 :         return (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;</span></a>
 <a name="285"><span class="lineNum">     285 </span>            :     }</a>
 <a name="286"><span class="lineNum">     286 </span>            :     /**</a>
 <a name="287"><span class="lineNum">     287 </span>            :    * Set modulus and recalculates the vector values to fit the modulus</a>
