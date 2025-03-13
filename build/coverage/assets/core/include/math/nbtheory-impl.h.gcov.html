@@ -32,17 +32,17 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntry">152</td>
-            <td class="headerCovTableEntry">160</td>
-            <td class="headerCovTableEntryHi">95.0 %</td>
+            <td class="headerCovTableEntry">210</td>
+            <td class="headerCovTableEntryLo">72.4 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">31</td>
-            <td class="headerCovTableEntry">31</td>
-            <td class="headerCovTableEntryHi">100.0 %</td>
+            <td class="headerCovTableEntry">47</td>
+            <td class="headerCovTableEntryLo">66.0 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -191,28 +191,28 @@
 <a name="129"><span class="lineNum">     129 </span>            :  generator of q</a>
 <a name="130"><span class="lineNum">     130 </span>            :  */</a>
 <a name="131"><span class="lineNum">     131 </span>            : template &lt;typename IntType&gt;</a>
-<a name="132"><span class="lineNum">     132 </span>            : IntType FindGeneratorCyclic(const IntType&amp; q) {</a>
-<a name="133"><span class="lineNum">     133 </span>            :     IntType phi_q(GetTotient(q.ConvertToInt()));</a>
-<a name="134"><span class="lineNum">     134 </span>            :     IntType phi_q_m1(GetTotient(q.ConvertToInt()));</a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineNoCov">          0 : IntType FindGeneratorCyclic(const IntType&amp; q) {</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :     IntType phi_q(GetTotient(q.ConvertToInt()));</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :     IntType phi_q_m1(GetTotient(q.ConvertToInt()));</span></a>
 <a name="135"><span class="lineNum">     135 </span>            :     std::set&lt;IntType&gt; primeFactors;</a>
-<a name="136"><span class="lineNum">     136 </span>            :     PrimeFactorize&lt;IntType&gt;(phi_q, primeFactors);</a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineNoCov">          0 :     PrimeFactorize&lt;IntType&gt;(phi_q, primeFactors);</span></a>
 <a name="137"><span class="lineNum">     137 </span>            :     usint cnt;</a>
-<a name="138"><span class="lineNum">     138 </span>            :     IntType gen;</a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineNoCov">          0 :     IntType gen;</span></a>
 <a name="139"><span class="lineNum">     139 </span>            :     do {</a>
 <a name="140"><span class="lineNum">     140 </span>            :         cnt = 0;</a>
-<a name="141"><span class="lineNum">     141 </span>            :         gen = RNG(phi_q_m1) + IntType(1);  // gen is random in [1, phi(q)]</a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineNoCov">          0 :         gen = RNG(phi_q_m1) + IntType(1);  // gen is random in [1, phi(q)]</span></a>
 <a name="142"><span class="lineNum">     142 </span>            : </a>
 <a name="143"><span class="lineNum">     143 </span>            :         // Generator must lie in the group!</a>
-<a name="144"><span class="lineNum">     144 </span>            :         if (GreatestCommonDivisor&lt;IntType&gt;(gen, q) != IntType(1))</a>
-<a name="145"><span class="lineNum">     145 </span>            :             continue;</a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :         if (GreatestCommonDivisor&lt;IntType&gt;(gen, q) != IntType(1))</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :             continue;</span></a>
 <a name="146"><span class="lineNum">     146 </span>            : </a>
 <a name="147"><span class="lineNum">     147 </span>            :         // Order of a generator cannot divide any co-factor</a>
-<a name="148"><span class="lineNum">     148 </span>            :         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</a>
-<a name="149"><span class="lineNum">     149 </span>            :             if (gen.ModExp(phi_q / (*it), q) == IntType(1))</a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :             if (gen.ModExp(phi_q / (*it), q) == IntType(1))</span></a>
 <a name="150"><span class="lineNum">     150 </span>            :                 break;</a>
 <a name="151"><span class="lineNum">     151 </span>            :         }</a>
-<a name="152"><span class="lineNum">     152 </span>            :     } while (cnt != primeFactors.size());</a>
-<a name="153"><span class="lineNum">     153 </span>            :     return gen;</a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :     } while (cnt != primeFactors.size());</span></a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineNoCov">          0 :     return gen;</span></a>
 <a name="154"><span class="lineNum">     154 </span>            : }</a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
 <a name="156"><span class="lineNum">     156 </span>            : /*</a>
@@ -221,16 +221,16 @@
 <a name="159"><span class="lineNum">     159 </span>            :  generator g and modulus q Output: returns true if g is a generator for q</a>
 <a name="160"><span class="lineNum">     160 </span>            :  */</a>
 <a name="161"><span class="lineNum">     161 </span>            : template &lt;typename IntType&gt;</a>
-<a name="162"><span class="lineNum">     162 </span>            : bool IsGenerator(const IntType&amp; g, const IntType&amp; q) {</a>
-<a name="163"><span class="lineNum">     163 </span>            :     IntType qm1(GetTotient(q.ConvertToInt()));</a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineNoCov">          0 : bool IsGenerator(const IntType&amp; g, const IntType&amp; q) {</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :     IntType qm1(GetTotient(q.ConvertToInt()));</span></a>
 <a name="164"><span class="lineNum">     164 </span>            :     std::set&lt;IntType&gt; primeFactors;</a>
-<a name="165"><span class="lineNum">     165 </span>            :     PrimeFactorize&lt;IntType&gt;(qm1, primeFactors);</a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 :     PrimeFactorize&lt;IntType&gt;(qm1, primeFactors);</span></a>
 <a name="166"><span class="lineNum">     166 </span>            :     usint cnt = 0;</a>
-<a name="167"><span class="lineNum">     167 </span>            :     for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</a>
-<a name="168"><span class="lineNum">     168 </span>            :         if (g.ModExp(qm1 / (*it), q) == IntType(1))</a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :     for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :         if (g.ModExp(qm1 / (*it), q) == IntType(1))</span></a>
 <a name="169"><span class="lineNum">     169 </span>            :             break;</a>
 <a name="170"><span class="lineNum">     170 </span>            :     }</a>
-<a name="171"><span class="lineNum">     171 </span>            :     return cnt == primeFactors.size();</a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :     return cnt == primeFactors.size();</span></a>
 <a name="172"><span class="lineNum">     172 </span>            : }</a>
 <a name="173"><span class="lineNum">     173 </span>            : </a>
 <a name="174"><span class="lineNum">     174 </span>            : /*</a>
@@ -293,11 +293,11 @@
 <a name="231"><span class="lineNum">     231 </span>            : }</a>
 <a name="232"><span class="lineNum">     232 </span>            : </a>
 <a name="233"><span class="lineNum">     233 </span>            : template &lt;typename IntType&gt;</a>
-<a name="234"><span class="lineNum">     234 </span>            : std::vector&lt;IntType&gt; RootsOfUnity(usint m, const std::vector&lt;IntType&gt;&amp; moduli) {</a>
-<a name="235"><span class="lineNum">     235 </span>            :     std::vector&lt;IntType&gt; rootsOfUnity(moduli.size());</a>
-<a name="236"><span class="lineNum">     236 </span>            :     for (size_t i = 0; i &lt; moduli.size(); ++i)</a>
-<a name="237"><span class="lineNum">     237 </span>            :         rootsOfUnity[i] = RootOfUnity(m, moduli[i]);</a>
-<a name="238"><span class="lineNum">     238 </span>            :     return rootsOfUnity;</a>
+<a name="234"><span class="lineNum">     234 </span><span class="lineNoCov">          0 : std::vector&lt;IntType&gt; RootsOfUnity(usint m, const std::vector&lt;IntType&gt;&amp; moduli) {</span></a>
+<a name="235"><span class="lineNum">     235 </span><span class="lineNoCov">          0 :     std::vector&lt;IntType&gt; rootsOfUnity(moduli.size());</span></a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineNoCov">          0 :     for (size_t i = 0; i &lt; moduli.size(); ++i)</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 :         rootsOfUnity[i] = RootOfUnity(m, moduli[i]);</span></a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineNoCov">          0 :     return rootsOfUnity;</span></a>
 <a name="239"><span class="lineNum">     239 </span>            : }</a>
 <a name="240"><span class="lineNum">     240 </span>            : </a>
 <a name="241"><span class="lineNum">     241 </span>            : template &lt;typename IntType&gt;</a>
@@ -446,9 +446,9 @@
 <a name="384"><span class="lineNum">     384 </span>            : </a>
 <a name="385"><span class="lineNum">     385 </span>            : template &lt;typename IntType&gt;</a>
 <a name="386"><span class="lineNum">     386 </span><span class="lineCov">      15637 : IntType PreviousPrime(const IntType&amp; q, uint64_t m) {</span></a>
-<a name="387"><span class="lineNum">     387 </span>            :     IntType M(m), qNew(q - M);</a>
+<a name="387"><span class="lineNum">     387 </span><span class="lineNoCov">          0 :     IntType M(m), qNew(q - M);</span></a>
 <a name="388"><span class="lineNum">     388 </span><span class="lineCov">     303430 :     while (!MillerRabinPrimalityTest(qNew)) {</span></a>
-<a name="389"><span class="lineNum">     389 </span>            :         if ((qNew -= M) &gt; q)</a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineNoCov">          0 :         if ((qNew -= M) &gt; q)</span></a>
 <a name="390"><span class="lineNum">     390 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(std::string(__func__) + &quot;: overflow shrinking candidate&quot;);</span></a>
 <a name="391"><span class="lineNum">     391 </span>            :     }</a>
 <a name="392"><span class="lineNum">     392 </span><span class="lineCov">      15637 :     return qNew;</span></a>
@@ -530,46 +530,46 @@
 <a name="468"><span class="lineNum">     468 </span>            : }</a>
 <a name="469"><span class="lineNum">     469 </span>            : </a>
 <a name="470"><span class="lineNum">     470 </span>            : template &lt;typename IntVector&gt;</a>
-<a name="471"><span class="lineNum">     471 </span>            : typename IntVector::Integer SyntheticRemainder(const IntVector&amp; dividend, const typename IntVector::Integer&amp; a,</a>
+<a name="471"><span class="lineNum">     471 </span><span class="lineNoCov">          0 : typename IntVector::Integer SyntheticRemainder(const IntVector&amp; dividend, const typename IntVector::Integer&amp; a,</span></a>
 <a name="472"><span class="lineNum">     472 </span>            :                                                const typename IntVector::Integer&amp; modulus) {</a>
-<a name="473"><span class="lineNum">     473 </span>            :     auto mu  = modulus.ComputeMu();</a>
+<a name="473"><span class="lineNum">     473 </span><span class="lineNoCov">          0 :     auto mu  = modulus.ComputeMu();</span></a>
 <a name="474"><span class="lineNum">     474 </span>            :     auto val = dividend[dividend.GetLength() - 1];</a>
-<a name="475"><span class="lineNum">     475 </span>            :     for (int i = dividend.GetLength() - 2; i &gt;= 0; --i)</a>
-<a name="476"><span class="lineNum">     476 </span>            :         val = (dividend[i] + a * val).Mod(modulus, mu);</a>
-<a name="477"><span class="lineNum">     477 </span>            :     return val;</a>
+<a name="475"><span class="lineNum">     475 </span><span class="lineNoCov">          0 :     for (int i = dividend.GetLength() - 2; i &gt;= 0; --i)</span></a>
+<a name="476"><span class="lineNum">     476 </span><span class="lineNoCov">          0 :         val = (dividend[i] + a * val).Mod(modulus, mu);</span></a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineNoCov">          0 :     return val;</span></a>
 <a name="478"><span class="lineNum">     478 </span>            : }</a>
 <a name="479"><span class="lineNum">     479 </span>            : </a>
 <a name="480"><span class="lineNum">     480 </span>            : template &lt;typename IntVector&gt;</a>
-<a name="481"><span class="lineNum">     481 </span>            : IntVector SyntheticPolyRemainder(const IntVector&amp; dividend, const IntVector&amp; aList,</a>
+<a name="481"><span class="lineNum">     481 </span><span class="lineNoCov">          0 : IntVector SyntheticPolyRemainder(const IntVector&amp; dividend, const IntVector&amp; aList,</span></a>
 <a name="482"><span class="lineNum">     482 </span>            :                                  const typename IntVector::Integer&amp; modulus) {</a>
-<a name="483"><span class="lineNum">     483 </span>            :     IntVector result(aList.GetLength(), modulus);</a>
-<a name="484"><span class="lineNum">     484 </span>            :     for (usint i = 0; i &lt; aList.GetLength(); ++i)</a>
-<a name="485"><span class="lineNum">     485 </span>            :         result[i] = SyntheticRemainder(dividend, aList[i], modulus);</a>
-<a name="486"><span class="lineNum">     486 </span>            :     return result;</a>
+<a name="483"><span class="lineNum">     483 </span><span class="lineNoCov">          0 :     IntVector result(aList.GetLength(), modulus);</span></a>
+<a name="484"><span class="lineNum">     484 </span><span class="lineNoCov">          0 :     for (usint i = 0; i &lt; aList.GetLength(); ++i)</span></a>
+<a name="485"><span class="lineNum">     485 </span><span class="lineNoCov">          0 :         result[i] = SyntheticRemainder(dividend, aList[i], modulus);</span></a>
+<a name="486"><span class="lineNum">     486 </span><span class="lineNoCov">          0 :     return result;</span></a>
 <a name="487"><span class="lineNum">     487 </span>            : }</a>
 <a name="488"><span class="lineNum">     488 </span>            : </a>
 <a name="489"><span class="lineNum">     489 </span>            : template &lt;typename IntVector&gt;</a>
-<a name="490"><span class="lineNum">     490 </span>            : IntVector PolynomialPower(const IntVector&amp; input, usint power) {</a>
-<a name="491"><span class="lineNum">     491 </span>            :     usint finalDegree = (input.GetLength() - 1) * power;</a>
-<a name="492"><span class="lineNum">     492 </span>            :     IntVector finalPoly(finalDegree + 1, input.GetModulus());</a>
-<a name="493"><span class="lineNum">     493 </span>            :     for (usint i = 0; i &lt; input.GetLength(); ++i)</a>
-<a name="494"><span class="lineNum">     494 </span>            :         finalPoly[i * power] = input[i];</a>
-<a name="495"><span class="lineNum">     495 </span>            :     return finalPoly;</a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineNoCov">          0 : IntVector PolynomialPower(const IntVector&amp; input, usint power) {</span></a>
+<a name="491"><span class="lineNum">     491 </span><span class="lineNoCov">          0 :     usint finalDegree = (input.GetLength() - 1) * power;</span></a>
+<a name="492"><span class="lineNum">     492 </span><span class="lineNoCov">          0 :     IntVector finalPoly(finalDegree + 1, input.GetModulus());</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineNoCov">          0 :     for (usint i = 0; i &lt; input.GetLength(); ++i)</span></a>
+<a name="494"><span class="lineNum">     494 </span><span class="lineNoCov">          0 :         finalPoly[i * power] = input[i];</span></a>
+<a name="495"><span class="lineNum">     495 </span><span class="lineNoCov">          0 :     return finalPoly;</span></a>
 <a name="496"><span class="lineNum">     496 </span>            : }</a>
 <a name="497"><span class="lineNum">     497 </span>            : </a>
 <a name="498"><span class="lineNum">     498 </span>            : template &lt;typename IntVector&gt;</a>
-<a name="499"><span class="lineNum">     499 </span>            : IntVector SyntheticPolynomialDivision(const IntVector&amp; dividend, const typename IntVector::Integer&amp; a,</a>
+<a name="499"><span class="lineNum">     499 </span><span class="lineNoCov">          0 : IntVector SyntheticPolynomialDivision(const IntVector&amp; dividend, const typename IntVector::Integer&amp; a,</span></a>
 <a name="500"><span class="lineNum">     500 </span>            :                                       const typename IntVector::Integer&amp; modulus) {</a>
-<a name="501"><span class="lineNum">     501 </span>            :     auto mu(modulus.ComputeMu());</a>
-<a name="502"><span class="lineNum">     502 </span>            :     usint n(dividend.GetLength() - 1);</a>
-<a name="503"><span class="lineNum">     503 </span>            :     IntVector result(n, modulus);</a>
-<a name="504"><span class="lineNum">     504 </span>            :     result[n - 1] = dividend[n];</a>
+<a name="501"><span class="lineNum">     501 </span><span class="lineNoCov">          0 :     auto mu(modulus.ComputeMu());</span></a>
+<a name="502"><span class="lineNum">     502 </span><span class="lineNoCov">          0 :     usint n(dividend.GetLength() - 1);</span></a>
+<a name="503"><span class="lineNum">     503 </span><span class="lineNoCov">          0 :     IntVector result(n, modulus);</span></a>
+<a name="504"><span class="lineNum">     504 </span><span class="lineNoCov">          0 :     result[n - 1] = dividend[n];</span></a>
 <a name="505"><span class="lineNum">     505 </span>            :     auto val(dividend[n]);</a>
-<a name="506"><span class="lineNum">     506 </span>            :     for (int i = n - 1; i &gt; 0; i--) {</a>
-<a name="507"><span class="lineNum">     507 </span>            :         val           = (val * a + dividend[i]).Mod(modulus, mu);</a>
-<a name="508"><span class="lineNum">     508 </span>            :         result[i - 1] = val;</a>
+<a name="506"><span class="lineNum">     506 </span><span class="lineNoCov">          0 :     for (int i = n - 1; i &gt; 0; i--) {</span></a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineNoCov">          0 :         val           = (val * a + dividend[i]).Mod(modulus, mu);</span></a>
+<a name="508"><span class="lineNum">     508 </span><span class="lineNoCov">          0 :         result[i - 1] = val;</span></a>
 <a name="509"><span class="lineNum">     509 </span>            :     }</a>
-<a name="510"><span class="lineNum">     510 </span>            :     return result;</a>
+<a name="510"><span class="lineNum">     510 </span><span class="lineNoCov">          0 :     return result;</span></a>
 <a name="511"><span class="lineNum">     511 </span>            : }</a>
 <a name="512"><span class="lineNum">     512 </span>            : </a>
 <a name="513"><span class="lineNum">     513 </span>            : }  // namespace lbcrypto</a>

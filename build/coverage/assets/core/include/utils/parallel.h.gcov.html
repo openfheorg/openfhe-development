@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -173,7 +173,7 @@
 <a name="111"><span class="lineNum">     111 </span>            :     // @Brief returns min of int n and machineThreads</a>
 <a name="112"><span class="lineNum">     112 </span>            :     int GetThreadLimit(int n) const {</a>
 <a name="113"><span class="lineNum">     113 </span>            : #ifdef PARALLEL</a>
-<a name="114"><span class="lineNum">     114 </span><span class="lineCov">     835734 :         return n &gt; machineThreads ? machineThreads : n;</span></a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">    1191044 :         return n &gt; machineThreads ? machineThreads : n;</span></a>
 <a name="115"><span class="lineNum">     115 </span>            : #else</a>
 <a name="116"><span class="lineNum">     116 </span>            :         return 1;</a>
 <a name="117"><span class="lineNum">     117 </span>            : #endif</a>

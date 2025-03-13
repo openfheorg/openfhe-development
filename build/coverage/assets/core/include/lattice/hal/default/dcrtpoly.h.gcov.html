@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">46</td>
-            <td class="headerCovTableEntry">64</td>
-            <td class="headerCovTableEntryLo">71.9 %</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntry">78</td>
+            <td class="headerCovTableEntryLo">61.5 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">11</td>
-            <td class="headerCovTableEntry">14</td>
-            <td class="headerCovTableEntryMed">78.6 %</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -133,14 +133,14 @@
 <a name="71"><span class="lineNum">      71 </span>            :     using TugType               = typename DCRTPolyInterfaceType::TugType;</a>
 <a name="72"><span class="lineNum">      72 </span>            :     using BugType               = typename DCRTPolyInterfaceType::BugType;</a>
 <a name="73"><span class="lineNum">      73 </span>            : </a>
-<a name="74"><span class="lineNum">      74 </span><span class="lineCov">      48104 :     DCRTPolyImpl() = default;</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">     146935 :     DCRTPolyImpl() = default;</span></a>
 <a name="75"><span class="lineNum">      75 </span>            : </a>
-<a name="76"><span class="lineNum">      76 </span><span class="lineCov">     712045 :     DCRTPolyImpl(const DCRTPolyType&amp; e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}</span></a>
-<a name="77"><span class="lineNum">      77 </span><span class="lineCov">      44687 :     DCRTPolyType&amp; operator=(const DCRTPolyType&amp; rhs) noexcept override {</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">     803852 :     DCRTPolyImpl(const DCRTPolyType&amp; e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">      83387 :     DCRTPolyType&amp; operator=(const DCRTPolyType&amp; rhs) noexcept override {</span></a>
 <a name="78"><span class="lineNum">      78 </span>            :         m_params  = rhs.m_params;</a>
-<a name="79"><span class="lineNum">      79 </span><span class="lineCov">      44687 :         m_format  = rhs.m_format;</span></a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov">      44687 :         m_vectors = rhs.m_vectors;</span></a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineCov">      44687 :         return *this;</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">      83387 :         m_format  = rhs.m_format;</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">      83387 :         m_vectors = rhs.m_vectors;</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">      83387 :         return *this;</span></a>
 <a name="82"><span class="lineNum">      82 </span>            :     }</a>
 <a name="83"><span class="lineNum">      83 </span>            : </a>
 <a name="84"><span class="lineNum">      84 </span>            :     DCRTPolyImpl(const PolyLargeType&amp; e, const std::shared_ptr&lt;Params&gt;&amp; params) noexcept;</a>
@@ -149,24 +149,24 @@
 <a name="87"><span class="lineNum">      87 </span>            :     DCRTPolyImpl(const PolyType&amp; e, const std::shared_ptr&lt;Params&gt;&amp; params) noexcept;</a>
 <a name="88"><span class="lineNum">      88 </span>            :     DCRTPolyType&amp; operator=(const PolyType&amp; rhs) noexcept;</a>
 <a name="89"><span class="lineNum">      89 </span>            : </a>
-<a name="90"><span class="lineNum">      90 </span><span class="lineCov">     181333 :     DCRTPolyImpl(DCRTPolyType&amp;&amp; e) noexcept</span></a>
-<a name="91"><span class="lineNum">      91 </span><span class="lineCov">     181333 :         : m_params{std::move(e.m_params)}, m_format{e.m_format}, m_vectors{std::move(e.m_vectors)} {}</span></a>
-<a name="92"><span class="lineNum">      92 </span><span class="lineCov">     190010 :     DCRTPolyType&amp; operator=(DCRTPolyType&amp;&amp; rhs) noexcept override {</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineCov">     343284 :     DCRTPolyImpl(DCRTPolyType&amp;&amp; e) noexcept</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">     343284 :         : m_params{std::move(e.m_params)}, m_format{e.m_format}, m_vectors{std::move(e.m_vectors)} {}</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineCov">     279323 :     DCRTPolyType&amp; operator=(DCRTPolyType&amp;&amp; rhs) noexcept override {</span></a>
 <a name="93"><span class="lineNum">      93 </span>            :         m_params  = std::move(rhs.m_params);</a>
-<a name="94"><span class="lineNum">      94 </span><span class="lineCov">     190010 :         m_format  = std::move(rhs.m_format);</span></a>
-<a name="95"><span class="lineNum">      95 </span><span class="lineCov">     190010 :         m_vectors = std::move(rhs.m_vectors);</span></a>
-<a name="96"><span class="lineNum">      96 </span><span class="lineCov">     190010 :         return *this;</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">     279323 :         m_format  = std::move(rhs.m_format);</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">     279323 :         m_vectors = std::move(rhs.m_vectors);</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">     279323 :         return *this;</span></a>
 <a name="97"><span class="lineNum">      97 </span>            :     }</a>
 <a name="98"><span class="lineNum">      98 </span>            : </a>
 <a name="99"><span class="lineNum">      99 </span>            :     explicit DCRTPolyImpl(const std::vector&lt;PolyType&gt;&amp; elements);</a>
 <a name="100"><span class="lineNum">     100 </span>            : </a>
-<a name="101"><span class="lineNum">     101 </span><span class="lineCov">    1095565 :     DCRTPolyImpl(const std::shared_ptr&lt;Params&gt;&amp; params, Format format = Format::EVALUATION,</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">    1539331 :     DCRTPolyImpl(const std::shared_ptr&lt;Params&gt;&amp; params, Format format = Format::EVALUATION,</span></a>
 <a name="102"><span class="lineNum">     102 </span>            :                  bool initializeElementToZero = false) noexcept</a>
-<a name="103"><span class="lineNum">     103 </span><span class="lineCov">    1095565 :         : m_params{params}, m_format{format} {</span></a>
-<a name="104"><span class="lineNum">     104 </span><span class="lineCov">    1095565 :         m_vectors.reserve(m_params-&gt;GetParams().size());</span></a>
-<a name="105"><span class="lineNum">     105 </span><span class="lineCov">    6666171 :         for (const auto&amp; p : m_params-&gt;GetParams())</span></a>
-<a name="106"><span class="lineNum">     106 </span><span class="lineCov">    5570595 :             m_vectors.emplace_back(p, m_format, initializeElementToZero);</span></a>
-<a name="107"><span class="lineNum">     107 </span><span class="lineCov">    1095565 :     }</span></a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineCov">    1539331 :         : m_params{params}, m_format{format} {</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">    1539331 :         m_vectors.reserve(m_params-&gt;GetParams().size());</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">   10102991 :         for (const auto&amp; p : m_params-&gt;GetParams())</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">    8563655 :             m_vectors.emplace_back(p, m_format, initializeElementToZero);</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">    1539331 :     }</span></a>
 <a name="108"><span class="lineNum">     108 </span>            : </a>
 <a name="109"><span class="lineNum">     109 </span>            :     DCRTPolyImpl(const DggType&amp; dgg, const std::shared_ptr&lt;Params&gt;&amp; p, Format f = Format::EVALUATION);</a>
 <a name="110"><span class="lineNum">     110 </span>            :     DCRTPolyImpl(const BugType&amp; bug, const std::shared_ptr&lt;Params&gt;&amp; p, Format f = Format::EVALUATION);</a>
@@ -413,45 +413,45 @@
 <a name="351"><span class="lineNum">     351 </span><span class="lineCov">      45566 :         ar(::cereal::make_nvp(&quot;p&quot;, m_params));</span></a>
 <a name="352"><span class="lineNum">     352 </span><span class="lineCov">      45566 :     }</span></a>
 <a name="353"><span class="lineNum">     353 </span>            : </a>
-<a name="354"><span class="lineNum">     354 </span>            :     static const std::string GetElementName() {</a>
-<a name="355"><span class="lineNum">     355 </span>            :         return &quot;DCRTPolyImpl&quot;;</a>
+<a name="354"><span class="lineNum">     354 </span><span class="lineNoCov">          0 :     static const std::string GetElementName() {</span></a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineNoCov">          0 :         return &quot;DCRTPolyImpl&quot;;</span></a>
 <a name="356"><span class="lineNum">     356 </span>            :     }</a>
 <a name="357"><span class="lineNum">     357 </span>            : </a>
 <a name="358"><span class="lineNum">     358 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="359"><span class="lineNum">     359 </span><span class="lineNoCov">          0 :         return &quot;DCRTPoly&quot;;</span></a>
 <a name="360"><span class="lineNum">     360 </span>            :     }</a>
 <a name="361"><span class="lineNum">     361 </span>            : </a>
-<a name="362"><span class="lineNum">     362 </span>            :     static uint32_t SerializedVersion() {</a>
-<a name="363"><span class="lineNum">     363 </span>            :         return 1;</a>
+<a name="362"><span class="lineNum">     362 </span><span class="lineNoCov">          0 :     static uint32_t SerializedVersion() {</span></a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineNoCov">          0 :         return 1;</span></a>
 <a name="364"><span class="lineNum">     364 </span>            :     }</a>
 <a name="365"><span class="lineNum">     365 </span>            : </a>
-<a name="366"><span class="lineNum">     366 </span><span class="lineCov">        364 :     inline Format GetFormat() const final {</span></a>
-<a name="367"><span class="lineNum">     367 </span><span class="lineCov">        218 :         return m_format;</span></a>
+<a name="366"><span class="lineNum">     366 </span><span class="lineCov">       2116 :     inline Format GetFormat() const final {</span></a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">        587 :         return m_format;</span></a>
 <a name="368"><span class="lineNum">     368 </span>            :     }</a>
 <a name="369"><span class="lineNum">     369 </span>            : </a>
 <a name="370"><span class="lineNum">     370 </span><span class="lineNoCov">          0 :     void OverrideFormat(const Format f) final {</span></a>
-<a name="371"><span class="lineNum">     371 </span><span class="lineNoCov">          0 :         m_format = f;</span></a>
+<a name="371"><span class="lineNum">     371 </span><span class="lineCov">      28780 :         m_format = f;</span></a>
 <a name="372"><span class="lineNum">     372 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="373"><span class="lineNum">     373 </span>            : </a>
-<a name="374"><span class="lineNum">     374 </span>            :     inline const std::shared_ptr&lt;Params&gt;&amp; GetParams() const {</a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineNoCov">          0 :     inline const std::shared_ptr&lt;Params&gt;&amp; GetParams() const {</span></a>
 <a name="375"><span class="lineNum">     375 </span><span class="lineNoCov">          0 :         return m_params;</span></a>
 <a name="376"><span class="lineNum">     376 </span>            :     }</a>
 <a name="377"><span class="lineNum">     377 </span>            : </a>
-<a name="378"><span class="lineNum">     378 </span>            :     const std::vector&lt;PolyType&gt;&amp; GetAllElements() const {</a>
-<a name="379"><span class="lineNum">     379 </span>            :         return m_vectors;</a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineNoCov">          0 :     const std::vector&lt;PolyType&gt;&amp; GetAllElements() const {</span></a>
+<a name="379"><span class="lineNum">     379 </span><span class="lineNoCov">          0 :         return m_vectors;</span></a>
 <a name="380"><span class="lineNum">     380 </span>            :     }</a>
 <a name="381"><span class="lineNum">     381 </span>            : </a>
-<a name="382"><span class="lineNum">     382 </span>            :     std::vector&lt;PolyType&gt;&amp; GetAllElements() {</a>
-<a name="383"><span class="lineNum">     383 </span>            :         return m_vectors;</a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineNoCov">          0 :     std::vector&lt;PolyType&gt;&amp; GetAllElements() {</span></a>
+<a name="383"><span class="lineNum">     383 </span><span class="lineNoCov">          0 :         return m_vectors;</span></a>
 <a name="384"><span class="lineNum">     384 </span>            :     }</a>
 <a name="385"><span class="lineNum">     385 </span>            : </a>
-<a name="386"><span class="lineNum">     386 </span>            :     void SetElementAtIndex(usint index, const PolyType&amp; element) {</a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineNoCov">          0 :     void SetElementAtIndex(usint index, const PolyType&amp; element) {</span></a>
 <a name="387"><span class="lineNum">     387 </span><span class="lineCov">          2 :         m_vectors[index] = element;</span></a>
-<a name="388"><span class="lineNum">     388 </span>            :     }</a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="389"><span class="lineNum">     389 </span>            : </a>
-<a name="390"><span class="lineNum">     390 </span>            :     void SetElementAtIndex(usint index, PolyType&amp;&amp; element) {</a>
-<a name="391"><span class="lineNum">     391 </span>            :         m_vectors[index] = std::move(element);</a>
-<a name="392"><span class="lineNum">     392 </span>            :     }</a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineNoCov">          0 :     void SetElementAtIndex(usint index, PolyType&amp;&amp; element) {</span></a>
+<a name="391"><span class="lineNum">     391 </span><span class="lineCov">        752 :         m_vectors[index] = std::move(element);</span></a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="393"><span class="lineNum">     393 </span>            : </a>
 <a name="394"><span class="lineNum">     394 </span>            : protected:</a>
 <a name="395"><span class="lineNum">     395 </span>            :     std::shared_ptr&lt;Params&gt; m_params{std::make_shared&lt;DCRTPolyImpl::Params&gt;()};</a>

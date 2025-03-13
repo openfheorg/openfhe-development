@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">7</td>
-            <td class="headerCovTableEntry">9</td>
-            <td class="headerCovTableEntryMed">77.8 %</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryMed">80.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">0</td>
-            <td class="headerCovTableEntry">1</td>
-            <td class="headerCovTableEntryLo">0.0 %</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -116,7 +116,7 @@
 <a name="54"><span class="lineNum">      54 </span>            :  * @class Field2n</a>
 <a name="55"><span class="lineNum">      55 </span>            :  * @brief A class to represent field elements with power-of-2 dimension.</a>
 <a name="56"><span class="lineNum">      56 </span>            :  */</a>
-<a name="57"><span class="lineNum">      57 </span><span class="lineCov">       1246 : class Field2n : public std::vector&lt;std::complex&lt;double&gt;&gt;, public Serializable {</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">     193022 : class Field2n : public std::vector&lt;std::complex&lt;double&gt;&gt;, public Serializable {</span></a>
 <a name="58"><span class="lineNum">      58 </span>            : private:</a>
 <a name="59"><span class="lineNum">      59 </span>            :     // Format of the field element</a>
 <a name="60"><span class="lineNum">      60 </span>            :     Format format{Format::COEFFICIENT};</a>
@@ -125,9 +125,9 @@
 <a name="63"><span class="lineNum">      63 </span>            :     /**</a>
 <a name="64"><span class="lineNum">      64 </span>            :    * @brief Default Constructor</a>
 <a name="65"><span class="lineNum">      65 </span>            :    */</a>
-<a name="66"><span class="lineNum">      66 </span><span class="lineCov">        202 :     Field2n() noexcept = default;</span></a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">       6116 :     Field2n() noexcept = default;</span></a>
 <a name="67"><span class="lineNum">      67 </span>            : </a>
-<a name="68"><span class="lineNum">      68 </span>            :     explicit Field2n(Format f) : format(f) {}</a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">       1752 :     explicit Field2n(Format f) : format(f) {}</span></a>
 <a name="69"><span class="lineNum">      69 </span>            : </a>
 <a name="70"><span class="lineNum">      70 </span>            :     /**</a>
 <a name="71"><span class="lineNum">      71 </span>            :    * @brief Constructor for field element</a>
@@ -138,8 +138,8 @@
 <a name="76"><span class="lineNum">      76 </span>            :    * set to false by default.</a>
 <a name="77"><span class="lineNum">      77 </span>            :    */</a>
 <a name="78"><span class="lineNum">      78 </span>            :     Field2n(usint size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT</a>
-<a name="79"><span class="lineNum">      79 </span><span class="lineCov">         39 :         : std::vector&lt;std::complex&lt;double&gt;&gt;(size, initializeElementToZero ? 0 : -std::numeric_limits&lt;double&gt;::max()),</span></a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov">         39 :           format(f) {}</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">        576 :         : std::vector&lt;std::complex&lt;double&gt;&gt;(size, initializeElementToZero ? 0 : -std::numeric_limits&lt;double&gt;::max()),</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">      39598 :           format(f) {}</span></a>
 <a name="81"><span class="lineNum">      81 </span>            : </a>
 <a name="82"><span class="lineNum">      82 </span>            :     /**</a>
 <a name="83"><span class="lineNum">      83 </span>            :    * @brief Constructor from ring element</a>
@@ -171,7 +171,7 @@
 <a name="109"><span class="lineNum">     109 </span>            :    * @return format/representation of the field element</a>
 <a name="110"><span class="lineNum">     110 </span>            :    */</a>
 <a name="111"><span class="lineNum">     111 </span>            :     Format GetFormat() const {</a>
-<a name="112"><span class="lineNum">     112 </span>            :         return format;</a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">      29268 :         return format;</span></a>
 <a name="113"><span class="lineNum">     113 </span>            :     }</a>
 <a name="114"><span class="lineNum">     114 </span>            : </a>
 <a name="115"><span class="lineNum">     115 </span>            :     /**</a>
@@ -286,8 +286,8 @@
 <a name="224"><span class="lineNum">     224 </span>            :    * representation</a>
 <a name="225"><span class="lineNum">     225 </span>            :    */</a>
 <a name="226"><span class="lineNum">     226 </span>            :     inline void SetFormat(Format f) {</a>
-<a name="227"><span class="lineNum">     227 </span><span class="lineCov">        303 :         if (format != f)</span></a>
-<a name="228"><span class="lineNum">     228 </span><span class="lineCov">        303 :             SwitchFormat();</span></a>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">      15700 :         if (format != f)</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">      15700 :             SwitchFormat();</span></a>
 <a name="229"><span class="lineNum">     229 </span>            :     }</a>
 <a name="230"><span class="lineNum">     230 </span>            : </a>
 <a name="231"><span class="lineNum">     231 </span>            :     /**</a>
@@ -325,8 +325,8 @@
 <a name="263"><span class="lineNum">     263 </span>            :    * @param &amp;element  right hand side element for operation</a>
 <a name="264"><span class="lineNum">     264 </span>            :    * @return result of the operation</a>
 <a name="265"><span class="lineNum">     265 </span>            :    */</a>
-<a name="266"><span class="lineNum">     266 </span>            :     Field2n&amp; operator+=(const Field2n&amp; element) {</a>
-<a name="267"><span class="lineNum">     267 </span>            :         return *this = this-&gt;Plus(element);</a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineCov">       8308 :     Field2n&amp; operator+=(const Field2n&amp; element) {</span></a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">       8308 :         return *this = this-&gt;Plus(element);</span></a>
 <a name="268"><span class="lineNum">     268 </span>            :     }</a>
 <a name="269"><span class="lineNum">     269 </span>            : </a>
 <a name="270"><span class="lineNum">     270 </span>            :     /**</a>
@@ -335,16 +335,16 @@
 <a name="273"><span class="lineNum">     273 </span>            :    * @param &amp;element  right hand side element for operation</a>
 <a name="274"><span class="lineNum">     274 </span>            :    * @return result of the operation</a>
 <a name="275"><span class="lineNum">     275 </span>            :    */</a>
-<a name="276"><span class="lineNum">     276 </span>            :     Field2n&amp; operator-=(const Field2n&amp; element) {</a>
-<a name="277"><span class="lineNum">     277 </span>            :         return *this = this-&gt;Minus(element);</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :     Field2n&amp; operator-=(const Field2n&amp; element) {</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineNoCov">          0 :         return *this = this-&gt;Minus(element);</span></a>
 <a name="278"><span class="lineNum">     278 </span>            :     }</a>
 <a name="279"><span class="lineNum">     279 </span>            : </a>
 <a name="280"><span class="lineNum">     280 </span>            :     /**</a>
 <a name="281"><span class="lineNum">     281 </span>            :    * @brief Unary minus on a field element.</a>
 <a name="282"><span class="lineNum">     282 </span>            :    * @return negation of the field element.</a>
 <a name="283"><span class="lineNum">     283 </span>            :    */</a>
-<a name="284"><span class="lineNum">     284 </span>            :     Field2n operator-() const {</a>
-<a name="285"><span class="lineNum">     285 </span>            :         return Field2n(size(), this-&gt;GetFormat(), true) - *this;</a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">        512 :     Field2n operator-() const {</span></a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineCov">        512 :         return Field2n(size(), this-&gt;GetFormat(), true) - *this;</span></a>
 <a name="286"><span class="lineNum">     286 </span>            :     }</a>
 <a name="287"><span class="lineNum">     287 </span>            : </a>
 <a name="288"><span class="lineNum">     288 </span>            :     /**</a>
@@ -355,7 +355,7 @@
 <a name="293"><span class="lineNum">     293 </span>            :    * @return result of the substraction operation</a>
 <a name="294"><span class="lineNum">     294 </span>            :    */</a>
 <a name="295"><span class="lineNum">     295 </span>            :     friend inline Field2n operator-(const Field2n&amp; a, const Field2n&amp; b) {</a>
-<a name="296"><span class="lineNum">     296 </span>            :         return a.Minus(b);</a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">      13006 :         return a.Minus(b);</span></a>
 <a name="297"><span class="lineNum">     297 </span>            :     }</a>
 <a name="298"><span class="lineNum">     298 </span>            : </a>
 <a name="299"><span class="lineNum">     299 </span>            :     /**</a>
@@ -366,7 +366,7 @@
 <a name="304"><span class="lineNum">     304 </span>            :    * @return result of the addition operation</a>
 <a name="305"><span class="lineNum">     305 </span>            :    */</a>
 <a name="306"><span class="lineNum">     306 </span>            :     friend inline Field2n operator+(const Field2n&amp; a, const Field2n&amp; b) {</a>
-<a name="307"><span class="lineNum">     307 </span>            :         return a.Plus(b);</a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineCov">       6528 :         return a.Plus(b);</span></a>
 <a name="308"><span class="lineNum">     308 </span>            :     }</a>
 <a name="309"><span class="lineNum">     309 </span>            : </a>
 <a name="310"><span class="lineNum">     310 </span>            :     /**</a>
@@ -377,7 +377,7 @@
 <a name="315"><span class="lineNum">     315 </span>            :    * @return result of the addition operation</a>
 <a name="316"><span class="lineNum">     316 </span>            :    */</a>
 <a name="317"><span class="lineNum">     317 </span>            :     friend inline Field2n operator+(const Field2n&amp; a, double scalar) {</a>
-<a name="318"><span class="lineNum">     318 </span><span class="lineCov">        204 :         return a.Plus(scalar);</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">        262 :         return a.Plus(scalar);</span></a>
 <a name="319"><span class="lineNum">     319 </span>            :     }</a>
 <a name="320"><span class="lineNum">     320 </span>            : </a>
 <a name="321"><span class="lineNum">     321 </span>            :     /**</a>
@@ -388,7 +388,7 @@
 <a name="326"><span class="lineNum">     326 </span>            :    * @return result of the multiplication operation</a>
 <a name="327"><span class="lineNum">     327 </span>            :    */</a>
 <a name="328"><span class="lineNum">     328 </span>            :     friend inline Field2n operator*(const Field2n&amp; a, const Field2n&amp; b) {</a>
-<a name="329"><span class="lineNum">     329 </span>            :         return a.Times(b);</a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineCov">      16032 :         return a.Times(b);</span></a>
 <a name="330"><span class="lineNum">     330 </span>            :     }</a>
 <a name="331"><span class="lineNum">     331 </span>            : </a>
 <a name="332"><span class="lineNum">     332 </span>            :     template &lt;class Archive&gt;</a>

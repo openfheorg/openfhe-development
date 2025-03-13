@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">57</td>
-            <td class="headerCovTableEntry">71</td>
-            <td class="headerCovTableEntryMed">80.3 %</td>
+            <td class="headerCovTableEntry">67</td>
+            <td class="headerCovTableEntry">118</td>
+            <td class="headerCovTableEntryLo">56.8 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">12</td>
-            <td class="headerCovTableEntry">15</td>
-            <td class="headerCovTableEntryMed">80.0 %</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -232,16 +232,16 @@
 <a name="170"><span class="lineNum">     170 </span>            :    * @param corder the order of the ciphertext</a>
 <a name="171"><span class="lineNum">     171 </span>            :    * @param &amp;moduli is the tower of moduli</a>
 <a name="172"><span class="lineNum">     172 </span>            :    */</a>
-<a name="173"><span class="lineNum">     173 </span>            :     ILDCRTParams(uint32_t corder, const std::vector&lt;NativeInteger&gt;&amp; moduli) : ElemParams&lt;IntType&gt;(corder, 0) {</a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineNoCov">          0 :     ILDCRTParams(uint32_t corder, const std::vector&lt;NativeInteger&gt;&amp; moduli) : ElemParams&lt;IntType&gt;(corder, 0) {</span></a>
 <a name="174"><span class="lineNum">     174 </span>            :         size_t limbs{moduli.size()};</a>
-<a name="175"><span class="lineNum">     175 </span>            :         m_params.reserve(limbs);</a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :         m_params.reserve(limbs);</span></a>
 <a name="176"><span class="lineNum">     176 </span>            :         IntType compositeModulus(1);</a>
-<a name="177"><span class="lineNum">     177 </span>            :         for (size_t i = 0; i &lt; limbs; ++i) {</a>
-<a name="178"><span class="lineNum">     178 </span>            :             m_params.push_back(std::make_shared&lt;ILNativeParams&gt;(corder, moduli[i]));</a>
-<a name="179"><span class="lineNum">     179 </span>            :             compositeModulus *= IntType(moduli[i].template ConvertToInt&lt;BasicInteger&gt;());</a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :         for (size_t i = 0; i &lt; limbs; ++i) {</span></a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :             m_params.push_back(std::make_shared&lt;ILNativeParams&gt;(corder, moduli[i]));</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineNoCov">          0 :             compositeModulus *= IntType(moduli[i].template ConvertToInt&lt;BasicInteger&gt;());</span></a>
 <a name="180"><span class="lineNum">     180 </span>            :         }</a>
 <a name="181"><span class="lineNum">     181 </span>            :         ElemParams&lt;IntType&gt;::m_ciphertextModulus = compositeModulus;</a>
-<a name="182"><span class="lineNum">     182 </span>            :     }</a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="183"><span class="lineNum">     183 </span>            : </a>
 <a name="184"><span class="lineNum">     184 </span>            :     /**</a>
 <a name="185"><span class="lineNum">     185 </span>            :    * @brief Constructor that takes in the cyclotomic order and the component</a>
@@ -251,15 +251,15 @@
 <a name="189"><span class="lineNum">     189 </span>            :    * @param params the componet parameters.</a>
 <a name="190"><span class="lineNum">     190 </span>            :    * @return</a>
 <a name="191"><span class="lineNum">     191 </span>            :    */</a>
-<a name="192"><span class="lineNum">     192 </span>            :     ILDCRTParams(uint32_t corder, const std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt;&amp; params)</a>
-<a name="193"><span class="lineNum">     193 </span>            :         : ElemParams&lt;IntType&gt;(corder, 0), m_params(params) {</a>
-<a name="194"><span class="lineNum">     194 </span>            :         RecalculateModulus();</a>
-<a name="195"><span class="lineNum">     195 </span>            :     }</a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">          6 :     ILDCRTParams(uint32_t corder, const std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt;&amp; params)</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov">         12 :         : ElemParams&lt;IntType&gt;(corder, 0), m_params(params) {</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">          6 :         RecalculateModulus();</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">          6 :     }</span></a>
 <a name="196"><span class="lineNum">     196 </span>            : </a>
-<a name="197"><span class="lineNum">     197 </span><span class="lineCov">       2234 :     ILDCRTParams(const ILDCRTParams&amp; rhs) : ElemParams&lt;IntType&gt;(rhs), m_params(rhs.m_params) {}</span></a>
+<a name="197"><span class="lineNum">     197 </span><span class="lineCov">     251083 :     ILDCRTParams(const ILDCRTParams&amp; rhs) : ElemParams&lt;IntType&gt;(rhs), m_params(rhs.m_params) {}</span></a>
 <a name="198"><span class="lineNum">     198 </span>            : </a>
-<a name="199"><span class="lineNum">     199 </span>            :     ILDCRTParams(ILDCRTParams&amp;&amp; rhs) noexcept</a>
-<a name="200"><span class="lineNum">     200 </span>            :         : ElemParams&lt;IntType&gt;(std::move(rhs)), m_params(std::move(rhs.m_params)) {}</a>
+<a name="199"><span class="lineNum">     199 </span><span class="lineNoCov">          0 :     ILDCRTParams(ILDCRTParams&amp;&amp; rhs) noexcept</span></a>
+<a name="200"><span class="lineNum">     200 </span><span class="lineNoCov">          0 :         : ElemParams&lt;IntType&gt;(std::move(rhs)), m_params(std::move(rhs.m_params)) {}</span></a>
 <a name="201"><span class="lineNum">     201 </span>            : </a>
 <a name="202"><span class="lineNum">     202 </span>            :     /**</a>
 <a name="203"><span class="lineNum">     203 </span>            :    * Assignment Operator.</a>
@@ -267,16 +267,16 @@
 <a name="205"><span class="lineNum">     205 </span>            :    * @param &amp;rhs the copied ILDCRTParams.</a>
 <a name="206"><span class="lineNum">     206 </span>            :    * @return the resulting ILDCRTParams.</a>
 <a name="207"><span class="lineNum">     207 </span>            :    */</a>
-<a name="208"><span class="lineNum">     208 </span>            :     ILDCRTParams&amp; operator=(const ILDCRTParams&amp; rhs) {</a>
-<a name="209"><span class="lineNum">     209 </span>            :         ElemParams&lt;IntType&gt;::operator=(rhs);</a>
-<a name="210"><span class="lineNum">     210 </span>            :         m_params = rhs.m_params;</a>
-<a name="211"><span class="lineNum">     211 </span>            :         return *this;</a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :     ILDCRTParams&amp; operator=(const ILDCRTParams&amp; rhs) {</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineNoCov">          0 :         ElemParams&lt;IntType&gt;::operator=(rhs);</span></a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineNoCov">          0 :         m_params = rhs.m_params;</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="212"><span class="lineNum">     212 </span>            :     }</a>
 <a name="213"><span class="lineNum">     213 </span>            : </a>
-<a name="214"><span class="lineNum">     214 </span>            :     ILDCRTParams&amp; operator=(ILDCRTParams&amp;&amp; rhs) noexcept {</a>
-<a name="215"><span class="lineNum">     215 </span>            :         ElemParams&lt;IntType&gt;::operator=(std::move(rhs));</a>
-<a name="216"><span class="lineNum">     216 </span>            :         m_params = std::move(rhs.m_params);</a>
-<a name="217"><span class="lineNum">     217 </span>            :         return *this;</a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :     ILDCRTParams&amp; operator=(ILDCRTParams&amp;&amp; rhs) noexcept {</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :         ElemParams&lt;IntType&gt;::operator=(std::move(rhs));</span></a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :         m_params = std::move(rhs.m_params);</span></a>
+<a name="217"><span class="lineNum">     217 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="218"><span class="lineNum">     218 </span>            :     }</a>
 <a name="219"><span class="lineNum">     219 </span>            : </a>
 <a name="220"><span class="lineNum">     220 </span>            :     // ACCESSORS</a>
@@ -284,8 +284,8 @@
 <a name="222"><span class="lineNum">     222 </span>            :    * @brief Getter method for the component parameters.</a>
 <a name="223"><span class="lineNum">     223 </span>            :    * @return A vector of the component polynomial parameters.</a>
 <a name="224"><span class="lineNum">     224 </span>            :    */</a>
-<a name="225"><span class="lineNum">     225 </span>            :     const std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt;&amp; GetParams() const {</a>
-<a name="226"><span class="lineNum">     226 </span>            :         return m_params;</a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineNoCov">          0 :     const std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt;&amp; GetParams() const {</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">        905 :         return m_params;</span></a>
 <a name="227"><span class="lineNum">     227 </span>            :     }</a>
 <a name="228"><span class="lineNum">     228 </span>            : </a>
 <a name="229"><span class="lineNum">     229 </span>            :     /**</a>
@@ -295,11 +295,11 @@
 <a name="233"><span class="lineNum">     233 </span>            :    * @param end The index of the last tower to include.</a>
 <a name="234"><span class="lineNum">     234 </span>            :    * @return A vector of the component polynomial parameters.</a>
 <a name="235"><span class="lineNum">     235 </span>            :    */</a>
-<a name="236"><span class="lineNum">     236 </span>            :     std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt; GetParamPartition(uint32_t start, uint32_t end) const {</a>
-<a name="237"><span class="lineNum">     237 </span>            :         if (end &lt; start || end &gt;= m_params.size())</a>
-<a name="238"><span class="lineNum">     238 </span>            :             OPENFHE_THROW(&quot;Incorrect parameters for GetParamPartition - (start: &quot; + std::to_string(start) +</a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineNoCov">          0 :     std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt; GetParamPartition(uint32_t start, uint32_t end) const {</span></a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 :         if (end &lt; start || end &gt;= m_params.size())</span></a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;Incorrect parameters for GetParamPartition - (start: &quot; + std::to_string(start) +</span></a>
 <a name="239"><span class="lineNum">     239 </span>            :                           &quot;, end:&quot; + std::to_string(end) + &quot;)&quot;);</a>
-<a name="240"><span class="lineNum">     240 </span>            :         return std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt;(m_params.begin() + start, m_params.begin() + end + 1);</a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineNoCov">          0 :         return std::vector&lt;std::shared_ptr&lt;ILNativeParams&gt;&gt;(m_params.begin() + start, m_params.begin() + end + 1);</span></a>
 <a name="241"><span class="lineNum">     241 </span>            :     }</a>
 <a name="242"><span class="lineNum">     242 </span>            : </a>
 <a name="243"><span class="lineNum">     243 </span>            :     /**</a>
@@ -308,11 +308,11 @@
 <a name="246"><span class="lineNum">     246 </span>            :    * unguarded if the index is out of bounds.</a>
 <a name="247"><span class="lineNum">     247 </span>            :    * @return the parameters at index i.</a>
 <a name="248"><span class="lineNum">     248 </span>            :    */</a>
-<a name="249"><span class="lineNum">     249 </span>            :     std::shared_ptr&lt;ILNativeParams&gt;&amp; operator[](size_t i) {</a>
-<a name="250"><span class="lineNum">     250 </span>            :         return m_params[i];</a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 :     std::shared_ptr&lt;ILNativeParams&gt;&amp; operator[](size_t i) {</span></a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineNoCov">          0 :         return m_params[i];</span></a>
 <a name="251"><span class="lineNum">     251 </span>            :     }</a>
-<a name="252"><span class="lineNum">     252 </span>            :     const std::shared_ptr&lt;ILNativeParams&gt;&amp; operator[](size_t i) const {</a>
-<a name="253"><span class="lineNum">     253 </span>            :         return m_params[i];</a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineNoCov">          0 :     const std::shared_ptr&lt;ILNativeParams&gt;&amp; operator[](size_t i) const {</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :         return m_params[i];</span></a>
 <a name="254"><span class="lineNum">     254 </span>            :     }</a>
 <a name="255"><span class="lineNum">     255 </span>            : </a>
 <a name="256"><span class="lineNum">     256 </span>            :     /**</a>
@@ -320,21 +320,21 @@
 <a name="258"><span class="lineNum">     258 </span>            :    *</a>
 <a name="259"><span class="lineNum">     259 </span>            :    */</a>
 <a name="260"><span class="lineNum">     260 </span>            : </a>
-<a name="261"><span class="lineNum">     261 </span><span class="lineCov">      69778 :     void PopLastParam() {</span></a>
-<a name="262"><span class="lineNum">     262 </span><span class="lineCov">      69778 :         ElemParams&lt;IntType&gt;::m_ciphertextModulus /=</span></a>
-<a name="263"><span class="lineNum">     263 </span><span class="lineCov">     139556 :             IntType(m_params.back()-&gt;GetModulus().template ConvertToInt&lt;BasicInteger&gt;());</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">     207879 :     void PopLastParam() {</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineCov">     207879 :         ElemParams&lt;IntType&gt;::m_ciphertextModulus /=</span></a>
+<a name="263"><span class="lineNum">     263 </span><span class="lineCov">     415758 :             IntType(m_params.back()-&gt;GetModulus().template ConvertToInt&lt;BasicInteger&gt;());</span></a>
 <a name="264"><span class="lineNum">     264 </span>            :         m_params.pop_back();</a>
-<a name="265"><span class="lineNum">     265 </span><span class="lineCov">      69778 :     }</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">     207879 :     }</span></a>
 <a name="266"><span class="lineNum">     266 </span>            : </a>
 <a name="267"><span class="lineNum">     267 </span>            :     /**</a>
 <a name="268"><span class="lineNum">     268 </span>            :    * @brief Removes the first parameter set and adjust the multiplied moduli.</a>
 <a name="269"><span class="lineNum">     269 </span>            :    *</a>
 <a name="270"><span class="lineNum">     270 </span>            :    */</a>
-<a name="271"><span class="lineNum">     271 </span>            :     void PopFirstParam() {</a>
-<a name="272"><span class="lineNum">     272 </span>            :         ElemParams&lt;IntType&gt;::m_ciphertextModulus /=</a>
-<a name="273"><span class="lineNum">     273 </span>            :             IntType(m_params[0]-&gt;GetModulus().template ConvertToInt&lt;BasicInteger&gt;());</a>
-<a name="274"><span class="lineNum">     274 </span>            :         m_params.erase(m_params.begin());</a>
-<a name="275"><span class="lineNum">     275 </span>            :     }</a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineNoCov">          0 :     void PopFirstParam() {</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineNoCov">          0 :         ElemParams&lt;IntType&gt;::m_ciphertextModulus /=</span></a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineNoCov">          0 :             IntType(m_params[0]-&gt;GetModulus().template ConvertToInt&lt;BasicInteger&gt;());</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineNoCov">          0 :         m_params.erase(m_params.begin());</span></a>
+<a name="275"><span class="lineNum">     275 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="276"><span class="lineNum">     276 </span>            : </a>
 <a name="277"><span class="lineNum">     277 </span>            :     /**</a>
 <a name="278"><span class="lineNum">     278 </span>            :    * Destructor.</a>
@@ -366,23 +366,23 @@
 <a name="304"><span class="lineNum">     304 </span>            :    * @brief Method to recalculate the composite modulus from the component</a>
 <a name="305"><span class="lineNum">     305 </span>            :    * moduli.</a>
 <a name="306"><span class="lineNum">     306 </span>            :    */</a>
-<a name="307"><span class="lineNum">     307 </span>            :     void RecalculateModulus() {</a>
-<a name="308"><span class="lineNum">     308 </span>            :         ElemParams&lt;IntType&gt;::m_ciphertextModulus = 1;</a>
-<a name="309"><span class="lineNum">     309 </span>            :         for (size_t i = 0; i &lt; m_params.size(); ++i)</a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineCov">          7 :     void RecalculateModulus() {</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineCov">          7 :         ElemParams&lt;IntType&gt;::m_ciphertextModulus = 1;</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineCov">         28 :         for (size_t i = 0; i &lt; m_params.size(); ++i)</span></a>
 <a name="310"><span class="lineNum">     310 </span>            :             ElemParams&lt;IntType&gt;::m_ciphertextModulus *=</a>
-<a name="311"><span class="lineNum">     311 </span>            :                 IntType(m_params[i]-&gt;GetModulus().template ConvertToInt&lt;BasicInteger&gt;());</a>
-<a name="312"><span class="lineNum">     312 </span>            :     }</a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">         42 :                 IntType(m_params[i]-&gt;GetModulus().template ConvertToInt&lt;BasicInteger&gt;());</span></a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineCov">          7 :     }</span></a>
 <a name="313"><span class="lineNum">     313 </span>            : </a>
 <a name="314"><span class="lineNum">     314 </span>            :     /**</a>
 <a name="315"><span class="lineNum">     315 </span>            :    * @brief Method to recalculate the big composite modulus from the component</a>
 <a name="316"><span class="lineNum">     316 </span>            :    * moduli.</a>
 <a name="317"><span class="lineNum">     317 </span>            :    */</a>
-<a name="318"><span class="lineNum">     318 </span>            :     void RecalculateBigModulus() {</a>
-<a name="319"><span class="lineNum">     319 </span>            :         ElemParams&lt;IntType&gt;::m_bigCiphertextModulus = 1;</a>
-<a name="320"><span class="lineNum">     320 </span>            :         for (size_t i = 0; i &lt; m_params.size(); ++i)</a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineNoCov">          0 :     void RecalculateBigModulus() {</span></a>
+<a name="319"><span class="lineNum">     319 </span><span class="lineNoCov">          0 :         ElemParams&lt;IntType&gt;::m_bigCiphertextModulus = 1;</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineNoCov">          0 :         for (size_t i = 0; i &lt; m_params.size(); ++i)</span></a>
 <a name="321"><span class="lineNum">     321 </span>            :             ElemParams&lt;IntType&gt;::m_bigCiphertextModulus *=</a>
-<a name="322"><span class="lineNum">     322 </span>            :                 IntType(m_params[i]-&gt;GetBigModulus().template ConvertToInt&lt;BasicInteger&gt;());</a>
-<a name="323"><span class="lineNum">     323 </span>            :     }</a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineNoCov">          0 :                 IntType(m_params[i]-&gt;GetBigModulus().template ConvertToInt&lt;BasicInteger&gt;());</span></a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="324"><span class="lineNum">     324 </span>            : </a>
 <a name="325"><span class="lineNum">     325 </span>            :     template &lt;class Archive&gt;</a>
 <a name="326"><span class="lineNum">     326 </span><span class="lineCov">       1528 :     void save(Archive&amp; ar, std::uint32_t const version) const {</span></a>
@@ -403,8 +403,8 @@
 <a name="341"><span class="lineNum">     341 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="342"><span class="lineNum">     342 </span><span class="lineNoCov">          0 :         return &quot;DCRTParams&quot;;</span></a>
 <a name="343"><span class="lineNum">     343 </span>            :     }</a>
-<a name="344"><span class="lineNum">     344 </span>            :     static uint32_t SerializedVersion() {</a>
-<a name="345"><span class="lineNum">     345 </span>            :         return 1;</a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineNoCov">          0 :     static uint32_t SerializedVersion() {</span></a>
+<a name="345"><span class="lineNum">     345 </span><span class="lineNoCov">          0 :         return 1;</span></a>
 <a name="346"><span class="lineNum">     346 </span>            :     }</a>
 <a name="347"><span class="lineNum">     347 </span>            : </a>
 <a name="348"><span class="lineNum">     348 </span>            : private:</a>

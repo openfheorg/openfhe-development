@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">23</td>
@@ -361,7 +361,7 @@
 <a name="299"><span class="lineNum">     299 </span>            : }</a>
 <a name="300"><span class="lineNum">     300 </span>            : </a>
 <a name="301"><span class="lineNum">     301 </span>            : template &lt;typename VecType&gt;</a>
-<a name="302"><span class="lineNum">     302 </span><span class="lineCov">     112261 : void NumberTheoreticTransformNat&lt;VecType&gt;::ForwardTransformToBitReverseInPlace(const VecType&amp; rootOfUnityTable,</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineCov">    1154721 : void NumberTheoreticTransformNat&lt;VecType&gt;::ForwardTransformToBitReverseInPlace(const VecType&amp; rootOfUnityTable,</span></a>
 <a name="303"><span class="lineNum">     303 </span>            :                                                                                const VecType&amp; preconRootOfUnityTable,</a>
 <a name="304"><span class="lineNum">     304 </span>            :                                                                                VecType* element) {</a>
 <a name="305"><span class="lineNum">     305 </span>            :     //</a>
@@ -381,15 +381,15 @@
 <a name="319"><span class="lineNum">     319 </span>            :     //</a>
 <a name="320"><span class="lineNum">     320 </span>            : </a>
 <a name="321"><span class="lineNum">     321 </span>            :     const auto modulus{element-&gt;GetModulus()};</a>
-<a name="322"><span class="lineNum">     322 </span><span class="lineCov">     112261 :     const uint32_t n(element-&gt;GetLength() &gt;&gt; 1);</span></a>
-<a name="323"><span class="lineNum">     323 </span><span class="lineCov">     337891 :     for (uint32_t m{1}, t{n}, logt{GetMSB(t)}; m &lt; n; m &lt;&lt;= 1, t &gt;&gt;= 1, --logt) {</span></a>
-<a name="324"><span class="lineNum">     324 </span><span class="lineCov">     568805 :         for (uint32_t i{0}; i &lt; m; ++i) {</span></a>
-<a name="325"><span class="lineNum">     325 </span><span class="lineCov">     343175 :             auto omega{rootOfUnityTable[i + m]};</span></a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineCov">    1154721 :     const uint32_t n(element-&gt;GetLength() &gt;&gt; 1);</span></a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineCov">    9957321 :     for (uint32_t m{1}, t{n}, logt{GetMSB(t)}; m &lt; n; m &lt;&lt;= 1, t &gt;&gt;= 1, --logt) {</span></a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineCov">  357709805 :         for (uint32_t i{0}; i &lt; m; ++i) {</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineCov">  348907175 :             auto omega{rootOfUnityTable[i + m]};</span></a>
 <a name="326"><span class="lineNum">     326 </span>            :             auto preconOmega{preconRootOfUnityTable[i + m]};</a>
-<a name="327"><span class="lineNum">     327 </span><span class="lineCov">    1277140 :             for (uint32_t j1{i &lt;&lt; logt}, j2{j1 + t}; j1 &lt; j2; ++j1) {</span></a>
-<a name="328"><span class="lineNum">     328 </span><span class="lineCov">     933968 :                 auto omegaFactor{(*element)[j1 + t]};</span></a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineCov"> 3356137140 :             for (uint32_t j1{i &lt;&lt; logt}, j2{j1 + t}; j1 &lt; j2; ++j1) {</span></a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov"> 3007233968 :                 auto omegaFactor{(*element)[j1 + t]};</span></a>
 <a name="329"><span class="lineNum">     329 </span>            :                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);</a>
-<a name="330"><span class="lineNum">     330 </span><span class="lineCov">     933968 :                 auto loVal{(*element)[j1 + 0]};</span></a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineCov"> 3007233968 :                 auto loVal{(*element)[j1 + 0]};</span></a>
 <a name="331"><span class="lineNum">     331 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__)</a>
 <a name="332"><span class="lineNum">     332 </span>            :                 auto hiVal{loVal + omegaFactor};</a>
 <a name="333"><span class="lineNum">     333 </span>            :                 if (hiVal &gt;= modulus)</a>
@@ -410,12 +410,12 @@
 <a name="348"><span class="lineNum">     348 </span>            :         }</a>
 <a name="349"><span class="lineNum">     349 </span>            :     }</a>
 <a name="350"><span class="lineNum">     350 </span>            :     // peeled off last ntt stage for performance</a>
-<a name="351"><span class="lineNum">     351 </span><span class="lineCov">     567697 :     for (uint32_t i{0}; i &lt; (n &lt;&lt; 1); i += 2) {</span></a>
-<a name="352"><span class="lineNum">     352 </span><span class="lineCov">     455436 :         auto omegaFactor{(*element)[i + 1]};</span></a>
-<a name="353"><span class="lineNum">     353 </span><span class="lineCov">     455436 :         auto omega{rootOfUnityTable[(i &gt;&gt; 1) + n]};</span></a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineCov">  351216697 :     for (uint32_t i{0}; i &lt; (n &lt;&lt; 1); i += 2) {</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">  350061436 :         auto omegaFactor{(*element)[i + 1]};</span></a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineCov">  350061436 :         auto omega{rootOfUnityTable[(i &gt;&gt; 1) + n]};</span></a>
 <a name="354"><span class="lineNum">     354 </span>            :         auto preconOmega{preconRootOfUnityTable[(i &gt;&gt; 1) + n]};</a>
 <a name="355"><span class="lineNum">     355 </span>            :         omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);</a>
-<a name="356"><span class="lineNum">     356 </span><span class="lineCov">     455436 :         auto loVal{(*element)[i + 0]};</span></a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineCov">  350061436 :         auto loVal{(*element)[i + 0]};</span></a>
 <a name="357"><span class="lineNum">     357 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__)</a>
 <a name="358"><span class="lineNum">     358 </span>            :         auto hiVal{loVal + omegaFactor};</a>
 <a name="359"><span class="lineNum">     359 </span>            :         if (hiVal &gt;= modulus)</a>
@@ -432,7 +432,7 @@
 <a name="370"><span class="lineNum">     370 </span>            :         (*element)[i + 1] = loVal - omegaFactor;</a>
 <a name="371"><span class="lineNum">     371 </span>            : #endif</a>
 <a name="372"><span class="lineNum">     372 </span>            :     }</a>
-<a name="373"><span class="lineNum">     373 </span><span class="lineCov">     112261 : }</span></a>
+<a name="373"><span class="lineNum">     373 </span><span class="lineCov">    1154721 : }</span></a>
 <a name="374"><span class="lineNum">     374 </span>            : </a>
 <a name="375"><span class="lineNum">     375 </span>            : template &lt;typename VecType&gt;</a>
 <a name="376"><span class="lineNum">     376 </span><span class="lineCov">          2 : void NumberTheoreticTransformNat&lt;VecType&gt;::ForwardTransformToBitReverse(const VecType&amp; element,</span></a>
@@ -570,7 +570,7 @@
 <a name="508"><span class="lineNum">     508 </span>            : }</a>
 <a name="509"><span class="lineNum">     509 </span>            : </a>
 <a name="510"><span class="lineNum">     510 </span>            : template &lt;typename VecType&gt;</a>
-<a name="511"><span class="lineNum">     511 </span><span class="lineCov">      29359 : void NumberTheoreticTransformNat&lt;VecType&gt;::InverseTransformFromBitReverseInPlace(</span></a>
+<a name="511"><span class="lineNum">     511 </span><span class="lineCov">      94925 : void NumberTheoreticTransformNat&lt;VecType&gt;::InverseTransformFromBitReverseInPlace(</span></a>
 <a name="512"><span class="lineNum">     512 </span>            :     const VecType&amp; rootOfUnityInverseTable, const VecType&amp; preconRootOfUnityInverseTable, const IntType&amp; cycloOrderInv,</a>
 <a name="513"><span class="lineNum">     513 </span>            :     const IntType&amp; preconCycloOrderInv, VecType* element) {</a>
 <a name="514"><span class="lineNum">     514 </span>            :     //</a>
@@ -593,18 +593,18 @@
 <a name="531"><span class="lineNum">     531 </span>            :     //</a>
 <a name="532"><span class="lineNum">     532 </span>            : </a>
 <a name="533"><span class="lineNum">     533 </span>            :     auto modulus{element-&gt;GetModulus()};</a>
-<a name="534"><span class="lineNum">     534 </span><span class="lineCov">      29359 :     uint32_t n(element-&gt;GetLength());</span></a>
+<a name="534"><span class="lineNum">     534 </span><span class="lineCov">      94925 :     uint32_t n(element-&gt;GetLength());</span></a>
 <a name="535"><span class="lineNum">     535 </span>            : </a>
 <a name="536"><span class="lineNum">     536 </span>            :     // precomputed omega[bitreversed(1)] * (n inverse). used in final stage of intt.</a>
 <a name="537"><span class="lineNum">     537 </span>            :     auto omega1Inv{rootOfUnityInverseTable[1].ModMulFastConst(cycloOrderInv, modulus, preconCycloOrderInv)};</a>
-<a name="538"><span class="lineNum">     538 </span><span class="lineCov">      29359 :     auto preconOmega1Inv{omega1Inv.PrepModMulConst(modulus)};</span></a>
+<a name="538"><span class="lineNum">     538 </span><span class="lineCov">      94925 :     auto preconOmega1Inv{omega1Inv.PrepModMulConst(modulus)};</span></a>
 <a name="539"><span class="lineNum">     539 </span>            : </a>
 <a name="540"><span class="lineNum">     540 </span>            :     // peeled off first stage for performance</a>
-<a name="541"><span class="lineNum">     541 </span><span class="lineCov">     148881 :     for (uint32_t i{0}; i &lt; n; i += 2) {</span></a>
-<a name="542"><span class="lineNum">     542 </span><span class="lineCov">     119522 :         auto omega{rootOfUnityInverseTable[(i + n) &gt;&gt; 1]};</span></a>
+<a name="541"><span class="lineNum">     541 </span><span class="lineCov">   37753781 :     for (uint32_t i{0}; i &lt; n; i += 2) {</span></a>
+<a name="542"><span class="lineNum">     542 </span><span class="lineCov">   37658822 :         auto omega{rootOfUnityInverseTable[(i + n) &gt;&gt; 1]};</span></a>
 <a name="543"><span class="lineNum">     543 </span>            :         auto preconOmega{preconRootOfUnityInverseTable[(i + n) &gt;&gt; 1]};</a>
-<a name="544"><span class="lineNum">     544 </span><span class="lineCov">     119522 :         auto loVal{(*element)[i + 0]};</span></a>
-<a name="545"><span class="lineNum">     545 </span><span class="lineCov">     119522 :         auto hiVal{(*element)[i + 1]};</span></a>
+<a name="544"><span class="lineNum">     544 </span><span class="lineCov">   37658822 :         auto loVal{(*element)[i + 0]};</span></a>
+<a name="545"><span class="lineNum">     545 </span><span class="lineCov">   37658822 :         auto hiVal{(*element)[i + 1]};</span></a>
 <a name="546"><span class="lineNum">     546 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__)</a>
 <a name="547"><span class="lineNum">     547 </span>            :         auto omegaFactor{loVal};</a>
 <a name="548"><span class="lineNum">     548 </span>            :         if (omegaFactor &lt; hiVal)</a>
@@ -625,13 +625,13 @@
 <a name="563"><span class="lineNum">     563 </span>            : #endif</a>
 <a name="564"><span class="lineNum">     564 </span>            :     }</a>
 <a name="565"><span class="lineNum">     565 </span>            :     // inner stages</a>
-<a name="566"><span class="lineNum">     566 </span><span class="lineCov">      58756 :     for (uint32_t m{n &gt;&gt; 2}, t{2}, logt{2}; m &gt; 1; m &gt;&gt;= 1, t &lt;&lt;= 1, ++logt) {</span></a>
-<a name="567"><span class="lineNum">     567 </span><span class="lineCov">      90201 :         for (uint32_t i{0}; i &lt; m; ++i) {</span></a>
-<a name="568"><span class="lineNum">     568 </span><span class="lineCov">      60804 :             auto omega{rootOfUnityInverseTable[i + m]};</span></a>
+<a name="566"><span class="lineNum">     566 </span><span class="lineCov">     640068 :     for (uint32_t m{n &gt;&gt; 2}, t{2}, logt{2}; m &gt; 1; m &gt;&gt;= 1, t &lt;&lt;= 1, ++logt) {</span></a>
+<a name="567"><span class="lineNum">     567 </span><span class="lineCov">   38014101 :         for (uint32_t i{0}; i &lt; m; ++i) {</span></a>
+<a name="568"><span class="lineNum">     568 </span><span class="lineCov">   37469004 :             auto omega{rootOfUnityInverseTable[i + m]};</span></a>
 <a name="569"><span class="lineNum">     569 </span>            :             auto preconOmega{preconRootOfUnityInverseTable[i + m]};</a>
-<a name="570"><span class="lineNum">     570 </span><span class="lineCov">     194784 :             for (uint32_t j1{i &lt;&lt; logt}, j2{j1 + t}; j1 &lt; j2; ++j1) {</span></a>
-<a name="571"><span class="lineNum">     571 </span><span class="lineCov">     133980 :                 auto loVal{(*element)[j1 + 0]};</span></a>
-<a name="572"><span class="lineNum">     572 </span><span class="lineCov">     133980 :                 auto hiVal{(*element)[j1 + t]};</span></a>
+<a name="570"><span class="lineNum">     570 </span><span class="lineCov">  354322784 :             for (uint32_t j1{i &lt;&lt; logt}, j2{j1 + t}; j1 &lt; j2; ++j1) {</span></a>
+<a name="571"><span class="lineNum">     571 </span><span class="lineCov">  316853980 :                 auto loVal{(*element)[j1 + 0]};</span></a>
+<a name="572"><span class="lineNum">     572 </span><span class="lineCov">  316853980 :                 auto hiVal{(*element)[j1 + t]};</span></a>
 <a name="573"><span class="lineNum">     573 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__)</a>
 <a name="574"><span class="lineNum">     574 </span>            :                 auto omegaFactor{loVal};</a>
 <a name="575"><span class="lineNum">     575 </span>            :                 if (omegaFactor &lt; hiVal)</a>
@@ -656,10 +656,10 @@
 <a name="594"><span class="lineNum">     594 </span>            :     // peeled off final stage to implement optimization where n/2 scalar multiplies</a>
 <a name="595"><span class="lineNum">     595 </span>            :     // by (n inverse) are incorporated into the omegaFactor calculation.</a>
 <a name="596"><span class="lineNum">     596 </span>            :     // Please see https://github.com/openfheorg/openfhe-development/issues/872 for details.</a>
-<a name="597"><span class="lineNum">     597 </span><span class="lineCov">      29359 :     uint32_t j2{n &gt;&gt; 1};</span></a>
-<a name="598"><span class="lineNum">     598 </span><span class="lineCov">     148881 :     for (uint32_t j1{0}; j1 &lt; j2; ++j1) {</span></a>
-<a name="599"><span class="lineNum">     599 </span><span class="lineCov">     119522 :         auto loVal{(*element)[j1]};</span></a>
-<a name="600"><span class="lineNum">     600 </span><span class="lineCov">     119522 :         auto hiVal{(*element)[j1 + j2]};</span></a>
+<a name="597"><span class="lineNum">     597 </span><span class="lineCov">      94925 :     uint32_t j2{n &gt;&gt; 1};</span></a>
+<a name="598"><span class="lineNum">     598 </span><span class="lineCov">   37753781 :     for (uint32_t j1{0}; j1 &lt; j2; ++j1) {</span></a>
+<a name="599"><span class="lineNum">     599 </span><span class="lineCov">   37658822 :         auto loVal{(*element)[j1]};</span></a>
+<a name="600"><span class="lineNum">     600 </span><span class="lineCov">   37658822 :         auto hiVal{(*element)[j1 + j2]};</span></a>
 <a name="601"><span class="lineNum">     601 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__)</a>
 <a name="602"><span class="lineNum">     602 </span>            :         auto omegaFactor{loVal};</a>
 <a name="603"><span class="lineNum">     603 </span>            :         if (omegaFactor &lt; hiVal)</a>
@@ -679,9 +679,9 @@
 <a name="617"><span class="lineNum">     617 </span>            : #endif</a>
 <a name="618"><span class="lineNum">     618 </span>            :     }</a>
 <a name="619"><span class="lineNum">     619 </span>            :     // perform remaining n/2 scalar multiplies by (n inverse)</a>
-<a name="620"><span class="lineNum">     620 </span><span class="lineCov">     148881 :     for (uint32_t i = 0; i &lt; j2; ++i)</span></a>
-<a name="621"><span class="lineNum">     621 </span><span class="lineCov">     119522 :         (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);</span></a>
-<a name="622"><span class="lineNum">     622 </span><span class="lineCov">      29359 : }</span></a>
+<a name="620"><span class="lineNum">     620 </span><span class="lineCov">   37753781 :     for (uint32_t i = 0; i &lt; j2; ++i)</span></a>
+<a name="621"><span class="lineNum">     621 </span><span class="lineCov">   37658822 :         (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);</span></a>
+<a name="622"><span class="lineNum">     622 </span><span class="lineCov">      94925 : }</span></a>
 <a name="623"><span class="lineNum">     623 </span>            : </a>
 <a name="624"><span class="lineNum">     624 </span>            : template &lt;typename VecType&gt;</a>
 <a name="625"><span class="lineNum">     625 </span>            : void NumberTheoreticTransformNat&lt;VecType&gt;::InverseTransformFromBitReverse(</a>
@@ -704,7 +704,7 @@
 <a name="642"><span class="lineNum">     642 </span>            : }</a>
 <a name="643"><span class="lineNum">     643 </span>            : </a>
 <a name="644"><span class="lineNum">     644 </span>            : template &lt;typename VecType&gt;</a>
-<a name="645"><span class="lineNum">     645 </span><span class="lineCov">     112261 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::ForwardTransformToBitReverseInPlace(const IntType&amp; rootOfUnity,</span></a>
+<a name="645"><span class="lineNum">     645 </span><span class="lineCov">    1154721 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::ForwardTransformToBitReverseInPlace(const IntType&amp; rootOfUnity,</span></a>
 <a name="646"><span class="lineNum">     646 </span>            :                                                                                    const usint CycloOrder,</a>
 <a name="647"><span class="lineNum">     647 </span>            :                                                                                    VecType* element) {</a>
 <a name="648"><span class="lineNum">     648 </span>            :     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {</a>
@@ -715,20 +715,20 @@
 <a name="653"><span class="lineNum">     653 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;CyclotomicOrder is not a power of two&quot;);</span></a>
 <a name="654"><span class="lineNum">     654 </span>            :     }</a>
 <a name="655"><span class="lineNum">     655 </span>            : </a>
-<a name="656"><span class="lineNum">     656 </span><span class="lineCov">     112261 :     usint CycloOrderHf = (CycloOrder &gt;&gt; 1);</span></a>
-<a name="657"><span class="lineNum">     657 </span><span class="lineCov">     112261 :     if (element-&gt;GetLength() != CycloOrderHf) {</span></a>
+<a name="656"><span class="lineNum">     656 </span><span class="lineCov">    1154721 :     usint CycloOrderHf = (CycloOrder &gt;&gt; 1);</span></a>
+<a name="657"><span class="lineNum">     657 </span><span class="lineCov">    1154721 :     if (element-&gt;GetLength() != CycloOrderHf) {</span></a>
 <a name="658"><span class="lineNum">     658 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;element size must be equal to CyclotomicOrder / 2&quot;);</span></a>
 <a name="659"><span class="lineNum">     659 </span>            :     }</a>
 <a name="660"><span class="lineNum">     660 </span>            : </a>
 <a name="661"><span class="lineNum">     661 </span>            :     IntType modulus = element-&gt;GetModulus();</a>
 <a name="662"><span class="lineNum">     662 </span>            : </a>
 <a name="663"><span class="lineNum">     663 </span>            :     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);</a>
-<a name="664"><span class="lineNum">     664 </span><span class="lineCov">     112261 :     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch-&gt;second.GetLength() != CycloOrderHf) {</span></a>
-<a name="665"><span class="lineNum">     665 </span><span class="lineCov">         17 :         PreCompute(rootOfUnity, CycloOrder, modulus);</span></a>
+<a name="664"><span class="lineNum">     664 </span><span class="lineCov">    1154721 :     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch-&gt;second.GetLength() != CycloOrderHf) {</span></a>
+<a name="665"><span class="lineNum">     665 </span><span class="lineCov">         20 :         PreCompute(rootOfUnity, CycloOrder, modulus);</span></a>
 <a name="666"><span class="lineNum">     666 </span>            :     }</a>
 <a name="667"><span class="lineNum">     667 </span>            : </a>
-<a name="668"><span class="lineNum">     668 </span><span class="lineCov">     112261 :     NumberTheoreticTransformNat&lt;VecType&gt;().ForwardTransformToBitReverseInPlace(</span></a>
-<a name="669"><span class="lineNum">     669 </span><span class="lineCov">     112261 :         m_rootOfUnityReverseTableByModulus[modulus], m_rootOfUnityPreconReverseTableByModulus[modulus], element);</span></a>
+<a name="668"><span class="lineNum">     668 </span><span class="lineCov">    1154721 :     NumberTheoreticTransformNat&lt;VecType&gt;().ForwardTransformToBitReverseInPlace(</span></a>
+<a name="669"><span class="lineNum">     669 </span><span class="lineCov">    1154721 :         m_rootOfUnityReverseTableByModulus[modulus], m_rootOfUnityPreconReverseTableByModulus[modulus], element);</span></a>
 <a name="670"><span class="lineNum">     670 </span>            : }</a>
 <a name="671"><span class="lineNum">     671 </span>            : </a>
 <a name="672"><span class="lineNum">     672 </span>            : template &lt;typename VecType&gt;</a>
@@ -764,7 +764,7 @@
 <a name="702"><span class="lineNum">     702 </span>            : }</a>
 <a name="703"><span class="lineNum">     703 </span>            : </a>
 <a name="704"><span class="lineNum">     704 </span>            : template &lt;typename VecType&gt;</a>
-<a name="705"><span class="lineNum">     705 </span><span class="lineCov">      29358 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::InverseTransformFromBitReverseInPlace(const IntType&amp; rootOfUnity,</span></a>
+<a name="705"><span class="lineNum">     705 </span><span class="lineCov">      94924 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::InverseTransformFromBitReverseInPlace(const IntType&amp; rootOfUnity,</span></a>
 <a name="706"><span class="lineNum">     706 </span>            :                                                                                      const usint CycloOrder,</a>
 <a name="707"><span class="lineNum">     707 </span>            :                                                                                      VecType* element) {</a>
 <a name="708"><span class="lineNum">     708 </span>            :     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {</a>
@@ -775,22 +775,22 @@
 <a name="713"><span class="lineNum">     713 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;CyclotomicOrder is not a power of two&quot;);</span></a>
 <a name="714"><span class="lineNum">     714 </span>            :     }</a>
 <a name="715"><span class="lineNum">     715 </span>            : </a>
-<a name="716"><span class="lineNum">     716 </span><span class="lineCov">      29358 :     usint CycloOrderHf = (CycloOrder &gt;&gt; 1);</span></a>
-<a name="717"><span class="lineNum">     717 </span><span class="lineCov">      29358 :     if (element-&gt;GetLength() != CycloOrderHf) {</span></a>
+<a name="716"><span class="lineNum">     716 </span><span class="lineCov">      94924 :     usint CycloOrderHf = (CycloOrder &gt;&gt; 1);</span></a>
+<a name="717"><span class="lineNum">     717 </span><span class="lineCov">      94924 :     if (element-&gt;GetLength() != CycloOrderHf) {</span></a>
 <a name="718"><span class="lineNum">     718 </span><span class="lineNoCov">          0 :         OPENFHE_THROW(&quot;element size must be equal to CyclotomicOrder / 2&quot;);</span></a>
 <a name="719"><span class="lineNum">     719 </span>            :     }</a>
 <a name="720"><span class="lineNum">     720 </span>            : </a>
 <a name="721"><span class="lineNum">     721 </span>            :     IntType modulus = element-&gt;GetModulus();</a>
 <a name="722"><span class="lineNum">     722 </span>            : </a>
 <a name="723"><span class="lineNum">     723 </span>            :     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);</a>
-<a name="724"><span class="lineNum">     724 </span><span class="lineCov">      29358 :     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch-&gt;second.GetLength() != CycloOrderHf) {</span></a>
+<a name="724"><span class="lineNum">     724 </span><span class="lineCov">      94924 :     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch-&gt;second.GetLength() != CycloOrderHf) {</span></a>
 <a name="725"><span class="lineNum">     725 </span><span class="lineCov">          4 :         PreCompute(rootOfUnity, CycloOrder, modulus);</span></a>
 <a name="726"><span class="lineNum">     726 </span>            :     }</a>
 <a name="727"><span class="lineNum">     727 </span>            : </a>
-<a name="728"><span class="lineNum">     728 </span><span class="lineCov">      29358 :     usint msb = GetMSB(CycloOrderHf - 1);</span></a>
-<a name="729"><span class="lineNum">     729 </span><span class="lineCov">      29358 :     NumberTheoreticTransformNat&lt;VecType&gt;().InverseTransformFromBitReverseInPlace(</span></a>
-<a name="730"><span class="lineNum">     730 </span><span class="lineCov">      29358 :         m_rootOfUnityInverseReverseTableByModulus[modulus], m_rootOfUnityInversePreconReverseTableByModulus[modulus],</span></a>
-<a name="731"><span class="lineNum">     731 </span><span class="lineCov">      29358 :         m_cycloOrderInverseTableByModulus[modulus][msb], m_cycloOrderInversePreconTableByModulus[modulus][msb],</span></a>
+<a name="728"><span class="lineNum">     728 </span><span class="lineCov">      94924 :     usint msb = GetMSB(CycloOrderHf - 1);</span></a>
+<a name="729"><span class="lineNum">     729 </span><span class="lineCov">      94924 :     NumberTheoreticTransformNat&lt;VecType&gt;().InverseTransformFromBitReverseInPlace(</span></a>
+<a name="730"><span class="lineNum">     730 </span><span class="lineCov">      94924 :         m_rootOfUnityInverseReverseTableByModulus[modulus], m_rootOfUnityInversePreconReverseTableByModulus[modulus],</span></a>
+<a name="731"><span class="lineNum">     731 </span><span class="lineCov">      94924 :         m_cycloOrderInverseTableByModulus[modulus][msb], m_cycloOrderInversePreconTableByModulus[modulus][msb],</span></a>
 <a name="732"><span class="lineNum">     732 </span>            :         element);</a>
 <a name="733"><span class="lineNum">     733 </span>            : }</a>
 <a name="734"><span class="lineNum">     734 </span>            : </a>
@@ -834,61 +834,61 @@
 <a name="772"><span class="lineNum">     772 </span>            : }</a>
 <a name="773"><span class="lineNum">     773 </span>            : </a>
 <a name="774"><span class="lineNum">     774 </span>            : template &lt;typename VecType&gt;</a>
-<a name="775"><span class="lineNum">     775 </span><span class="lineCov">         22 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::PreCompute(const IntType&amp; rootOfUnity, const usint CycloOrder,</span></a>
+<a name="775"><span class="lineNum">     775 </span><span class="lineCov">         25 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::PreCompute(const IntType&amp; rootOfUnity, const usint CycloOrder,</span></a>
 <a name="776"><span class="lineNum">     776 </span>            :                                                           const IntType&amp; modulus) {</a>
-<a name="777"><span class="lineNum">     777 </span><span class="lineCov">         22 :     usint CycloOrderHf = (CycloOrder &gt;&gt; 1);</span></a>
+<a name="777"><span class="lineNum">     777 </span><span class="lineCov">         25 :     usint CycloOrderHf = (CycloOrder &gt;&gt; 1);</span></a>
 <a name="778"><span class="lineNum">     778 </span>            : </a>
 <a name="779"><span class="lineNum">     779 </span>            :     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);</a>
-<a name="780"><span class="lineNum">     780 </span><span class="lineCov">         22 :     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch-&gt;second.GetLength() != CycloOrderHf) {</span></a>
-<a name="781"><span class="lineNum">     781 </span><span class="lineCov">         22 : #pragma omp critical</span></a>
+<a name="780"><span class="lineNum">     780 </span><span class="lineCov">         25 :     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch-&gt;second.GetLength() != CycloOrderHf) {</span></a>
+<a name="781"><span class="lineNum">     781 </span><span class="lineCov">         25 : #pragma omp critical</span></a>
 <a name="782"><span class="lineNum">     782 </span>            :         {</a>
-<a name="783"><span class="lineNum">     783 </span><span class="lineCov">         22 :             IntType x(1), xinv(1);</span></a>
-<a name="784"><span class="lineNum">     784 </span><span class="lineCov">         22 :             usint msb  = GetMSB(CycloOrderHf - 1);</span></a>
-<a name="785"><span class="lineNum">     785 </span><span class="lineCov">         22 :             IntType mu = modulus.ComputeMu();</span></a>
+<a name="783"><span class="lineNum">     783 </span><span class="lineCov">         25 :             IntType x(1), xinv(1);</span></a>
+<a name="784"><span class="lineNum">     784 </span><span class="lineCov">         25 :             usint msb  = GetMSB(CycloOrderHf - 1);</span></a>
+<a name="785"><span class="lineNum">     785 </span><span class="lineCov">         25 :             IntType mu = modulus.ComputeMu();</span></a>
 <a name="786"><span class="lineNum">     786 </span>            :             VecType Table(CycloOrderHf, modulus);</a>
 <a name="787"><span class="lineNum">     787 </span>            :             VecType TableI(CycloOrderHf, modulus);</a>
-<a name="788"><span class="lineNum">     788 </span><span class="lineCov">         22 :             IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);</span></a>
+<a name="788"><span class="lineNum">     788 </span><span class="lineCov">         25 :             IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);</span></a>
 <a name="789"><span class="lineNum">     789 </span>            :             usint iinv;</a>
-<a name="790"><span class="lineNum">     790 </span><span class="lineCov">       1210 :             for (usint i = 0; i &lt; CycloOrderHf; i++) {</span></a>
-<a name="791"><span class="lineNum">     791 </span><span class="lineCov">       1188 :                 iinv         = ReverseBits(i, msb);</span></a>
-<a name="792"><span class="lineNum">     792 </span><span class="lineCov">       1188 :                 Table[iinv]  = x;</span></a>
+<a name="790"><span class="lineNum">     790 </span><span class="lineCov">       4797 :             for (usint i = 0; i &lt; CycloOrderHf; i++) {</span></a>
+<a name="791"><span class="lineNum">     791 </span><span class="lineCov">       4772 :                 iinv         = ReverseBits(i, msb);</span></a>
+<a name="792"><span class="lineNum">     792 </span><span class="lineCov">       4772 :                 Table[iinv]  = x;</span></a>
 <a name="793"><span class="lineNum">     793 </span>            :                 TableI[iinv] = xinv;</a>
-<a name="794"><span class="lineNum">     794 </span><span class="lineCov">       1188 :                 x.ModMulEq(rootOfUnity, modulus, mu);</span></a>
-<a name="795"><span class="lineNum">     795 </span><span class="lineCov">       1188 :                 xinv.ModMulEq(rootOfUnityInverse, modulus, mu);</span></a>
+<a name="794"><span class="lineNum">     794 </span><span class="lineCov">       4772 :                 x.ModMulEq(rootOfUnity, modulus, mu);</span></a>
+<a name="795"><span class="lineNum">     795 </span><span class="lineCov">       4772 :                 xinv.ModMulEq(rootOfUnityInverse, modulus, mu);</span></a>
 <a name="796"><span class="lineNum">     796 </span>            :             }</a>
-<a name="797"><span class="lineNum">     797 </span><span class="lineCov">         22 :             m_rootOfUnityReverseTableByModulus[modulus]        = Table;</span></a>
-<a name="798"><span class="lineNum">     798 </span><span class="lineCov">         22 :             m_rootOfUnityInverseReverseTableByModulus[modulus] = TableI;</span></a>
+<a name="797"><span class="lineNum">     797 </span><span class="lineCov">         25 :             m_rootOfUnityReverseTableByModulus[modulus]        = Table;</span></a>
+<a name="798"><span class="lineNum">     798 </span><span class="lineCov">         25 :             m_rootOfUnityInverseReverseTableByModulus[modulus] = TableI;</span></a>
 <a name="799"><span class="lineNum">     799 </span>            : </a>
-<a name="800"><span class="lineNum">     800 </span><span class="lineCov">         22 :             VecType TableCOI(msb + 1, modulus);</span></a>
-<a name="801"><span class="lineNum">     801 </span><span class="lineCov">        112 :             for (usint i = 0; i &lt; msb + 1; i++) {</span></a>
-<a name="802"><span class="lineNum">     802 </span><span class="lineCov">         90 :                 IntType coInv(IntType(1 &lt;&lt; i).ModInverse(modulus));</span></a>
-<a name="803"><span class="lineNum">     803 </span><span class="lineCov">         90 :                 TableCOI[i] = coInv;</span></a>
+<a name="800"><span class="lineNum">     800 </span><span class="lineCov">         25 :             VecType TableCOI(msb + 1, modulus);</span></a>
+<a name="801"><span class="lineNum">     801 </span><span class="lineCov">        148 :             for (usint i = 0; i &lt; msb + 1; i++) {</span></a>
+<a name="802"><span class="lineNum">     802 </span><span class="lineCov">        123 :                 IntType coInv(IntType(1 &lt;&lt; i).ModInverse(modulus));</span></a>
+<a name="803"><span class="lineNum">     803 </span><span class="lineCov">        123 :                 TableCOI[i] = coInv;</span></a>
 <a name="804"><span class="lineNum">     804 </span>            :             }</a>
-<a name="805"><span class="lineNum">     805 </span><span class="lineCov">         22 :             m_cycloOrderInverseTableByModulus[modulus] = TableCOI;</span></a>
+<a name="805"><span class="lineNum">     805 </span><span class="lineCov">         25 :             m_cycloOrderInverseTableByModulus[modulus] = TableCOI;</span></a>
 <a name="806"><span class="lineNum">     806 </span>            : </a>
 <a name="807"><span class="lineNum">     807 </span>            :             NativeInteger nativeModulus = modulus.ConvertToInt();</a>
 <a name="808"><span class="lineNum">     808 </span>            :             VecType preconTable(CycloOrderHf, nativeModulus);</a>
 <a name="809"><span class="lineNum">     809 </span>            :             VecType preconTableI(CycloOrderHf, nativeModulus);</a>
 <a name="810"><span class="lineNum">     810 </span>            : </a>
-<a name="811"><span class="lineNum">     811 </span><span class="lineCov">       1210 :             for (usint i = 0; i &lt; CycloOrderHf; i++) {</span></a>
-<a name="812"><span class="lineNum">     812 </span><span class="lineCov">       1188 :                 preconTable[i] = NativeInteger(m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())</span></a>
+<a name="811"><span class="lineNum">     811 </span><span class="lineCov">       4797 :             for (usint i = 0; i &lt; CycloOrderHf; i++) {</span></a>
+<a name="812"><span class="lineNum">     812 </span><span class="lineCov">       4772 :                 preconTable[i] = NativeInteger(m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())</span></a>
 <a name="813"><span class="lineNum">     813 </span>            :                                      .PrepModMulConst(nativeModulus);</a>
-<a name="814"><span class="lineNum">     814 </span><span class="lineCov">       1188 :                 preconTableI[i] = NativeInteger(m_rootOfUnityInverseReverseTableByModulus[modulus][i].ConvertToInt())</span></a>
+<a name="814"><span class="lineNum">     814 </span><span class="lineCov">       4772 :                 preconTableI[i] = NativeInteger(m_rootOfUnityInverseReverseTableByModulus[modulus][i].ConvertToInt())</span></a>
 <a name="815"><span class="lineNum">     815 </span>            :                                       .PrepModMulConst(nativeModulus);</a>
 <a name="816"><span class="lineNum">     816 </span>            :             }</a>
 <a name="817"><span class="lineNum">     817 </span>            : </a>
 <a name="818"><span class="lineNum">     818 </span>            :             VecType preconTableCOI(msb + 1, nativeModulus);</a>
-<a name="819"><span class="lineNum">     819 </span><span class="lineCov">        112 :             for (usint i = 0; i &lt; msb + 1; i++) {</span></a>
-<a name="820"><span class="lineNum">     820 </span><span class="lineCov">         90 :                 preconTableCOI[i] = NativeInteger(m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())</span></a>
+<a name="819"><span class="lineNum">     819 </span><span class="lineCov">        148 :             for (usint i = 0; i &lt; msb + 1; i++) {</span></a>
+<a name="820"><span class="lineNum">     820 </span><span class="lineCov">        123 :                 preconTableCOI[i] = NativeInteger(m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())</span></a>
 <a name="821"><span class="lineNum">     821 </span>            :                                         .PrepModMulConst(nativeModulus);</a>
 <a name="822"><span class="lineNum">     822 </span>            :             }</a>
 <a name="823"><span class="lineNum">     823 </span>            : </a>
-<a name="824"><span class="lineNum">     824 </span><span class="lineCov">         22 :             m_rootOfUnityPreconReverseTableByModulus[modulus]        = preconTable;</span></a>
-<a name="825"><span class="lineNum">     825 </span><span class="lineCov">         22 :             m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;</span></a>
-<a name="826"><span class="lineNum">     826 </span><span class="lineCov">         22 :             m_cycloOrderInversePreconTableByModulus[modulus]         = preconTableCOI;</span></a>
+<a name="824"><span class="lineNum">     824 </span><span class="lineCov">         25 :             m_rootOfUnityPreconReverseTableByModulus[modulus]        = preconTable;</span></a>
+<a name="825"><span class="lineNum">     825 </span><span class="lineCov">         25 :             m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;</span></a>
+<a name="826"><span class="lineNum">     826 </span><span class="lineCov">         25 :             m_cycloOrderInversePreconTableByModulus[modulus]         = preconTableCOI;</span></a>
 <a name="827"><span class="lineNum">     827 </span>            :         }</a>
 <a name="828"><span class="lineNum">     828 </span>            :     }</a>
-<a name="829"><span class="lineNum">     829 </span><span class="lineCov">         22 : }</span></a>
+<a name="829"><span class="lineNum">     829 </span><span class="lineCov">         25 : }</span></a>
 <a name="830"><span class="lineNum">     830 </span>            : </a>
 <a name="831"><span class="lineNum">     831 </span>            : template &lt;typename VecType&gt;</a>
 <a name="832"><span class="lineNum">     832 </span><span class="lineNoCov">          0 : void ChineseRemainderTransformFTTNat&lt;VecType&gt;::PreCompute(std::vector&lt;IntType&gt;&amp; rootOfUnity, const usint CycloOrder,</span></a>

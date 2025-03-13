@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">68</td>
-            <td class="headerCovTableEntry">84</td>
-            <td class="headerCovTableEntryMed">81.0 %</td>
+            <td class="headerCovTableEntry">76</td>
+            <td class="headerCovTableEntry">114</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">14</td>
             <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntryMed">87.5 %</td>
+            <td class="headerCovTableEntry">32</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -179,7 +179,7 @@
 <a name="117"><span class="lineNum">     117 </span>            : #endif</a>
 <a name="118"><span class="lineNum">     118 </span>            : </a>
 <a name="119"><span class="lineNum">     119 </span>            : template &lt;class IntegerType&gt;</a>
-<a name="120"><span class="lineNum">     120 </span><span class="lineCov">   20517775 : class NativeVectorT final : public lbcrypto::BigVectorInterface&lt;NativeVectorT&lt;IntegerType&gt;, IntegerType&gt;,</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">   27382121 : class NativeVectorT final : public lbcrypto::BigVectorInterface&lt;NativeVectorT&lt;IntegerType&gt;, IntegerType&gt;,</span></a>
 <a name="121"><span class="lineNum">     121 </span>            :                             public lbcrypto::Serializable {</a>
 <a name="122"><span class="lineNum">     122 </span>            : private:</a>
 <a name="123"><span class="lineNum">     123 </span>            :     // m_modulus stores the internal modulus of the vector.</a>
@@ -192,17 +192,17 @@
 <a name="130"><span class="lineNum">     130 </span>            : #endif</a>
 <a name="131"><span class="lineNum">     131 </span>            : </a>
 <a name="132"><span class="lineNum">     132 </span>            :     // function to check if the index is a valid index.</a>
-<a name="133"><span class="lineNum">     133 </span>            :     bool IndexCheck(size_t length) const {</a>
-<a name="134"><span class="lineNum">     134 </span>            :         return length &lt; m_data.size();</a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :     bool IndexCheck(size_t length) const {</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :         return length &lt; m_data.size();</span></a>
 <a name="135"><span class="lineNum">     135 </span>            :     }</a>
 <a name="136"><span class="lineNum">     136 </span>            : </a>
 <a name="137"><span class="lineNum">     137 </span>            : public:</a>
 <a name="138"><span class="lineNum">     138 </span>            :     using BasicInt = typename IntegerType::Integer;</a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
-<a name="140"><span class="lineNum">     140 </span><span class="lineCov">     631357 :     constexpr NativeVectorT() = default;</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">     631375 :     constexpr NativeVectorT() = default;</span></a>
 <a name="141"><span class="lineNum">     141 </span>            : </a>
-<a name="142"><span class="lineNum">     142 </span>            :     static constexpr NativeVectorT Single(const IntegerType&amp; val, const IntegerType&amp; modulus) noexcept {</a>
-<a name="143"><span class="lineNum">     143 </span>            :         return NativeVectorT(1, modulus, val);</a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 :     static constexpr NativeVectorT Single(const IntegerType&amp; val, const IntegerType&amp; modulus) noexcept {</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :         return NativeVectorT(1, modulus, val);</span></a>
 <a name="144"><span class="lineNum">     144 </span>            :     }</a>
 <a name="145"><span class="lineNum">     145 </span>            : </a>
 <a name="146"><span class="lineNum">     146 </span>            :     /**</a>
@@ -211,7 +211,7 @@
 <a name="149"><span class="lineNum">     149 </span>            :    * @param length is the length of the native vector, in terms of the number of</a>
 <a name="150"><span class="lineNum">     150 </span>            :    * entries.</a>
 <a name="151"><span class="lineNum">     151 </span>            :    */</a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineCov">         40 :     explicit constexpr NativeVectorT(usint length) noexcept : m_data(length) {}</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">        716 :     explicit constexpr NativeVectorT(usint length) noexcept : m_data(length) {}</span></a>
 <a name="153"><span class="lineNum">     153 </span>            : </a>
 <a name="154"><span class="lineNum">     154 </span>            :     /**</a>
 <a name="155"><span class="lineNum">     155 </span>            :    * Basic constructor for specifying the length of the vector and the modulus.</a>
@@ -220,12 +220,12 @@
 <a name="158"><span class="lineNum">     158 </span>            :    * entries.</a>
 <a name="159"><span class="lineNum">     159 </span>            :    * @param modulus is the modulus of the ring.</a>
 <a name="160"><span class="lineNum">     160 </span>            :    */</a>
-<a name="161"><span class="lineNum">     161 </span><span class="lineCov">    5119281 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus) noexcept : m_modulus{modulus}, m_data(length) {</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">   34932951 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus) noexcept : m_modulus{modulus}, m_data(length) {</span></a>
 <a name="162"><span class="lineNum">     162 </span>            :         // TODO: better performance if this check is done at poly level</a>
 <a name="163"><span class="lineNum">     163 </span>            :         //        if (modulus.GetMSB() &gt; MAX_MODULUS_SIZE)</a>
 <a name="164"><span class="lineNum">     164 </span>            :         //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +</a>
 <a name="165"><span class="lineNum">     165 </span>            :         //                              &quot; bits larger than max modulus bits &quot; + std::to_string(MAX_MODULUS_SIZE));</a>
-<a name="166"><span class="lineNum">     166 </span>            :     }</a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="167"><span class="lineNum">     167 </span>            : </a>
 <a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :     constexpr NativeVectorT(usint length, const IntegerType&amp; modulus, const IntegerType&amp; val) noexcept</span></a>
 <a name="169"><span class="lineNum">     169 </span><span class="lineCov">          2 :         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {</span></a>
@@ -233,22 +233,22 @@
 <a name="171"><span class="lineNum">     171 </span>            :         //        if (modulus.GetMSB() &gt; MAX_MODULUS_SIZE)</a>
 <a name="172"><span class="lineNum">     172 </span>            :         //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +</a>
 <a name="173"><span class="lineNum">     173 </span>            :         //                              &quot; bits larger than max modulus bits &quot; + std::to_string(MAX_MODULUS_SIZE));</a>
-<a name="174"><span class="lineNum">     174 </span>            :     }</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="175"><span class="lineNum">     175 </span>            : </a>
 <a name="176"><span class="lineNum">     176 </span>            :     /**</a>
 <a name="177"><span class="lineNum">     177 </span>            :    * Basic constructor for copying a vector</a>
 <a name="178"><span class="lineNum">     178 </span>            :    *</a>
 <a name="179"><span class="lineNum">     179 </span>            :    * @param bigVector is the native vector to be copied.</a>
 <a name="180"><span class="lineNum">     180 </span>            :    */</a>
-<a name="181"><span class="lineNum">     181 </span><span class="lineCov">   18641767 :     constexpr NativeVectorT(const NativeVectorT&amp; v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">   24248133 :     constexpr NativeVectorT(const NativeVectorT&amp; v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}</span></a>
 <a name="182"><span class="lineNum">     182 </span>            : </a>
 <a name="183"><span class="lineNum">     183 </span>            :     /**</a>
 <a name="184"><span class="lineNum">     184 </span>            :    * Basic move constructor for moving a vector</a>
 <a name="185"><span class="lineNum">     185 </span>            :    *</a>
 <a name="186"><span class="lineNum">     186 </span>            :    * @param &amp;&amp;bigVector is the native vector to be moved.</a>
 <a name="187"><span class="lineNum">     187 </span>            :    */</a>
-<a name="188"><span class="lineNum">     188 </span><span class="lineCov">         22 :     constexpr NativeVectorT(NativeVectorT&amp;&amp; v) noexcept</span></a>
-<a name="189"><span class="lineNum">     189 </span><span class="lineCov">         22 :         : m_modulus{std::move(v.m_modulus)}, m_data{std::move(v.m_data)} {}</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">    7004996 :     constexpr NativeVectorT(NativeVectorT&amp;&amp; v) noexcept</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">       4264 :         : m_modulus{std::move(v.m_modulus)}, m_data{std::move(v.m_data)} {}</span></a>
 <a name="190"><span class="lineNum">     190 </span>            : </a>
 <a name="191"><span class="lineNum">     191 </span>            :     /**</a>
 <a name="192"><span class="lineNum">     192 </span>            :    * Basic constructor for specifying the length of the vector</a>
@@ -279,16 +279,16 @@
 <a name="217"><span class="lineNum">     217 </span>            :    * @param &amp;rhs is the native vector to be assigned from.</a>
 <a name="218"><span class="lineNum">     218 </span>            :    * @return Assigned NativeVectorT.</a>
 <a name="219"><span class="lineNum">     219 </span>            :    */</a>
-<a name="220"><span class="lineNum">     220 </span><span class="lineCov">     217628 :     NativeVectorT&amp; operator=(const NativeVectorT&amp; rhs) noexcept {</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineCov">     227668 :     NativeVectorT&amp; operator=(const NativeVectorT&amp; rhs) noexcept {</span></a>
 <a name="221"><span class="lineNum">     221 </span>            :         m_modulus = rhs.m_modulus;</a>
-<a name="222"><span class="lineNum">     222 </span><span class="lineCov">     217628 :         if (m_data.size() &gt;= rhs.m_data.size()) {</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineCov">     227668 :         if (m_data.size() &gt;= rhs.m_data.size()) {</span></a>
 <a name="223"><span class="lineNum">     223 </span>            :             std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());</a>
-<a name="224"><span class="lineNum">     224 </span><span class="lineCov">     217488 :             if (m_data.size() &gt; rhs.m_data.size())</span></a>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">     227510 :             if (m_data.size() &gt; rhs.m_data.size())</span></a>
 <a name="225"><span class="lineNum">     225 </span><span class="lineCov">         12 :                 m_data.resize(rhs.m_data.size());</span></a>
-<a name="226"><span class="lineNum">     226 </span><span class="lineCov">     217488 :             return *this;</span></a>
+<a name="226"><span class="lineNum">     226 </span><span class="lineCov">     227510 :             return *this;</span></a>
 <a name="227"><span class="lineNum">     227 </span>            :         }</a>
-<a name="228"><span class="lineNum">     228 </span><span class="lineCov">        140 :         m_data = rhs.m_data;</span></a>
-<a name="229"><span class="lineNum">     229 </span><span class="lineCov">        140 :         return *this;</span></a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">        158 :         m_data = rhs.m_data;</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">        158 :         return *this;</span></a>
 <a name="230"><span class="lineNum">     230 </span>            :     }</a>
 <a name="231"><span class="lineNum">     231 </span>            : </a>
 <a name="232"><span class="lineNum">     232 </span>            :     /**</a>
@@ -297,10 +297,10 @@
 <a name="235"><span class="lineNum">     235 </span>            :    * @param &amp;&amp;rhs is the native vector to be moved.</a>
 <a name="236"><span class="lineNum">     236 </span>            :    * @return moved NativeVectorT object</a>
 <a name="237"><span class="lineNum">     237 </span>            :    */</a>
-<a name="238"><span class="lineNum">     238 </span>            :     NativeVectorT&amp; operator=(NativeVectorT&amp;&amp; rhs) noexcept {</a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineNoCov">          0 :     NativeVectorT&amp; operator=(NativeVectorT&amp;&amp; rhs) noexcept {</span></a>
 <a name="239"><span class="lineNum">     239 </span>            :         m_modulus = std::move(rhs.m_modulus);</a>
-<a name="240"><span class="lineNum">     240 </span>            :         m_data    = std::move(rhs.m_data);</a>
-<a name="241"><span class="lineNum">     241 </span>            :         return *this;</a>
+<a name="240"><span class="lineNum">     240 </span><span class="lineCov">         56 :         m_data    = std::move(rhs.m_data);</span></a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="242"><span class="lineNum">     242 </span>            :     }</a>
 <a name="243"><span class="lineNum">     243 </span>            : </a>
 <a name="244"><span class="lineNum">     244 </span>            :     /**</a>
@@ -339,16 +339,16 @@
 <a name="277"><span class="lineNum">     277 </span>            :    *</a>
 <a name="278"><span class="lineNum">     278 </span>            :    * @param index is the index to set a value at.</a>
 <a name="279"><span class="lineNum">     279 </span>            :    */</a>
-<a name="280"><span class="lineNum">     280 </span><span class="lineCov">     203975 :     IntegerType&amp; at(size_t i) {</span></a>
-<a name="281"><span class="lineNum">     281 </span><span class="lineCov">     203975 :         if (!NativeVectorT::IndexCheck(i))</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">     204109 :     IntegerType&amp; at(size_t i) {</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineCov">     204109 :         if (!NativeVectorT::IndexCheck(i))</span></a>
 <a name="282"><span class="lineNum">     282 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeVectorT index out of range&quot;);</span></a>
-<a name="283"><span class="lineNum">     283 </span><span class="lineCov">     203975 :         return m_data[i];</span></a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineCov">     204109 :         return m_data[i];</span></a>
 <a name="284"><span class="lineNum">     284 </span>            :     }</a>
 <a name="285"><span class="lineNum">     285 </span>            : </a>
-<a name="286"><span class="lineNum">     286 </span>            :     const IntegerType&amp; at(size_t i) const {</a>
-<a name="287"><span class="lineNum">     287 </span>            :         if (!NativeVectorT::IndexCheck(i))</a>
-<a name="288"><span class="lineNum">     288 </span>            :             OPENFHE_THROW(&quot;NativeVectorT index out of range&quot;);</a>
-<a name="289"><span class="lineNum">     289 </span>            :         return m_data[i];</a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineCov">        256 :     const IntegerType&amp; at(size_t i) const {</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineCov">        256 :         if (!NativeVectorT::IndexCheck(i))</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;NativeVectorT index out of range&quot;);</span></a>
+<a name="289"><span class="lineNum">     289 </span><span class="lineCov">        256 :         return m_data[i];</span></a>
 <a name="290"><span class="lineNum">     290 </span>            :     }</a>
 <a name="291"><span class="lineNum">     291 </span>            : </a>
 <a name="292"><span class="lineNum">     292 </span>            :     /**</a>
@@ -356,12 +356,12 @@
 <a name="294"><span class="lineNum">     294 </span>            :    * @param idx is the index to get a value at.</a>
 <a name="295"><span class="lineNum">     295 </span>            :    * @return is the value at the index. return nullptr if invalid index.</a>
 <a name="296"><span class="lineNum">     296 </span>            :    */</a>
-<a name="297"><span class="lineNum">     297 </span>            :     IntegerType&amp; operator[](size_t idx) {</a>
-<a name="298"><span class="lineNum">     298 </span>            :         return m_data[idx];</a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineNoCov">          0 :     IntegerType&amp; operator[](size_t idx) {</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineNoCov">          0 :         return m_data[idx];</span></a>
 <a name="299"><span class="lineNum">     299 </span>            :     }</a>
 <a name="300"><span class="lineNum">     300 </span>            : </a>
-<a name="301"><span class="lineNum">     301 </span>            :     const IntegerType&amp; operator[](size_t idx) const {</a>
-<a name="302"><span class="lineNum">     302 </span>            :         return m_data[idx];</a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineNoCov">          0 :     const IntegerType&amp; operator[](size_t idx) const {</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineNoCov">          0 :         return m_data[idx];</span></a>
 <a name="303"><span class="lineNum">     303 </span>            :     }</a>
 <a name="304"><span class="lineNum">     304 </span>            : </a>
 <a name="305"><span class="lineNum">     305 </span>            :     /**</a>
@@ -370,14 +370,14 @@
 <a name="308"><span class="lineNum">     308 </span>            :    * @param value is the value to set.</a>
 <a name="309"><span class="lineNum">     309 </span>            :    * @param value is the modulus value to set.</a>
 <a name="310"><span class="lineNum">     310 </span>            :    */</a>
-<a name="311"><span class="lineNum">     311 </span><span class="lineCov">        187 :     void SetModulus(const IntegerType&amp; value) {</span></a>
-<a name="312"><span class="lineNum">     312 </span><span class="lineCov">        187 :         if (value.GetMSB() &gt; MAX_MODULUS_SIZE) {</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">       1280 :     void SetModulus(const IntegerType&amp; value) {</span></a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineCov">       1280 :         if (value.GetMSB() &gt; MAX_MODULUS_SIZE) {</span></a>
 <a name="313"><span class="lineNum">     313 </span><span class="lineNoCov">          0 :             std::string errMsg{&quot;Requested modulus' size &quot; + std::to_string(value.GetMSB()) + &quot; is not supported.&quot;};</span></a>
 <a name="314"><span class="lineNum">     314 </span><span class="lineNoCov">          0 :             errMsg += &quot; NativeVectorT supports only modulus size &lt;=  &quot; + std::to_string(MAX_MODULUS_SIZE);</span></a>
 <a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(errMsg);</span></a>
 <a name="316"><span class="lineNum">     316 </span>            :         }</a>
-<a name="317"><span class="lineNum">     317 </span><span class="lineCov">        187 :         m_modulus.m_value = value.m_value;</span></a>
-<a name="318"><span class="lineNum">     318 </span><span class="lineCov">        187 :     }</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">       1280 :         m_modulus.m_value = value.m_value;</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">       1280 :     }</span></a>
 <a name="319"><span class="lineNum">     319 </span>            : </a>
 <a name="320"><span class="lineNum">     320 </span>            :     /**</a>
 <a name="321"><span class="lineNum">     321 </span>            :    * Sets the vector modulus and changes the values to match the new modulus.</a>
@@ -391,7 +391,7 @@
 <a name="329"><span class="lineNum">     329 </span>            :    *</a>
 <a name="330"><span class="lineNum">     330 </span>            :    * @return the vector modulus.</a>
 <a name="331"><span class="lineNum">     331 </span>            :    */</a>
-<a name="332"><span class="lineNum">     332 </span>            :     const IntegerType&amp; GetModulus() const {</a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :     const IntegerType&amp; GetModulus() const {</span></a>
 <a name="333"><span class="lineNum">     333 </span><span class="lineCov">         47 :         return m_modulus;</span></a>
 <a name="334"><span class="lineNum">     334 </span>            :     }</a>
 <a name="335"><span class="lineNum">     335 </span>            : </a>
@@ -400,8 +400,8 @@
 <a name="338"><span class="lineNum">     338 </span>            :    *</a>
 <a name="339"><span class="lineNum">     339 </span>            :    * @return vector length.</a>
 <a name="340"><span class="lineNum">     340 </span>            :    */</a>
-<a name="341"><span class="lineNum">     341 </span>            :     size_t GetLength() const {</a>
-<a name="342"><span class="lineNum">     342 </span>            :         return m_data.size();</a>
+<a name="341"><span class="lineNum">     341 </span><span class="lineNoCov">          0 :     size_t GetLength() const {</span></a>
+<a name="342"><span class="lineNum">     342 </span><span class="lineNoCov">          0 :         return m_data.size();</span></a>
 <a name="343"><span class="lineNum">     343 </span>            :     }</a>
 <a name="344"><span class="lineNum">     344 </span>            : </a>
 <a name="345"><span class="lineNum">     345 </span>            :     // MODULAR ARITHMETIC OPERATIONS</a>
@@ -593,13 +593,13 @@
 <a name="531"><span class="lineNum">     531 </span>            :    *</a>
 <a name="532"><span class="lineNum">     532 </span>            :    * @return a new vector which is the result of the modulus inverse operation.</a>
 <a name="533"><span class="lineNum">     533 </span>            :    */</a>
-<a name="534"><span class="lineNum">     534 </span>            :     NativeVectorT ModInverse() const {</a>
+<a name="534"><span class="lineNum">     534 </span><span class="lineCov">          5 :     NativeVectorT ModInverse() const {</span></a>
 <a name="535"><span class="lineNum">     535 </span>            :         size_t size{m_data.size()};</a>
 <a name="536"><span class="lineNum">     536 </span>            :         auto mv{m_modulus};</a>
 <a name="537"><span class="lineNum">     537 </span>            :         NativeVectorT ans(size, mv);</a>
-<a name="538"><span class="lineNum">     538 </span>            :         for (size_t i{0}; i &lt; size; ++i)</a>
-<a name="539"><span class="lineNum">     539 </span>            :             ans[i] = m_data[i].ModInverse(mv);</a>
-<a name="540"><span class="lineNum">     540 </span>            :         return ans;</a>
+<a name="538"><span class="lineNum">     538 </span><span class="lineCov">         24 :         for (size_t i{0}; i &lt; size; ++i)</span></a>
+<a name="539"><span class="lineNum">     539 </span><span class="lineCov">         20 :             ans[i] = m_data[i].ModInverse(mv);</span></a>
+<a name="540"><span class="lineNum">     540 </span><span class="lineCov">          4 :         return ans;</span></a>
 <a name="541"><span class="lineNum">     541 </span>            :     }</a>
 <a name="542"><span class="lineNum">     542 </span>            : </a>
 <a name="543"><span class="lineNum">     543 </span>            :     /**</a>
@@ -607,12 +607,12 @@
 <a name="545"><span class="lineNum">     545 </span>            :    *</a>
 <a name="546"><span class="lineNum">     546 </span>            :    * @return a new vector which is the result of the modulus inverse operation.</a>
 <a name="547"><span class="lineNum">     547 </span>            :    */</a>
-<a name="548"><span class="lineNum">     548 </span>            :     NativeVectorT&amp; ModInverseEq() {</a>
+<a name="548"><span class="lineNum">     548 </span><span class="lineNoCov">          0 :     NativeVectorT&amp; ModInverseEq() {</span></a>
 <a name="549"><span class="lineNum">     549 </span>            :         size_t size{m_data.size()};</a>
 <a name="550"><span class="lineNum">     550 </span>            :         auto mv{m_modulus};</a>
-<a name="551"><span class="lineNum">     551 </span>            :         for (size_t i{0}; i &lt; size; ++i)</a>
-<a name="552"><span class="lineNum">     552 </span>            :             m_data[i] = m_data[i].ModInverse(mv);</a>
-<a name="553"><span class="lineNum">     553 </span>            :         return *this;</a>
+<a name="551"><span class="lineNum">     551 </span><span class="lineNoCov">          0 :         for (size_t i{0}; i &lt; size; ++i)</span></a>
+<a name="552"><span class="lineNum">     552 </span><span class="lineNoCov">          0 :             m_data[i] = m_data[i].ModInverse(mv);</span></a>
+<a name="553"><span class="lineNum">     553 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="554"><span class="lineNum">     554 </span>            :     }</a>
 <a name="555"><span class="lineNum">     555 </span>            : </a>
 <a name="556"><span class="lineNum">     556 </span>            :     /**</a>
@@ -766,8 +766,8 @@
 <a name="704"><span class="lineNum">     704 </span><span class="lineNoCov">          0 :         return &quot;NativeVectorT&quot;;</span></a>
 <a name="705"><span class="lineNum">     705 </span>            :     }</a>
 <a name="706"><span class="lineNum">     706 </span>            : </a>
-<a name="707"><span class="lineNum">     707 </span>            :     static uint32_t SerializedVersion() {</a>
-<a name="708"><span class="lineNum">     708 </span>            :         return 1;</a>
+<a name="707"><span class="lineNum">     707 </span><span class="lineNoCov">          0 :     static uint32_t SerializedVersion() {</span></a>
+<a name="708"><span class="lineNum">     708 </span><span class="lineNoCov">          0 :         return 1;</span></a>
 <a name="709"><span class="lineNum">     709 </span>            :     }</a>
 <a name="710"><span class="lineNum">     710 </span>            : };</a>
 <a name="711"><span class="lineNum">     711 </span>            : </a>

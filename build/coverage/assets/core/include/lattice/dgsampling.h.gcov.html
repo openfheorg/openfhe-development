@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">2</td>
@@ -122,14 +122,14 @@
 <a name="60"><span class="lineNum">      60 </span>            : </a>
 <a name="61"><span class="lineNum">      61 </span>            : // Spectral norm for preimage samples</a>
 <a name="62"><span class="lineNum">      62 </span>            : const double SPECTRAL_CONSTANT = 1.8;</a>
-<a name="63"><span class="lineNum">      63 </span><span class="lineCov">          3 : const auto SPECTRAL_BOUND      = [](uint64_t n, uint64_t k, uint64_t base) -&gt; double {</span></a>
-<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          3 :     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(n * k) + std::sqrt(2 * n) + 4.7);</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov">          5 : const auto SPECTRAL_BOUND      = [](uint64_t n, uint64_t k, uint64_t base) -&gt; double {</span></a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          5 :     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(n * k) + std::sqrt(2 * n) + 4.7);</span></a>
 <a name="65"><span class="lineNum">      65 </span>            : };</a>
 <a name="66"><span class="lineNum">      66 </span>            : </a>
 <a name="67"><span class="lineNum">      67 </span>            : // Spectral norm for preimage samples - for the case of matrices of ring</a>
 <a name="68"><span class="lineNum">      68 </span>            : // elements</a>
-<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          8 : const auto SPECTRAL_BOUND_D = [](uint64_t n, uint64_t k, uint64_t base, uint64_t d) -&gt; double {</span></a>
-<a name="70"><span class="lineNum">      70 </span><span class="lineCov">          8 :     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(d * n * k) + std::sqrt(2 * n) + 4.7);</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">         16 : const auto SPECTRAL_BOUND_D = [](uint64_t n, uint64_t k, uint64_t base, uint64_t d) -&gt; double {</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">         16 :     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(d * n * k) + std::sqrt(2 * n) + 4.7);</span></a>
 <a name="71"><span class="lineNum">      71 </span>            : };</a>
 <a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            : /**</a>

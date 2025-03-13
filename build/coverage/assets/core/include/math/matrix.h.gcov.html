@@ -31,18 +31,18 @@
             <td class="headerValue">Coverage Test</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">81</td>
-            <td class="headerCovTableEntry">95</td>
-            <td class="headerCovTableEntryMed">85.3 %</td>
+            <td class="headerCovTableEntry">110</td>
+            <td class="headerCovTableEntry">167</td>
+            <td class="headerCovTableEntryLo">65.9 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">59</td>
-            <td class="headerCovTableEntry">78</td>
-            <td class="headerCovTableEntryMed">75.6 %</td>
+            <td class="headerCovTableEntry">76</td>
+            <td class="headerCovTableEntry">336</td>
+            <td class="headerCovTableEntryLo">22.6 %</td>
           </tr>
           <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -137,15 +137,15 @@
 <a name="75"><span class="lineNum">      75 </span>            :    * @param &amp;rows number of rows.</a>
 <a name="76"><span class="lineNum">      76 </span>            :    * @param &amp;rows number of columns.</a>
 <a name="77"><span class="lineNum">      77 </span>            :    */</a>
-<a name="78"><span class="lineNum">      78 </span><span class="lineCov">       7374 :     Matrix(alloc_func allocZero, size_t rows, size_t cols) : data(), rows(rows), cols(cols), allocZero(allocZero) {</span></a>
-<a name="79"><span class="lineNum">      79 </span><span class="lineCov">       7374 :         data.resize(rows);</span></a>
-<a name="80"><span class="lineNum">      80 </span><span class="lineCov">      74802 :         for (auto row = data.begin(); row != data.end(); ++row) {</span></a>
-<a name="81"><span class="lineNum">      81 </span><span class="lineCov">      67428 :             row-&gt;reserve(cols);</span></a>
-<a name="82"><span class="lineNum">      82 </span><span class="lineCov">     261967 :             for (size_t col = 0; col &lt; cols; ++col) {</span></a>
-<a name="83"><span class="lineNum">      83 </span><span class="lineCov">     194539 :                 row-&gt;push_back(allocZero());</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">      17972 :     Matrix(alloc_func allocZero, size_t rows, size_t cols) : data(), rows(rows), cols(cols), allocZero(allocZero) {</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">      17972 :         data.resize(rows);</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">     352783 :         for (auto row = data.begin(); row != data.end(); ++row) {</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">     334811 :             row-&gt;reserve(cols);</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">    1055019 :             for (size_t col = 0; col &lt; cols; ++col) {</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">     720208 :                 row-&gt;push_back(allocZero());</span></a>
 <a name="84"><span class="lineNum">      84 </span>            :             }</a>
 <a name="85"><span class="lineNum">      85 </span>            :         }</a>
-<a name="86"><span class="lineNum">      86 </span><span class="lineCov">       7374 :     }</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">      17972 :     }</span></a>
 <a name="87"><span class="lineNum">      87 </span>            : </a>
 <a name="88"><span class="lineNum">      88 </span>            :     // TODO: add Clear();</a>
 <a name="89"><span class="lineNum">      89 </span>            : </a>
@@ -170,7 +170,7 @@
 <a name="108"><span class="lineNum">     108 </span>            :    *</a>
 <a name="109"><span class="lineNum">     109 </span>            :    * @param &amp;allocZero lambda function for zero initialization.</a>
 <a name="110"><span class="lineNum">     110 </span>            :    */</a>
-<a name="111"><span class="lineNum">     111 </span>            :     explicit Matrix(alloc_func allocZero = 0) : data(), rows(0), cols(0), allocZero(allocZero) {}</a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :     explicit Matrix(alloc_func allocZero = 0) : data(), rows(0), cols(0), allocZero(allocZero) {}</span></a>
 <a name="112"><span class="lineNum">     112 </span>            : </a>
 <a name="113"><span class="lineNum">     113 </span>            :     /**</a>
 <a name="114"><span class="lineNum">     114 </span>            :    * Set the size of a matrix, elements are zeroed out</a>
@@ -179,22 +179,22 @@
 <a name="117"><span class="lineNum">     117 </span>            :    * @param cols number of colums</a>
 <a name="118"><span class="lineNum">     118 </span>            :    */</a>
 <a name="119"><span class="lineNum">     119 </span>            : </a>
-<a name="120"><span class="lineNum">     120 </span>            :     void SetSize(size_t rows, size_t cols) {</a>
-<a name="121"><span class="lineNum">     121 </span>            :         if (this-&gt;rows != 0 || this-&gt;cols != 0) {</a>
-<a name="122"><span class="lineNum">     122 </span>            :             OPENFHE_THROW(&quot;You cannot SetSize on a non-empty matrix&quot;);</a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :     void SetSize(size_t rows, size_t cols) {</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineNoCov">          0 :         if (this-&gt;rows != 0 || this-&gt;cols != 0) {</span></a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;You cannot SetSize on a non-empty matrix&quot;);</span></a>
 <a name="123"><span class="lineNum">     123 </span>            :         }</a>
 <a name="124"><span class="lineNum">     124 </span>            : </a>
-<a name="125"><span class="lineNum">     125 </span>            :         this-&gt;rows = rows;</a>
-<a name="126"><span class="lineNum">     126 </span>            :         this-&gt;cols = cols;</a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineNoCov">          0 :         this-&gt;rows = rows;</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineNoCov">          0 :         this-&gt;cols = cols;</span></a>
 <a name="127"><span class="lineNum">     127 </span>            : </a>
-<a name="128"><span class="lineNum">     128 </span>            :         data.resize(rows);</a>
-<a name="129"><span class="lineNum">     129 </span>            :         for (auto row = data.begin(); row != data.end(); ++row) {</a>
-<a name="130"><span class="lineNum">     130 </span>            :             row-&gt;reserve(cols);</a>
-<a name="131"><span class="lineNum">     131 </span>            :             for (size_t col = 0; col &lt; cols; ++col) {</a>
-<a name="132"><span class="lineNum">     132 </span>            :                 row-&gt;push_back(allocZero());</a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineNoCov">          0 :         data.resize(rows);</span></a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineNoCov">          0 :         for (auto row = data.begin(); row != data.end(); ++row) {</span></a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineNoCov">          0 :             row-&gt;reserve(cols);</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :             for (size_t col = 0; col &lt; cols; ++col) {</span></a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineNoCov">          0 :                 row-&gt;push_back(allocZero());</span></a>
 <a name="133"><span class="lineNum">     133 </span>            :             }</a>
 <a name="134"><span class="lineNum">     134 </span>            :         }</a>
-<a name="135"><span class="lineNum">     135 </span>            :     }</a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="136"><span class="lineNum">     136 </span>            : </a>
 <a name="137"><span class="lineNum">     137 </span>            :     /**</a>
 <a name="138"><span class="lineNum">     138 </span>            :    * SetAllocator - set the function to allocate a zero;</a>
@@ -202,18 +202,18 @@
 <a name="140"><span class="lineNum">     140 </span>            :    *</a>
 <a name="141"><span class="lineNum">     141 </span>            :    * @param allocZero</a>
 <a name="142"><span class="lineNum">     142 </span>            :    */</a>
-<a name="143"><span class="lineNum">     143 </span>            :     void SetAllocator(alloc_func allocZero) {</a>
-<a name="144"><span class="lineNum">     144 </span>            :         this-&gt;allocZero = allocZero;</a>
-<a name="145"><span class="lineNum">     145 </span>            :     }</a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :     void SetAllocator(alloc_func allocZero) {</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :         this-&gt;allocZero = allocZero;</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :     }</span></a>
 <a name="146"><span class="lineNum">     146 </span>            : </a>
 <a name="147"><span class="lineNum">     147 </span>            :     /**</a>
 <a name="148"><span class="lineNum">     148 </span>            :    * Copy constructor</a>
 <a name="149"><span class="lineNum">     149 </span>            :    *</a>
 <a name="150"><span class="lineNum">     150 </span>            :    * @param &amp;other the matrix object to be copied</a>
 <a name="151"><span class="lineNum">     151 </span>            :    */</a>
-<a name="152"><span class="lineNum">     152 </span><span class="lineCov">        500 :     Matrix(const Matrix&lt;Element&gt;&amp; other) : data(), rows(other.rows), cols(other.cols), allocZero(other.allocZero) {</span></a>
-<a name="153"><span class="lineNum">     153 </span><span class="lineCov">        500 :         deepCopyData(other.data);</span></a>
-<a name="154"><span class="lineNum">     154 </span><span class="lineCov">        500 :     }</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">       5260 :     Matrix(const Matrix&lt;Element&gt;&amp; other) : data(), rows(other.rows), cols(other.cols), allocZero(other.allocZero) {</span></a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">       5260 :         deepCopyData(other.data);</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">       5260 :     }</span></a>
 <a name="155"><span class="lineNum">     155 </span>            : </a>
 <a name="156"><span class="lineNum">     156 </span>            :     /**</a>
 <a name="157"><span class="lineNum">     157 </span>            :    * Assignment operator</a>
@@ -310,32 +310,32 @@
 <a name="248"><span class="lineNum">     248 </span>            :               typename std::enable_if&lt;std::is_same&lt;T, M2DCRTPoly&gt;::value || std::is_same&lt;T, M4DCRTPoly&gt;::value ||</a>
 <a name="249"><span class="lineNum">     249 </span>            :                                           std::is_same&lt;T, M6DCRTPoly&gt;::value,</a>
 <a name="250"><span class="lineNum">     250 </span>            :                                       bool&gt;::type = true&gt;</a>
-<a name="251"><span class="lineNum">     251 </span>            :     Matrix&lt;T&gt; GadgetVector(int64_t base = 2) const {</a>
-<a name="252"><span class="lineNum">     252 </span>            :         Matrix&lt;T&gt; g(allocZero, rows, cols);</a>
-<a name="253"><span class="lineNum">     253 </span>            :         auto base_matrix = allocZero();</a>
-<a name="254"><span class="lineNum">     254 </span>            :         base_matrix      = base;</a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineCov">          5 :     Matrix&lt;T&gt; GadgetVector(int64_t base = 2) const {</span></a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineCov">         10 :         Matrix&lt;T&gt; g(allocZero, rows, cols);</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineCov">          5 :         auto base_matrix = allocZero();</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineCov">          5 :         base_matrix      = base;</span></a>
 <a name="255"><span class="lineNum">     255 </span>            :         size_t bk        = 1;</a>
 <a name="256"><span class="lineNum">     256 </span>            : </a>
-<a name="257"><span class="lineNum">     257 </span>            :         auto params = g(0, 0).GetParams()-&gt;GetParams();</a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineCov">         10 :         auto params = g(0, 0).GetParams()-&gt;GetParams();</span></a>
 <a name="258"><span class="lineNum">     258 </span>            : </a>
-<a name="259"><span class="lineNum">     259 </span>            :         uint64_t digitCount = (uint64_t)ceil(log2(params[0]-&gt;GetModulus().ConvertToDouble()) / log2(base));</a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineCov">          5 :         uint64_t digitCount = (uint64_t)ceil(log2(params[0]-&gt;GetModulus().ConvertToDouble()) / log2(base));</span></a>
 <a name="260"><span class="lineNum">     260 </span>            : </a>
-<a name="261"><span class="lineNum">     261 </span>            :         for (size_t k = 0; k &lt; digitCount; k++) {</a>
-<a name="262"><span class="lineNum">     262 </span>            :             for (size_t i = 0; i &lt; params.size(); i++) {</a>
-<a name="263"><span class="lineNum">     263 </span>            :                 NativePoly temp(params[i]);</a>
-<a name="264"><span class="lineNum">     264 </span>            :                 temp = bk;</a>
-<a name="265"><span class="lineNum">     265 </span>            :                 g(0, k + i * digitCount).SetElementAtIndex(i, std::move(temp));</a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineCov">        250 :         for (size_t k = 0; k &lt; digitCount; k++) {</span></a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineCov">        997 :             for (size_t i = 0; i &lt; params.size(); i++) {</span></a>
+<a name="263"><span class="lineNum">     263 </span><span class="lineCov">       1504 :                 NativePoly temp(params[i]);</span></a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineCov">        752 :                 temp = bk;</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineCov">        752 :                 g(0, k + i * digitCount).SetElementAtIndex(i, std::move(temp));</span></a>
 <a name="266"><span class="lineNum">     266 </span>            :             }</a>
-<a name="267"><span class="lineNum">     267 </span>            :             bk *= base;</a>
+<a name="267"><span class="lineNum">     267 </span><span class="lineCov">        245 :             bk *= base;</span></a>
 <a name="268"><span class="lineNum">     268 </span>            :         }</a>
 <a name="269"><span class="lineNum">     269 </span>            : </a>
-<a name="270"><span class="lineNum">     270 </span>            :         size_t kCols = cols / rows;</a>
-<a name="271"><span class="lineNum">     271 </span>            :         for (size_t row = 1; row &lt; rows; row++) {</a>
-<a name="272"><span class="lineNum">     272 </span>            :             for (size_t i = 0; i &lt; kCols; i++) {</a>
-<a name="273"><span class="lineNum">     273 </span>            :                 g(row, i + row * kCols) = g(0, i);</a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">          5 :         size_t kCols = cols / rows;</span></a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineCov">         15 :         for (size_t row = 1; row &lt; rows; row++) {</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineCov">       1720 :             for (size_t i = 0; i &lt; kCols; i++) {</span></a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineCov">       1710 :                 g(row, i + row * kCols) = g(0, i);</span></a>
 <a name="274"><span class="lineNum">     274 </span>            :             }</a>
 <a name="275"><span class="lineNum">     275 </span>            :         }</a>
-<a name="276"><span class="lineNum">     276 </span>            :         return g;</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineCov">          5 :         return g;</span></a>
 <a name="277"><span class="lineNum">     277 </span>            :     }</a>
 <a name="278"><span class="lineNum">     278 </span>            : </a>
 <a name="279"><span class="lineNum">     279 </span>            :     /**</a>
@@ -383,8 +383,8 @@
 <a name="321"><span class="lineNum">     321 </span>            :    * @param &amp;other the multiplier matrix</a>
 <a name="322"><span class="lineNum">     322 </span>            :    * @return the result of multiplication</a>
 <a name="323"><span class="lineNum">     323 </span>            :    */</a>
-<a name="324"><span class="lineNum">     324 </span>            :     Matrix&lt;Element&gt; operator*(Matrix&lt;Element&gt; const&amp; other) const {</a>
-<a name="325"><span class="lineNum">     325 </span><span class="lineCov">        336 :         return Mult(other);</span></a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :     Matrix&lt;Element&gt; operator*(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineCov">        570 :         return Mult(other);</span></a>
 <a name="326"><span class="lineNum">     326 </span>            :     }</a>
 <a name="327"><span class="lineNum">     327 </span>            : </a>
 <a name="328"><span class="lineNum">     328 </span>            :     /**</a>
@@ -393,16 +393,16 @@
 <a name="331"><span class="lineNum">     331 </span>            :    * @param &amp;other the multiplier element</a>
 <a name="332"><span class="lineNum">     332 </span>            :    * @return the result of multiplication</a>
 <a name="333"><span class="lineNum">     333 </span>            :    */</a>
-<a name="334"><span class="lineNum">     334 </span>            :     Matrix&lt;Element&gt; ScalarMult(Element const&amp; other) const {</a>
-<a name="335"><span class="lineNum">     335 </span><span class="lineCov">          4 :         Matrix&lt;Element&gt; result(*this);</span></a>
-<a name="336"><span class="lineNum">     336 </span><span class="lineCov">          4 : #pragma omp parallel for</span></a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineNoCov">          0 :     Matrix&lt;Element&gt; ScalarMult(Element const&amp; other) const {</span></a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineCov">       2348 :         Matrix&lt;Element&gt; result(*this);</span></a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineCov">         28 : #pragma omp parallel for</span></a>
 <a name="337"><span class="lineNum">     337 </span>            :         for (size_t col = 0; col &lt; result.cols; ++col) {</a>
 <a name="338"><span class="lineNum">     338 </span>            :             for (size_t row = 0; row &lt; result.rows; ++row) {</a>
 <a name="339"><span class="lineNum">     339 </span>            :                 result.data[row][col] = result.data[row][col] * other;</a>
 <a name="340"><span class="lineNum">     340 </span>            :             }</a>
 <a name="341"><span class="lineNum">     341 </span>            :         }</a>
 <a name="342"><span class="lineNum">     342 </span>            : </a>
-<a name="343"><span class="lineNum">     343 </span>            :         return result;</a>
+<a name="343"><span class="lineNum">     343 </span><span class="lineNoCov">          0 :         return result;</span></a>
 <a name="344"><span class="lineNum">     344 </span>            :     }</a>
 <a name="345"><span class="lineNum">     345 </span>            : </a>
 <a name="346"><span class="lineNum">     346 </span>            :     /**</a>
@@ -411,8 +411,8 @@
 <a name="349"><span class="lineNum">     349 </span>            :    * @param &amp;other the multiplier element</a>
 <a name="350"><span class="lineNum">     350 </span>            :    * @return the result of multiplication</a>
 <a name="351"><span class="lineNum">     351 </span>            :    */</a>
-<a name="352"><span class="lineNum">     352 </span>            :     Matrix&lt;Element&gt; operator*(Element const&amp; other) const {</a>
-<a name="353"><span class="lineNum">     353 </span>            :         return ScalarMult(other);</a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineNoCov">          0 :     Matrix&lt;Element&gt; operator*(Element const&amp; other) const {</span></a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineNoCov">          0 :         return ScalarMult(other);</span></a>
 <a name="354"><span class="lineNum">     354 </span>            :     }</a>
 <a name="355"><span class="lineNum">     355 </span>            : </a>
 <a name="356"><span class="lineNum">     356 </span>            :     /**</a>
@@ -442,7 +442,7 @@
 <a name="380"><span class="lineNum">     380 </span>            :    * @param &amp;other the matrix object to compare to</a>
 <a name="381"><span class="lineNum">     381 </span>            :    * @return the boolean result</a>
 <a name="382"><span class="lineNum">     382 </span>            :    */</a>
-<a name="383"><span class="lineNum">     383 </span>            :     bool operator==(Matrix&lt;Element&gt; const&amp; other) const {</a>
+<a name="383"><span class="lineNum">     383 </span><span class="lineNoCov">          0 :     bool operator==(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
 <a name="384"><span class="lineNum">     384 </span><span class="lineCov">         45 :         return Equal(other);</span></a>
 <a name="385"><span class="lineNum">     385 </span>            :     }</a>
 <a name="386"><span class="lineNum">     386 </span>            : </a>
@@ -452,8 +452,8 @@
 <a name="390"><span class="lineNum">     390 </span>            :    * @param &amp;other the matrix object to compare to</a>
 <a name="391"><span class="lineNum">     391 </span>            :    * @return the boolean result</a>
 <a name="392"><span class="lineNum">     392 </span>            :    */</a>
-<a name="393"><span class="lineNum">     393 </span>            :     bool operator!=(Matrix&lt;Element&gt; const&amp; other) const {</a>
-<a name="394"><span class="lineNum">     394 </span>            :         return !Equal(other);</a>
+<a name="393"><span class="lineNum">     393 </span><span class="lineNoCov">          0 :     bool operator!=(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
+<a name="394"><span class="lineNum">     394 </span><span class="lineNoCov">          0 :         return !Equal(other);</span></a>
 <a name="395"><span class="lineNum">     395 </span>            :     }</a>
 <a name="396"><span class="lineNum">     396 </span>            : </a>
 <a name="397"><span class="lineNum">     397 </span>            :     /**</a>
@@ -461,8 +461,8 @@
 <a name="399"><span class="lineNum">     399 </span>            :    *</a>
 <a name="400"><span class="lineNum">     400 </span>            :    * @return the data as vector of vectors</a>
 <a name="401"><span class="lineNum">     401 </span>            :    */</a>
-<a name="402"><span class="lineNum">     402 </span>            :     const data_t&amp; GetData() const {</a>
-<a name="403"><span class="lineNum">     403 </span>            :         return data;</a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineNoCov">          0 :     const data_t&amp; GetData() const {</span></a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineNoCov">          0 :         return data;</span></a>
 <a name="404"><span class="lineNum">     404 </span>            :     }</a>
 <a name="405"><span class="lineNum">     405 </span>            : </a>
 <a name="406"><span class="lineNum">     406 </span>            :     /**</a>
@@ -470,8 +470,8 @@
 <a name="408"><span class="lineNum">     408 </span>            :    *</a>
 <a name="409"><span class="lineNum">     409 </span>            :    * @return the number of rows</a>
 <a name="410"><span class="lineNum">     410 </span>            :    */</a>
-<a name="411"><span class="lineNum">     411 </span>            :     size_t GetRows() const {</a>
-<a name="412"><span class="lineNum">     412 </span><span class="lineCov">         26 :         return rows;</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineNoCov">          0 :     size_t GetRows() const {</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineCov">      26565 :         return rows;</span></a>
 <a name="413"><span class="lineNum">     413 </span>            :     }</a>
 <a name="414"><span class="lineNum">     414 </span>            : </a>
 <a name="415"><span class="lineNum">     415 </span>            :     /**</a>
@@ -479,8 +479,8 @@
 <a name="417"><span class="lineNum">     417 </span>            :    *</a>
 <a name="418"><span class="lineNum">     418 </span>            :    * @return the number of columns</a>
 <a name="419"><span class="lineNum">     419 </span>            :    */</a>
-<a name="420"><span class="lineNum">     420 </span>            :     size_t GetCols() const {</a>
-<a name="421"><span class="lineNum">     421 </span><span class="lineCov">        127 :         return cols;</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineNoCov">          0 :     size_t GetCols() const {</span></a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineCov">        253 :         return cols;</span></a>
 <a name="422"><span class="lineNum">     422 </span>            :     }</a>
 <a name="423"><span class="lineNum">     423 </span>            : </a>
 <a name="424"><span class="lineNum">     424 </span>            :     /**</a>
@@ -488,8 +488,8 @@
 <a name="426"><span class="lineNum">     426 </span>            :    *</a>
 <a name="427"><span class="lineNum">     427 </span>            :    * @return the lambda function corresponding to the element zero allocator</a>
 <a name="428"><span class="lineNum">     428 </span>            :    */</a>
-<a name="429"><span class="lineNum">     429 </span>            :     alloc_func GetAllocator() const {</a>
-<a name="430"><span class="lineNum">     430 </span>            :         return allocZero;</a>
+<a name="429"><span class="lineNum">     429 </span><span class="lineNoCov">          0 :     alloc_func GetAllocator() const {</span></a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineNoCov">          0 :         return allocZero;</span></a>
 <a name="431"><span class="lineNum">     431 </span>            :     }</a>
 <a name="432"><span class="lineNum">     432 </span>            : </a>
 <a name="433"><span class="lineNum">     433 </span>            :     /**</a>
@@ -507,18 +507,18 @@
 <a name="445"><span class="lineNum">     445 </span>            :    * @param &amp;other the matrix to be added</a>
 <a name="446"><span class="lineNum">     446 </span>            :    * @return the resulting matrix</a>
 <a name="447"><span class="lineNum">     447 </span>            :    */</a>
-<a name="448"><span class="lineNum">     448 </span><span class="lineCov">        100 :     Matrix&lt;Element&gt; Add(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
-<a name="449"><span class="lineNum">     449 </span><span class="lineCov">        100 :         if (rows != other.rows || cols != other.cols) {</span></a>
+<a name="448"><span class="lineNum">     448 </span><span class="lineCov">       2526 :     Matrix&lt;Element&gt; Add(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
+<a name="449"><span class="lineNum">     449 </span><span class="lineCov">       2526 :         if (rows != other.rows || cols != other.cols) {</span></a>
 <a name="450"><span class="lineNum">     450 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;Addition operands have incompatible dimensions&quot;);</span></a>
 <a name="451"><span class="lineNum">     451 </span>            :         }</a>
-<a name="452"><span class="lineNum">     452 </span><span class="lineCov">        100 :         Matrix&lt;Element&gt; result(*this);</span></a>
-<a name="453"><span class="lineNum">     453 </span><span class="lineCov">        100 : #pragma omp parallel for</span></a>
+<a name="452"><span class="lineNum">     452 </span><span class="lineCov">       2526 :         Matrix&lt;Element&gt; result(*this);</span></a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineCov">       2526 : #pragma omp parallel for</span></a>
 <a name="454"><span class="lineNum">     454 </span>            :         for (size_t j = 0; j &lt; cols; ++j) {</a>
 <a name="455"><span class="lineNum">     455 </span>            :             for (size_t i = 0; i &lt; rows; ++i) {</a>
 <a name="456"><span class="lineNum">     456 </span>            :                 result.data[i][j] += other.data[i][j];</a>
 <a name="457"><span class="lineNum">     457 </span>            :             }</a>
 <a name="458"><span class="lineNum">     458 </span>            :         }</a>
-<a name="459"><span class="lineNum">     459 </span><span class="lineCov">        100 :         return result;</span></a>
+<a name="459"><span class="lineNum">     459 </span><span class="lineCov">       2526 :         return result;</span></a>
 <a name="460"><span class="lineNum">     460 </span>            :     }</a>
 <a name="461"><span class="lineNum">     461 </span>            : </a>
 <a name="462"><span class="lineNum">     462 </span>            :     /**</a>
@@ -527,8 +527,8 @@
 <a name="465"><span class="lineNum">     465 </span>            :    * @param &amp;other the matrix to be added</a>
 <a name="466"><span class="lineNum">     466 </span>            :    * @return the resulting matrix</a>
 <a name="467"><span class="lineNum">     467 </span>            :    */</a>
-<a name="468"><span class="lineNum">     468 </span>            :     Matrix&lt;Element&gt; operator+(Matrix&lt;Element&gt; const&amp; other) const {</a>
-<a name="469"><span class="lineNum">     469 </span><span class="lineCov">        100 :         return this-&gt;Add(other);</span></a>
+<a name="468"><span class="lineNum">     468 </span><span class="lineNoCov">          0 :     Matrix&lt;Element&gt; operator+(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
+<a name="469"><span class="lineNum">     469 </span><span class="lineCov">       2526 :         return this-&gt;Add(other);</span></a>
 <a name="470"><span class="lineNum">     470 </span>            :     }</a>
 <a name="471"><span class="lineNum">     471 </span>            : </a>
 <a name="472"><span class="lineNum">     472 </span>            :     /**</a>
@@ -545,19 +545,19 @@
 <a name="483"><span class="lineNum">     483 </span>            :    * @param &amp;other the matrix to be substracted</a>
 <a name="484"><span class="lineNum">     484 </span>            :    * @return the resulting matrix</a>
 <a name="485"><span class="lineNum">     485 </span>            :    */</a>
-<a name="486"><span class="lineNum">     486 </span><span class="lineCov">         16 :     Matrix&lt;Element&gt; Sub(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
-<a name="487"><span class="lineNum">     487 </span><span class="lineCov">         16 :         if (rows != other.rows || cols != other.cols) {</span></a>
+<a name="486"><span class="lineNum">     486 </span><span class="lineCov">        216 :     Matrix&lt;Element&gt; Sub(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
+<a name="487"><span class="lineNum">     487 </span><span class="lineCov">        216 :         if (rows != other.rows || cols != other.cols) {</span></a>
 <a name="488"><span class="lineNum">     488 </span><span class="lineNoCov">          0 :             OPENFHE_THROW(&quot;Subtraction operands have incompatible dimensions&quot;);</span></a>
 <a name="489"><span class="lineNum">     489 </span>            :         }</a>
-<a name="490"><span class="lineNum">     490 </span><span class="lineCov">         16 :         Matrix&lt;Element&gt; result(allocZero, rows, other.cols);</span></a>
-<a name="491"><span class="lineNum">     491 </span><span class="lineCov">         16 : #pragma omp parallel for</span></a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineCov">        216 :         Matrix&lt;Element&gt; result(allocZero, rows, other.cols);</span></a>
+<a name="491"><span class="lineNum">     491 </span><span class="lineCov">        216 : #pragma omp parallel for</span></a>
 <a name="492"><span class="lineNum">     492 </span>            :         for (size_t j = 0; j &lt; cols; ++j) {</a>
 <a name="493"><span class="lineNum">     493 </span>            :             for (size_t i = 0; i &lt; rows; ++i) {</a>
 <a name="494"><span class="lineNum">     494 </span>            :                 result.data[i][j] = data[i][j] - other.data[i][j];</a>
 <a name="495"><span class="lineNum">     495 </span>            :             }</a>
 <a name="496"><span class="lineNum">     496 </span>            :         }</a>
 <a name="497"><span class="lineNum">     497 </span>            : </a>
-<a name="498"><span class="lineNum">     498 </span><span class="lineCov">         16 :         return result;</span></a>
+<a name="498"><span class="lineNum">     498 </span><span class="lineCov">        216 :         return result;</span></a>
 <a name="499"><span class="lineNum">     499 </span>            :     }</a>
 <a name="500"><span class="lineNum">     500 </span>            : </a>
 <a name="501"><span class="lineNum">     501 </span>            :     /**</a>
@@ -566,8 +566,8 @@
 <a name="504"><span class="lineNum">     504 </span>            :    * @param &amp;other the matrix to be substracted</a>
 <a name="505"><span class="lineNum">     505 </span>            :    * @return the resulting matrix</a>
 <a name="506"><span class="lineNum">     506 </span>            :    */</a>
-<a name="507"><span class="lineNum">     507 </span>            :     Matrix&lt;Element&gt; operator-(Matrix&lt;Element&gt; const&amp; other) const {</a>
-<a name="508"><span class="lineNum">     508 </span><span class="lineCov">          6 :         return this-&gt;Sub(other);</span></a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineNoCov">          0 :     Matrix&lt;Element&gt; operator-(Matrix&lt;Element&gt; const&amp; other) const {</span></a>
+<a name="508"><span class="lineNum">     508 </span><span class="lineCov">        216 :         return this-&gt;Sub(other);</span></a>
 <a name="509"><span class="lineNum">     509 </span>            :     }</a>
 <a name="510"><span class="lineNum">     510 </span>            : </a>
 <a name="511"><span class="lineNum">     511 </span>            :     /**</a>
@@ -626,8 +626,8 @@
 <a name="564"><span class="lineNum">     564 </span>            :    * @param &amp;col column index</a>
 <a name="565"><span class="lineNum">     565 </span>            :    * @return the element at the index</a>
 <a name="566"><span class="lineNum">     566 </span>            :    */</a>
-<a name="567"><span class="lineNum">     567 </span>            :     Element&amp; operator()(size_t row, size_t col) {</a>
-<a name="568"><span class="lineNum">     568 </span>            :         return data[row][col];</a>
+<a name="567"><span class="lineNum">     567 </span><span class="lineNoCov">          0 :     Element&amp; operator()(size_t row, size_t col) {</span></a>
+<a name="568"><span class="lineNum">     568 </span><span class="lineNoCov">          0 :         return data[row][col];</span></a>
 <a name="569"><span class="lineNum">     569 </span>            :     }</a>
 <a name="570"><span class="lineNum">     570 </span>            : </a>
 <a name="571"><span class="lineNum">     571 </span>            :     /**</a>
@@ -637,8 +637,8 @@
 <a name="575"><span class="lineNum">     575 </span>            :    * @param &amp;col column index</a>
 <a name="576"><span class="lineNum">     576 </span>            :    * @return the element at the index</a>
 <a name="577"><span class="lineNum">     577 </span>            :    */</a>
-<a name="578"><span class="lineNum">     578 </span>            :     Element const&amp; operator()(size_t row, size_t col) const {</a>
-<a name="579"><span class="lineNum">     579 </span>            :         return data[row][col];</a>
+<a name="578"><span class="lineNum">     578 </span><span class="lineNoCov">          0 :     Element const&amp; operator()(size_t row, size_t col) const {</span></a>
+<a name="579"><span class="lineNum">     579 </span><span class="lineNoCov">          0 :         return data[row][col];</span></a>
 <a name="580"><span class="lineNum">     580 </span>            :     }</a>
 <a name="581"><span class="lineNum">     581 </span>            : </a>
 <a name="582"><span class="lineNum">     582 </span>            :     /**</a>
@@ -647,14 +647,14 @@
 <a name="585"><span class="lineNum">     585 </span>            :    * @param &amp;row row index</a>
 <a name="586"><span class="lineNum">     586 </span>            :    * @return the row at the index</a>
 <a name="587"><span class="lineNum">     587 </span>            :    */</a>
-<a name="588"><span class="lineNum">     588 </span>            :     Matrix&lt;Element&gt; ExtractRow(size_t row) const {</a>
-<a name="589"><span class="lineNum">     589 </span>            :         Matrix&lt;Element&gt; result(this-&gt;allocZero, 1, this-&gt;cols);</a>
+<a name="588"><span class="lineNum">     588 </span><span class="lineNoCov">          0 :     Matrix&lt;Element&gt; ExtractRow(size_t row) const {</span></a>
+<a name="589"><span class="lineNum">     589 </span><span class="lineNoCov">          0 :         Matrix&lt;Element&gt; result(this-&gt;allocZero, 1, this-&gt;cols);</span></a>
 <a name="590"><span class="lineNum">     590 </span>            :         int i = 0;</a>
-<a name="591"><span class="lineNum">     591 </span>            :         for (auto&amp; elem : this-&gt;GetData()[row]) {</a>
-<a name="592"><span class="lineNum">     592 </span>            :             result(0, i) = elem;</a>
-<a name="593"><span class="lineNum">     593 </span>            :             i++;</a>
+<a name="591"><span class="lineNum">     591 </span><span class="lineNoCov">          0 :         for (auto&amp; elem : this-&gt;GetData()[row]) {</span></a>
+<a name="592"><span class="lineNum">     592 </span><span class="lineNoCov">          0 :             result(0, i) = elem;</span></a>
+<a name="593"><span class="lineNum">     593 </span><span class="lineNoCov">          0 :             i++;</span></a>
 <a name="594"><span class="lineNum">     594 </span>            :         }</a>
-<a name="595"><span class="lineNum">     595 </span>            :         return result;</a>
+<a name="595"><span class="lineNum">     595 </span><span class="lineNoCov">          0 :         return result;</span></a>
 <a name="596"><span class="lineNum">     596 </span>            :         // return *this;</a>
 <a name="597"><span class="lineNum">     597 </span>            :     }</a>
 <a name="598"><span class="lineNum">     598 </span>            : </a>
@@ -664,12 +664,12 @@
 <a name="602"><span class="lineNum">     602 </span>            :    * @param &amp;col col index</a>
 <a name="603"><span class="lineNum">     603 </span>            :    * @return the col at the index</a>
 <a name="604"><span class="lineNum">     604 </span>            :    */</a>
-<a name="605"><span class="lineNum">     605 </span>            :     Matrix&lt;Element&gt; ExtractCol(size_t col) const {</a>
-<a name="606"><span class="lineNum">     606 </span>            :         Matrix&lt;Element&gt; result(this-&gt;allocZero, this-&gt;rows, 1);</a>
-<a name="607"><span class="lineNum">     607 </span>            :         for (size_t i = 0; i &lt; this-&gt;rows; i++) {</a>
-<a name="608"><span class="lineNum">     608 </span>            :             result(i, 0) = data[i][col];</a>
+<a name="605"><span class="lineNum">     605 </span><span class="lineCov">         28 :     Matrix&lt;Element&gt; ExtractCol(size_t col) const {</span></a>
+<a name="606"><span class="lineNum">     606 </span><span class="lineCov">         56 :         Matrix&lt;Element&gt; result(this-&gt;allocZero, this-&gt;rows, 1);</span></a>
+<a name="607"><span class="lineNum">     607 </span><span class="lineCov">      85564 :         for (size_t i = 0; i &lt; this-&gt;rows; i++) {</span></a>
+<a name="608"><span class="lineNum">     608 </span><span class="lineCov">      85536 :             result(i, 0) = data[i][col];</span></a>
 <a name="609"><span class="lineNum">     609 </span>            :         }</a>
-<a name="610"><span class="lineNum">     610 </span>            :         return result;</a>
+<a name="610"><span class="lineNum">     610 </span><span class="lineCov">         28 :         return result;</span></a>
 <a name="611"><span class="lineNum">     611 </span>            :         // return *this;</a>
 <a name="612"><span class="lineNum">     612 </span>            :     }</a>
 <a name="613"><span class="lineNum">     613 </span>            : </a>
@@ -679,19 +679,19 @@
 <a name="617"><span class="lineNum">     617 </span>            :    * @param &amp;row_start &amp;row_end row indices</a>
 <a name="618"><span class="lineNum">     618 </span>            :    * @return the rows in the range delimited by indices inclusive</a>
 <a name="619"><span class="lineNum">     619 </span>            :    */</a>
-<a name="620"><span class="lineNum">     620 </span>            :     inline Matrix&lt;Element&gt; ExtractRows(size_t row_start, size_t row_end) const {</a>
-<a name="621"><span class="lineNum">     621 </span>            :         Matrix&lt;Element&gt; result(this-&gt;allocZero, row_end - row_start + 1, this-&gt;cols);</a>
+<a name="620"><span class="lineNum">     620 </span><span class="lineCov">        340 :     inline Matrix&lt;Element&gt; ExtractRows(size_t row_start, size_t row_end) const {</span></a>
+<a name="621"><span class="lineNum">     621 </span><span class="lineCov">        340 :         Matrix&lt;Element&gt; result(this-&gt;allocZero, row_end - row_start + 1, this-&gt;cols);</span></a>
 <a name="622"><span class="lineNum">     622 </span>            : </a>
-<a name="623"><span class="lineNum">     623 </span>            :         for (usint row = row_start; row &lt; row_end + 1; row++) {</a>
+<a name="623"><span class="lineNum">     623 </span><span class="lineCov">       2224 :         for (usint row = row_start; row &lt; row_end + 1; row++) {</span></a>
 <a name="624"><span class="lineNum">     624 </span>            :             int i = 0;</a>
 <a name="625"><span class="lineNum">     625 </span>            : </a>
-<a name="626"><span class="lineNum">     626 </span>            :             for (auto elem = this-&gt;GetData()[row].begin(); elem != this-&gt;GetData()[row].end(); ++elem) {</a>
-<a name="627"><span class="lineNum">     627 </span>            :                 result(row - row_start, i) = *elem;</a>
-<a name="628"><span class="lineNum">     628 </span>            :                 i++;</a>
+<a name="626"><span class="lineNum">     626 </span><span class="lineCov">       3768 :             for (auto elem = this-&gt;GetData()[row].begin(); elem != this-&gt;GetData()[row].end(); ++elem) {</span></a>
+<a name="627"><span class="lineNum">     627 </span><span class="lineCov">       1884 :                 result(row - row_start, i) = *elem;</span></a>
+<a name="628"><span class="lineNum">     628 </span><span class="lineCov">       1884 :                 i++;</span></a>
 <a name="629"><span class="lineNum">     629 </span>            :             }</a>
 <a name="630"><span class="lineNum">     630 </span>            :         }</a>
 <a name="631"><span class="lineNum">     631 </span>            : </a>
-<a name="632"><span class="lineNum">     632 </span>            :         return result;</a>
+<a name="632"><span class="lineNum">     632 </span><span class="lineCov">        340 :         return result;</span></a>
 <a name="633"><span class="lineNum">     633 </span>            :     }</a>
 <a name="634"><span class="lineNum">     634 </span>            : </a>
 <a name="635"><span class="lineNum">     635 </span><span class="lineNoCov">          0 :     friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Matrix&lt;Element&gt;&amp; m) {</span></a>
@@ -755,8 +755,8 @@
 <a name="693"><span class="lineNum">     693 </span><span class="lineNoCov">          0 :     std::string SerializedObjectName() const override {</span></a>
 <a name="694"><span class="lineNum">     694 </span><span class="lineNoCov">          0 :         return &quot;Matrix&quot;;</span></a>
 <a name="695"><span class="lineNum">     695 </span>            :     }</a>
-<a name="696"><span class="lineNum">     696 </span>            :     static uint32_t SerializedVersion() {</a>
-<a name="697"><span class="lineNum">     697 </span>            :         return 1;</a>
+<a name="696"><span class="lineNum">     696 </span><span class="lineNoCov">          0 :     static uint32_t SerializedVersion() {</span></a>
+<a name="697"><span class="lineNum">     697 </span><span class="lineNoCov">          0 :         return 1;</span></a>
 <a name="698"><span class="lineNum">     698 </span>            :     }</a>
 <a name="699"><span class="lineNum">     699 </span>            : </a>
 <a name="700"><span class="lineNum">     700 </span>            : private:</a>
@@ -767,15 +767,15 @@
 <a name="705"><span class="lineNum">     705 </span>            :     // mutable int NUM_THREADS = 1;</a>
 <a name="706"><span class="lineNum">     706 </span>            : </a>
 <a name="707"><span class="lineNum">     707 </span>            :     // deep copy of data - used for copy constructor</a>
-<a name="708"><span class="lineNum">     708 </span><span class="lineCov">        500 :     void deepCopyData(data_t const&amp; src) {</span></a>
-<a name="709"><span class="lineNum">     709 </span><span class="lineCov">        500 :         data.clear();</span></a>
-<a name="710"><span class="lineNum">     710 </span><span class="lineCov">        500 :         data.resize(src.size());</span></a>
-<a name="711"><span class="lineNum">     711 </span><span class="lineCov">       3534 :         for (size_t row = 0; row &lt; src.size(); ++row) {</span></a>
-<a name="712"><span class="lineNum">     712 </span><span class="lineCov">     235493 :             for (auto elem = src[row].begin(); elem != src[row].end(); ++elem) {</span></a>
-<a name="713"><span class="lineNum">     713 </span><span class="lineCov">     232459 :                 data[row].push_back(*elem);</span></a>
+<a name="708"><span class="lineNum">     708 </span><span class="lineCov">       8184 :     void deepCopyData(data_t const&amp; src) {</span></a>
+<a name="709"><span class="lineNum">     709 </span><span class="lineCov">       8184 :         data.clear();</span></a>
+<a name="710"><span class="lineNum">     710 </span><span class="lineCov">       8184 :         data.resize(src.size());</span></a>
+<a name="711"><span class="lineNum">     711 </span><span class="lineCov">     289109 :         for (size_t row = 0; row &lt; src.size(); ++row) {</span></a>
+<a name="712"><span class="lineNum">     712 </span><span class="lineCov">     824031 :             for (auto elem = src[row].begin(); elem != src[row].end(); ++elem) {</span></a>
+<a name="713"><span class="lineNum">     713 </span><span class="lineCov">     543106 :                 data[row].push_back(*elem);</span></a>
 <a name="714"><span class="lineNum">     714 </span>            :             }</a>
 <a name="715"><span class="lineNum">     715 </span>            :         }</a>
-<a name="716"><span class="lineNum">     716 </span><span class="lineCov">        500 :     }</span></a>
+<a name="716"><span class="lineNum">     716 </span><span class="lineCov">       8184 :     }</span></a>
 <a name="717"><span class="lineNum">     717 </span>            : };</a>
 <a name="718"><span class="lineNum">     718 </span>            : </a>
 <a name="719"><span class="lineNum">     719 </span>            : /**</a>

@@ -1,0 +1,435 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Coverage Test - core/include/math/discretegaussiangeneratorgeneric.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">core/include/math</a> - discretegaussiangeneratorgeneric.h<span style="font-size: 80%;"> (source / <a href="discretegaussiangeneratorgeneric.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Coverage Test</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //==================================================================================</a>
+<a name="2"><span class="lineNum">       2 </span>            : // BSD 2-Clause License</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors</a>
+<a name="5"><span class="lineNum">       5 </span>            : //</a>
+<a name="6"><span class="lineNum">       6 </span>            : // All rights reserved.</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : // Author TPOC: contact@openfhe.org</a>
+<a name="9"><span class="lineNum">       9 </span>            : //</a>
+<a name="10"><span class="lineNum">      10 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="11"><span class="lineNum">      11 </span>            : // modification, are permitted provided that the following conditions are met:</a>
+<a name="12"><span class="lineNum">      12 </span>            : //</a>
+<a name="13"><span class="lineNum">      13 </span>            : // 1. Redistributions of source code must retain the above copyright notice, this</a>
+<a name="14"><span class="lineNum">      14 </span>            : //    list of conditions and the following disclaimer.</a>
+<a name="15"><span class="lineNum">      15 </span>            : //</a>
+<a name="16"><span class="lineNum">      16 </span>            : // 2. Redistributions in binary form must reproduce the above copyright notice,</a>
+<a name="17"><span class="lineNum">      17 </span>            : //    this list of conditions and the following disclaimer in the documentation</a>
+<a name="18"><span class="lineNum">      18 </span>            : //    and/or other materials provided with the distribution.</a>
+<a name="19"><span class="lineNum">      19 </span>            : //</a>
+<a name="20"><span class="lineNum">      20 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</a>
+<a name="22"><span class="lineNum">      22 </span>            : // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</a>
+<a name="23"><span class="lineNum">      23 </span>            : // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</a>
+<a name="24"><span class="lineNum">      24 </span>            : // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</a>
+<a name="26"><span class="lineNum">      26 </span>            : // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</a>
+<a name="27"><span class="lineNum">      27 </span>            : // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="29"><span class="lineNum">      29 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="30"><span class="lineNum">      30 </span>            : //==================================================================================</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : /*</a>
+<a name="33"><span class="lineNum">      33 </span>            :   This code provides generation of gaussian distributions of discrete values. Discrete uniform generator</a>
+<a name="34"><span class="lineNum">      34 </span>            :   relies on the built-in C++ generator for 32-bit unsigned integers defined in &lt;random&gt;</a>
+<a name="35"><span class="lineNum">      35 </span>            :  */</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : /*This is the header file for the Generic Sampler used for various Discrete</a>
+<a name="38"><span class="lineNum">      38 </span>            :  * Gaussian Sampling applications. This class implements the generic sampler by</a>
+<a name="39"><span class="lineNum">      39 </span>            :  * UCSD discussed in the https://eprint.iacr.org/2017/259.pdf and it is heavily</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * based on Michael Walter's original code. Along the sides of the</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * implementation there are also two different &quot;base samplers&quot;, which are used</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * for the generic sampler or can be used on their own depending on the</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * requirements of needed application.</a>
+<a name="44"><span class="lineNum">      44 </span>            :  *</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * The first base sampler uses Peikert's inversion method, discussed in</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * section 4.1 of https://eprint.iacr.org/2010/088.pdf and summarized in</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * section 3.2.2 of</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * https://link.springer.com/content/pdf/10.1007%2Fs00200-014-0218-3.pdf.</a>
+<a name="49"><span class="lineNum">      49 </span>            :  * Peikert's method requires precomputation of CDF tables around a specific</a>
+<a name="50"><span class="lineNum">      50 </span>            :  * center and the table must be kept during the sampling process. Hence,</a>
+<a name="51"><span class="lineNum">      51 </span>            :  * Peikert's method works best if the DESIRED STANDARD DEVIATION IS SMALL and</a>
+<a name="52"><span class="lineNum">      52 </span>            :  * THE MEAN OF THE DISTRIBUTION IS FIXED, as each new center will require a new</a>
+<a name="53"><span class="lineNum">      53 </span>            :  * set of precomputations.</a>
+<a name="54"><span class="lineNum">      54 </span>            :  *</a>
+<a name="55"><span class="lineNum">      55 </span>            :  * Second base sampler is  the Knuth-Yao Sampler discussed in section 5 of</a>
+<a name="56"><span class="lineNum">      56 </span>            :  * https://link.springer.com/content/pdf/10.1007%2Fs00200-014-0218-3.pdf .</a>
+<a name="57"><span class="lineNum">      57 </span>            :  * Similar to Peikert's, Knuth-Yao precomputes the PDF's of the numbers based on</a>
+<a name="58"><span class="lineNum">      58 </span>            :  * standard deviation and the center, which is used during the sampling process.</a>
+<a name="59"><span class="lineNum">      59 </span>            :  * Therefore like Peikert's method,  Knuth-Yao works best method works best if</a>
+<a name="60"><span class="lineNum">      60 </span>            :  * the DESIRED STANDARD DEVIATION IS SMALL and THE MEAN OF THE DISTRIBUTION IS</a>
+<a name="61"><span class="lineNum">      61 </span>            :  * FIXED, as each new center will require a new set of precomputations, just</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * like Peikert's inversion method.</a>
+<a name="63"><span class="lineNum">      63 </span>            :  *</a>
+<a name="64"><span class="lineNum">      64 </span>            :  * The &quot;generic sampler&quot; on the other hand, works independent from standard</a>
+<a name="65"><span class="lineNum">      65 </span>            :  * deviation of the distribution. It combines an array of previously discussed</a>
+<a name="66"><span class="lineNum">      66 </span>            :  * base samplers centered around 0 to (2^b-1) / 2^b through convolution. The</a>
+<a name="67"><span class="lineNum">      67 </span>            :  * tables of base samplers however, must be precomputed beforehand; but they do</a>
+<a name="68"><span class="lineNum">      68 </span>            :  * not need to be recalculated at any time of the sampling process. It is USABLE</a>
+<a name="69"><span class="lineNum">      69 </span>            :  * FOR ANY STANDARD DEVIATION AND MEAN, just like Karney's method defined in</a>
+<a name="70"><span class="lineNum">      70 </span>            :  * discretegaussiangenerator.h, needs only one single precomputation and is not</a>
+<a name="71"><span class="lineNum">      71 </span>            :  * prone to timing attacks unlike Karney. Karney's method, however, is faster</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * than the generic sampler.</a>
+<a name="73"><span class="lineNum">      73 </span>            :  *</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * PARAMETER SELECTION FOR GENERIC SAMPLER</a>
+<a name="75"><span class="lineNum">      75 </span>            :  *</a>
+<a name="76"><span class="lineNum">      76 </span>            :  * The selection of parameters change the run time/memory usage/precision of the</a>
+<a name="77"><span class="lineNum">      77 </span>            :  * generic sampler. The triple trade off between these parameters are defined in</a>
+<a name="78"><span class="lineNum">      78 </span>            :  * the equation k = (PRECISION - FLIPS) / LOG_BASE. k denotes the level of</a>
+<a name="79"><span class="lineNum">      79 </span>            :  * precision of the generic sampler. Higher the k is, higher the precision of</a>
+<a name="80"><span class="lineNum">      80 </span>            :  * the generic sampler but higher the run time. PRECISION denotes the number of</a>
+<a name="81"><span class="lineNum">      81 </span>            :  * decimal bits in the center of the distribution. Since we are using 'double'</a>
+<a name="82"><span class="lineNum">      82 </span>            :  * for mean, it is fixed to 53 by definition. FLIPS denote the number of</a>
+<a name="83"><span class="lineNum">      83 </span>            :  * Bernoulli flips used to approximate the bits used in combination of base</a>
+<a name="84"><span class="lineNum">      84 </span>            :  * sampler. Higher the number of flips, larger the number of bits approximated</a>
+<a name="85"><span class="lineNum">      85 </span>            :  * rather than calculated which means smaller run times. Generic sampler</a>
+<a name="86"><span class="lineNum">      86 </span>            :  * requires a set of base samplers centered around 0/2^b to (2^b-1)/2^b;</a>
+<a name="87"><span class="lineNum">      87 </span>            :  * LOG_BASE denotes b in this equation. Higher the LOG_BASE is, more base</a>
+<a name="88"><span class="lineNum">      88 </span>            :  * samplers required which requires additional memory; but at the same time</a>
+<a name="89"><span class="lineNum">      89 </span>            :  * smaller run times.</a>
+<a name="90"><span class="lineNum">      90 </span>            :  *</a>
+<a name="91"><span class="lineNum">      91 </span>            :  * The base samplers used in generic sampler requires varying centers between</a>
+<a name="92"><span class="lineNum">      92 </span>            :  * 0/2^b and (2^b-1)/(2^b) with the same standard deviation. The standard</a>
+<a name="93"><span class="lineNum">      93 </span>            :  * deviation required for base samplers must satisfy SIGMA&gt;=4*SQRT(2)*N, where</a>
+<a name="94"><span class="lineNum">      94 </span>            :  * sigma is the standard deviation of the base sampler and N is the smoothing</a>
+<a name="95"><span class="lineNum">      95 </span>            :  * parameter</a>
+<a name="96"><span class="lineNum">      96 </span>            :  *</a>
+<a name="97"><span class="lineNum">      97 </span>            :  * */</a>
+<a name="98"><span class="lineNum">      98 </span>            : </a>
+<a name="99"><span class="lineNum">      99 </span>            : #ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_</a>
+<a name="100"><span class="lineNum">     100 </span>            : #define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_</a>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<a name="102"><span class="lineNum">     102 </span>            : #define MAX_LEVELS 4</a>
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<a name="104"><span class="lineNum">     104 </span>            : #include &quot;math/distributiongenerator.h&quot;</a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span>            : #include &lt;cmath&gt;</a>
+<a name="107"><span class="lineNum">     107 </span>            : #include &lt;memory&gt;</a>
+<a name="108"><span class="lineNum">     108 </span>            : #include &lt;random&gt;</a>
+<a name="109"><span class="lineNum">     109 </span>            : #include &lt;vector&gt;</a>
+<a name="110"><span class="lineNum">     110 </span>            : </a>
+<a name="111"><span class="lineNum">     111 </span>            : namespace lbcrypto {</a>
+<a name="112"><span class="lineNum">     112 </span>            : </a>
+<a name="113"><span class="lineNum">     113 </span>            : enum BaseSamplerType { KNUTH_YAO = 0, PEIKERT = 1 };</a>
+<a name="114"><span class="lineNum">     114 </span>            : </a>
+<a name="115"><span class="lineNum">     115 </span>            : class DiscreteGaussianGeneratorGeneric;</a>
+<a name="116"><span class="lineNum">     116 </span>            : class BaseSampler;</a>
+<a name="117"><span class="lineNum">     117 </span>            : class SamplerCombiner;</a>
+<a name="118"><span class="lineNum">     118 </span>            : class BitGenerator;</a>
+<a name="119"><span class="lineNum">     119 </span>            : </a>
+<a name="120"><span class="lineNum">     120 </span>            : /*</a>
+<a name="121"><span class="lineNum">     121 </span>            :  * @brief Class implementation to generate random bit. This is created for</a>
+<a name="122"><span class="lineNum">     122 </span>            :  * centralizing the random bit pools by the samplers.</a>
+<a name="123"><span class="lineNum">     123 </span>            :  */</a>
+<a name="124"><span class="lineNum">     124 </span>            : class BitGenerator {</a>
+<a name="125"><span class="lineNum">     125 </span>            : public:</a>
+<a name="126"><span class="lineNum">     126 </span>            :     BitGenerator()  = default;</a>
+<a name="127"><span class="lineNum">     127 </span>            :     ~BitGenerator() = default;</a>
+<a name="128"><span class="lineNum">     128 </span>            :     /*</a>
+<a name="129"><span class="lineNum">     129 </span>            :    * @brief Method for generating a random bit</a>
+<a name="130"><span class="lineNum">     130 </span>            :    * @return A random bit</a>
+<a name="131"><span class="lineNum">     131 </span>            :    */</a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineNoCov">          0 :     short Generate() {  // NOLINT</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :         if (m_counter == 0) {</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :             m_sequence = (PseudoRandomNumberGenerator::GetPRNG())();</span></a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineNoCov">          0 :             m_counter  = 32;</span></a>
+<a name="136"><span class="lineNum">     136 </span>            :         }</a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineNoCov">          0 :         return static_cast&lt;short&gt;((m_sequence &gt;&gt; (--m_counter)) &amp; 0x1);  // NOLINT</span></a>
+<a name="138"><span class="lineNum">     138 </span>            :     }</a>
+<a name="139"><span class="lineNum">     139 </span>            : </a>
+<a name="140"><span class="lineNum">     140 </span>            : private:</a>
+<a name="141"><span class="lineNum">     141 </span>            :     uint32_t m_sequence{0};</a>
+<a name="142"><span class="lineNum">     142 </span>            :     uint32_t m_counter{0};</a>
+<a name="143"><span class="lineNum">     143 </span>            : };</a>
+<a name="144"><span class="lineNum">     144 </span>            : /*</a>
+<a name="145"><span class="lineNum">     145 </span>            :  * @brief Class definiton for base samplers with precomputation that is used for</a>
+<a name="146"><span class="lineNum">     146 </span>            :  * UCSD generic sampler</a>
+<a name="147"><span class="lineNum">     147 </span>            :  */</a>
+<a name="148"><span class="lineNum">     148 </span>            : class BaseSampler {</a>
+<a name="149"><span class="lineNum">     149 </span>            : public:</a>
+<a name="150"><span class="lineNum">     150 </span>            :     /*</a>
+<a name="151"><span class="lineNum">     151 </span>            :    * @brief Constructor</a>
+<a name="152"><span class="lineNum">     152 </span>            :    * @param mean Mean of the distribution</a>
+<a name="153"><span class="lineNum">     153 </span>            :    * @param std Standard deviation of the distribution</a>
+<a name="154"><span class="lineNum">     154 </span>            :    * @param generator Pointer to the bit generator that the sampler will use the</a>
+<a name="155"><span class="lineNum">     155 </span>            :    * random bits from</a>
+<a name="156"><span class="lineNum">     156 </span>            :    * @param bType Type of the base sampler</a>
+<a name="157"><span class="lineNum">     157 </span>            :    */</a>
+<a name="158"><span class="lineNum">     158 </span>            :     BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType);</a>
+<a name="159"><span class="lineNum">     159 </span>            :     BaseSampler() = default;</a>
+<a name="160"><span class="lineNum">     160 </span>            :     /*</a>
+<a name="161"><span class="lineNum">     161 </span>            :    * @brief Method for generating integer from the base sampler</a>
+<a name="162"><span class="lineNum">     162 </span>            :    * @return A random integer from the distribution</a>
+<a name="163"><span class="lineNum">     163 </span>            :    */</a>
+<a name="164"><span class="lineNum">     164 </span>            :     virtual int64_t GenerateInteger();</a>
+<a name="165"><span class="lineNum">     165 </span>            :     /*</a>
+<a name="166"><span class="lineNum">     166 </span>            :    * @brief Destroyer for the base sampler</a>
+<a name="167"><span class="lineNum">     167 </span>            :    */</a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :     virtual ~BaseSampler() = default;</span></a>
+<a name="169"><span class="lineNum">     169 </span>            :     /*</a>
+<a name="170"><span class="lineNum">     170 </span>            :    * @brief Method for generating a random bit from the bit generator within</a>
+<a name="171"><span class="lineNum">     171 </span>            :    * @return A random bit</a>
+<a name="172"><span class="lineNum">     172 </span>            :    */</a>
+<a name="173"><span class="lineNum">     173 </span>            :     short RandomBit() {  // NOLINT</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :         return bg-&gt;Generate();</span></a>
+<a name="175"><span class="lineNum">     175 </span>            :     }</a>
+<a name="176"><span class="lineNum">     176 </span>            : </a>
+<a name="177"><span class="lineNum">     177 </span>            : private:</a>
+<a name="178"><span class="lineNum">     178 </span>            :     // all parameters are set as int because it is assumed that they are used for</a>
+<a name="179"><span class="lineNum">     179 </span>            :     // generating &quot;small&quot; polynomials only</a>
+<a name="180"><span class="lineNum">     180 </span>            :     double b_a;</a>
+<a name="181"><span class="lineNum">     181 </span>            : </a>
+<a name="182"><span class="lineNum">     182 </span>            :     /**</a>
+<a name="183"><span class="lineNum">     183 </span>            :    *Mean of the distribution used</a>
+<a name="184"><span class="lineNum">     184 </span>            :    */</a>
+<a name="185"><span class="lineNum">     185 </span>            :     int64_t b_mean;</a>
+<a name="186"><span class="lineNum">     186 </span>            : </a>
+<a name="187"><span class="lineNum">     187 </span>            :     /**</a>
+<a name="188"><span class="lineNum">     188 </span>            :    * The standard deviation of the distribution.</a>
+<a name="189"><span class="lineNum">     189 </span>            :    */</a>
+<a name="190"><span class="lineNum">     190 </span>            :     float b_std;</a>
+<a name="191"><span class="lineNum">     191 </span>            : </a>
+<a name="192"><span class="lineNum">     192 </span>            :     /**</a>
+<a name="193"><span class="lineNum">     193 </span>            :    * Generator used for creating random bits through sampling</a>
+<a name="194"><span class="lineNum">     194 </span>            :    */</a>
+<a name="195"><span class="lineNum">     195 </span>            :     BitGenerator* bg;</a>
+<a name="196"><span class="lineNum">     196 </span>            :     /**</a>
+<a name="197"><span class="lineNum">     197 </span>            :    * Type of the base sampler (Knuth Yao or Peikert's Inversion)</a>
+<a name="198"><span class="lineNum">     198 </span>            :    */</a>
+<a name="199"><span class="lineNum">     199 </span>            :     BaseSamplerType b_type;</a>
+<a name="200"><span class="lineNum">     200 </span>            : </a>
+<a name="201"><span class="lineNum">     201 </span>            :     int fin;</a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span>            :     std::vector&lt;std::vector&lt;short&gt;&gt; DDGTree;  // NOLINT</a>
+<a name="204"><span class="lineNum">     204 </span>            : </a>
+<a name="205"><span class="lineNum">     205 </span>            :     // short *DDGColumn = nullptr;</a>
+<a name="206"><span class="lineNum">     206 </span>            : </a>
+<a name="207"><span class="lineNum">     207 </span>            :     /**</a>
+<a name="208"><span class="lineNum">     208 </span>            :    *Array that stores the Hamming Weights of the probability matrix used in</a>
+<a name="209"><span class="lineNum">     209 </span>            :    *Knuth-Yao sampling</a>
+<a name="210"><span class="lineNum">     210 </span>            :    */</a>
+<a name="211"><span class="lineNum">     211 </span>            :     std::vector&lt;uint32_t&gt; hammingWeights;</a>
+<a name="212"><span class="lineNum">     212 </span>            :     /**</a>
+<a name="213"><span class="lineNum">     213 </span>            :    *Size of probability matrix used in Knuth-Yao</a>
+<a name="214"><span class="lineNum">     214 </span>            :    */</a>
+<a name="215"><span class="lineNum">     215 </span>            :     int32_t b_matrixSize;</a>
+<a name="216"><span class="lineNum">     216 </span>            : </a>
+<a name="217"><span class="lineNum">     217 </span>            :     /**</a>
+<a name="218"><span class="lineNum">     218 </span>            :    *Index of first bit with non zero Hamming weight in the probability table</a>
+<a name="219"><span class="lineNum">     219 </span>            :    */</a>
+<a name="220"><span class="lineNum">     220 </span>            :     int32_t firstNonZero;</a>
+<a name="221"><span class="lineNum">     221 </span>            : </a>
+<a name="222"><span class="lineNum">     222 </span>            :     int32_t endIndex;</a>
+<a name="223"><span class="lineNum">     223 </span>            : </a>
+<a name="224"><span class="lineNum">     224 </span>            :     std::vector&lt;double&gt; m_vals;</a>
+<a name="225"><span class="lineNum">     225 </span>            :     /**</a>
+<a name="226"><span class="lineNum">     226 </span>            :    * @brief Sub-procedure called by Peikert's inversion sampling</a>
+<a name="227"><span class="lineNum">     227 </span>            :    * @param S Vector containing the CDF values</a>
+<a name="228"><span class="lineNum">     228 </span>            :    * @param search Searched probability value</a>
+<a name="229"><span class="lineNum">     229 </span>            :    * @return Index that is the smallest bigger value than search</a>
+<a name="230"><span class="lineNum">     230 </span>            :    */</a>
+<a name="231"><span class="lineNum">     231 </span>            :     uint32_t FindInVector(const std::vector&lt;double&gt;&amp; S, double search) const;</a>
+<a name="232"><span class="lineNum">     232 </span>            :     /**</a>
+<a name="233"><span class="lineNum">     233 </span>            :    * @brief Generates DDG tree used through the sampling in Knuth-Yao</a>
+<a name="234"><span class="lineNum">     234 </span>            :    * @param probMatrix The probability matrix used for filling the DDG tree</a>
+<a name="235"><span class="lineNum">     235 </span>            :    */</a>
+<a name="236"><span class="lineNum">     236 </span>            :     void GenerateDDGTree(const std::vector&lt;uint64_t&gt;&amp; probMatrix);</a>
+<a name="237"><span class="lineNum">     237 </span>            :     /**</a>
+<a name="238"><span class="lineNum">     238 </span>            :    * @brief Initializes the generator used for Peikert's Inversion method.</a>
+<a name="239"><span class="lineNum">     239 </span>            :    * @param mean Mean of the distribution that the sampler will be using</a>
+<a name="240"><span class="lineNum">     240 </span>            :    *</a>
+<a name="241"><span class="lineNum">     241 </span>            :    */</a>
+<a name="242"><span class="lineNum">     242 </span>            :     void Initialize(double mean);</a>
+<a name="243"><span class="lineNum">     243 </span>            : </a>
+<a name="244"><span class="lineNum">     244 </span>            :     /**</a>
+<a name="245"><span class="lineNum">     245 </span>            :    * @brief Generates the probability matrix of given distribution, which is</a>
+<a name="246"><span class="lineNum">     246 </span>            :    * used in Knuth-Yao method</a>
+<a name="247"><span class="lineNum">     247 </span>            :    * @param sttdev standard deviation of Discrete Gaussian Distribution</a>
+<a name="248"><span class="lineNum">     248 </span>            :    * @param mean Center of the distribution</a>
+<a name="249"><span class="lineNum">     249 </span>            :    * @param tableCount Number of probability tables to be generated</a>
+<a name="250"><span class="lineNum">     250 </span>            :    */</a>
+<a name="251"><span class="lineNum">     251 </span>            :     void GenerateProbMatrix(double stddev, double mean);</a>
+<a name="252"><span class="lineNum">     252 </span>            :     /**</a>
+<a name="253"><span class="lineNum">     253 </span>            :    * @ brief Returns a generated integer. Uses Naive Knuth-Yao method</a>
+<a name="254"><span class="lineNum">     254 </span>            :    * @ return A random value within the Discrete Gaussian Distribution</a>
+<a name="255"><span class="lineNum">     255 </span>            :    */</a>
+<a name="256"><span class="lineNum">     256 </span>            :     int64_t GenerateIntegerKnuthYao();</a>
+<a name="257"><span class="lineNum">     257 </span>            :     /**</a>
+<a name="258"><span class="lineNum">     258 </span>            :    * @brief Returns a generated integer. Uses Peikert's inversion method.</a>
+<a name="259"><span class="lineNum">     259 </span>            :    */</a>
+<a name="260"><span class="lineNum">     260 </span>            :     int64_t GenerateIntegerPeikert() const;</a>
+<a name="261"><span class="lineNum">     261 </span>            : };</a>
+<a name="262"><span class="lineNum">     262 </span>            : /*</a>
+<a name="263"><span class="lineNum">     263 </span>            :  * @brief Class for combining samples from two base samplers, which is used for</a>
+<a name="264"><span class="lineNum">     264 </span>            :  * UCSD generic sampling</a>
+<a name="265"><span class="lineNum">     265 </span>            :  */</a>
+<a name="266"><span class="lineNum">     266 </span>            : class SamplerCombiner final : public BaseSampler {</a>
+<a name="267"><span class="lineNum">     267 </span>            : public:</a>
+<a name="268"><span class="lineNum">     268 </span>            :     /**</a>
+<a name="269"><span class="lineNum">     269 </span>            :    * @brief Constructor</a>
+<a name="270"><span class="lineNum">     270 </span>            :    * @param s1 Pointer to the first sampler to be combined</a>
+<a name="271"><span class="lineNum">     271 </span>            :    * @param s2 Pointer to the second sampler to be combined</a>
+<a name="272"><span class="lineNum">     272 </span>            :    * @param z1 Coefficient for the first sampler</a>
+<a name="273"><span class="lineNum">     273 </span>            :    * @param z2 Coefficient for the second sampler</a>
+<a name="274"><span class="lineNum">     274 </span>            :    */</a>
+<a name="275"><span class="lineNum">     275 </span>            :     SamplerCombiner(BaseSampler* s1, BaseSampler* s2, int64_t z1, int64_t z2)</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :         : sampler1(s1), sampler2(s1), x1(z1), x2(z2) {}</span></a>
+<a name="277"><span class="lineNum">     277 </span>            :     /**</a>
+<a name="278"><span class="lineNum">     278 </span>            :    * @brief Return the combined value for two samplers with given coefficients</a>
+<a name="279"><span class="lineNum">     279 </span>            :    * @return Combined value of the samplers with given coefficents</a>
+<a name="280"><span class="lineNum">     280 </span>            :    */</a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineNoCov">          0 :     int64_t GenerateInteger() override {</span></a>
+<a name="282"><span class="lineNum">     282 </span><span class="lineNoCov">          0 :         return x1 * sampler1-&gt;GenerateInteger() + x2 * sampler2-&gt;GenerateInteger();</span></a>
+<a name="283"><span class="lineNum">     283 </span>            :     }</a>
+<a name="284"><span class="lineNum">     284 </span>            :     /**</a>
+<a name="285"><span class="lineNum">     285 </span>            :    * @brief Destructor</a>
+<a name="286"><span class="lineNum">     286 </span>            :    */</a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineNoCov">          0 :     ~SamplerCombiner() = default;</span></a>
+<a name="288"><span class="lineNum">     288 </span>            : </a>
+<a name="289"><span class="lineNum">     289 </span>            : private:</a>
+<a name="290"><span class="lineNum">     290 </span>            :     // Samplers to be combined</a>
+<a name="291"><span class="lineNum">     291 </span>            :     BaseSampler *sampler1, *sampler2;</a>
+<a name="292"><span class="lineNum">     292 </span>            :     // Coefficients that are used for combining</a>
+<a name="293"><span class="lineNum">     293 </span>            :     int64_t x1, x2;</a>
+<a name="294"><span class="lineNum">     294 </span>            : };</a>
+<a name="295"><span class="lineNum">     295 </span>            : </a>
+<a name="296"><span class="lineNum">     296 </span>            : /**</a>
+<a name="297"><span class="lineNum">     297 </span>            :  * @brief The class for Generic Discrete Gaussion Distribution generator.</a>
+<a name="298"><span class="lineNum">     298 </span>            :  */</a>
+<a name="299"><span class="lineNum">     299 </span>            : class DiscreteGaussianGeneratorGeneric {</a>
+<a name="300"><span class="lineNum">     300 </span>            : public:</a>
+<a name="301"><span class="lineNum">     301 </span>            :     /**</a>
+<a name="302"><span class="lineNum">     302 </span>            :    * @brief Basic constructor which does the precomputations.</a>
+<a name="303"><span class="lineNum">     303 </span>            :    * @param samplers Array containing the base samplers</a>
+<a name="304"><span class="lineNum">     304 </span>            :    * @param std Standard deviation of the base samplers</a>
+<a name="305"><span class="lineNum">     305 </span>            :    * @param base Log of number of centers that are used for calculating base</a>
+<a name="306"><span class="lineNum">     306 </span>            :    * samplers (Recall that base samplers are centered from 0 to (2^b-1)/2^b)</a>
+<a name="307"><span class="lineNum">     307 </span>            :    * @param N smoothing parameter</a>
+<a name="308"><span class="lineNum">     308 </span>            :    */</a>
+<a name="309"><span class="lineNum">     309 </span>            :     DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std, const int b, double N);</a>
+<a name="310"><span class="lineNum">     310 </span>            : </a>
+<a name="311"><span class="lineNum">     311 </span>            :     /**</a>
+<a name="312"><span class="lineNum">     312 </span>            :    * @ brief Returns a generated integer. Uses generic algorithm in UCSD paper,</a>
+<a name="313"><span class="lineNum">     313 </span>            :    * based on Sample Z</a>
+<a name="314"><span class="lineNum">     314 </span>            :    * @ param mean Mean of the distribution</a>
+<a name="315"><span class="lineNum">     315 </span>            :    * @ param variance Variance of the desired distribution</a>
+<a name="316"><span class="lineNum">     316 </span>            :    * @ return A random value within the Discrete Gaussian Distribution</a>
+<a name="317"><span class="lineNum">     317 </span>            :    */</a>
+<a name="318"><span class="lineNum">     318 </span>            :     int64_t GenerateInteger(double mean, double std);</a>
+<a name="319"><span class="lineNum">     319 </span>            :     int64_t GenerateInteger() {</a>
+<a name="320"><span class="lineNum">     320 </span>            :         return base_samplers[0]-&gt;GenerateInteger();</a>
+<a name="321"><span class="lineNum">     321 </span>            :     }</a>
+<a name="322"><span class="lineNum">     322 </span>            :     /**</a>
+<a name="323"><span class="lineNum">     323 </span>            :    * @brief Destructor</a>
+<a name="324"><span class="lineNum">     324 </span>            :    */</a>
+<a name="325"><span class="lineNum">     325 </span>            :     ~DiscreteGaussianGeneratorGeneric();</a>
+<a name="326"><span class="lineNum">     326 </span>            : </a>
+<a name="327"><span class="lineNum">     327 </span>            : private:</a>
+<a name="328"><span class="lineNum">     328 </span>            :     /**</a>
+<a name="329"><span class="lineNum">     329 </span>            :    * @brief Subroutine used by Sample C</a>
+<a name="330"><span class="lineNum">     330 </span>            :    * @param center Center of the distribution</a>
+<a name="331"><span class="lineNum">     331 </span>            :    */</a>
+<a name="332"><span class="lineNum">     332 </span>            :     int64_t flipAndRound(double center);</a>
+<a name="333"><span class="lineNum">     333 </span>            :     /**</a>
+<a name="334"><span class="lineNum">     334 </span>            :    * @brief Sample C defined in the paper</a>
+<a name="335"><span class="lineNum">     335 </span>            :    * @param center Center of the distribution</a>
+<a name="336"><span class="lineNum">     336 </span>            :    */</a>
+<a name="337"><span class="lineNum">     337 </span>            :     int64_t SampleC(int64_t center);</a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            :     BaseSampler* wide_sampler;</a>
+<a name="340"><span class="lineNum">     340 </span>            :     BaseSampler** base_samplers;</a>
+<a name="341"><span class="lineNum">     341 </span>            :     BaseSampler* combiners[MAX_LEVELS];</a>
+<a name="342"><span class="lineNum">     342 </span>            :     long double wide_variance, sampler_variance;</a>
+<a name="343"><span class="lineNum">     343 </span>            :     double x, c, ci;</a>
+<a name="344"><span class="lineNum">     344 </span>            :     int k, log_base;</a>
+<a name="345"><span class="lineNum">     345 </span>            :     uint64_t mask;</a>
+<a name="346"><span class="lineNum">     346 </span>            :     /**</a>
+<a name="347"><span class="lineNum">     347 </span>            :    * @ brief Method to return the nth bit of a number</a>
+<a name="348"><span class="lineNum">     348 </span>            :    * @ param number The number that the bit of desired</a>
+<a name="349"><span class="lineNum">     349 </span>            :    * @ param n Desired bit number</a>
+<a name="350"><span class="lineNum">     350 </span>            :    * @ return The nth bit of the number starting from 0 being the LSB</a>
+<a name="351"><span class="lineNum">     351 </span>            :    */</a>
+<a name="352"><span class="lineNum">     352 </span>            :     short extractBit(int64_t number, int n) {  // NOLINT</a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineNoCov">          0 :         return (number &gt;&gt; n) &amp; 0x1;</span></a>
+<a name="354"><span class="lineNum">     354 </span>            :     }</a>
+<a name="355"><span class="lineNum">     355 </span>            : };</a>
+<a name="356"><span class="lineNum">     356 </span>            : </a>
+<a name="357"><span class="lineNum">     357 </span>            : }  // namespace lbcrypto</a>
+<a name="358"><span class="lineNum">     358 </span>            : </a>
+<a name="359"><span class="lineNum">     359 </span>            : #endif  // LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

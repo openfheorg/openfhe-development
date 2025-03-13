@@ -32,17 +32,17 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntry">19</td>
-            <td class="headerCovTableEntry">26</td>
-            <td class="headerCovTableEntryLo">73.1 %</td>
+            <td class="headerCovTableEntry">35</td>
+            <td class="headerCovTableEntryLo">54.3 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-03-12 19:58:31</td>
+            <td class="headerValue">2025-03-12 20:52:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">9</td>
-            <td class="headerCovTableEntry">17</td>
-            <td class="headerCovTableEntryLo">52.9 %</td>
+            <td class="headerCovTableEntry">34</td>
+            <td class="headerCovTableEntryLo">26.5 %</td>
           </tr>
           <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -143,12 +143,12 @@
 <a name="81"><span class="lineNum">      81 </span><span class="lineCov">         44 :     explicit ILParamsImpl(uint32_t order, const IntType&amp; modulus)</span></a>
 <a name="82"><span class="lineNum">      82 </span><span class="lineCov">         53 :         : ElemParams&lt;IntType&gt;(order, modulus, RootOfUnity&lt;IntType&gt;(order, modulus)) {}</span></a>
 <a name="83"><span class="lineNum">      83 </span>            : </a>
-<a name="84"><span class="lineNum">      84 </span><span class="lineCov">      12268 :     ILParamsImpl(uint32_t order, const IntType&amp; modulus, const IntType&amp; rootOfUnity)</span></a>
-<a name="85"><span class="lineNum">      85 </span><span class="lineCov">      12341 :         : ElemParams&lt;IntType&gt;(order, modulus, rootOfUnity) {}</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">      15565 :     ILParamsImpl(uint32_t order, const IntType&amp; modulus, const IntType&amp; rootOfUnity)</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">      18564 :         : ElemParams&lt;IntType&gt;(order, modulus, rootOfUnity) {}</span></a>
 <a name="86"><span class="lineNum">      86 </span>            : </a>
-<a name="87"><span class="lineNum">      87 </span><span class="lineCov">          2 :     ILParamsImpl(uint32_t order, const IntType&amp; modulus, const IntType&amp; rootOfUnity, const IntType&amp; bigModulus,</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">         11 :     ILParamsImpl(uint32_t order, const IntType&amp; modulus, const IntType&amp; rootOfUnity, const IntType&amp; bigModulus,</span></a>
 <a name="88"><span class="lineNum">      88 </span>            :                  const IntType&amp; bigRootOfUnity)</a>
-<a name="89"><span class="lineNum">      89 </span><span class="lineCov">          8 :         : ElemParams&lt;IntType&gt;(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineCov">    1185558 :         : ElemParams&lt;IntType&gt;(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}</span></a>
 <a name="90"><span class="lineNum">      90 </span>            : </a>
 <a name="91"><span class="lineNum">      91 </span>            :     /**</a>
 <a name="92"><span class="lineNum">      92 </span>            :    * @brief Copy constructor.</a>
@@ -163,9 +163,9 @@
 <a name="101"><span class="lineNum">     101 </span>            :    * @param &amp;rhs the params to be copied.</a>
 <a name="102"><span class="lineNum">     102 </span>            :    * @return this object</a>
 <a name="103"><span class="lineNum">     103 </span>            :    */</a>
-<a name="104"><span class="lineNum">     104 </span>            :     ILParamsImpl&amp; operator=(const ILParamsImpl&amp; rhs) {</a>
-<a name="105"><span class="lineNum">     105 </span>            :         ElemParams&lt;IntType&gt;::operator=(rhs);</a>
-<a name="106"><span class="lineNum">     106 </span>            :         return *this;</a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineNoCov">          0 :     ILParamsImpl&amp; operator=(const ILParamsImpl&amp; rhs) {</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineNoCov">          0 :         ElemParams&lt;IntType&gt;::operator=(rhs);</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="107"><span class="lineNum">     107 </span>            :     }</a>
 <a name="108"><span class="lineNum">     108 </span>            : </a>
 <a name="109"><span class="lineNum">     109 </span>            :     /**</a>
@@ -173,11 +173,11 @@
 <a name="111"><span class="lineNum">     111 </span>            :    *</a>
 <a name="112"><span class="lineNum">     112 </span>            :    * @param &amp;rhs the input set of parameters which is copied.</a>
 <a name="113"><span class="lineNum">     113 </span>            :    */</a>
-<a name="114"><span class="lineNum">     114 </span>            :     ILParamsImpl(ILParamsImpl&amp;&amp; rhs) noexcept : ElemParams&lt;IntType&gt;(std::move(rhs)) {}</a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 :     ILParamsImpl(ILParamsImpl&amp;&amp; rhs) noexcept : ElemParams&lt;IntType&gt;(std::move(rhs)) {}</span></a>
 <a name="115"><span class="lineNum">     115 </span>            : </a>
-<a name="116"><span class="lineNum">     116 </span>            :     ILParamsImpl&amp; operator=(ILParamsImpl&amp;&amp; rhs) noexcept {</a>
-<a name="117"><span class="lineNum">     117 </span>            :         ElemParams&lt;IntType&gt;::operator=(std::move(rhs));</a>
-<a name="118"><span class="lineNum">     118 </span>            :         return *this;</a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineNoCov">          0 :     ILParamsImpl&amp; operator=(ILParamsImpl&amp;&amp; rhs) noexcept {</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 :         ElemParams&lt;IntType&gt;::operator=(std::move(rhs));</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 :         return *this;</span></a>
 <a name="119"><span class="lineNum">     119 </span>            :     }</a>
 <a name="120"><span class="lineNum">     120 </span>            : </a>
 <a name="121"><span class="lineNum">     121 </span>            :     /**</a>
@@ -210,8 +210,8 @@
 <a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :         return &quot;ILParms&quot;;</span></a>
 <a name="149"><span class="lineNum">     149 </span>            :     }</a>
 <a name="150"><span class="lineNum">     150 </span>            : </a>
-<a name="151"><span class="lineNum">     151 </span>            :     static uint32_t SerializedVersion() {</a>
-<a name="152"><span class="lineNum">     152 </span>            :         return 1;</a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineNoCov">          0 :     static uint32_t SerializedVersion() {</span></a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :         return 1;</span></a>
 <a name="153"><span class="lineNum">     153 </span>            :     }</a>
 <a name="154"><span class="lineNum">     154 </span>            : </a>
 <a name="155"><span class="lineNum">     155 </span>            : private:</a>
