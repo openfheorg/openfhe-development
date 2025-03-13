@@ -1336,44 +1336,55 @@ public:
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                                   const std::string& keyId);
 
-    virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootAdjustScale(ciphertext);
-        }
-        OPENFHE_THROW("IntMPBootAdjustScale operation has not been enabled");
+    Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootAdjustScale(ciphertext);
     }
 
-    virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
-                                                          const PublicKey<Element> publicKey) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
-        }
-        OPENFHE_THROW("IntMPBootRandomElementGen operation has not been enabled");
+    Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
+                                       ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootDecrypt(privateKey, ciphertext);
     }
 
-    virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-                                                              ConstCiphertext<Element> ciphertext,
-                                                              ConstCiphertext<Element> a) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootDecrypt(privateKey, ciphertext, a);
-        }
-        OPENFHE_THROW("IntMPBootDecrypt operation has not been enabled");
+    Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey, ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootEncrypt(publicKey, ciphertext);
+    }
+
+    Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootAdd(ciphertext1, ciphertext2);
+    }
+
+    Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootAdjustScale(ciphertext);
+    }
+
+    Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
+                                                  const PublicKey<Element> publicKey) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
+    }
+
+    std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+                                                      ConstCiphertext<Element> ciphertext,
+                                                      ConstCiphertext<Element> a) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootDecrypt(privateKey, ciphertext, a);
     }
 
     std::vector<Ciphertext<Element>> IntMPBootAdd(std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootAdd(sharesPairVec);
-        }
-        OPENFHE_THROW("IntMPBootAdd operation has not been enabled");
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootAdd(sharesPairVec);
     }
 
     Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                          const std::vector<Ciphertext<Element>>& sharesPair, ConstCiphertext<Element> a,
                                          ConstCiphertext<Element> ciphertext) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
-        }
-        OPENFHE_THROW("IntMPBootEncrypt operation has not been enabled");
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
     }
 
     // FHE METHODS

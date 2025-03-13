@@ -42,6 +42,9 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "cryptocontext.h"
 
 #include <memory>
+#include <vector>
+#include <utility>
+#include <string>
 
 namespace lbcrypto {
 
@@ -444,6 +447,51 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
     outCtxt->SetSlots(ciphertext->GetSlots());
 
     return outCtxt;
+}
+
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
+    if (ciphertext->GetElements().size() == 0) {
+        std::string msg = "IntBootEncrypt: no polynomials in the input ciphertext.";
+        OPENFHE_THROW(msg);
+    }
+
+    const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+
+    auto cc = ciphertext->GetCryptoContext();
+
+    if ((cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO) ||
+        (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+        if (ciphertext->GetElements()[0].GetNumOfElements() < 3) {
+            std::string msg = "IntBootAdjustScale: not enough towers in the input polynomial.";
+            OPENFHE_THROW(msg);
+        }
+
+        auto ciphertextAdjusted = cc->Compress(ciphertext, 3);
+
+        double targetSF    = cryptoParams->GetScalingFactorReal(0);
+        double sourceSF    = ciphertextAdjusted->GetScalingFactor();
+        uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
+        double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
+        double adjustmentFactor = (targetSF / sourceSF) * (modToDrop / sourceSF);
+
+        // in the case of FLEXIBLEAUTO, we need to bring the ciphertext to the right scale using a
+        // a scaling multiplication. Note the at currently FLEXIBLEAUTO is only supported for NATIVEINT = 64.
+
+        ciphertextAdjusted = cc->EvalMult(ciphertextAdjusted, adjustmentFactor);
+
+        ciphertextAdjusted = cc->GetScheme()->ModReduceInternal(ciphertextAdjusted, BASE_NUM_LEVELS_TO_DROP);
+        ciphertextAdjusted->SetScalingFactor(targetSF);
+        return ciphertextAdjusted;
+    }
+    else {
+        if (ciphertext->GetElements()[0].GetNumOfElements() < 2) {
+            std::string msg = "IntBootAdjustScale: not enough towers in the input polynomial.";
+            OPENFHE_THROW(msg);
+        }
+
+        return cc->Compress(ciphertext, 2);
+    }
 }
 
 }  // namespace lbcrypto

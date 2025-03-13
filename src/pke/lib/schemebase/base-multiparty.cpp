@@ -40,6 +40,12 @@
 
 #include "schemebase/base-scheme.h"
 
+#include <utility>
+#include <memory>
+#include <map>
+#include <vector>
+#include <string>
+
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme
@@ -412,6 +418,29 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     }
 
     return EvalKeyMapSum;
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntBootDecrypt(const PrivateKey<Element> privateKey,
+                                                            ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntBootAdd(ConstCiphertext<Element> ciphertext1,
+                                                        ConstCiphertext<Element> ciphertext2) const {
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
+}
+
+template <class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntBootEncrypt(const PublicKey<Element> publicKey,
+                                                            ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 template <class Element>
