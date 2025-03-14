@@ -469,7 +469,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTP
 
         auto ciphertextAdjusted = cc->Compress(ciphertext, 3);
 
-        double targetSF    = cryptoParams->GetScalingFactorReal(0);
+        uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
+        double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
         double sourceSF    = ciphertextAdjusted->GetScalingFactor();
         uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
         double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();

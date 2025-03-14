@@ -46,11 +46,13 @@ void Chebyshev(enum ScalingTechnique rescaleTech);
 
 int main(int argc, char* argv[]) {
     ThresholdFHE(FIXEDMANUAL);
-    ThresholdFHE(FLEXIBLEAUTO);
     ThresholdFHE(FIXEDAUTO);
+    ThresholdFHE(FLEXIBLEAUTO);
+    ThresholdFHE(FLEXIBLEAUTOEXT);
     Chebyshev(FIXEDMANUAL);
     Chebyshev(FIXEDAUTO);
     Chebyshev(FLEXIBLEAUTO);
+    Chebyshev(FLEXIBLEAUTOEXT);
     return 0;
 }
 
@@ -61,6 +63,7 @@ void ThresholdFHE(enum ScalingTechnique rescaleTech) {
     parameters.SetMultiplicativeDepth(7);
     parameters.SetScalingModSize(50);
     parameters.SetBatchSize(16);
+    parameters.SetScalingTechnique(rescaleTech);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // enable features that you wish to use
@@ -159,6 +162,7 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     parameters.SetMultiplicativeDepth(8);
     parameters.SetScalingModSize(50);
     parameters.SetBatchSize(16);
+    parameters.SetScalingTechnique(rescaleTech);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // enable features that you wish to use
