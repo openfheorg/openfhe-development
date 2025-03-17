@@ -324,7 +324,9 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
                     crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
                     logApprox_cp -= logStep;
                 }
-                crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtApprox, moduli);
+                for (usint i = 1; i < ciphertext->GetNoiseScaleDeg(); i++) {
+                    crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtApprox, moduli);
+                }
             }
         }
     }
