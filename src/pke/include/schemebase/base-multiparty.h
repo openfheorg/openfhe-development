@@ -282,6 +282,62 @@ public:
         const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
+	 * Prepare a ciphertext for interactive bootstraping.
+	 *
+	 * For the FIXEDMANUAL and FIXEDAUTO modes of CKKS, drops the
+	 * the number of towers 2 and makes sure the scale is Delta
+	 * (not a power of Delta). The input should have at least 2
+	 * towers.
+	 *
+	 * For the FLEXIBLEAUTO mode of CKKS, the input ciphertext
+	 * should have at least 3 towers. One tower will be used to adjust
+	 * the scale to level 0.
+	 *
+	 * @param ciphertext: Input Ciphertext
+	 * @return: Resulting Ciphertext
+	 */
+    virtual Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
+
+    /**
+       * Does masked decryption as part of interactive bootstrapping.
+       *
+       * For the case of Server, it expects a ciphertext with both polynomials a and b.
+       * For the case os Client, it expects only the polnomial a (for the linear term).
+       * Under the hood, the decryption also includes the rounding operation.
+       *
+       * @param privateKey: secret key share
+       * @param ciphertext: input ciphertext
+       * @return: Resulting masked decryption
+       */
+    virtual Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
+                                               ConstCiphertext<Element> ciphertext) const;
+
+    /**
+       * Does public key encryption of Client's masked decryption
+       * as part of interactive bootstrapping, which increases
+       * the ciphertext modulus and enables future computations.
+       * This operation is done by the Client.
+       *
+       * @param publicKey: joint public key based on Threshold FHE
+       * @param ciphertext: input ciphertext
+       * @return: Resulting encryption
+       */
+    virtual Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
+                                               ConstCiphertext<Element> ciphertext) const;
+
+    /**
+       * Adds up both masked decryptions (one encrypted with public key
+       * encryption), which is the last step of the interactive bootstrapping
+       * procedure.
+       *
+       * @param ciphertext1: encrypted masked decryption
+       * @param ciphertext2: unencrypted masked decryption
+       * @return: Refreshed ciphertext
+       */
+    virtual Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1,
+                                           ConstCiphertext<Element> ciphertext2) const;
+
+    /**
     * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping
     *
     * @param ciphertext: Input Ciphertext

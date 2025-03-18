@@ -66,6 +66,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <set>
+#include <iostream>
 
 namespace lbcrypto {
 
@@ -3187,6 +3188,87 @@ public:
             OPENFHE_THROW("Input second evaluation key is nullptr");
 
         return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
+    }
+
+    /**
+     * Does masked decryption as part of 2-party interactive bootstrapping.
+     *
+     * For the case of Server, it expects a ciphertext with both polynomials a and b.
+     * For the case os Client, it expects only the polnomial a (for the linear term).
+     * Under the hood, the decryption also includes the rounding operation.
+     *
+     * @param privateKey: secret key share
+     * @param ciphertext: input ciphertext
+     * @return: Resulting masked decryption
+     */
+    Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
+                                       ConstCiphertext<Element> ciphertext) const {
+        if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()) || privateKey == NULL ||
+            this->Mismatched(privateKey->GetCryptoContext()))
+            OPENFHE_THROW("Information passed to IntBootDecrypt was not generated with this crypto context");
+
+        auto rv = this->GetScheme()->IntBootDecrypt(privateKey, ciphertext);
+        return rv;
+    }
+
+    /**
+    * Does public key encryption of Client's masked decryption
+    * as part of 2-party interactive bootstrapping, which increases
+    * the ciphertext modulus and enables future computations.
+    * This operation is done by the Client.
+    *
+    * @param publicKey: joint public key based on Threshold FHE
+    * @param ciphertext: input ciphertext
+    * @return: Resulting encryption
+    */
+    Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey, ConstCiphertext<Element> ciphertext) const {
+        if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()) || publicKey == NULL ||
+            this->Mismatched(publicKey->GetCryptoContext()))
+            OPENFHE_THROW("Information passed to IntBootEncrypt was not generated with this crypto context");
+
+        auto rv = this->GetScheme()->IntBootEncrypt(publicKey, ciphertext);
+        return rv;
+    }
+
+    /**
+    * Adds up both masked decryptions (one encrypted with public key
+    * encryption), which is the last step of the 2-party interactive bootstrapping
+    * procedure.
+    *
+    * @param ciphertext1: encrypted masked decryption
+    * @param ciphertext2: unencrypted masked decryption
+    * @return: Refreshed ciphertext
+    */
+    Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+        if (ciphertext1 == NULL || this->Mismatched(ciphertext1->GetCryptoContext()) || ciphertext2 == NULL ||
+            this->Mismatched(ciphertext2->GetCryptoContext()))
+            OPENFHE_THROW("Information passed to IntBootAdd was not generated with this crypto context");
+
+        auto rv = this->GetScheme()->IntBootAdd(ciphertext1, ciphertext2);
+        return rv;
+    }
+
+    /**
+    * Prepare a ciphertext for interactive bootstraping.
+    *
+    * For the FIXEDMANUAL and FIXEDAUTO modes of CKKS, drops the
+    * the number of towers 2 and makes sure the scale is Delta
+    * (not a power of Delta). The input should have at least 2
+    * towers.
+    *
+    * For the FLEXIBLEAUTO mode of CKKS, the input ciphertext
+    * should have at least 3 towers. One tower will be used to adjust
+    * the scale to level 0.
+    *
+    * @param ciphertext: Input Ciphertext
+    * @return: Resulting Ciphertext
+    */
+    Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()))
+            OPENFHE_THROW("Information passed to IntBootAdjustScale was not generated with this crypto context");
+
+        auto rv = this->GetScheme()->IntBootAdjustScale(ciphertext);
+        return rv;
     }
 
     /**
