@@ -246,7 +246,11 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     // -gsplit-dwarf
     int32_t logApprox = 0;
     // Duhyeong: We need to take account the 64-bit overflow for both operand * scFactor and scFactor
-    const double res  = std::max(std::fabs(operand * scFactor), std::fabs(scFactor));
+    double res = std::fabs(operand * scFactor);
+    if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+        res = std::max(std::fabs(operand * scFactor), std::fabs(scFactor));
+    }
     if (res > 0) {
         int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
         int32_t logValid = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
