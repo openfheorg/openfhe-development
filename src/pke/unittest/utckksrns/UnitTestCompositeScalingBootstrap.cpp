@@ -284,7 +284,10 @@ protected:
 
             size_t encodedLength = input.size();
 
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
+            auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
             auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
 
@@ -583,7 +586,10 @@ protected:
                 Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
-            Plaintext plaintext1  = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
+            auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
             auto ciphertext1      = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext1After = cc->EvalBootstrap(ciphertext1);
 
@@ -599,7 +605,8 @@ protected:
                 Fill({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
             size_t encodedLength2 = input2.size();
 
-            Plaintext plaintext2  = cc->MakeCKKSPackedPlaintext(input2, 1, MULT_DEPTH - 1, nullptr, testData.slots / 2);
+            Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(
+                input2, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots / 2);
             auto ciphertext2      = cc->Encrypt(keyPair.publicKey, plaintext2);
             auto ciphertext2After = cc->EvalBootstrap(ciphertext2);
 
