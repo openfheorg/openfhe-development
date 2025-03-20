@@ -153,9 +153,6 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
         // Select number of primes in auxiliary CRT basis
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
-        if (GetScalingTechnique() == COMPOSITESCALINGAUTO || GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-            sizeP = UpdateSizeP(m_compositeDegree, sizeP);
-        }
 
         uint64_t primeStep = FindAuxPrimeStep();
 
@@ -464,9 +461,6 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
     // Select number of primes in auxiliary CRT basis
     auto sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
-    if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        sizeP = UpdateSizeP(compositeDegree, sizeP);
-    }
 
     return std::make_pair(sizeP * auxBits, sizeP);
 }

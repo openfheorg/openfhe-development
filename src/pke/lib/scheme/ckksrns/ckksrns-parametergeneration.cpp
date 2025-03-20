@@ -75,6 +75,10 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
+        // TODO (Duhyeong): We need more exception cases in terms of 
+        //                  prime size (= scalingModSize / compositeDegree), registerSize, and numPrimes
+        //                  e.g.1, assertion: prime size < registerSize (we may need at least 1-2 bit gap)
+        //                  e.g.2, prime size > ??? if numPrimes > ???
         if (compositeDegree > 2 && scalingModSize < 55) {
             std::string errorMsg = "COMPOSITESCALING Warning:";
             errorMsg +=
@@ -111,9 +115,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
-    uint32_t auxBits       = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
-                                 // Alternative way to calculate auxBits for composite scaling mode
-                           std::ceil(registerWordSize * 0.9375) :
+    uint32_t auxBits       = ((scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) && registerWordSize <= AUXMODSIZE) ?
+                                 registerWordSize - 1 :     // Duhyeong: Let's check if auxBits = registerWordSize makes an error in the P prime generation.
                                  AUXMODSIZE;
     uint32_t n             = cyclOrder / 2;
     uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
@@ -128,13 +131,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
                                                               numPrimes, auxBits, scalTech, compositeDegree, true);
 
-        if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-            uint32_t tmpFactor = compositeDegree;  // (compositeDegree == 2) ? 2 : 4;
-            qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / (tmpFactor * auxBits)) * tmpFactor * auxBits;
-        }
-        else {
-            qBound += std::get<0>(hybridKSInfo);
-        }
+        qBound += std::get<0>(hybridKSInfo);
     }
 
     // GAUSSIAN security constraint
@@ -176,6 +173,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     uint32_t dcrtBits = scalingModSize;
 
+    // In COMPOSITESCALING mode, each modulus consists of compositeDegree number of primes
     numPrimes *= compositeDegree;
 
     uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
