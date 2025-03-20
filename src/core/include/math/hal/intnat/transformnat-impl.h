@@ -660,12 +660,10 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPla
 
     IntType modulus = element->GetModulus();
 
-#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
-#endif
 
     NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
         m_rootOfUnityReverseTableByModulus[modulus], m_rootOfUnityPreconReverseTableByModulus[modulus], element);
@@ -691,12 +689,10 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(cons
 
     IntType modulus = element.GetModulus();
 
-#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
-#endif
 
     NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
         element, m_rootOfUnityReverseTableByModulus[modulus], m_rootOfUnityPreconReverseTableByModulus[modulus],
@@ -724,12 +720,10 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverseInP
 
     IntType modulus = element->GetModulus();
 
-#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
-#endif
 
     usint msb = GetMSB(CycloOrderHf - 1);
     NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
@@ -758,12 +752,10 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(co
 
     IntType modulus = element.GetModulus();
 
-#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
-#endif
 
     usint n = element.GetLength();
     result->SetModulus(element.GetModulus());
