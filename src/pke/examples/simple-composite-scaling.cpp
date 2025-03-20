@@ -85,8 +85,8 @@ int main(int argc, char* argv[]) {
    * scaling factor should be large enough to both accommodate this noise and
    * support results that match the desired accuracy.
    */
-    uint32_t firstModSize = 60;
-    uint32_t scaleModSize = 52;
+    uint32_t firstModSize = 90;
+    uint32_t scaleModSize = 73;
 
     /* A3) Number of plaintext slots used in the ciphertext.
    * CKKS packs multiple plaintext values in each ciphertext.
@@ -167,6 +167,8 @@ int main(int argc, char* argv[]) {
     parameters.SetFirstModSize(firstModSize);
     parameters.SetScalingModSize(scaleModSize);
     parameters.SetBatchSize(batchSize);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1 << 12);
 
     parameters.SetScalingTechnique(COMPOSITESCALINGAUTO);
     parameters.SetRegisterWordSize(registerWordSize);
@@ -302,6 +304,26 @@ int main(int argc, char* argv[]) {
     cc->Decrypt(keys.secretKey, cRot2, &result);
     result->SetLength(batchSize);
     std::cout << "x1 rotate by -2 = " << result << std::endl;
+
+
+    // Testing EvalAdd ciphertext - double
+    auto cSubDouble = cc->EvalSub(c1, 0.5);
+    std::cout << "c1 noise degree = " << c1->GetNoiseScaleDeg() << std::endl;
+    std::cout << "c1 scaling factor = " << c1->GetScalingFactor() << std::endl;
+
+    // Testing EvalAdd ciphertext + negative double
+    auto cAddNegDouble = cc->EvalAdd(c1, -0.5);
+
+    // Decrypt the result of subtraction
+    cc->Decrypt(keys.secretKey, cSubDouble, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 - 0.5 = " << result << std::endl;
+
+    // Decrypt the result of subtraction
+    cc->Decrypt(keys.secretKey, cAddNegDouble, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 + (-0.5) = " << result << std::endl;
+
 
     return 0;
 }
