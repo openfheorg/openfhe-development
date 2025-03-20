@@ -457,7 +457,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes,
-                                                              auxBits, scalTech, 1, true);
+                                                              auxBits, scalTech, true);
         qBound += std::get<0>(hybridKSInfo);
         auxTowers = std::get<1>(hybridKSInfo);
     }
@@ -489,7 +489,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                     numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
                     (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,
                     (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
-                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, scalTech, 1, false);
+                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, scalTech, false);
                 newQBound += std::get<0>(hybridKSInfo);
             }
         } while (qBound < newQBound);

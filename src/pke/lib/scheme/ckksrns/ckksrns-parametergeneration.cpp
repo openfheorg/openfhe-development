@@ -75,7 +75,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     uint32_t registerWordSize = cryptoParamsCKKSRNS->GetRegisterWordSize();
 
     if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        // TODO (Duhyeong): We need more exception cases in terms of 
+        // TODO (Duhyeong): We need more exception cases in terms of
         //                  prime size (= scalingModSize / compositeDegree), registerSize, and numPrimes
         //                  e.g.1, assertion: prime size < registerSize (we may need at least 1-2 bit gap)
         //                  e.g.2, prime size > ??? if numPrimes > ???
@@ -115,11 +115,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
-    uint32_t auxBits       = ((scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) && registerWordSize <= AUXMODSIZE) ?
-                                 registerWordSize - 1 :     // Duhyeong: Let's check if auxBits = registerWordSize makes an error in the P prime generation.
-                                 AUXMODSIZE;
-    uint32_t n             = cyclOrder / 2;
-    uint32_t qBound        = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
+    uint32_t auxBits =
+        ((scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) && registerWordSize <= AUXMODSIZE) ?
+            registerWordSize -
+                1 :  // Duhyeong: Let's check if auxBits = registerWordSize makes an error in the P prime generation.
+            AUXMODSIZE;
+    uint32_t n      = cyclOrder / 2;
+    uint32_t qBound = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
 
     // we add an extra bit to account for the alternating logic of selecting the RNS moduli in CKKS
     // ignore the case when there is only one max size modulus
@@ -129,7 +131,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     // Estimate ciphertext modulus Q*P bound (in case of HYBRID P*Q)
     if (ksTech == HYBRID) {
         auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
-                                                              numPrimes, auxBits, scalTech, compositeDegree, true);
+                                                              numPrimes, auxBits, scalTech, true);
 
         qBound += std::get<0>(hybridKSInfo);
     }
@@ -301,8 +303,8 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
 
             bool fitsRegister = true;
             for (size_t step = 0; step < qNext.size(); ++step) {
-              qNext[step] = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);  
-              do {
+                qNext[step] = sfInt - sfRem + NativeInteger(1) + NativeInteger(cyclOrder);
+                do {
                     try {
                         if (fitsRegister == true) {
                             qNext[step] = lbcrypto::NextPrime(qNext[step], cyclOrder);
