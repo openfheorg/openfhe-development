@@ -38,6 +38,7 @@
 #define __DISTRIBUTIONGENERATOR_H__
 
 #include "utils/prng/prng.h"
+#include "config_core.h"
 
 #include <memory>
 #include <string>
@@ -49,6 +50,7 @@ namespace lbcrypto {
  * The security of Ring Learning With Errors (used for all crypto capabilities in OpenFHE) depends on
  * the randomness of uniform, ternary, and Gaussian distributions, which derive their randomness from the PRNG.
  */
+
 class PseudoRandomNumberGenerator {
 public:
     /**
@@ -68,15 +70,16 @@ public:
 private:
     using GenPRNGEngineFuncPtr = PRNG* (*)();
 
+#if defined(WITH_OPENMP)
     // shared pointer to a thread-specific PRNG engine
     static std::shared_ptr<PRNG> m_prng;
+    #if !defined(FIXED_SEED)
+        // avoid contention on m_prng: local copies of m_prng are created for each thread
+        #pragma omp threadprivate(m_prng)
+    #endif
+#endif
     // pointer to the function generating PRNG
     static GenPRNGEngineFuncPtr genPRNGEngine;
-
-#if !defined(FIXED_SEED)
-    // avoid contention on m_prng: local copies of m_prng are created for each thread
-    #pragma omp threadprivate(m_prng)
-#endif
 };
 
 }  // namespace lbcrypto
