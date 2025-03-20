@@ -9,6 +9,7 @@
 #cmakedefine WITH_NOISE_DEBUG
 #cmakedefine WITH_NTL
 #cmakedefine WITH_TCM
+#cmakedefine WITH_OPENMP
 
 #cmakedefine CKKS_M_FACTOR @CKKS_M_FACTOR@
 #cmakedefine HAVE_INT128 @HAVE_INT128@

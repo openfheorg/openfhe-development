@@ -660,7 +660,7 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPla
 
     IntType modulus = element->GetModulus();
 
-#if 0
+#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
@@ -691,7 +691,7 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(cons
 
     IntType modulus = element.GetModulus();
 
-#if 0
+#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
@@ -724,7 +724,7 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverseInP
 
     IntType modulus = element->GetModulus();
 
-#if 0
+#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
@@ -758,7 +758,7 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(co
 
     IntType modulus = element.GetModulus();
 
-#if 0
+#if defined(WITH_OPENMP)
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
         PreCompute(rootOfUnity, CycloOrder, modulus);
