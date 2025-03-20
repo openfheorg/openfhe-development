@@ -45,7 +45,11 @@
 
 namespace lbcrypto {
 
-std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng                                    = nullptr;
+#if defined(WITH_OPENMP)
+    std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng = nullptr;
+#else
+    thread_local std::shared_ptr<PRNG> m_prng = nullptr;
+#endif
 PseudoRandomNumberGenerator::GenPRNGEngineFuncPtr PseudoRandomNumberGenerator::genPRNGEngine = nullptr;
 
 void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
