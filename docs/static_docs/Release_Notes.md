@@ -1,3 +1,10 @@
+03/21/2025: OpenFHE 1.2.4 (stable) is released
+
+* Improves the support for STL threads (when OMP is disabled)
+* Fixes the bugs identified in [CVE-2024-56430](https://nvd.nist.gov/vuln/detail/CVE-2024-56430) 
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.4%22
+
 10/30/2024: OpenFHE 1.2.3 (stable) is released
 
 * Adds support for a custom PRNG implemented in an external library
