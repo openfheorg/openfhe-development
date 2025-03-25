@@ -170,15 +170,13 @@ public:
    * @param numPrimes number of moduli witout extraModulus
    * @param auxBits size of auxiliar moduli used for hybrid key switching
    * @param scalTech scaling technique
-   * @param compositeDegree number of moduli in each level (CKKS only)
    * @param addOne should an extra bit be added (for CKKS and BGV)
    *
    * @return log2 of the modulus and number of RNS limbs.
    */
     static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits,
-                                                    ScalingTechnique scalTech, uint32_t compositeDegree = 1,
-                                                    bool addOne = false);
+                                                    ScalingTechnique scalTech, bool addOne = false);
 
     /*
    * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)

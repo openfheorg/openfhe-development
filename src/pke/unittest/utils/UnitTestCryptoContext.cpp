@@ -133,6 +133,11 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
             parameters.SetNoiseEstimate(params.noiseEstimate);
         }
     }
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
+        if (!isDefaultValue(params.registerWordSize)) {
+            parameters.SetRegisterWordSize(params.registerWordSize);
+        }
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
