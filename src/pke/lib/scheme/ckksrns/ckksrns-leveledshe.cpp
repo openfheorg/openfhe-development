@@ -249,7 +249,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     double res = std::fabs(operand * scFactor);
     if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
         cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        res = std::max(std::fabs(operand * scFactor), std::fabs(scFactor));
+        res = std::max(res, std::fabs(scFactor));
     }
     if (res > 0) {
         int32_t logSF    = static_cast<int32_t>(std::ceil(std::log2(res)));
