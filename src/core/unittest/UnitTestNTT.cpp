@@ -59,6 +59,7 @@ void switch_format_simple_single_crt(const std::string& msg) {
 
     auto x1p = std::make_shared<ParmType>(m1, bits);
     auto x2p = std::make_shared<ParmType>(m1 / 2, bits);
+    auto x3p = std::make_shared<ParmType>(m1 / 4, bits);
 
     Element x1(x1p, Format::COEFFICIENT);
     x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};
@@ -66,16 +67,23 @@ void switch_format_simple_single_crt(const std::string& msg) {
     Element x2(x2p, Format::COEFFICIENT);
     x2 = {4127, 9647, 1987, 5410};
 
+    Element x3(x3p, Format::COEFFICIENT);
+    x3 = {9647, 1987};
+
     Element x1Clone(x1);
     Element x2Clone(x2);
+    Element x3Clone(x3);
 
     x1.SwitchFormat();
     x2.SwitchFormat();
+    x3.SwitchFormat();
     x1.SwitchFormat();
     x2.SwitchFormat();
+    x3.SwitchFormat();
 
     EXPECT_EQ(x1, x1Clone) << msg;
     EXPECT_EQ(x2, x2Clone) << msg;
+    EXPECT_EQ(x3, x3Clone) << msg;
 }
 
 TEST(UTNTT, switch_format_simple_single_crt) {
