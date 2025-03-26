@@ -238,10 +238,6 @@ class CryptoContextImpl : public Serializable {
                                            CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
     }
     /**
-   * Get automorphism keys for a specific secret key tag
-   */
-    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
-    /**
    * @brief Get automorphism keys for a specific secret key tag and an array of specific indices
    * @param keyID - secret key tag
    * @param indexList - array of specific indices to retrieve key for
@@ -1069,6 +1065,10 @@ public:
    * Get a map of automorphism keys for all secret keys
    */
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
+   /**
+    * Get automorphism keys for a specific secret key tag
+    */
+    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
     /**
    * Get automorphism keys for a specific secret key tag
    */
