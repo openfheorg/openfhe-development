@@ -89,8 +89,8 @@ void SimpleBootstrapExample() {
     * or 256-bit security, respectively. If you choose one of these as your security level,
     * you do not need to set the ring dimension.
     */
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 10);
+    // parameters.SetSecurityLevel(HEStd_NotSet);
+    // parameters.SetRingDim(1 << 15);
 
     /*  A3) Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values
@@ -98,14 +98,14 @@ void SimpleBootstrapExample() {
     * below unless you are an FHE expert.
     */
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    usint dcrtBits               = 66;
-    usint firstMod               = 76;
+    usint dcrtBits               = 78;
+    usint firstMod               = 80;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    usint registerWordSize = 27;
+    usint registerWordSize = 32;
     parameters.SetRegisterWordSize(registerWordSize);
 
     /*  A4) Multiplicative depth.

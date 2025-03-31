@@ -42,25 +42,6 @@
 
 namespace lbcrypto {
 
-uint32_t UpdateSizeP(uint32_t compositeDegree, uint32_t sizeP) {
-    switch (compositeDegree) {
-        case 0:  // not allowed
-            OPENFHE_THROW(std::string("Composite degree d = 0 is not allowed."));
-        case 1:  // not composite
-            break;
-        case 2:  // composite degree == 2
-            sizeP += (sizeP % 2);
-            break;
-        case 3:  // composite degree == 3
-            sizeP += (sizeP % 3);
-            break;
-        default:  // composite degree > 3
-            sizeP += (sizeP % 4);
-            break;
-    }
-    return sizeP;
-}
-
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                               EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                               uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
@@ -153,9 +134,6 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
         // Select number of primes in auxiliary CRT basis
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
-        if (GetScalingTechnique() == COMPOSITESCALINGAUTO || GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-            sizeP = UpdateSizeP(m_compositeDegree, sizeP);
-        }
 
         uint64_t primeStep = FindAuxPrimeStep();
 
@@ -416,8 +394,7 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
 std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
                                                               double dcrtBits, double extraModulusSize,
                                                               uint32_t numPrimes, uint32_t auxBits,
-                                                              ScalingTechnique scalTech, uint32_t compositeDegree,
-                                                              bool addOne) {
+                                                              ScalingTechnique scalTech, bool addOne) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -464,9 +441,6 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
     // Select number of primes in auxiliary CRT basis
     auto sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
-    if (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) {
-        sizeP = UpdateSizeP(compositeDegree, sizeP);
-    }
 
     return std::make_pair(sizeP * auxBits, sizeP);
 }
