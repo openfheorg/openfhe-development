@@ -256,27 +256,24 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
 // The guarantees that rounded c_0 + c_1 < q/2,
 // it prevents an overflow during interactive bootstrapping
 void PolynomialRound(DCRTPoly& dcrtpoly) {
-    if (dcrtpoly.GetNumOfElements() != 2) {
-        std::string msg = "PolynomialRound: input polynomial should have 2 RNS limbs";
-        OPENFHE_THROW(msg);
+    const uint32_t NUM_TOWERS = dcrtpoly.GetNumOfElements();
+    if ( 2 != NUM_TOWERS) {
+        OPENFHE_THROW("The input polynomial has " + std::to_string(NUM_TOWERS) + " instead of 2 RNS limbs");
     }
 
-    uint32_t n = dcrtpoly.GetRingDimension();
-
-    // pre-computations for CRT composition
-    std::vector<NativeInteger> q(2);
-    std::vector<NativePoly> poly(2);
-    for (uint32_t i = 0; i < 2; i++) {
+    std::vector<NativeInteger> q(NUM_TOWERS);
+    std::vector<NativePoly> poly(NUM_TOWERS);
+    for (size_t i = 0; i < NUM_TOWERS; i++) {
         poly[i] = dcrtpoly.GetElementAtIndex(i);
         q[i]    = poly[i].GetModulus();
     }
 
-    std::vector<NativeInteger> qInv(2);
+    std::vector<NativeInteger> qInv(NUM_TOWERS);
     qInv[0] = q[1].ModInverse(q[0]);
     qInv[1] = q[0].ModInverse(q[1]);
 
-    std::vector<NativeInteger> precon(2);
-    for (uint32_t i = 0; i < 2; i++) {
+    std::vector<NativeInteger> precon(NUM_TOWERS);
+    for (size_t i = 0; i < NUM_TOWERS; i++) {
         precon[i] = qInv[i].PrepModMulConst(q[i]);
     }
 
@@ -285,15 +282,15 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
     NativeInteger::DNativeInt Qhalf   = Q / 2;
     NativeInteger::DNativeInt Q1quart = Q / 4;
     NativeInteger::DNativeInt Q3quart = 3 * Q / 4;
-    std::vector<NativeInteger> qHalf(2);
-    for (uint32_t i = 0; i < 2; i++) {
+    std::vector<NativeInteger> qHalf(NUM_TOWERS);
+    for (size_t i = 0; i < NUM_TOWERS; i++) {
         qHalf[i] = Qhalf % q[i].ConvertToInt();
     }
 
     // to do the comparison |coefficient[k]| > q/4,
     // we compute CRT composition (interpolation) using
     // 128-bit integers
-    for (uint32_t k = 0; k < n; k++) {
+    for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
         NativeInteger::DNativeInt x128 =
             (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt() * q[1].ConvertToInt();
         x128 += (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt() * q[0].ConvertToInt();
@@ -315,8 +312,7 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
 // https://eprint.iacr.org/2018/117 is used.
 void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> paramsQP) {
     if (dcrtpoly.GetNumOfElements() != 2) {
-        std::string msg = "ExtendBasis: input polynomial should have 2 RNS limbs";
-        OPENFHE_THROW(msg);
+        OPENFHE_THROW(" The input polynomial should have 2 RNS limbs");
     }
 
     const auto paramsQ = dcrtpoly.GetParams();
@@ -326,10 +322,10 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
 
     // Loads all moduli and roots of unity
     std::vector<NativeInteger> moduliQ(sizeQ);
-    std::vector<NativeInteger> rootsQ(sizeQ);
+    // std::vector<NativeInteger> rootsQ(sizeQ);  // TODO (dsuponit): do we need rootsQ?
     for (size_t i = 0; i < sizeQ; i++) {
         moduliQ[i] = paramsQ->GetParams()[i]->GetModulus();
-        rootsQ[i]  = paramsQ->GetParams()[i]->GetRootOfUnity();
+        // rootsQ[i]  = paramsQ->GetParams()[i]->GetRootOfUnity();
     }
 
     std::vector<NativeInteger> moduliP(sizeP);
@@ -393,15 +389,19 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
 
 Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
                                                    ConstCiphertext<DCRTPoly> ciphertext) const {
+    const size_t NUM_POLYNOMIALS = ciphertext->NumberCiphertextElements();
+    if(NUM_POLYNOMIALS != 1 && NUM_POLYNOMIALS != 2) {
+        std::string msg ="Ciphertext should contain either one or two polynomials. The input ciphertext has " +
+                          std::to_string(NUM_POLYNOMIALS) + ".";
+        OPENFHE_THROW(msg);
+    }
+
     std::vector<DCRTPoly> c = ciphertext->GetElements();
+    for (uint32_t i = 0; i < NUM_POLYNOMIALS; i++)
+        c[i].SetFormat(Format::EVALUATION);
+    size_t sizeQl = c[0].GetParams()->GetParams().size();
 
     const DCRTPoly& s = privateKey->GetPrivateElement();
-
-    DCRTPoly cs;
-    for (uint32_t i = 0; i < c.size(); i++)
-        c[i].SetFormat(Format::EVALUATION);
-
-    size_t sizeQl = c[0].GetParams()->GetParams().size();
     size_t sizeQ  = s.GetParams()->GetParams().size();
 
     size_t diffQl = sizeQ - sizeQl;
@@ -409,26 +409,11 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> pr
     auto scopy(s);
     scopy.DropLastElements(diffQl);
 
-    if (c.size() == 1) {
-        cs = c[0] * scopy;
-    }
-    else if (c.size() == 2) {
-        cs = c[1] * scopy + c[0];
-    }
-    else {
-        std::string msg =
-            "IntBootDecrypt: ciphertext should contain either one or two polynomials. "
-            "The input ciphertext has " +
-            std::to_string(c.size()) + ".";
-        OPENFHE_THROW(msg);
-    }
-
+    DCRTPoly cs{(NUM_POLYNOMIALS == 1) ? (c[0] * scopy) : (c[1] * scopy + c[0])};
     cs.SetFormat(Format::COEFFICIENT);
-
     PolynomialRound(cs);
 
     Ciphertext<DCRTPoly> result = ciphertext->Clone();
-
     result->SetElements({cs});
 
     return result;
@@ -436,50 +421,36 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> pr
 
 Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> publicKey,
                                                    ConstCiphertext<DCRTPoly> ctxt) const {
-    if (ctxt->GetElements().size() == 0) {
-        std::string msg = "IntBootEncrypt: no polynomials in the input ciphertext.";
-        OPENFHE_THROW(msg);
+    if (ctxt->GetElements().empty()) {
+        OPENFHE_THROW("No polynomials found in the input ciphertext");
     }
 
     using DggType  = typename DCRTPoly::DggType;
     using TugType  = typename DCRTPoly::TugType;
     using ParmType = typename DCRTPoly::Params;
 
+
     const auto cryptoParams =
         std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(publicKey->GetCryptoParameters());
 
     DCRTPoly ptxt = ctxt->GetElements()[0];
-
-    Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
-
-    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-
-    TugType tug;
-
     ptxt.SetFormat(Format::COEFFICIENT);
 
-    // changes the modulus from small q (2 RNS limbs) to a large Q
-    // to support future computations
+    // changes the modulus from small q (2 RNS limbs) to a large Q to support future computations
     ExtendBasis(ptxt, cryptoParams->GetElementParams());
 
     const std::shared_ptr<ParmType> ptxtParams = ptxt.GetParams();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    TugType tug;
 
-    std::vector<DCRTPoly> cv;
-
-    DCRTPoly v;
-
-    // Supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
-    // (UNIFORM_TERNARY) cases
-    if (cryptoParams->GetSecretKeyDist() == GAUSSIAN)
-        v = DCRTPoly(dgg, ptxtParams, Format::EVALUATION);
-    else
-        v = DCRTPoly(tug, ptxtParams, Format::EVALUATION);
+    // Supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution (UNIFORM_TERNARY) cases
+    DCRTPoly v = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, ptxtParams, Format::EVALUATION) :
+                                                                  DCRTPoly(tug, ptxtParams, Format::EVALUATION);
 
     DCRTPoly e0(dgg, ptxtParams, Format::COEFFICIENT);
     DCRTPoly e1(dgg, ptxtParams, Format::EVALUATION);
 
-    // we add in the coefficient representation to
-    // avoid extra NTTs
+    // we add in the coefficient representation to avoid extra NTTs
     ptxt += e0;
     ptxt.SetFormat(Format::EVALUATION);
 
@@ -487,7 +458,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     uint32_t sizeQl                 = ptxtParams->GetParams().size();
     uint32_t sizeQ                  = pk[0].GetParams()->GetParams().size();
 
-    DCRTPoly c0, c1;
+    std::vector<DCRTPoly> cv;
     if (sizeQl != sizeQ) {
         // Clone public keys because we need to drop towers.
         DCRTPoly b = pk[0].Clone();
@@ -498,8 +469,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
         a.DropLastElements(diffQl);
 
         // the error e0 was already added to ptxt
-        c0 = b * v + ptxt;
-        c1 = a * v + e1;
+        cv.push_back(b * v + ptxt);
+        cv.push_back(a * v + e1);
     }
     else {
         // Use public keys as they are
@@ -507,21 +478,16 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
         const DCRTPoly& a = pk[1];
 
         // the error e0 was already added to ptxt
-        c0 = b * v + ptxt;
-        c1 = a * v + e1;
+        cv.push_back(b * v + ptxt);
+        cv.push_back(a * v + e1);
     }
 
-    cv.push_back(std::move(c0));
-    cv.push_back(std::move(c1));
-
+    Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
     ciphertext->SetElements(std::move(cv));
 
-    // Ciphertext depth, level, and scaling factor should be
-    // equal to that of the plaintext. However, Encrypt does
-    // not take Plaintext as input (only DCRTPoly), so we
-    // don't have access to these here and we copy them
-    // from the input ciphertext.
-
+    // Ciphertext depth, level, and scaling factor should be equal to that of the plaintext.
+    // However, Encrypt does not take Plaintext as input (only DCRTPoly),
+    // so we don't have access to these here and we copy them from the input ciphertext.
     ciphertext->SetEncodingType(ctxt->GetEncodingType());
     ciphertext->SetScalingFactor(ctxt->GetScalingFactor());
     ciphertext->SetNoiseScaleDeg(ctxt->GetNoiseScaleDeg());
@@ -534,27 +500,25 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
 
 Ciphertext<DCRTPoly> MultipartyRNS::IntBootAdd(ConstCiphertext<DCRTPoly> ciphertext1,
                                                ConstCiphertext<DCRTPoly> ciphertext2) const {
-    if ((ciphertext1->GetElements().size() == 0) || (ciphertext2->GetElements().size() == 0)) {
-        std::string msg = "IntBootAdd: no polynomials in input ciphertext(s).";
-        OPENFHE_THROW(msg);
+    if (ciphertext1->GetElements().empty()) {
+        OPENFHE_THROW("No polynomials found in the input ciphertext1");
     }
-
-    const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(ciphertext1->GetCryptoParameters());
+    if (ciphertext2->GetElements().empty()) {
+        OPENFHE_THROW("No polynomials found in the input ciphertext2");
+    }
 
     auto elements1 = ciphertext1->GetElements();
     auto elements2 = ciphertext2->GetElements();
 
     elements2[0].SetFormat(Format::COEFFICIENT);
-
+    const auto cryptoParams =
+        std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(ciphertext1->GetCryptoParameters());
     ExtendBasis(elements2[0], cryptoParams->GetElementParams());
-
     elements2[0].SetFormat(Format::EVALUATION);
 
     elements1[0] += elements2[0];
 
     Ciphertext<DCRTPoly> result = ciphertext1->Clone();
-
     result->SetElements(elements1);
 
     return result;

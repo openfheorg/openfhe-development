@@ -450,9 +450,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->GetElements().size() == 0) {
-        std::string msg = "IntBootEncrypt: no polynomials in the input ciphertext.";
-        OPENFHE_THROW(msg);
+    if (ciphertext->GetElements().empty()) {
+        OPENFHE_THROW("No polynomials in the input ciphertext");
     }
 
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
@@ -463,8 +462,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTP
     if ((cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO) ||
         (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
         if (ciphertext->GetElements()[0].GetNumOfElements() < 3) {
-            std::string msg = "IntBootAdjustScale: not enough towers in the input polynomial.";
-            OPENFHE_THROW(msg);
+            OPENFHE_THROW("Not enough towers in the input polynomial");
         }
 
         auto ciphertextAdjusted = cc->Compress(ciphertext, 3);
@@ -483,12 +481,12 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTP
 
         ciphertextAdjusted = cc->GetScheme()->ModReduceInternal(ciphertextAdjusted, BASE_NUM_LEVELS_TO_DROP);
         ciphertextAdjusted->SetScalingFactor(targetSF);
+        
         return ciphertextAdjusted;
     }
     else {
         if (ciphertext->GetElements()[0].GetNumOfElements() < 2) {
-            std::string msg = "IntBootAdjustScale: not enough towers in the input polynomial.";
-            OPENFHE_THROW(msg);
+            OPENFHE_THROW("Not enough towers in the input polynomial");
         }
 
         return cc->Compress(ciphertext, 2);

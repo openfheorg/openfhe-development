@@ -296,7 +296,9 @@ public:
 	 * @param ciphertext: Input Ciphertext
 	 * @return: Resulting Ciphertext
 	 */
-    virtual Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
+    virtual Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
        * Does masked decryption as part of interactive bootstrapping.
@@ -310,7 +312,9 @@ public:
        * @return: Resulting masked decryption
        */
     virtual Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
-                                               ConstCiphertext<Element> ciphertext) const;
+                                               ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
        * Does public key encryption of Client's masked decryption
@@ -323,7 +327,9 @@ public:
        * @return: Resulting encryption
        */
     virtual Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
-                                               ConstCiphertext<Element> ciphertext) const;
+                                               ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
        * Adds up both masked decryptions (one encrypted with public key
@@ -335,7 +341,9 @@ public:
        * @return: Refreshed ciphertext
        */
     virtual Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1,
-                                           ConstCiphertext<Element> ciphertext2) const;
+                                           ConstCiphertext<Element> ciphertext2) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
     * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping
@@ -343,7 +351,9 @@ public:
     * @param ciphertext: Input Ciphertext
     * @return: Resulting Ciphertext
     */
-    virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
+    virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
     * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
@@ -352,7 +362,9 @@ public:
     * @return: Resulting ring element
     */
     virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
-                                                          const PublicKey<Element> publicKey) const;
+                                                          const PublicKey<Element> publicKey) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
     * Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
@@ -365,7 +377,9 @@ public:
     */
     virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                               ConstCiphertext<Element> ciphertext,
-                                                              ConstCiphertext<Element> a) const;
+                                                              ConstCiphertext<Element> a) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
     * Threshold FHE: Aggregates a vector of masked decryptions and re-encryotion shares,
@@ -376,7 +390,9 @@ public:
     * @return: aggregated pair of shares ((h_0, h_1)
     */
     virtual std::vector<Ciphertext<Element>> IntMPBootAdd(
-        std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const;
+        std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     /**
     *  Threshold FHE: Does public key encryption of lead party's masked decryption
@@ -393,7 +409,10 @@ public:
     */
     virtual Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                                  const std::vector<Ciphertext<Element>>& sharesPair,
-                                                 ConstCiphertext<Element> a, ConstCiphertext<Element> ciphertext) const;
+                                                 ConstCiphertext<Element> a,
+                                                 ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW("The function is not supported");
+    }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {}

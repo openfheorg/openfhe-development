@@ -66,7 +66,6 @@
 #include <algorithm>
 #include <unordered_map>
 #include <set>
-#include <iostream>
 
 namespace lbcrypto {
 
@@ -3203,9 +3202,8 @@ public:
      */
     Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
                                        ConstCiphertext<Element> ciphertext) const {
-        if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()) || privateKey == NULL ||
-            this->Mismatched(privateKey->GetCryptoContext()))
-            OPENFHE_THROW("Information passed to IntBootDecrypt was not generated with this crypto context");
+        ValidateCiphertext(ciphertext);
+        ValidateKey(privateKey);
 
         auto rv = this->GetScheme()->IntBootDecrypt(privateKey, ciphertext);
         return rv;
@@ -3222,9 +3220,8 @@ public:
     * @return: Resulting encryption
     */
     Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey, ConstCiphertext<Element> ciphertext) const {
-        if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()) || publicKey == NULL ||
-            this->Mismatched(publicKey->GetCryptoContext()))
-            OPENFHE_THROW("Information passed to IntBootEncrypt was not generated with this crypto context");
+        ValidateCiphertext(ciphertext);
+        ValidateKey(publicKey);
 
         auto rv = this->GetScheme()->IntBootEncrypt(publicKey, ciphertext);
         return rv;
@@ -3240,9 +3237,8 @@ public:
     * @return: Refreshed ciphertext
     */
     Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
-        if (ciphertext1 == NULL || this->Mismatched(ciphertext1->GetCryptoContext()) || ciphertext2 == NULL ||
-            this->Mismatched(ciphertext2->GetCryptoContext()))
-            OPENFHE_THROW("Information passed to IntBootAdd was not generated with this crypto context");
+        ValidateCiphertext(ciphertext1);
+        ValidateCiphertext(ciphertext2);
 
         auto rv = this->GetScheme()->IntBootAdd(ciphertext1, ciphertext2);
         return rv;
@@ -3264,8 +3260,7 @@ public:
     * @return: Resulting Ciphertext
     */
     Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-        if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()))
-            OPENFHE_THROW("Information passed to IntBootAdjustScale was not generated with this crypto context");
+        ValidateCiphertext(ciphertext);
 
         auto rv = this->GetScheme()->IntBootAdjustScale(ciphertext);
         return rv;

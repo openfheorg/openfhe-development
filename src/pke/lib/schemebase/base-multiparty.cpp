@@ -40,11 +40,6 @@
 
 #include "schemebase/base-scheme.h"
 
-#include <utility>
-#include <memory>
-#include <map>
-#include <vector>
-#include <string>
 
 namespace lbcrypto {
 
@@ -418,61 +413,6 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     }
 
     return EvalKeyMapSum;
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntBootDecrypt(const PrivateKey<Element> privateKey,
-                                                            ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntBootAdd(ConstCiphertext<Element> ciphertext1,
-                                                        ConstCiphertext<Element> ciphertext2) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntBootEncrypt(const PublicKey<Element> publicKey,
-                                                            ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
-                                                                       const PublicKey<Element> publicKey) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-                                                                           ConstCiphertext<Element> ciphertext,
-                                                                           ConstCiphertext<Element> a) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootAdd(
-    std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
-}
-
-template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::IntMPBootEncrypt(const PublicKey<Element> publicKey,
-                                                              const std::vector<Ciphertext<Element>>& sharesPair,
-                                                              ConstCiphertext<Element> a,
-                                                              ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(std::string(__func__) + " is not supported");
 }
 
 }  // namespace lbcrypto
