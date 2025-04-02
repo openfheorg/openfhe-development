@@ -48,6 +48,7 @@
 
 using namespace lbcrypto;
 
+#if NATIVEINT == 64
 //===========================================================================================================
 enum TEST_CASE_TYPE {
     BOOTSTRAP_FULL = 0,
@@ -140,92 +141,60 @@ constexpr uint32_t FMODSIZED2 = 60;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSCS_BOOT> testCases = {
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvlBudget, Dim1,       Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 32, 32 }, RDIM/2 },
-#endif
     // ==========================================
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvlBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_FULL, "11", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 3 },  { 0, 0 }, RDIM/2 },
     { BOOTSTRAP_FULL, "12", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,         FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 3 },  { 0, 0 }, RDIM/2 },
-#endif
     // ==========================================
     // TestType,      Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvlBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_EDGE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 0, 0 }, RDIM/4 },
-#endif
     // ==========================================
     // TestType,      Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvlBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_EDGE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 2, 2 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,         FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 2, 2 },  { 0, 0 }, RDIM/4 },
-#endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,         FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 8, 8 }, 8 },
-#endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_SPARSE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 2, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 2, 2 },  { 0, 0 }, 8 },
- #endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_SPARSE, "21", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "22", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 0, 0 }, 8 },
-#endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_SPARSE, "31", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "32", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,         FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 }, 8 },
-#endif
-
-#if NATIVEINT == 64
     { BOOTSTRAP_SPARSE, "39", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 0, 0 }, 1 },
     { BOOTSTRAP_SPARSE, "40", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 0, 0 }, 1 },
-#endif
-
     // ==========================================
     // TestType,            Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1
-#if NATIVEINT == 64
     { BOOTSTRAP_KEY_SWITCH, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZED2,     DFLT,  8,       UNIFORM_TERNARY,  DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "02", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZED3,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 } },
-#endif
     // ==========================================
     // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_ITERATIVE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  8,       UNIFORM_TERNARY,  DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 3 },  { 0, 0 }, 8},
     { BOOTSTRAP_ITERATIVE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 3 },  { 0, 0 }, 8},
-#endif
     // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_ITERATIVE, "09", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,         FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 3 },  { 0, 0 }, RDIM/2},
     { BOOTSTRAP_ITERATIVE, "10", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 3 },  { 0, 0 }, RDIM/2},
-#endif
     // ==========================================
     // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_NUM_TOWERS, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  8,       UNIFORM_TERNARY, DFLT,         FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 }, 8},
     { BOOTSTRAP_NUM_TOWERS, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 }, 8},
-#endif
     // TestType,            Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,     Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_NUM_TOWERS, "09", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,         FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 }, RDIM/2},
     { BOOTSTRAP_NUM_TOWERS, "10", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 3, 2 },  { 0, 0 }, RDIM/2},
-#endif
     // ==========================================
     // TestType,           Descr, Scheme,         RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, LvLBudget, Dim1,       Slots
-#if NATIVEINT == 64
     { BOOTSTRAP_SERIALIZE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_SERIALIZE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3,  HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   { 1, 1 },  { 32, 32 }, RDIM/2 },
-#endif
     // ==========================================
 };
 // clang-format on
@@ -658,3 +627,4 @@ TEST_P(UTCKKSRNSCS_BOOT, CKKSRNS) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNSCS_BOOT, ::testing::ValuesIn(testCases), testName);
+#endif
