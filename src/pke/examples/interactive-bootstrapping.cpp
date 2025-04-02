@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 /*
- Example for Interactive Bootstrapping
+ Examples for 2-party Interactive Bootstrapping
 */
 
 #include "openfhe.h"
@@ -45,14 +45,9 @@ void ThresholdFHE(enum ScalingTechnique rescaleTech);
 void Chebyshev(enum ScalingTechnique rescaleTech);
 
 int main(int argc, char* argv[]) {
-    ThresholdFHE(FIXEDMANUAL);
-    ThresholdFHE(FIXEDAUTO);
+    // the scaling technigue can be changed to FIXEDMANUAL, FIXEDAUTO, or FLEXIBLEAUTOEXT
     ThresholdFHE(FLEXIBLEAUTO);
-    ThresholdFHE(FLEXIBLEAUTOEXT);
-    Chebyshev(FIXEDMANUAL);
-    Chebyshev(FIXEDAUTO);
     Chebyshev(FLEXIBLEAUTO);
-    Chebyshev(FLEXIBLEAUTOEXT);
     return 0;
 }
 
@@ -60,7 +55,11 @@ void ThresholdFHE(enum ScalingTechnique rescaleTech) {
     std::cout << "\nThreshold FHE example " << rescaleTech << std::endl;
 
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetMultiplicativeDepth(7);
+
+    // 1 extra level needs to be added for FIXED* modes (2 extra levels for FLEXIBLE* modes) to the multiplicative depth
+    // to support 2-party interactive bootstrapping
+    uint32_t depth = 7;
+    parameters.SetMultiplicativeDepth(depth);
     parameters.SetScalingModSize(50);
     parameters.SetBatchSize(16);
     parameters.SetScalingTechnique(rescaleTech);
@@ -104,34 +103,36 @@ void ThresholdFHE(enum ScalingTechnique rescaleTech) {
 
     std::vector<std::complex<double>> input({-0.9, -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 0.9});
 
-    Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
+    // This plaintext only has 3 RNS limbs, the minimum needed to perform 2-party interactive bootstrapping
+    // for FLEXIBLEAUTO
+    Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, depth - 2);
 
     auto ciphertext1 = cc->Encrypt(kp2.publicKey, plaintext1);
 
     // INTERACTIVE BOOTSTRAPPING STARTS
 
-    // reduce to two towers
+    // under the hood it reduces to two towers
     ciphertext1 = cc->IntBootAdjustScale(ciphertext1);
-    std::cerr << "IntBootAdjustScale Succeeded" << std::endl;
+    std::cout << "IntBootAdjustScale Succeeded" << std::endl;
 
     // masked decryption on the server: c0 = b + a*s0
     auto ciphertextOutput1 = cc->IntBootDecrypt(kp1.secretKey, ciphertext1);
-    std::cerr << "IntBootDecrypt on Server Succeeded" << std::endl;
+    std::cout << "IntBootDecrypt on Server Succeeded" << std::endl;
 
     auto ciphertext2 = ciphertext1->Clone();
     ciphertext2->SetElements({ciphertext2->GetElements()[1]});
 
     // masked decryption on the client: c1 = a*s1
     auto ciphertextOutput2 = cc->IntBootDecrypt(kp2.secretKey, ciphertext2);
-    std::cerr << "IntBootDecrypt on Client Succeeded" << std::endl;
+    std::cout << "IntBootDecrypt on Client Succeeded" << std::endl;
 
     // Encryption of masked decryption c1 = a*s1
     ciphertextOutput2 = cc->IntBootEncrypt(kp2.publicKey, ciphertextOutput2);
-    std::cerr << "IntBootEncrypt on Client Succeeded" << std::endl;
+    std::cout << "IntBootEncrypt on Client Succeeded" << std::endl;
 
     // Compute Enc(c1) + c0
     auto ciphertextOutput = cc->IntBootAdd(ciphertextOutput2, ciphertextOutput1);
-    std::cerr << "IntBootAdd on Server Succeeded" << std::endl;
+    std::cout << "IntBootAdd on Server Succeeded" << std::endl;
 
     // INTERACTIVE BOOTSTRAPPING ENDS
 
@@ -159,6 +160,9 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     std::cout << "\nThreshold FHE example " << rescaleTech << std::endl;
 
     CCParams<CryptoContextCKKSRNS> parameters;
+
+    // 1 extra level needs to be added for FIXED* modes (2 extra levels for FLEXIBLE* modes) to the multiplicative depth
+    // to support 2-party interactive bootstrapping
     parameters.SetMultiplicativeDepth(8);
     parameters.SetScalingModSize(50);
     parameters.SetBatchSize(16);
@@ -251,35 +255,33 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
 
     auto ciphertext1 = cc->Encrypt(kp2.publicKey, plaintext1);
 
+    // The Chebyshev series interpolation requires 6 levels
     ciphertext1 = cc->EvalChebyshevSeries(ciphertext1, coefficients, a, b);
-    std::cerr << "Ran Chebyshev interpolation" << std::endl;
+    std::cout << "Ran Chebyshev interpolation" << std::endl;
 
     // INTERACTIVE BOOTSTRAPPING STARTS
 
-    // ciphertext1 = cc->Compress(ciphertext1,2);
-    // std::cerr << "IntBootAdjustScale Succeeded" << std::endl;
-
     ciphertext1 = cc->IntBootAdjustScale(ciphertext1);
-    std::cerr << "IntBootAdjustScale Succeeded" << std::endl;
+    std::cout << "IntBootAdjustScale Succeeded" << std::endl;
 
     // masked decryption on the server: c0 = b + a*s0
     auto ciphertextOutput1 = cc->IntBootDecrypt(kp1.secretKey, ciphertext1);
-    std::cerr << "IntBootDecrypt on Server Succeeded" << std::endl;
+    std::cout << "IntBootDecrypt on Server Succeeded" << std::endl;
 
     auto ciphertext2 = ciphertext1->Clone();
     ciphertext2->SetElements({ciphertext2->GetElements()[1]});
 
     // masked decryption on the client: c1 = a*s1
     auto ciphertextOutput2 = cc->IntBootDecrypt(kp2.secretKey, ciphertext2);
-    std::cerr << "IntBootDecrypt on Client Succeeded" << std::endl;
+    std::cout << "IntBootDecrypt on Client Succeeded" << std::endl;
 
     // Encryption of masked decryption c1 = a*s1
     ciphertextOutput2 = cc->IntBootEncrypt(kp2.publicKey, ciphertextOutput2);
-    std::cerr << "IntBootEncrypt on Client Succeeded" << std::endl;
+    std::cout << "IntBootEncrypt on Client Succeeded" << std::endl;
 
     // Compute Enc(c1) + c0
     auto ciphertextOutput = cc->IntBootAdd(ciphertextOutput2, ciphertextOutput1);
-    std::cerr << "IntBootAdd on Server Succeeded" << std::endl;
+    std::cout << "IntBootAdd on Server Succeeded" << std::endl;
 
     // INTERACTIVE BOOTSTRAPPING ENDS
 
@@ -314,7 +316,7 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     std::cout << "\n Another round of Chebyshev interpolation after interactive bootstrapping: \n";
 
     ciphertextOutput = cc->EvalChebyshevSeries(ciphertextOutput, coefficients, a, b);
-    std::cerr << "Ran Chebyshev interpolation" << std::endl;
+    std::cout << "Ran Chebyshev interpolation" << std::endl;
 
     // distributed decryption
 
