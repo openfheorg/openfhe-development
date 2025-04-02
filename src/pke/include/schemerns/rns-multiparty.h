@@ -88,6 +88,15 @@ public:
 
     EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const override;
 
+    Ciphertext<DCRTPoly> IntBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
+                                        ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+    Ciphertext<DCRTPoly> IntBootEncrypt(const PublicKey<DCRTPoly> publicKey,
+                                        ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+    Ciphertext<DCRTPoly> IntBootAdd(ConstCiphertext<DCRTPoly> ciphertext1,
+                                    ConstCiphertext<DCRTPoly> ciphertext2) const override;
+
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////
