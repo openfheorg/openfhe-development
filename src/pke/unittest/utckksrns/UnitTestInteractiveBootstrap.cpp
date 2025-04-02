@@ -643,6 +643,7 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
             case INTERACTIVE_MP_BOOT_CHEBYSHEV:
                 UnitTest_MultiPartyBootChebyshev(test, test.buildTestName());
                 break;
+#if NATIVEINT != 128
             case INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY:
                 UnitTest_MultiPartyBootEncrypt2(test, test.buildTestName());
                 break;
@@ -655,6 +656,7 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
             case INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY:
                 UnitTest_MultiPartyBootChebyshev2(test, test.buildTestName());
                 break;
+#endif
             default:
                 break;
         }
