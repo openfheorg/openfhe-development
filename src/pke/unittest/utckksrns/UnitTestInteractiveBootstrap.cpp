@@ -449,9 +449,9 @@ protected:
             auto cPoly = cs.CRTInterpolate();
         
             auto Q       = cPoly.GetModulus();
-            auto Qhalf   = Q / 2;
-            auto Q1quart = Q / 4;
-            auto Q3quart = 3 * Q / 4;
+            auto Qhalf   = Q / BigInteger(2);
+            auto Q1quart = Q / BigInteger(4);
+            auto Q3quart = (BigInteger(3) * Q) / BigInteger(4);
 
             for (usint i = 0; i < cPoly.GetRingDimension(); i++) {
                 if ((cPoly[i] > Q1quart) && (cPoly[i] <= Q3quart))
