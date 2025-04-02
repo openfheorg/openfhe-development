@@ -48,6 +48,7 @@
 
 using namespace lbcrypto;
 
+#if NATIVEINT == 64
 //===========================================================================================================
 enum TEST_CASE_TYPE {
     ADD_PACKED = 0,
@@ -176,7 +177,6 @@ constexpr usint BATCH         = 8;
 constexpr double MIN_PRECISION_DIFF = 1.5;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
-#if NATIVEINT == 64
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { ADD_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     60,     DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
     { ADD_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     90,     DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
@@ -184,9 +184,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { ADD_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
     { ADD_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
     { ADD_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   UNIFORM_TERNARY,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32},   0},
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     // composite degree d = 2
@@ -197,9 +194,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { MULT_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
     // composite degree d = 4
     { MULT_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   0},
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     // composite degree d = 2
@@ -210,9 +204,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { MULT_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
     // composite degree d = 4
     { MULT_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   32},
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     // composite degree d = 2
@@ -223,9 +214,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { MULT_PACKED, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
      // composite degree d = 4
     { MULT_PACKED, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32},   RING_DIM_HALF},
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,               Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     // composite degree d = 2
@@ -295,9 +283,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVALATINDEX, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          76,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
     { EVALATINDEX, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          90,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
     { EVALATINDEX, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     108,    DSIZE, BATCH,   DFLT,       DFLT,         118,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, 0},
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { EVALMERGE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
@@ -305,9 +290,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVALMERGE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVALMERGE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVALMERGE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,         120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { EVAL_LINEAR_WSUM, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
@@ -315,9 +297,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVAL_LINEAR_WSUM, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVAL_LINEAR_WSUM, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVAL_LINEAR_WSUM, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,         120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { RE_ENCRYPTION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
@@ -325,9 +304,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { RE_ENCRYPTION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
     { RE_ENCRYPTION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
     { RE_ENCRYPTION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    INDCPA, DFLT, DFLT, DFLT, DFLT, 32}, },
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { EVAL_POLY, "01", {CKKSRNS_SCHEME, RING_DIM, 5,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
@@ -335,9 +311,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVAL_POLY, "03", {CKKSRNS_SCHEME, RING_DIM, 5,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVAL_POLY, "04", {CKKSRNS_SCHEME, RING_DIM, 5,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVAL_POLY, "05", {CKKSRNS_SCHEME, RING_DIM, 5,     117,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { METADATA, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
@@ -345,9 +318,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { METADATA, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { METADATA, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { METADATA, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,    DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
-#endif
-
-#if NATIVEINT == 64
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, Slots
     { EVALSQUARE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     52,     DSIZE, BATCH,   DFLT,       DFLT,          64,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
@@ -355,7 +325,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVALSQUARE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     66,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVALSQUARE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     80,     DSIZE, BATCH,   DFLT,       DFLT,          96,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
     { EVALSQUARE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     118,     DSIZE, BATCH,   DFLT,       DFLT,        120,     HEStd_NotSet, HYBRID,     COMPOSITESCALINGAUTO,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32}, },
-#endif
 };
 // clang-format on
 //===========================================================================================================
@@ -2000,3 +1969,4 @@ TEST_P(UTCKKSRNSCS, CKKSRNS) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNSCS, ::testing::ValuesIn(testCases), testName);
+#endif
