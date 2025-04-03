@@ -34,6 +34,7 @@
  */
 
 #include "openfhe.h"
+#include "math/chebyshev.h"
 
 using namespace lbcrypto;
 
@@ -168,6 +169,13 @@ void EvalFunctionExample() {
     std::vector<std::complex<double>> expectedOutput(
         {1, 1.414213, 1.732050, 2, 2.236067, 2.449489, 2.645751, 2.828427, 3});
     std::cout << "Expected output\n\t" << expectedOutput << std::endl;
+
+    // Compute the same approximation on cleartext data
+    std::vector<double> inputDouble{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    auto ptxtApprox = EvalChebyshevFunctionPtxt(
+            [](double x) -> double { return std::sqrt(x); },
+            inputDouble, lowerBound, upperBound, polyDegree);
+    std::cout << "Cleartext output\n\t" << ptxtApprox << std::endl;
 
     std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
     std::cout << "Actual output\n\t" << finalResult << std::endl << std::endl;
