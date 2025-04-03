@@ -53,10 +53,10 @@ const size_t AUXMODSIZE = 119;
 const size_t AUXMODSIZE = 60;
 #endif
 
-bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                  usint cyclOrder, usint numPrimes, usint scalingModSize,
-                                                  usint firstModSize, uint32_t numPartQ,
-                                                  COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
+bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                                          usint cyclOrder, usint numPrimes, usint scalingModSize,
+                                                          usint firstModSize, uint32_t numPartQ,
+                                                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
     // the "const" modifier for cryptoParamsCKKSRNS and encodingParams below doesn't mean that the objects those 2 pointers
     // point to are const (not changeable). it means that the pointers themselves are const only.
     const auto cryptoParamsCKKSRNS      = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);

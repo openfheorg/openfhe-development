@@ -136,3 +136,11 @@ respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain 
 - Computing the min/max via scheme switching is only implemented for vectors of size a power of two.
 - Large memory consumption for large number of slots (because of the linear transform required in the switching and that the keys are created with the maximum number of levels)
 - Only GINX with uniform ternary secrets is currently supported for scheme switching.
+
+
+Additional example demonstrating serialization
+================================================
+
+The code for this example is located in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). The file provides a simple setup for real number serialization before progressing into the next logical step - serialization and communication between 2 separate entities.
+All generated files containing serialized data are stored in the DATAFOLDER directory, which is defined in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). If you want to rename any of those files, you can do so in [src/pke/unittest/utils/schemeswitching-data-serializer.h](src/pke/unittest/utils/schemeswitching-data-serializer.h).
+

@@ -47,7 +47,7 @@
 
 #include <algorithm>
 #include <initializer_list>
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -323,6 +323,9 @@ public:
    * @param value is the value to set.
    */
     void SwitchModulus(const IntegerType& value);
+    void LazySwitchModulus(const IntegerType& value);
+
+    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
 
     /**
    * Gets the vector modulus.

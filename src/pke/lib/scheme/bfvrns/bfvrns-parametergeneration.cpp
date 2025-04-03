@@ -46,10 +46,10 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                uint32_t evalAddCount, uint32_t multiplicativeDepth,
-                                                uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
-                                                uint32_t numDigits) const {
+bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                                        uint32_t evalAddCount, uint32_t multiplicativeDepth,
+                                                        uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
+                                                        uint32_t numDigits) const {
     if (!cryptoParams)
         OPENFHE_THROW("No crypto parameters are supplied to BFVrns ParamsGen");
 
@@ -144,7 +144,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             // iterative approximations; we do not know the number
             // of digits and moduli at this point and use upper bounds
             double numTowers = std::ceil(logqPrev / dcrtBits);
+#if defined(WITH_REDUCED_NOISE)
             return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
+#else
+            return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0);
+#endif
         }
         else {
             double numDigitsPerTower = (digitSize == 0) ? 1 : ((dcrtBits / digitSize) + 1);

@@ -39,13 +39,13 @@
     #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
         #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
 
-        #include <iostream>
-        #include <string>
+        #include "math/hal/bigintfxd/ubintfxd.h"
 
         #include "utils/inttypes.h"
         #include "utils/serializable.h"
 
-        #include "math/hal/bigintfxd/ubintfxd.h"
+        #include <ostream>
+        #include <string>
 
 /**
  * @namespace bigintfxd
@@ -232,6 +232,11 @@ public:
    * @param value is the value to set.
    */
     void SwitchModulus(const IntegerType& value);
+    void LazySwitchModulus(const IntegerType& value);
+
+    BigVectorFixedT& MultAccEqNoCheck(const BigVectorFixedT& v, const IntegerType& i) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecfxd");
+    }
 
     /**
    * Gets the vector modulus.

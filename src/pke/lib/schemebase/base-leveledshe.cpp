@@ -478,8 +478,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
 template <class Element>
 std::shared_ptr<std::vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
     ConstCiphertext<Element> ciphertext) const {
-    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    auto algo                       = ciphertext->GetCryptoContext()->GetScheme();
+    const std::vector<Element>& cv = ciphertext->GetElements();
+    auto algo                      = ciphertext->GetCryptoContext()->GetScheme();
 
     return algo->EvalKeySwitchPrecomputeCore(cv[1], ciphertext->GetCryptoParameters());
 }
@@ -505,8 +505,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
     }
     auto evalKey = evalKeyIterator->second;
 
-    auto algo                       = cc->GetScheme();
-    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    auto algo                      = cc->GetScheme();
+    const std::vector<Element>& cv = ciphertext->GetElements();
 
     std::shared_ptr<std::vector<Element>> ba = algo->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
 

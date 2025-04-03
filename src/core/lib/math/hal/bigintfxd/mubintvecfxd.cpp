@@ -226,6 +226,13 @@ void BigVectorFixedT<IntegerType>::SwitchModulus(const IntegerType& newModulus) 
     this->SetModulus(newModulus);
 }
 
+template <class IntegerType>
+void BigVectorFixedT<IntegerType>::LazySwitchModulus(const IntegerType& modulus) {
+    for (uint32_t i = 0; i < m_length; ++i)
+        this->m_data[i].ModEq(modulus);
+    this->SetModulus(modulus);
+}
+
 // MODULAR ARITHMETIC OPERATIONS
 
 template <class IntegerType>

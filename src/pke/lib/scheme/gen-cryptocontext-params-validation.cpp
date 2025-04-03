@@ -134,6 +134,13 @@ void validateParametersForCryptocontext(const Params& parameters) {
                              "]. Ring dimension must be a power of 2.");
         OPENFHE_THROW(errorMsg);
     }
+    if (BV == parameters.GetKeySwitchTechnique()) {
+        const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE / 2));
+        if (maxDigitSize < parameters.GetDigitSize()) {
+            OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
+                          " for keySwitchTechnique == BV");
+        }
+    }
     //====================================================================================================================
     constexpr usint maxMultiplicativeDepthValue = 1000;
     if (parameters.GetMultiplicativeDepth() > maxMultiplicativeDepthValue) {

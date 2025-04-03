@@ -34,7 +34,6 @@
 
 #include <vector>
 #include <complex>
-#include <iostream>
 #include <stdint.h>
 #include <memory>
 
@@ -185,17 +184,6 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
  * @param slots number of slots and size of vector that is rotated.
  */
 uint32_t ReduceRotation(int32_t index, uint32_t slots);
-
-/**
- * Computes parameters to ensure the encoding and decoding computations take exactly the
- * specified number of levels. More specifically, it returns a vector than contains
- * layers (the number of layers to collapse in one level), rows (how many such levels),
- * rem (the number of layers remaining to be collapsed in one level)
- *
- * @param logSlots the base 2 logarithm of the number of slots.
- * @param budget the allocated level budget for the computation.
- */
-std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4);
 
 /**
  * Computes all parameters needed for the homomorphic encoding and decoding in the bootstrapping

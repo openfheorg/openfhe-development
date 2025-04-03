@@ -435,11 +435,11 @@ public:
         OPENFHE_THROW("double scalar multiplication is not implemented for this scheme");
     }
 
-    virtual Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+    virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element> ciphertext, uint64_t integer) const {
         OPENFHE_THROW("MultByInteger is not implemented for this scheme");
     }
 
-    virtual void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
+    virtual void MultByIntegerInPlace(Ciphertext<Element>& ciphertext, uint64_t integer) const {
         OPENFHE_THROW("MultByIntegerInPlace is not implemented for this scheme");
     }
 

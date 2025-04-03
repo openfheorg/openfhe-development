@@ -345,7 +345,7 @@ public:
         return 1;
     }
 
-private:
+protected:
     std::ostream& doprint(std::ostream& out) const override {
         out << "ILDCRTParams ";
         ElemParams<IntType>::doprint(out);
@@ -355,6 +355,7 @@ private:
         return out << std::endl;
     }
 
+private:
     // array of smaller ILParams
     std::vector<std::shared_ptr<ILNativeParams>> m_params;
 };

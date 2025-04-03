@@ -64,7 +64,7 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
             OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
@@ -83,7 +83,7 @@ public:
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& coeffs,
                        size_t noiseScaleDeg, uint32_t level, double scFact, size_t slots)
-        : PlaintextImpl(vp, ep, CKKSRNS_SCHEME), value(coeffs) {
+        : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(coeffs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
             OPENFHE_THROW("The number of slots should be a power of two");
@@ -109,7 +109,7 @@ public:
    * @param rhs - The input object to copy.
    */
     explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& rhs, size_t slots)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME), value(rhs) {
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(rhs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
             OPENFHE_THROW("The number of slots should be a power of two");
@@ -128,7 +128,7 @@ public:
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME) {
+    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
             OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
@@ -147,7 +147,7 @@ public:
         OPENFHE_THROW("CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
     }
 
-    bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);
+    bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) override;
 
     const std::vector<std::complex<double>>& GetCKKSPackedValue() const override {
         return value;
@@ -174,14 +174,6 @@ public:
     static std::vector<DCRTPoly::Integer> CRTMult(const std::vector<DCRTPoly::Integer>& a,
                                                   const std::vector<DCRTPoly::Integer>& b,
                                                   const std::vector<DCRTPoly::Integer>& mods);
-
-    /**
-   * GetEncodingType
-   * @return CKKS_PACKED_ENCODING
-   */
-    PlaintextEncodings GetEncodingType() const override {
-        return CKKS_PACKED_ENCODING;
-    }
 
     /**
    * Get method to return the length of plaintext
@@ -216,39 +208,15 @@ public:
     }
 
     /**
-   * Method to compare two plaintext to test for equivalence.  This method does
-   * not test that the plaintext are of the same type.
-   *
-   * @param other - the other plaintext to compare to.
-   * @return whether the two plaintext are equivalent.
-   */
-    bool CompareTo(const PlaintextImpl& other) const override {
-        const auto& rv = static_cast<const CKKSPackedEncoding&>(other);
-        return this->value == rv.value;
-    }
-
-    /**
    * @brief Destructor method.
    */
     static void Destroy();
 
-    void PrintValue(std::ostream& out) const override {
-        // for sanity's sake, trailing zeros get elided into "..."
-        // out.precision(15);
-        out << "(";
-        size_t i = value.size();
-        while (--i > 0)
-            if (value[i] != std::complex<double>(0, 0))
-                break;
-
-        for (size_t j = 0; j <= i; j++) {
-            out << value[j].real() << ", ";
-        }
-
-        out << " ... ); ";
-        out << "Estimated precision: " << encodingParams->GetPlaintextModulus() - m_logError << " bits" << std::endl;
-    }
-
+    /**
+    * @brief GetFormattedValues() is called by operator<< and requires a precision as an argument
+    * @param precision number of decimal digits of precision to print
+    * @return string with all values and "estimated precision"
+    */
     std::string GetFormattedValues(int64_t precision) const override {
         std::stringstream ss;
         ss << "(";
@@ -279,10 +247,30 @@ private:
     double m_logError = 0;
 
 protected:
+    void PrintValue(std::ostream& out) const override {
+        out << GetFormattedValues(8) << std::endl;
+    }
+
     usint GetDefaultSlotSize() {
         auto batchSize = GetEncodingParams()->GetBatchSize();
         return (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
     }
+
+    /**
+    * Method to compare two plaintext to test for equivalence.  This method does
+    * not test that the plaintext are of the same type.
+    *
+    * @param rhs - the other plaintext to compare to.
+    * @return whether the two plaintext are equivalent.
+    */
+    bool CompareTo(const PlaintextImpl& rhs) const override {
+        const auto* el = dynamic_cast<const CKKSPackedEncoding*>(&rhs);
+        if (el == nullptr)
+            return false;
+
+        return this->value == el->value;
+    }
+
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
