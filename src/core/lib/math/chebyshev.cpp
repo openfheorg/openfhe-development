@@ -67,4 +67,41 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
     return coefficients;
 }
 
+// A cleartext version of CryptoContext<...>::EvalChebyshevFunction(...)
+std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double> ptxt, double a, double b, size_t degree)
+{
+    auto coeffs = EvalChebyshevCoefficients(func, a, b, degree);
+    coeffs[0] /= 2.0; // For some reason we need this
+
+    // It seems to be standard practice to halve the 1st coeffiicent,
+    // see for example the Chebychev Series section at
+    // https://www.cfm.brown.edu/people/dobrush/am34/Mathematica/ch5/chebyshev.html
+
+    // Special case for trivial case of a degee-0 approximation
+    if (degree == 0) {
+        std::vector<double> result(ptxt.size(), coeffs[0]);
+        return result;
+    }
+
+    std::vector<double> result(ptxt.size());
+    for (size_t i = 0; i < ptxt.size(); i++) {
+        double x = ptxt[i];
+        double x2 = 2*x;
+
+        double t_prev = 1.0;   // T0(x) = 1
+        double t_j = x;        // T1(x) = x
+        double y = coeffs[0] + coeffs[1]*x;
+        // Use the recursive formula T_{i+1}(X) = 2x T_i(x) - T_{i-1}(x)
+        for (size_t j = 2; j < coeffs.size(); j++) {
+            // Compute T_j(x) and add it to the approximation
+            double t_next = x2*t_j - t_prev;
+            t_prev = t_j;
+            t_j = t_next;
+            y += coeffs[j]*t_next;
+        }
+        result[i] = y;
+    }
+    return result;
+}
+
 }  // namespace lbcrypto
