@@ -49,8 +49,10 @@ namespace lbcrypto {
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 const size_t AUXMODSIZE = 119;
-#else
+#elif NATIVEINT == 64
 const size_t AUXMODSIZE = 60;
+#else
+const size_t AUXMODSIZE = 28;
 #endif
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
