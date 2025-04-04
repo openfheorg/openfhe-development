@@ -71,11 +71,14 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
 std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double> ptxt, double a, double b, size_t degree)
 {
     auto coeffs = EvalChebyshevCoefficients(func, a, b, degree);
-    coeffs[0] /= 2.0; // For some reason we need this
-
-    // It seems to be standard practice to halve the 1st coeffiicent,
-    // see for example the Chebychev Series section at
+    
+    // The standard practice is to halve the 1st coefficient.
+    // See, for example, the Chebyshev Series section at
     // https://www.cfm.brown.edu/people/dobrush/am34/Mathematica/ch5/chebyshev.html
+    // and derivation of Eq. (6) in https://arxiv.org/pdf/1810.04282.
+    // The halving requirement follows from the discrete orthogonality relation for Chebyshev polynomials, 
+    // i.e., Eq. (4) in https://arxiv.org/pdf/1810.04282.
+    coeffs[0] /= 2.0; 
 
     // Special case for trivial case of a degee-0 approximation
     if (degree == 0) {

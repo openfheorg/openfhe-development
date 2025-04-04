@@ -46,8 +46,6 @@
  */
 namespace lbcrypto {
 
-// move to cryptocontext?
-
 /**
  * Method for calculating Chebyshev coefficients for an input function
  * over the range [a,b]. These coefficents are used in EValChebyshevSeries
