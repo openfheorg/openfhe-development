@@ -129,7 +129,8 @@ protected:
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
                         uint32_t thresholdNumOfParties                        = 1,
                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
-                        usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT)
+                        usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT,
+                        CKKSDataType ckksDataType = REAL)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
                                          PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
@@ -141,6 +142,7 @@ protected:
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
         m_compositeDegree                     = compositeDegree;
         m_registerWordSize                    = registerWordSize;
+        m_ckksDataType                        = ckksDataType;
     }
 
     ~CryptoParametersRNS() override = default;
@@ -161,7 +163,8 @@ protected:
                m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
                m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
                m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode() &&
-               m_compositeDegree == el->GetCompositeDegree() && m_registerWordSize == el->GetRegisterWordSize();
+               m_compositeDegree == el->GetCompositeDegree() && m_registerWordSize == el->GetRegisterWordSize() &&
+               m_ckksDataType == el->GetCKKSDataType();
     }
 
     void PrintParameters(std::ostream& os) const override {
@@ -1385,6 +1388,15 @@ public:
         return m_MPIntBootCiphertextCompressionLevel;
     }
 
+    /**
+   * Method to retrieve the CKKS data type.
+   *
+   * @return the CKKS data type.
+   */
+    enum CKKSDataType GetCKKSDataType() const {
+        return m_ckksDataType;
+    }
+
 protected:
     /////////////////////////////////////
     // PrecomputeCRTTables
@@ -1820,6 +1832,9 @@ protected:
     // CKKS RNS MultiParty Bootstrapping Parameter
     /////////////////////////////////////
     COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
+
+    // CKKS Data Type
+    CKKSDataType m_ckksDataType;
 
 public:
     /////////////////////////////////////

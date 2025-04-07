@@ -108,6 +108,19 @@ class CryptoContextImpl : public Serializable {
         }
     }
 
+    /**
+    * @brief VerifyRealCKKS is to check if the CKKS data type is real. if it is not
+    *        the function will thow an exception
+    * @param functionName is the calling function name. __func__ can be used instead
+    */
+    inline void VerifyRealCKKS(const std::string& functionName) const {
+        if (GetCKKSDataType() != REAL) {
+            std::string errMsg =
+                "Function " + std::string(functionName) + " is available for the real CKKS data types only.";
+            OPENFHE_THROW(errMsg);
+        }
+    }
+
     void SetKSTechniqueInScheme();
 
     const CryptoContext<Element> GetContextForPointer(const CryptoContextImpl<Element>* cc) const {
@@ -274,6 +287,7 @@ protected:
             std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
             OPENFHE_THROW(errorMsg);
         }
+
         if (a->GetCryptoContext().get() != this) {
             std::string errorMsg(std::string("Ciphertext was not created in this CryptoContext") + CALLER_INFO);
             OPENFHE_THROW(errorMsg);
@@ -417,7 +431,8 @@ protected:
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
-                                                               noiseScaleDeg, level, scFact, slots));
+                                                               noiseScaleDeg, level, scFact, slots,
+                                                               this->GetCKKSDataType()));
         }
         else {
             // Check if plaintext has got enough slots for data (value)
@@ -430,7 +445,7 @@ protected:
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
-                                                               level, scFact, slots));
+                                                               level, scFact, slots, this->GetCKKSDataType()));
         }
         p->Encode();
 
@@ -453,6 +468,20 @@ protected:
         }
 
         return cryptoParams->GetCompositeDegree();
+    }
+
+    /**
+    * GetCKKSDataType: get CKKS data type of the current CKKS crypto context.
+    * @return enum corresponding to data type
+    */
+    CKKSDataType GetCKKSDataType() const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        if (!cryptoParams) {
+            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
+            OPENFHE_THROW(errorMsg);
+        }
+
+        return cryptoParams->GetCKKSDataType();
     }
 
     PrivateKey<Element> privateKey;
@@ -1082,7 +1111,7 @@ public:
    * Get a map of automorphism keys for all secret keys
    */
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
-   /**
+    /**
     * Get automorphism keys for a specific secret key tag
     */
     static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
@@ -1148,8 +1177,6 @@ public:
     }
 
     /**
-   * COMPLEX ARITHMETIC IS NOT AVAILABLE,
-   * AND THIS METHOD BE DEPRECATED. USE THE REAL-NUMBER METHOD INSTEAD.
    * MakeCKKSPackedPlaintext constructs a CKKSPackedEncoding in this context
    * from a vector of complex numbers
    * @param value - input vector of complex number
@@ -3466,6 +3493,7 @@ public:
    */
     LWEPrivateKey EvalCKKStoFHEWSetup(SchSwchParams params) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         SetParamsFromCKKSCryptocontext(params);
         return GetScheme()->EvalCKKStoFHEWSetup(params);
     }
@@ -3479,6 +3507,7 @@ public:
    */
     void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateKey(keyPair.secretKey);
         if (!lwesk) {
             OPENFHE_THROW("FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
@@ -3495,6 +3524,7 @@ public:
    */
     void EvalCKKStoFHEWPrecompute(double scale = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         GetScheme()->EvalCKKStoFHEWPrecompute(*this, scale);
     }
 
@@ -3508,6 +3538,7 @@ public:
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
                                                                    uint32_t numCtxts = 0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         if (ciphertext == nullptr)
             OPENFHE_THROW("ciphertext passed to EvalCKKStoFHEW is empty");
         return GetScheme()->EvalCKKStoFHEW(ciphertext, numCtxts);
@@ -3524,6 +3555,7 @@ public:
     void EvalFHEWtoCKKSSetup(const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS = 0,
                              uint32_t logQ = 25) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         GetScheme()->EvalFHEWtoCKKSSetup(*this, ccLWE, numSlotsCKKS, logQ);
     }
 
@@ -3541,6 +3573,7 @@ public:
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
                               uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateKey(keyPair.secretKey);
 
         auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
@@ -3563,6 +3596,7 @@ public:
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
                                        double pmax = 2.0, uint32_t dim1 = 0) const {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
     }
 
@@ -3592,6 +3626,7 @@ public:
    */
     LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams& params) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         SetParamsFromCKKSCryptocontext(params);
         return GetScheme()->EvalSchemeSwitchingSetup(params);
     }
@@ -3605,6 +3640,7 @@ public:
    */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateKey(keyPair.secretKey);
 
         auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
@@ -3622,6 +3658,7 @@ public:
    */
     void EvalCompareSwitchPrecompute(uint32_t pLWE = 0, double scaleSign = 1.0, bool unit = false) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         GetScheme()->EvalCompareSwitchPrecompute(*this, pLWE, scaleSign, unit);
     }
 
@@ -3644,6 +3681,7 @@ public:
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
                                                    bool unit = false) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
 
@@ -3672,6 +3710,7 @@ public:
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                             double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3685,6 +3724,7 @@ public:
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                                double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3711,6 +3751,7 @@ public:
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                             double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3724,6 +3765,7 @@ public:
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                                double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyRealCKKS(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);

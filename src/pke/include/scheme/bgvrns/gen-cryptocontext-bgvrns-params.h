@@ -90,6 +90,9 @@ public:
     void SetRegisterWordSize(uint32_t registerWordSize0) override {
         DISABLED_FOR_BGVRNS;
     }
+    virtual void SetCKKSDataType(CKKSDataType ckksDataType0) override {
+        DISABLED_FOR_BGVRNS;
+    }
 };
 //====================================================================================================================
 

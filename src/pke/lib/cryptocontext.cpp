@@ -471,6 +471,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
     Plaintext decrypted = CryptoContextImpl<Element>::GetPlaintextForDecrypt(
         ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
 
+    decrypted->SetCKKSDataType(this->GetCKKSDataType());
     DecryptResult result;
 
     if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly))) {
@@ -576,6 +577,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
     // this->GetElementParams(), this->GetEncodingParams());
     Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
         ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
+    decrypted->SetCKKSDataType(this->GetCKKSDataType());
 
     DecryptResult result;
 

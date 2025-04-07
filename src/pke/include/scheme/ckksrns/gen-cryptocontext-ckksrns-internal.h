@@ -69,6 +69,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     usint scalingModSize    = parameters.GetScalingModSize();
     usint firstModSize      = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
+    if (parameters.GetExecutionMode() == EXEC_NOISE_ESTIMATION && parameters.GetCKKSDataType() == COMPLEX) {
+        OPENFHE_THROW("EXEC_NOISE_ESTIMATION mode is not compatible with complex data types.");
+    }
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
         if (parameters.GetNoiseEstimate() == 0) {
@@ -117,7 +120,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetThresholdNumOfParties(),
         parameters.GetInteractiveBootCompressionLevel(),
         parameters.GetCompositeDegree(),
-        parameters.GetRegisterWordSize());
+        parameters.GetRegisterWordSize(),
+        parameters.GetCKKSDataType());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
