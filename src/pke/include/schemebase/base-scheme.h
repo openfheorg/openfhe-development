@@ -533,6 +533,21 @@ public:
         return;
     }
 
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        return m_LeveledSHE->EvalAdd(ciphertext, constant);
+    }
+
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        m_LeveledSHE->EvalAddInPlace(ciphertext, constant);
+        return;
+    }
+
     /////////////////////////////////////////
     // SHE SUBTRACTION Wrapper
     /////////////////////////////////////////
@@ -845,6 +860,21 @@ public:
     }
 
     virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        m_LeveledSHE->EvalMultInPlace(ciphertext, constant);
+        return;
+    }
+
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        return m_LeveledSHE->EvalMult(ciphertext, constant);
+    }
+
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");

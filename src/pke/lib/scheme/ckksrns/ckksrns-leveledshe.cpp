@@ -64,6 +64,36 @@ void LeveledSHECKKSRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, double 
     cv[0]                     = cv[0] + GetElementForEvalAddOrSub(ciphertext, operand);
 }
 
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext,
+                                                std::complex<double> operand) const {
+    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    EvalAddInPlace(result, operand);
+    return result;
+}
+
+void LeveledSHECKKSRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const {
+    std::vector<DCRTPoly>& cv              = ciphertext->GetElements();
+    std::vector<DCRTPoly::Integer> elemsRe = GetElementForEvalAddOrSub(ciphertext, std::fabs(operand.real()));
+    std::vector<DCRTPoly::Integer> elemsIm = GetElementForEvalAddOrSub(ciphertext, std::fabs(operand.imag()));
+    usint N                                = cv[0].GetLength();
+    const auto elemParams                  = cv[0].GetParams();
+
+    DCRTPoly elemsComplex(elemParams, Format::COEFFICIENT, true);
+    usint sizeQl = elemsComplex.GetNumOfElements();
+    for (usint i = 0; i < sizeQl; i++) {
+        NativeVector vec(N, cv[0].GetElementAtIndex(i).GetModulus());
+        NativeInteger mod = cv[0].GetElementAtIndex(i).GetModulus();
+        vec[0]            = (operand.real() > 0) ? NativeInteger(elemsRe[i].Mod(mod)) : mod.ModSub(elemsRe[i], mod);
+        vec[N / 2]        = (operand.imag() > 0) ? NativeInteger(elemsIm[i].Mod(mod)) : mod.ModSub(elemsIm[i], mod);
+        NativePoly element(cv[0].GetElementAtIndex(i));
+        element.SetValues(vec, Format::COEFFICIENT);
+        elemsComplex.SetElementAtIndex(i, element);
+    }
+    elemsComplex.SetFormat(Format::EVALUATION);
+
+    cv[0] += elemsComplex;
+}
+
 /////////////////////////////////////////
 // SHE SUBTRACTION CONSTANT
 /////////////////////////////////////////
@@ -95,6 +125,25 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
         if (ciphertext->GetNoiseScaleDeg() == 2) {
             ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
+        }
+    }
+
+    EvalMultCoreInPlace(ciphertext, operand);
+}
+
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertext,
+                                                 std::complex<double> operand) const {
+    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    EvalMultInPlace(result, operand);
+    return result;
+}
+
+void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+
+    if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
+        if (ciphertext->GetNoiseScaleDeg() == 2) {
+            ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
         }
     }
 
@@ -727,6 +776,52 @@ void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, do
     for (usint i = 0; i < cv.size(); ++i) {
         cv[i] = cv[i] * factors;
     }
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
+
+    double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
+    ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * scFactor);
+}
+
+void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+
+    double operandRe = operand.real();
+    double operandIm = operand.imag();
+
+    std::vector<DCRTPoly::Integer> factorsRe = GetElementForEvalMult(ciphertext, operandRe);
+    std::vector<DCRTPoly::Integer> factorsIm = GetElementForEvalMult(ciphertext, operandIm);
+    std::vector<DCRTPoly>& cv                = ciphertext->GetElements();
+    std::vector<DCRTPoly> cvRe(cv.size()), cvIm(cv.size());
+    for (usint i = 0; i < cv.size(); ++i) {
+        cvRe[i] = cv[i] * factorsRe;
+        cvIm[i] = cv[i] * factorsIm;
+    }
+
+    // MultByMonomialInPlace
+    const auto elemParams = cv[0].GetParams();
+    auto paramsNative     = elemParams->GetParams()[0];
+    usint N               = elemParams->GetRingDimension();
+    usint M               = 2 * N;
+
+    NativePoly monomial(paramsNative, Format::COEFFICIENT, true);
+
+    usint power        = M / 4;
+    usint powerReduced = power % M;
+    usint index        = power % N;
+    monomial[index]    = powerReduced < N ? NativeInteger(1) : paramsNative->GetModulus() - NativeInteger(1);
+
+    DCRTPoly monomialDCRT(elemParams, Format::COEFFICIENT, true);
+    monomialDCRT = monomial;
+    monomialDCRT.SetFormat(Format::EVALUATION);
+
+    for (usint i = 0; i < ciphertext->NumberCiphertextElements(); i++) {
+        cvIm[i] *= monomialDCRT;
+    }
+
+    for (usint i = 0; i < cv.size(); ++i) {
+        cv[i] = cvRe[i] + cvIm[i];
+    }
+
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
 
     double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());

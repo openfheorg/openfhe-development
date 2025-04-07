@@ -207,6 +207,9 @@ void SimpleComplexNumbers() {
     std::vector<std::complex<double>> x2 = {5.0 - 5.0i, 4.0 - 4.i,    3.0 - 3.i,  2.0 - 2.i,
                                             1.0 - 1.i,  0.75 - 0.75i, 0.5 - 0.5i, 0.25 - 0.25i};
 
+    std::complex<double> constComplex(1.0 - 2.0i);
+    std::complex<double> constComplex2(1.0 + 0.5i);
+
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
     Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
@@ -240,6 +243,17 @@ void SimpleComplexNumbers() {
     auto evalConjKeyMap = cc->GetEvalAutomorphismKeyMap(c1->GetKeyTag());
     auto cConj1         = cc->EvalAutomorphism(c1, indexConj, evalConjKeyMap);
 
+    // Multiplication by a complex constant
+    auto cMulC = cc->EvalMult(c1, constComplex);
+
+    // Additions by a complex constant
+    auto cAddC = cc->EvalAdd(c2, constComplex);
+    cc->EvalAddInPlace(cAddC, constComplex2);
+
+    // Subtractions by a complex constant
+    auto cSubC = cc->EvalSub(c2, constComplex);
+    cc->EvalSubInPlace(cSubC, constComplex2);
+
     // Step 5: Decryption and output
     // Note that this does not automatically create a plaintext that encodes complex values.
     Plaintext result;
@@ -248,11 +262,17 @@ void SimpleComplexNumbers() {
     // to 15 and it should become visible.
     std::cout.precision(8);
 
-    std::cout << std::endl << "Results of homomorphic computations: " << std::endl;
+    std::cout << std::endl << "Decrypted complex inputs: " << std::endl;
 
     cc->Decrypt(keys.secretKey, c1, &result);
     result->SetLength(batchSize);
     std::cout << "x1 = " << result;
+
+    cc->Decrypt(keys.secretKey, c2, &result);
+    result->SetLength(batchSize);
+    std::cout << "x2 = " << result;
+
+    std::cout << std::endl << "Results of homomorphic computations: " << std::endl;
 
     // Decrypt the result of addition
     cc->Decrypt(keys.secretKey, cAdd, &result);
@@ -275,21 +295,34 @@ void SimpleComplexNumbers() {
     std::cout << "x1 * x2 = " << result << std::endl;
 
     // Decrypt the result of rotations
-
     cc->Decrypt(keys.secretKey, cRot1, &result);
     result->SetLength(batchSize);
-    std::cout << std::endl << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
-    std::cout << "x1 rotate by 1 = " << result << std::endl;
+    std::cout << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
+    std::cout << "x1 rotated by 1 = " << result << std::endl;
 
     cc->Decrypt(keys.secretKey, cRot2, &result);
     result->SetLength(batchSize);
-    std::cout << "x1 rotate by -2 = " << result << std::endl;
+    std::cout << "x1 rotated by -2 = " << result << std::endl;
 
     // Decrypt the result of conjugation
-
     cc->Decrypt(keys.secretKey, cConj1, &result);
     result->SetLength(batchSize);
     std::cout << "x1 conjugated = " << result << std::endl;
+
+    // Decrypt the result of multiplication by complex value
+    cc->Decrypt(keys.secretKey, cMulC, &result);
+    result->SetLength(batchSize);
+    std::cout << "x1 * (1 - 2i) = " << result << std::endl;
+
+    // Decrypt the result of additions by two complex values
+    cc->Decrypt(keys.secretKey, cAddC, &result);
+    result->SetLength(batchSize);
+    std::cout << "x2 + (1 - 2i) + (1 + 0.5i) = " << result << std::endl;
+
+    // Decrypt the result of subtractions by two complex values
+    cc->Decrypt(keys.secretKey, cSubC, &result);
+    result->SetLength(batchSize);
+    std::cout << "x2 - (1 - 2i) - (1 + 0.5i) = " << result << std::endl;
 }
 
 void SimpleBootstrappingComplex() {
