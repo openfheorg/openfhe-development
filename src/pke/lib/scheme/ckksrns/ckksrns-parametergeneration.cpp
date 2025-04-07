@@ -49,6 +49,8 @@ namespace lbcrypto {
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 const size_t AUXMODSIZE = 119;
+#elif NATIVEINT == 32
+const size_t AUXMODSIZE = 28;
 #else
 const size_t AUXMODSIZE = 60;
 #endif
