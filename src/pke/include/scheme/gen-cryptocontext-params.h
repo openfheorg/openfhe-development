@@ -173,6 +173,9 @@ class Params {
     uint32_t compositeDegree;
     uint32_t registerWordSize;
 
+    // CKKS data type: real or complex. Noise flooding is only enabled for real values.
+    CKKSDataType ckksDataType;
+
     void SetToDefaults(SCHEME scheme);
 
 protected:
@@ -255,7 +258,8 @@ public:
                 "thresholdNumOfParties",
                 "interactiveBootCompressionLevel",
                 "compositeDegree",
-                "registerWordSize"};
+                "registerWordSize",
+                "ckksDataType"};
     }
 
     // getters
@@ -357,6 +361,9 @@ public:
     uint32_t GetRegisterWordSize() const {
         return registerWordSize;
     }
+    CKKSDataType GetCKKSDataType() const {
+        return ckksDataType;
+    }
 
     // setters
     // They all must be virtual, so any of them can be disabled in the derived class
@@ -452,6 +459,9 @@ public:
     }
     virtual void SetRegisterWordSize(uint32_t registerWordSize0) {
         registerWordSize = registerWordSize0;
+    }
+    virtual void SetCKKSDataType(CKKSDataType ckksDataType0) {
+        ckksDataType = ckksDataType0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

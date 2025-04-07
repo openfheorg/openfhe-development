@@ -78,13 +78,14 @@ protected:
     static constexpr int fracCTOR    = 0x04;
     static constexpr int vecuintCTOR = 0x08;
 
-    double scalingFactor           = 1;
-    NativeInteger scalingFactorInt = 1;
-    size_t level                   = 0;
-    size_t noiseScaleDeg           = 1;
-    usint slots                    = 0;
+    double scalingFactor            = 1;
+    NativeInteger scalingFactorInt  = 1;
+    size_t level                    = 0;
+    size_t noiseScaleDeg            = 1;
+    usint slots                     = 0;
     PlaintextEncodings ptxtEncoding = INVALID_ENCODING;
     SCHEME schemeID;
+    CKKSDataType ckksDataType = REAL;
 
 protected:
     /**
@@ -218,6 +219,22 @@ public:
    */
     const EncodingParams GetEncodingParams() const {
         return encodingParams;
+    }
+
+    /**
+   * GetCKKSDataType
+   * @return CKKS data type with this plaintext
+   */
+    const CKKSDataType GetCKKSDataType() const {
+        return ckksDataType;
+    }
+
+    /**
+   * SetCKKSDataType
+   * @return Set CKKS data type to be used with this plaintext
+   */
+    void SetCKKSDataType(CKKSDataType cdt) {
+        ckksDataType = cdt;
     }
 
     /**

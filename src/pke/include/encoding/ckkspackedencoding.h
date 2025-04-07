@@ -46,6 +46,7 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+#include <string>
 
 namespace lbcrypto {
 
@@ -64,7 +65,8 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep)
+        : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
             OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
@@ -82,7 +84,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& coeffs,
-                       size_t noiseScaleDeg, uint32_t level, double scFact, size_t slots)
+                       size_t noiseScaleDeg, uint32_t level, double scFact, size_t slots, CKKSDataType ckksDataType)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(coeffs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
@@ -101,6 +103,7 @@ public:
         this->noiseScaleDeg = noiseScaleDeg;
         this->level         = level;
         this->scalingFactor = scFact;
+        this->ckksDataType  = ckksDataType;
     }
 
     /**
@@ -128,7 +131,8 @@ public:
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
+    CKKSPackedEncoding()
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
             OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
@@ -196,7 +200,12 @@ public:
    * Get method to return log2 of estimated precision
    */
     double GetLogPrecision() const override {
-        return encodingParams->GetPlaintextModulus() - m_logError;
+        if (this->ckksDataType == REAL) {
+            return encodingParams->GetPlaintextModulus() - m_logError;
+        }
+        else {
+            OPENFHE_THROW("GetLogPrecision for complex numbers is not implemented.");
+        }
     }
 
     /**
@@ -233,10 +242,19 @@ public:
         }
 
         if (allZeroes == false) {
-            for (size_t j = 0; j <= i; ++j)
-                ss << std::setprecision(precision) << value[j].real() << ", ";
+            if (this->ckksDataType == REAL) {
+                for (size_t j = 0; j <= i; ++j) {
+                    ss << std::setprecision(precision) << value[j].real() << ", ";
+                }
+                ss << "... ); Estimated precision: " << GetLogPrecision() << " bits";
+            }
+            else {
+                for (size_t j = 0; j <= i; ++j) {
+                    ss << std::setprecision(precision) << " (" << value[j].real() << ", " << value[j].imag() << "), ";
+                }
+                ss << "... )";
+            }
         }
-        ss << "... ); Estimated precision: " << GetLogPrecision() << " bits";
 
         return ss.str();
     }

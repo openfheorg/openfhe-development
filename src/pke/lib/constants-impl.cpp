@@ -490,4 +490,42 @@ std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL p) {
     return s;
 }
 
+CKKSDataType convertToCKKSDataType(const std::string& str) {
+    if (str == "REAL")
+        return REAL;
+    else if (str == "COMPLEX")
+        return COMPLEX;
+
+    std::string errMsg(std::string("Unknown CKKSDataType ") + str);
+    OPENFHE_THROW(errMsg);
+}
+CKKSDataType convertToCKKSDataType(uint32_t num) {
+    auto dataType = static_cast<CKKSDataType>(num);
+    switch (dataType) {
+        case REAL:
+            return dataType;
+        case COMPLEX:
+            return dataType;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for CKKSDataType ") + std::to_string(num));
+    OPENFHE_THROW(errMsg);
+}
+std::ostream& operator<<(std::ostream& s, CKKSDataType t) {
+    switch (t) {
+        case REAL:
+            s << "REAL";
+            break;
+        case COMPLEX:
+            s << "COMPLEX";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
 }  // namespace lbcrypto

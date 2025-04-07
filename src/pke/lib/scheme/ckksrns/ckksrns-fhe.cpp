@@ -894,15 +894,14 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
         fullIndexList = FindCoeffsToSlotsRotationIndices(slots, M);
 
         std::vector<uint32_t> indexListStC{FindSlotsToCoeffsRotationIndices(slots, M)};
-        fullIndexList.insert(fullIndexList.end(),
-                             std::make_move_iterator(indexListStC.begin()),
+        fullIndexList.insert(fullIndexList.end(), std::make_move_iterator(indexListStC.begin()),
                              std::make_move_iterator(indexListStC.end()));
     }
 
     // Remove possible duplicates and remove automorphisms corresponding to 0 and M/4 by using std::set
     std::set<uint32_t> s(fullIndexList.begin(), fullIndexList.end());
     s.erase(0);
-    s.erase(M/4);
+    s.erase(M / 4);
 
     return std::vector<int32_t>(s.begin(), s.end());
 }
@@ -928,7 +927,7 @@ std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t sl
     // To avoid overflowing uint32_t variables, we do some math operations below in a specific order
     // computing all indices for baby-step giant-step procedure
     int32_t indexListSz = static_cast<int32_t>(g) + h + M - 2;
-    if(indexListSz < 0) {
+    if (indexListSz < 0) {
         OPENFHE_THROW("indexListSz can not be negative");
     }
     indexList.reserve(indexListSz);
@@ -979,7 +978,7 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
     // To avoid overflowing uint32_t variables, we do some math operations below in a specific order
     // Computing all indices for baby-step giant-step procedure for encoding and decoding
     int32_t indexListSz = static_cast<int32_t>(b) + g - 2 + bRem + gRem - 2 + 1 + M;
-    if(indexListSz < 0) {
+    if (indexListSz < 0) {
         OPENFHE_THROW("indexListSz can not be negative");
     }
     indexList.reserve(indexListSz);
@@ -1023,18 +1022,18 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
         OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
-    uint32_t levelBudget     = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
-    uint32_t layersCollapse  = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
-    uint32_t remCollapse     = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_REM];
-    uint32_t numRotations    = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
-    uint32_t b               = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP];
-    uint32_t g               = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP];
-    uint32_t numRotationsRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
-    uint32_t bRem            = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP_REM];
-    uint32_t gRem            = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
+    uint32_t levelBudget                              = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+    uint32_t layersCollapse                           = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
+    uint32_t remCollapse                              = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_REM];
+    uint32_t numRotations                             = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+    uint32_t b                                        = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP];
+    uint32_t g                                        = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP];
+    uint32_t numRotationsRem                          = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+    uint32_t bRem                                     = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+    uint32_t gRem                                     = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
     uint32_t flagRem = (remCollapse == 0) ? 0 : 1;
-    if(levelBudget < flagRem) {
+    if (levelBudget < flagRem) {
         OPENFHE_THROW("levelBudget can not be less than flagRem");
     }
 
@@ -1042,7 +1041,7 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     // To avoid overflowing uint32_t variables, we do some math operations below in a specific order
     // Computing all indices for baby-step giant-step procedure for encoding and decoding
     int32_t indexListSz = static_cast<int32_t>(b) + g - 2 + bRem + gRem - 2 + 1 + M;
-    if(indexListSz < 0) {
+    if (indexListSz < 0) {
         OPENFHE_THROW("indexListSz can not be negative");
     }
     indexList.reserve(indexListSz);
@@ -1058,7 +1057,7 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     }
 
     if (flagRem) {
-        uint32_t s = levelBudget - flagRem;
+        uint32_t s                   = levelBudget - flagRem;
         const uint32_t scalingFactor = 1U << (s * layersCollapse);
         for (int32_t j = (1 - (numRotationsRem + 1) / 2); j <= static_cast<int32_t>(gRem); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, M / 4));
@@ -2277,7 +2276,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
     Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
-                                                                 level, scFact, slots));
+                                                                 level, scFact, slots, COMPLEX));
 
     DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
 
@@ -2424,7 +2423,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
     Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
-                                                                 level, scFact, slots));
+                                                                 level, scFact, slots, COMPLEX));
 
     DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
 

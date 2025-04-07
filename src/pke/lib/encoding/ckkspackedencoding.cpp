@@ -258,9 +258,11 @@ bool CKKSPackedEncoding::Encode() {
         OPENFHE_THROW(errMsg);
     }
 
-    // clears all imaginary values as CKKS for complex numbers
-    for (size_t i = 0; i < inverse.size(); i++)
-        inverse[i].imag(0.0);
+    if (this->ckksDataType == REAL) {
+        // clears all imaginary values as CKKS for complex numbers
+        for (size_t i = 0; i < inverse.size(); i++)
+            inverse[i].imag(0.0);
+    }
 
     inverse.resize(slots);
 
@@ -541,11 +543,13 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         //  }
         // }
 
-        //   If less than 5 bits of precision is observed
-        if (logstd > p - 5.0)
-            OPENFHE_THROW(
-                "The decryption failed because the approximation error is "
-                "too high. Check the parameters. ");
+        if (this->ckksDataType == REAL) {
+            //   If less than 5 bits of precision is observed
+            if (logstd > p - 5.0)
+                OPENFHE_THROW(
+                    "The decryption failed because the approximation error is "
+                    "too high. Check the parameters. ");
+        }
 
         // real values
         std::vector<std::complex<double>> realValues(slots);
@@ -554,7 +558,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // set to 1 by default
         stddev = sqrt(CKKS_M_FACTOR + 1) * stddev;
 
-        double scale = 0.5 * powP;
+        double scale = (this->ckksDataType == REAL) ? 0.5 * powP : powP;
 
         // TODO temporary removed errors
         std::normal_distribution<> d(0, stddev);
@@ -566,12 +570,14 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // We would add sampling only for even indices of i.
         // This change should be done together with the one below.
         for (size_t i = 0; i < slots; ++i) {
-            double real = scale * (curValues[i].real() + conjugate[i].real());
-            // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-            real += powP * d(g);
-            double imag = scale * (curValues[i].imag() + conjugate[i].imag());
-            // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-            imag += powP * d(g);
+            double real = scale * curValues[i].real();
+            double imag = scale * curValues[i].imag();
+            if (this->ckksDataType == REAL) {
+                real += scale * conjugate[i].real() + powP * d(g);
+                // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
+                imag += scale * conjugate[i].imag() + powP * d(g);
+                // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
+            }
             realValues[i].real(real);
             realValues[i].imag(imag);
         }
@@ -582,12 +588,17 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // above.
         DiscreteFourierTransform::FFTSpecial(realValues, GetElementRingDimension() * 2);
 
-        // clears all imaginary values for security reasons
-        for (size_t i = 0; i < realValues.size(); ++i)
-            realValues[i].imag(0.0);
+        if (this->ckksDataType == REAL) {
+            // clears all imaginary values for security reasons
+            for (size_t i = 0; i < realValues.size(); ++i)
+                realValues[i].imag(0.0);
 
-        // sets an estimate of the approximation error
-        m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
+            // sets an estimate of the approximation error
+            m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
+        }
+        else {
+            m_logError = 0;
+        }
 
         value = realValues;
     }

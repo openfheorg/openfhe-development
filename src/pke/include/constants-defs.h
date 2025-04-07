@@ -114,6 +114,11 @@ enum LargeScalingFactorConstants {
     MAX_LOG_STEP     = 60,
 };
 
+enum CKKSDataType {
+    REAL = 0,
+    COMPLEX,
+};
+
 /**
  * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
  * as default arguments work differently for virtual functions)
