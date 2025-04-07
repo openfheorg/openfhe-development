@@ -1591,6 +1591,47 @@ public:
         EvalAddInPlace(ciphertext, constant);
     }
 
+    /**
+   * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a complex number.  Supported only in CKKS.
+   * @param ciphertext input ciphertext
+   * @param constant a complex number
+   * @return new ciphertext for ciphertext + constant
+   */
+    Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        Ciphertext<Element> result = GetScheme()->EvalAdd(ciphertext, constant);
+        return result;
+    }
+
+    /**
+    * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a complex number.  Supported only in CKKS.
+    * @param constant a complex number
+    * @param ciphertext input ciphertext
+    * @return new ciphertext for ciphertext + constant
+    */
+    Ciphertext<Element> EvalAdd(std::complex<double> constant, ConstCiphertext<Element> ciphertext) const {
+        return EvalAdd(ciphertext, constant);
+    }
+
+    /**
+    * In-place addition of a ciphertext and a complex number. Supported only in CKKS.
+    * @param ciphertext input ciphertext
+    * @param constant a complex number
+    */
+    void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        if (constant.real() == 0 && constant.imag() == 0)
+            return;
+        GetScheme()->EvalAddInPlace(ciphertext, constant);
+    }
+
+    /**
+    * In-place addition of a ciphertext and a complex number.  Supported only in CKKS.
+    * @param constant a complex number
+    * @param ciphertext input ciphertext
+    */
+    void EvalAddInPlace(std::complex<double> constant, Ciphertext<Element>& ciphertext) const {
+        EvalAddInPlace(ciphertext, constant);
+    }
+
     //------------------------------------------------------------------------------
     // SHE SUBTRACTION Wrapper
     //------------------------------------------------------------------------------
@@ -1721,11 +1762,53 @@ public:
     }
 
     /**
-   * In-placve subtraction of ciphertext from a real number.  Supported only in CKKS.
+   * In-place subtraction of ciphertext from a real number.  Supported only in CKKS.
    * @param constant a real number
    * @param ciphertext input ciphertext
    */
     void EvalSubInPlace(double constant, Ciphertext<Element>& ciphertext) const {
+        EvalNegateInPlace(ciphertext);
+        EvalAddInPlace(ciphertext, constant);
+    }
+
+    /**
+   * Subtraction of a ciphertext and a complex number. Supported only in CKKS.
+   * @param ciphertext input ciphertext
+   * @param constant a complex number
+   * @return new ciphertext for ciphertext - constant
+   */
+    Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        Ciphertext<Element> result = GetScheme()->EvalAdd(ciphertext, -constant);
+        return result;
+    }
+
+    /**
+* Subtraction of a ciphertext and a complex number.  Supported only in CKKS.
+* @param constant a complex number
+* @param ciphertext input ciphertext
+* @return new ciphertext for constant - ciphertext
+*/
+    Ciphertext<Element> EvalSub(std::complex<double> constant, ConstCiphertext<Element> ciphertext) const {
+        return EvalAdd(EvalNegate(ciphertext), constant);
+    }
+
+    /**
+* In-place subtraction of a ciphertext and a complex number.  Supported only in CKKS.
+* @param ciphertext input ciphertext
+* @param constant a realcomplex number
+*/
+    void EvalSubInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        if (constant.real() == 0 && constant.imag() == 0)
+            return;
+        GetScheme()->EvalAddInPlace(ciphertext, -constant);
+    }
+
+    /**
+* In-place subtraction of ciphertext from a complex number.  Supported only in CKKS.
+* @param constant a complex number
+* @param ciphertext input ciphertext
+*/
+    void EvalSubInPlace(std::complex<double> constant, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
         EvalAddInPlace(ciphertext, constant);
     }
@@ -2061,6 +2144,51 @@ public:
    * @param ciphertext multiplicand
    */
     inline void EvalMultInPlace(double constant, Ciphertext<Element>& ciphertext) const {
+        EvalMultInPlace(ciphertext, constant);
+    }
+
+    /**
+   * Multiplication of a ciphertext by a complex number.  Supported only in CKKS.
+   * @param ciphertext multiplier
+   * @param constant multiplicand
+   * @return the result of multiplication
+   */
+    Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        if (!ciphertext) {
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        }
+        return GetScheme()->EvalMult(ciphertext, constant);
+    }
+
+    /**
+    * Multiplication of a ciphertext by a complex number.  Supported only in CKKS.
+    * @param constant multiplier
+    * @param ciphertext multiplicand
+    * @return the result of multiplication
+    */
+    inline Ciphertext<Element> EvalMult(std::complex<double> constant, ConstCiphertext<Element> ciphertext) const {
+        return EvalMult(ciphertext, constant);
+    }
+
+    /**
+    * In-place multiplication of a ciphertext by a complex number. Supported only in CKKS.
+    * @param ciphertext multiplier
+    * @param constant multiplicand
+    */
+    void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        if (!ciphertext) {
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        }
+
+        GetScheme()->EvalMultInPlace(ciphertext, constant);
+    }
+
+    /**
+    * In-place multiplication of a ciphertext by a complex number. Supported only in CKKS.
+    * @param constant multiplier (complex number)
+    * @param ciphertext multiplicand
+    */
+    inline void EvalMultInPlace(std::complex<double> constant, Ciphertext<Element>& ciphertext) const {
         EvalMultInPlace(ciphertext, constant);
     }
 

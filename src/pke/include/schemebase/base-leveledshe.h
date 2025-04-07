@@ -192,6 +192,14 @@ public:
         OPENFHE_THROW("double scalar addition is not implemented for this scheme");
     }
 
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar addition is not implemented for this scheme");
+    }
+
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar addition is not implemented for this scheme");
+    }
+
     /////////////////////////////////////////
     // SHE SUBTRACTION
     /////////////////////////////////////////
@@ -433,6 +441,14 @@ public:
 
     virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
         OPENFHE_THROW("double scalar multiplication is not implemented for this scheme");
+    }
+
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar multiplication is not implemented for this scheme");
+    }
+
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar multiplication is not implemented for this scheme");
     }
 
     virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element> ciphertext, uint64_t integer) const {
