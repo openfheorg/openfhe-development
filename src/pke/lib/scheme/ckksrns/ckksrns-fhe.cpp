@@ -480,7 +480,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     int32_t deg = std::round(std::log2(qDouble / powP));
 #if NATIVEINT != 128
-    if (deg > static_cast<int32_t>(m_correctionFactor)) {
+    if (deg > static_cast<int32_t>(m_correctionFactor) && 
+    (cryptoParams->GetScalingTechnique() != COMPOSITESCALINGAUTO && cryptoParams->GetScalingTechnique() != COMPOSITESCALINGMANUAL)) {
         OPENFHE_THROW("Degree [" + std::to_string(deg) + "] must be less than or equal to the correction factor [" +
                       std::to_string(m_correctionFactor) + "].");
     }
@@ -623,8 +624,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     }
     else {
         if (compositeDegree < 3) {
-            coefficients = g_coefficientsUniform;
-            k            = K_UNIFORM;
+            if (N < (1 << 17)) {
+                coefficients = g_coefficientsUniform;
+                k            = K_UNIFORM;
+            } else {
+                coefficients = g_coefficientsUniformExt;
+                k            = K_UNIFORMEXT;                
+            }
         }
         else {
             coefficients = g_coefficientsUniformExt;
