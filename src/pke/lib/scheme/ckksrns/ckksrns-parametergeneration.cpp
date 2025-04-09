@@ -316,16 +316,21 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                         }
                     }
                     catch (const OpenFHEException& ex) {
-                        OPENFHE_THROW(
-                            "COMPOSITE SCALING next prime sampling error. "
-                            "Try increasing scaling factor (scalingModSize) "
-                            "or decreasing first modulus size (firstModSize) "
-                            "or try another combination of firstModSize and scalingModSize.");
+                        std::string errMsg = "COMPOSITE SCALING next prime sampling error. ";
+                        errMsg += "Try increasing scaling factor (scalingModSize) ";
+                        errMsg += "or decreasing first modulus size (firstModSize) ";
+                        errMsg += "or try another combination of firstModSize and scalingModSize.\n";
+                        errMsg +=
+                            "scaling factor = " + std::to_string(dcrtBits / static_cast<double>(compositeDegree)) +
+                            "\n";
+                        errMsg += "register size = " + std::to_string(registerWordSize) + "\n";
+                        errMsg += "prime size = " + std::to_string(std::log2(qNext[step].ConvertToDouble())) + "\n";
+                        OPENFHE_THROW(errMsg);
                     }
                     if (std::log2(qNext[step].ConvertToDouble()) > registerWordSize) {
                         fitsRegister = false;
                     }
-                } while (fitsRegister == false ||
+                } while (std::log2(qNext[step].ConvertToDouble()) > registerWordSize ||
                          moduliQRecord.find(qNext[step].ConvertToInt()) != moduliQRecord.end() ||
                          qCurrentRecord.find(qNext[step].ConvertToInt()) != qCurrentRecord.end());
                 qCurrentRecord.emplace(qNext[step].ConvertToInt());
@@ -387,16 +392,20 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                             }
                         }
                         catch (const OpenFHEException& ex) {
-                            OPENFHE_THROW(
-                                "COMPOSITE SCALING next prime sampling error. "
-                                "Try increasing scaling factor (scalingModSize) "
-                                "or decreasing first modulus size (firstModSize) "
-                                "or try another combination of firstModSize and scalingModSize.");
+                            std::string errMsg = "COMPOSITE SCALING next prime sampling error. ";
+                            errMsg += "Try increasing scaling factor (scalingModSize) ";
+                            errMsg += "or decreasing first modulus size (firstModSize) ";
+                            errMsg += "or try another combination of firstModSize and scalingModSize.\n";
+                            errMsg += "composite scaling factor size = " +
+                                      std::to_string(dcrtBits / static_cast<double>(compositeDegree)) + "\n";
+                            errMsg += "register size = " + std::to_string(registerWordSize) + "\n";
+                            errMsg += "prime size = " + std::to_string(std::log2(qNextPrev.ConvertToDouble())) + "\n";
+                            OPENFHE_THROW(errMsg);
                         }
                         if (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize) {
                             fitsRegister = false;
                         }
-                    } while (fitsRegister == false ||
+                    } while (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize ||
                              moduliQRecord.find(qNextPrev.ConvertToInt()) != moduliQRecord.end() ||
                              qCurrentRecord.find(qNextPrev.ConvertToInt()) != qCurrentRecord.end());
                     qCurrentRecord.emplace(qNextPrev.ConvertToInt());
