@@ -138,6 +138,11 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
             parameters.SetRegisterWordSize(params.registerWordSize);
         }
     }
+    if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
+        if (!isDefaultValue(params.compositeDegree)) {
+            parameters.SetCompositeDegree(params.compositeDegree);
+        }
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
