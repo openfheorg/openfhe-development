@@ -512,9 +512,12 @@ if(WITH_COVTEST)
         add_custom_target(cov
             DEPENDS core_tests pke_tests binfhe_tests
             COMMAND cd ${BUILDDIR} && mkdir -p coverage
-            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/core_tests.dir/unittest/ && gcov *.gcno && lcov --capture --directory . --output-file ${COVDIR}/core.info
-            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pke_tests.dir/unittest/ && gcov *.gcno && lcov --capture --directory . --output-file ${COVDIR}/pke.info
-            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfhe_tests.dir/unittest/ && gcov  *.gcno && lcov --capture --directory . --output-file ${COVDIR}/binfhe.info
+            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/core_tests.dir/unittest/ && gcov *.gcno && lcov --capture --directory . --output-file ${COVDIR}/core.info --exclude '*/usr/include/*' --exclude '*/usr/local/include/*' --exclude '*/third-party/*'
+            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/coreobj.dir/ && gcov *.gcno && lcov --capture --directory . --output-file ${COVDIR}/core_cpp.info --exclude '*/usr/include/*' --exclude '*/usr/local/include/*' --exclude '*/third-party/*'
+            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pke_tests.dir/unittest/ && gcov *.gcno && lcov --capture --directory . --output-file ${COVDIR}/pke.info --exclude '*/usr/include/*' --exclude '*/usr/local/include/*' --exclude '*/third-party/*'
+            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pkeobj.dir/ && gcov *.gcno && lcov --capture --directory . --output-file ${COVDIR}/pke_cpp.info --exclude '*/usr/include/*' --exclude '*/usr/local/include/*' --exclude '*/third-party/*'
+            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfhe_tests.dir/unittest/ && gcov  *.gcno && lcov --capture --directory . --output-file ${COVDIR}/binfhe.info --exclude '*/usr/include/*' --exclude '*/usr/local/include/*' --exclude '*/third-party/*'
+            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfheobj.dir/ && gcov  *.gcno && lcov --capture --directory . --output-file ${COVDIR}/binfhe_cpp.info --exclude '*/usr/include/*' --exclude '*/usr/local/include/*' --exclude '*/third-party/*'
             COMMAND cd ${COVDIR} && mkdir -p assets && genhtml -t "Coverage Test" -o ${COVDIR}/assets/ *.info)
         message(STATUS "lcov found in ${LCOV_BIN}")
     else()
