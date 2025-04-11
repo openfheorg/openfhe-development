@@ -376,7 +376,6 @@ protected:
             std::vector<int32_t> x2_values{0, -1, 2, -3, 4, -8, 16, -32};
             std::copy(x2_values.begin(), x2_values.end(), x2.begin());
             std::vector<LWECiphertext> ctxtsLWE1(testData.slots);
-            // TODO: Andreea: number of slots is 32 here
             for (uint32_t i = 0; i < testData.slots; i++) {
                 // encrypted under small plantext modulus p = 4 and ciphertext modulus
                 ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, 4, modulus_LWE);

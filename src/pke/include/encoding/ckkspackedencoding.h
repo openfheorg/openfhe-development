@@ -153,8 +153,17 @@ public:
 
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) override;
 
-    const std::vector<std::complex<double>>& GetCKKSPackedValue() const override {
-        return value;
+    std::vector<std::complex<double>> GetCKKSPackedValue() const override {
+        if (this->ckksDataType == REAL) {
+            std::vector<std::complex<double>> realValue(value);
+            // clears all imaginary values as CKKS for complex numbers
+            for (size_t i = 0; i < realValue.size(); i++)
+                realValue[i].imag(0.0);
+            return realValue;
+        }
+        else {
+            return value;
+        }
     }
 
     std::vector<double> GetRealPackedValue() const override {

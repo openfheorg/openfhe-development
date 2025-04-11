@@ -68,6 +68,7 @@ struct UnitTestCCParams {
     double executionMode           = DFLT;  // CKKSRNS
     double noiseEstimate           = DFLT;  // CKKSRNS
     double registerWordSize        = DFLT;  // CKKSRNS
+    double ckksDataType            = DFLT;  // CKKSRNS
 
     std::string toString() const;
 };

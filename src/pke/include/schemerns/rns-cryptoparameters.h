@@ -1854,6 +1854,7 @@ public:
         ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
         ar(cereal::make_nvp("cd", m_compositeDegree));
         ar(cereal::make_nvp("rws", m_registerWordSize));
+        ar(cereal::make_nvp("cdt", m_ckksDataType));
     }
 
     template <class Archive>
@@ -1881,6 +1882,7 @@ public:
         }
         ar(cereal::make_nvp("cd", m_compositeDegree));
         ar(cereal::make_nvp("rws", m_registerWordSize));
+        ar(cereal::make_nvp("cdt", m_ckksDataType));
     }
 
     std::string SerializedObjectName() const override {
