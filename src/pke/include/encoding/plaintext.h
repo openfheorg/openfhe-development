@@ -404,7 +404,7 @@ public:
     virtual const std::vector<int64_t>& GetPackedValue() const {
         OPENFHE_THROW("not a packed vector");
     }
-    virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
+    virtual std::vector<std::complex<double>> GetCKKSPackedValue() const {
         OPENFHE_THROW("not a packed vector of complex numbers");
     }
     virtual std::vector<double> GetRealPackedValue() const {

@@ -258,12 +258,6 @@ bool CKKSPackedEncoding::Encode() {
         OPENFHE_THROW(errMsg);
     }
 
-    if (this->ckksDataType == REAL) {
-        // clears all imaginary values as CKKS for complex numbers
-        for (size_t i = 0; i < inverse.size(); i++)
-            inverse[i].imag(0.0);
-    }
-
     inverse.resize(slots);
 
     if (this->typeFlag == IsDCRTPoly) {

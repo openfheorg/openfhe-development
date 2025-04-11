@@ -243,6 +243,9 @@ void SimpleComplexNumbers() {
     auto evalConjKeyMap = cc->GetEvalAutomorphismKeyMap(c1->GetKeyTag());
     auto cConj1         = cc->EvalAutomorphism(c1, indexConj, evalConjKeyMap);
 
+    // Note that setting the data type to REAL and performing operations with
+    // complex constants leads to a decryption error.
+
     // Multiplication by a complex constant
     auto cMulC = cc->EvalMult(c1, constComplex);
 

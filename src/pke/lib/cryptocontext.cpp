@@ -633,6 +633,8 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
         partialCiphertextVec[0]->GetEncodingType(), partialCiphertextVec[0]->GetElements()[0].GetParams(),
         this->GetEncodingParams());
 
+    decrypted->SetCKKSDataType(this->GetCKKSDataType());
+
     if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (partialCiphertextVec[0]->GetElements()[0].GetParams()->GetParams().size() > 1))
         result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());

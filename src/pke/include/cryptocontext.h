@@ -470,20 +470,6 @@ protected:
         return cryptoParams->GetCompositeDegree();
     }
 
-    /**
-    * GetCKKSDataType: get CKKS data type of the current CKKS crypto context.
-    * @return enum corresponding to data type
-    */
-    CKKSDataType GetCKKSDataType() const {
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
-        if (!cryptoParams) {
-            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
-            OPENFHE_THROW(errorMsg);
-        }
-
-        return cryptoParams->GetCKKSDataType();
-    }
-
     PrivateKey<Element> privateKey;
 
 public:
@@ -1091,6 +1077,20 @@ public:
    */
     const IntType& GetRootOfUnity() const {
         return params->GetElementParams()->GetRootOfUnity();
+    }
+
+    /**
+    * GetCKKSDataType: get CKKS data type of the current CKKS crypto context.
+    * @return enum corresponding to data type
+    */
+    CKKSDataType GetCKKSDataType() const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        if (!cryptoParams) {
+            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
+            OPENFHE_THROW(errorMsg);
+        }
+
+        return cryptoParams->GetCKKSDataType();
     }
 
     //------------------------------------------------------------------------------
