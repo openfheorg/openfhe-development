@@ -320,11 +320,11 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                         errMsg += "Try increasing scaling factor (scalingModSize) ";
                         errMsg += "or decreasing first modulus size (firstModSize) ";
                         errMsg += "or try another combination of firstModSize and scalingModSize.\n";
-                        errMsg +=
-                            "scaling factor = " + std::to_string(dcrtBits / static_cast<double>(compositeDegree)) +
-                            "\n";
-                        errMsg += "register size = " + std::to_string(registerWordSize) + "\n";
-                        errMsg += "prime size = " + std::to_string(std::log2(qNext[step].ConvertToDouble())) + "\n";
+                        // errMsg +=
+                        //     "scaling factor = " + std::to_string(dcrtBits / static_cast<double>(compositeDegree)) +
+                        //     "\n";
+                        // errMsg += "register size = " + std::to_string(registerWordSize) + "\n";
+                        // errMsg += "prime size = " + std::to_string(std::log2(qNext[step].ConvertToDouble())) + "\n";
                         OPENFHE_THROW(errMsg);
                     }
                     if (std::log2(qNext[step].ConvertToDouble()) > registerWordSize) {
@@ -396,10 +396,10 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                             errMsg += "Try increasing scaling factor (scalingModSize) ";
                             errMsg += "or decreasing first modulus size (firstModSize) ";
                             errMsg += "or try another combination of firstModSize and scalingModSize.\n";
-                            errMsg += "composite scaling factor size = " +
-                                      std::to_string(dcrtBits / static_cast<double>(compositeDegree)) + "\n";
-                            errMsg += "register size = " + std::to_string(registerWordSize) + "\n";
-                            errMsg += "prime size = " + std::to_string(std::log2(qNextPrev.ConvertToDouble())) + "\n";
+                            // errMsg += "composite scaling factor size = " +
+                            //           std::to_string(dcrtBits / static_cast<double>(compositeDegree)) + "\n";
+                            // errMsg += "register size = " + std::to_string(registerWordSize) + "\n";
+                            // errMsg += "prime size = " + std::to_string(std::log2(qNextPrev.ConvertToDouble())) + "\n";
                             OPENFHE_THROW(errMsg);
                         }
                         if (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize) {
