@@ -34,6 +34,7 @@
  */
 
 #include "binfhecontext.h"
+
 #include <string>
 #include <unordered_map>
 
@@ -51,16 +52,18 @@ void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeIn
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ, uint32_t N,
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, bool arbFunc, uint32_t logQ, uint32_t N,
                                           BINFHE_METHOD method, bool timeOptimization) {
     if (method != GINX)
         OPENFHE_THROW("CGGI is the only supported method");
-    if (set != STD128 && set != TOY)
+    if (s != STD128 && s != TOY)
         OPENFHE_THROW("STD128 and TOY are the only supported sets");
     if (logQ > 29)
         OPENFHE_THROW("logQ > 29 is not supported");
     if (logQ < 11)
         OPENFHE_THROW("logQ < 11 is not supported");
+
+    isMethodCompatible(method, s);
 
     auto logQprime = 54;
     uint32_t baseG = 0;
@@ -91,7 +94,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 
     uint64_t qKS = uint64_t(1) << 35;
 
-    uint32_t n      = (set == TOY) ? 32 : 1305;
+    uint32_t n      = (s == TOY) ? 32 : 1305;
     auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, STD_DEV, 32);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, STD_DEV, UNIFORM_TERNARY,
                                                             ((logQ != 11) && timeOptimization));
@@ -101,8 +104,11 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
     m_timeOptimization = timeOptimization;
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD method) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
+
+    isMethodCompatible(method, s);
+
     // clang-format off
     static const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap{
     //  { BINFHE_PARAMSET      { bits, cycOrder, latParam, modq,   modKS,  stdDev, Bks,        Bg, Brk, autoKeys,         keyDist } },
@@ -153,9 +159,10 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     };
     // clang-format on
 
-    auto search = paramsMap.find(set);
+    auto search = paramsMap.find(s);
     if (paramsMap.end() == search)
         OPENFHE_THROW("unknown parameter set");
+
     auto& params = search->second;
 
     auto Q         = LastPrime<NativeInteger>(params.numberBits, params.cyclOrder);
@@ -168,7 +175,6 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
                                               params.stdDev, params.keyDist, false, params.numAutoKeys);
     m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
 
-    // TODO: add check that (method == LMKCDEY) for LMKCDEY-optimized BINFHE_PARAMSETs
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
@@ -217,7 +223,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BIN
         OPENFHE_THROW("PrivateKey is empty");
 
     auto&& LWEParams = m_params->GetLWEParams();
-    auto ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p, (mod == 0 ? LWEParams->Getq() : mod));
+    auto ct          = m_LWEscheme->Encrypt(LWEParams, sk, m, p, (mod == 0 ? LWEParams->Getq() : mod));
 
     // BINFHE_OUTPUT is kept as it is for backward compatibility but
     // this logic is obsolete now and commented out
@@ -233,7 +239,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
         OPENFHE_THROW("PublicKey is empty");
 
     auto&& LWEParams = m_params->GetLWEParams();
-    auto ct = m_LWEscheme->EncryptN(LWEParams, pk, m, p, (mod == 0 ? LWEParams->GetQ() : mod));
+    auto ct          = m_LWEscheme->EncryptN(LWEParams, pk, m, p, (mod == 0 ? LWEParams->GetQ() : mod));
 
     // Switch from ct of modulus Q and dimension N to smaller q and n
     // This is done by default while calling Encrypt but the output could
@@ -281,7 +287,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
         OPENFHE_THROW("PrivateKey is empty");
 
     auto&& RGSWParams = m_params->GetRingGSWParams();
-    auto temp = RGSWParams->GetBaseG();
+    auto temp         = RGSWParams->GetBaseG();
 
     if (m_timeOptimization) {
         for (auto&& [k, v] : RGSWParams->GetGPowerMap()) {
@@ -300,17 +306,18 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
     }
 }
 
-LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended) const {
+LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
+                                         bool extended) const {
     if (ct1 == nullptr)
         OPENFHE_THROW("Ciphertext1 is empty");
     if (ct2 == nullptr)
         OPENFHE_THROW("Ciphertext2 is empty");
 
-
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, extended);
 }
 
-LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended) const {
+LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector,
+                                         bool extended) const {
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvector, extended);
 }
 
