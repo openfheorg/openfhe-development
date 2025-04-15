@@ -62,6 +62,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
                 OPENFHE_THROW("numAdversarialQueries is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
             }
         }
+        if (parameters.GetExecutionMode() == EXEC_NOISE_ESTIMATION && parameters.GetCKKSDataType() == COMPLEX) {
+            OPENFHE_THROW("EXEC_NOISE_ESTIMATION mode is not compatible with complex data types.");
+        }
     }
     else if (isBFVRNS(scheme)) {
         if (0 == parameters.GetPlaintextModulus()) {

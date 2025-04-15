@@ -791,10 +791,13 @@ void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, st
     std::vector<DCRTPoly::Integer> factorsRe = GetElementForEvalMult(ciphertext, operandRe);
     std::vector<DCRTPoly::Integer> factorsIm = GetElementForEvalMult(ciphertext, operandIm);
     std::vector<DCRTPoly>& cv                = ciphertext->GetElements();
-    std::vector<DCRTPoly> cvRe(cv.size()), cvIm(cv.size());
+    std::vector<DCRTPoly> cvRe;
+    std::vector<DCRTPoly> cvIm;
+    cvRe.reserve(cv.size());
+    cvIm.reserve(cv.size());
     for (usint i = 0; i < cv.size(); ++i) {
-        cvRe[i] = cv[i] * factorsRe;
-        cvIm[i] = cv[i] * factorsIm;
+        cvRe.emplace_back(cv[i] * factorsRe);
+        cvIm.emplace_back(cv[i] * factorsIm);
     }
 
     // MultByMonomialInPlace
@@ -814,11 +817,8 @@ void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, st
     monomialDCRT = monomial;
     monomialDCRT.SetFormat(Format::EVALUATION);
 
-    for (usint i = 0; i < ciphertext->NumberCiphertextElements(); i++) {
-        cvIm[i] *= monomialDCRT;
-    }
-
     for (usint i = 0; i < cv.size(); ++i) {
+        cvIm[i] *= monomialDCRT;
         cv[i] = cvRe[i] + cvIm[i];
     }
 

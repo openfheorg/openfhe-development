@@ -1393,7 +1393,7 @@ public:
    *
    * @return the CKKS data type.
    */
-    enum CKKSDataType GetCKKSDataType() const {
+    CKKSDataType GetCKKSDataType() const {
         return m_ckksDataType;
     }
 
