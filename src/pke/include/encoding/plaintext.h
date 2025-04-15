@@ -84,8 +84,8 @@ protected:
     size_t noiseScaleDeg            = 1;
     usint slots                     = 0;
     PlaintextEncodings ptxtEncoding = INVALID_ENCODING;
+    CKKSDataType ckksDataType       = REAL;
     SCHEME schemeID;
-    CKKSDataType ckksDataType = REAL;
 
 protected:
     /**

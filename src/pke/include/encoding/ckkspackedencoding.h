@@ -154,16 +154,13 @@ public:
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) override;
 
     std::vector<std::complex<double>> GetCKKSPackedValue() const override {
+        std::vector<std::complex<double>> realValue(value);
         if (this->ckksDataType == REAL) {
-            std::vector<std::complex<double>> realValue(value);
             // clears all imaginary values as CKKS for complex numbers
-            for (size_t i = 0; i < realValue.size(); i++)
-                realValue[i].imag(0.0);
-            return realValue;
+            std::transform(realValue.begin(), realValue.end(), realValue.begin(),
+                           [](std::complex<double> val) { return std::complex<double>(val.real(), 0.0); });
         }
-        else {
-            return value;
-        }
+        return realValue;
     }
 
     std::vector<double> GetRealPackedValue() const override {
@@ -209,12 +206,10 @@ public:
    * Get method to return log2 of estimated precision
    */
     double GetLogPrecision() const override {
-        if (this->ckksDataType == REAL) {
-            return encodingParams->GetPlaintextModulus() - m_logError;
-        }
-        else {
+        if (this->ckksDataType == COMPLEX) {
             OPENFHE_THROW("GetLogPrecision for complex numbers is not implemented.");
         }
+        return encodingParams->GetPlaintextModulus() - m_logError;
     }
 
     /**

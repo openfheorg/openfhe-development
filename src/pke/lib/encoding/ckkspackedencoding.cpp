@@ -580,8 +580,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
         if (this->ckksDataType == REAL) {
             // clears all imaginary values for security reasons
-            for (size_t i = 0; i < realValues.size(); ++i)
-                realValues[i].imag(0.0);
+            for (auto& val : realValues) {
+                val.imag(0.0);
+            }
 
             // sets an estimate of the approximation error
             m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
