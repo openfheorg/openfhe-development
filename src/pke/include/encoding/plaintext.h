@@ -84,8 +84,8 @@ protected:
     size_t noiseScaleDeg            = 1;
     usint slots                     = 0;
     PlaintextEncodings ptxtEncoding = INVALID_ENCODING;
-    CKKSDataType ckksDataType       = REAL;
     SCHEME schemeID;
+    CKKSDataType ckksDataType = REAL;
 
 protected:
     /**
@@ -105,32 +105,35 @@ protected:
 
 public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false, CKKSDataType ckksDataType = REAL)
         : isEncoded(isEncoded),
           typeFlag(IsPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           ptxtEncoding(encoding),
-          schemeID(schemeTag) {}
+          schemeID(schemeTag),
+          ckksDataType(ckksDataType) {}
 
     PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false, CKKSDataType ckksDataType = REAL)
         : isEncoded(isEncoded),
           typeFlag(IsNativePoly),
           encodingParams(std::move(ep)),
           encodedNativeVector(vp, Format::COEFFICIENT),
           ptxtEncoding(encoding),
-          schemeID(schemeTag) {}
+          schemeID(schemeTag),
+          ckksDataType(ckksDataType) {}
 
     PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false, CKKSDataType ckksDataType = REAL)
         : isEncoded(isEncoded),
           typeFlag(IsDCRTPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           encodedVectorDCRT(vp, Format::COEFFICIENT),
           ptxtEncoding(encoding),
-          schemeID(schemeTag) {}
+          schemeID(schemeTag),
+          ckksDataType(ckksDataType) {}
 
     PlaintextImpl(const PlaintextImpl& rhs)
         : isEncoded(rhs.isEncoded),
