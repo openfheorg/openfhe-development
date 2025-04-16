@@ -1223,9 +1223,11 @@ public:
    * @param pte Type of plaintext we want to return
    * @param evp Element parameters
    * @param ep Encoding parameters
+   * @param cdt CKKS data type, real or complex
    * @return plaintext
    */
-    static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep);
+    static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep,
+                                            CKKSDataType cdt = REAL);
 
     //------------------------------------------------------------------------------
     // PKE Wrapper

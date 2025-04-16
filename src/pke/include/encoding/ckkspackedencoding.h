@@ -65,12 +65,13 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep)
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, CKKSDataType ckksDataType)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         this->slots = GetDefaultSlotSize();
         if (this->slots > (GetElementRingDimension() / 2)) {
             OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
         }
+        this->ckksDataType = ckksDataType;
     }
 
     /*
@@ -154,13 +155,16 @@ public:
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) override;
 
     std::vector<std::complex<double>> GetCKKSPackedValue() const override {
-        std::vector<std::complex<double>> realValue(value);
         if (this->ckksDataType == REAL) {
+            std::vector<std::complex<double>> realValue;
+            realValue.reserve(value.size());
             // clears all imaginary values as CKKS for complex numbers
-            std::transform(realValue.begin(), realValue.end(), realValue.begin(),
-                           [](std::complex<double> val) { return std::complex<double>(val.real(), 0.0); });
+            for (const auto& val : value) {
+                realValue.emplace_back(std::complex<double>(val.real(), 0.0));
+            }
+            return realValue;
         }
-        return realValue;
+        return value;
     }
 
     std::vector<double> GetRealPackedValue() const override {

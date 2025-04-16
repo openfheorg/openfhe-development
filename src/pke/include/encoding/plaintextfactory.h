@@ -57,7 +57,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-                                   SCHEME schemeID = SCHEME::INVALID_SCHEME) {
+                                   SCHEME schemeID = SCHEME::INVALID_SCHEME, CKKSDataType cdt = REAL) {
         switch (encoding) {
             case COEF_PACKED_ENCODING:
                 return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
@@ -66,7 +66,7 @@ public:
             case STRING_ENCODING:
                 return std::make_shared<StringEncoding>(vp, ep);
             case CKKS_PACKED_ENCODING:
-                return std::make_shared<CKKSPackedEncoding>(vp, ep);
+                return std::make_shared<CKKSPackedEncoding>(vp, ep, cdt);
             default:
                 OPENFHE_THROW("Unknown plaintext encoding type in MakePlaintext");
         }

@@ -446,11 +446,11 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
 
 template <typename Element>
 Plaintext CryptoContextImpl<Element>::GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp,
-                                                             EncodingParams ep) {
+                                                             EncodingParams ep, CKKSDataType cdt) {
     auto vp = std::make_shared<typename NativePoly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
 
     if (pte == CKKS_PACKED_ENCODING)
-        return PlaintextFactory::MakePlaintext(pte, evp, ep);
+        return PlaintextFactory::MakePlaintext(pte, evp, ep, getSchemeId(), cdt);
 
     return PlaintextFactory::MakePlaintext(pte, vp, ep);
 }
@@ -469,9 +469,9 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
     Plaintext decrypted = CryptoContextImpl<Element>::GetPlaintextForDecrypt(
-        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
+        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
+        this->GetCKKSDataType());
 
-    decrypted->SetCKKSDataType(this->GetCKKSDataType());
     DecryptResult result;
 
     if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly))) {
@@ -549,15 +549,15 @@ namespace lbcrypto {
 
 template <>
 Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp,
-                                                              EncodingParams ep) {
+                                                              EncodingParams ep, CKKSDataType cdt) {
     if ((pte == CKKS_PACKED_ENCODING) && (evp->GetParams().size() > 1)) {
         auto vp = std::make_shared<typename Poly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
-        return PlaintextFactory::MakePlaintext(pte, vp, ep);
+        return PlaintextFactory::MakePlaintext(pte, vp, ep, INVALID_SCHEME, cdt);
     }
     else {
         auto vp =
             std::make_shared<typename NativePoly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
-        return PlaintextFactory::MakePlaintext(pte, vp, ep);
+        return PlaintextFactory::MakePlaintext(pte, vp, ep, INVALID_SCHEME, cdt);
     }
 }
 
@@ -576,8 +576,8 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
     Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
-        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams());
-    decrypted->SetCKKSDataType(this->GetCKKSDataType());
+        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
+        this->GetCKKSDataType());
 
     DecryptResult result;
 
@@ -631,9 +631,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     // determine which type of plaintext that you need to decrypt into
     Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
         partialCiphertextVec[0]->GetEncodingType(), partialCiphertextVec[0]->GetElements()[0].GetParams(),
-        this->GetEncodingParams());
-
-    decrypted->SetCKKSDataType(this->GetCKKSDataType());
+        this->GetEncodingParams(), this->GetCKKSDataType());
 
     if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (partialCiphertextVec[0]->GetElements()[0].GetParams()->GetParams().size() > 1))
