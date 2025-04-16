@@ -450,7 +450,7 @@ Plaintext CryptoContextImpl<Element>::GetPlaintextForDecrypt(PlaintextEncodings 
     auto vp = std::make_shared<typename NativePoly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
 
     if (pte == CKKS_PACKED_ENCODING)
-        return PlaintextFactory::MakePlaintext(pte, evp, ep, getSchemeId(), cdt);
+        return PlaintextFactory::MakePlaintext(pte, evp, ep, INVALID_SCHEME, cdt);
 
     return PlaintextFactory::MakePlaintext(pte, vp, ep);
 }
