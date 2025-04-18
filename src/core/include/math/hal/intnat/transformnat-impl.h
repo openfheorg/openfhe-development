@@ -303,14 +303,13 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
 
-std::cout << " \n\n********* Forward " << element->GetLength() << " *********\n\n";
-std::cout << "X = [" << (*element)[0];
+std::cout << "'X' : [" << (*element)[0];
 for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
-std::cout << "]\n";
-std::cout << "modulus = " << element->GetModulus() << "\n";
-std::cout << "twiddles = [" << rootOfUnityTable[0];
+std::cout << "],\n";
+std::cout << "'modulus' : " << element->GetModulus() << ",\n";
+std::cout << "'twiddles' : [" << rootOfUnityTable[0];
 for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << rootOfUnityTable[i]; }
-std::cout << "]\n";
+std::cout << "],\n";
 
     auto modulus{element->GetModulus()};
     uint32_t n(element->GetLength() >> 1), t{n}, logt{GetMSB(t)};
@@ -364,9 +363,9 @@ std::cout << "]\n";
 #endif
     }
 
-std::cout << "Y_truth = [" << (*element)[0];
+std::cout << "'Y_truth' : [" << (*element)[0];
 for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
-std::cout << "]\n";
+std::cout << "],\n";
 
 }
 
@@ -511,15 +510,14 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     const IntType& preconCycloOrderInv, VecType* element) {
 
 
-std::cout << "\n\n********* Inverse " << element->GetLength() << " *********\n\n";
-std::cout << "X = [" << (*element)[0];
+std::cout << "'X' : [" << (*element)[0];
 for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
-std::cout << "]\n";
-std::cout << "modulus = " << element->GetModulus() << "\n";
-std::cout << "cyclo = " << cycloOrderInv << "\n";
-std::cout << "twiddles = [" << rootOfUnityInverseTable[0];
+std::cout << "],\n";
+std::cout << "'modulus' : " << element->GetModulus() << ",\n";
+std::cout << "'cyclo' : " << cycloOrderInv << ",\n";
+std::cout << "'twiddles' : [" << rootOfUnityInverseTable[0];
 for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << rootOfUnityInverseTable[i]; }
-std::cout << "]\n";
+std::cout << "],\n";
 
     auto modulus{element->GetModulus()};
     uint32_t n(element->GetLength());
@@ -579,9 +577,9 @@ std::cout << "]\n";
         }
     }
 
-std::cout << "Y_truth = [" << (*element)[0];
+std::cout << "'Y_truth' : [" << (*element)[0];
 for (uint32_t i = 1; i < element->GetLength(); ++i) { std::cout << ", " << (*element)[i]; }
-std::cout << "]\n";
+std::cout << "],\n";
 
 }
 

@@ -30,16 +30,22 @@
 //==================================================================================
 
 #include "openfhecore.h"
+#include <iostream>
 using namespace lbcrypto;
 
 constexpr uint32_t bits = 20;
 
 int main() {
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    for (uint32_t n : {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}) {
+    std::cout << "datantt" << bits << " = {\n";
+    for (uint32_t n : {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}) {
         auto params = std::make_shared<ILNativeParams>(1 << (n + 1), bits);
         auto poly = NativePoly(dug, params, Format::COEFFICIENT);
+        std::cout << (1 << n) << " : [\n{\n";
         poly.SwitchFormat();  // forward ntt
+        std::cout << "},\n{\n";
         poly.SwitchFormat();  // inverse ntt
+        std::cout << "} ],\n";
     }
+    std::cout << "}\n";
 }
