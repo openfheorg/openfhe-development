@@ -191,7 +191,4 @@ The set method is `SetFirstModSize`.
 
 The set method is `SetPRENumHops`.
 
-**COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression. The set method is `SetInteractiveBootCompressionLevel`.
-level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient)
-
-**CKKSDataType ckksDataType (CKKS only)** - data type of values encoded in CKKS, real or complex. If complex, it is not compatible with EXEC_NOISE_ESTIMATION mode.
+**COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient).  The set method is `SetInteractiveBootCompressionLevel`.
