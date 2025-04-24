@@ -258,8 +258,8 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
     }
 
     if (numPrimes > 1) {
-        const std::string compositeScalingErrMsg = "COMPOSITE SCALING prime sampling error. ";
-        "Try increasing the scaling factor(s).";
+        const std::string compositeScalingErrMsg =
+            "COMPOSITE SCALING prime sampling error. Try increasing the scaling factor(s).";
         std::vector<NativeInteger> qPrev(std::ceil(static_cast<double>(compositeDegree) / 2));
         std::vector<NativeInteger> qNext(compositeDegree - static_cast<uint32_t>(qPrev.size()));
 
