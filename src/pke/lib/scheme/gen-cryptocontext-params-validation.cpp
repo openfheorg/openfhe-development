@@ -40,14 +40,25 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (NORESCALE == parameters.GetScalingTechnique()) {
             OPENFHE_THROW("NORESCALE is not supported in CKKSRNS");
         }
+        else if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique()) {
+            if (1 != parameters.GetCompositeDegree()) {
+                OPENFHE_THROW("Composite degree can be set for COMPOSITESCALINGMANUAL only.");
+            }
+        }
+        else if (COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
+            if (parameters.GetCompositeDegree() < 1 || parameters.GetCompositeDegree() > 4) {
+                OPENFHE_THROW("Composite degree valid values: 1, 2, 3, and 4.");
+            }
+        }
         if (NOISE_FLOODING_HRA == parameters.GetPREMode()) {
             OPENFHE_THROW("NOISE_FLOODING_HRA is not supported in CKKSRNS");
         }
         if (NOISE_FLOODING_MULTIPARTY == parameters.GetMultipartyMode()) {
             OPENFHE_THROW("NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS");
         }
-        if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() 
-            && COMPOSITESCALINGAUTO != parameters.GetScalingTechnique() && COMPOSITESCALINGMANUAL != parameters.GetScalingTechnique()) {
+        if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
+            COMPOSITESCALINGAUTO != parameters.GetScalingTechnique() &&
+            COMPOSITESCALINGMANUAL != parameters.GetScalingTechnique()) {
             OPENFHE_THROW("scalingModSize should be less than " + std::to_string(MAX_MODULUS_SIZE));
         }
         if (30 != parameters.GetStatisticalSecurity()) {
