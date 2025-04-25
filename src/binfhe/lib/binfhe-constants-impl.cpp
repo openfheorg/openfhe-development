@@ -32,6 +32,7 @@
 #include <ostream>
 
 #include "binfhe-constants.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -260,6 +261,72 @@ std::ostream& operator<<(std::ostream& s, BINGATE f) {
             break;
     }
     return s;
+}
+
+void isMethodCompatible(BINFHE_METHOD m, BINFHE_PARAMSET p) {
+    if (m == LMKCDEY) {
+        switch (p) {
+            case TOY:
+            case MEDIUM:
+            case STD128_LMKCDEY:
+            case STD128_3_LMKCDEY:
+            case STD128_4_LMKCDEY:
+            case STD128Q_LMKCDEY:
+            case STD128Q_3_LMKCDEY:
+            case STD128Q_4_LMKCDEY:
+            case STD192_LMKCDEY:
+            case STD192_3_LMKCDEY:
+            case STD192_4_LMKCDEY:
+            case STD192Q_LMKCDEY:
+            case STD192Q_3_LMKCDEY:
+            case STD192Q_4_LMKCDEY:
+            case STD256_LMKCDEY:
+            case STD256_3_LMKCDEY:
+            case STD256_4_LMKCDEY:
+            case STD256Q_LMKCDEY:
+            case STD256Q_3_LMKCDEY:
+            case STD256Q_4_LMKCDEY:
+            case LPF_STD128_LMKCDEY:
+            case LPF_STD128Q_LMKCDEY:
+                break;
+            default:
+                OPENFHE_THROW("Specified BINFHE_METHOD and BINFHE_PARAMSET are incompatible");
+        }
+    }
+    else if (m == AP || m == GINX) {
+        switch (p) {
+            case TOY:
+            case MEDIUM:
+            case STD128_AP:
+            case STD128:
+            case STD128_3:
+            case STD128_4:
+            case STD128Q:
+            case STD128Q_3:
+            case STD128Q_4:
+            case STD192:
+            case STD192_3:
+            case STD192_4:
+            case STD192Q:
+            case STD192Q_3:
+            case STD192Q_4:
+            case STD256:
+            case STD256_3:
+            case STD256_4:
+            case STD256Q:
+            case STD256Q_3:
+            case STD256Q_4:
+            case LPF_STD128:
+            case LPF_STD128Q:
+            case SIGNED_MOD_TEST:
+                break;
+            default:
+                OPENFHE_THROW("Specified BINFHE_METHOD and BINFHE_PARAMSET are incompatible");
+        }
+    }
+    else {
+        OPENFHE_THROW("Invalid BINFHE_METHOD");
+    }
 }
 
 };  // namespace lbcrypto

@@ -51,23 +51,23 @@ namespace lbcrypto {
 // TODO: reorder to optimize struct size/alignment
 struct BinFHEContextParams {
     // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
-    usint numberBits;
-    usint cyclOrder;
+    uint32_t numberBits;
+    uint32_t cyclOrder;
 
     // for LWE crypto parameters
-    usint latticeParam;
-    usint mod;  // modulus for additive LWE
+    uint32_t latticeParam;
+    uint32_t mod;  // modulus for additive LWE
     // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
-    usint modKS;
+    uint32_t modKS;
     double stdDev;
-    usint baseKS;  // base for key switching
+    uint32_t baseKS;  // base for key switching
 
     // for Ring GSW + LWE parameters
-    usint gadgetBase;  // gadget base used in the bootstrapping
-    usint baseRK;      // base for the refreshing key
+    uint32_t gadgetBase;  // gadget base used in the bootstrapping
+    uint32_t baseRK;      // base for the refreshing key
 
     // number of Automorphism keys for LMKCDEY (> 0)
-    usint numAutoKeys;
+    uint32_t numAutoKeys;
 
     // for key distribution
     SecretKeyDist keyDist;
@@ -302,7 +302,8 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
+    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
+                              bool extended = false) const;
 
     /**
    * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
