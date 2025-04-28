@@ -196,7 +196,7 @@ bool CKKSPackedEncoding::Encode() {
     }
     DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
 #else  // NATIVEINT == 64
-    int32_t logc = 0;
+    int32_t logc = -1;
     for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= scalingFactor;
         if (inverse[i].real() != 0.) {
@@ -210,6 +210,7 @@ bool CKKSPackedEncoding::Encode() {
                 logc = logci;
         }
     }
+    logc = (logc == -1) ? 0 : logc;
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 

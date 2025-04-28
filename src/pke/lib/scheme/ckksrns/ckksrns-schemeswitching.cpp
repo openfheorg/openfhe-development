@@ -325,8 +325,8 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
     constexpr int32_t MAX_BITS_IN_WORD = 61;
 
-    int32_t logc = 0;
-    for (size_t i = 0; i < slots; ++i) {
+    int32_t logc = -1;
+    for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
         if (inverse[i].real() != 0) {
             int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
@@ -339,9 +339,10 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
                 logc = logci;
         }
     }
-    if (logc < 0) {
-        OPENFHE_THROW("Too small scaling factor");
-    }
+    logc = (logc == -1) ? 0 : logc;
+    if (logc < 0)
+        OPENFHE_THROW("Scaling factor too small");
+
     int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
     int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
