@@ -42,6 +42,7 @@
 
 #include <complex>
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -196,7 +197,7 @@ bool CKKSPackedEncoding::Encode() {
     }
     DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
 #else  // NATIVEINT == 64
-    int32_t logc = -1;
+    int32_t logc = std::numeric_limits<int32_t>::min();
     for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= scalingFactor;
         if (inverse[i].real() != 0.) {
@@ -210,7 +211,7 @@ bool CKKSPackedEncoding::Encode() {
                 logc = logci;
         }
     }
-    logc = (logc == -1) ? 0 : logc;
+    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 

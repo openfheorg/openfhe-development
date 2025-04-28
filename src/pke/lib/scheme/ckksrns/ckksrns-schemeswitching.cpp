@@ -44,6 +44,7 @@
 #include "math/dftransform.h"
 
 #include <iterator>
+#include <limits>
 
 // K = 16
 static constexpr std::initializer_list<double> g_coefficientsFHEW16{
@@ -325,7 +326,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
     constexpr int32_t MAX_BITS_IN_WORD = 61;
 
-    int32_t logc = -1;
+    int32_t logc = std::numeric_limits<int32_t>::min();
     for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
         if (inverse[i].real() != 0) {
@@ -339,7 +340,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
                 logc = logci;
         }
     }
-    logc = (logc == -1) ? 0 : logc;
+    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 

@@ -31,34 +31,31 @@
 
 #define PROFILE
 
-#include "scheme/ckksrns/ckksrns-fhe.h"
-
-#include "key/privatekey.h"
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "schemebase/base-scheme.h"
-#include "cryptocontext.h"
 #include "ciphertext.h"
-
+#include "cryptocontext.h"
+#include "key/privatekey.h"
 #include "lattice/lat-hal.h"
-
 #include "math/hal/basicint.h"
 #include "math/dftransform.h"
-
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
+#include "schemebase/base-scheme.h"
 #include "utils/exception.h"
 #include "utils/parallel.h"
 #include "utils/utilities.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
 
-#include <cmath>
-#include <memory>
-#include <vector>
 #include <algorithm>
-#include <map>
-#include <utility>
-#include <string>
+#include <cmath>
 #ifdef BOOTSTRAPTIMING
     #include <iostream>
 #endif
+#include <limits>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace {
 // GetBigModulus() calculates the big modulus as the product of
@@ -2447,7 +2444,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
     constexpr int32_t MAX_BITS_IN_WORD = 61;
 
-    int32_t logc = -1;
+    int32_t logc = std::numeric_limits<int32_t>::min();
     for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
         if (inverse[i].real() != 0) {
@@ -2461,7 +2458,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 logc = logci;
         }
     }
-    logc = (logc == -1) ? 0 : logc;
+    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 
