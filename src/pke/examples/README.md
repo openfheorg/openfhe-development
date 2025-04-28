@@ -26,23 +26,28 @@ File Listing
 - [depth-bfvrns.cpp](depth-bfvrns.cpp): demonstrates use of the BFVrns scheme for basic homomorphic encryption
 - [depth-bfvrns-behz.cpp](depth-bfvrns-behz.cpp): demonstrates use of the BEHZ BFV variant for basic homomorphic encryption
 - [depth-bgvrns.cpp](depth-bgvrns.cpp): demonstrates use of the BGVrns scheme for basic homomorphic encryption
+- [function-evaluation.cpp](function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
+- [inner-product.cpp](inner-product.cpp): demonstrates the evaluation of inner product using CKKS and BFV
+- [interactive-bootstrapping.cpp](interactive-bootstrapping.cpp): Two examples of $2$-party interactive bootstrapping (the second one is with Chebyshev interpolation)
 - [iterative-ckks-bootstrapping.cpp](iterative-ckks-bootstrapping.cpp): demonstrates how to run multiple iterations of CKKS bootstrapping to improve precision
 - [linearwsum-evaluation.cpp](linearwsum-evaluation.cpp): demonstrates the evaluation of a linear weighted sum using CKKS
-- [function-evaluation.cpp](function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
 - [polynomial-evaluation.cpp](polynomial-evaluation.cpp): demonstrates an evaluation of a polynomial (power series) using CKKS
 - [pre-buffer.cpp](pre-buffer.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
 - [pre-hra-secure.cpp](pre-hra-secure.cpp): shows examples of HRA-secure PRE based on BGV
 - [rotation.cpp](rotation.cpp): demonstrates use of EvalRotate for different schemes
 - [scheme-switching.cpp](scheme-switching.cpp): demonstrates several use cases for switching between CKKS and FHEW ciphertexts
+- [scheme-switching-serial.cpp](scheme-switching-serial.cpp): provides an example of CKKS <-> FHEW scheme switching with serialization
 - [simple-ckks-bootstrapping.cpp](simple-ckks-bootstrapping.cpp): simple example showing CKKS bootstrapping for a ciphertext with full packing
 - [simple-integers.cpp](simple-integers.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
-- [simple-integers-bgvrns.cpp](simple-integers-bgvrns.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BGVrns
+- [simple-integers-bgvrns.cpp](simple-integers-bgvrns.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BGV
 - [simple-integers-serial.cpp](simple-integers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
-- [simple-integers-serial-bgvrns.cpp](simple-integers-serial-bgvrns.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BGVrns
+- [simple-integers-serial-bgvrns.cpp](simple-integers-serial-bgvrns.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BGV
 - [simple-real-numbers.cpp](simple-real-numbers): simple example showing homomorphic additions, multiplications, and rotations for vectors of real numbers using CKKS
 - [simple-real-numbers-serial.cpp](simple-real-numbers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using CKKS
-- [threshold-fhe.cpp](threshold-fhe.cpp): shows several examples of threshold FHE in BGVrns, BFVrns, and CKKSrns
-- [threshold-fhe-5p.cpp](threshold-fhe-5p.cpp): shows example of threshold FHE with 5 parties in BFVrns
+- [tckks-interactive-mp-bootstrapping.cpp](tckks-interactive-mp-bootstrapping.cpp): An example of $n$-party interactive bootstrapping
+- [tckks-interactive-mp-bootstrapping-Chebyshev.cpp](tckks-interactive-mp-bootstrapping-Chebyshev.cpp): An example of $n$-party interactive bootstrapping with Chebyshev interpolation
+- [threshold-fhe.cpp](threshold-fhe.cpp): shows several examples of threshold FHE in BGV, BFV, and CKKS
+- [threshold-fhe-5p.cpp](threshold-fhe-5p.cpp): shows example of threshold FHE with 5 parties in BFV
 
 How To Link Your Own Project After Having OpenFHE Installed
 ===================
