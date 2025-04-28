@@ -248,7 +248,7 @@ protected:
             uint32_t batchSize = GetEncodingParams()->GetBatchSize();
             slots              = (batchSize == 0) ? GetElementRingDimension() >> 1 : batchSize;
         }
-        if (slots & (slots - 1) != 0)
+        if ((slots & (slots - 1)) != 0)
             OPENFHE_THROW("The number of slots should be a power of two");
         if (slots > GetElementRingDimension() >> 1)
             OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");

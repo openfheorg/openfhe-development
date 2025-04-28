@@ -1899,7 +1899,7 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutableInPlace");
         }
 
         GetScheme()->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKeyVec[0]);
@@ -1913,9 +1913,9 @@ public:
     Ciphertext<Element> EvalSquare(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
-        const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
+        const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalSquare");
         }
 
         return GetScheme()->EvalSquare(ciphertext, evalKeyVec[0]);
@@ -1931,7 +1931,7 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalSquareMutable");
         }
 
         return GetScheme()->EvalSquareMutable(ciphertext, evalKeyVec[0]);
@@ -1947,7 +1947,7 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalSquareInPlace");
         }
 
         GetScheme()->EvalSquareInPlace(ciphertext, evalKeyVec[0]);
@@ -1980,7 +1980,7 @@ public:
         if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(
                 "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMult");
+                "keys for Relinearize");
         }
 
         return GetScheme()->Relinearize(ciphertext, evalKeyVec);
@@ -1999,7 +1999,7 @@ public:
         if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(
                 "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMult");
+                "keys for RelinearizeInPlace");
         }
 
         GetScheme()->RelinearizeInPlace(ciphertext, evalKeyVec);
@@ -2023,7 +2023,7 @@ public:
             (ciphertext1->NumberCiphertextElements() + ciphertext2->NumberCiphertextElements() - 3)) {
             OPENFHE_THROW(
                 "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMult");
+                "keys for EvalMultAndRelinearize");
         }
 
         return GetScheme()->EvalMultAndRelinearize(ciphertext1, ciphertext2, evalKeyVec);

@@ -96,7 +96,7 @@ public:
 
     const EncodingParams GetEncodingParameters() const;
 
-    const std::string GetKeyTag() const {
+    const std::string& GetKeyTag() const {
         return keyTag;
     }
 
