@@ -36,15 +36,14 @@
 #include <cstdint>
 
 // clang-format off
+#define COMPOSITESCALING_MAX_MODULUS_SIZE 121
 #if NATIVEINT == 128
     #define MAX_MODULUS_SIZE 121
-    #define COMPOSITESCALING_MAX_MODULUS_SIZE 121
     using BasicInteger    = unsigned __int128;
     using DoubleNativeInt = unsigned __int128;
     using uint128_t       = unsigned __int128;
     using int128_t        = __int128;
 #elif NATIVEINT == 64
-    #define COMPOSITESCALING_MAX_MODULUS_SIZE 121
     #if defined(HAVE_INT128)
         #define MAX_MODULUS_SIZE 60
         using BasicInteger    = uint64_t;
@@ -60,7 +59,6 @@
     #endif
 #elif NATIVEINT == 32
     #define MAX_MODULUS_SIZE 28
-    #define COMPOSITESCALING_MAX_MODULUS_SIZE 121
     using BasicInteger    = uint32_t;
     using DoubleNativeInt = uint64_t;
     using uint128_t       = uint64_t;
