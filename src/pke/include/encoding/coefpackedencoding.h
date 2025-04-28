@@ -36,16 +36,17 @@
 #ifndef SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_
 #define SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_
 
+#include "encoding/plaintext.h"
+
 #include <initializer_list>
 #include <memory>
-#include <vector>
 #include <string>
-
-#include "encoding/plaintext.h"
+#include <vector>
 
 namespace lbcrypto {
 
 class CoefPackedEncoding : public PlaintextImpl {
+private:
     std::vector<int64_t> value;
 
 protected:
@@ -83,10 +84,7 @@ protected:
     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
         const auto* el = dynamic_cast<const CoefPackedEncoding*>(&rhs);
-        if (el == nullptr)
-            return false;
-
-        return this->value == el->value;
+        return (el != nullptr) && value == el->value;
     }
 
 public:
@@ -132,7 +130,7 @@ public:
     /**
    * Decode the Poly into the string
    * @return true on success
-   */ 
+   */
     bool Decode() override;
 
     /**

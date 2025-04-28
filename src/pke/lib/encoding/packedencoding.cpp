@@ -44,9 +44,9 @@ std::map<ModulusM, NativeInteger> PackedEncoding::m_initRoot;
 std::map<ModulusM, NativeInteger> PackedEncoding::m_bigModulus;
 std::map<ModulusM, NativeInteger> PackedEncoding::m_bigRoot;
 
-std::map<usint, usint> PackedEncoding::m_automorphismGenerator;
-std::map<usint, std::vector<usint>> PackedEncoding::m_toCRTPerm;
-std::map<usint, std::vector<usint>> PackedEncoding::m_fromCRTPerm;
+std::map<uint32_t, uint32_t> PackedEncoding::m_automorphismGenerator;
+std::map<uint32_t, std::vector<uint32_t>> PackedEncoding::m_toCRTPerm;
+std::map<uint32_t, std::vector<uint32_t>> PackedEncoding::m_fromCRTPerm;
 
 bool PackedEncoding::Encode() {
     if (this->isEncoded)
@@ -129,7 +129,6 @@ bool PackedEncoding::Encode() {
             this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
             this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
-        this->isEncoded = true;
     }
     else {
         BigVector temp(this->GetElementRingDimension(), BigInteger(this->GetElementModulus()));
@@ -163,10 +162,9 @@ bool PackedEncoding::Encode() {
         // ilVector coefficients are packed and resulting ilVector is in COEFFICIENT
         // form.
         this->Pack(&this->GetElement<Poly>(), this->encodingParams->GetPlaintextModulus());
-
-        this->isEncoded = true;
     }
 
+    this->isEncoded = true;
     return true;
 }
 
@@ -235,7 +233,7 @@ void PackedEncoding::Destroy() {
     m_fromCRTPerm.clear();
 }
 
-void PackedEncoding::SetParams(usint m, EncodingParams params) {
+void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
     NativeInteger modulusNI(params->GetPlaintextModulus());  // native int modulus
     std::string exception_message;
     bool hadEx = false;
@@ -262,13 +260,13 @@ void PackedEncoding::SetParams(usint m, EncodingParams params) {
 
                 // Find a compatible big-modulus and root of unity for CRTArb
                 if (params->GetPlaintextBigModulus() == 0) {
-                    usint nttDim = pow(2, ceil(log2(2 * m - 1)));
+                    uint32_t nttDim = pow(2, ceil(log2(2 * m - 1)));
                     if ((modulusNI.ConvertToInt() - 1) % nttDim == 0) {
                         m_bigModulus[modulusM] = modulusNI;
                     }
                     else {
-                        usint bigModulusSize   = ceil(log2(2 * m - 1)) + 2 * modulusNI.GetMSB() + 1;
-                        m_bigModulus[modulusM] = LastPrime<NativeInteger>(bigModulusSize, nttDim);
+                        uint32_t bigModulusSize = ceil(log2(2 * m - 1)) + 2 * modulusNI.GetMSB() + 1;
+                        m_bigModulus[modulusM]  = LastPrime<NativeInteger>(bigModulusSize, nttDim);
                     }
                     m_bigRoot[modulusM] = RootOfUnity<NativeInteger>(nttDim, m_bigModulus[modulusM]);
                     params->SetPlaintextBigModulus(m_bigModulus[modulusM]);
@@ -292,18 +290,18 @@ void PackedEncoding::SetParams(usint m, EncodingParams params) {
 
                 // Create the permutations that interchange the automorphism and crt
                 // ordering
-                usint phim = GetTotient(m);
-                auto tList = GetTotientList(m);
-                auto tIdx  = std::vector<usint>(m, -1);
-                for (usint i = 0; i < phim; i++) {
+                uint32_t phim = GetTotient(m);
+                auto tList    = GetTotientList(m);
+                auto tIdx     = std::vector<uint32_t>(m, -1);
+                for (uint32_t i = 0; i < phim; i++) {
                     tIdx[tList[i]] = i;
                 }
 
-                m_toCRTPerm[m]   = std::vector<usint>(phim);
-                m_fromCRTPerm[m] = std::vector<usint>(phim);
+                m_toCRTPerm[m]   = std::vector<uint32_t>(phim);
+                m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
-                usint curr_index = 1;
-                for (usint i = 0; i < phim; i++) {
+                uint32_t curr_index = 1;
+                for (uint32_t i = 0; i < phim; i++) {
                     m_toCRTPerm[m][tIdx[curr_index]] = i;
                     m_fromCRTPerm[m][i]              = tIdx[curr_index];
 
@@ -325,8 +323,8 @@ template <typename P>
 void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
     OPENFHE_DEBUG_FLAG(false);
 
-    usint m = ring->GetCyclotomicOrder();  // cyclotomic order
-    NativeInteger modulusNI(modulus);      // native int modulus
+    uint32_t m = ring->GetCyclotomicOrder();  // cyclotomic order
+    NativeInteger modulusNI(modulus);         // native int modulus
 
     const ModulusM modulusM = {modulusNI, m};
 
@@ -335,13 +333,13 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
         SetParams(m, EncodingParams(std::make_shared<EncodingParamsImpl>(modulus)));
     }
 
-    usint phim = ring->GetRingDimension();
+    uint32_t phim = ring->GetRingDimension();
 
     OPENFHE_DEBUG("Pack for order " << m << " phim " << phim << " modulus " << modulusNI);
 
     // copy values from ring to the vector
     NativeVector slotValues(phim, modulusNI);
-    for (usint i = 0; i < phim; i++) {
+    for (uint32_t i = 0; i < phim; i++) {
         slotValues[i] = (*ring)[i].ConvertToInt();
     }
 
@@ -354,7 +352,7 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
             // Permute to CRT Order
             NativeVector permutedSlots(phim, modulusNI);
 
-            for (usint i = 0; i < phim; i++) {
+            for (uint32_t i = 0; i < phim; i++) {
                 permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
@@ -368,7 +366,7 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
     else {  // Arbitrary cyclotomic
         // Permute to CRT Order
         NativeVector permutedSlots(phim, modulusNI);
-        for (usint i = 0; i < phim; i++) {
+        for (uint32_t i = 0; i < phim; i++) {
             permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
         }
 
@@ -384,7 +382,7 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
     OPENFHE_DEBUG("slotvalues now " << slotValues);
     // copy values into the slotValuesRing
     typename P::Vector slotValuesRing(phim, ring->GetModulus());
-    for (usint i = 0; i < phim; i++) {
+    for (uint32_t i = 0; i < phim; i++) {
         slotValuesRing[i] = typename P::Integer(slotValues[i].ConvertToInt());
     }
 
@@ -396,7 +394,7 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
 void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t m, NativeVector* values) const {
     NativeVector& slotValues = *values;
     NativeInteger modulusNI(modulus);  // native int modulus
-    usint phim = slotValues.GetLength();
+    uint32_t phim = slotValues.GetLength();
 
     const ModulusM modulusM = {modulusNI, m};
 
@@ -411,7 +409,7 @@ void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t 
             // Permute to CRT Order
             NativeVector permutedSlots(phim, modulusNI);
 
-            for (usint i = 0; i < phim; i++) {
+            for (uint32_t i = 0; i < phim; i++) {
                 permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
@@ -425,7 +423,7 @@ void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t 
     else {  // Arbitrary cyclotomic
         // Permute to CRT Order
         NativeVector permutedSlots(phim, modulusNI);
-        for (usint i = 0; i < phim; i++) {
+        for (uint32_t i = 0; i < phim; i++) {
             permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
         }
 
@@ -438,8 +436,8 @@ template <typename P>
 void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
     OPENFHE_DEBUG_FLAG(false);
 
-    usint m = ring->GetCyclotomicOrder();  // cyclotomic order
-    NativeInteger modulusNI(modulus);      // native int modulus
+    uint32_t m = ring->GetCyclotomicOrder();  // cyclotomic order
+    NativeInteger modulusNI(modulus);         // native int modulus
 
     const ModulusM modulusM = {modulusNI, m};
 
@@ -448,13 +446,13 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
         SetParams(m, EncodingParams(std::make_shared<EncodingParamsImpl>(modulus)));
     }
 
-    usint phim = ring->GetRingDimension();  // ring dimension
+    uint32_t phim = ring->GetRingDimension();  // ring dimension
 
     OPENFHE_DEBUG("Unpack for order " << m << " phim " << phim << " modulus " << modulusNI);
 
     // copy aggregate plaintext values
     NativeVector packedVector(phim, modulusNI);
-    for (usint i = 0; i < phim; i++) {
+    for (uint32_t i = 0; i < phim; i++) {
         packedVector[i] = NativeInteger((*ring)[i].ConvertToInt());
     }
 
@@ -473,7 +471,7 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
 
     if (m_fromCRTPerm[m].size() > 0) {
         // Permute to automorphism Order
-        for (usint i = 0; i < phim; i++) {
+        for (uint32_t i = 0; i < phim; i++) {
             packedVector[i] = permutedSlots[m_fromCRTPerm[m][i]];
         }
     }
@@ -485,14 +483,14 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
 
     // copy values into the slotValuesRing
     typename P::Vector packedVectorRing(phim, ring->GetModulus());
-    for (usint i = 0; i < phim; i++) {
+    for (uint32_t i = 0; i < phim; i++) {
         packedVectorRing[i] = typename P::Integer(packedVector[i].ConvertToInt());
     }
 
     ring->SetValues(std::move(packedVectorRing), Format::COEFFICIENT);
 }
 
-void PackedEncoding::SetParams_2n(usint m, const NativeInteger& modulusNI) {
+void PackedEncoding::SetParams_2n(uint32_t m, NativeInteger modulusNI) {
     if (!MillerRabinPrimalityTest(modulusNI)) {
         OPENFHE_THROW("The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
     }
@@ -506,19 +504,19 @@ void PackedEncoding::SetParams_2n(usint m, const NativeInteger& modulusNI) {
     // First we create the cyclic group generated by 5 and then adjoin the
     // co-factor by multiplying by (-1)
 
-    usint phim      = (m >> 1);
-    usint phim_by_2 = (m >> 2);
+    uint32_t phim      = (m >> 1);
+    uint32_t phim_by_2 = (m >> 2);
 
-    m_toCRTPerm[m]   = std::vector<usint>(phim);
-    m_fromCRTPerm[m] = std::vector<usint>(phim);
+    m_toCRTPerm[m]   = std::vector<uint32_t>(phim);
+    m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
-    usint curr_index = 1;
-    usint logn       = std::round(log2(m / 2));
-    for (usint i = 0; i < phim_by_2; i++) {
+    uint32_t curr_index = 1;
+    uint32_t logn       = std::round(log2(m / 2));
+    for (uint32_t i = 0; i < phim_by_2; i++) {
         m_toCRTPerm[m][ReverseBits((curr_index - 1) / 2, logn)] = i;
         m_fromCRTPerm[m][i]                                     = ReverseBits((curr_index - 1) / 2, logn);
 
-        usint cofactor_index = curr_index * (m - 1) % m;
+        uint32_t cofactor_index = curr_index * (m - 1) % m;
 
         m_toCRTPerm[m][ReverseBits((cofactor_index - 1) / 2, logn)] = i + phim_by_2;
         m_fromCRTPerm[m][i + phim_by_2]                             = ReverseBits((cofactor_index - 1) / 2, logn);
@@ -527,7 +525,7 @@ void PackedEncoding::SetParams_2n(usint m, const NativeInteger& modulusNI) {
     }
 }
 
-void PackedEncoding::SetParams_2n(usint m, EncodingParams params) {
+void PackedEncoding::SetParams_2n(uint32_t m, EncodingParams params) {
     NativeInteger modulusNI(params->GetPlaintextModulus());  // native int modulus
 
     if (!MillerRabinPrimalityTest(modulusNI)) {
@@ -548,19 +546,19 @@ void PackedEncoding::SetParams_2n(usint m, EncodingParams params) {
     // Create the permutations that interchange the automorphism and crt ordering
     // First we create the cyclic group generated by 5 and then adjoin the
     // co-factor by multiplying by (-1)
-    usint phim      = (m >> 1);
-    usint phim_by_2 = (m >> 2);
+    uint32_t phim      = (m >> 1);
+    uint32_t phim_by_2 = (m >> 2);
 
-    m_toCRTPerm[m]   = std::vector<usint>(phim);
-    m_fromCRTPerm[m] = std::vector<usint>(phim);
+    m_toCRTPerm[m]   = std::vector<uint32_t>(phim);
+    m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
-    usint curr_index = 1;
-    usint logn       = std::round(log2(m >> 1));
-    for (usint i = 0; i < phim_by_2; i++) {
+    uint32_t curr_index = 1;
+    uint32_t logn       = std::round(log2(m >> 1));
+    for (uint32_t i = 0; i < phim_by_2; i++) {
         m_toCRTPerm[m][ReverseBits((curr_index - 1) / 2, logn)] = i;
         m_fromCRTPerm[m][i]                                     = ReverseBits((curr_index - 1) / 2, logn);
 
-        usint cofactor_index = curr_index * (m - 1) % m;
+        uint32_t cofactor_index = curr_index * (m - 1) % m;
 
         m_toCRTPerm[m][ReverseBits((cofactor_index - 1) / 2, logn)] = i + phim_by_2;
         m_fromCRTPerm[m][i + phim_by_2]                             = ReverseBits((cofactor_index - 1) / 2, logn);

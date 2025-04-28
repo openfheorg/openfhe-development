@@ -91,6 +91,7 @@ static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext, std::strin
     ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
     OPENFHE_DEBUG("EvalMultKeysGen");
     // Create evaluation key vector to be used in keyswitching
+
     cryptoContext->EvalMultKeysGen(keyPair.secretKey);
 
     ////////////////////////////////////////////////////////////
@@ -105,6 +106,7 @@ static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext, std::strin
     std::vector<int64_t> vectorOfInts5 = {10, 8, 6, 4, 2, 0, 10, 8, 6, 4, 2, 0};
     std::vector<int64_t> vectorOfInts6 = {30, 24, 18, 12, 6, 0, 30, 24, 18, 12, 6, 0};
     std::vector<int64_t> vectorOfInts7 = {120, 96, 72, 48, 24, 0, 120, 96, 72, 48, 24, 0};
+
     OPENFHE_DEBUG("MakeCoefPackedPlaintext");
     Plaintext plaintext1 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
     Plaintext plaintext2 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
