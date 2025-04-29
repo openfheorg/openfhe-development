@@ -78,12 +78,13 @@ public:
                             PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                             uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
                             COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
-                            usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT)
+                            usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT,
+                            CKKSDataType ckksDataType = REAL)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
                               multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
                               numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel,
-                              compositeDegree, registerWordSize) {}
+                              compositeDegree, registerWordSize, ckksDataType) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 

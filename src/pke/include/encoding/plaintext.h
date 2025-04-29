@@ -36,10 +36,9 @@
 #ifndef LBCRYPTO_UTILS_PLAINTEXT_H
 #define LBCRYPTO_UTILS_PLAINTEXT_H
 
-#include "encoding/plaintext-fwd.h"
-
-#include "encoding/encodingparams.h"
 #include "constants.h"
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext-fwd.h"
 #include "scheme/scheme-id.h"
 
 #include <algorithm>
@@ -65,28 +64,24 @@ class PlaintextImpl {
 protected:
     enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
 
-    bool isEncoded;
+    bool isEncoded{false};
     PtxtPolyType typeFlag;
     EncodingParams encodingParams;
 
+    // TODO: remove mutable
     mutable Poly encodedVector;
     mutable NativePoly encodedNativeVector;
     mutable DCRTPoly encodedVectorDCRT;
 
-    static constexpr int intCTOR     = 0x01;
-    static constexpr int vecintCTOR  = 0x02;
-    static constexpr int fracCTOR    = 0x04;
-    static constexpr int vecuintCTOR = 0x08;
+    PlaintextEncodings ptxtEncoding{INVALID_ENCODING};
+    SCHEME schemeID{SCHEME::INVALID_SCHEME};
+    CKKSDataType ckksDataType{REAL};
+    double scalingFactor{1.0};
+    NativeInteger scalingFactorInt{1};
+    size_t level{0};
+    size_t noiseScaleDeg{1};
+    uint32_t slots{0};
 
-    double scalingFactor           = 1;
-    NativeInteger scalingFactorInt = 1;
-    size_t level                   = 0;
-    size_t noiseScaleDeg           = 1;
-    usint slots                    = 0;
-    PlaintextEncodings ptxtEncoding = INVALID_ENCODING;
-    SCHEME schemeID;
-
-protected:
     /**
     * @brief PrintValue() is called by operator<<
     * @param out
@@ -104,27 +99,25 @@ protected:
 
 public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
-        : isEncoded(isEncoded),
-          typeFlag(IsPoly),
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+        : typeFlag(IsPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           ptxtEncoding(encoding),
           schemeID(schemeTag) {}
 
     PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
-        : isEncoded(isEncoded),
-          typeFlag(IsNativePoly),
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+        : typeFlag(IsNativePoly),
           encodingParams(std::move(ep)),
           encodedNativeVector(vp, Format::COEFFICIENT),
           ptxtEncoding(encoding),
           schemeID(schemeTag) {}
 
+    // TODO: eliminate use of encodedVector in coefpackedencoding to remove encodedVector init here
     PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME, bool isEncoded = false)
-        : isEncoded(isEncoded),
-          typeFlag(IsDCRTPoly),
+                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+        : typeFlag(IsDCRTPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           encodedVectorDCRT(vp, Format::COEFFICIENT),
@@ -136,28 +129,32 @@ public:
           typeFlag(rhs.typeFlag),
           encodingParams(rhs.encodingParams),
           encodedVector(rhs.encodedVector),
+          encodedNativeVector(rhs.encodedNativeVector),
           encodedVectorDCRT(rhs.encodedVectorDCRT),
+          ptxtEncoding(rhs.ptxtEncoding),
+          schemeID(rhs.schemeID),
+          ckksDataType(rhs.ckksDataType),
           scalingFactor(rhs.scalingFactor),
           scalingFactorInt(rhs.scalingFactorInt),
           level(rhs.level),
           noiseScaleDeg(rhs.noiseScaleDeg),
-          slots(rhs.slots),
-          ptxtEncoding(rhs.ptxtEncoding),
-          schemeID(rhs.schemeID) {}
+          slots(rhs.slots) {}
 
     PlaintextImpl(PlaintextImpl&& rhs)
         : isEncoded(rhs.isEncoded),
           typeFlag(rhs.typeFlag),
           encodingParams(std::move(rhs.encodingParams)),
           encodedVector(std::move(rhs.encodedVector)),
+          encodedNativeVector(std::move(rhs.encodedNativeVector)),
           encodedVectorDCRT(std::move(rhs.encodedVectorDCRT)),
+          ptxtEncoding(rhs.ptxtEncoding),
+          schemeID(rhs.schemeID),
+          ckksDataType(rhs.ckksDataType),
           scalingFactor(rhs.scalingFactor),
           scalingFactorInt(rhs.scalingFactorInt),
           level(rhs.level),
           noiseScaleDeg(rhs.noiseScaleDeg),
-          slots(rhs.slots),
-          ptxtEncoding(rhs.ptxtEncoding),
-          schemeID(rhs.schemeID) {}
+          slots(rhs.slots) {}
 
     virtual ~PlaintextImpl() = default;
 
@@ -186,7 +183,7 @@ public:
     /**
    * Get the scaling factor of the plaintext for BGV-based plaintexts.
    */
-    const NativeInteger GetScalingFactorInt() const {
+    NativeInteger GetScalingFactorInt() const {
         return scalingFactorInt;
     }
 
@@ -216,8 +213,24 @@ public:
    * GetEncodingParams
    * @return Encoding params used with this plaintext
    */
-    const EncodingParams GetEncodingParams() const {
+    EncodingParams GetEncodingParams() const {
         return encodingParams;
+    }
+
+    /**
+   * GetCKKSDataType
+   * @return CKKS data type with this plaintext
+   */
+    CKKSDataType GetCKKSDataType() const {
+        return ckksDataType;
+    }
+
+    /**
+   * SetCKKSDataType
+   * @return Set CKKS data type to be used with this plaintext
+   */
+    void SetCKKSDataType(CKKSDataType cdt) {
+        ckksDataType = cdt;
     }
 
     /**
@@ -241,12 +254,8 @@ public:
    * @return floor(-p/2)
    */
     int64_t LowBound() const {
-        uint64_t half = GetEncodingParams()->GetPlaintextModulus() >> 1;
-        bool odd      = (GetEncodingParams()->GetPlaintextModulus() & 0x1) == 1;
-        int64_t bound = -1 * half;
-        if (odd)
-            bound--;
-        return bound;
+        uint64_t ptm = GetEncodingParams()->GetPlaintextModulus();
+        return -static_cast<int64_t>((ptm >> 1) + (ptm & 0x1));
     }
 
     /**
@@ -263,6 +272,7 @@ public:
    *
    * @param fmt
    */
+    // TODO: remove const
     void SetFormat(Format fmt) const {
         if (typeFlag == IsPoly)
             encodedVector.SetFormat(fmt);
@@ -290,7 +300,7 @@ public:
    * GetElementRingDimension
    * @return ring dimension on the underlying element
    */
-    usint GetElementRingDimension() const {
+    uint32_t GetElementRingDimension() const {
         return typeFlag == IsPoly ? encodedVector.GetRingDimension() :
                                     (typeFlag == IsNativePoly ? encodedNativeVector.GetRingDimension() :
                                                                 encodedVectorDCRT.GetRingDimension());
@@ -300,7 +310,7 @@ public:
    * GetElementModulus
    * @return modulus on the underlying elemenbt
    */
-    const BigInteger GetElementModulus() const {
+    BigInteger GetElementModulus() const {
         return typeFlag == IsPoly ? encodedVector.GetModulus() :
                                     (typeFlag == IsNativePoly ? BigInteger(encodedNativeVector.GetModulus()) :
                                                                 encodedVectorDCRT.GetModulus());
@@ -359,14 +369,14 @@ public:
    *
    * @return the level of the plaintext
    */
-    usint GetSlots() const {
+    uint32_t GetSlots() const {
         return slots;
     }
 
     /*
    * Method to set the level of a plaintext.
    */
-    void SetSlots(usint l) {
+    void SetSlots(uint32_t l) {
         slots = l;
     }
 
@@ -427,10 +437,8 @@ public:
     }
     friend std::ostream& operator<<(std::ostream& out, const Plaintext& item) {
         if (item)
-            out << *item;  // Call the non-pointer version
-        else
-            OPENFHE_THROW("Cannot de-reference nullptr for printing");
-        return out;
+            return out << *item;  // Call the non-pointer version
+        OPENFHE_THROW("Cannot de-reference nullptr for printing");
     }
 
     /**

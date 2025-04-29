@@ -472,10 +472,11 @@ void FloorViaSchemeSwitching() {
         cFloor[i] = ccLWE->EvalFloor(cTemp[i], bits);
     }
 
-    std::cout << "Input x1: " << ptxt1->GetRealPackedValue() << std::endl;
+    auto ptxt1_rpv = ptxt1->GetRealPackedValue();
+    std::cout << "Input x1: " << ptxt1_rpv << std::endl;
     std::cout << "Expected result for EvalFloor with " << bits << " bits: ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << (static_cast<int>(ptxt1->GetRealPackedValue()[i]) >> bits) << " ";
+        std::cout << (static_cast<int>(ptxt1_rpv[i]) >> bits) << " ";
     }
     LWEPlaintext pFloor;
     std::cout << "\nFHEW decryption p = " << NativeInteger(pLWE)
@@ -628,8 +629,9 @@ void FuncViaSchemeSwitching() {
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
     plaintextDec2->SetLength(slots);
     std::cout << "Arcsin(switched result) * p/2pi gives the correct result if messages are < p/4: ";
+    auto plaintextDec2_rpv = plaintextDec2->GetRealPackedValue();
     for (uint32_t i = 0; i < slots; i++) {
-        double x = std::max(std::min(plaintextDec2->GetRealPackedValue()[i], 1.0), -1.0);
+        double x = std::max(std::min(plaintextDec2_rpv[i], 1.0), -1.0);
         std::cout << std::asin(x) * pLWE / (2 * Pi) << " ";
     }
     std::cout << "\n";
@@ -728,14 +730,15 @@ void ComparisonViaSchemeSwitching() {
     cc->Decrypt(keys.secretKey, cDiff, &pDiff);
     pDiff->SetLength(slots);
     std::cout << "Difference of inputs: ";
+    auto pDiff_rpv = pDiff->GetRealPackedValue();
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << pDiff->GetRealPackedValue()[i] << " ";
+        std::cout << pDiff_rpv[i] << " ";
     }
 
     const double eps = 0.0001;
     std::cout << "\nExpected sign result from CKKS: ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << int(std::round(pDiff->GetRealPackedValue()[i] / eps) * eps < 0) << " ";
+        std::cout << int(std::round(pDiff_rpv[i] / eps) * eps < 0) << " ";
     }
     std::cout << "\n";
 
@@ -751,10 +754,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\nExpected sign result in FHEW with plaintext modulus " << NativeInteger(pLWE2) << " and scale "
               << scaleSignFHEW << ": ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE2 -
-                          pLWE2 / 2.0 >=
-                      0)
-                  << " ";
+        std::cout << (static_cast<int>(std::round(pDiff_rpv[i] * scaleSignFHEW)) % pLWE2 - pLWE2 / 2.0 >= 0) << " ";
     }
     std::cout << "\n";
 
@@ -792,10 +792,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\nExpected sign result in FHEW with plaintext modulus " << NativeInteger(pLWE2) << " and scale "
               << scaleSignFHEW << ": ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE2 -
-                          pLWE2 / 2.0 >=
-                      0)
-                  << " ";
+        std::cout << (static_cast<int>(std::round(pDiff_rpv[i] * scaleSignFHEW)) % pLWE2 - pLWE2 / 2.0 >= 0) << " ";
     }
     std::cout << "\n";
     std::cout << "Obtained sign result in FHEW with plaintext modulus " << NativeInteger(pLWE2) << " and scale "
@@ -832,10 +829,7 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\nExpected sign result in FHEW with plaintext modulus " << NativeInteger(pLWE1) << " and scale "
               << scaleSignFHEW << ": ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE1 -
-                          pLWE1 / 2.0 >=
-                      0)
-                  << " ";
+        std::cout << (static_cast<int>(std::round(pDiff_rpv[i] * scaleSignFHEW)) % pLWE1 - pLWE1 / 2.0 >= 0) << " ";
     }
     std::cout << "\n";
     std::cout << "Obtained sign result in FHEW with plaintext modulus " << NativeInteger(pLWE1) << " and scale "

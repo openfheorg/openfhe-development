@@ -36,10 +36,10 @@
 #ifndef SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
 #define SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
 
+#include "encoding/plaintext.h"
+
 #include <memory>
 #include <string>
-
-#include "encoding/plaintext.h"
 
 namespace lbcrypto {
 
@@ -114,10 +114,7 @@ protected:
     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
         const auto* el = dynamic_cast<const StringEncoding*>(&rhs);
-        if (el == nullptr)
-            return false;
-
-        return this->ptx == el->ptx;
+        return (el != nullptr) && ptx == el->ptx;
     }
 
     /**

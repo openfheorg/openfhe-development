@@ -36,6 +36,10 @@
 #ifndef LBCRYPTO_UTILS_PACKEDEXTENCODING_H
 #define LBCRYPTO_UTILS_PACKEDEXTENCODING_H
 
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+#include "utils/inttypes.h"
+
 #include <functional>
 #include <initializer_list>
 #include <map>
@@ -43,10 +47,6 @@
 #include <numeric>
 #include <utility>
 #include <vector>
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -107,7 +107,7 @@ public:
    */
     PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value() {}
 
-    static usint GetAutomorphismGenerator(usint m) {
+    static uint32_t GetAutomorphismGenerator(uint32_t m) {
         return m_automorphismGenerator[m];
     }
 
@@ -141,16 +141,16 @@ public:
    * @param m the encoding cyclotomic order.
    * @params params data structure storing encoding parameters
    */
-    static void SetParams(usint m, EncodingParams params);
+    static void SetParams(uint32_t m, EncodingParams params);
 
     /**
    * @brief Method to set encoding params (this method should eventually be
-   * replaced by void SetParams(usint m, EncodingParams params);)
+   * replaced by void SetParams(uint32_t m, EncodingParams params);)
    * @param m the encoding cyclotomic order.
    * @params modulus is the plaintext modulus
    */
-    static void SetParams(usint m, const PlaintextModulus& modulus)
-        __attribute__((deprecated("use SetParams(usint m, EncodingParams p)")));
+    static void SetParams(uint32_t m, const PlaintextModulus& modulus)
+        __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
 
     /**
    * SetLength of the plaintext to the given size
@@ -199,10 +199,7 @@ protected:
     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
         const auto* el = dynamic_cast<const PackedEncoding*>(&rhs);
-        if (el == nullptr)
-            return false;
-
-        return this->value == el->value;
+        return (el != nullptr) && value == el->value;
     }
 
 private:
@@ -213,13 +210,13 @@ private:
     static std::map<ModulusM, NativeInteger> m_bigRoot;
 
     // stores the list of primitive roots used in packing.
-    static std::map<usint, usint> m_automorphismGenerator;
-    static std::map<usint, std::vector<usint>> m_toCRTPerm;
-    static std::map<usint, std::vector<usint>> m_fromCRTPerm;
+    static std::map<uint32_t, uint32_t> m_automorphismGenerator;
+    static std::map<uint32_t, std::vector<uint32_t>> m_toCRTPerm;
+    static std::map<uint32_t, std::vector<uint32_t>> m_fromCRTPerm;
 
-    static void SetParams_2n(usint m, const NativeInteger& modulusNI);
+    static void SetParams_2n(uint32_t m, NativeInteger modulusNI);
 
-    static void SetParams_2n(usint m, EncodingParams params);
+    static void SetParams_2n(uint32_t m, EncodingParams params);
 
     /**
    * @brief Packs the slot values into aggregate plaintext space.

@@ -36,6 +36,8 @@
 #ifndef SRC_PKE_CRYPTOCONTEXT_H_
 #define SRC_PKE_CRYPTOCONTEXT_H_
 
+#include "binfhecontext.h"
+
 #include "cryptocontextfactory.h"
 #include "cryptocontext-fwd.h"
 #include "ciphertext.h"
@@ -55,17 +57,16 @@
 #include "utils/serial.h"
 #include "utils/type_name.h"
 
-#include "binfhecontext.h"
-
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <algorithm>
-#include <unordered_map>
-#include <set>
+
 #ifdef DEBUG_KEY
     #include <iostream>
 #endif
@@ -104,6 +105,19 @@ class CryptoContextImpl : public Serializable {
                                  " is available for the CKKS scheme only."
                                  " The current scheme is " +
                                  convertToString(m_schemeId);
+            OPENFHE_THROW(errMsg);
+        }
+    }
+
+    /**
+    * @brief VerifyCKKSRealDataType is to check if the CKKS data type is real. if it is not
+    *        the function will thow an exception
+    * @param functionName is the calling function name. __func__ can be used instead
+    */
+    inline void VerifyCKKSRealDataType(const std::string& functionName) const {
+        if (GetCKKSDataType() != REAL) {
+            std::string errMsg =
+                "Function " + std::string(functionName) + " is available for the real CKKS data types only.";
             OPENFHE_THROW(errMsg);
         }
     }
@@ -204,7 +218,6 @@ class CryptoContextImpl : public Serializable {
             p = PlaintextFactory::MakePlaintext(value, encoding, elemParamsPtr, this->GetEncodingParams(),
                                                 getSchemeId(), depth, level);
         }
-
         return p;
     }
 
@@ -246,13 +259,13 @@ class CryptoContextImpl : public Serializable {
    * @param indexList - array of specific indices to retrieve key for
    * @return shared_ptr to std::map where the map key/data pair is index/automorphism key
    */
-    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetPartialEvalAutomorphismKeyMapPtr(
+    static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetPartialEvalAutomorphismKeyMapPtr(
         const std::string& keyID, const std::vector<uint32_t>& indexList);
 
     // cached evalmult keys, by secret key UID
     static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
     // cached evalautomorphism keys, by secret key UID
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
+    static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
 
 protected:
     // crypto parameters used for this context
@@ -269,11 +282,12 @@ protected:
    * @param a
    * @param b
    */
-    void TypeCheck(const ConstCiphertext<Element> a, const ConstCiphertext<Element> b, CALLER_INFO_ARGS_HDR) const {
+    void TypeCheck(const ConstCiphertext<Element>& a, const ConstCiphertext<Element>& b, CALLER_INFO_ARGS_HDR) const {
         if (a == nullptr || b == nullptr) {
             std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
             OPENFHE_THROW(errorMsg);
         }
+
         if (a->GetCryptoContext().get() != this) {
             std::string errorMsg(std::string("Ciphertext was not created in this CryptoContext") + CALLER_INFO);
             OPENFHE_THROW(errorMsg);
@@ -302,7 +316,7 @@ protected:
    * @param a
    * @param b
    */
-    void TypeCheck(const ConstCiphertext<Element> a, const ConstPlaintext& b, CALLER_INFO_ARGS_HDR) const {
+    void TypeCheck(const ConstCiphertext<Element>& a, const ConstPlaintext& b, CALLER_INFO_ARGS_HDR) const {
         if (a == nullptr) {
             std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
             OPENFHE_THROW(errorMsg);
@@ -358,7 +372,7 @@ protected:
 
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
-                                                      const std::shared_ptr<ParmType> params, usint slots) const {
+                                                      const std::shared_ptr<ParmType> params, uint32_t slots) const {
         VerifyCKKSScheme(__func__);
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         if (level > 0) {
@@ -408,7 +422,7 @@ protected:
                 elemParamsPtr = cryptoParams->GetElementParams();
             }
             // Check if plaintext has got enough slots for data (value)
-            usint ringDim    = elemParamsPtr->GetRingDimension();
+            uint32_t ringDim = elemParamsPtr->GetRingDimension();
             size_t valueSize = value.size();
             if (valueSize > ringDim / 2) {
                 OPENFHE_THROW("The size [" + std::to_string(valueSize) +
@@ -417,11 +431,12 @@ protected:
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
-                                                               noiseScaleDeg, level, scFact, slots));
+                                                               noiseScaleDeg, level, scFact, slots,
+                                                               this->GetCKKSDataType()));
         }
         else {
             // Check if plaintext has got enough slots for data (value)
-            usint ringDim    = params->GetRingDimension();
+            uint32_t ringDim = params->GetRingDimension();
             size_t valueSize = value.size();
             if (valueSize > ringDim / 2) {
                 OPENFHE_THROW("The size [" + std::to_string(valueSize) +
@@ -430,7 +445,7 @@ protected:
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
-                                                               level, scFact, slots));
+                                                               level, scFact, slots, this->GetCKKSDataType()));
         }
         p->Encode();
 
@@ -798,7 +813,7 @@ public:
    * existing map if there
    * @param evalKeyMap key map
    */
-    static void InsertEvalSumKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert,
+    static void InsertEvalSumKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert,
                                  std::string keyTag = "") {
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(mapToInsert, keyTag);
     }
@@ -815,8 +830,8 @@ public:
     template <typename ST>
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, std::string id = "") {
         // TODO (dsuponit): do we need Serailize/Deserialized to return bool?
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>* smap;
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
+        std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>* smap;
+        std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> omap;
         if (id.length() == 0) {
             smap = &CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys();
         }
@@ -839,7 +854,7 @@ public:
    */
     template <typename ST>
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
+        std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> omap;
         for (const auto& k : CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys()) {
             if (k.second->begin()->second->GetCryptoContext() == cc) {
                 omap[k.first] = k.second;
@@ -864,7 +879,7 @@ public:
     template <typename ST>
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyID,
                                              const std::vector<uint32_t>& indexList) {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> keyMap = {
+        std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> keyMap = {
             {keyID, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyID, indexList)}};
 
         Serial::Serialize(keyMap, ser, sertype);
@@ -887,7 +902,7 @@ public:
         if (keyID.empty())
             OPENFHE_THROW("keyID may not be empty");
 
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> allDeserKeys;
+        std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> allDeserKeys;
         Serial::Deserialize(allDeserKeys, ser, sertype);
 
         const auto& keyMapIt = allDeserKeys.find(keyID);
@@ -896,7 +911,7 @@ public:
         }
 
         // create a new map with evalkeys for the specified indices
-        std::map<usint, EvalKey<Element>> newMap;
+        std::map<uint32_t, EvalKey<Element>> newMap;
         for (const uint32_t indx : indexList) {
             const auto& key = keyMapIt->find(indx);
             if (key == keyMapIt->end()) {
@@ -923,7 +938,7 @@ public:
    */
     template <typename ST>
     static bool DeserializeEvalAutomorphismKey(std::istream& ser, const ST& sertype) {
-        std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> keyMap;
+        std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> keyMap;
 
         Serial::Deserialize(keyMap, ser, sertype);
 
@@ -959,7 +974,7 @@ public:
    * @param mapToInsert
    */
     // TODO (dsuponit): move InsertEvalAutomorphismKey() to the private section of the class
-    static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+    static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
                                           const std::string& keyTag = "");
     //------------------------------------------------------------------------------
     // TURN FEATURES ON
@@ -977,7 +992,7 @@ public:
    * Enable several features at once
    * @param featureMask - bitwise or of several PKESchemeFeatures
    */
-    void Enable(usint featureMask) {
+    void Enable(uint32_t featureMask) {
         scheme->Enable(featureMask);
     }
 
@@ -1033,7 +1048,7 @@ public:
    *
    * @return
    */
-    usint GetCyclotomicOrder() const {
+    uint32_t GetCyclotomicOrder() const {
         return params->GetElementParams()->GetCyclotomicOrder();
     }
 
@@ -1042,7 +1057,7 @@ public:
    *
    * @return
    */
-    usint GetRingDimension() const {
+    uint32_t GetRingDimension() const {
         return params->GetElementParams()->GetRingDimension();
     }
 
@@ -1064,6 +1079,20 @@ public:
         return params->GetElementParams()->GetRootOfUnity();
     }
 
+    /**
+     * @brief Get the CKKS data type of the current CKKS crypto context.
+     * @return enum corresponding to data type
+     **/
+    CKKSDataType GetCKKSDataType() const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        if (!cryptoParams) {
+            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
+            OPENFHE_THROW(errorMsg);
+        }
+
+        return cryptoParams->GetCKKSDataType();
+    }
+
     //------------------------------------------------------------------------------
     // KEYS GETTERS
     //------------------------------------------------------------------------------
@@ -1081,26 +1110,26 @@ public:
     /**
    * Get a map of automorphism keys for all secret keys
    */
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
-   /**
+    static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
+    /**
     * Get automorphism keys for a specific secret key tag
     */
-    static std::shared_ptr<std::map<usint, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
+    static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyID);
     /**
    * Get automorphism keys for a specific secret key tag
    */
-    static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyID) {
+    static std::map<uint32_t, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyID) {
         return *(CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID));
     }
     /**
    * Get a map of summation keys (each is composed of several automorphism keys) for all secret keys
    */
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalSumKeys();
+    static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>& GetAllEvalSumKeys();
 
     /**
    * Get a map of summation keys (each is composed of several automorphism keys) for a specific secret key tag
    */
-    static const std::map<usint, EvalKey<Element>>& GetEvalSumKeyMap(const std::string& id);
+    static const std::map<uint32_t, EvalKey<Element>>& GetEvalSumKeyMap(const std::string& id);
 
     //------------------------------------------------------------------------------
     // PLAINTEXT FACTORY METHODS
@@ -1148,8 +1177,6 @@ public:
     }
 
     /**
-   * COMPLEX ARITHMETIC IS NOT AVAILABLE,
-   * AND THIS METHOD BE DEPRECATED. USE THE REAL-NUMBER METHOD INSTEAD.
    * MakeCKKSPackedPlaintext constructs a CKKSPackedEncoding in this context
    * from a vector of complex numbers
    * @param value - input vector of complex number
@@ -1160,7 +1187,7 @@ public:
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t scaleDeg = 1,
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
-                                      usint slots = 0) const {
+                                      uint32_t slots = 0) const {
         VerifyCKKSScheme(__func__);
         if (!value.size())
             OPENFHE_THROW("Cannot encode an empty value vector");
@@ -1178,7 +1205,7 @@ public:
    * @return plaintext
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t scaleDeg = 1, uint32_t level = 0,
-                                      const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
+                                      const std::shared_ptr<ParmType> params = nullptr, uint32_t slots = 0) const {
         VerifyCKKSScheme(__func__);
         if (!value.size())
             OPENFHE_THROW("Cannot encode an empty value vector");
@@ -1196,9 +1223,11 @@ public:
    * @param pte Type of plaintext we want to return
    * @param evp Element parameters
    * @param ep Encoding parameters
+   * @param cdt CKKS data type, real or complex
    * @return plaintext
    */
-    static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep);
+    static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep,
+                                            CKKSDataType cdt = REAL);
 
     //------------------------------------------------------------------------------
     // PKE Wrapper
@@ -1300,7 +1329,7 @@ public:
    * @param plaintext - resulting plaintext object pointer is here
    * @return
    */
-    DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
+    DecryptResult Decrypt(const ConstCiphertext<Element>& ciphertext, const PrivateKey<Element> privateKey,
                           Plaintext* plaintext);
 
     /**
@@ -1311,7 +1340,7 @@ public:
    * @param plaintext - resulting plaintext object pointer is here
    * @return
    */
-    inline DecryptResult Decrypt(const PrivateKey<Element> privateKey, ConstCiphertext<Element> ciphertext,
+    inline DecryptResult Decrypt(const PrivateKey<Element> privateKey, const ConstCiphertext<Element>& ciphertext,
                                  Plaintext* plaintext) {
         return Decrypt(ciphertext, privateKey, plaintext);
     }
@@ -1341,7 +1370,7 @@ public:
    * @param evalKey - evaluation key used for key switching
    * @return new CiphertextImpl after applying key switch
    */
-    Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
+    Ciphertext<Element> KeySwitch(const ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(evalKey);
 
@@ -1369,7 +1398,7 @@ public:
    * @param ciphertext input ciphertext
    * @return new ciphertext -ct
    */
-    Ciphertext<Element> EvalNegate(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> EvalNegate(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalNegate(ciphertext);
@@ -1395,7 +1424,8 @@ public:
    * @param ciphertext2 second addend
    * @return the result as a new ciphertext
    */
-    Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> EvalAdd(const ConstCiphertext<Element>& ciphertext1,
+                                const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return GetScheme()->EvalAdd(ciphertext1, ciphertext2);
     }
@@ -1406,7 +1436,7 @@ public:
    * @param ciphertext2 second addend
    * @return \p ciphertext1 contains \p ciphertext1 + \p ciphertext2
    */
-    void EvalAddInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    void EvalAddInPlace(Ciphertext<Element>& ciphertext1, const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         GetScheme()->EvalAddInPlace(ciphertext1, ciphertext2);
     }
@@ -1439,7 +1469,7 @@ public:
    * @param plaintext input plaintext
    * @return new ciphertext for ciphertext + plaintext
    */
-    Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const {
+    Ciphertext<Element> EvalAdd(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext) const {
         TypeCheck(ciphertext, plaintext);
         plaintext->SetFormat(EVALUATION);
         return GetScheme()->EvalAdd(ciphertext, plaintext);
@@ -1451,7 +1481,7 @@ public:
    * @param ciphertext input ciphertext
    * @return new ciphertext for ciphertext + plaintext
    */
-    Ciphertext<Element> EvalAdd(ConstPlaintext plaintext, ConstCiphertext<Element> ciphertext) const {
+    inline Ciphertext<Element> EvalAdd(ConstPlaintext plaintext, const ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(ciphertext, plaintext);
     }
 
@@ -1498,70 +1528,108 @@ public:
     }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
-    //  return GetScheme()->EvalAdd(ciphertext, constant);
+    // Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, const NativeInteger& scalar) const {
+    //  return GetScheme()->EvalAdd(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalAdd(const NativeInteger& constant, ConstCiphertext<Element> ciphertext) const {
-    //  return EvalAdd(ciphertext, constant);
+    // Ciphertext<Element> EvalAdd(const NativeInteger& scalar, ConstCiphertext<Element> ciphertext) const {
+    //  return EvalAdd(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalAddInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
-    //  GetScheme()->EvalAddInPlace(ciphertext, constant);
+    // void EvalAddInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& scalar) const {
+    //  GetScheme()->EvalAddInPlace(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalAddInPlace(const NativeInteger& constant, Ciphertext<Element>& ciphertext) const {
-    //  EvalAddInPlace(ciphertext, constant);
+    // void EvalAddInPlace(const NativeInteger& scalar, Ciphertext<Element>& ciphertext) const {
+    //  EvalAddInPlace(ciphertext, scalar);
     // }
 
     /**
    * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a real number.  Supported only in CKKS.
    * @param ciphertext input ciphertext
-   * @param constant a real number
-   * @return new ciphertext for ciphertext + constant
+   * @param scalar a real number
+   * @return new ciphertext for ciphertext + scalar
    */
-    Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, double constant) const {
-        Ciphertext<Element> result =
-            constant >= 0 ? GetScheme()->EvalAdd(ciphertext, constant) : GetScheme()->EvalSub(ciphertext, -constant);
-        return result;
+    Ciphertext<Element> EvalAdd(const ConstCiphertext<Element>& ciphertext, double scalar) const {
+        return scalar >= 0. ? GetScheme()->EvalAdd(ciphertext, scalar) : GetScheme()->EvalSub(ciphertext, -scalar);
     }
 
     /**
    * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a real number.  Supported only in CKKS.
-   * @param constant a real number
+   * @param scalar a real number
    * @param ciphertext input ciphertext
-   * @return new ciphertext for ciphertext + constant
+   * @return new ciphertext for ciphertext + scalar
    */
-    Ciphertext<Element> EvalAdd(double constant, ConstCiphertext<Element> ciphertext) const {
-        return EvalAdd(ciphertext, constant);
+    Ciphertext<Element> EvalAdd(double scalar, const ConstCiphertext<Element>& ciphertext) const {
+        return EvalAdd(ciphertext, scalar);
     }
 
     /**
    * In-place addition of a ciphertext and a real number. Supported only in CKKS.
    * @param ciphertext input ciphertext
-   * @param constant a real number
+   * @param scalar a real number
    */
-    void EvalAddInPlace(Ciphertext<Element>& ciphertext, double constant) const {
-        if (constant == 0)
+    void EvalAddInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
+        if (scalar == 0.)
             return;
-        if (constant > 0) {
-            GetScheme()->EvalAddInPlace(ciphertext, constant);
+        if (scalar > 0.) {
+            GetScheme()->EvalAddInPlace(ciphertext, scalar);
         }
         else {
-            GetScheme()->EvalSubInPlace(ciphertext, std::fabs(constant));
+            GetScheme()->EvalSubInPlace(ciphertext, -scalar);
         }
     }
 
     /**
    * In-place addition of a ciphertext and a real number.  Supported only in CKKS.
-   * @param constant a real number
+   * @param scalar a real number
    * @param ciphertext input ciphertext
    */
-    void EvalAddInPlace(double constant, Ciphertext<Element>& ciphertext) const {
-        EvalAddInPlace(ciphertext, constant);
+    void EvalAddInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
+        EvalAddInPlace(ciphertext, scalar);
+    }
+
+    /**
+   * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a complex number.  Supported only in CKKS.
+   * @param ciphertext input ciphertext
+   * @param scalar a complex number
+   * @return new ciphertext for ciphertext + scalar
+   */
+    Ciphertext<Element> EvalAdd(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
+        return GetScheme()->EvalAdd(ciphertext, scalar);
+    }
+
+    /**
+    * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a complex number.  Supported only in CKKS.
+    * @param scalar a complex number
+    * @param ciphertext input ciphertext
+    * @return new ciphertext for ciphertext + scalar
+    */
+    Ciphertext<Element> EvalAdd(std::complex<double> scalar, const ConstCiphertext<Element>& ciphertext) const {
+        return EvalAdd(ciphertext, scalar);
+    }
+
+    /**
+    * In-place addition of a ciphertext and a complex number. Supported only in CKKS.
+    * @param ciphertext input ciphertext
+    * @param scalar a complex number
+    */
+    void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
+        if (scalar == std::complex<double>(0.0, 0.0))
+            return;
+        GetScheme()->EvalAddInPlace(ciphertext, scalar);
+    }
+
+    /**
+    * In-place addition of a ciphertext and a complex number.  Supported only in CKKS.
+    * @param scalar a complex number
+    * @param ciphertext input ciphertext
+    */
+    void EvalAddInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
+        EvalAddInPlace(ciphertext, scalar);
     }
 
     //------------------------------------------------------------------------------
@@ -1574,7 +1642,8 @@ public:
    * @param ciphertext2 subtrahend
    * @return the result as a new ciphertext
    */
-    Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext1,
+                                const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return GetScheme()->EvalSub(ciphertext1, ciphertext2);
     }
@@ -1585,7 +1654,7 @@ public:
    * @param ciphertext2 subtrahend
    * @return the result as a new ciphertext
    */
-    void EvalSubInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    void EvalSubInPlace(Ciphertext<Element>& ciphertext1, const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         GetScheme()->EvalSubInPlace(ciphertext1, ciphertext2);
     }
@@ -1618,7 +1687,7 @@ public:
    * @param plaintext subtrahend
    * @return new ciphertext for ciphertext - plaintext
    */
-    Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const {
+    Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalSub(ciphertext, plaintext);
     }
@@ -1629,7 +1698,7 @@ public:
    * @param ciphertext subtrahend
    * @return new ciphertext for plaintext - ciphertext
    */
-    Ciphertext<Element> EvalSub(ConstPlaintext plaintext, ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> EvalSub(ConstPlaintext plaintext, const ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), plaintext);
     }
 
@@ -1660,67 +1729,106 @@ public:
     /**
    * Subtraction of a ciphertext and a real number. Supported only in CKKS.
    * @param ciphertext input ciphertext
-   * @param constant a real number
-   * @return new ciphertext for ciphertext - constant
+   * @param scalar a real number
+   * @return new ciphertext for ciphertext - scalar
    */
-    Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, double constant) const {
-        Ciphertext<Element> result =
-            constant >= 0 ? GetScheme()->EvalSub(ciphertext, constant) : GetScheme()->EvalAdd(ciphertext, -constant);
-        return result;
+    Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext, double scalar) const {
+        return scalar >= 0 ? GetScheme()->EvalSub(ciphertext, scalar) : GetScheme()->EvalAdd(ciphertext, -scalar);
     }
 
     /**
    * Subtraction of a ciphertext and a real number.  Supported only in CKKS.
-   * @param constant a real number
+   * @param scalar a real number
    * @param ciphertext input ciphertext
-   * @return new ciphertext for constant - ciphertext
+   * @return new ciphertext for scalar - ciphertext
    */
-    Ciphertext<Element> EvalSub(double constant, ConstCiphertext<Element> ciphertext) const {
-        return EvalAdd(EvalNegate(ciphertext), constant);
+    Ciphertext<Element> EvalSub(double scalar, const ConstCiphertext<Element>& ciphertext) const {
+        return EvalAdd(EvalNegate(ciphertext), scalar);
     }
 
     /**
    * In-place subtraction of a ciphertext and a real number.  Supported only in CKKS.
    * @param ciphertext input ciphertext
-   * @param constant a real number
+   * @param scalar a real number
    */
-    void EvalSubInPlace(Ciphertext<Element>& ciphertext, double constant) const {
-        if (constant >= 0) {
-            GetScheme()->EvalSubInPlace(ciphertext, constant);
+    void EvalSubInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
+        if (scalar >= 0.) {
+            GetScheme()->EvalSubInPlace(ciphertext, scalar);
         }
         else {
-            GetScheme()->EvalAddInPlace(ciphertext, -constant);
+            GetScheme()->EvalAddInPlace(ciphertext, -scalar);
         }
     }
 
     /**
-   * In-placve subtraction of ciphertext from a real number.  Supported only in CKKS.
-   * @param constant a real number
+   * In-place subtraction of ciphertext from a real number.  Supported only in CKKS.
+   * @param scalar a real number
    * @param ciphertext input ciphertext
    */
-    void EvalSubInPlace(double constant, Ciphertext<Element>& ciphertext) const {
+    void EvalSubInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
-        EvalAddInPlace(ciphertext, constant);
+        EvalAddInPlace(ciphertext, scalar);
+    }
+
+    /**
+   * Subtraction of a ciphertext and a complex number. Supported only in CKKS.
+   * @param ciphertext input ciphertext
+   * @param scalar a complex number
+   * @return new ciphertext for ciphertext - scalar
+   */
+    Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
+        return GetScheme()->EvalAdd(ciphertext, -scalar);
+    }
+
+    /**
+    * Subtraction of a ciphertext and a complex number.  Supported only in CKKS.
+    * @param scalar a complex number
+    * @param ciphertext input ciphertext
+    * @return new ciphertext for scalar - ciphertext
+    */
+    Ciphertext<Element> EvalSub(std::complex<double> scalar, const ConstCiphertext<Element>& ciphertext) const {
+        return EvalAdd(EvalNegate(ciphertext), scalar);
+    }
+
+    /**
+* In-place subtraction of a ciphertext and a complex number.  Supported only in CKKS.
+* @param ciphertext input ciphertext
+* @param scalar a realcomplex number
+*/
+    void EvalSubInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
+        if (scalar == std::complex<double>(0.0, 0.0))
+            return;
+        GetScheme()->EvalAddInPlace(ciphertext, -scalar);
+    }
+
+    /**
+* In-place subtraction of ciphertext from a complex number.  Supported only in CKKS.
+* @param scalar a complex number
+* @param ciphertext input ciphertext
+*/
+    void EvalSubInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
+        EvalNegateInPlace(ciphertext);
+        EvalAddInPlace(ciphertext, scalar);
     }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
-    //  return GetScheme()->EvalSub(ciphertext, constant);
+    // Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, const NativeInteger& scalar) const {
+    //  return GetScheme()->EvalSub(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalSub(const NativeInteger& constant, ConstCiphertext<Element> ciphertext) const {
-    //  return EvalAdd(EvalNegate(ciphertext), constant);
+    // Ciphertext<Element> EvalSub(const NativeInteger& scalar, ConstCiphertext<Element> ciphertext) const {
+    //  return EvalAdd(EvalNegate(ciphertext), scalar);
     // }
 
-    //  void EvalSubInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
-    //    GetScheme()->EvalSubInPlace(ciphertext, constant);
+    //  void EvalSubInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& scalar) const {
+    //    GetScheme()->EvalSubInPlace(ciphertext, scalar);
     //  }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalSubInPlace(const NativeInteger& constant, Ciphertext<Element>& ciphertext) const {
+    // void EvalSubInPlace(const NativeInteger& scalar, Ciphertext<Element>& ciphertext) const {
     //  EvalNegateInPlace(ciphertext);
-    //  EvalAddInPlace(ciphertext, constant);
+    //  EvalAddInPlace(ciphertext, scalar);
     // }
 
     //------------------------------------------------------------------------------
@@ -1752,7 +1860,8 @@ public:
    * @param ciphertext2 multiplicand
    * @return new ciphertext for ciphertext1 * ciphertext2
    */
-    Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext1,
+                                 const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
@@ -1790,7 +1899,7 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutableInPlace");
         }
 
         GetScheme()->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKeyVec[0]);
@@ -1801,12 +1910,12 @@ public:
    * @param ciphertext input ciphertext
    * @return squared ciphertext
    */
-    Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> EvalSquare(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalSquare");
         }
 
         return GetScheme()->EvalSquare(ciphertext, evalKeyVec[0]);
@@ -1822,7 +1931,7 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalSquareMutable");
         }
 
         return GetScheme()->EvalSquareMutable(ciphertext, evalKeyVec[0]);
@@ -1838,7 +1947,7 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (!evalKeyVec.size()) {
-            OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
+            OPENFHE_THROW("Evaluation key has not been generated for EvalSquareInPlace");
         }
 
         GetScheme()->EvalSquareInPlace(ciphertext, evalKeyVec[0]);
@@ -1850,8 +1959,8 @@ public:
    * @param ciphertext2 multiplicand
    * @return new ciphertext for ciphertext1 * ciphertext2
    */
-    Ciphertext<Element> EvalMultNoRelin(ConstCiphertext<Element> ciphertext1,
-                                        ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> EvalMultNoRelin(const ConstCiphertext<Element>& ciphertext1,
+                                        const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return GetScheme()->EvalMult(ciphertext1, ciphertext2);
     }
@@ -1861,7 +1970,7 @@ public:
    * @param ciphertext input ciphertext.
    * @return relinearized ciphertext
    */
-    Ciphertext<Element> Relinearize(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> Relinearize(const ConstCiphertext<Element>& ciphertext) const {
         // input parameter check
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -1871,7 +1980,7 @@ public:
         if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(
                 "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMult");
+                "keys for Relinearize");
         }
 
         return GetScheme()->Relinearize(ciphertext, evalKeyVec);
@@ -1890,7 +1999,7 @@ public:
         if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
             OPENFHE_THROW(
                 "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMult");
+                "keys for RelinearizeInPlace");
         }
 
         GetScheme()->RelinearizeInPlace(ciphertext, evalKeyVec);
@@ -1902,8 +2011,8 @@ public:
    * @param ciphertext2 second input ciphertext.
    * @return new ciphertext
    */
-    Ciphertext<Element> EvalMultAndRelinearize(ConstCiphertext<Element> ciphertext1,
-                                               ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> EvalMultAndRelinearize(const ConstCiphertext<Element>& ciphertext1,
+                                               const ConstCiphertext<Element>& ciphertext2) const {
         // input parameter check
         if (!ciphertext1 || !ciphertext2)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -1914,7 +2023,7 @@ public:
             (ciphertext1->NumberCiphertextElements() + ciphertext2->NumberCiphertextElements() - 3)) {
             OPENFHE_THROW(
                 "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMult");
+                "keys for EvalMultAndRelinearize");
         }
 
         return GetScheme()->EvalMultAndRelinearize(ciphertext1, ciphertext2, evalKeyVec);
@@ -1926,7 +2035,7 @@ public:
    * @param plaintext multiplicand
    * @return the result of multiplication
    */
-    Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const {
+    Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalMult(ciphertext, plaintext);
     }
@@ -1937,7 +2046,7 @@ public:
    * @param ciphertext multiplicand
    * @return the result of multiplication
    */
-    Ciphertext<Element> EvalMult(ConstPlaintext plaintext, ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> EvalMult(ConstPlaintext plaintext, const ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, plaintext);
     }
 
@@ -1966,75 +2075,120 @@ public:
     //    typename std::enable_if <!std::is_same<ConstCiphertext<Element>, T>::value, bool>::type = true>
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
+    // Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, const NativeInteger& scalar) const {
     //  if (!ciphertext) {
     //    OPENFHE_THROW( "Input ciphertext is nullptr");
     //  }
-    //  return GetScheme()->EvalMult(ciphertext, constant);
+    //  return GetScheme()->EvalMult(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalMult(const NativeInteger& constant, ConstCiphertext<Element> ciphertext) const {
-    //  return EvalMult(ciphertext, constant);
+    // Ciphertext<Element> EvalMult(const NativeInteger& scalar, ConstCiphertext<Element> ciphertext) const {
+    //  return EvalMult(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalMultInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
+    // void EvalMultInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& scalar) const {
     //  if (!ciphertext) {
     //    OPENFHE_THROW( "Input ciphertext is nullptr");
     //  }
 
-    //  GetScheme()->EvalMultInPlace(ciphertext, constant);
+    //  GetScheme()->EvalMultInPlace(ciphertext, scalar);
     // }
 
     // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalMultInPlace(const NativeInteger& constant, Ciphertext<Element>& ciphertext) const {
-    //  EvalMultInPlace(ciphertext, constant);
+    // void EvalMultInPlace(const NativeInteger& scalar, Ciphertext<Element>& ciphertext) const {
+    //  EvalMultInPlace(ciphertext, scalar);
     // }
 
     /**
    * Multiplication of a ciphertext by a real number.  Supported only in CKKS.
    * @param ciphertext multiplier
-   * @param constant multiplicand
+   * @param scalar multiplicand
    * @return the result of multiplication
    */
-    Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, double constant) const {
+    Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext) {
             OPENFHE_THROW("Input ciphertext is nullptr");
         }
-        return GetScheme()->EvalMult(ciphertext, constant);
+        return GetScheme()->EvalMult(ciphertext, scalar);
     }
 
     /**
    * Multiplication of a ciphertext by a real number.  Supported only in CKKS.
-   * @param constant multiplier
+   * @param scalar multiplier
    * @param ciphertext multiplicand
    * @return the result of multiplication
    */
-    inline Ciphertext<Element> EvalMult(double constant, ConstCiphertext<Element> ciphertext) const {
-        return EvalMult(ciphertext, constant);
+    inline Ciphertext<Element> EvalMult(double scalar, const ConstCiphertext<Element>& ciphertext) const {
+        return EvalMult(ciphertext, scalar);
     }
 
     /**
    * In-place multiplication of a ciphertext by a real number. Supported only in CKKS.
    * @param ciphertext multiplier
-   * @param constant multiplicand
+   * @param scalar multiplicand
    */
-    void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+    void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext) {
             OPENFHE_THROW("Input ciphertext is nullptr");
         }
 
-        GetScheme()->EvalMultInPlace(ciphertext, constant);
+        GetScheme()->EvalMultInPlace(ciphertext, scalar);
     }
 
     /**
    * In-place multiplication of a ciphertext by a real number. Supported only in CKKS.
-   * @param constant multiplier (real number)
+   * @param scalar multiplier (real number)
    * @param ciphertext multiplicand
    */
-    inline void EvalMultInPlace(double constant, Ciphertext<Element>& ciphertext) const {
-        EvalMultInPlace(ciphertext, constant);
+    inline void EvalMultInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
+        EvalMultInPlace(ciphertext, scalar);
+    }
+
+    /**
+   * Multiplication of a ciphertext by a complex number.  Supported only in CKKS.
+   * @param ciphertext multiplier
+   * @param scalar multiplicand
+   * @return the result of multiplication
+   */
+    Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
+        if (!ciphertext) {
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        }
+        return GetScheme()->EvalMult(ciphertext, scalar);
+    }
+
+    /**
+    * Multiplication of a ciphertext by a complex number.  Supported only in CKKS.
+    * @param scalar multiplier
+    * @param ciphertext multiplicand
+    * @return the result of multiplication
+    */
+    inline Ciphertext<Element> EvalMult(std::complex<double> scalar, const ConstCiphertext<Element>& ciphertext) const {
+        return EvalMult(ciphertext, scalar);
+    }
+
+    /**
+    * In-place multiplication of a ciphertext by a complex number. Supported only in CKKS.
+    * @param ciphertext multiplier
+    * @param scalar multiplicand
+    */
+    void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
+        if (!ciphertext) {
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        }
+
+        GetScheme()->EvalMultInPlace(ciphertext, scalar);
+    }
+
+    /**
+    * In-place multiplication of a ciphertext by a complex number. Supported only in CKKS.
+    * @param scalar multiplier (complex number)
+    * @param ciphertext multiplicand
+    */
+    inline void EvalMultInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
+        EvalMultInPlace(ciphertext, scalar);
     }
 
     //------------------------------------------------------------------------------
@@ -2049,8 +2203,8 @@ public:
    * @param indexList list of automorphism indices to be computed
    * @return returns the evaluation keys
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
         ValidateKey(privateKey);
         if (!indexList.size())
             OPENFHE_THROW("Input index vector is empty");
@@ -2069,11 +2223,11 @@ public:
 
     [[deprecated(
         "Use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] std::
-        shared_ptr<std::map<usint, EvalKey<Element>>>
+        shared_ptr<std::map<uint32_t, EvalKey<Element>>>
         EvalAutomorphismKeyGen(const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-                               const std::vector<usint>& indexList) const {
+                               const std::vector<uint32_t>& indexList) const {
         std::string errMsg(
-            "This API is deprecated. use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<usint>& indexList)");
+            "This API is deprecated. use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList)");
         OPENFHE_THROW(errMsg);
     }
 
@@ -2085,8 +2239,8 @@ public:
    * @param &evalKeys - reference to the vector of evaluation keys generated by EvalAutomorphismKeyGen.
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
-                                         const std::map<usint, EvalKey<Element>>& evalKeyMap,
+    Ciphertext<Element> EvalAutomorphism(const ConstCiphertext<Element>& ciphertext, uint32_t i,
+                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
                                          CALLER_INFO_ARGS_HDR) const {
         ValidateCiphertext(ciphertext);
 
@@ -2114,7 +2268,7 @@ public:
    * @param idx regular vector index
    * @return the automorphism index
    */
-    usint FindAutomorphismIndex(const usint idx) const {
+    uint32_t FindAutomorphismIndex(const uint32_t idx) const {
         const auto cryptoParams  = GetCryptoParameters();
         const auto elementParams = cryptoParams->GetElementParams();
         uint32_t m               = elementParams->GetCyclotomicOrder();
@@ -2126,8 +2280,8 @@ public:
    * @param idxList vector of indices
    * @return a vector of automorphism indices
    */
-    std::vector<usint> FindAutomorphismIndices(const std::vector<usint>& idxList) const {
-        std::vector<usint> newIndices;
+    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<uint32_t>& idxList) const {
+        std::vector<uint32_t> newIndices;
         newIndices.reserve(idxList.size());
         for (const auto idx : idxList) {
             newIndices.emplace_back(FindAutomorphismIndex(idx));
@@ -2143,7 +2297,7 @@ public:
    * @param index rotation index
    * @return a rotated ciphertext
    */
-    Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const {
+    Ciphertext<Element> EvalRotate(const ConstCiphertext<Element>& ciphertext, int32_t index) const {
         ValidateCiphertext(ciphertext);
 
         auto evalKeyMap = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
@@ -2177,7 +2331,7 @@ public:
    * @param ciphertext the input ciphertext on which to do the precomputation (digit
    * decomposition)
    */
-    std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
+    std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(const ConstCiphertext<Element>& ciphertext) const {
         return GetScheme()->EvalFastRotationPrecompute(ciphertext);
     }
 
@@ -2217,8 +2371,8 @@ public:
    * @param digits the digit decomposition created by EvalFastRotationPrecompute
    * at the precomputation step.
    */
-    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-                                         const std::shared_ptr<std::vector<Element>> digits) const {
+    Ciphertext<Element> EvalFastRotation(const ConstCiphertext<Element>& ciphertext, const uint32_t index,
+                                         const uint32_t m, const std::shared_ptr<std::vector<Element>> digits) const {
         return GetScheme()->EvalFastRotation(ciphertext, index, m, digits);
     }
 
@@ -2233,7 +2387,7 @@ public:
    * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
+    Ciphertext<Element> EvalFastRotationExt(const ConstCiphertext<Element>& ciphertext, uint32_t index,
                                             const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
         auto evalKeyMap = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
 
@@ -2248,7 +2402,7 @@ public:
    * @param ciphertext input ciphertext in the extended basis
    * @return resulting ciphertext
    */
-    Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> KeySwitchDown(const ConstCiphertext<Element>& ciphertext) const {
         return GetScheme()->KeySwitchDown(ciphertext);
     }
 
@@ -2259,7 +2413,7 @@ public:
    * @param ciphertext input ciphertext in the extended basis
    * @return resulting polynomial
    */
-    Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const {
+    Element KeySwitchDownFirstElement(const ConstCiphertext<Element>& ciphertext) const {
         return GetScheme()->KeySwitchDownFirstElement(ciphertext);
     }
 
@@ -2271,7 +2425,7 @@ public:
    * @param ciphertext input ciphertext in basis Q
    * @return resulting ciphertext in basis P*Q
    */
-    Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const {
+    Ciphertext<Element> KeySwitchExt(const ConstCiphertext<Element>& ciphertext, bool addFirst) const {
         return GetScheme()->KeySwitchExt(ciphertext, addFirst);
     }
 
@@ -2321,7 +2475,7 @@ public:
    * @param index rotation index
    * @return a rotated ciphertext
    */
-    Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, int32_t index) const;
+    Ciphertext<Element> EvalAtIndex(const ConstCiphertext<Element>& ciphertext, int32_t index) const;
 
     //------------------------------------------------------------------------------
     // SHE Leveled Methods Wrapper
@@ -2333,8 +2487,8 @@ public:
    * @param ciphertext1 - first ciphertext
    * @param ciphertext2 - second ciphertext
    */
-    Ciphertext<Element> ComposedEvalMult(ConstCiphertext<Element> ciphertext1,
-                                         ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> ComposedEvalMult(const ConstCiphertext<Element>& ciphertext1,
+                                         const ConstCiphertext<Element>& ciphertext2) const {
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
 
@@ -2353,7 +2507,7 @@ public:
    * @param ciphertext - ciphertext
    * @return rescaled ciphertext
    */
-    Ciphertext<Element> Rescale(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> Rescale(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
@@ -2376,7 +2530,7 @@ public:
    * @param ciphertext - ciphertext
    * @return mod reduced ciphertext
    */
-    Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> ModReduce(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
@@ -2399,7 +2553,7 @@ public:
    * @param evalKey input evaluation key (modified in place)
    * @returns the ciphertext with reduced number opf RNS limbs
    */
-    Ciphertext<Element> LevelReduce(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
+    Ciphertext<Element> LevelReduce(const ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
                                     size_t levels = 1) const {
         ValidateCiphertext(ciphertext);
 
@@ -2428,7 +2582,7 @@ public:
    * @param numTowers - number of RNS limbs after compressing (default is 1)
    * @return compressed ciphertext
    */
-    Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, uint32_t towersLeft = 1) const {
+    Ciphertext<Element> Compress(const ConstCiphertext<Element>& ciphertext, uint32_t towersLeft = 1) const {
         if (ciphertext == nullptr)
             OPENFHE_THROW("input ciphertext is invalid (has no data)");
 
@@ -2576,7 +2730,7 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element> ciphertext,
+    virtual Ciphertext<Element> EvalPoly(const ConstCiphertext<Element>& ciphertext,
                                          const std::vector<double>& coefficients) const {
         ValidateCiphertext(ciphertext);
 
@@ -2593,7 +2747,7 @@ public:
    * size of the vector is the degree of the polynomial
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element> ciphertext,
+    Ciphertext<Element> EvalPolyLinear(const ConstCiphertext<Element>& ciphertext,
                                        const std::vector<double>& coefficients) const {
         ValidateCiphertext(ciphertext);
 
@@ -2609,7 +2763,8 @@ public:
    * size of the vector is the degree of the polynomial
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element> ciphertext, const std::vector<double>& coefficients) const {
+    Ciphertext<Element> EvalPolyPS(const ConstCiphertext<Element>& ciphertext,
+                                   const std::vector<double>& coefficients) const {
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalPolyPS(ciphertext, coefficients);
@@ -2632,7 +2787,7 @@ public:
    * @param b - upper bound of argument for which the coefficients were found
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
+    Ciphertext<Element> EvalChebyshevSeries(const ConstCiphertext<Element>& ciphertext,
                                             const std::vector<double>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
 
@@ -2650,7 +2805,7 @@ public:
    * @param b - upper bound of argument for which the coefficients were found
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element> ciphertext,
+    Ciphertext<Element> EvalChebyshevSeriesLinear(const ConstCiphertext<Element>& ciphertext,
                                                   const std::vector<double>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
 
@@ -2668,7 +2823,7 @@ public:
    * @param b - upper bound of argument for which the coefficients were found
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element> ciphertext,
+    Ciphertext<Element> EvalChebyshevSeriesPS(const ConstCiphertext<Element>& ciphertext,
                                               const std::vector<double>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
 
@@ -2686,8 +2841,9 @@ public:
    * @param degree Desired degree of approximation
    * @return the coefficients of the Chebyshev approximation.
    */
-    Ciphertext<Element> EvalChebyshevFunction(std::function<double(double)> func, ConstCiphertext<Element> ciphertext,
-                                              double a, double b, uint32_t degree) const;
+    Ciphertext<Element> EvalChebyshevFunction(std::function<double(double)> func,
+                                              const ConstCiphertext<Element>& ciphertext, double a, double b,
+                                              uint32_t degree) const;
 
     /**
    * Evaluate approximate sine function on a ciphertext using the Chebyshev approximation.
@@ -2699,7 +2855,7 @@ public:
    * @param degree Desired degree of approximation
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalSin(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+    Ciphertext<Element> EvalSin(const ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
    * Evaluate approximate cosine function on a ciphertext using the Chebyshev approximation.
@@ -2711,7 +2867,7 @@ public:
    * @param degree Desired degree of approximation
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalCos(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+    Ciphertext<Element> EvalCos(const ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
    * Evaluate approximate logistic function 1/(1 + exp(-x)) on a ciphertext using the Chebyshev approximation.
@@ -2723,7 +2879,8 @@ public:
    * @param degree Desired degree of approximation
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalLogistic(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+    Ciphertext<Element> EvalLogistic(const ConstCiphertext<Element>& ciphertext, double a, double b,
+                                     uint32_t degree) const;
 
     /**
    * Evaluate approximate division function 1/x where x >= 1 on a ciphertext using the Chebyshev approximation.
@@ -2735,7 +2892,8 @@ public:
    * @param degree Desired degree of approximation
    * @return the result of polynomial evaluation.
    */
-    Ciphertext<Element> EvalDivide(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+    Ciphertext<Element> EvalDivide(const ConstCiphertext<Element>& ciphertext, double a, double b,
+                                   uint32_t degree) const;
 
     //------------------------------------------------------------------------------
     // Advanced SHE EVAL SUM
@@ -2765,17 +2923,17 @@ public:
    * @param subringDim subring dimension (set to cyclotomic order if set to 0)
    * @return returns the evaluation keys
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                         const PublicKey<Element> publicKey = nullptr,
-                                                                         usint rowSize = 0, usint subringDim = 0);
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
+        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr, uint32_t rowSize = 0,
+        uint32_t subringDim = 0);
 
     // [[deprecated(
-    //     "Use EvalSumRowKeyGen(const PrivateKey<Element> privateKey, usint rowSize = 0, usint subringDim = 0) instead.")]] std::
-    //     shared_ptr<std::map<usint, EvalKey<Element>>>
-    //     EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize = 0,
-    //                       usint subringDim = 0) {
+    //     "Use EvalSumRowKeyGen(const PrivateKey<Element> privateKey, uint32_t rowSize = 0, uint32_t subringDim = 0) instead.")]] std::
+    //     shared_ptr<std::map<uint32_t, EvalKey<Element>>>
+    //     EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize = 0,
+    //                       uint32_t subringDim = 0) {
     //     std::string errMsg(
-    //         "This API is deprecated. use EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, usint rowSize = 0, usint subringDim = 0)");
+    //         "This API is deprecated. use EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, uint32_t rowSize = 0, uint32_t subringDim = 0)");
     //     OPENFHE_THROW( errMsg);
     // }
 
@@ -2787,17 +2945,17 @@ public:
    * @param publicKey public key.
    * @return returns the evaluation keys
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
-                                                                         const PublicKey<Element> publicKey = nullptr);
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
+        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr);
 
     // [[deprecated("Use EvalSumColsKeyGen(const PrivateKey<Element> privateKey) instead.")]] std::shared_ptr<
-    //     std::map<usint, EvalKey<Element>>>
+    //     std::map<uint32_t, EvalKey<Element>>>
     // EvalSumColsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
     //     std::string errMsg("This API is deprecated. use EvalSumColsKeyGen(const PrivateKey<Element> privateKey)");
     //     OPENFHE_THROW( errMsg);
     // }
 
-    // std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
+    // std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
 
     /**
    * Function for evaluating a sum of all components in a vector.
@@ -2806,7 +2964,7 @@ public:
    * @param batchSize size of the batch
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, usint batchSize) const;
+    Ciphertext<Element> EvalSum(const ConstCiphertext<Element>& ciphertext, uint32_t batchSize) const;
 
     /**
    * Sums all elements over row-vectors in a matrix - works only with packed
@@ -2819,8 +2977,9 @@ public:
    * 0, we use the full cyclotomic order.
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, usint numRows,
-                                    const std::map<usint, EvalKey<Element>>& evalSumKeyMap, usint subringDim = 0) const;
+    Ciphertext<Element> EvalSumRows(const ConstCiphertext<Element>& ciphertext, uint32_t numRows,
+                                    const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
+                                    uint32_t subringDim = 0) const;
 
     /**
    * Sums all elements over column-vectors in a matrix - works only with packed
@@ -2831,8 +2990,8 @@ public:
    * @param &evalSumKeyMap - reference to the map of evaluation keys generated by
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, usint numCols,
-                                    const std::map<usint, EvalKey<Element>>& evalSumKeyMap) const;
+    Ciphertext<Element> EvalSumCols(const ConstCiphertext<Element>& ciphertext, uint32_t numCols,
+                                    const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap) const;
 
     //------------------------------------------------------------------------------
     // Advanced SHE EVAL INNER PRODUCT
@@ -2846,8 +3005,8 @@ public:
    * @param batchSize size of the batch to be summed up
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2,
-                                         usint batchSize) const;
+    Ciphertext<Element> EvalInnerProduct(const ConstCiphertext<Element>& ciphertext1,
+                                         const ConstCiphertext<Element>& ciphertext2, uint32_t batchSize) const;
 
     /**
    * Evaluates inner product in packed encoding (uses EvalSum)
@@ -2857,8 +3016,8 @@ public:
    * @param batchSize size of the batch to be summed up
    * @return resulting ciphertext
    */
-    Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext,
-                                         usint batchSize) const;
+    Ciphertext<Element> EvalInnerProduct(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext,
+                                         uint32_t batchSize) const;
 
     /**
    * Merges multiple ciphertexts with encrypted results in slot 0 into a single
@@ -2906,7 +3065,7 @@ public:
    * ciphertext.
    * @return the resulting ciphertext
    */
-    Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, EvalKey<Element> evalKey,
+    Ciphertext<Element> ReEncrypt(const ConstCiphertext<Element>& ciphertext, EvalKey<Element> evalKey,
                                   const PublicKey<Element> publicKey = nullptr) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(evalKey);
@@ -3040,9 +3199,9 @@ public:
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return a dictionary with new joined automorphism keys.
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
-        const std::vector<usint>& indexList, const std::string& keyId = "") {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+        const std::vector<uint32_t>& indexList, const std::string& keyId = "") {
         if (!privateKey)
             OPENFHE_THROW("Input private key is nullptr");
         if (!evalKeyMap)
@@ -3064,8 +3223,8 @@ public:
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return a dictionary with new joined rotation keys.
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::vector<int32_t>& indexList, const std::string& keyId = "") {
         if (!privateKey)
             OPENFHE_THROW("Input private key is nullptr");
@@ -3087,8 +3246,8 @@ public:
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return new joined summation keys.
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::string& keyId = "") {
         if (!privateKey)
             OPENFHE_THROW("Input private key is nullptr");
@@ -3143,9 +3302,9 @@ public:
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return the new joined key set for summation.
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2, const std::string& keyId = "") {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyId = "") {
         if (!evalKeyMap1)
             OPENFHE_THROW("Input first evaluation key map is nullptr");
         if (!evalKeyMap2)
@@ -3162,9 +3321,9 @@ public:
    * @param keyId - new key identifier used for the resulting evaluation key.
    * @return the new joined key set for summation.
    */
-    std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2, const std::string& keyId = "") {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyId = "") {
         if (!evalKeyMap1)
             OPENFHE_THROW("Input first evaluation key map is nullptr");
         if (!evalKeyMap2)
@@ -3205,7 +3364,6 @@ public:
             OPENFHE_THROW("Input first evaluation key is nullptr");
         if (!evalKey2)
             OPENFHE_THROW("Input second evaluation key is nullptr");
-
         return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
     }
 
@@ -3221,12 +3379,10 @@ public:
      * @return: Resulting masked decryption
      */
     Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
-                                       ConstCiphertext<Element> ciphertext) const {
+                                       const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(privateKey);
-
-        auto rv = this->GetScheme()->IntBootDecrypt(privateKey, ciphertext);
-        return rv;
+        return GetScheme()->IntBootDecrypt(privateKey, ciphertext);
     }
 
     /**
@@ -3239,12 +3395,11 @@ public:
     * @param ciphertext: input ciphertext
     * @return: Resulting encryption
     */
-    Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey, ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
+                                       const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(publicKey);
-
-        auto rv = this->GetScheme()->IntBootEncrypt(publicKey, ciphertext);
-        return rv;
+        return GetScheme()->IntBootEncrypt(publicKey, ciphertext);
     }
 
     /**
@@ -3256,12 +3411,11 @@ public:
     * @param ciphertext2: unencrypted masked decryption
     * @return: Refreshed ciphertext
     */
-    Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    Ciphertext<Element> IntBootAdd(const ConstCiphertext<Element>& ciphertext1,
+                                   const ConstCiphertext<Element>& ciphertext2) const {
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
-
-        auto rv = this->GetScheme()->IntBootAdd(ciphertext1, ciphertext2);
-        return rv;
+        return GetScheme()->IntBootAdd(ciphertext1, ciphertext2);
     }
 
     /**
@@ -3279,11 +3433,9 @@ public:
     * @param ciphertext: Input Ciphertext
     * @return: Resulting Ciphertext
     */
-    Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> IntBootAdjustScale(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
-
-        auto rv = this->GetScheme()->IntBootAdjustScale(ciphertext);
-        return rv;
+        return GetScheme()->IntBootAdjustScale(ciphertext);
     }
 
     /**
@@ -3292,7 +3444,7 @@ public:
     * @param ciphertext: Input Ciphertext
     * @return: Resulting Ciphertext
     */
-    Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
+    Ciphertext<Element> IntMPBootAdjustScale(const ConstCiphertext<Element>& ciphertext) const;
 
     /**
     * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
@@ -3312,8 +3464,8 @@ public:
     * @return: Resulting masked decryption
     */
     std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-                                                      ConstCiphertext<Element> ciphertext,
-                                                      ConstCiphertext<Element> a) const;
+                                                      const ConstCiphertext<Element>& ciphertext,
+                                                      const ConstCiphertext<Element>& a) const;
 
     /**
     * Threshold FHE: Aggregates a vector of masked decryptions and re-encryotion shares,
@@ -3339,8 +3491,9 @@ public:
     * @return: Resulting encryption
     */
     Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
-                                         const std::vector<Ciphertext<Element>>& sharesPair, ConstCiphertext<Element> a,
-                                         ConstCiphertext<Element> ciphertext) const;
+                                         const std::vector<Ciphertext<Element>>& sharesPair,
+                                         const ConstCiphertext<Element>& a,
+                                         const ConstCiphertext<Element>& ciphertext) const;
 
     /**
    * Threshold FHE with aborts: secret sharing of secret key for aborts
@@ -3352,8 +3505,8 @@ public:
    * @param shareType - Type of secret sharing to be used - additive or shamir sharing.
    * @return the secret shares of the secret key sk.
    */
-    std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, usint N, usint threshold,
-                                                    usint index, const std::string& shareType) const {
+    std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, uint32_t N, uint32_t threshold,
+                                                    uint32_t index, const std::string& shareType) const {
         std::string datatype = demangle(typeid(Element).name());
         OPENFHE_THROW(std::string(__func__) + " is not implemented for " + datatype);
     }
@@ -3368,8 +3521,8 @@ public:
    * @param shareType - Type of secret sharing to be used - additive or shamir sharing
    * @return the recovered key from the secret shares assigned to sk.
    */
-    void RecoverSharedKey(PrivateKey<Element>& sk, std::unordered_map<uint32_t, Element>& sk_shares, usint N,
-                          usint threshold, const std::string& shareType) const;
+    void RecoverSharedKey(PrivateKey<Element>& sk, std::unordered_map<uint32_t, Element>& sk_shares, uint32_t N,
+                          uint32_t threshold, const std::string& shareType) const;
 
     //------------------------------------------------------------------------------
     // FHE Bootstrap Methods
@@ -3432,7 +3585,7 @@ public:
    * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and precision = 0 (unused).
    * @return the refreshed ciphertext.
    */
-    Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
+    Ciphertext<Element> EvalBootstrap(const ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
         return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
     }
@@ -3466,6 +3619,7 @@ public:
    */
     LWEPrivateKey EvalCKKStoFHEWSetup(SchSwchParams params) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         SetParamsFromCKKSCryptocontext(params);
         return GetScheme()->EvalCKKStoFHEWSetup(params);
     }
@@ -3479,6 +3633,7 @@ public:
    */
     void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateKey(keyPair.secretKey);
         if (!lwesk) {
             OPENFHE_THROW("FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
@@ -3495,6 +3650,7 @@ public:
    */
     void EvalCKKStoFHEWPrecompute(double scale = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         GetScheme()->EvalCKKStoFHEWPrecompute(*this, scale);
     }
 
@@ -3505,9 +3661,10 @@ public:
    * @param numCtxts number of coefficients to extract from the CKKS ciphertext. If it is zero, it defaults to number of slots
    * @return a vector of LWE ciphertexts of length the numCtxts
    */
-    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
+    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(const ConstCiphertext<Element>& ciphertext,
                                                                    uint32_t numCtxts = 0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         if (ciphertext == nullptr)
             OPENFHE_THROW("ciphertext passed to EvalCKKStoFHEW is empty");
         return GetScheme()->EvalCKKStoFHEW(ciphertext, numCtxts);
@@ -3524,6 +3681,7 @@ public:
     void EvalFHEWtoCKKSSetup(const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS = 0,
                              uint32_t logQ = 25) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         GetScheme()->EvalFHEWtoCKKSSetup(*this, ccLWE, numSlotsCKKS, logQ);
     }
 
@@ -3541,6 +3699,7 @@ public:
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
                               uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateKey(keyPair.secretKey);
 
         auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, numCtxts, dim1, L);
@@ -3563,6 +3722,7 @@ public:
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
                                        double pmax = 2.0, uint32_t dim1 = 0) const {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax, dim1);
     }
 
@@ -3592,6 +3752,7 @@ public:
    */
     LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams& params) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         SetParamsFromCKKSCryptocontext(params);
         return GetScheme()->EvalSchemeSwitchingSetup(params);
     }
@@ -3605,6 +3766,7 @@ public:
    */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateKey(keyPair.secretKey);
 
         auto evalKeys = GetScheme()->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
@@ -3622,6 +3784,7 @@ public:
    */
     void EvalCompareSwitchPrecompute(uint32_t pLWE = 0, double scaleSign = 1.0, bool unit = false) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         GetScheme()->EvalCompareSwitchPrecompute(*this, pLWE, scaleSign, unit);
     }
 
@@ -3639,11 +3802,12 @@ public:
    * @param unit whether the input messages are normalized to the unit circle
    * @return a CKKS ciphertext encrypting in its slots the sign of  messages in the LWE ciphertexts
    */
-    Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
-                                                   ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
+    Ciphertext<Element> EvalCompareSchemeSwitching(const ConstCiphertext<Element>& ciphertext1,
+                                                   const ConstCiphertext<Element>& ciphertext2, uint32_t numCtxts = 0,
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
                                                    bool unit = false) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
 
@@ -3667,11 +3831,12 @@ public:
    * index (in the representation specified by oneHot). The ciphertexts have junk after the first slot in the first ciphertext
    * and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
    */
-    std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
+    std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(const ConstCiphertext<Element>& ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                             double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3680,11 +3845,12 @@ public:
     /**
      * Same as EvalMinSchemeSwitching but performs more operations in FHEW than in CKKS. Slightly better precision but slower.
     */
-    std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+    std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(const ConstCiphertext<Element>& ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                                double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3706,11 +3872,12 @@ public:
    * index (in the representation specified by oneHot). The ciphertexts have junk after the first slot in the first ciphertext
    * and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
    */
-    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
+    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(const ConstCiphertext<Element>& ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                             double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3719,11 +3886,12 @@ public:
     /**
      * Same as EvalMaxSchemeSwitching but performs more operations in FHEW than in CKKS. Slightly better precision but slower.
     */
-    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(const ConstCiphertext<Element>& ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
                                                                double scaleSign = 1.0) {
         VerifyCKKSScheme(__func__);
+        VerifyCKKSRealDataType(__func__);
         ValidateCiphertext(ciphertext);
 
         return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
@@ -3800,8 +3968,9 @@ template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec, Plaintext* plaintext) const;
 template <>
-std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,
-                                                                              usint threshold, usint index,
+std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk,
+                                                                              uint32_t N, uint32_t threshold,
+                                                                              uint32_t index,
                                                                               const std::string& shareType) const;
 }  // namespace lbcrypto
 

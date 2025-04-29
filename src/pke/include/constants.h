@@ -82,6 +82,10 @@ COMPRESSION_LEVEL convertToCompressionLevel(const std::string& str);
 COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num);
 std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL t);
 //======================================================================================================================
+CKKSDataType convertToCKKSDataType(const std::string& str);
+CKKSDataType convertToCKKSDataType(uint32_t num);
+std::ostream& operator<<(std::ostream& s, CKKSDataType t);
+//======================================================================================================================
 
 }  // namespace lbcrypto
 

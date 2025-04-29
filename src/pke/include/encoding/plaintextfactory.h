@@ -57,7 +57,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-                                   SCHEME schemeID = SCHEME::INVALID_SCHEME) {
+                                   SCHEME schemeID = SCHEME::INVALID_SCHEME, CKKSDataType cdt = REAL) {
         switch (encoding) {
             case COEF_PACKED_ENCODING:
                 return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
@@ -66,7 +66,7 @@ public:
             case STRING_ENCODING:
                 return std::make_shared<StringEncoding>(vp, ep);
             case CKKS_PACKED_ENCODING:
-                return std::make_shared<CKKSPackedEncoding>(vp, ep);
+                return std::make_shared<CKKSPackedEncoding>(vp, ep, cdt);
             default:
                 OPENFHE_THROW("Unknown plaintext encoding type in MakePlaintext");
         }
@@ -80,7 +80,7 @@ public:
                                    std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
                                    size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         // Check if plaintext has got enough slots for data (value)
-        usint ringDim    = vp->GetRingDimension();
+        uint32_t ringDim = vp->GetRingDimension();
         size_t valueSize = value.size();
         if (isCKKS(schemeID) && valueSize > ringDim / 2) {
             OPENFHE_THROW("The size [" + std::to_string(valueSize) +
@@ -109,7 +109,7 @@ public:
                                    EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
                                    size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         // Check if plaintext has got enough slots for data (value)
-        usint ringDim    = vp->GetRingDimension();
+        uint32_t ringDim = vp->GetRingDimension();
         size_t valueSize = value.size();
         if (isCKKS(schemeID) && valueSize > ringDim / 2) {
             OPENFHE_THROW("The size [" + std::to_string(valueSize) +

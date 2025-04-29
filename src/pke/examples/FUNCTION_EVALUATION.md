@@ -6,6 +6,7 @@ OpenFHE Lattice Cryptography Library - Arbitrary Smooth Function Evaluation
 Document Description
 ===================
 This document describes how to evaluate an arbitrary smooth function on a ciphertext in CKKS using [Chebyshev approximation](https://www.gnu.org/software/gsl/doc/html/cheb.html). The Chebyshev approximation is a method of approximating a smooth function using polynomials.
+Note that Chebyshev evaluation only works with real inputs (or complex inputs with zero imaginary parts).
 
 Example Description
 ==========================

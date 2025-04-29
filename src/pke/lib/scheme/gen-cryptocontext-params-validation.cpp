@@ -54,7 +54,8 @@ void validateParametersForCryptocontext(const Params& parameters) {
             OPENFHE_THROW("NOISE_FLOODING_HRA is not supported in CKKSRNS");
         }
         if (NOISE_FLOODING_MULTIPARTY == parameters.GetMultipartyMode()) {
-            OPENFHE_THROW("NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS");
+            OPENFHE_THROW(
+                "NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS. Use NOISE_FLOODING_DECRYPT and EXEC_EVALUATION instead.");
         }
         if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
             COMPOSITESCALINGAUTO != parameters.GetScalingTechnique() &&
@@ -75,6 +76,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
                 OPENFHE_THROW("numAdversarialQueries is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
             }
+        }
+        if (parameters.GetExecutionMode() == EXEC_NOISE_ESTIMATION && parameters.GetCKKSDataType() == COMPLEX) {
+            OPENFHE_THROW("EXEC_NOISE_ESTIMATION mode is not compatible with complex data types.");
         }
     }
     else if (isBFVRNS(scheme)) {

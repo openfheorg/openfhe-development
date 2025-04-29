@@ -100,6 +100,9 @@ public:
     void SetRegisterWordSize(uint32_t registerWordSize0) override {
         DISABLED_FOR_BFVRNS;
     }
+    void SetCKKSDataType(CKKSDataType ckksDataType0) override {
+        DISABLED_FOR_BFVRNS;
+    }
 };
 //====================================================================================================================
 
