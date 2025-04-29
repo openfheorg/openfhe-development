@@ -36,6 +36,7 @@
 #include <cstdint>
 
 // clang-format off
+#define COMPOSITESCALING_MAX_MODULUS_SIZE 121
 #if NATIVEINT == 128
     #define MAX_MODULUS_SIZE 121
     using BasicInteger    = unsigned __int128;

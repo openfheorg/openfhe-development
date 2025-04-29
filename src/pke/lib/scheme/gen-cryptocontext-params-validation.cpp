@@ -61,6 +61,11 @@ void validateParametersForCryptocontext(const Params& parameters) {
             COMPOSITESCALINGMANUAL != parameters.GetScalingTechnique()) {
             OPENFHE_THROW("scalingModSize should be less than " + std::to_string(MAX_MODULUS_SIZE));
         }
+        else if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
+                 (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
+                  COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique())) {
+            OPENFHE_THROW("scalingModSize should be less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
+        }
         if (30 != parameters.GetStatisticalSecurity()) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
                 OPENFHE_THROW("statisticalSecurity is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
