@@ -259,7 +259,7 @@ class CryptoContextImpl : public Serializable {
     static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
 
 protected:
-    // crypto parameters used for this context
+    // crypto parameters
     std::shared_ptr<CryptoParametersBase<Element>> params{nullptr};
     // algorithm used; accesses all crypto methods
     std::shared_ptr<SchemeBase<Element>> scheme{nullptr};
@@ -475,7 +475,7 @@ public:
    * Thees functions are only intended for debugging and should not be used in production systems.
    * Please define DEBUG_KEY in openfhe.h to enable them.
    *
-   * If used, one can create a key pair and store the secret key in th crypto context like this:
+   * If used, one can create a key pair and store the secret key in the crypto context like this:
    *
    * auto keys = cc->KeyGen();
    * cc->SetPrivateKey(keys.secretKey);
@@ -508,6 +508,7 @@ public:
 
     /**
    * @brief Constructor from raw pointers to parameters and scheme
+   * 
    * @param params pointer to CryptoParameters
    * @param scheme pointer to Crypto Scheme object
    * @param schemeId scheme identifier
@@ -524,6 +525,7 @@ public:
 
     /**
    * @brief Constructor from shared pointers to parameters and scheme
+   * 
    * @param params shared pointer to CryptoParameters
    * @param scheme sharedpointer to Crypto Scheme object
    * @param schemeId scheme identifier
@@ -561,18 +563,20 @@ public:
     }
 
     /**
-   * A CryptoContextImpl is only valid if the shared pointers are both valid
+   * @brief Checks the CryptoContextImpl object health.
+   * @return true if params and scheme exists in the object
    */
     operator bool() const {
         return params && scheme;
     }
 
     /**
-   * Private method to compare two contexts; this is only used internally and
-   * is not generally available
-   * @param a - operand 1
-   * @param b - operand 2
-   * @return true if the implementations have identical parms and scheme
+   * @brief Equality comparison operator
+   * 
+   * @param a cryptocontext object1
+   * @param b cryptocontext object2
+   * @return true if the implementations have identical params and scheme
+   * @note this is for internal use only
    */
     friend bool operator==(const CryptoContextImpl<Element>& a, const CryptoContextImpl<Element>& b) {
         // Identical if the parameters and the schemes are identical... the exact
@@ -603,19 +607,23 @@ public:
     }
 
     /**
-   * Private method to compare two contexts; this is only used internally and
-   * is not generally available
-   * */
-    friend bool operator!=(const CryptoContextImpl<Element>& a, const CryptoContextImpl<Element>& b) {
+   * @brief Inequality comparison operator
+   * 
+   * @param a cryptocontext object1
+   * @param b cryptocontext object2
+   * @return true if the implementations do not have identical params and scheme
+   * @note this is for internal use only
+   */
+  friend bool operator!=(const CryptoContextImpl<Element>& a, const CryptoContextImpl<Element>& b) {
         return !(a == b);
     }
 
     /**
-   * SerializeEvalMultKey for a single EvalMult key or all EvalMult keys
+   * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
    *
-   * @param ser - stream to serialize to
-   * @param sertype - type of serialization
-   * @param keyTag for key to serialize - if empty std::string, serialize them all
+   * @param ser stream to serialize to
+   * @param sertype type of serialization
+   * @param keyTag secret key tag
    * @return true on success
    */
     template <typename ST>
@@ -638,12 +646,12 @@ public:
     }
 
     /**
-   * SerializeEvalMultKey for all EvalMultKeys made in a given context
-   *
+   * @brief Serializes all EvalMult keys associated with the given CryptoContext
+   * 
    * @param ser stream to serialize to
    * @param sertype type of serialization
-   * @param cc whose keys should be serialized
-   * @return true on success (false on failure or no keys found)
+   * @param cc the CryptoContext whose keys should be serialized
+   * @return true on success
    */
     template <typename ST>
     static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
@@ -662,13 +670,12 @@ public:
     }
 
     /**
-   * DeserializeEvalMultKey deserialize all keys in the serialization
-   * deserialized keys silently replace any existing matching keys
-   * deserialization will create CryptoContextImpl if necessary
-   *
-   * @param serObj - stream with a serialization
+   * @brief Deserializes EvalMult keys
+   * 
+   * @param ser stream to deserialize from
    * @param sertype type of serialization
    * @return true on success
+   * @note Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
    */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
@@ -685,36 +692,35 @@ public:
     }
 
     /**
-   * ClearEvalMultKeys - flush EvalMultKey cache
+   * @brief Clears the entire EvalMultKey cache
    */
     static void ClearEvalMultKeys();
-
     /**
-   * ClearEvalMultKeys - flush EvalMultKey cache for a given keyTag
-   * @param keyTag the correponding key id
+   * @brief Clears the EvalMultKey cache for the given keyTag or the entire EvalMultKey cache if keyTag is empty
+   * @param keyTag secret key tag
    */
     static void ClearEvalMultKeys(const std::string& keyTag);
     /**
-   * ClearEvalMultKeys - flush EvalMultKey cache for a given context
-   * @param cc crypto context
+   * @brief Clears EvalMultKey cache for the given context
+   * @param cc the context to clear all EvalMultKey for
    */
     static void ClearEvalMultKeys(const CryptoContext<Element> cc);
 
     /**
-   * InsertEvalMultKey - add the given vector of keys to the map, replacing the
-   * existing vector if it is there
+   * @brief Adds the given vector of keys for the given keyTag to the map of all EvalMult keys
+   * 
    * @param evalKeyVec vector of keys
-   * @param keyTag key identifier, unique for every cryptocontext
+   * @param keyTag secret key tag
+   * @note Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from evalKeyVec
    */
-    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec,
-                                  const std::string& keyTag = std::string());
+    static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec, const std::string& keyTag = "");
 
     /**
-   * SerializeEvalSumKey for a single EvalSum key or all of the EvalSum keys
+   * @brief Serializes either all EvalSum keys (if keyTag is empty) or the EvalSum keys for keyTag
    *
-   * @param ser - stream to serialize to
-   * @param sertype - type of serialization
-   * @param keyTag - key to serialize; empty std::string means all keys
+   * @param ser stream to serialize to
+   * @param sertype type of serialization
+   * @param keyTag secret key tag
    * @return true on success
    */
     template <typename ST>
@@ -723,11 +729,11 @@ public:
     }
 
     /**
-   * SerializeEvalSumKey for all of the EvalSum keys for a context
-   *
-   * @param ser - stream to serialize to
-   * @param sertype - type of serialization
-   * @param cc - context
+   * @brief Serializes all EvalSum keys associated with the given CryptoContext
+   * 
+   * @param ser stream to serialize to
+   * @param sertype type of serialization
+   * @param cc the CryptoContext whose keys should be serialized
    * @return true on success
    */
     template <typename ST>
@@ -736,13 +742,12 @@ public:
     }
 
     /**
-   * DeserializeEvalSumKey deserialize all keys in the serialization
-   * deserialized keys silently replace any existing matching keys
-   * deserialization will create CryptoContextImpl if necessary
-   *
-   * @param ser - stream to serialize from
-   * @param sertype - type of serialization
+   * @brief Deserializes EvalSum keys
+   * 
+   * @param ser stream to deserialize from
+   * @param sertype type of serialization
    * @return true on success
+   * @note Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
    */
     template <typename ST>
     static bool DeserializeEvalSumKey(std::istream& ser, const ST& sertype) {
@@ -750,26 +755,26 @@ public:
     }
 
     /**
-   * ClearEvalSumKeys - flush EvalSumKey cache
+   * @brief Clears the entire EvalSumKey cache
    */
     static void ClearEvalSumKeys();
-
     /**
-   * ClearEvalSumKeys - flush EvalSumKey cache for a given keyTag
-   * @param keyTag key id
+   * @brief Clears the EvalSumKey cache for the given keyTag or the entire EvalSumKey cache if keyTag is empty
+   * @param keyTag secret key tag
    */
     static void ClearEvalSumKeys(const std::string& keyTag);
-
     /**
-   * ClearEvalSumKeys - flush EvalSumKey cache for a given context
-   * @param cc crypto context
+   * @brief Clears EvalSumKey cache for the given context
+   * @param cc the context to clear all EvalSumKey for
    */
     static void ClearEvalSumKeys(const CryptoContext<Element> cc);
 
     /**
-   * InsertEvalSumKey - add the given map of keys to the map, replacing the
-   * existing map if there
-   * @param evalKeyMap key map
+   * @brief Adds the given map of keys for the given keyTag to the map of all EvalSum keys
+   * 
+   * @param mapToInsert map of keys
+   * @param keyTag secret key tag
+   * @note Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from mapToInsert
    */
     static void InsertEvalSumKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert,
                                  std::string keyTag = "") {
@@ -777,10 +782,11 @@ public:
     }
 
     /**
-   * @brief Serialize for a single EvalAuto key or all of the EvalAuto keys
+   * @brief Serializes either all EvalAutomorphism keys (if keyTag is empty) or the EvalAutomorphism keys for keyTag
+   *
    * @param ser stream to serialize to
    * @param sertype type of serialization
-   * @param keyTag key identifier to serialize; empty std::string means all keys
+   * @param keyTag secret key tag
    * @return true on success
    */
     template <typename ST>
@@ -801,11 +807,11 @@ public:
     }
 
     /**
-   * SerializeEvalAutomorphismKey for all of the EvalAuto keys for a context
-   *
-   * @param ser - stream to serialize to
-   * @param sertype - type of serialization
-   * @param cc - context
+   * @brief Serializes all EvalAutomorphism keys associated with the given CryptoContext
+   * 
+   * @param ser stream to serialize to
+   * @param sertype type of serialization
+   * @param cc the CryptoContext whose keys should be serialized
    * @return true on success
    */
     template <typename ST>
@@ -825,11 +831,12 @@ public:
     }
 
     /**
-   * @brief Serialize automorphism keys for an array of specific indices within a specific secret key tag
-   * @param ser - stream to serialize to
-   * @param sertype - type of serialization
-   * @param keyTag - secret key tag
-   * @param indexList - array of specific indices to serialize key for
+   * @brief Serialize EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+   * 
+   * @param ser stream to serialize to
+   * @param sertype type of serialization
+   * @param keyTag secret key tag
+   * @param indexList array of specific indices to serialize keys for
    * @return true on success
    */
     template <typename ST>
@@ -843,11 +850,12 @@ public:
     }
 
     /**
-   * @brief Deserialize automorphism keys for an array of specific indices within a specific secret key tag
-   * @param ser - stream to serialize from
-   * @param sertype - type of serialization
-   * @param keyTag - secret key tag
-   * @param indexList - array of specific indices to serialize key for
+   * @brief Deserialize EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+   * 
+   * @param ser stream to deserialize from
+   * @param sertype type of serialization
+   * @param keyTag secret key tag
+   * @param indexList array of specific indices to deserialize keys for
    * @return true on success
    */
     template <typename ST>
@@ -884,13 +892,12 @@ public:
     }
 
     /**
-   * DeserializeEvalAutomorphismKey deserialize all keys in the serialization
-   * deserialized keys silently replace any existing matching keys
-   * deserialization will create CryptoContextImpl if necessary
-   *
-   * @param ser - stream to serialize from
-   * @param sertype - type of serialization
+   * @brief Deserializes EvalAutomorphism keys
+   * 
+   * @param ser stream to deserialize from
+   * @param sertype type of serialization
    * @return true on success
+   * @note Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
    */
     template <typename ST>
     static bool DeserializeEvalAutomorphismKey(std::istream& ser, const ST& sertype) {
@@ -907,29 +914,29 @@ public:
     }
 
     /**
-   * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache
+   * @brief Clears the entire EvalAutomorphismKey cache
    */
     static void ClearEvalAutomorphismKeys();
-
     /**
-   * @brief Flush EvalAutomorphismKey cache for a given keyTag
-   * @param keyTag the key id to clear all EvalAutomorphismKeys for
+   * @brief Clears the EvalAutomorphismKey cache for the given keyTag or the entire EvalAutomorphismKey cache if keyTag is empty
+   * @param keyTag secret key tag
    */
     static void ClearEvalAutomorphismKeys(const std::string& keyTag);
-
     /**
-   * @brief Flush EvalAutomorphismKey cache for a given context
+   * @brief Clears EvalAutomorphismKey cache for the given context
    * @param cc the context to clear all EvalAutomorphismKeys for
    */
     static void ClearEvalAutomorphismKeys(const CryptoContext<Element> cc);
 
     /**
-   * @brief Add the given map of keys to the map, replacing the existing map if there is one
-   * @param evalKeyMap map of keys to be inserted.
-   * @param keyTag key identifier for the given key map.
+   * @brief Adds the given map of keys for the given keyTag to the map of all EvalAutomorphism keys
+   * 
+   * @param mapToInsert map of keys
+   * @param keyTag secret key tag
+   * @note Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from mapToInsert
    */
     // TODO (dsuponit): move InsertEvalAutomorphismKey() to the private section of the class
-    static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+    static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert,
                                           const std::string& keyTag = "");
     //------------------------------------------------------------------------------
     // TURN FEATURES ON
@@ -970,6 +977,7 @@ public:
 
     /**
    * @brief Getter for the level at which evaluation keys should be generated
+   * @return level
    * @note For future use
    */
     size_t GetKeyGenLevel() const {
@@ -1001,7 +1009,7 @@ public:
     }
 
     /**
-   * @brief Getter for cyclotomic order used for this context
+   * @brief Getter for cyclotomic order
    * @return CyclotomicOrder
    */
     uint32_t GetCyclotomicOrder() const {
@@ -1009,7 +1017,7 @@ public:
     }
 
     /**
-   * @brief Getter for ring dimension used for this context
+   * @brief Getter for ring dimension
    * @return RingDimension
    */
     uint32_t GetRingDimension() const {
@@ -1017,7 +1025,7 @@ public:
     }
 
     /**
-   * @brief Getter for ciphertext modulus used for this context
+   * @brief Getter for ciphertext modulus
    * @return modulus
    */
     const IntType& GetModulus() const {
@@ -1025,7 +1033,7 @@ public:
     }
 
     /**
-   * @brief Getter for root of unity used for this context
+   * @brief Getter for root of unity
    * @return RootOfUnity
    */
     const IntType& GetRootOfUnity() const {
@@ -1033,9 +1041,9 @@ public:
     }
 
     /**
-     * @brief Get the CKKS data type of the current CKKS crypto context.
-     * @return enum corresponding to data type
-     **/
+     * @brief Getter for the CKKS data type
+     * @return data type of the CKKS data
+     */
     CKKSDataType GetCKKSDataType() const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
         if (!cryptoParams) {
@@ -1066,13 +1074,13 @@ public:
     static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
    /**
     * @brief Get automorphism keys for a specific secret key tag
-    * @param keyTag identifier used for private key
+    * @param keyTag secret key tag
     * @return shared_ptr to map with EvalAutomorphismKey
     */
     static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(const std::string& keyTag);
     /**
     * @brief Get automorphism keys for a specific secret key tag
-    * @param keyTag identifier used for private key
+    * @param keyTag secret key tag
     * @return map with EvalAutomorphismKey
     */
     static std::map<uint32_t, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyTag) {
@@ -1085,9 +1093,9 @@ public:
 
     /**
      * @brief Get a map of summation keys (each is composed of several automorphism keys) for a specific secret key tag
-     * @param keyTag identifier used for private key
+     * @param keyTag secret key tag
      * @return map with EvalAutomorphismKey
-   */
+     */
     static const std::map<uint32_t, EvalKey<Element>>& GetEvalSumKeyMap(const std::string& keyTag);
 
     //------------------------------------------------------------------------------
@@ -3145,7 +3153,7 @@ public:
    * @param privateKey secret key share.
    * @param evalKeyMap a map with prior joined automorphism keys.
    * @param indexList a vector of automorphism indices.
-   * @param keyTag - new key identifier used for the resulting evaluation key
+   * @param keyTag secret key tag
    * @return a dictionary with new joined automorphism keys.
    */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
@@ -3167,7 +3175,7 @@ public:
    * @param privateKey secret key share.
    * @param evalKeyMap a map with prior joined rotation keys.
    * @param indexList a vector of rotation indices.
-   * @param keyTag - new key identifier used for the resulting evaluation key.
+   * @param keyTag secret key tag
    * @return a map with new joined rotation keys.
    */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
@@ -3189,7 +3197,7 @@ public:
    *
    * @param privateKey secret key share.
    * @param evalKeyMap a dictionary with prior joined summation keys.
-   * @param keyTag - new key identifier used for the resulting evaluation key
+   * @param keyTag secret key tag
    * @return new joined summation keys.
    */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
@@ -3207,7 +3215,7 @@ public:
    *
    * @param evalKey1 first evaluation key.
    * @param evalKey2 second evaluation key.
-   * @param keyTag - new key identifier used for the resulting evaluation key
+   * @param keyTag secret key tag
    * @return the new joined key.
    */
     EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
@@ -3226,7 +3234,7 @@ public:
    *
    * @param privateKey current secret share.
    * @param evalKey prior evaluation key.
-   * @param keyTag - new key identifier used for the resulting evaluation key
+   * @param keyTag secret key tag
    * @return the new joined key.
    */
     EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
@@ -3244,7 +3252,7 @@ public:
    *
    * @param evalKeyMap1 first summation key set.
    * @param evalKeyMap2 second summation key set.
-   * @param keyTag - new key identifier used for the resulting evaluation key
+   * @param keyTag secret key tag
    * @return the new joined key set for summation.
    */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
@@ -3263,7 +3271,7 @@ public:
    *
    * @param evalKeyMap1 first automorphism key set.
    * @param evalKeyMap2 second automorphism key set.
-   * @param keyTag - new key identifier used for the resulting evaluation key.
+   * @param keyTag secret key tag
    * @return the new joined key set for summation.
    */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
@@ -3282,7 +3290,7 @@ public:
      *
      * @param publicKey1 first public key.
      * @param publicKey2 second public key.
-     * @param keyTag - new key identifier used for the resulting key.
+     * @param keyTag secret key tag
      * @return the new combined key.
      */
     PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
@@ -3300,7 +3308,7 @@ public:
      *
      * @param evalKey1 first evaluation key.
      * @param evalKey2 second evaluation key.
-     * @param keyTag - new key identifier used for the resulting evaluation key.
+     * @param keyTag secret key tag
      * @return the new joined key.
      */
     EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
@@ -3855,7 +3863,7 @@ public:
 
     /**
      * @brief GetExistingEvalAutomorphismKeyIndices gets indices for all existing automorphism keys
-     * @param keyTag map search id for the automorphism keys
+     * @param keyTag secret key tag
      * @return vector with all indices in the map. if nothing is found for the given keyTag, then the vector is empty
      **/
     static std::set<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
