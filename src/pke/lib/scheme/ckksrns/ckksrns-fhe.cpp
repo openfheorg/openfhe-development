@@ -2193,14 +2193,8 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(uint32_t approxModDepth, const std::vecto
     return approxModDepth + levelBudget[0] + levelBudget[1];
 }
 
-uint32_t FHECKKSRNS::GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist,
-                                       ScalingTechnique scalingTechnique) {
+uint32_t FHECKKSRNS::GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist) {
     uint32_t approxModDepth = GetModDepthInternal(secretKeyDist);
-
-    if ((scalingTechnique == COMPOSITESCALINGAUTO) || (scalingTechnique == COMPOSITESCALINGMANUAL)) {
-        // so far one less level is needed for the composite modes
-        approxModDepth--;
-    }
 
     return approxModDepth + levelBudget[0] + levelBudget[1];
 }

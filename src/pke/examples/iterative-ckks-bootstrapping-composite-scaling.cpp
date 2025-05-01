@@ -85,6 +85,7 @@ void IterativeBootstrapExample() {
     parameters.SetRingDim(1 << 7);
 
     // All modes are supported for 64-bit CKKS bootstrapping.
+    // For this configuration, 3 words per level will be used
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
     usint dcrtBits               = 61;
     usint firstMod               = 66;
@@ -104,8 +105,8 @@ void IterativeBootstrapExample() {
 
     uint32_t levelsAvailableAfterBootstrap = 10;
     // Each extra iteration on top of 1 requires an extra level to be consumed.
-    usint depth = levelsAvailableAfterBootstrap +
-                  FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist, rescaleTech) + (numIterations - 1);
+    usint depth =
+        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.
@@ -176,7 +177,7 @@ void IterativeBootstrapExample() {
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << std::endl;
 
     // Set precision equal to empirically measured value after many test runs.
-    precision = 7;
+    precision = 19;
     std::cout << "Precision input to algorithm: " << precision << std::endl;
 
     // Step 6: Run bootstrapping with multiple iterations.
@@ -187,13 +188,14 @@ void IterativeBootstrapExample() {
     result->SetLength(numSlots);
     auto actualResult = resultTwoIterations->GetCKKSPackedValue();
 
-    std::cout << "Output after two iterations of bootstrapping: " << actualResult << std::endl;
+    std::cout << "\nOutput after two iterations of bootstrapping: " << actualResult << std::endl;
     double precisionMultipleIterations = CalculateApproximationError(actualResult, ptxt->GetCKKSPackedValue());
 
     // Output the precision of bootstrapping after two iterations. It should be approximately double the original precision.
-    std::cout << "Bootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
+    std::cout << "\nBootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
     std::cout << "Number of levels remaining after 2 bootstrappings: "
-              << compositeDegree * depth - ciphertextTwoIterations->GetLevel() << std::endl;
-    //   << compositeDegree * depth - ciphertextTwoIterations->GetLevel() - (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
-    //   << std::endl;
+              << depth - ciphertextAfter->GetLevel() / compositeDegree -
+                     (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
+              << std::endl
+              << std::endl;
 }

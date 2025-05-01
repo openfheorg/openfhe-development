@@ -213,8 +213,7 @@ public:
     static uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                       SecretKeyDist secretKeyDist);
 
-    static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist,
-                                      ScalingTechnique scaleTechnique = FIXEDMANUAL);
+    static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
     std::string SerializedObjectName() const {
         return "FHECKKSRNS";

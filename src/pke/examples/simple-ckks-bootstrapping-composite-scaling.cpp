@@ -123,9 +123,8 @@ void SimpleBootstrapExample() {
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
-    uint32_t levelsAvailableAfterBootstrap = 2;
-    usint depth =
-        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist, rescaleTech);
+    uint32_t levelsAvailableAfterBootstrap = 10;
+    usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
     // std::cout << "approxBootstrapDepth = " << approxBootstrapDepth << std::endl;
@@ -178,7 +177,8 @@ void SimpleBootstrapExample() {
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph, 1, 11);
 
     std::cout << "Number of levels remaining after bootstrapping: "
-              << depth - ciphertextAfter->GetLevel() / compositeDegree << std::endl
+              << depth - ciphertextAfter->GetLevel() / compositeDegree - (ciphertextAfter->GetNoiseScaleDeg() - 1)
+              << std::endl
               << std::endl;
 
     std::cout << "Scaling factor after bootstrapping: " << ciphertextAfter->GetScalingFactor() << std::endl;
