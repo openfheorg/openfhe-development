@@ -98,14 +98,17 @@ void SimpleBootstrapExample() {
     * below unless you are an FHE expert.
     */
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    usint dcrtBits               = 78;
-    usint firstMod               = 80;
+    usint dcrtBits               = 98;
+    usint firstMod               = 100;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    usint registerWordSize = 32;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1 << 12);
+
+    usint registerWordSize = 64;
     parameters.SetRegisterWordSize(registerWordSize);
 
     /*  A4) Multiplicative depth.
@@ -115,21 +118,17 @@ void SimpleBootstrapExample() {
     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
     * depth. We recommend using the input parameters below to get started.
     */
-    // std::vector<uint32_t> levelBudget = {4, 4};
-    std::vector<uint32_t> levelBudget = {2, 2};
+    std::vector<uint32_t> levelBudget = {4, 4};
 
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
-    // uint32_t levelsAvailableAfterBootstrap = 10;
-    // usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
-    uint32_t approxBootstrapDepth          = 8;
     uint32_t levelsAvailableAfterBootstrap = 2;
     usint depth =
-        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
+        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist, rescaleTech);
     parameters.SetMultiplicativeDepth(depth);
 
-    std::cout << "approxBootstrapDepth = " << approxBootstrapDepth << std::endl;
+    // std::cout << "approxBootstrapDepth = " << approxBootstrapDepth << std::endl;
     std::cout << "levelBudget[0] = " << levelBudget[0] << std::endl;
     std::cout << "levelBudget[1] = " << levelBudget[1] << std::endl;
     std::cout << "secretKeyDist = " << secretKeyDist << std::endl;

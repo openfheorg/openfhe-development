@@ -305,7 +305,6 @@ int main(int argc, char* argv[]) {
     result->SetLength(batchSize);
     std::cout << "x1 rotate by -2 = " << result << std::endl;
 
-
     // Testing EvalAdd ciphertext - double
     auto cSubDouble = cc->EvalSub(c1, 0.5);
     std::cout << "c1 noise degree = " << c1->GetNoiseScaleDeg() << std::endl;
@@ -323,7 +322,6 @@ int main(int argc, char* argv[]) {
     cc->Decrypt(keys.secretKey, cAddNegDouble, &result);
     result->SetLength(batchSize);
     std::cout << "x1 + (-0.5) = " << result << std::endl;
-
 
     return 0;
 }
