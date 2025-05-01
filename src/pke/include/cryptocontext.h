@@ -1590,30 +1590,33 @@ public:
     }
 
     /**
-   * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a complex number.  Supported only in CKKS.
-   * @param ciphertext input ciphertext
-   * @param scalar a complex number
-   * @return new ciphertext for ciphertext + scalar
-   */
+     * @brief Homomorphic addition of a ciphertext and a complex number (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Complex number to add.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         return GetScheme()->EvalAdd(ciphertext, scalar);
     }
 
     /**
-    * EvalAdd - OpenFHE EvalAdd method for a ciphertext and a complex number.  Supported only in CKKS.
-    * @param scalar a complex number
-    * @param ciphertext input ciphertext
-    * @return new ciphertext for ciphertext + scalar
-    */
+     * @brief Homomorphic addition of a complex number and a ciphertext (CKKS only).
+     *
+     * @param scalar      Complex number to add.
+     * @param ciphertext  Input ciphertext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(std::complex<double> scalar, const ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(ciphertext, scalar);
     }
 
     /**
-    * In-place addition of a ciphertext and a complex number. Supported only in CKKS.
-    * @param ciphertext input ciphertext
-    * @param scalar a complex number
-    */
+     * @brief In-place addition of a ciphertext and a complex number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Complex number to add.
+     */
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (scalar == std::complex<double>(0.0, 0.0))
             return;
@@ -1621,10 +1624,11 @@ public:
     }
 
     /**
-    * In-place addition of a ciphertext and a complex number.  Supported only in CKKS.
-    * @param scalar a complex number
-    * @param ciphertext input ciphertext
-    */
+     * @brief In-place addition of a complex number and a ciphertext (CKKS only).
+     *
+     * @param scalar      Complex number to add.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalAddInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
         EvalAddInPlace(ciphertext, scalar);
     }
@@ -1634,11 +1638,12 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * Homomorphic subtraction of two ciphertexts
-   * @param ciphertext1 minuend
-   * @param ciphertext2 subtrahend
-   * @return the result as a new ciphertext
-   */
+     * @brief Homomorphic subtraction of two ciphertexts.
+     *
+     * @param ciphertext1  Minuend.
+     * @param ciphertext2  Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext1,
                                 const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
@@ -1646,76 +1651,81 @@ public:
     }
 
     /**
-   * In-place homomorphic subtraction of two ciphertexts
-   * @param ciphertext1 minuend
-   * @param ciphertext2 subtrahend
-   * @return the result as a new ciphertext
-   */
+     * @brief In-place homomorphic subtraction of two ciphertexts.
+     *
+     * @param ciphertext1  Minuend (modified in place).
+     * @param ciphertext2  Subtrahend.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext1, const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         GetScheme()->EvalSubInPlace(ciphertext1, ciphertext2);
     }
 
     /**
-   * Homomorphic subtraction of two mutable ciphertexts
-   * @param ciphertext1 minuend
-   * @param ciphertext2 subtrahend
-   * @return the result as a new ciphertext
-   */
+     * @brief Homomorphic subtraction of two mutable ciphertexts.
+     *
+     * @param ciphertext1  Minuend (may be modified).
+     * @param ciphertext2  Subtrahend (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return GetScheme()->EvalSubMutable(ciphertext1, ciphertext2);
     }
 
     /**
-   * In-place homomorphic subtraction of two mutable ciphertexts
-   * @param ciphertext1 minuend
-   * @param ciphertext2 subtrahend
-   * @return the updated minuend
-   */
+     * @brief In-place homomorphic subtraction of two mutable ciphertexts.
+     *
+     * @param ciphertext1  Minuend (modified in place).
+     * @param ciphertext2  Subtrahend (may be modified).
+     */
     void EvalSubMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         GetScheme()->EvalSubMutableInPlace(ciphertext1, ciphertext2);
     }
 
     /**
-   * Homomorphic subtraction of a ciphertext and plaintext
-   * @param ciphertext minuend
-   * @param plaintext subtrahend
-   * @return new ciphertext for ciphertext - plaintext
-   */
+     * @brief Homomorphic subtraction of a ciphertext and a plaintext.
+     *
+     * @param ciphertext  Minuend.
+     * @param plaintext   Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalSub(ciphertext, plaintext);
     }
 
     /**
-   * Homomorphic subtraction of a ciphertext and plaintext
-   * @param plaintext minuend
-   * @param ciphertext subtrahend
-   * @return new ciphertext for plaintext - ciphertext
-   */
+     * @brief Homomorphic subtraction of a ciphertext from a plaintext.
+     *
+     * @param plaintext   Minuend.
+     * @param ciphertext  Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSub(ConstPlaintext plaintext, const ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), plaintext);
     }
 
     /**
-   * Homomorphic subtraction of mutable ciphertext and plaintext
-   * @param ciphertext minuend
-   * @param plaintext subtrahend
-   * @return new ciphertext for ciphertext - plaintext
-   */
+     * @brief Homomorphic subtraction of a plaintext from a mutable ciphertext.
+     *
+     * @param ciphertext  Minuend (may be modified).
+     * @param plaintext   Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
         TypeCheck((ConstCiphertext<Element>)ciphertext, (ConstPlaintext)plaintext);
         return GetScheme()->EvalSubMutable(ciphertext, plaintext);
     }
 
     /**
-   * Homomorphic subtraction of mutable ciphertext and plaintext
-   * @param plaintext minuend
-   * @param ciphertext subtrahend
-   * @return new ciphertext for plaintext - ciphertext
-   */
+     * @brief Homomorphic subtraction of a mutable ciphertext from a plaintext.
+     *
+     * @param plaintext   Minuend.
+     * @param ciphertext  Subtrahend (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSubMutable(Plaintext plaintext, Ciphertext<Element>& ciphertext) const {
         Ciphertext<Element> negated = EvalNegate(ciphertext);
         Ciphertext<Element> result  = EvalAddMutable(negated, plaintext);
@@ -1724,30 +1734,33 @@ public:
     }
 
     /**
-   * Subtraction of a ciphertext and a real number. Supported only in CKKS.
-   * @param ciphertext input ciphertext
-   * @param scalar a real number
-   * @return new ciphertext for ciphertext - scalar
-   */
+     * @brief Homomorphic subtraction of a real number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Real number to subtract.
+     * @return Resulting ciphertext (ciphertext - scalar).
+     */
     Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext, double scalar) const {
         return scalar >= 0 ? GetScheme()->EvalSub(ciphertext, scalar) : GetScheme()->EvalAdd(ciphertext, -scalar);
     }
 
     /**
-   * Subtraction of a ciphertext and a real number.  Supported only in CKKS.
-   * @param scalar a real number
-   * @param ciphertext input ciphertext
-   * @return new ciphertext for scalar - ciphertext
-   */
+     * @brief Homomorphic subtraction of a ciphertext from a real number (CKKS only).
+     *
+     * @param scalar      Real number.
+     * @param ciphertext  Ciphertext to subtract.
+     * @return Resulting ciphertext (scalar - ciphertext).
+     */
     Ciphertext<Element> EvalSub(double scalar, const ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), scalar);
     }
 
     /**
-   * In-place subtraction of a ciphertext and a real number.  Supported only in CKKS.
-   * @param ciphertext input ciphertext
-   * @param scalar a real number
-   */
+     * @brief In-place subtraction of a real number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Real number to subtract.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (scalar >= 0.) {
             GetScheme()->EvalSubInPlace(ciphertext, scalar);
@@ -1758,40 +1771,44 @@ public:
     }
 
     /**
-   * In-place subtraction of ciphertext from a real number.  Supported only in CKKS.
-   * @param scalar a real number
-   * @param ciphertext input ciphertext
-   */
+     * @brief In-place subtraction of a ciphertext from a real number (CKKS only).
+     *
+     * @param scalar      Real number.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalSubInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
         EvalAddInPlace(ciphertext, scalar);
     }
 
     /**
-   * Subtraction of a ciphertext and a complex number. Supported only in CKKS.
-   * @param ciphertext input ciphertext
-   * @param scalar a complex number
-   * @return new ciphertext for ciphertext - scalar
-   */
+     * @brief Homomorphic subtraction of a complex number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Complex number to subtract.
+     * @return Resulting ciphertext (ciphertext - scalar).
+     */
     Ciphertext<Element> EvalSub(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         return GetScheme()->EvalAdd(ciphertext, -scalar);
     }
 
     /**
-    * Subtraction of a ciphertext and a complex number.  Supported only in CKKS.
-    * @param scalar a complex number
-    * @param ciphertext input ciphertext
-    * @return new ciphertext for scalar - ciphertext
-    */
+     * @brief Homomorphic subtraction of a ciphertext from a complex number (CKKS only).
+     *
+     * @param scalar      Complex number.
+     * @param ciphertext  Ciphertext to subtract.
+     * @return Resulting ciphertext (scalar - ciphertext).
+     */
     Ciphertext<Element> EvalSub(std::complex<double> scalar, const ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), scalar);
     }
 
     /**
-* In-place subtraction of a ciphertext and a complex number.  Supported only in CKKS.
-* @param ciphertext input ciphertext
-* @param scalar a realcomplex number
-*/
+     * @brief In-place subtraction of a complex number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Complex number to subtract.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (scalar == std::complex<double>(0.0, 0.0))
             return;
@@ -1799,10 +1816,11 @@ public:
     }
 
     /**
-* In-place subtraction of ciphertext from a complex number.  Supported only in CKKS.
-* @param scalar a complex number
-* @param ciphertext input ciphertext
-*/
+     * @brief In-place subtraction of a ciphertext from a complex number (CKKS only).
+     *
+     * @param scalar      Complex number.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalSubInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
         EvalAddInPlace(ciphertext, scalar);
@@ -1852,11 +1870,12 @@ public:
     void EvalMultKeysGen(const PrivateKey<Element> key);
 
     /**
-   * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts (uses a relinearization key from the crypto context)
-   * @param ciphertext1 multiplier
-   * @param ciphertext2 multiplicand
-   * @return new ciphertext for ciphertext1 * ciphertext2
-   */
+     * @brief Homomorphic multiplication of two ciphertexts using a relinearization key.
+     *
+     * @param ciphertext1  Multiplier.
+     * @param ciphertext2  Multiplicand.
+     * @return Resulting ciphertext (ciphertext1 * ciphertext2).
+     */
     Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext1,
                                  const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
@@ -1870,11 +1889,12 @@ public:
     }
 
     /**
-   * EvalMult - OpenFHE EvalMult method for a pair of mutable ciphertexts (uses a relinearization key from the crypto context)
-   * @param ciphertext1 multiplier
-   * @param ciphertext2 multiplicand
-   * @return new ciphertext for ciphertext1 * ciphertext2
-   */
+     * @brief Homomorphic multiplication of two mutable ciphertexts using a relinearization key.
+     *
+     * @param ciphertext1  Multiplier (may be modified).
+     * @param ciphertext2  Multiplicand (may be modified).
+     * @return Resulting ciphertext (ciphertext1 * ciphertext2).
+     */
     Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
 
@@ -1887,10 +1907,11 @@ public:
     }
 
     /**
-   * In-place EvalMult method for a pair of mutable ciphertexts (uses a relinearization key from the crypto context)
-   * @param ciphertext1 multiplier
-   * @param ciphertext2 multiplicand
-   */
+     * @brief In-place homomorphic multiplication of two mutable ciphertexts using a relinearization key.
+     *
+     * @param ciphertext1  Multiplier (modified in place).
+     * @param ciphertext2  Multiplicand (may be modified).
+     */
     void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
 
@@ -1903,10 +1924,11 @@ public:
     }
 
     /**
-   * Efficient homomorphic squaring of a ciphertext - uses a relinearization key stored in the crypto context
-   * @param ciphertext input ciphertext
-   * @return squared ciphertext
-   */
+     * @brief Homomorphic squaring of a ciphertext using a relinearization key.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Squared ciphertext.
+     */
     Ciphertext<Element> EvalSquare(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
@@ -1919,10 +1941,11 @@ public:
     }
 
     /**
-   * Efficient homomorphic squaring of a mutable ciphertext - uses a relinearization key stored in the crypto context
-   * @param ciphertext input ciphertext
-   * @return squared ciphertext
-   */
+     * @brief Homomorphic squaring of a mutable ciphertext using a relinearization key.
+     *
+     * @param ciphertext  Input ciphertext (may be modified).
+     * @return Squared ciphertext.
+     */
     Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
@@ -1935,10 +1958,10 @@ public:
     }
 
     /**
-   * In-place homomorphic squaring of a mutable ciphertext - uses a relinearization key stored in the crypto context
-   * @param ciphertext input ciphertext
-   * @return squared ciphertext
-   */
+     * @brief In-place homomorphic squaring of a ciphertext using a relinearization key.
+     *
+     * @param ciphertext  Ciphertext to square (modified in place).
+     */
     void EvalSquareInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
@@ -1951,11 +1974,12 @@ public:
     }
 
     /**
-   * Homomorphic multiplication of two ciphertexts withour relinearization
-   * @param ciphertext1 multiplier
-   * @param ciphertext2 multiplicand
-   * @return new ciphertext for ciphertext1 * ciphertext2
-   */
+     * @brief Homomorphic multiplication of two ciphertexts without relinearization.
+     *
+     * @param ciphertext1  Multiplier.
+     * @param ciphertext2  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultNoRelin(const ConstCiphertext<Element>& ciphertext1,
                                         const ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
@@ -1963,10 +1987,11 @@ public:
     }
 
     /**
-   * Function for relinearization of a ciphertext to the lowest level (with 2 polynomials per ciphertext).
-   * @param ciphertext input ciphertext.
-   * @return relinearized ciphertext
-   */
+     * @brief Relinearizes a ciphertext to reduce it to two components (2 polynomials per ciphertext).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Relinearized ciphertext.
+     */
     Ciphertext<Element> Relinearize(const ConstCiphertext<Element>& ciphertext) const {
         // input parameter check
         if (!ciphertext)
@@ -1974,19 +1999,17 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
 
-        if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
-            OPENFHE_THROW(
-                "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for Relinearize");
-        }
+        if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2))
+            OPENFHE_THROW("Insufficient value was used for maxRelinSkDeg to generate keys for Relinearize");
 
         return GetScheme()->Relinearize(ciphertext, evalKeyVec);
     }
 
     /**
-   * In-place relinearization of a ciphertext to the lowest level (with 2 polynomials per ciphertext).
-   * @param ciphertext input ciphertext.
-   */
+     * @brief In-place relinearization of a ciphertext to reduce it to two components (2 polynomials per ciphertext).
+     *
+     * @param ciphertext  Ciphertext to relinearize (modified in place).
+     */
     void RelinearizeInPlace(Ciphertext<Element>& ciphertext) const {
         // input parameter check
         if (!ciphertext)
@@ -1994,20 +2017,19 @@ public:
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
-            OPENFHE_THROW(
-                "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for RelinearizeInPlace");
+            OPENFHE_THROW("Insufficient value was used for maxRelinSkDeg to generate keys for RelinearizeInPlace");
         }
 
         GetScheme()->RelinearizeInPlace(ciphertext, evalKeyVec);
     }
 
     /**
-   * Homomorphic multiplication of two ciphertexts followed by relinearization to the lowest level
-   * @param ciphertext1 first input ciphertext.
-   * @param ciphertext2 second input ciphertext.
-   * @return new ciphertext
-   */
+     * @brief Homomorphic multiplication of two ciphertexts followed by relinearization to the lowest level.
+     *
+     * @param ciphertext1  First input ciphertext.
+     * @param ciphertext2  Second input ciphertext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultAndRelinearize(const ConstCiphertext<Element>& ciphertext1,
                                                const ConstCiphertext<Element>& ciphertext2) const {
         // input parameter check
@@ -2027,43 +2049,47 @@ public:
     }
 
     /**
-   * Multiplication of a ciphertext by a plaintext
-   * @param ciphertext multiplier
-   * @param plaintext multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a ciphertext by a plaintext.
+     *
+     * @param ciphertext  Multiplier.
+     * @param plaintext   Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalMult(ciphertext, plaintext);
     }
 
     /**
-   * Multiplication of a plaintext by a ciphertext
-   * @param plaintext multiplier
-   * @param ciphertext multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a plaintext by a ciphertext.
+     *
+     * @param plaintext   Multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(ConstPlaintext plaintext, const ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, plaintext);
     }
 
     /**
-   * Multiplication of mutable ciphertext and plaintext
-   * @param ciphertext multiplier
-   * @param plaintext multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a mutable ciphertext and a plaintext.
+     *
+     * @param ciphertext  Multiplier (may be modified).
+     * @param plaintext   Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalMultMutable(ciphertext, plaintext);
     }
 
     /**
-   * Multiplication of mutable plaintext and ciphertext
-   * @param plaintext multiplier
-   * @param ciphertext multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a mutable plaintext and a ciphertext.
+     *
+     * @param plaintext   Multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultMutable(Plaintext plaintext, Ciphertext<Element>& ciphertext) const {
         return EvalMultMutable(ciphertext, plaintext);
     }
@@ -2099,11 +2125,12 @@ public:
     // }
 
     /**
-   * Multiplication of a ciphertext by a real number.  Supported only in CKKS.
-   * @param ciphertext multiplier
-   * @param scalar multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param ciphertext  Multiplier.
+     * @param scalar      Real number multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext) {
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2112,20 +2139,22 @@ public:
     }
 
     /**
-   * Multiplication of a ciphertext by a real number.  Supported only in CKKS.
-   * @param scalar multiplier
-   * @param ciphertext multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param scalar      Real number multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     inline Ciphertext<Element> EvalMult(double scalar, const ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, scalar);
     }
 
     /**
-   * In-place multiplication of a ciphertext by a real number. Supported only in CKKS.
-   * @param ciphertext multiplier
-   * @param scalar multiplicand
-   */
+     * @brief In-place multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Real number multiplicand.
+     */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext) {
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2135,20 +2164,22 @@ public:
     }
 
     /**
-   * In-place multiplication of a ciphertext by a real number. Supported only in CKKS.
-   * @param scalar multiplier (real number)
-   * @param ciphertext multiplicand
-   */
+     * @brief In-place multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param scalar      Real number multiplier.
+     * @param ciphertext  Ciphertext to modify (multiplicand).
+     */
     inline void EvalMultInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
         EvalMultInPlace(ciphertext, scalar);
     }
 
     /**
-   * Multiplication of a ciphertext by a complex number.  Supported only in CKKS.
-   * @param ciphertext multiplier
-   * @param scalar multiplicand
-   * @return the result of multiplication
-   */
+     * @brief Homomorphic multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param ciphertext  Multiplier.
+     * @param scalar      Complex number multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (!ciphertext) {
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2157,20 +2188,22 @@ public:
     }
 
     /**
-    * Multiplication of a ciphertext by a complex number.  Supported only in CKKS.
-    * @param scalar multiplier
-    * @param ciphertext multiplicand
-    * @return the result of multiplication
-    */
+     * @brief Homomorphic multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param scalar      Complex number multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     inline Ciphertext<Element> EvalMult(std::complex<double> scalar, const ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, scalar);
     }
 
     /**
-    * In-place multiplication of a ciphertext by a complex number. Supported only in CKKS.
-    * @param ciphertext multiplier
-    * @param scalar multiplicand
-    */
+     * @brief In-place multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Complex number multiplicand.
+     */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (!ciphertext) {
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2180,10 +2213,11 @@ public:
     }
 
     /**
-    * In-place multiplication of a ciphertext by a complex number. Supported only in CKKS.
-    * @param scalar multiplier (complex number)
-    * @param ciphertext multiplicand
-    */
+     * @brief In-place multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param scalar      Complex number multiplier.
+     * @param ciphertext  Ciphertext to modify (multiplicand).
+     */
     inline void EvalMultInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
         EvalMultInPlace(ciphertext, scalar);
     }
