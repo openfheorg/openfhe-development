@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Real number serialization in a simple context. The goal of this is to show a simple setup for real number
+  Scheme switching serialization in a simple context. The goal of this is to show a simple setup for scheme switching
   serialization before progressing into the next logical step - serialization and communication across
   2 separate entities
  */
@@ -48,7 +48,10 @@
 #include <iomanip>
 #include <tuple>
 #include <unistd.h>
-
+#include <string>
+#include <vector>
+#include <memory>
+#include <iostream>
 
 using namespace lbcrypto;
 
@@ -61,7 +64,7 @@ using namespace lbcrypto;
 // std::string DATAFOLDER = std::string(getcwd(buff, 1024));
 
 // Save-Load locations for keys
-const std::string DATAFOLDER      = "demoData";
+const std::string DATAFOLDER = "demoData";
 
 // Save-load locations for evaluated ciphertext
 std::string cipherArgminLocation = "/ciphertextArgmin.txt";

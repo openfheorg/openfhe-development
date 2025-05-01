@@ -56,6 +56,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <functional>
+#include <set>
 
 namespace {
 // GetBigModulus() calculates the big modulus as the product of
