@@ -2730,7 +2730,7 @@ public:
 
     /**
      * @brief Evaluates a polynomial (given as a power series) on a ciphertext (CKKS only).
-     *        Use EvalPolyLinear() for low polynomial degrees, or EvalPolyPS() for higher degrees.
+     *        Use EvalPolyLinear() for low polynomial degrees (degree < 5), or EvalPolyPS() for higher degrees.
      *
      * @param ciphertext    Input ciphertext.
      * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
@@ -2778,18 +2778,17 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * Method for evaluating Chebyshev polynomial interpolation;
-   * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
-   * (x-a)/(b-a) If the degree of the polynomial is less than 5, use
-   * EvalChebyshevSeriesLinear (naive linear method), otherwise, use EvalChebyshevSeriesPS (Paterson-Stockmeyer method).
-   * Supported only in CKKS.
-   *
-   * @param cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in Chebyshev expansion
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates a Chebyshev interpolated polynomial on a ciphertext.
+     *        Uses a linear transformation to map [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a),
+     *        then applies either EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS depending on degree.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Chebyshev series coefficients.
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalChebyshevSeries(const ConstCiphertext<Element>& ciphertext,
                                             const std::vector<double>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
@@ -2798,16 +2797,15 @@ public:
     }
 
     /**
-   * Naive linear method for evaluating Chebyshev polynomial interpolation;
-   * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
-   * (x-a)/(b-a). Supported only in CKKS.
-   *
-   * @param cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in Chebyshev expansion
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates a Chebyshev interpolated polynomial using a naive linear method.
+     *        Maps [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a). Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Chebyshev series coefficients.
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalChebyshevSeriesLinear(const ConstCiphertext<Element>& ciphertext,
                                                   const std::vector<double>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
@@ -2816,16 +2814,15 @@ public:
     }
 
     /**
-   * Paterson-Stockmeyer method for evaluating Chebyshev polynomial interpolation;
-   * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
-   * (x-a)/(b-a). Supported only in CKKS.
-   *
-   * @param cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in Chebyshev expansion
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates a Chebyshev interpolated polynomial using the Paterson-Stockmeyer method.
+     *        Maps [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a). Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Chebyshev series coefficients.
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalChebyshevSeriesPS(const ConstCiphertext<Element>& ciphertext,
                                               const std::vector<double>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
@@ -2834,67 +2831,67 @@ public:
     }
 
     /**
-   * @brief Method for calculating Chebyshev evaluation on a ciphertext for a smooth input function over the range [a,b].
-   * Supported only in CKKS.
-   *
-   * @param func is the function to be approximated
-   * @param ciphertext input ciphertext
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @param degree Desired degree of approximation
-   * @return the coefficients of the Chebyshev approximation.
-   */
+     * @brief Evaluates a smooth function on a ciphertext using Chebyshev polynomial approximation over [a, b].
+     *        Supported only in CKKS.
+     *
+     * @param func        Function to approximate.
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after function evaluation.
+     */
     Ciphertext<Element> EvalChebyshevFunction(std::function<double(double)> func,
                                               const ConstCiphertext<Element>& ciphertext, double a, double b,
                                               uint32_t degree) const;
 
     /**
-   * @brief Evaluate approximate sine function on a ciphertext using the Chebyshev approximation.
-   * Supported only in CKKS.
-   *
-   * @param ciphertext input ciphertext
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @param degree Desired degree of approximation
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates an approximate sine function on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after sine approximation.
+     */
     Ciphertext<Element> EvalSin(const ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
-   * @brief Evaluate approximate cosine function on a ciphertext using the Chebyshev approximation.
-   * Supported only in CKKS.
-   *
-   * @param ciphertext input ciphertext
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @param degree Desired degree of approximation
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates an approximate cosine function on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after cosine approximation.
+     */
     Ciphertext<Element> EvalCos(const ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
-   * @brief Evaluate approximate logistic function 1/(1 + exp(-x)) on a ciphertext using the Chebyshev approximation.
-   * Supported only in CKKS.
-   *
-   * @param ciphertext input ciphertext
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @param degree Desired degree of approximation
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates an approximate logistic function 1 / (1 + exp(-x)) on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after logistic approximation.
+     */
     Ciphertext<Element> EvalLogistic(const ConstCiphertext<Element>& ciphertext, double a, double b,
                                      uint32_t degree) const;
 
     /**
-   * @brief Evaluates approximate division function 1/x where x >= 1 on a ciphertext using the Chebyshev approximation.
-   * Supported only in CKKS.
-   *
-   * @param ciphertext input ciphertext
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @param degree Desired degree of approximation
-   * @return the result of polynomial evaluation.
-   */
+     * @brief Evaluates an approximate reciprocal function 1 / x (for x ≥ 1) on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after reciprocal approximation.
+     */
     Ciphertext<Element> EvalDivide(const ConstCiphertext<Element>& ciphertext, double a, double b,
                                    uint32_t degree) const;
 
@@ -2903,11 +2900,11 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * @brief Generates the key map to be used by EvalSum
-   *
-   * @param privateKey private key.
-   * @param publicKey public key (used in NTRU schemes).
-   */
+     * @brief Generates evaluation keys required for homomorphic summation (EvalSum).
+     *
+     * @param privateKey  Private key used for key generation.
+     * @param publicKey   Public key (used in NTRU schemes; unused now).
+     */
     void EvalSumKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr);
 
     // [[deprecated("Use EvalSumKeyGen(const PrivateKey<Element> privateKey) instead.")]] void EvalSumKeyGen(
@@ -2917,14 +2914,14 @@ public:
     // }
 
     /**
-   * @brief Generate the automorphism keys for EvalSumRows; works only for packed encoding
-   *
-   * @param privateKey private key.
-   * @param publicKey public key.
-   * @param rowSize size of rows in the matrix
-   * @param subringDim subring dimension (set to cyclotomic order if set to 0)
-   * @return returns the evaluation keys
-   */
+     * @brief Generates automorphism keys for EvalSumRows (only for packed encoding).
+     *
+     * @param privateKey    Private key used for key generation.
+     * @param publicKey     Public key (used in NTRU schemes; unused now).
+     * @param rowSize       Number of slots per row in the packed matrix.
+     * @param subringDim    Subring dimension (use cyclotomic order if 0).
+     * @return Map of generated evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
         const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr, uint32_t rowSize = 0,
         uint32_t subringDim = 0);
@@ -2940,12 +2937,12 @@ public:
     // }
 
     /**
-   * @brief Generates the automorphism keys for EvalSumCols; works only for packed encoding
-   *
-   * @param privateKey private key.
-   * @param publicKey public key.
-   * @return returns the evaluation keys
-   */
+     * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
+     *
+     * @param privateKey  Private key used for key generation.
+     * @param publicKey   Public key (used in NTRU schemes; unused now).
+     * @return Map of generated evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
         const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr);
 
@@ -2959,35 +2956,35 @@ public:
     // std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
 
     /**
-   * @brief Function for evaluating a sum of all components in a vector.
-   *
-   * @param ciphertext the input ciphertext.
-   * @param batchSize size of the batch
-   * @return resulting ciphertext
-   */
+     * @brief Computes the sum of all components in a packed ciphertext vector.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param batchSize   Number of slots to sum over.
+     * @return Resulting ciphertext containing the sum.
+     */
     Ciphertext<Element> EvalSum(const ConstCiphertext<Element>& ciphertext, uint32_t batchSize) const;
 
     /**
-   * @brief Sums all elements over row-vectors in a matrix; works only with packed encoding
-   *
-   * @param ciphertext the input ciphertext.
-   * @param numRows number of rows in the matrix
-   * @param evalSumKeyMap - reference to the map of evaluation keys generated by
-   * @param subringDim the current cyclotomic order/subring dimension. If set to 0, we use the full cyclotomic order.
-   * @return resulting ciphertext
-   */
+     * @brief Sums all elements across each row in a packed-encoded matrix ciphertext.
+     *
+     * @param ciphertext      Input ciphertext.
+     * @param numRows         Number of rows in the matrix.
+     * @param evalSumKeyMap   Map of evaluation keys generated for row summation.
+     * @param subringDim      Subring dimension (use full cyclotomic order if 0).
+     * @return Ciphertext containing row-wise sums.
+     */
     Ciphertext<Element> EvalSumRows(const ConstCiphertext<Element>& ciphertext, uint32_t numRows,
                                     const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
                                     uint32_t subringDim = 0) const;
 
     /**
-   * @brief Sums all elements over column-vectors in a matrix; works only with packed encoding
-   *
-   * @param ciphertext the input ciphertext.
-   * @param numCols number of columns in the matrix
-   * @param evalSumKeyMap - reference to the map of evaluation keys generated by
-   * @return resulting ciphertext
-   */
+     * @brief Sums all elements across each column in a packed-encoded matrix ciphertext.
+     *
+     * @param ciphertext      Input ciphertext.
+     * @param numCols         Number of columns in the matrix.
+     * @param evalSumKeyMap   Map of evaluation keys generated for column summation.
+     * @return Ciphertext containing column-wise sums.
+     */
     Ciphertext<Element> EvalSumCols(const ConstCiphertext<Element>& ciphertext, uint32_t numCols,
                                     const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap) const;
 
@@ -2996,35 +2993,35 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * @brief Evaluates inner product in packed encoding (uses EvalSum)
-   *
-   * @param ciphertext1 first vector.
-   * @param ciphertext2 second vector.
-   * @param batchSize size of the batch to be summed up
-   * @return resulting ciphertext
-   */
+     * @brief Computes the inner product of two ciphertext vectors using packed encoding and EvalSum.
+     *
+     * @param ciphertext1  First input ciphertext vector.
+     * @param ciphertext2  Second input ciphertext vector.
+     * @param batchSize    Number of slots to sum over.
+     * @return Ciphertext containing the inner product.
+     */
     Ciphertext<Element> EvalInnerProduct(const ConstCiphertext<Element>& ciphertext1,
                                          const ConstCiphertext<Element>& ciphertext2, uint32_t batchSize) const;
 
     /**
-   * @brief Evaluates inner product in packed encoding (uses EvalSum)
-   *
-   * @param ciphertext1 first vector - ciphertext.
-   * @param plaintext second vector - plaintext.
-   * @param batchSize size of the batch to be summed up
-   * @return resulting ciphertext
-   */
+     * @brief Computes the inner product of a ciphertext and a plaintext using packed encoding and EvalSum.
+     *
+     * @param ciphertext  Encrypted input vector.
+     * @param plaintext   Plaintext input vector.
+     * @param batchSize   Number of slots to sum over.
+     * @return Ciphertext containing the inner product.
+     */
     Ciphertext<Element> EvalInnerProduct(const ConstCiphertext<Element>& ciphertext, ConstPlaintext plaintext,
                                          uint32_t batchSize) const;
 
     /**
-   * @brief Merges multiple ciphertexts with encrypted results in slot 0 into a single ciphertext.
-   *
-   * @param ciphertextVector vector of ciphertexts to be merged.
-   * @return resulting ciphertext
-   * @note The slot assignment is done based on the order of ciphertexts in the vector.
-   * Requires the generation of rotation keys for the indices that are needed.
-   */
+     * @brief Merges multiple ciphertexts with values in slot 0 into a single packed ciphertext.
+     *
+     * @param ciphertextVec  Vector of ciphertexts to merge.
+     * @return Merged ciphertext with values placed into slots in order.
+     *
+     * @note Requires rotation keys for the necessary indices.
+     */
     Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
     //------------------------------------------------------------------------------
@@ -3032,12 +3029,12 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * @brief Produces an Eval Key that OpenFHE can use for Proxy Re-Encryption
-   * 
-   * @param oldPrivateKey original secret key
-   * @param newPublicKey public key for the new secret key
-   * @return new evaluation key
-   */
+     * @brief Generates a re-encryption key for Proxy Re-Encryption (PRE).
+     *
+     * @param oldPrivateKey  Original private key.
+     * @param newPublicKey   Public key of the target recipient.
+     * @return Re-encryption evaluation key.
+     */
     EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
         ValidateKey(oldPrivateKey);
         ValidateKey(newPublicKey);
@@ -3058,13 +3055,13 @@ public:
         __attribute__((deprecated("functionality removed from OpenFHE")));
 
     /**
-   * @brief Proxy Re-Encryption mechanism for OpenFHE
-   * 
-   * @param ciphertext - input ciphertext
-   * @param evalKey - evaluation key from the PRE keygen method
-   * @param publicKey the public key of the recipient of the re-encrypted ciphertext.
-   * @return the resulting ciphertext
-   */
+     * @brief Re-encrypts a ciphertext using a re-encryption key for Proxy Re-Encryption.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param evalKey     Re-encryption key.
+     * @param publicKey   Optional public key of the recipient.
+     * @return Re-encrypted ciphertext.
+     */
     Ciphertext<Element> ReEncrypt(const ConstCiphertext<Element>& ciphertext, EvalKey<Element> evalKey,
                                   const PublicKey<Element> publicKey = nullptr) const {
         ValidateCiphertext(ciphertext);
@@ -3078,12 +3075,13 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * @brief Threshold FHE: Generates a public key from a vector of secret shares.
-   *
-   * @param &privateKeyVec secrete key shares.
-   * @return key pair including the private for the current party and joined public key
-   * @attention ONLY FOR DEBUGGING PURPOSES. SHOULD NOT BE USED IN PRODUCTION.
-   */
+     * @brief Generates a joined public key from a set of secret key shares (Threshold FHE).
+     *
+     * @param privateKeyVec  Vector of secret key shares.
+     * @return Key pair containing this party's private key and the joined public key.
+     *
+     * @attention Only for debugging purposes. Not for production use.
+     */
     KeyPair<Element> MultipartyKeyGen(const std::vector<PrivateKey<Element>>& privateKeyVec) {
         if (!privateKeyVec.size())
             OPENFHE_THROW("Input private key vector is empty");
@@ -3091,14 +3089,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Generation of a public key derived from a previous joined public key (for prior secret shares)
-   * and the secret key share of the current party.
-   *
-   * @param publicKey joined public key from prior parties.
-   * @param makeSparse set to true if ring reduce by a factor of 2 is to be used. NOT SUPPORTED BY ANY SCHEME ANYMORE.
-   * @param fresh set to true if proxy re-encryption is used in the multi-party protocol or star topology is used
-   * @return key pair including the secret share for the current party and joined public key
-   */
+     * @brief Generates a joined public key using a prior public key and the current party's secret share (Threshold FHE).
+     *
+     * @param publicKey   joined public key from prior parties.
+     * @param makeSparse  Use ring reduction (no longer supported).
+     * @param fresh       Indicates if proxy re-encryption is used in the multi-party protocol or star topology is used.
+     * @return Key pair containing this party's private key and the updated joined public key.
+     */
     KeyPair<Element> MultipartyKeyGen(const PublicKey<Element> publicKey, bool makeSparse = false, bool fresh = false) {
         if (!publicKey)
             OPENFHE_THROW("Input public key is empty");
@@ -3106,12 +3103,12 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Method for decryption operation run by the lead decryption client
-   *
-   * @param ciphertextVec a vector of ciphertexts
-   * @param privateKey secret key share used for decryption.
-   * @return vector of partially decrypted ciphertexts.
-   */
+     * @brief Performs partial decryption as the lead decryption party (Threshold FHE).
+     *
+     * @param ciphertextVec  Vector of ciphertexts to decrypt.
+     * @param privateKey     Secret key share of the lead party.
+     * @return Vector of partially decrypted ciphertexts.
+     */
     std::vector<Ciphertext<Element>> MultipartyDecryptLead(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
         ValidateKey(privateKey);
@@ -3126,12 +3123,12 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: "Partial" decryption computed by all parties except for the lead one
-   *
-   * @param ciphertextVec a vector of ciphertexts
-   * @param privateKey secret key share used for decryption.
-   * @return vector of partially decrypted ciphertexts.
-   */
+     * @brief Performs partial decryption by non-lead parties in a Threshold FHE setting.
+     *
+     * @param ciphertextVec  Vector of ciphertexts to decrypt.
+     * @param privateKey     Secret key share of a non-lead party.
+     * @return Vector of partially decrypted ciphertexts.
+     */
     std::vector<Ciphertext<Element>> MultipartyDecryptMain(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
         ValidateKey(privateKey);
@@ -3146,12 +3143,12 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Method for combining the partially decrypted ciphertexts and getting the final decryption in the clear.
-   *
-   * @param partialCiphertextVec vector of "partial" decryptions.
-   * @param plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * @brief Combines partially decrypted ciphertexts into the final plaintext result (Threshold FHE).
+     *
+     * @param partialCiphertextVec  Vector of partial decryptions.
+     * @param plaintext             Output plaintext.
+     * @return Decoding result.
+     */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& partialCiphertextVec,
                                           Plaintext* plaintext) const {
         std::string datatype = demangle(typeid(Element).name());
@@ -3159,14 +3156,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Generates a joined evaluation key from the current secret share and
-   * a prior joined evaluation key
-   *
-   * @param originalPrivateKey secret key transformed from.
-   * @param newPrivateKey secret key transformed to.
-   * @param ek the prior joined evaluation key.
-   * @return the new joined evaluation key.
-   */
+     * @brief Generates a new joined evaluation key from a prior key and secret key shares (Threshold FHE).
+     *
+     * @param originalPrivateKey  Original private key.
+     * @param newPrivateKey       New private key.
+     * @param evalKey             Prior joined evaluation key.
+     * @return New joined evaluation key.
+     */
     EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> originalPrivateKey,
                                        const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const {
         if (!originalPrivateKey)
@@ -3180,15 +3176,14 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Generates joined automorphism keys from the current secret share and
-   * prior joined automorphism keys
-   *
-   * @param privateKey secret key share.
-   * @param evalKeyMap a map with prior joined automorphism keys.
-   * @param indexList a vector of automorphism indices.
-   * @param keyTag secret key tag
-   * @return a dictionary with new joined automorphism keys.
-   */
+     * @brief Generates joined automorphism keys from the current secret share and prior keys (Threshold FHE).
+     *
+     * @param privateKey   Secret key share.
+     * @param evalKeyMap   Prior joined automorphism keys.
+     * @param indexList    List of automorphism indices.
+     * @param keyTag       Secret key tag (optional).
+     * @return Map of updated joined automorphism keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::vector<uint32_t>& indexList, const std::string& keyTag = "") {
@@ -3203,14 +3198,14 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Generates joined rotation keys from the current secret key and prior joined rotation keys
-   *
-   * @param privateKey secret key share.
-   * @param evalKeyMap a map with prior joined rotation keys.
-   * @param indexList a vector of rotation indices.
-   * @param keyTag secret key tag
-   * @return a map with new joined rotation keys.
-   */
+     * @brief Generates joined rotation keys from the current secret share and prior keys (Threshold FHE).
+     *
+     * @param privateKey   Secret key share.
+     * @param evalKeyMap   Prior joined rotation keys.
+     * @param indexList    List of rotation indices.
+     * @param keyTag       Secret key tag (optional).
+     * @return Map of updated joined rotation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::vector<int32_t>& indexList, const std::string& keyTag = "") {
@@ -3225,14 +3220,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Generates joined summation evaluation keys from the current secret share and
-   * prior joined summation keys
-   *
-   * @param privateKey secret key share.
-   * @param evalKeyMap a dictionary with prior joined summation keys.
-   * @param keyTag secret key tag
-   * @return new joined summation keys.
-   */
+     * @brief Generates joined summation evaluation keys from the current secret share and prior keys (Threshold FHE).
+     *
+     * @param privateKey   Secret key share.
+     * @param evalKeyMap   Prior summation evaluation keys.
+     * @param keyTag       Secret key tag (optional).
+     * @return Map of updated summation evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::string& keyTag = "") {
@@ -3244,13 +3238,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Adds two prior evaluation keys
-   *
-   * @param evalKey1 first evaluation key.
-   * @param evalKey2 second evaluation key.
-   * @param keyTag secret key tag
-   * @return the new joined key.
-   */
+     * @brief Adds two evaluation keys to produce a new joined evaluation key (Threshold FHE).
+     *
+     * @param evalKey1  First evaluation key.
+     * @param evalKey2  Second evaluation key.
+     * @param keyTag    Secret key tag (optional).
+     * @return Joined evaluation key.
+     */
     EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                       const std::string& keyTag = "") {
         if (!evalKey1)
@@ -3262,14 +3256,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Generates a partial evaluation key for homomorphic multiplication based on
-   * the current secret share and an existing partial evaluation key
-   *
-   * @param privateKey current secret share.
-   * @param evalKey prior evaluation key.
-   * @param keyTag secret key tag
-   * @return the new joined key.
-   */
+     * @brief Generates a joined partial evaluation key for homomorphic multiplication from a partial key and current secret share (Threshold FHE).
+     *
+     * @param privateKey  Current secret share.
+     * @param evalKey     Prior partial evaluation key.
+     * @param keyTag      Secret key tag (optional).
+     * @return Joined evaluation key.
+     */
     EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
                                       const std::string& keyTag = "") {
         if (!privateKey)
@@ -3281,13 +3274,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Adds two prior evaluation key sets for summation
-   *
-   * @param evalKeyMap1 first summation key set.
-   * @param evalKeyMap2 second summation key set.
-   * @param keyTag secret key tag
-   * @return the new joined key set for summation.
-   */
+     * @brief Adds two summation evaluation key sets (Threshold FHE).
+     *
+     * @param evalKeyMap1  First summation key set.
+     * @param evalKeyMap2  Second summation key set.
+     * @param keyTag       Secret key tag (optional).
+     * @return Combined summation evaluation key set.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
         const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
         const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
@@ -3300,13 +3293,13 @@ public:
     }
 
     /**
-   * @brief Threshold FHE: Adds two prior evaluation key sets for automorphisms
-   *
-   * @param evalKeyMap1 first automorphism key set.
-   * @param evalKeyMap2 second automorphism key set.
-   * @param keyTag secret key tag
-   * @return the new joined key set for summation.
-   */
+     * @brief Adds two automorphism evaluation key sets (Threshold FHE).
+     *
+     * @param evalKeyMap1  First automorphism key set.
+     * @param evalKeyMap2  Second automorphism key set.
+     * @param keyTag       Secret key tag (optional).
+     * @return Combined automorphism evaluation key set.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
         const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
         const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
@@ -3319,12 +3312,12 @@ public:
     }
 
     /**
-     * @brief Threshold FHE: Adds two prior public keys
+     * @brief Adds two public keys to produce a combined public key (Threshold FHE).
      *
-     * @param publicKey1 first public key.
-     * @param publicKey2 second public key.
-     * @param keyTag secret key tag
-     * @return the new combined key.
+     * @param publicKey1  First public key.
+     * @param publicKey2  Second public key.
+     * @param keyTag      Secret key tag (optional).
+     * @return Combined public key.
      */
     PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
                                        const std::string& keyTag = "") {
@@ -3337,12 +3330,12 @@ public:
     }
 
     /**
-     * @brief Threshold FHE: Adds two  partial evaluation keys for multiplication
+     * @brief Adds two partial evaluation keys for multiplication (Threshold FHE).
      *
-     * @param evalKey1 first evaluation key.
-     * @param evalKey2 second evaluation key.
-     * @param keyTag secret key tag
-     * @return the new joined key.
+     * @param evalKey1  First evaluation key.
+     * @param evalKey2  Second evaluation key.
+     * @param keyTag    Secret key tag (optional).
+     * @return Combined evaluation key.
      */
     EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                           const std::string& keyTag = "") {
@@ -3355,15 +3348,15 @@ public:
     }
 
     /**
-     * @brief Does masked decryption as part of 2-party interactive bootstrapping.
+     * @brief Performs masked decryption for interactive bootstrapping (2-party protocol).
      *
-     * @param privateKey: secret key share
-     * @param ciphertext: input ciphertext
-     * @return: Resulting masked decryption
+     * @param privateKey   Secret key share.
+     * @param ciphertext   Input ciphertext.
+     * @return Masked decrypted ciphertext.
      *
-     * @note For the case of Server, it expects a ciphertext with both polynomials a and b.
-     * For the case os Client, it expects only the polnomial a (for the linear term).
-     * Under the hood, the decryption also includes the rounding operation.
+     * @note For Server, expects ciphertext with both polynomials a and b.
+     *       For Client, expects only the linear term a.
+     *       Includes rounding as part of decryption.
      */
     Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
                                        const ConstCiphertext<Element>& ciphertext) const {
@@ -3373,12 +3366,12 @@ public:
     }
 
     /**
-     * @brief Does public key encryption of Client's masked decryption as part of 2-party interactive bootstrapping,
-     * which increases the ciphertext modulus and enables future computations. This operation is done by the Client.
+     * @brief Encrypts Client's masked decryption for interactive bootstrapping.
+     *        Increases ciphertext modulus to allow further computation. Done by Client.
      *
-     * @param publicKey joint public key based on Threshold FHE
-     * @param ciphertext input ciphertext
-     * @return: Resulting encryption
+     * @param publicKey   Joined public key (Threshold FHE).
+     * @param ciphertext  Input ciphertext.
+     * @return Encrypted ciphertext.
      */
     Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
                                        const ConstCiphertext<Element>& ciphertext) const {
@@ -3388,13 +3381,13 @@ public:
     }
 
     /**
-    * @brief Adds up both masked decryptions (one encrypted with public key encryption), which is the last step of
-    * the 2-party interactive bootstrapping procedure.
-    *
-    * @param ciphertext1: encrypted masked decryption
-    * @param ciphertext2: unencrypted masked decryption
-    * @return: Refreshed ciphertext
-    */
+     * @brief Combines encrypted and unencrypted masked decryptions in 2-party interactive bootstrapping.
+     *        It is the last step in the boostrapping.
+     *
+     * @param ciphertext1  Encrypted masked decryption.
+     * @param ciphertext2  Unencrypted masked decryption.
+     * @return Refreshed ciphertext.
+     */
     Ciphertext<Element> IntBootAdd(const ConstCiphertext<Element>& ciphertext1,
                                    const ConstCiphertext<Element>& ciphertext2) const {
         ValidateCiphertext(ciphertext1);
@@ -3403,89 +3396,83 @@ public:
     }
 
     /**
-    * @brief Prepare a ciphertext for interactive bootstraping.
-    *
-    * @param ciphertext: Input Ciphertext
-    * @return: Resulting Ciphertext
-    *
-    * @note For the FIXEDMANUAL and FIXEDAUTO modes of CKKS: drops the the number of towers 2 and makes sure
-    * the scale is Delta (not a power of Delta). The input should have at least 2 towers.
-    *
-    * For the FLEXIBLEAUTO mode of CKKS: the input ciphertext should have at least 3 towers.
-    * One tower will be used to adjust the scale to level 0.
-    */
+     * @brief Prepares a ciphertext for interactive bootstrapping.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Adjusted ciphertext.
+     *
+     * @note CKKS FIXEDMANUAL/FIXEDAUTO: requires ≥ 2 towers; reduces to 2 towers and sets scale to Delta (not a power of Delta).
+     *       CKKS FLEXIBLEAUTO: requires ≥ 3 towers; adjusts scale to level 0.
+     */
     Ciphertext<Element> IntBootAdjustScale(const ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->IntBootAdjustScale(ciphertext);
     }
 
     /**
-    * @brief Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping.
-    *
-    * @param ciphertext: Input Ciphertext
-    * @return: Resulting Ciphertext
-    */
+     * @brief Prepares a ciphertext for multi-party interactive bootstrapping (Threshold FHE).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Adjusted ciphertext.
+     */
     Ciphertext<Element> IntMPBootAdjustScale(const ConstCiphertext<Element>& ciphertext) const;
 
     /**
-    * @brief Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
-    *
-    * @param publicKey: the scheme public key (you can also provide the lead party's public-key)
-    * @return: Resulting ring element
-    */
+     * @brief Generates a common random polynomial for Multi-Party Interactive Bootstrapping (Threshold FHE).
+     *
+     * @param publicKey  Scheme public key or lead party's public key.
+     * @return Random ring element as ciphertext.
+     */
     Ciphertext<Element> IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const;
 
     /**
-    * Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
-    * Each party calls this function as part of the protocol
-    *
-    * @param privateKey: secret key share for party i
-    * @param ciphertext: input ciphertext
-    * @param a: input common random polynomial
-    * @return: Resulting masked decryption
-    */
+     * @brief Performs masked decryption as part of Multi-Party Interactive Bootstrapping (Threshold FHE).
+     *        Each party calls this function as part of the protocol
+     *
+     * @param privateKey  Secret key share for the party.
+     * @param ciphertext  Input ciphertext.
+     * @param a           Common random polynomial.
+     * @return Vector of masked decryption shares.
+     */
     std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                       const ConstCiphertext<Element>& ciphertext,
                                                       const ConstCiphertext<Element>& a) const;
 
     /**
-    * Threshold FHE: Aggregates a vector of masked decryptions and re-encryotion shares,
-    * which is the second step of the interactive multiparty bootstrapping procedure.
-    *
-    * @param sharesPairVec: vector of pair of ciphertexts, each element of this vector contains
-    * (h_0i, h_1i) - the masked-decryption and encryption shares ofparty i
-    * @return: aggregated pair of shares ((h_0, h_1)
-    */
+     * @brief Aggregates masked decryption and re-encryption shares (Threshold FHE).
+     *        It is the second step of the interactive multiparty bootstrapping procedure.
+     *
+     * @param sharesPairVec  Vector of (h_0i, h_1i) shares from each party.
+     * @return Aggregated pair of shares (h_0, h_1).
+     */
     std::vector<Ciphertext<Element>> IntMPBootAdd(std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const;
 
     /**
-    *  Threshold FHE: Does public key encryption of lead party's masked decryption
-    * as part of interactive multi-party bootstrapping, which increases
-    * the ciphertext modulus and enables future computations.
-    * This operation is done by the lead party as the final step
-    * of interactive multi-party bootstrapping.
-    *
-    * @param publicKey: the lead party's public key
-    * @param sharesPair: aggregated decryption and re-encryption shares
-    * @param a: common random ring element
-    * @param ciphertext: input ciphertext
-    * @return: Resulting encryption
-    */
+     * @brief Encrypts the lead party's masked decryption result as the final step of Multi-Party Interactive Bootstrapping (Threshold FHE).
+     *        It increases the ciphertext modulus and enables future computations. This operation is done by the lead party as the final step
+     *        of interactive multi-party bootstrapping.
+     *
+     * @param publicKey   Lead party's public key.
+     * @param sharesPair  Aggregated masked decryption and re-encryption shares.
+     * @param a           Common random polynomial.
+     * @param ciphertext  Input ciphertext.
+     * @return Encrypted refreshed ciphertext.
+     */
     Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                          const std::vector<Ciphertext<Element>>& sharesPair,
                                          const ConstCiphertext<Element>& a,
                                          const ConstCiphertext<Element>& ciphertext) const;
 
     /**
-   * Threshold FHE with aborts: secret sharing of secret key for aborts
-   *
-   * @param &sk secret key to be shared.
-   * @param N total number of parties.
-   * @param threshold - threshold number of parties.
-   * @param index - index of the party invoking the function.
-   * @param shareType - Type of secret sharing to be used - additive or shamir sharing.
-   * @return the secret shares of the secret key sk.
-   */
+     * @brief Performs secret sharing of a secret key for Threshold FHE with aborts.
+     *
+     * @param sk         Secret key to be shared.
+     * @param N          Total number of parties.
+     * @param threshold  Threshold number of parties required to reconstruct the key.
+     * @param index      Index of the current party.
+     * @param shareType  Type of secret sharing ("additive" or "shamir").
+     * @return Map of secret key shares indexed by party ID.
+     */
     std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, uint32_t N, uint32_t threshold,
                                                     uint32_t index, const std::string& shareType) const {
         std::string datatype = demangle(typeid(Element).name());
@@ -3493,15 +3480,14 @@ public:
     }
 
     /**
-   * Threshold FHE with aborts: Recovers a secret key share from other existing secret shares.
-   *
-   * @param &sk secret recovered from the secret shares.
-   * @param &sk_shares secret shares.
-   * @param N total number of parties.
-   * @param threshold - threshold number of parties.
-   * @param shareType - Type of secret sharing to be used - additive or shamir sharing
-   * @return the recovered key from the secret shares assigned to sk.
-   */
+     * @brief Recovers a secret key share from existing shares for Threshold FHE with aborts.
+     *
+     * @param sk         Output: recovered secret key.
+     * @param sk_shares  Map of secret key shares indexed by party ID.
+     * @param N          Total number of parties.
+     * @param threshold  Threshold number of parties required to reconstruct the key.
+     * @param shareType  Type of secret sharing ("additive" or "shamir").
+     */
     void RecoverSharedKey(PrivateKey<Element>& sk, std::unordered_map<uint32_t, Element>& sk_shares, uint32_t N,
                           uint32_t threshold, const std::string& shareType) const;
 
@@ -3520,27 +3506,24 @@ public:
    */
 
     /**
-   * Sets all parameters for both linear  and FFT-like methods. Supported in CKKS only.
-   *
-   * @param levelBudget - vector of budgets for the amount of levels in encoding
-   * and decoding
-   * @param dim1 - vector of inner dimension in the baby-step giant-step routine
-   * for encoding and decoding
-   * @param slots - number of slots to be bootstrapped
-   * @param correctionFactor - value to internally rescale message by to improve precision of bootstrapping. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64
-   * @param precompute - flag specifying whether to precompute the plaintexts for encoding and decoding.
-   */
+     * @brief Sets all bootstrapping parameters for both linear and FFT-like methods. Supported only in CKKS.
+     *
+     * @param levelBudget      Vector of level budgets for encoding and decoding.
+     * @param dim1             Inner dimensions for baby-step giant-step routine.
+     * @param slots            Number of slots to be bootstrapped.
+     * @param correctionFactor Internal rescaling factor to improve precision (only for NATIVE_SIZE=64; 0 = default).
+     * @param precompute       Whether to precompute plaintexts for encoding/decoding.
+     */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
                             uint32_t slots = 0, uint32_t correctionFactor = 0, bool precompute = true) {
         GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute);
     }
     /**
-   * @brief Generates all automorphism keys for EvalBootstrap. Supported in CKKS only.
-   * EvalBootstrapKeyGen uses the baby-step/giant-step strategy.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on
-   */
+     * @brief Generates automorphism keys for EvalBootstrap. Uses baby-step/giant-step strategy. Supported only in CKKS.
+     *
+     * @param privateKey  Secret key.
+     * @param slots       Number of slots to support permutations on.
+     */
     void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
         ValidateKey(privateKey);
 
@@ -3549,22 +3532,21 @@ public:
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
     }
     /**
-   * @brief Computes the plaintexts for encoding and decoding for both linear and FFT-like methods. Supported in CKKS only.
-   *
-   * @param slots - number of slots to be bootstrapped
-   */
+     * @brief Precomputes plaintexts for encoding and decoding used in bootstrapping. Supported only in CKKS.
+     *
+     * @param slots  Number of slots to be bootstrapped.
+     */
     void EvalBootstrapPrecompute(uint32_t slots = 0) {
         GetScheme()->EvalBootstrapPrecompute(*this, slots);
     }
     /**
-   * @brief Defines the bootstrapping evaluation of ciphertext using either the FFT-like method or the linear method
-   *
-   * @param ciphertext the input ciphertext.
-   * @param numIterations number of iterations to run iterative bootstrapping (Meta-BTS). Increasing the iterations increases the precision of bootstrapping.
-   * @param precision precision of initial bootstrapping algorithm. This value is
-   * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and precision = 0 (unused).
-   * @return the refreshed ciphertext.
-   */
+     * @brief Evaluates bootstrapping on a ciphertext using FFT-like or linear method. Supported only in CKKS.
+     *
+     * @param ciphertext     Input ciphertext.
+     * @param numIterations  Number of Meta-BTS iterations to improve precision.
+     * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
+     * @return Refreshed ciphertext.
+     */
     Ciphertext<Element> EvalBootstrap(const ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
         return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
@@ -3591,12 +3573,13 @@ public:
    */
 
     /**
-   * Sets all parameters for switching from CKKS to FHEW
-   *
-   * @param params objects holding all necessary paramters
-   * @return the FHEW secret key
-   * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
-   */
+     * @brief Sets all parameters for switching from CKKS to FHEW.
+     *
+     * @param params  Parameters for CKKS-to-FHEW scheme switching.
+     * @return FHEW secret key.
+     *
+     * @note TODO: Add overload for pre-generated BinFHEContext.
+     */
     LWEPrivateKey EvalCKKStoFHEWSetup(SchSwchParams params) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -3605,12 +3588,11 @@ public:
     }
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the linear transform in the homomorphic decoding,
-   * conjugation keys, switching key from CKKS to FHEW
-   *
-   * @param keypair CKKS key pair
-   * @param lwesk FHEW secret key
-   */
+     * @brief Generates keys for CKKS-to-FHEW scheme switching: rotation keys, conjugation keys, and switching key.
+     *
+     * @param keyPair  CKKS key pair.
+     * @param lwesk    FHEW secret key.
+     */
     void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -3623,11 +3605,12 @@ public:
     }
 
     /**
-   * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalCKKStoFHEWSetup
-   * to allow the user to specify a scale that depends on the CKKS and FHEW cryptocontexts
-   *
-   * @param scale factor with which to scale the matrix in the linear transform
-   */
+     * @brief Performs precomputations for CKKS homomorphic decoding. Allows setting a custom scale factor. Given as
+     *        a separate method than EvalCKKStoFHEWSetup to allow the user to specify a scale that depends on
+     *        the CKKS and FHEW cryptocontexts
+     *
+     * @param scale  Scaling factor for the linear transform matrix.
+     */
     void EvalCKKStoFHEWPrecompute(double scale = 1.0) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -3635,12 +3618,12 @@ public:
     }
 
     /**
-   * Performs the scheme switching on a CKKS ciphertext
-   *
-   * @param ciphertext CKKS ciphertext to switch
-   * @param numCtxts number of coefficients to extract from the CKKS ciphertext. If it is zero, it defaults to number of slots
-   * @return a vector of LWE ciphertexts of length the numCtxts
-   */
+     * @brief Switches a CKKS ciphertext to a vector of FHEW ciphertexts.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param numCtxts    Number of coefficients to extract (defaults to number of slots if 0).
+     * @return Vector of LWE ciphertexts.
+     */
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(const ConstCiphertext<Element>& ciphertext,
                                                                    uint32_t numCtxts = 0) {
         VerifyCKKSScheme(__func__);
@@ -3651,13 +3634,12 @@ public:
     }
 
     /**
-   * Sets all parameters for switching from FHEW to CKKS. The CKKS cryptocontext to switch to is
-   * already generated.
-   *
-   * @param ccLWE the FHEW cryptocontext from which to switch
-   * @param numSlotsCKKS number of FHEW ciphertexts that becomes the number of slots in CKKS encryption
-   * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
-   */
+     * @brief Sets parameters for switching from FHEW to CKKS. Requires existing CKKS context.
+     *
+     * @param ccLWE         Source FHEW crypto context.
+     * @param numSlotsCKKS  Number of slots in resulting CKKS ciphertext.
+     * @param logQ          Ciphertext modulus size in FHEW (for high precision).
+     */
     void EvalFHEWtoCKKSSetup(const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS = 0,
                              uint32_t logQ = 25) {
         VerifyCKKSScheme(__func__);
@@ -3666,16 +3648,15 @@ public:
     }
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
-   * in the linear transform for the partial decryption, the switching key from FHEW to CKKS
-   *
-   * @param keypair CKKS key pair
-   * @param lwesk FHEW secret key
-   * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
-   * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
-   */
+     * @brief Generates keys for switching from FHEW to CKKS.
+     *
+     * @param keyPair   CKKS key pair.
+     * @param lwesk     FHEW secret key.
+     * @param numSlots  Number of slots for CKKS encryption.
+     * @param numCtxts  Number of LWE ciphertext values to encrypt.
+     * @param dim1      Baby-step parameter for linear transform.
+     * @param L         Target level for homomorphic decoding matrix.
+     */
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
                               uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0) {
         VerifyCKKSScheme(__func__);
@@ -3687,17 +3668,17 @@ public:
     }
 
     /**
-   * Performs the scheme switching on a vector of FHEW ciphertexts
-   *
-   * @param LWECiphertexts FHEW/LWE ciphertexts to switch
-   * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
-   * @param numSlots number of slots to use in the encoding in the new CKKS/RLWE ciphertext
-   * @param p plaintext modulus to use to decide postscaling, by default p = 4
-   * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
-   * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
-   * @param dim1 baby-step for the linear transform, necessary only for argmin
-   * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
-   */
+     * @brief Switches a vector of FHEW ciphertexts to a single CKKS ciphertext.
+     *
+     * @param LWECiphertexts  Input vector of FHEW ciphertexts.
+     * @param numCtxts        Number of values to encode.
+     * @param numSlots        Number of CKKS slots to use.
+     * @param p               Plaintext modulus (default = 4).
+     * @param pmin            Minimum expected plaintext value (default = 0.0).
+     * @param pmax            Maximum expected plaintext value (default = 2.0).
+     * @param dim1            Baby-step parameter (used in argmin).
+     * @return CKKS ciphertext encoding the input LWE messages.
+     */
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
                                        double pmax = 2.0, uint32_t dim1 = 0) const {
@@ -3707,8 +3688,10 @@ public:
     }
 
     /**
-   * Gets data from CKKS cryptocontext to set some parameters for scheme switching
-   */
+     * @brief Sets scheme switching parameters using the current CKKS crypto context.
+     *
+     * @param params  Scheme switching parameter object to populate.
+     */
     void SetParamsFromCKKSCryptocontext(SchSwchParams& params) {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(GetCryptoParameters());
         if (!cryptoParams) {
@@ -3724,12 +3707,13 @@ public:
     }
 
     /**
-   * Sets all parameters for switching from CKKS to FHEW and back
-   *
-   * @param params objects holding all necessary paramters
-   * @return the FHEW secret key
-   * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
-   */
+     * @brief Sets parameters for switching between CKKS and FHEW.
+     *
+     * @param params  Scheme switching parameter object.
+     * @return FHEW secret key.
+     *
+     * @note TODO: Add overload for pre-generated BinFHEContext.
+     */
     LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams& params) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -3738,12 +3722,11 @@ public:
     }
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the linear transform for the homomorphic encoding
-   * and partial decryption, the switching key from FHEW to CKKS
-   *
-   * @param keypair CKKS key pair
-   * @param lwesk FHEW secret key
-   */
+     * @brief Generates keys for switching between CKKS and FHEW.
+     *
+     * @param keyPair  CKKS key pair.
+     * @param lwesk    FHEW secret key.
+     */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -3754,14 +3737,13 @@ public:
     }
 
     /**
-   * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup
-   * to allow the user to specify a scale that depends on the CKKS and FHEW cryptocontexts
-   *
-   * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
-   * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
-   * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
-   * @param unit whether the input messages are normalized to the unit circle
-   */
+     * @brief Performs precomputations for scheme switching in CKKS-to-FHEW comparison.
+     *        Given as a separate method than EvalSchemeSwitchingSetup to allow the user to specify a scale.
+     *
+     * @param pLWE       Target plaintext modulus for FHEW ciphertexts.
+     * @param scaleSign  Scaling factor for CKKS ciphertexts before switching.
+     * @param unit       Indicates if input messages are normalized to unit circle.
+     */
     void EvalCompareSwitchPrecompute(uint32_t pLWE = 0, double scaleSign = 1.0, bool unit = false) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -3769,19 +3751,17 @@ public:
     }
 
     /**
-   * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function
-   * over the resulting FHEW ciphertexts, then performs the scheme switching back to a CKKS ciphertext
-   *
-   * @param ciphertext1, ciphertext2 CKKS ciphertexts of messages that need to be compared
-   * @param numCtxts number of coefficients to extract from the CKKS ciphertext
-   * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
-   * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
-   * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
-   * pLWE and scaleSign are given here only if the homomorphic decoding matrix is not scaled with the desired values
-   * @param unit whether the input messages are normalized to the unit circle
-   * @return a CKKS ciphertext encrypting in its slots the sign of  messages in the LWE ciphertexts
-   */
+     * @brief Compares two CKKS ciphertexts using FHEW-based scheme switching and returns CKKS result.
+     *
+     * @param ciphertext1  First input CKKS ciphertext.
+     * @param ciphertext2  Second input CKKS ciphertext.
+     * @param numCtxts     Number of coefficients to extract.
+     * @param numSlots     Number of slots to encode in the result.
+     * @param pLWE         Target plaintext modulus for FHEW ciphertexts.
+     * @param scaleSign    Scaling factor for CKKS ciphertexts before switching.
+     * @param unit         Indicates if input messages are normalized to unit circle.
+     * @return CKKS ciphertext encoding sign comparison result.
+     */
     Ciphertext<Element> EvalCompareSchemeSwitching(const ConstCiphertext<Element>& ciphertext1,
                                                    const ConstCiphertext<Element>& ciphertext2, uint32_t numCtxts = 0,
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
@@ -3796,21 +3776,19 @@ public:
     }
 
     /**
-   * Computes the minimum and argument of the first numValues packed in a CKKS ciphertext via repeated
-   * scheme switchings to FHEW and back.
-   *
-   * @param ciphertext CKKS ciphertexts of values that need to be compared
-   * @param publicKey public key of the CKKS cryptocontext
-   * @param numValues number of values to extract from the CKKS ciphertext. We always assume for the moment numValues is a power of two
-   * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
-   * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
-   * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
-   * pLWE and scaleSign are given here only if the homomorphic decoding matrix is not scaled with the desired values
-   * @return a vector of two CKKS ciphertexts where the first encrypts the minimum value and the second encrypts the
-   * index (in the representation specified by oneHot). The ciphertexts have junk after the first slot in the first ciphertext
-   * and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
-   */
+     * @brief Computes minimum and index of the first packed values using scheme switching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of values to compare (we assume that numValues is a power of two).
+     * @param numSlots    Number of output slots.
+     * @param pLWE        Target plaintext modulus for FHEW.
+     * @param scaleSign   Scaling factor before switching to FHEW. The resulting FHEW ciphertexts will encrypt values modulo pLWE,
+     *                    so scaleSign should account for this pLWE and is given here only if the homomorphic decoding matrix is
+     *                    not scaled with the desired values
+     * @return A vector of two CKKS ciphertexts: [min, argmin]. The ciphertexts have junk after the first slot in the first ciphertext
+     *         and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
+     */
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(const ConstCiphertext<Element>& ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -3823,8 +3801,16 @@ public:
     }
 
     /**
-     * Same as EvalMinSchemeSwitching but performs more operations in FHEW than in CKKS. Slightly better precision but slower.
-    */
+     * @brief Computes minimum and index using more FHEW operations than CKKS with higher precision, but slower than EvalMinSchemeSwitching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of packed values to compare.
+     * @param numSlots    Number of slots in the output ciphertexts.
+     * @param pLWE        Target plaintext modulus for FHEW ciphertexts.
+     * @param scaleSign   Scaling factor before switching to FHEW.
+     * @return A vector with two CKKS ciphertexts: [min, argmin].
+     */
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(const ConstCiphertext<Element>& ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -3837,21 +3823,17 @@ public:
     }
 
     /**
-   * Computes the maximum and argument of the first numValues packed in a CKKS ciphertext via repeated
-   * scheme switchings to FHEW and back.
-   *
-   * @param ciphertext CKKS ciphertexts of values that need to be compared
-   * @param publicKey public key of the CKKS cryptocontext
-   * @param numValues number of values to extract from the CKKS ciphertext. We always assume for the moment numValues is a power of two
-   * @param numSlots number of slots to encode the new CKKS ciphertext with
-   * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
-   * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
-   * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
-   * pLWE and scaleSign are given here only if the homomorphic decoding matrix is not scaled with the desired values
-   * @return a vector of two CKKS ciphertexts where the first encrypts the maximum value and the second encrypts the
-   * index (in the representation specified by oneHot). The ciphertexts have junk after the first slot in the first ciphertext
-   * and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
-   */
+     * @brief Computes maximum and index from the first packed values using scheme switching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of values to compare (we assume that numValues is a power of two).
+     * @param numSlots    Number of output slots.
+     * @param pLWE        Target plaintext modulus for FHEW.
+     * @param scaleSign   Scaling factor before switching to FHEW.
+     * @return A vector of two CKKS ciphertexts: [max, argmax]. The ciphertexts have junk after the first slot in the first ciphertext
+     *         and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
+     */
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(const ConstCiphertext<Element>& ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -3864,8 +3846,16 @@ public:
     }
 
     /**
-     * Same as EvalMaxSchemeSwitching but performs more operations in FHEW than in CKKS. Slightly better precision but slower.
-    */
+     * @brief Computes max and index via scheme switching, with more FHEW operations for better precision than EvalMaxSchemeSwitching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of values to compare.
+     * @param numSlots    Number of output slots.
+     * @param pLWE        Target plaintext modulus for FHEW.
+     * @param scaleSign   Scaling factor before switching to FHEW.
+     * @return A vector of two CKKS ciphertexts: [max, argmax].
+     */
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(const ConstCiphertext<Element>& ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -3877,36 +3867,48 @@ public:
         return GetScheme()->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, pLWE, scaleSign);
     }
 
-    /* Getter and setter for the binFHE cryptocontext used in scheme switching
-    */
+    /**
+     * @brief Returns the BinFHE context used for scheme switching.
+     * @return BinFHE context.
+     */
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() {
         return GetScheme()->GetBinCCForSchemeSwitch();
     }
+    /**
+     * @brief Sets the BinFHE context to be used for scheme switching.
+     * @param ccLWE BinFHE context.
+     */
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
         GetScheme()->SetBinCCForSchemeSwitch(ccLWE);
     }
-    /* Getter and setter for the switching key between FHEW and CKKS
-    */
+    /**
+     * @brief Gets the FHEW-to-CKKS scheme switching key ciphertext.
+     * @return Switching key ciphertext.
+     */
     Ciphertext<Element> GetSwkFC() {
         return GetScheme()->GetSwkFC();
     }
+    /**
+     * @brief Sets the FHEW-to-CKKS scheme switching key ciphertext.
+     * @param FHEWtoCKKSswk Switching key ciphertext.
+     */
     void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
         GetScheme()->SetSwkFC(FHEWtoCKKSswk);
     }
 
     /**
-     * @brief GetExistingEvalAutomorphismKeyIndices gets indices for all existing automorphism keys
-     * @param keyTag secret key tag
-     * @return vector with all indices in the map. if nothing is found for the given keyTag, then the vector is empty
-     **/
+     * @brief Returns automorphism indices for all existing evaluation keys.
+     * @param keyTag      Secret key tag.
+     * @return Set of indices found for the given key tag. Empty if none exist.
+     */
     static std::set<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
 
     /**
-     * @brief GetUniqueValues compares 2 sets to generate a set with unique values from the 2nd set
-     * @param oldValues set of integers to compare against (passed by value)
-     * @param newValues set of integers to find unique values from  (passed by value)
-     * @return set with the unique values from newValues
-     **/
+     * @brief Compares two sets and returns unique values from the second set.
+     * @param oldValues   First set to compare against.
+     * @param newValues   Second set to extract unique values from.
+     * @return Set of values present in newValues but not in oldValues.
+     */
     static std::set<uint32_t> GetUniqueValues(const std::set<uint32_t>& oldValues, const std::set<uint32_t>& newValues);
 
     template <class Archive>
