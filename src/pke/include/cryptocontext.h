@@ -83,7 +83,7 @@ namespace lbcrypto {
  * All OpenFHE methods are accessed through CryptoContextImpl methods. Guards are implemented to make certain that
  * only valid objects that have been created in the context are used
  *
- * Contexts are created using GenCryptoContext(), and can be serialized and recovered from a serialization
+ * Contexts are created using GenCryptoContext(), and can be serialized and recovered from serialization
  */
 template <typename Element>
 class CryptoContextImpl : public Serializable {
@@ -356,8 +356,7 @@ protected:
             OPENFHE_THROW(errorMsg);
         }
         if (Mismatched(ciphertext->GetCryptoContext())) {
-            std::string errorMsg(std::string("Ciphertext was not generated with the same crypto context") +
-                                 CALLER_INFO);
+            std::string errorMsg(std::string("Ciphertext was not generated with the same crypto context") + CALLER_INFO);
             OPENFHE_THROW(errorMsg);
         }
     }
@@ -391,9 +390,8 @@ protected:
         double scFact = 0;
         if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
             scFact = cryptoParams->GetScalingFactorRealBig(level);
-            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
-            // in our encoding function, so we set it to 1 to make sure it
-            // has no effect on the encoding.
+            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg in our encoding function,
+            // so we set it to 1 to make sure it has no effect on the encoding.
             noiseScaleDeg = 1;
         }
         else {
@@ -1571,6 +1569,7 @@ public:
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (scalar == 0.)
             return;
+
         if (scalar > 0.) {
             GetScheme()->EvalAddInPlace(ciphertext, scalar);
         }
@@ -1620,6 +1619,7 @@ public:
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (scalar == std::complex<double>(0.0, 0.0))
             return;
+    
         GetScheme()->EvalAddInPlace(ciphertext, scalar);
     }
 
@@ -1762,12 +1762,10 @@ public:
      * @param scalar      Real number to subtract.
      */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
-        if (scalar >= 0.) {
+        if (scalar >= 0.)
             GetScheme()->EvalSubInPlace(ciphertext, scalar);
-        }
-        else {
+        else
             GetScheme()->EvalAddInPlace(ciphertext, -scalar);
-        }
     }
 
     /**
@@ -1812,6 +1810,7 @@ public:
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (scalar == std::complex<double>(0.0, 0.0))
             return;
+
         GetScheme()->EvalAddInPlace(ciphertext, -scalar);
     }
 
@@ -1881,9 +1880,8 @@ public:
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
-        }
 
         return GetScheme()->EvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
@@ -1899,9 +1897,8 @@ public:
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
-        }
 
         return GetScheme()->EvalMultMutable(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
@@ -1916,9 +1913,8 @@ public:
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutableInPlace");
-        }
 
         GetScheme()->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
@@ -1933,9 +1929,8 @@ public:
         ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquare");
-        }
 
         return GetScheme()->EvalSquare(ciphertext, evalKeyVec[0]);
     }
@@ -1950,9 +1945,8 @@ public:
         ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquareMutable");
-        }
 
         return GetScheme()->EvalSquareMutable(ciphertext, evalKeyVec[0]);
     }
@@ -1966,9 +1960,8 @@ public:
         ValidateCiphertext(ciphertext);
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquareInPlace");
-        }
 
         GetScheme()->EvalSquareInPlace(ciphertext, evalKeyVec[0]);
     }
@@ -2016,9 +2009,8 @@ public:
             OPENFHE_THROW("Input ciphertext is nullptr");
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2)) {
+        if (evalKeyVec.size() < (ciphertext->NumberCiphertextElements() - 2))
             OPENFHE_THROW("Insufficient value was used for maxRelinSkDeg to generate keys for RelinearizeInPlace");
-        }
 
         GetScheme()->RelinearizeInPlace(ciphertext, evalKeyVec);
     }
@@ -2040,9 +2032,7 @@ public:
 
         if (evalKeyVec.size() <
             (ciphertext1->NumberCiphertextElements() + ciphertext2->NumberCiphertextElements() - 3)) {
-            OPENFHE_THROW(
-                "Insufficient value was used for maxRelinSkDeg to generate "
-                "keys for EvalMultAndRelinearize");
+            OPENFHE_THROW("Insufficient value was used for maxRelinSkDeg to generate keys for EvalMultAndRelinearize");
         }
 
         return GetScheme()->EvalMultAndRelinearize(ciphertext1, ciphertext2, evalKeyVec);
@@ -2132,9 +2122,9 @@ public:
      * @return Resulting ciphertext.
      */
     Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, double scalar) const {
-        if (!ciphertext) {
+        if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        }
+
         return GetScheme()->EvalMult(ciphertext, scalar);
     }
 
@@ -2156,9 +2146,8 @@ public:
      * @param scalar      Real number multiplicand.
      */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
-        if (!ciphertext) {
+        if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        }
 
         GetScheme()->EvalMultInPlace(ciphertext, scalar);
     }
@@ -2181,9 +2170,9 @@ public:
      * @return Resulting ciphertext.
      */
     Ciphertext<Element> EvalMult(const ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
-        if (!ciphertext) {
+        if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        }
+
         return GetScheme()->EvalMult(ciphertext, scalar);
     }
 
@@ -2205,9 +2194,8 @@ public:
      * @param scalar      Complex number multiplicand.
      */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
-        if (!ciphertext) {
+        if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        }
 
         GetScheme()->EvalMultInPlace(ciphertext, scalar);
     }
@@ -2274,20 +2262,14 @@ public:
                                          CALLER_INFO_ARGS_HDR) const {
         ValidateCiphertext(ciphertext);
 
-        if (evalKeyMap.empty()) {
-            std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
-            OPENFHE_THROW(errorMsg);
-        }
+        if (evalKeyMap.empty())
+            OPENFHE_THROW(std::string("Empty input key map") + CALLER_INFO);
 
         auto key = evalKeyMap.find(i);
-
-        if (key == evalKeyMap.end()) {
-            std::string errorMsg(std::string("Could not find an EvalKey for index ") + std::to_string(i) + CALLER_INFO);
-            OPENFHE_THROW(errorMsg);
-        }
+        if (key == evalKeyMap.end())
+            OPENFHE_THROW(std::string("Could not find an EvalKey for index ") + std::to_string(i) + CALLER_INFO);
 
         auto evalKey = key->second;
-
         ValidateKey(evalKey);
 
         return GetScheme()->EvalAutomorphism(ciphertext, i, evalKeyMap);
@@ -2506,9 +2488,8 @@ public:
         ValidateCiphertext(ciphertext2);
 
         auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size()) {
+        if (!evalKeyVec.size())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
-        }
 
         return GetScheme()->ComposedEvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
@@ -2656,18 +2637,16 @@ public:
      */
     Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
         // input parameter check
-        if (!ciphertextVec.size()) {
+        if (!ciphertextVec.size())
             OPENFHE_THROW("Empty input ciphertext vector");
-        }
 
         if (ciphertextVec.size() == 1) {
             return ciphertextVec[0];
         }
 
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
-        if (evalKeyVec.size() < (ciphertextVec[0]->NumberCiphertextElements() - 2)) {
+        if (evalKeyVec.size() < (ciphertextVec[0]->NumberCiphertextElements() - 2))
             OPENFHE_THROW("Insufficient value was used for maxRelinSkDeg to generate keys");
-        }
 
         return GetScheme()->EvalMultMany(ciphertextVec, evalKeyVec);
     }
@@ -3085,6 +3064,7 @@ public:
     KeyPair<Element> MultipartyKeyGen(const std::vector<PrivateKey<Element>>& privateKeyVec) {
         if (!privateKeyVec.size())
             OPENFHE_THROW("Input private key vector is empty");
+
         return GetScheme()->MultipartyKeyGen(GetContextForPointer(this), privateKeyVec, false);
     }
 
@@ -3099,6 +3079,7 @@ public:
     KeyPair<Element> MultipartyKeyGen(const PublicKey<Element> publicKey, bool makeSparse = false, bool fresh = false) {
         if (!publicKey)
             OPENFHE_THROW("Input public key is empty");
+
         return GetScheme()->MultipartyKeyGen(GetContextForPointer(this), publicKey, makeSparse, fresh);
     }
 
@@ -3152,7 +3133,7 @@ public:
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& partialCiphertextVec,
                                           Plaintext* plaintext) const {
         std::string datatype = demangle(typeid(Element).name());
-        OPENFHE_THROW(std::string(__func__) + " is not implemented for " + datatype);
+        OPENFHE_THROW("Not implemented for " + datatype);
     }
 
     /**
@@ -3476,7 +3457,7 @@ public:
     std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, uint32_t N, uint32_t threshold,
                                                     uint32_t index, const std::string& shareType) const {
         std::string datatype = demangle(typeid(Element).name());
-        OPENFHE_THROW(std::string(__func__) + " is not implemented for " + datatype);
+        OPENFHE_THROW("Not implemented for " + datatype);
     }
 
     /**
@@ -3597,9 +3578,9 @@ public:
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
         ValidateKey(keyPair.secretKey);
-        if (!lwesk) {
+        if (!lwesk)
             OPENFHE_THROW("FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
-        }
+
         auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk);
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, keyPair.secretKey->GetKeyTag());
     }
@@ -3630,6 +3611,7 @@ public:
         VerifyCKKSRealDataType(__func__);
         if (ciphertext == nullptr)
             OPENFHE_THROW("ciphertext passed to EvalCKKStoFHEW is empty");
+
         return GetScheme()->EvalCKKStoFHEW(ciphertext, numCtxts);
     }
 
