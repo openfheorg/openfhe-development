@@ -93,8 +93,8 @@ void CryptoContextImpl<Element>::ClearEvalMultKeys() {
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& id) {
-    auto kd = CryptoContextImpl<Element>::s_evalMultKeyMap.find(id);
+void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& keyTag) {
+    auto kd = CryptoContextImpl<Element>::s_evalMultKeyMap.find(keyTag);
     if (kd != CryptoContextImpl<Element>::s_evalMultKeyMap.end())
         CryptoContextImpl<Element>::s_evalMultKeyMap.erase(kd);
 }
@@ -170,8 +170,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>
 }
 
 template <typename Element>
-const std::map<uint32_t, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
-    return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(keyID);
+const std::map<uint32_t, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyTag) {
+    return CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(keyTag);
 }
 
 template <typename Element>
@@ -180,10 +180,10 @@ std::map<std::string, std::vector<EvalKey<Element>>>& CryptoContextImpl<Element>
 }
 
 template <typename Element>
-const std::vector<EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyID) {
-    auto ekv = CryptoContextImpl<Element>::s_evalMultKeyMap.find(keyID);
+const std::vector<EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyTag) {
+    auto ekv = CryptoContextImpl<Element>::s_evalMultKeyMap.find(keyTag);
     if (ekv == CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
-        std::string errMsg(std::string("Call EvalMultKeyGen() to have EvalMultKey available for ID [") + keyID + "].");
+        std::string errMsg(std::string("Call EvalMultKeyGen() to have EvalMultKey available for ID [") + keyTag + "].");
         OPENFHE_THROW(errMsg);
     }
     return ekv->second;
@@ -197,29 +197,29 @@ CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
-    const std::string& keyID) {
-    auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyID);
+    const std::string& keyTag) {
+    auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
     if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
-        OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyID + "].");
+        OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyTag + "].");
     }
     return ekv->second;
 }
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(
-    const std::string& keyID, const std::vector<uint32_t>& indexList) {
+    const std::string& keyTag, const std::vector<uint32_t>& indexList) {
     if (!indexList.size())
         OPENFHE_THROW("indexList is empty");
 
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> keyMap =
-        CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyID);
+        CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyTag);
 
     // create a return map if specific indices are provided
     std::map<uint32_t, EvalKey<Element>> retMap;
     for (uint32_t indx : indexList) {
         const auto it = keyMap->find(indx);
         if (it == keyMap->end()) {
-            OPENFHE_THROW("Key is not generated for index [" + std::to_string(indx) + "] and keyID [" + keyID + "]");
+            OPENFHE_THROW("Key is not generated for index [" + std::to_string(indx) + "] and keyTag [" + keyTag + "]");
         }
         retMap.emplace(indx, it->second);
     }
@@ -239,11 +239,11 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys() {
 
 /**
  * ClearEvalMultKeys - flush EvalMultKey cache for a given id
- * @param id
+ * @param keyTag
  */
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& id) {
-    CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(id);
+void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& keyTag) {
+    CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(keyTag);
 }
 
 /**
@@ -279,11 +279,11 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
 
 /**
  * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given id
- * @param id
+ * @param keyTag
  */
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id) {
-    auto kd = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(id);
+void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& keyTag) {
+    auto kd = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
     if (kd != CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
         CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.erase(kd);
 }
@@ -310,7 +310,7 @@ template <typename Element>
 std::set<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag) {
     auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
     if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
-        // there is no keys for the given id, return empty vector
+        // there is no keys for the given keyTag, return empty vector
         return std::set<uint32_t>();
 
     // get all inidices from the existing automorphism key map
