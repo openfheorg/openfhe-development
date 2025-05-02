@@ -202,4 +202,6 @@ The set method is `SetPRENumHops`.
 
 **COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient).  The set method is `SetInteractiveBootCompressionLevel`.
 
+**uint32_t compositeDegree (CKKS only)** - specifies how many words should be used to represent the CKKS scaling factor in the CKKS composite scaling mode. The set method is `SetCompositeDegree`.
+
 **uint32_t registerWordSize (CKKS only)** - register word size for the CKKS composite scaling mode (should match the hardware architecture on which the FHE computation will be run). The set method is `SetRegisterWordSize`.
