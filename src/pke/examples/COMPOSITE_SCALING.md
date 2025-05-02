@@ -28,14 +28,12 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - Current implementation supports Meta-BTS (or multiple-iteration) CKKS bootstrapping.
 
-## Current Limitations
+## Current Constraints
 
-- This current CKKS composite scaling implementation only supports single-key CKKS. In other words, multiparty (threshold) CKKS and schem switching are supported yet.
+- This current CKKS composite scaling implementation only supports single-key CKKS. In other words, multiparty (threshold) CKKS and scheme switching are not supported yet.
 
 - By design when operating on composite scaling mode (i.e., COMPOSITESCALINGAUTO), the target hardware platform is assumed to have fixed word size smaller than 64 bits. However, in general, it still works under the scenario where scaling factors greater than 64 bits running on hardware architectures having 64-bit register word size.
 
 - Regardless of the target architecture word size, the OpenFHE library needs to be compiled using NATIVE_SIZE=64 compilation flag. In other words, NATIVE_SZIE=32 is not supported.
 
 - COMPOSITESCALING<AUTO/MANUAL> scaling technique mode only works with the CKKS scheme.
-
-- The secret key distribution needs to be set to UNIFORM_TERNARY.
