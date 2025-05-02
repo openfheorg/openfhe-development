@@ -46,6 +46,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <memory>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 namespace lbcrypto {
 
@@ -143,7 +144,7 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::c
 
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
         if (ciphertext->GetNoiseScaleDeg() == 2) {
-            ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+            ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
         }
     }
 
