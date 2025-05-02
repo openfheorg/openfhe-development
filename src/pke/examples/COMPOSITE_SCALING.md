@@ -13,14 +13,16 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - By setting the scaling technique to COMPOSITESCALINGMANUAL: This mode is meant for developers/FHE experts that wish to experiment with untested/unlikely combinations of composite scaling parameters that may only be functional under special circumstances. In those special cases, the program may be more sensitive to runtime errors due to insufficient availability of prime moduli for given certain values for the tuple <register word size, multiplicative depth, ring size>.
 
+- The register word size needs to be set using `SetRegisterWordSize`, e.g., to 32 or 64. This limits the maximum size of the (small) moduli used to represent the scaling factor in composite-scaling CKKS.
+
 ## Composite Modulus Chain Generation
 
-- All prime moduli are NTT-friendly (tested up to 2^16).
+- All prime moduli are NTT-friendly (tested up to $2^{16}$).
 - All primes in the modulus chain are distinct from each other.
 
-- `q_i = p_1 x ... x p_ d ~ 2 ^\delta`, where `\delta` is the scaling factor, `q_i` is the composite coefficient modulus comprised of the prime moduli `{p_1, ..., p_d}`, and `d` is the composite degree that characterizes the composite scaling approach.
+- $q_i = p_1 \times \cdots \times p_d \approx 2^\Delta$, where $\Delta$ is the scaling factor ($\log \Delta$ is the `scalingModSize` in OpenFHE), $q_i$ is the composite coefficient modulus comprised of the prime moduli ${p_1, \cdots, p_d}$, and $d$ is the composite degree that characterizes the composite scaling approach.
 
-- `p_i` is chosen to be very close `2^( (scalingModSize) / (composite degree) )`
+- $p_i$ is chosen to be very close $2^{\log \Delta / d }$.
 
 ## Composite Scaling Bootstrapping
 
@@ -32,8 +34,15 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - This current CKKS composite scaling implementation only supports single-key CKKS. In other words, multiparty (threshold) CKKS and scheme switching are not supported yet.
 
-- By design when operating on composite scaling mode (i.e., COMPOSITESCALINGAUTO), the target hardware platform is assumed to have fixed word size smaller than 64 bits. However, in general, it still works under the scenario where scaling factors greater than 64 bits running on hardware architectures having 64-bit register word size.
+- By design, when operating on composite scaling mode (i.e., COMPOSITESCALINGAUTO), the target hardware platform is assumed to have a fixed word size smaller than 64 bits. However, it still works when CKKS scaling factors are greater than 64 bits, even on hardware architectures with 64-bit register word sizes. The latter is a more efficient alternative to using NATIVE_SIZE=128 in scenarios when $IND-CPA^D$ security or high precision needs to be achieved.
 
-- Regardless of the target architecture word size, the OpenFHE library needs to be compiled using NATIVE_SIZE=64 compilation flag. In other words, NATIVE_SIZE=32 is not supported.
+- Regardless of the target architecture word size, the OpenFHE library needs to be compiled using the NATIVE_SIZE=64 compilation flag. In other words, NATIVE_SIZE=32 is not supported.
 
 - COMPOSITESCALING<AUTO/MANUAL> scaling technique mode only works with the CKKS scheme.
+
+## Examples
+
+- [iterative-ckks-bootstrapping-composite-scaling.cpp](iterative-ckks-bootstrapping-composite-scaling.cpp): Double-precision CKKS bootstrapping in the CKKS composite scaling mode.
+- [polynomial-evaluation-high-precision-composite-scaling.cpp](polynomial-evaluation-high-precision-composite-scaling.cpp): High-precision (80-bit scaling factor) power series evaluation in the CKKS composite scaling mode.
+- [simple-ckks-bootstrapping-composite-scaling.cpp](simple-ckks-bootstrapping-composite-scaling.cpp): Single-precision CKKS bootstrapping in the CKKS composite scaling mode.
+- [simple-real-numbers-composite-scaling.cpp](simple-real-numbers-composite-scaling.cpp): Basic CKKS arithmetic in the CKKS composite scaling mode.

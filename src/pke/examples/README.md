@@ -28,24 +28,28 @@ File Listing
 - [depth-bgvrns.cpp](depth-bgvrns.cpp): demonstrates use of the BGVrns scheme for basic homomorphic encryption
 - [function-evaluation.cpp](function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
 - [inner-product.cpp](inner-product.cpp): demonstrates the evaluation of inner product using CKKS and BFV
-- [interactive-bootstrapping.cpp](interactive-bootstrapping.cpp): Two examples of $2$-party interactive bootstrapping (the second one is with Chebyshev interpolation)
+- [interactive-bootstrapping.cpp](interactive-bootstrapping.cpp): two examples of $2$-party interactive bootstrapping (the second one is with Chebyshev interpolation)
 - [iterative-ckks-bootstrapping.cpp](iterative-ckks-bootstrapping.cpp): demonstrates how to run multiple iterations of CKKS bootstrapping to improve precision
+- [iterative-ckks-bootstrapping-composite-scaling.cpp](iterative-ckks-bootstrapping-composite-scaling.cpp): double-precision CKKS bootstrapping in the CKKS composite scaling mode
 - [linearwsum-evaluation.cpp](linearwsum-evaluation.cpp): demonstrates the evaluation of a linear weighted sum using CKKS
 - [polynomial-evaluation.cpp](polynomial-evaluation.cpp): demonstrates an evaluation of a polynomial (power series) using CKKS
+- [polynomial-evaluation-high-precision-composite-scaling.cpp](polynomial-evaluation-high-precision-composite-scaling.cpp): high-precision (80-bit scaling factor) power series evaluation in the CKKS composite scaling mode
 - [pre-buffer.cpp](pre-buffer.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
 - [pre-hra-secure.cpp](pre-hra-secure.cpp): shows examples of HRA-secure PRE based on BGV
 - [rotation.cpp](rotation.cpp): demonstrates use of EvalRotate for different schemes
 - [scheme-switching.cpp](scheme-switching.cpp): demonstrates several use cases for switching between CKKS and FHEW ciphertexts
 - [scheme-switching-serial.cpp](scheme-switching-serial.cpp): provides an example of CKKS <-> FHEW scheme switching with serialization
 - [simple-ckks-bootstrapping.cpp](simple-ckks-bootstrapping.cpp): simple example showing CKKS bootstrapping for a ciphertext with full packing
+- [simple-ckks-bootstrapping-composite-scaling.cpp](simple-ckks-bootstrapping-composite-scaling.cpp): single-precision CKKS bootstrapping in the CKKS composite scaling mode
 - [simple-integers.cpp](simple-integers.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
 - [simple-integers-bgvrns.cpp](simple-integers-bgvrns.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BGV
 - [simple-integers-serial.cpp](simple-integers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
 - [simple-integers-serial-bgvrns.cpp](simple-integers-serial-bgvrns.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BGV
 - [simple-real-numbers.cpp](simple-real-numbers): simple example showing homomorphic additions, multiplications, and rotations for vectors of real numbers using CKKS
+- [simple-real-numbers-composite-scaling.cpp](simple-real-numbers-composite-scaling.cpp): basic CKKS arithmetic in the CKKS composite scaling mode
 - [simple-real-numbers-serial.cpp](simple-real-numbers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using CKKS
-- [tckks-interactive-mp-bootstrapping.cpp](tckks-interactive-mp-bootstrapping.cpp): An example of $n$-party interactive bootstrapping
-- [tckks-interactive-mp-bootstrapping-Chebyshev.cpp](tckks-interactive-mp-bootstrapping-Chebyshev.cpp): An example of $n$-party interactive bootstrapping with Chebyshev interpolation
+- [tckks-interactive-mp-bootstrapping.cpp](tckks-interactive-mp-bootstrapping.cpp): an example of $n$-party interactive bootstrapping
+- [tckks-interactive-mp-bootstrapping-Chebyshev.cpp](tckks-interactive-mp-bootstrapping-Chebyshev.cpp): an example of $n$-party interactive bootstrapping with Chebyshev interpolation
 - [threshold-fhe.cpp](threshold-fhe.cpp): shows several examples of threshold FHE in BGV, BFV, and CKKS
 - [threshold-fhe-5p.cpp](threshold-fhe-5p.cpp): shows example of threshold FHE with 5 parties in BFV
 
@@ -197,3 +201,5 @@ The set method is `SetFirstModSize`.
 The set method is `SetPRENumHops`.
 
 **COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient).  The set method is `SetInteractiveBootCompressionLevel`.
+
+**uint32_t registerWordSize (CKKS only)** - register word size for the CKKS composite scaling mode (should match the hardware architecture on which the FHE computation will be run). The set method is `SetRegisterWordSize`.
