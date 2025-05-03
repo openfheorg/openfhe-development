@@ -81,13 +81,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
         //                  prime size (= scalingModSize / compositeDegree), registerSize, and numPrimes
         //                  e.g.1, assertion: prime size < registerSize (we may need at least 1-2 bit gap)
         //                  e.g.2, prime size > ??? if numPrimes > ???
-        if (compositeDegree > 2 && scalingModSize < 55) {
+        if (compositeDegree > 2 && scalingModSize < 60) {
             std::string errorMsg = "COMPOSITESCALING Warning:";
             errorMsg +=
-                "There will not be enough prime moduli for composite degree > 2 and scaling factor < 55 -- prime moduli too small.";
+                "There will not be enough prime moduli for composite degree > 2 and scaling factor < 60 -- prime moduli too small.";
             errorMsg +=
-                "Prime moduli size must generally be greater than 20, especially for larger multiplicative depth.";
-            errorMsg += "Try increasing the scaling factor (scalingModSize).";
+                "Prime moduli size must generally be greater than 19, especially for larger multiplicative depth.";
+            errorMsg += "Consider increasing the scaling factor (scalingModSize) or the register word size.";
             errorMsg += "Also, feel free to use COMPOSITESCALINGMANUAL at your own risk.";
             OPENFHE_THROW(errorMsg);
         }
@@ -99,8 +99,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
             OPENFHE_THROW("Composite degree must be greater than or equal to 1.");
         }
 
-        if (registerWordSize < 24 && scalTech == COMPOSITESCALINGAUTO) {
-            std::string errorMsg = "Register word size must be greater than or equal to 24 for COMPOSITESCALINGAUTO.";
+        if (registerWordSize < 20 && scalTech == COMPOSITESCALINGAUTO) {
+            std::string errorMsg = "Register word size must be greater than or equal to 20 for COMPOSITESCALINGAUTO.";
             errorMsg += "Otherwise, try it with COMPOSITESCALINGMANUAL.";
             OPENFHE_THROW(errorMsg);
         }
@@ -257,9 +257,10 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         remBits -= std::ceil(std::log2(q.ConvertToDouble()));
     }
 
+    const std::string compositeScalingErrMsg =
+        "COMPOSITE SCALING prime sampling error. Consider increasing the scaling factor or the register word size.";
+
     if (numPrimes > 1) {
-        const std::string compositeScalingErrMsg =
-            "COMPOSITE SCALING prime sampling error. Try increasing the scaling factor(s).";
         std::vector<NativeInteger> qPrev(std::ceil(static_cast<double>(compositeDegree) / 2));
         std::vector<NativeInteger> qNext(compositeDegree - static_cast<uint32_t>(qPrev.size()));
 
@@ -424,21 +425,27 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
     remBits = static_cast<uint32_t>(firstModSize);
     for (uint32_t d = 1; d <= compositeDegree; ++d) {
         uint32_t qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));
-        // Find next prime
-        NativeInteger nextInteger = FirstPrime<NativeInteger>(qBitSize, cyclOrder);
-        nextInteger               = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);
+        try {
+            // Find next prime
+            NativeInteger nextInteger = FirstPrime<NativeInteger>(qBitSize, cyclOrder);
+            nextInteger               = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);
 
-        while (std::log2(nextInteger.ConvertToDouble()) > qBitSize ||
-               std::log2(nextInteger.ConvertToDouble()) > registerWordSize ||
-               moduliQRecord.find(nextInteger.ConvertToInt()) != moduliQRecord.end())
-            nextInteger = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);
+            while (std::log2(nextInteger.ConvertToDouble()) > qBitSize ||
+                   std::log2(nextInteger.ConvertToDouble()) > registerWordSize ||
+                   moduliQRecord.find(nextInteger.ConvertToInt()) != moduliQRecord.end())
+                nextInteger = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);
 
-        // Store prime
-        moduliQ[d - 1] = nextInteger;
-        rootsQ[d - 1]  = RootOfUnity(cyclOrder, moduliQ[d - 1]);
-        // Keep track of existing primes
-        moduliQRecord.emplace(moduliQ[d - 1].ConvertToInt());
-        remBits -= qBitSize;
+            // Store prime
+            moduliQ[d - 1] = nextInteger;
+            rootsQ[d - 1]  = RootOfUnity(cyclOrder, moduliQ[d - 1]);
+            // Keep track of existing primes
+            moduliQRecord.emplace(moduliQ[d - 1].ConvertToInt());
+            remBits -= qBitSize;
+        }
+        catch (const OpenFHEException& ex) {
+            std::string errMsg = compositeScalingErrMsg;
+            OPENFHE_THROW(errMsg);
+        }
     }
 
     return;
