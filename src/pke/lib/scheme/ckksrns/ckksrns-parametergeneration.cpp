@@ -82,7 +82,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
         //                  e.g.1, assertion: prime size < registerSize (we may need at least 1-2 bit gap)
         //                  e.g.2, prime size > ??? if numPrimes > ???
         if (compositeDegree > 2 && scalingModSize < 60) {
-            std::string errorMsg = "Prime moduli is too small. Its size must generally be greater than 19,";
+            std::string errorMsg = "Prime moduli size is too small. It must generally be greater than 19,";
             errorMsg += " especially for larger multiplicative depth.";
             errorMsg += " Please increase the scaling factor (scalingModSize) or the register word size.";
             errorMsg += " Also, you can use COMPOSITESCALINGMANUAL at your own risk.";
