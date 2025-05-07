@@ -289,8 +289,6 @@ private:
     Ciphertext<DCRTPoly> m_ctxtKS;
     // Precomputed matrix for CKKS to FHEW switching
     std::vector<ReadOnlyPlaintext> m_U0Pre;
-
-#define Pi 3.14159265358979323846
 };
 
 }  // namespace lbcrypto

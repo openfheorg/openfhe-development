@@ -69,7 +69,7 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, CKKSDataType ckksdt)
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         ckksDataType = ckksdt;
         slots        = GetDefaultSlotSize();
@@ -86,7 +86,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& v,
-                       size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt)
+                       size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
         ckksDataType  = ckksdt;
         scalingFactor = scFact;

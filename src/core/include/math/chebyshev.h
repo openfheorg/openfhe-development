@@ -73,7 +73,8 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
  * @param degree is the desired degree of approximation
  * @return Evaluation of the approximated function over the plaintexts.
  */
-std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double> ptxt, double a, double b, size_t degree);
+std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double>& ptxt,
+                                              double a, double b, size_t degree);
 
 }  // namespace lbcrypto
 

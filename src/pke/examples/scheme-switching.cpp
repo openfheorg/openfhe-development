@@ -632,7 +632,7 @@ void FuncViaSchemeSwitching() {
     auto plaintextDec2_rpv = plaintextDec2->GetRealPackedValue();
     for (uint32_t i = 0; i < slots; i++) {
         double x = std::max(std::min(plaintextDec2_rpv[i], 1.0), -1.0);
-        std::cout << std::asin(x) * pLWE / (2 * Pi) << " ";
+        std::cout << std::asin(x) * pLWE / (2 * M_PI) << " ";
     }
     std::cout << "\n";
 }
