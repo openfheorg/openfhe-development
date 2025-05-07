@@ -138,7 +138,7 @@ uint32_t GetDepthByDegree(size_t degree) {
 }
 
 constexpr std::complex<double> I(0.0, 1.0);
-const double PREC = std::pow(2, -20);
+const double PREC                       = std::pow(2, -20);
 const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
 const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
 
@@ -155,18 +155,14 @@ inline bool IsNotEqualOne(double val) {
 }
 
 uint32_t Degree(const std::vector<double>& coefficients) {
-    const size_t coefficientsSize = coefficients.size();
-    if (!coefficientsSize) {
+    uint32_t i = coefficients.size();
+    if (i == 0)
         OPENFHE_THROW("The coefficients vector can not be empty");
+    while (i > 0) {
+        if (coefficients[--i] != 0.)
+            break;
     }
-
-    for(int32_t i = (coefficientsSize - 1); i >= 0; --i) {
-        if (coefficients[i])
-            return static_cast<uint32_t>(i);
-    }
-
-    // if all coefficients are zeroes, we return 0
-    return 0;
+    return i;
 }
 
 /* f and g are vectors of coefficients of the two polynomials. We assume their dominant
@@ -548,9 +544,9 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
     bool flag_i) {
     const uint32_t slots = rotGroup.size();
-    if(!slots)
+    if (!slots)
         OPENFHE_THROW("rotGroup can not be empty");
-    if(!levelBudget)
+    if (!levelBudget)
         OPENFHE_THROW("levelBudget can not be 0");
 
     const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
@@ -598,7 +594,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 
                 for (size_t u = 0; u < (1U << (l + 1)) - 1; u++) {
                     for (size_t k = 0; k < slots; k++) {
-                        coeff[s][2 * u][k] += coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
+                        coeff[s][2 * u][k] +=
+                            coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
                         coeff[s][2 * u + 1][k] += coeff1[top - l + log2slots][k] * temp[u][k];
                         coeff[s][2 * u + 2][k] +=
                             coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
@@ -611,7 +608,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     if (flagRem && remCollapse) {
         std::vector<std::vector<std::complex<double>>> zeros(numRotationsRem,
                                                              std::vector<std::complex<double>>(slots, 0.0));
-        uint32_t s  = 0;
+        uint32_t s = 0;
         // top is an index, so it can't be negative. let's check that
         if (log2slots < (dimCollapse - 1 - s) * layersCollapse - 1)
             OPENFHE_THROW("top can not be negative");
@@ -644,7 +641,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     const uint32_t slots = rotGroup.size();
     if (!slots)
         OPENFHE_THROW("rotGroup can not be empty");
-    if(!levelBudget)
+    if (!levelBudget)
         OPENFHE_THROW("levelBudget can not be 0");
 
     const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
@@ -728,9 +725,9 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 }
 
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {
-    if(!slots)
+    if (!slots)
         OPENFHE_THROW("slots can not be 0");
-    if(!levelBudget)
+    if (!levelBudget)
         OPENFHE_THROW("levelBudget can not be 0");
 
     // even for the case of (slots = 1) we need one level for rescaling as (std::log2(1) = 0)
@@ -776,9 +773,15 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     }
 
     // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well
-    return {static_cast<int32_t>(levelBudget), static_cast<int32_t>(layersCollapse), static_cast<int32_t>(remCollapse),
-            static_cast<int32_t>(numRotations), static_cast<int32_t>(b), static_cast<int32_t>(g),
-            static_cast<int32_t>(numRotationsRem), static_cast<int32_t>(bRem), static_cast<int32_t>(gRem)};
+    return {static_cast<int32_t>(levelBudget),
+            static_cast<int32_t>(layersCollapse),
+            static_cast<int32_t>(remCollapse),
+            static_cast<int32_t>(numRotations),
+            static_cast<int32_t>(b),
+            static_cast<int32_t>(g),
+            static_cast<int32_t>(numRotationsRem),
+            static_cast<int32_t>(bRem),
+            static_cast<int32_t>(gRem)};
 }
 
 uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
@@ -836,7 +839,8 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
     uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
 
     std::vector<int32_t> indexList;
-    indexList.reserve(bStep + gStep + cols);  // There will be a lot of intersection between the rotations, provide an upper bound
+    indexList.reserve(bStep + gStep +
+                      cols);  // There will be a lot of intersection between the rotations, provide an upper bound
 
     while (slots >= 1) {
         // Computing all indices for baby-step giant-step procedure

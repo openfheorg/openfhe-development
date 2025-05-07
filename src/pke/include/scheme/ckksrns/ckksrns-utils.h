@@ -32,10 +32,12 @@
 #ifndef _CKKSRNS_UTILS_H_
 #define _CKKSRNS_UTILS_H_
 
-#include <vector>
+#include "utils/exception.h"
+
 #include <complex>
-#include <stdint.h>
 #include <memory>
+#include <stdint.h>
+#include <vector>
 
 /*
  * Subroutines used by the linear transformation homomorphic capability
