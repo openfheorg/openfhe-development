@@ -40,8 +40,6 @@
 
 namespace lbcrypto {
 
-// TODO: templatize these
-
 /**
  * Method for calculating the intermediate Hermite trigonometric interpolation (of order 1)
  * coefficients for an input function. These coefficents can be input into
@@ -55,6 +53,8 @@ namespace lbcrypto {
  * @param p number of interpolation points
  * @return the coefficients of the intermediate Hermite trigonometric interpolation.
  */
+
+// TODO: templatize this
 std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
                                                              size_t order, double scale);
 
