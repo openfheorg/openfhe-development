@@ -20,11 +20,11 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - By setting the scaling technique to COMPOSITESCALINGAUTO: This is the most suitable choice for any developer trying out or not familiar with the intricate details of composite scaling.
 
-- By setting the scaling technique to COMPOSITESCALINGMANUAL: This mode is meant for developers/FHE experts that wish to experiment with untested/unlikely combinations of composite scaling parameters that may only be functional under special circumstances. In those special cases, the program may be more sensitive to runtime errors due to insufficient availability of prime moduli for given certain values for the tuple <register word size, multiplicative depth, ring size>.
+- The register word size can be set using `SetRegisterWordSize`, e.g., to 32 or 64. The supported range is 20 to 64. This limits the maximum size of the (small) moduli used to represent the scaling factor in composite-scaling CKKS. The default value is 32.
 
-- The register word size needs to be set using `SetRegisterWordSize`, e.g., to 32 or 64. This limits the maximum size of the (small) moduli used to represent the scaling factor in composite-scaling CKKS.
+- Alternatively, the scaling technique can be set to COMPOSITESCALINGMANUAL: This mode is meant for developers/FHE experts that wish to experiment with untested/unlikely combinations of composite scaling parameters that may only be functional under special circumstances. In those special cases, the program may be more sensitive to runtime errors due to insufficient availability of prime moduli for given certain values for the tuple <register word size, multiplicative depth, ring size>.
 
-- The composite degree can be set using `SetCompositeDegree`, e.g., to 2, 3, or 4. This defines how many small moduli should be used to represent the scaling factor.
+   - The composite degree can be set using `SetCompositeDegree`, e.g., to 2, 3, or 4. This defines how many small moduli should be used to represent the scaling factor. This setting is only supported for COMPOSITESCALINGMANUAL.
 
 ## Composite Scaling Bootstrapping
 

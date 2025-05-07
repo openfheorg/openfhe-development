@@ -202,6 +202,8 @@ The set method is `SetPRENumHops`.
 
 **COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient).  The set method is `SetInteractiveBootCompressionLevel`.
 
-**uint32_t compositeDegree (CKKS only)** - specifies how many words should be used to represent the CKKS scaling factor in the CKKS composite scaling mode. The set method is `SetCompositeDegree`.
+**uint32_t registerWordSize (CKKS only)** - register word size for the CKKS composite scaling mode (should match the hardware architecture on which the FHE computation will be run). The word size should be between 20 and 64. The actual moduli are determined by evenly splitting the scaling factor into approximately equal moduli, which cannot be not higher than the register word size. The set method is `SetRegisterWordSize`.
 
-**uint32_t registerWordSize (CKKS only)** - register word size for the CKKS composite scaling mode (should match the hardware architecture on which the FHE computation will be run). The set method is `SetRegisterWordSize`.
+**uint32_t compositeDegree (CKKS only)** - specifies how many words should be used to represent the CKKS scaling factor in the CKKS composite scaling mode. This setting is only used for the COMPOSITESCALINGMANUAL scaling techique. The supported values are 1, 2, 3, and 4. The set method is `SetCompositeDegree`.
+
+**CKKSDataType ckksDataType (CKKS only)** - defines the CKKS data type: COMPLEX (for complex numbers) or REAL (for real numbers). If the mode is COMPLEX, dynamic noise estimation is disabled; and the user has to set the noise using SetNoiseEstimate if $IND-CPA^D$ security is desired. If the mode is REAL, the dynamic noise is estimated using the imaginary component (OpenFHE works the same way as in version below 1.3.0). The set method is `SetCKKSDataType`.
