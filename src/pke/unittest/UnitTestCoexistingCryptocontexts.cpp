@@ -111,6 +111,7 @@ TEST_F(UTGENERAL_CRYPTOCONTEXTS, coexisting_ckks_cryptocontexts) {
     cc1->Decrypt(ciphertext, key1.secretKey, &results);
     results->SetLength(ptxt->GetLength());
 
-    EXPECT_TRUE(checkEquality(values, results->GetRealPackedValue()))
+    constexpr double epsilon = 0.0000001;
+    EXPECT_TRUE(checkEquality(values, results->GetRealPackedValue(), epsilon))
         << "static data for the first cryptocontext may be overriden";
 }
