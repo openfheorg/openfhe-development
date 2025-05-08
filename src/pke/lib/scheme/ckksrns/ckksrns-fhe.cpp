@@ -187,7 +187,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         double pre       = (compositeDegree > 1) ? 1.0 : qDouble / factor;
         double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
         double scaleEnc  = pre / k;
-        double scaleDec  = (compositeDegree > 1) ? qDouble / cryptoParams->GetScalingFactorReal(0) : 1 / pre;
+        // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
+        double scaleDec = (compositeDegree > 1) ? qDouble / cryptoParams->GetScalingFactorReal(0) : 1 / pre;
 
         uint32_t approxModDepth = GetModDepthInternal(cryptoParams->GetSecretKeyDist());
         uint32_t depthBT        = approxModDepth + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
@@ -418,6 +419,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         if (bootstrappingSizeQ <= initSizeQ) {
             return ciphertext->Clone();
         }
+
+        // TODO: YSP Can be removed for FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
         if (cryptoParams->GetScalingTechnique() != COMPOSITESCALINGAUTO &&
             cryptoParams->GetScalingTechnique() != COMPOSITESCALINGMANUAL) {
             for (auto& cv : ctBootstrappedScaledDown->GetElements()) {
@@ -489,6 +492,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     uint32_t correction = m_correctionFactor - deg;
     double post         = std::pow(2, static_cast<double>(deg));
 
+    // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
     double pre      = (compositeDegree > 1) ? cryptoParams->GetScalingFactorReal(0) / qDouble : 1. / post;
     uint64_t scalar = std::llround(post);
 
@@ -509,6 +513,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     AdjustCiphertext(raised, correction);
     auto ctxtDCRT = raised->GetElements();
 
+    // TODO: YSP Move this to a separate function
+    // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
     if (compositeDegree > 1) {
         // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
         // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
@@ -623,6 +629,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         k = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
+        // TODO: YSP For compositeDegree = 1, we can use K_UNIFORM even for N = 2^17
         if (compositeDegree < 3) {
             if (N < (1 << 17)) {
                 coefficients = g_coefficientsUniform;
@@ -820,6 +827,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
             ApplyDoubleAngleIterations(ctxtEnc, numIter);
         }
 
+        // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
         if (cryptoParams->GetScalingTechnique() != COMPOSITESCALINGAUTO &&
             cryptoParams->GetScalingTechnique() != COMPOSITESCALINGMANUAL) {
             // scale the message back up after Chebyshev interpolation
@@ -2464,8 +2472,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 
-    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox = logc - logValid;
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2496,11 +2504,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax = realVal;
+                    realMax    = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax = imagVal;
+                    imagMax    = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2523,11 +2531,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2553,21 +2561,21 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         if (logPowP > 64) {
             // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-            logValid = (logPowP <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
-                           logPowP :
-                           LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+            logValid               = (logPowP <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
+                                         logPowP :
+                                         LargeScalingFactorConstants::MAX_BITS_IN_WORD;
             int32_t logApprox_PowP = logPowP - logValid;
             if (logApprox_PowP > 0) {
-                int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
-                                      logApprox_PowP :
-                                      LargeScalingFactorConstants::MAX_LOG_STEP;
+                int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
+                                                logApprox_PowP :
+                                                LargeScalingFactorConstants::MAX_LOG_STEP;
                 DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
                 std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
                 logApprox_PowP -= logStep;
                 while (logApprox_PowP > 0) {
-                    int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
-                                          logApprox :
-                                          LargeScalingFactorConstants::MAX_LOG_STEP;
+                    int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
+                                                    logApprox :
+                                                    LargeScalingFactorConstants::MAX_LOG_STEP;
                     DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
                     std::vector<DCRTPoly::Integer> crtStep(numTowers, intStep);
                     crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtStep, moduli);
@@ -2607,7 +2615,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
+        auto intStep    = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
