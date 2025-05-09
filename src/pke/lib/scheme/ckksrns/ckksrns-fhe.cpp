@@ -513,87 +513,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     AdjustCiphertext(raised, correction);
     auto ctxtDCRT = raised->GetElements();
 
-    // TODO: YSP Move this to a separate function
-    // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
     if (compositeDegree > 1) {
-        // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
-        // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
-        // CompositeDegree = 4: [a]_q0q1q2q3 = [a*q1q2q3^-1]_q0 * q1q2q3 + [a*q0q2q3^-1]_q1 * q0q2q3 + [a*q0q1q3^-1]_q2 * q0q1q3 + [a*q0q1q2^-1]_q3 * q0q1q2
-
-        std::vector<NativeInteger> qj(compositeDegree);
-        for (uint32_t j = 0; j < compositeDegree; ++j) {
-            qj[j] = elementParamsRaisedPtr->GetParams()[j]->GetModulus().ConvertToInt();
-        }
-
-        std::vector<NativeInteger> qhat_modqj(compositeDegree);
-        qhat_modqj[0] = qj[1].Mod(qj[0]);
-        qhat_modqj[1] = qj[0].Mod(qj[1]);
-
-        std::vector<NativeInteger> qhat_inv_modqj(compositeDegree);
-
-        for (uint32_t d = 2; d < compositeDegree; d++) {
-            for (uint32_t j = 0; j < d; ++j) {
-                qhat_modqj[j] = qj[d].ModMul(qhat_modqj[j], qj[j]);
-            }
-            qhat_modqj[d] = qj[1].ModMul(qj[0], qj[d]);
-            for (uint32_t j = 2; j < d; ++j) {
-                qhat_modqj[d] = qj[j].ModMul(qhat_modqj[d], qj[d]);
-            }
-        }
-
-        for (uint32_t j = 0; j < compositeDegree; ++j) {
-            qhat_inv_modqj[j] = qhat_modqj[j].ModInverse(qj[j]);
-        }
-
-        NativeInteger qjProduct =
-            std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
-        uint32_t init_element_index = compositeDegree;
-        for (size_t i = 0; i < ctxtDCRT.size(); i++) {
-            std::vector<DCRTPoly> temp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-            std::vector<DCRTPoly> ctxtDCRT_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-
-            ctxtDCRT[i].SetFormat(COEFFICIENT);
-            for (size_t j = 0; j < ctxtDCRT[i].GetNumOfElements(); j++) {
-                for (size_t k = 0; k < compositeDegree; k++)
-                    ctxtDCRT_modq[k].SetElementAtIndex(j, ctxtDCRT[i].GetElementAtIndex(j) * qhat_inv_modqj[k]);
-            }
-            //=========================================================================================================
-            temp[0] = ctxtDCRT_modq[0].GetElementAtIndex(0);
-            for (auto& el : temp[0].GetAllElements()) {
-                el *= qjProduct;
-            }
-            //=========================================================================================================
-            for (size_t d = 1; d < compositeDegree; d++) {
-                temp[init_element_index] = ctxtDCRT_modq[d].GetElementAtIndex(d);
-
-                for (size_t k = 0; k < compositeDegree; k++) {
-                    if (k != d) {
-                        temp[d].SetElementAtIndex(k, temp[0].GetElementAtIndex(k) * qj[k]);
-                    }
-                }
-                //=========================================================================================================
-                NativeInteger qjProductD{1};
-                for (size_t k = 0; k < compositeDegree; k++) {
-                    if (k != d)
-                        qjProductD *= qj[k];
-                }
-
-                for (size_t j = compositeDegree; j < elementParamsRaisedPtr->GetParams().size(); j++) {
-                    auto value = temp[init_element_index].GetElementAtIndex(j) * qjProductD;
-                    temp[d].SetElementAtIndex(j, value);
-                }
-                //=========================================================================================================
-                {
-                    auto value = temp[init_element_index].GetElementAtIndex(d) * qjProductD;
-                    temp[d].SetElementAtIndex(d, value);
-                }
-                //=========================================================================================================
-                temp[0] += temp[d];
-            }
-
-            temp[0].SetFormat(EVALUATION);
-            ctxtDCRT[i] = temp[0];
-        }
+        // RNS basis extension from level 0 RNS limbs to the raised RNS basis
+        ExtendCiphertext(ctxtDCRT, *cc, elementParamsRaisedPtr);
     }
     else {
         // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
@@ -2260,6 +2182,93 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
         cc->EvalMultInPlace(ciphertext, std::pow(2, -correction));
         algo->ModReduceInternalInPlace(ciphertext, compositeDegree);
 #endif
+    }
+}
+
+void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRT, const CryptoContextImpl<DCRTPoly>& cc,
+                                  const std::shared_ptr<DCRTPoly::Params> elementParamsRaisedPtr) const {
+    // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
+
+    // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
+    // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
+    // CompositeDegree = 4: [a]_q0q1q2q3 = [a*q1q2q3^-1]_q0 * q1q2q3 + [a*q0q2q3^-1]_q1 * q0q2q3 + [a*q0q1q3^-1]_q2 * q0q1q3 + [a*q0q1q2^-1]_q3 * q0q1q2
+
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    std::vector<NativeInteger> qj(compositeDegree);
+    for (uint32_t j = 0; j < compositeDegree; ++j) {
+        qj[j] = elementParamsRaisedPtr->GetParams()[j]->GetModulus().ConvertToInt();
+    }
+
+    std::vector<NativeInteger> qhat_modqj(compositeDegree);
+    qhat_modqj[0] = qj[1].Mod(qj[0]);
+    qhat_modqj[1] = qj[0].Mod(qj[1]);
+
+    std::vector<NativeInteger> qhat_inv_modqj(compositeDegree);
+
+    for (uint32_t d = 2; d < compositeDegree; d++) {
+        for (uint32_t j = 0; j < d; ++j) {
+            qhat_modqj[j] = qj[d].ModMul(qhat_modqj[j], qj[j]);
+        }
+        qhat_modqj[d] = qj[1].ModMul(qj[0], qj[d]);
+        for (uint32_t j = 2; j < d; ++j) {
+            qhat_modqj[d] = qj[j].ModMul(qhat_modqj[d], qj[d]);
+        }
+    }
+
+    for (uint32_t j = 0; j < compositeDegree; ++j) {
+        qhat_inv_modqj[j] = qhat_modqj[j].ModInverse(qj[j]);
+    }
+
+    NativeInteger qjProduct =
+        std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
+    uint32_t init_element_index = compositeDegree;
+    for (size_t i = 0; i < ctxtDCRT.size(); i++) {
+        std::vector<DCRTPoly> temp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
+        std::vector<DCRTPoly> ctxtDCRT_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
+
+        ctxtDCRT[i].SetFormat(COEFFICIENT);
+        for (size_t j = 0; j < ctxtDCRT[i].GetNumOfElements(); j++) {
+            for (size_t k = 0; k < compositeDegree; k++)
+                ctxtDCRT_modq[k].SetElementAtIndex(j, ctxtDCRT[i].GetElementAtIndex(j) * qhat_inv_modqj[k]);
+        }
+        //=========================================================================================================
+        temp[0] = ctxtDCRT_modq[0].GetElementAtIndex(0);
+        for (auto& el : temp[0].GetAllElements()) {
+            el *= qjProduct;
+        }
+        //=========================================================================================================
+        for (size_t d = 1; d < compositeDegree; d++) {
+            temp[init_element_index] = ctxtDCRT_modq[d].GetElementAtIndex(d);
+
+            for (size_t k = 0; k < compositeDegree; k++) {
+                if (k != d) {
+                    temp[d].SetElementAtIndex(k, temp[0].GetElementAtIndex(k) * qj[k]);
+                }
+            }
+            //=========================================================================================================
+            NativeInteger qjProductD{1};
+            for (size_t k = 0; k < compositeDegree; k++) {
+                if (k != d)
+                    qjProductD *= qj[k];
+            }
+
+            for (size_t j = compositeDegree; j < elementParamsRaisedPtr->GetParams().size(); j++) {
+                auto value = temp[init_element_index].GetElementAtIndex(j) * qjProductD;
+                temp[d].SetElementAtIndex(j, value);
+            }
+            //=========================================================================================================
+            {
+                auto value = temp[init_element_index].GetElementAtIndex(d) * qjProductD;
+                temp[d].SetElementAtIndex(d, value);
+            }
+            //=========================================================================================================
+            temp[0] += temp[d];
+        }
+
+        temp[0].SetFormat(EVALUATION);
+        ctxtDCRT[i] = temp[0];
     }
 }
 
