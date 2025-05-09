@@ -629,16 +629,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         k = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
-        // TODO: YSP For compositeDegree = 1, we can use K_UNIFORM even for N = 2^17
-        if (compositeDegree < 3) {
-            if (N < (1 << 17)) {
-                coefficients = g_coefficientsUniform;
-                k            = K_UNIFORM;
-            }
-            else {
-                coefficients = g_coefficientsUniformExt;
-                k            = K_UNIFORMEXT;
-            }
+        // For larger composite degrees, larger K needs to be used to achieve a reasonable probability of failure
+        if ((compositeDegree == 1) || ((compositeDegree == 2) && (N < (1 << 17)))) {
+            coefficients = g_coefficientsUniform;
+            k            = K_UNIFORM;
         }
         else {
             coefficients = g_coefficientsUniformExt;
