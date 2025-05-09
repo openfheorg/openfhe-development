@@ -187,7 +187,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         double pre       = (compositeDegree > 1) ? 1.0 : qDouble / factor;
         double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
         double scaleEnc  = pre / k;
-        double scaleDec  = (compositeDegree > 1) ? qDouble / cryptoParams->GetScalingFactorReal(0) : 1 / pre;
+        // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
+        double scaleDec = (compositeDegree > 1) ? qDouble / cryptoParams->GetScalingFactorReal(0) : 1 / pre;
 
         uint32_t approxModDepth = GetModDepthInternal(cryptoParams->GetSecretKeyDist());
         uint32_t depthBT        = approxModDepth + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
@@ -418,6 +419,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         if (bootstrappingSizeQ <= initSizeQ) {
             return ciphertext->Clone();
         }
+
+        // TODO: YSP Can be removed for FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
         if (cryptoParams->GetScalingTechnique() != COMPOSITESCALINGAUTO &&
             cryptoParams->GetScalingTechnique() != COMPOSITESCALINGMANUAL) {
             for (auto& cv : ctBootstrappedScaledDown->GetElements()) {
@@ -489,6 +492,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     uint32_t correction = m_correctionFactor - deg;
     double post         = std::pow(2, static_cast<double>(deg));
 
+    // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
     double pre      = (compositeDegree > 1) ? cryptoParams->GetScalingFactorReal(0) / qDouble : 1. / post;
     uint64_t scalar = std::llround(post);
 
@@ -510,84 +514,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto ctxtDCRT = raised->GetElements();
 
     if (compositeDegree > 1) {
-        // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
-        // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
-        // CompositeDegree = 4: [a]_q0q1q2q3 = [a*q1q2q3^-1]_q0 * q1q2q3 + [a*q0q2q3^-1]_q1 * q0q2q3 + [a*q0q1q3^-1]_q2 * q0q1q3 + [a*q0q1q2^-1]_q3 * q0q1q2
-
-        std::vector<NativeInteger> qj(compositeDegree);
-        for (uint32_t j = 0; j < compositeDegree; ++j) {
-            qj[j] = elementParamsRaisedPtr->GetParams()[j]->GetModulus().ConvertToInt();
-        }
-
-        std::vector<NativeInteger> qhat_modqj(compositeDegree);
-        qhat_modqj[0] = qj[1].Mod(qj[0]);
-        qhat_modqj[1] = qj[0].Mod(qj[1]);
-
-        std::vector<NativeInteger> qhat_inv_modqj(compositeDegree);
-
-        for (uint32_t d = 2; d < compositeDegree; d++) {
-            for (uint32_t j = 0; j < d; ++j) {
-                qhat_modqj[j] = qj[d].ModMul(qhat_modqj[j], qj[j]);
-            }
-            qhat_modqj[d] = qj[1].ModMul(qj[0], qj[d]);
-            for (uint32_t j = 2; j < d; ++j) {
-                qhat_modqj[d] = qj[j].ModMul(qhat_modqj[d], qj[d]);
-            }
-        }
-
-        for (uint32_t j = 0; j < compositeDegree; ++j) {
-            qhat_inv_modqj[j] = qhat_modqj[j].ModInverse(qj[j]);
-        }
-
-        NativeInteger qjProduct =
-            std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
-        uint32_t init_element_index = compositeDegree;
-        for (size_t i = 0; i < ctxtDCRT.size(); i++) {
-            std::vector<DCRTPoly> temp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-            std::vector<DCRTPoly> ctxtDCRT_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-
-            ctxtDCRT[i].SetFormat(COEFFICIENT);
-            for (size_t j = 0; j < ctxtDCRT[i].GetNumOfElements(); j++) {
-                for (size_t k = 0; k < compositeDegree; k++)
-                    ctxtDCRT_modq[k].SetElementAtIndex(j, ctxtDCRT[i].GetElementAtIndex(j) * qhat_inv_modqj[k]);
-            }
-            //=========================================================================================================
-            temp[0] = ctxtDCRT_modq[0].GetElementAtIndex(0);
-            for (auto& el : temp[0].GetAllElements()) {
-                el *= qjProduct;
-            }
-            //=========================================================================================================
-            for (size_t d = 1; d < compositeDegree; d++) {
-                temp[init_element_index] = ctxtDCRT_modq[d].GetElementAtIndex(d);
-
-                for (size_t k = 0; k < compositeDegree; k++) {
-                    if (k != d) {
-                        temp[d].SetElementAtIndex(k, temp[0].GetElementAtIndex(k) * qj[k]);
-                    }
-                }
-                //=========================================================================================================
-                NativeInteger qjProductD{1};
-                for (size_t k = 0; k < compositeDegree; k++) {
-                    if (k != d)
-                        qjProductD *= qj[k];
-                }
-
-                for (size_t j = compositeDegree; j < elementParamsRaisedPtr->GetParams().size(); j++) {
-                    auto value = temp[init_element_index].GetElementAtIndex(j) * qjProductD;
-                    temp[d].SetElementAtIndex(j, value);
-                }
-                //=========================================================================================================
-                {
-                    auto value = temp[init_element_index].GetElementAtIndex(d) * qjProductD;
-                    temp[d].SetElementAtIndex(d, value);
-                }
-                //=========================================================================================================
-                temp[0] += temp[d];
-            }
-
-            temp[0].SetFormat(EVALUATION);
-            ctxtDCRT[i] = temp[0];
-        }
+        // RNS basis extension from level 0 RNS limbs to the raised RNS basis
+        ExtendCiphertext(ctxtDCRT, *cc, elementParamsRaisedPtr);
     }
     else {
         // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
@@ -623,15 +551,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         k = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
-        if (compositeDegree < 3) {
-            if (N < (1 << 17)) {
-                coefficients = g_coefficientsUniform;
-                k            = K_UNIFORM;
-            }
-            else {
-                coefficients = g_coefficientsUniformExt;
-                k            = K_UNIFORMEXT;
-            }
+        // For larger composite degrees, larger K needs to be used to achieve a reasonable probability of failure
+        if ((compositeDegree == 1) || ((compositeDegree == 2) && (N < (1 << 17)))) {
+            coefficients = g_coefficientsUniform;
+            k            = K_UNIFORM;
         }
         else {
             coefficients = g_coefficientsUniformExt;
@@ -820,6 +743,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
             ApplyDoubleAngleIterations(ctxtEnc, numIter);
         }
 
+        // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
         if (cryptoParams->GetScalingTechnique() != COMPOSITESCALINGAUTO &&
             cryptoParams->GetScalingTechnique() != COMPOSITESCALINGMANUAL) {
             // scale the message back up after Chebyshev interpolation
@@ -2261,6 +2185,93 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
     }
 }
 
+void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRT, const CryptoContextImpl<DCRTPoly>& cc,
+                                  const std::shared_ptr<DCRTPoly::Params> elementParamsRaisedPtr) const {
+    // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
+
+    // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
+    // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
+    // CompositeDegree = 4: [a]_q0q1q2q3 = [a*q1q2q3^-1]_q0 * q1q2q3 + [a*q0q2q3^-1]_q1 * q0q2q3 + [a*q0q1q3^-1]_q2 * q0q1q3 + [a*q0q1q2^-1]_q3 * q0q1q2
+
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    std::vector<NativeInteger> qj(compositeDegree);
+    for (uint32_t j = 0; j < compositeDegree; ++j) {
+        qj[j] = elementParamsRaisedPtr->GetParams()[j]->GetModulus().ConvertToInt();
+    }
+
+    std::vector<NativeInteger> qhat_modqj(compositeDegree);
+    qhat_modqj[0] = qj[1].Mod(qj[0]);
+    qhat_modqj[1] = qj[0].Mod(qj[1]);
+
+    std::vector<NativeInteger> qhat_inv_modqj(compositeDegree);
+
+    for (uint32_t d = 2; d < compositeDegree; d++) {
+        for (uint32_t j = 0; j < d; ++j) {
+            qhat_modqj[j] = qj[d].ModMul(qhat_modqj[j], qj[j]);
+        }
+        qhat_modqj[d] = qj[1].ModMul(qj[0], qj[d]);
+        for (uint32_t j = 2; j < d; ++j) {
+            qhat_modqj[d] = qj[j].ModMul(qhat_modqj[d], qj[d]);
+        }
+    }
+
+    for (uint32_t j = 0; j < compositeDegree; ++j) {
+        qhat_inv_modqj[j] = qhat_modqj[j].ModInverse(qj[j]);
+    }
+
+    NativeInteger qjProduct =
+        std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
+    uint32_t init_element_index = compositeDegree;
+    for (size_t i = 0; i < ctxtDCRT.size(); i++) {
+        std::vector<DCRTPoly> temp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
+        std::vector<DCRTPoly> ctxtDCRT_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
+
+        ctxtDCRT[i].SetFormat(COEFFICIENT);
+        for (size_t j = 0; j < ctxtDCRT[i].GetNumOfElements(); j++) {
+            for (size_t k = 0; k < compositeDegree; k++)
+                ctxtDCRT_modq[k].SetElementAtIndex(j, ctxtDCRT[i].GetElementAtIndex(j) * qhat_inv_modqj[k]);
+        }
+        //=========================================================================================================
+        temp[0] = ctxtDCRT_modq[0].GetElementAtIndex(0);
+        for (auto& el : temp[0].GetAllElements()) {
+            el *= qjProduct;
+        }
+        //=========================================================================================================
+        for (size_t d = 1; d < compositeDegree; d++) {
+            temp[init_element_index] = ctxtDCRT_modq[d].GetElementAtIndex(d);
+
+            for (size_t k = 0; k < compositeDegree; k++) {
+                if (k != d) {
+                    temp[d].SetElementAtIndex(k, temp[0].GetElementAtIndex(k) * qj[k]);
+                }
+            }
+            //=========================================================================================================
+            NativeInteger qjProductD{1};
+            for (size_t k = 0; k < compositeDegree; k++) {
+                if (k != d)
+                    qjProductD *= qj[k];
+            }
+
+            for (size_t j = compositeDegree; j < elementParamsRaisedPtr->GetParams().size(); j++) {
+                auto value = temp[init_element_index].GetElementAtIndex(j) * qjProductD;
+                temp[d].SetElementAtIndex(j, value);
+            }
+            //=========================================================================================================
+            {
+                auto value = temp[init_element_index].GetElementAtIndex(d) * qjProductD;
+                temp[d].SetElementAtIndex(d, value);
+            }
+            //=========================================================================================================
+            temp[0] += temp[d];
+        }
+
+        temp[0].SetFormat(EVALUATION);
+        ctxtDCRT[i] = temp[0];
+    }
+}
+
 void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIter) const {
     auto cc = ciphertext->GetCryptoContext();
 
@@ -2464,8 +2475,8 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 
-    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox = logc - logValid;
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2496,11 +2507,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax = realVal;
+                    realMax    = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax = imagVal;
+                    imagMax    = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2523,11 +2534,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2553,21 +2564,21 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         if (logPowP > 64) {
             // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-            logValid = (logPowP <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
-                           logPowP :
-                           LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+            logValid               = (logPowP <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ?
+                                         logPowP :
+                                         LargeScalingFactorConstants::MAX_BITS_IN_WORD;
             int32_t logApprox_PowP = logPowP - logValid;
             if (logApprox_PowP > 0) {
-                int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
-                                      logApprox_PowP :
-                                      LargeScalingFactorConstants::MAX_LOG_STEP;
+                int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
+                                                logApprox_PowP :
+                                                LargeScalingFactorConstants::MAX_LOG_STEP;
                 DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
                 std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
                 logApprox_PowP -= logStep;
                 while (logApprox_PowP > 0) {
-                    int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
-                                          logApprox :
-                                          LargeScalingFactorConstants::MAX_LOG_STEP;
+                    int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
+                                                    logApprox :
+                                                    LargeScalingFactorConstants::MAX_LOG_STEP;
                     DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
                     std::vector<DCRTPoly::Integer> crtStep(numTowers, intStep);
                     crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtStep, moduli);
@@ -2607,7 +2618,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
+        auto intStep    = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 

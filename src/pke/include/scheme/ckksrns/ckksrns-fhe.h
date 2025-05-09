@@ -241,6 +241,9 @@ private:
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 
+    void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
+                          const std::shared_ptr<DCRTPoly::Params> params) const;
+
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
     Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
