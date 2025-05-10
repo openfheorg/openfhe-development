@@ -59,7 +59,6 @@ static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
     parameters.SetStandardDeviation(4);
     parameters.SetMultiplicativeDepth(3);
     parameters.SetMaxRelinSkDeg(4);
-    parameters.SetScalingModSize(60);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     cryptoContext->Enable(PKE);

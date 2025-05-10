@@ -59,7 +59,6 @@ TEST_F(UTBFVRNS_SER, BFVRNS_SERIAL) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(16);
     parameters.SetStandardDeviation(4);
-    parameters.SetScalingModSize(60);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

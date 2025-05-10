@@ -53,10 +53,10 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     if (!cryptoParams)
         OPENFHE_THROW("No crypto parameters are supplied to BFVrns ParamsGen");
 
-    if ((dcrtBits < DCRT_MODULUS::MIN_SIZE) || (dcrtBits > DCRT_MODULUS::MAX_SIZE))
-        OPENFHE_THROW(
-            "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
-            "in the range from 30 to 60");
+    if ((dcrtBits < DCRT_MODULUS::MIN_SIZE) || (dcrtBits > DCRT_MODULUS::MAX_SIZE)) {
+        OPENFHE_THROW("Number of bits in CRT moduli should be <=" + std::to_string(DCRT_MODULUS::MAX_SIZE) + " and >=" +
+                      std::to_string(DCRT_MODULUS::MIN_SIZE));
+    }
 
     const auto cryptoParamsBFVRNS = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 

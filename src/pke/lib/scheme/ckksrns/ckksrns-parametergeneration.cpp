@@ -47,14 +47,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-const size_t AUXMODSIZE = 119;
-#elif NATIVEINT == 32
-const size_t AUXMODSIZE = 28;
-#else
-const size_t AUXMODSIZE = 60;
-#endif
-
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                           uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
                                                           uint32_t firstModSize, uint32_t numPartQ,
@@ -107,7 +99,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
         OPENFHE_THROW(s.str());
     }
 
-    // TODO: Allow the user to specify this?
+#if NATIVEINT == 128
+    constexpr uint32_t AUXMODSIZE = 119;
+#else
+    constexpr uint32_t AUXMODSIZE = DCRT_MODULUS::MAX_SIZE;
+#endif
+    
+        // TODO: Allow the user to specify this?
     uint32_t extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
 
     //// HE Standards compliance logic/check

@@ -190,25 +190,16 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQLEVELED) 
 }
 
 TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
-    UnitTestCCParams parameters;
-    parameters.schemeId                = BFVRNS_SCHEME;
-    parameters.plaintextModulus        = 65537;
-    parameters.standardDeviation       = 3.19;
-    parameters.maxRelinSkDeg           = 2;
-    parameters.scalTech                = NORESCALE;
-    parameters.numLargeDigits          = 0;
-    parameters.multiplicativeDepth     = 2;
-    parameters.scalingModSize          = 60;
-    parameters.ksTech                  = BV;
-    parameters.digitSize               = 20;
-    parameters.securityLevel           = HEStd_NotSet;
-    parameters.ringDimension           = 8;
-    parameters.firstModSize            = 60;
-    parameters.batchSize               = 8;
-    parameters.secretKeyDist           = UNIFORM_TERNARY;
-    parameters.multiplicationTechnique = BEHZ;
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetMultiplicativeDepth(2);
+    parameters.SetRingDim(8);
+    parameters.SetDigitSize(20);
+    parameters.SetBatchSize(8);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetMultiplicationTechnique(BEHZ);
 
-    CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> params = cc->GetCryptoParameters()->GetElementParams();
 
@@ -388,7 +379,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(7);
     parameters.SetMaxRelinSkDeg(8);
-    parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -432,7 +422,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -562,7 +551,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

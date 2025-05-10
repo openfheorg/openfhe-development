@@ -70,7 +70,7 @@ static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64
 }
 
 // static std::vector<usint> ptm_args{2, 65537, 5308417};
-// static std::vector<usint> dcrtbit_args{30, 40, 50, 60};
+// static std::vector<usint> dcrtbit_args{30, 40, 50, 57};
 
 TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
     usint ptm      = std::get<0>(GetParam());
@@ -163,9 +163,9 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(1 << 1, 55),        // C
                       std::make_tuple(1 << 15, 55),       // C
                       std::make_tuple(1 << 31, 55),       // D
-                      std::make_tuple(1 << 1, 60),        // C
-                      std::make_tuple(1 << 15, 60),       // C
-                      std::make_tuple(1 << 31, 60),       // D
+                      std::make_tuple(1 << 1, 57),        // C
+                      std::make_tuple(1 << 15, 57),       // C
+                      std::make_tuple(1 << 31, 57),       // D
                       std::make_tuple(65537, 30),         // E
                       std::make_tuple(5308417, 30),       // F
                       std::make_tuple(65537, 35),         // E
@@ -183,7 +183,7 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(65537, 55),         // G
                       std::make_tuple(5308417, 55),       // G
                       std::make_tuple(3221225473, 55),    // H
-                      std::make_tuple(65537, 60),         // G
-                      std::make_tuple(5308417, 60),       // H
-                      std::make_tuple(3221225473, 60)));  // H
+                      std::make_tuple(65537, 57),         // G
+                      std::make_tuple(5308417, 57),       // H
+                      std::make_tuple(3221225473, 57)));  // H
 // clang-format on
