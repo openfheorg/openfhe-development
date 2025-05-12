@@ -44,8 +44,8 @@
 #include <vector>
 
 static bool IsNotEqualZero(std::complex<double> v) {
-    constexpr double del = 0x1p-32;
-    return (std::abs(v.real()) >= del) || (std::abs(v.imag()) >= del);
+    constexpr double delta = 0x1p-32;  // 2**-32
+    return (std::fabs(v.real()) >= delta) || (std::fabs(v.imag()) >= delta);
 }
 
 namespace lbcrypto {

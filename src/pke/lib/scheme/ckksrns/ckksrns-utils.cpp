@@ -137,21 +137,11 @@ uint32_t GetDepthByDegree(size_t degree) {
     OPENFHE_THROW(errMsg);
 }
 
-constexpr std::complex<double> I(0.0, 1.0);
-const double PREC                       = std::pow(2, -20);
-const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
-const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
-
 }  // namespace
 
-inline bool IsNotEqualOne(double val) {
-    if (1 - PREC >= val) {
-        return true;
-    }
-    if (1 + PREC <= val) {
-        return true;
-    }
-    return false;
+inline bool IsNotEqualOne(double v) {
+    constexpr double delta = 0x1p-20;  // 2**-20
+    return std::fabs(v - 1.0) >= delta;
 }
 
 uint32_t Degree(const std::vector<double>& coefficients) {
@@ -441,6 +431,9 @@ std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& 
 std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::vector<std::complex<double>>& pows,
                                                                      const std::vector<uint32_t>& rotGroup,
                                                                      bool flag_i) {
+    constexpr std::complex<double> I(0.0, 1.0);
+    const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
+
     uint32_t dim   = pows.size() - 1;
     uint32_t slots = rotGroup.size();
 
@@ -492,6 +485,9 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
 std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::vector<std::complex<double>>& pows,
                                                                      const std::vector<uint32_t>& rotGroup,
                                                                      bool flag_i) {
+    constexpr std::complex<double> I(0.0, 1.0);
+    const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
+
     uint32_t dim   = pows.size() - 1;
     uint32_t slots = rotGroup.size();
 
