@@ -171,6 +171,7 @@ if(EMSCRIPTEN)
     set(CXX_COMPILE_FLAGS "${CXX_COMPILE_FLAGS} ${EMSCRIPTEN_IGNORE_WARNINGS}")
     add_compile_options(-fexceptions)
     add_link_options(
+        -Wno-limited-postlink-optimizations
         -sINITIAL_MEMORY=2047MB -sMAXIMUM_MEMORY=4GB -sALLOW_MEMORY_GROWTH=1
         -sMALLOC=emmalloc -sNO_DISABLE_EXCEPTION_CATCHING)
 endif()
@@ -266,6 +267,13 @@ endif()
 include(CheckTypeSize)
 check_type_size("__int128" INT128)
 check_type_size("uint64_t" INT64)
+### dsuponit: uncomment the following "if" block if HAVE_INT64 is false. It may happen when compiling with pthreads enabled.
+### Seems like I have disabled link with pthreads for Emscripten in all makefiles
+# if(EMSCRIPTEN)
+#     # Emscripten always(!) supports uint64_t, but check_type_size() may not work correctly due to the way
+#     # Emscripten handles cross-compilation. Instead of checking, we can hardcode the result.
+#     set(HAVE_INT64 1)
+# endif()
 
 if(NOT(BUILD_SHARED OR BUILD_STATIC))
     message(SEND_ERROR "Either BUILD_SHARED or BUILD_STATIC neeed to be turned on.")
@@ -452,7 +460,10 @@ if(WITH_OPENMP)
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     endif()
 else()  # WITH_OPENMP == OFF
-    find_package(Threads REQUIRED)
+    if(NOT EMSCRIPTEN)
+        find_package(Threads REQUIRED)
+    endif()
+
     # Disable unknown #pragma omp warning
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unknown-pragmas")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
