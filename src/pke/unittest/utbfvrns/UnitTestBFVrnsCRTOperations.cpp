@@ -189,6 +189,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQLEVELED) 
     }
 }
 
+#if !defined(__EMSCRIPTEN__)
 TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
@@ -209,7 +210,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     DCRTPoly a(params, Format::EVALUATION);
 
     usint m1               = 16;
-    NativeInteger modulus0 = 1152921504606846577;
+    NativeInteger modulus0 = 1152921504606846577; // This modulus's size is 60 which is too large for EMSCRIPTEN (should be <=57)
     NativeInteger modulus1 = 1152921504606846097;
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
     NativeInteger rootOfUnity1(RootOfUnity(m1, modulus1));
@@ -271,7 +272,9 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     EXPECT_EQ(a.GetElementAtIndex(3), ans3);
     EXPECT_EQ(a.GetElementAtIndex(4), ans4);
 }
+#endif
 
+#if !defined(__EMSCRIPTEN__)
 // TODO (dsuponit): review and fix multiple errors in this file
 TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     CCParams<CryptoContextBFVRNS> parameters;
@@ -295,7 +298,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     DCRTPoly a(params, Format::COEFFICIENT);
 
     usint m1               = 16;
-    NativeInteger modulus0 = NativeInteger("1152921504606846577");
+    NativeInteger modulus0 = NativeInteger("1152921504606846577"); // This modulus's size is 60 which is too large for EMSCRIPTEN (should be <=57)
     NativeInteger modulus1 = NativeInteger("1152921504606846097");
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
     NativeInteger rootOfUnity1(RootOfUnity(m1, modulus1));
@@ -372,6 +375,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     EXPECT_EQ(a.GetElementAtIndex(2), ans2);
     EXPECT_EQ(a.GetElementAtIndex(3), ans3);
 }
+#endif
 
 TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     CCParams<CryptoContextBFVRNS> parameters;
