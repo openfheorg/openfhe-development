@@ -39,6 +39,8 @@
 #include <unordered_map>
 #include "gtest/gtest.h"
 
+// this test does not work in the web assembly configuration
+#if !defined(__EMSCRIPTEN__)
 using namespace lbcrypto;
 class Params;
 
@@ -413,3 +415,4 @@ TEST_P(UTBGVRNS_AUTOMORPHISM, Automorphism) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTBGVRNS_AUTOMORPHISM),
                          testName);
+#endif

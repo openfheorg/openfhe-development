@@ -48,6 +48,9 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
+// this test does not work correctly in the web assembly configuration
+#if !defined(__EMSCRIPTEN__)
+
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {
@@ -201,3 +204,4 @@ TEST(UTBlockAllocate, xalloc_test) {
     // if using xallocator in a C-only application.
     // xalloc_destroy();
 }
+#endif

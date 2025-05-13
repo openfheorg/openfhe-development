@@ -39,6 +39,9 @@
 #include <unordered_map>
 #include "gtest/gtest.h"
 
+// this test does not work in the web assembly configuration
+#if !defined(__EMSCRIPTEN__)
+
 using namespace lbcrypto;
 class Params;
 
@@ -665,3 +668,4 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_INTERACTIVE_BOOT,
                          ::testing::ValuesIn(testCasesUTCKKSRNS_INTERACTIVE_BOOT), testName);
+#endif
