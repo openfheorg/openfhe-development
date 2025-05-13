@@ -89,7 +89,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalMultMany(const std::vector<Cipherte
 // LINEAR WEIGHTED SUM
 //------------------------------------------------------------------------------
 
-Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts,
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                                         const std::vector<double>& constants) const {
     std::vector<Ciphertext<DCRTPoly>> cts(ciphertexts.size());
 

@@ -1140,7 +1140,7 @@ public:
     // Advanced SHE LINEAR WEIGHTED SUM
     /////////////////////////////////////
 
-    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ConstCiphertext<Element>>& ciphertextVec,
+    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
                                                const std::vector<double>& constantVec) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())

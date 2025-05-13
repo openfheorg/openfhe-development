@@ -54,7 +54,7 @@ public:
     // LINEAR WEIGHTED SUM
     //------------------------------------------------------------------------------
 
-    Ciphertext<DCRTPoly> EvalLinearWSum(std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts,
+    Ciphertext<DCRTPoly> EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                         const std::vector<double>& constants) const override;
 
     Ciphertext<DCRTPoly> EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,

@@ -1013,7 +1013,7 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
 // Precomputations for CoeffsToSlots and SlotsToCoeffs
 //------------------------------------------------------------------------------
 
-std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
+std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A, double scale,
     uint32_t L) const {
     if (A[0].size() != A.size()) {
@@ -1074,7 +1074,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
     //  auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
-    std::vector<ConstPlaintext> result(slots);
+    std::vector<ReadOnlyPlaintext> result(slots);
 // parallelizing the loop (below) with OMP causes a segfault on MinGW
 // see https://github.com/openfheorg/openfhe-development/issues/176
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
@@ -1096,7 +1096,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     return result;
 }
 
-std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
+std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
     const std::vector<std::vector<std::complex<double>>>& B, uint32_t orientation, double scale, uint32_t L) const {
     uint32_t slots = A.size();
@@ -1152,7 +1152,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
     //  auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
-    std::vector<ConstPlaintext> result(slots);
+    std::vector<ReadOnlyPlaintext> result(slots);
 
     if (orientation == 0) {
         // vertical concatenation - used during homomorphic encoding
@@ -1206,7 +1206,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     return result;
 }
 
-std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute(
+std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& A,
     const std::vector<uint32_t>& rotGroup, bool flag_i, double scale, uint32_t L) const {
     uint32_t slots = rotGroup.size();
@@ -1241,14 +1241,14 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
     }
 
     // result is the rotated plaintext version of the coefficients
-    std::vector<std::vector<ConstPlaintext>> result(levelBudget);
+    std::vector<std::vector<ReadOnlyPlaintext>> result(levelBudget);
     for (uint32_t i = 0; i < static_cast<uint32_t>(levelBudget); i++) {
         if (flagRem == 1 && i == 0) {
             // remainder corresponds to index 0 in encoding and to last index in decoding
-            result[i] = std::vector<ConstPlaintext>(numRotationsRem);
+            result[i] = std::vector<ReadOnlyPlaintext>(numRotationsRem);
         }
         else {
-            result[i] = std::vector<ConstPlaintext>(numRotations);
+            result[i] = std::vector<ReadOnlyPlaintext>(numRotations);
         }
     }
 
@@ -1410,7 +1410,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
     return result;
 }
 
-std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute(
+std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& A,
     const std::vector<uint32_t>& rotGroup, bool flag_i, double scale, uint32_t L) const {
     uint32_t slots = rotGroup.size();
@@ -1443,14 +1443,14 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
     }
 
     // result is the rotated plaintext version of coeff
-    std::vector<std::vector<ConstPlaintext>> result(levelBudget);
+    std::vector<std::vector<ReadOnlyPlaintext>> result(levelBudget);
     for (uint32_t i = 0; i < static_cast<uint32_t>(levelBudget); i++) {
         if (flagRem == 1 && i == static_cast<uint32_t>(levelBudget - 1)) {
             // remainder corresponds to index 0 in encoding and to last index in decoding
-            result[i] = std::vector<ConstPlaintext>(numRotationsRem);
+            result[i] = std::vector<ReadOnlyPlaintext>(numRotationsRem);
         }
         else {
-            result[i] = std::vector<ConstPlaintext>(numRotations);
+            result[i] = std::vector<ReadOnlyPlaintext>(numRotations);
         }
     }
 
@@ -1608,7 +1608,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 // EVALUATION: CoeffsToSlots and SlotsToCoeffs
 //------------------------------------------------------------------------------
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlaintext>& A,
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A,
                                                      ConstCiphertext<DCRTPoly> ct) const {
     uint32_t slots = A.size();
 
@@ -1681,7 +1681,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
     return result;
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector<ConstPlaintext>>& A,
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                                    ConstCiphertext<DCRTPoly> ctxt) const {
     uint32_t slots = ctxt->GetSlots();
 
@@ -1893,7 +1893,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
     return result;
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector<ConstPlaintext>>& A,
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                                    ConstCiphertext<DCRTPoly> ctxt) const {
     uint32_t slots = ctxt->GetSlots();
 

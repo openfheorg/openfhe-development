@@ -777,7 +777,7 @@ std::shared_ptr<LWECiphertextImpl> ExtractLWECiphertext(const std::vector<std::v
 // TODO: fix this.
 //------------------------------------------------------------------------------
 
-std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
+std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
     const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale = 1) const {
     uint32_t slots = A.size();
@@ -818,7 +818,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
 
     std::vector<std::vector<std::complex<double>>> newA(slots);
-    std::vector<ConstPlaintext> result(slots);
+    std::vector<ReadOnlyPlaintext> result(slots);
 
     //  A and B are concatenated horizontally
     for (uint32_t i = 0; i < A.size(); i++) {
@@ -846,7 +846,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     return result;
 }
 
-std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
+std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1,
     uint32_t L, double scale = 1) const {
     if (A[0].size() != A.size()) {
@@ -890,7 +890,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
 
-    std::vector<ConstPlaintext> result(slots);
+    std::vector<ReadOnlyPlaintext> result(slots);
 #pragma omp parallel for
     for (uint32_t j = 0; j < gStep; j++) {
         int32_t offset = -static_cast<int32_t>(bStep * j);
@@ -962,7 +962,7 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                                ConstCiphertext<DCRTPoly> ctxt,
-                                                               const std::vector<ConstPlaintext>& A,
+                                                               const std::vector<ReadOnlyPlaintext>& A,
                                                                uint32_t dim1) const {
     uint32_t slots = A.size();
 

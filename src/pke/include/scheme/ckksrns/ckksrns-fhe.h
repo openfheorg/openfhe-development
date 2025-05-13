@@ -101,16 +101,16 @@ public:
     std::vector<int32_t> m_paramsDec = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS, 0);
 
     // Linear map U0; used in decoding
-    std::vector<ConstPlaintext> m_U0Pre;
+    std::vector<ReadOnlyPlaintext> m_U0Pre;
 
     // Conj(U0^T); used in encoding
-    std::vector<ConstPlaintext> m_U0hatTPre;
+    std::vector<ReadOnlyPlaintext> m_U0hatTPre;
 
     // coefficients corresponding to U0; used in decoding
-    std::vector<std::vector<ConstPlaintext>> m_U0PreFFT;
+    std::vector<std::vector<ReadOnlyPlaintext>> m_U0PreFFT;
 
     // coefficients corresponding to conj(U0^T); used in encoding
-    std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
+    std::vector<std::vector<ReadOnlyPlaintext>> m_U0hatTPreFFT;
 
     template <class Archive>
     void save(Archive& ar) const {
@@ -157,23 +157,23 @@ public:
     // Precomputations for CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
-    std::vector<ConstPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                               const std::vector<std::vector<std::complex<double>>>& A,
                                                               double scale = 1, uint32_t L = 0) const;
 
-    std::vector<ConstPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                               const std::vector<std::vector<std::complex<double>>>& A,
                                                               const std::vector<std::vector<std::complex<double>>>& B,
                                                               uint32_t orientation = 0, double scale = 1,
                                                               uint32_t L = 0) const;
 
-    std::vector<std::vector<ConstPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<std::vector<ReadOnlyPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                          const std::vector<std::complex<double>>& A,
                                                                          const std::vector<uint32_t>& rotGroup,
                                                                          bool flag_i, double scale = 1,
                                                                          uint32_t L = 0) const;
 
-    std::vector<std::vector<ConstPlaintext>> EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<std::vector<ReadOnlyPlaintext>> EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                          const std::vector<std::complex<double>>& A,
                                                                          const std::vector<uint32_t>& rotGroup,
                                                                          bool flag_i, double scale = 1,
@@ -183,12 +183,12 @@ public:
     // EVALUATION: CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
-    Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ConstPlaintext>& A, ConstCiphertext<DCRTPoly> ct) const;
+    Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly> ct) const;
 
-    Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ConstPlaintext>>& A,
+    Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly> ctxt) const;
 
-    Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ConstPlaintext>>& A,
+    Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly> ctxt) const;
 
     //------------------------------------------------------------------------------

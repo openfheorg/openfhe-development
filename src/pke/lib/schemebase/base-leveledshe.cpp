@@ -605,8 +605,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plain
 // CORE OPERATION
 /////////////////////////////////////////
 template <class Element>
-void LeveledSHEBase<Element>::VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext1,
-                                                const ConstCiphertext<Element>& ciphertext2,
+void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext1,
+                                                ConstCiphertext<Element>& ciphertext2,
                                                 CALLER_INFO_ARGS_CPP) const {
     uint32_t numTowers1 = ciphertext1->GetElements()[0].GetNumOfElements();
     uint32_t numTowers2 = ciphertext2->GetElements()[0].GetNumOfElements();
@@ -618,7 +618,7 @@ void LeveledSHEBase<Element>::VerifyNumOfTowers(const ConstCiphertext<Element>& 
     }
 }
 template <class Element>
-void LeveledSHEBase<Element>::VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext, const Element& plaintext,
+void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext, const Element& plaintext,
                                                 CALLER_INFO_ARGS_CPP) const {
     uint32_t numTowersCtxt = ciphertext->GetElements()[0].GetNumOfElements();
     uint32_t numTowersPtxt = plaintext.GetNumOfElements();
