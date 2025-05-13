@@ -799,9 +799,9 @@ protected:
     /////////////////////////////////////////
     // CORE OPERATIONS
     /////////////////////////////////////////
-    void VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext1, const ConstCiphertext<Element>& ciphertext,
+    void VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext,
                            CALLER_INFO_ARGS_HDR) const;
-    void VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext, const Element& plaintext,
+    void VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext, const Element& plaintext,
                            CALLER_INFO_ARGS_HDR) const;
 
     /**

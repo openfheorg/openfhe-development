@@ -108,7 +108,7 @@ public:
    * @param constants vector containing double weights.
    * @return A ciphertext containing the linear weighted sum.
    */
-    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ConstCiphertext<Element>>& ciphertextVec,
+    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
                                                const std::vector<double>& weights) const {
         std::string errMsg = "EvalLinearWSum is not implemented for this scheme.";
         OPENFHE_THROW(errMsg);

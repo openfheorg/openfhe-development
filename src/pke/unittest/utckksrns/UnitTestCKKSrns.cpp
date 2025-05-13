@@ -1696,7 +1696,7 @@ protected:
             Ciphertext<Element> cIn3 = cc->Encrypt(kp.publicKey, pIn3);
 
             std::vector<Ciphertext<Element>> ciphertexts{cIn1, cIn2, cIn3};
-            std::vector<ConstCiphertext<Element>> constCiphertexts{cIn1, cIn2, cIn3};
+            std::vector<ReadOnlyCiphertext<Element>> constCiphertexts{cIn1, cIn2, cIn3};
 
             auto cResult = cc->EvalLinearWSum(constCiphertexts, weights);
             Plaintext results;
@@ -2011,7 +2011,7 @@ protected:
             for (int i = 0; i < 2; i++)
                 weights[i] = i;
 
-            std::vector<ConstCiphertext<Element>> ciphertexts{ciphertext1, ciphertext2};
+            std::vector<ReadOnlyCiphertext<Element>> ciphertexts{ciphertext1, ciphertext2};
 
             // Checking if metadata is carried over in EvalLinearWSum
             auto cLWS       = cc->EvalLinearWSum(ciphertexts, weights);

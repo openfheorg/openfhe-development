@@ -366,7 +366,7 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(const ConstCiphertext<Element>& ciphertext,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>& ciphertext,
                                                         uint32_t batchSize) const {
     ValidateCiphertext(ciphertext);
     auto&& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
@@ -374,7 +374,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(const ConstCiphertext<El
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(const ConstCiphertext<Element>& ciphertext,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element>& ciphertext,
                                                             uint32_t numRows,
                                                             const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
                                                             uint32_t subringDim) const {
@@ -384,7 +384,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(const ConstCiphertex
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
-    const ConstCiphertext<Element>& ciphertext, uint32_t numCols,
+    ConstCiphertext<Element>& ciphertext, uint32_t numCols,
     const std::map<uint32_t, EvalKey<Element>>& evalSumKeysRight) const {
     ValidateCiphertext(ciphertext);
 
@@ -393,7 +393,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(const ConstCiphertext<Element>& ciphertext,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Element>& ciphertext,
                                                             int32_t index) const {
     ValidateCiphertext(ciphertext);
 
@@ -417,8 +417,8 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalMerge(
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(const ConstCiphertext<Element>& ct1,
-                                                                 const ConstCiphertext<Element>& ct2,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext<Element>& ct1,
+                                                                 ConstCiphertext<Element>& ct2,
                                                                  uint32_t batchSize) const {
     ValidateCiphertext(ct1);
     if (ct2 == nullptr || ct1->GetKeyTag() != ct2->GetKeyTag())
@@ -430,7 +430,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(const ConstCiph
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(const ConstCiphertext<Element>& ct1,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext<Element>& ct1,
                                                                  ConstPlaintext ct2, uint32_t batchSize) const {
     ValidateCiphertext(ct1);
     if (ct2 == nullptr)
@@ -452,7 +452,7 @@ Plaintext CryptoContextImpl<Element>::GetPlaintextForDecrypt(PlaintextEncodings 
 }
 
 template <typename Element>
-DecryptResult CryptoContextImpl<Element>::Decrypt(const ConstCiphertext<Element>& ciphertext,
+DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element>& ciphertext,
                                                   const PrivateKey<Element> privateKey, Plaintext* plaintext) {
     if (ciphertext == nullptr)
         OPENFHE_THROW("ciphertext is empty");
@@ -508,32 +508,32 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(const ConstCiphertext<Element>
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalChebyshevFunction(std::function<double(double)> func,
-                                                                      const ConstCiphertext<Element>& ciphertext,
+                                                                      ConstCiphertext<Element>& ciphertext,
                                                                       double a, double b, uint32_t degree) const {
     std::vector<double> coefficients = EvalChebyshevCoefficients(func, a, b, degree);
     return EvalChebyshevSeries(ciphertext, coefficients, a, b);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSin(const ConstCiphertext<Element>& ciphertext, double a, double b,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSin(ConstCiphertext<Element>& ciphertext, double a, double b,
                                                         uint32_t degree) const {
     return EvalChebyshevFunction([](double x) -> double { return std::sin(x); }, ciphertext, a, b, degree);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalCos(const ConstCiphertext<Element>& ciphertext, double a, double b,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalCos(ConstCiphertext<Element>& ciphertext, double a, double b,
                                                         uint32_t degree) const {
     return EvalChebyshevFunction([](double x) -> double { return std::cos(x); }, ciphertext, a, b, degree);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalLogistic(const ConstCiphertext<Element>& ciphertext, double a,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLogistic(ConstCiphertext<Element>& ciphertext, double a,
                                                              double b, uint32_t degree) const {
     return EvalChebyshevFunction([](double x) -> double { return 1 / (1 + std::exp(-x)); }, ciphertext, a, b, degree);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(const ConstCiphertext<Element>& ciphertext, double a,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Element>& ciphertext, double a,
                                                            double b, uint32_t degree) const {
     return EvalChebyshevFunction([](double x) -> double { return 1 / x; }, ciphertext, a, b, degree);
 }
@@ -558,7 +558,7 @@ Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings
 }
 
 template <>
-DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(const ConstCiphertext<DCRTPoly>& ciphertext,
+DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const PrivateKey<DCRTPoly> privateKey, Plaintext* plaintext) {
     if (ciphertext == nullptr)
         OPENFHE_THROW("ciphertext is empty");
@@ -657,7 +657,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(const ConstCiphertext<Element>& ciphertext) const {
+Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCiphertext<Element>& ciphertext) const {
     return GetScheme()->IntMPBootAdjustScale(ciphertext);
 }
 
@@ -669,8 +669,8 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const 
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(
-    const PrivateKey<Element> privateKey, const ConstCiphertext<Element>& ciphertext,
-    const ConstCiphertext<Element>& a) const {
+    const PrivateKey<Element> privateKey, ConstCiphertext<Element>& ciphertext,
+    ConstCiphertext<Element>& a) const {
     return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
 }
 
@@ -683,8 +683,8 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootAdd(
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                                                  const std::vector<Ciphertext<Element>>& sharesPair,
-                                                                 const ConstCiphertext<Element>& a,
-                                                                 const ConstCiphertext<Element>& ciphertext) const {
+                                                                 ConstCiphertext<Element>& a,
+                                                                 ConstCiphertext<Element>& ciphertext) const {
     return GetScheme()->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
 }
 
