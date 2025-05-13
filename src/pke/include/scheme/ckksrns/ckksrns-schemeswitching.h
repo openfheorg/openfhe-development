@@ -185,18 +185,18 @@ public:
     }
 
 private:
-    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                        const std::vector<std::vector<std::complex<double>>>& A,
                                                        uint32_t dim1, uint32_t L, double scale) const;
 
-    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                        const std::vector<std::vector<std::complex<double>>>& A,
                                                        const std::vector<std::vector<std::complex<double>>>& B,
                                                        uint32_t dim1, uint32_t L, double scale) const;
 
     Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                     ConstCiphertext<DCRTPoly> ctxt,
-                                                    const std::vector<ConstPlaintext>& A, uint32_t dim1) const;
+                                                    const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1) const;
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                         const std::vector<std::vector<std::complex<double>>>& A,
@@ -288,7 +288,7 @@ private:
     // a ciphertext under the intermediate cryptocontext
     Ciphertext<DCRTPoly> m_ctxtKS;
     // Precomputed matrix for CKKS to FHEW switching
-    std::vector<ConstPlaintext> m_U0Pre;
+    std::vector<ReadOnlyPlaintext> m_U0Pre;
 
 #define Pi 3.14159265358979323846
 };
