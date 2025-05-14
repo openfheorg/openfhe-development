@@ -98,8 +98,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_NOIS
 constexpr uint32_t MULT_DEPTH                 = 25;
 constexpr uint32_t RDIM                       = 512;
 constexpr uint32_t NUM_LRG_DIGS               = 3;
-constexpr uint32_t SMODSIZE                   = 59;
-constexpr uint32_t FMODSIZE                   = 60;
+constexpr uint32_t SMODSIZE                   = 56;
+constexpr uint32_t FMODSIZE                   = 57;
 constexpr double NOISE_ESTIMATE_FLEX_AUTO_EXT = 2;
 constexpr double NOISE_ESTIMATE               = 5.5;
 #if NATIVEINT != 128

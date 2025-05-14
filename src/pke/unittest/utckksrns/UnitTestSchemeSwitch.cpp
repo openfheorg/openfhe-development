@@ -137,7 +137,7 @@ constexpr uint32_t SMODSIZE = 70;
 constexpr uint32_t FMODSIZE = 80;
 #else
 constexpr uint32_t SMODSIZE = 50;
-constexpr uint32_t FMODSIZE = 60;
+constexpr uint32_t FMODSIZE = 57;
 #endif
 
 // clang-format off

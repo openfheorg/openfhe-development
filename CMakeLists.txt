@@ -173,7 +173,7 @@ if(EMSCRIPTEN)
     add_link_options(
         -Wno-limited-postlink-optimizations
         -sINITIAL_MEMORY=2047MB -sMAXIMUM_MEMORY=4GB -sALLOW_MEMORY_GROWTH=1
-        -sMALLOC=emmalloc -sNO_DISABLE_EXCEPTION_CATCHING)
+        -sMALLOC=emmalloc -sDISABLE_EXCEPTION_CATCHING=0)
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_COMPILE_FLAGS}")
