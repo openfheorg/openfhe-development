@@ -47,6 +47,51 @@ static bool IsNotEqualZero(std::complex<double> v) {
     return (std::fabs(v.real()) >= delta) || (std::fabs(v.imag()) >= delta);
 }
 
+//  Populate statically the parameter m for the Paterson-Stockmeyer algorithm up to the degree value of upperBoundDegree
+enum { UPPER_BOUND_PS = 2204 };
+
+// Populate the conversion table Degree-to-Multiplicative Depth
+enum {
+    LOWER_BOUND_DEGREE = 5,
+    UPPER_BOUND_DEGREE = 261631,
+};
+
+// clang-format off
+static std::vector<uint32_t> GenerateDepthByDegreeTable() {
+    std::vector<uint32_t> depthTable(UPPER_BOUND_DEGREE + 1);
+
+    std::fill(depthTable.begin(),        depthTable.begin() + 5,     3);  // degree in [0,4], depth = 3 - the Paterson-Stockmeyer algorithm is not used when degree < 5
+    std::fill(depthTable.begin() + 5,    depthTable.begin() + 6,     4);  // degree in [5],         depth = 4
+    std::fill(depthTable.begin() + 6,    depthTable.begin() + 14,    5);  // degree in [6,13],      depth = 5
+    std::fill(depthTable.begin() + 14,   depthTable.begin() + 28,    6);  // degree in [14,27],     depth = 6
+    std::fill(depthTable.begin() + 28,   depthTable.begin() + 60,    7);  // degree in [28,59],     depth = 7
+    std::fill(depthTable.begin() + 60,   depthTable.begin() + 120,   8);  // degree in [60,119],    depth = 8
+    std::fill(depthTable.begin() + 120,  depthTable.begin() + 248,   9);  // degree in [120,247],   depth = 9
+    std::fill(depthTable.begin() + 248,  depthTable.begin() + 496,  10);  // degree in [248,495],   depth = 10
+    std::fill(depthTable.begin() + 496,  depthTable.begin() + 1008, 11);  // degree in [496,1007],  depth = 11
+    std::fill(depthTable.begin() + 1008, depthTable.begin() + 2031, 12);  // degree in [1008,2031], depth = 12
+    std::fill(depthTable.begin() + 2032, depthTable.begin() + 4031, 13);  // degree in [2031,4031], depth = 13
+    std::fill(depthTable.begin() + 4032, depthTable.begin() + 8127, 14);  // degree in [4032,8127], depth = 14
+    std::fill(depthTable.begin() + 8128, depthTable.begin() + 16255, 15);  // degree in [8128, 16255], depth = 15
+    std::fill(depthTable.begin() + 16256, depthTable.begin() + 32639, 16);  // degree in [16256, 32639], depth = 16
+    std::fill(depthTable.begin() + 32640, depthTable.begin() + 65279, 17);  // degree in [32640, 65279], depth = 17
+    std::fill(depthTable.begin() + 65280, depthTable.begin() + 130815, 18);  // degree in [65280, 130815], depth = 18
+    std::fill(depthTable.begin() + 130816, depthTable.end(), 19);  // degree in [130816, 261631], depth = 19
+
+    return depthTable;
+}
+// clang-format on
+
+static uint32_t GetDepthByDegree(size_t degree) {
+    if (degree >= LOWER_BOUND_DEGREE && degree <= UPPER_BOUND_DEGREE)
+        return GenerateDepthByDegreeTable()[degree];
+
+    std::string errMsg("Polynomial degree is supported from " + std::to_string(LOWER_BOUND_DEGREE) + " to " +
+                       std::to_string(UPPER_BOUND_DEGREE) + " inclusive. Its current value is ");
+    errMsg += std::to_string(degree);
+    OPENFHE_THROW(errMsg);
+}
+
 namespace lbcrypto {
 
 std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
@@ -181,6 +226,12 @@ std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64
         default:
             OPENFHE_THROW("Order must be 1, 2, or 3");
     }
+}
+
+uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<std::complex<double>>& vec, bool isNormalized) {
+    if (vec.size() == 0)
+        OPENFHE_THROW("Cannot perform operation on empty vector. vec.size() == 0");
+    return GetDepthByDegree(vec.size() - 1) - isNormalized;
 }
 
 }  // namespace lbcrypto
