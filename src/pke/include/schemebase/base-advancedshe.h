@@ -65,7 +65,7 @@ class AdvancedSHEBase {
     using TugType  = typename Element::TugType;
 
 public:
-    virtual ~AdvancedSHEBase() {}
+    virtual ~AdvancedSHEBase() = default;
 
     /**
    * Virtual function for evaluating addition of a list of ciphertexts.

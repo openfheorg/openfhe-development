@@ -58,7 +58,7 @@ class PKERNS : public PKEBase<DCRTPoly> {
     using TugType  = typename DCRTPoly::TugType;
 
 public:
-    virtual ~PKERNS() {}
+    virtual ~PKERNS() = default;
 
     /**
    * Method for encrypting plaintext using LBC

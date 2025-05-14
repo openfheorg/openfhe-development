@@ -129,7 +129,7 @@ public:
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
         : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
 
-    CKKSPackedEncoding(CKKSPackedEncoding&& rhs)
+    CKKSPackedEncoding(CKKSPackedEncoding&& rhs) noexcept
         : PlaintextImpl(std::move(rhs)), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
 
     bool Encode() override;

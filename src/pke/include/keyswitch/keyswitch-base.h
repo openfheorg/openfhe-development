@@ -62,9 +62,9 @@ class KeySwitchBase {
     using ParmType = typename Element::Params;
 
 public:
-    KeySwitchBase(){};
+    KeySwitchBase() = default;
 
-    virtual ~KeySwitchBase(){};
+    virtual ~KeySwitchBase() = default;
 
     /**
    * Method for KeySwitchGen

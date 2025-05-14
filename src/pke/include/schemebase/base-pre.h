@@ -60,7 +60,7 @@ class PREBase {
     using TugType  = typename Element::TugType;
 
 public:
-    virtual ~PREBase() {}
+    virtual ~PREBase() = default;
 
     /**
    * Virtual function to generate 1..log(q) encryptions for each bit of the

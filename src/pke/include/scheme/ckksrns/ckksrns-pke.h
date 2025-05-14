@@ -50,7 +50,7 @@ class PKECKKSRNS : public PKERNS {
     using TugType  = typename DCRTPoly::TugType;
 
 public:
-    virtual ~PKECKKSRNS() {}
+    virtual ~PKECKKSRNS() = default;
 
     /**
    * Method for decrypting plaintext with noise flooding

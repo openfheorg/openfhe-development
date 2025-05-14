@@ -55,7 +55,7 @@ protected:
                               uint32_t cyclOrder, uint32_t extraModsize) const;
 
 public:
-    virtual ~ParameterGenerationCKKSRNS() {}
+    virtual ~ParameterGenerationCKKSRNS() = default;
 
     bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
                                   usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,

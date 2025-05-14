@@ -67,7 +67,7 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
 // SHE MULTIPLICATION
 /////////////////////////////////////////
 template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element> key) {
+void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key) {
     ValidateKey(key);
     if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
         CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
@@ -77,7 +77,7 @@ void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element> key) {
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element> key) {
+void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key) {
     ValidateKey(key);
     if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
         CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
@@ -99,7 +99,7 @@ void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& keyTag) {
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element> cc) {
+void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element>& cc) {
     for (auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.begin();
          it != CryptoContextImpl<Element>::s_evalMultKeyMap.end();) {
         if (it->second[0]->GetCryptoContext() == cc) {

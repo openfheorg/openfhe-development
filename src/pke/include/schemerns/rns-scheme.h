@@ -64,9 +64,9 @@ namespace lbcrypto {
  */
 class SchemeRNS : public SchemeBase<DCRTPoly> {
 public:
-    SchemeRNS() {}
+    SchemeRNS() = default;
 
-    virtual ~SchemeRNS() {}
+    virtual ~SchemeRNS() = default;
 
     void SetKeySwitchingTechnique(KeySwitchTechnique ksTech) {
         if (ksTech == BV) {

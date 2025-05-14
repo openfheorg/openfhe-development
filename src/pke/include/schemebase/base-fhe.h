@@ -60,7 +60,7 @@ namespace lbcrypto {
 template <class Element>
 class FHEBase {
 public:
-    virtual ~FHEBase() {}
+    virtual ~FHEBase() = default;
 
     /**
    * Bootstrap functionality:

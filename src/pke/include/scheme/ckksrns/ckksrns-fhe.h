@@ -53,36 +53,19 @@ namespace lbcrypto {
 
 class CKKSBootstrapPrecom {
 public:
-    CKKSBootstrapPrecom() {}
+    CKKSBootstrapPrecom() = default;
 
-    CKKSBootstrapPrecom(const CKKSBootstrapPrecom& rhs) {
-        m_dim1         = rhs.m_dim1;
-        m_slots        = rhs.m_slots;
-        m_paramsEnc    = rhs.m_paramsEnc;
-        m_paramsDec    = rhs.m_paramsDec;
-        m_U0Pre        = rhs.m_U0Pre;
-        m_U0hatTPre    = rhs.m_U0hatTPre;
-        m_U0PreFFT     = rhs.m_U0PreFFT;
-        m_U0hatTPreFFT = rhs.m_U0hatTPreFFT;
-    }
+    virtual ~CKKSBootstrapPrecom() = default;
 
-    CKKSBootstrapPrecom(CKKSBootstrapPrecom&& rhs) {
-        m_dim1         = rhs.m_dim1;
-        m_slots        = rhs.m_slots;
-        m_paramsEnc    = std::move(rhs.m_paramsEnc);
-        m_paramsDec    = std::move(rhs.m_paramsDec);
-        m_U0Pre        = std::move(rhs.m_U0Pre);
-        m_U0hatTPre    = std::move(rhs.m_U0hatTPre);
-        m_U0PreFFT     = std::move(rhs.m_U0PreFFT);
-        m_U0hatTPreFFT = std::move(rhs.m_U0hatTPreFFT);
-    }
+    CKKSBootstrapPrecom(const CKKSBootstrapPrecom& rhs) = default;
 
-    virtual ~CKKSBootstrapPrecom() {}
+    CKKSBootstrapPrecom(CKKSBootstrapPrecom&& rhs) noexcept = default;
+
     // the inner dimension in the baby-step giant-step strategy
-    uint32_t m_dim1 = 0;
+    uint32_t m_dim1;
 
     // number of slots for which the bootstrapping is performed
-    uint32_t m_slots = 0;
+    uint32_t m_slots;
 
     // level budget for homomorphic encoding, number of layers to collapse in one level,
     // number of layers remaining to be collapsed in one level to have exactly the number
@@ -90,7 +73,7 @@ public:
     // the baby step and giant step in the baby-step giant-step strategy, the number of
     // rotations in the remaining level, the baby step and giant step in the baby-step
     // giant-step strategy for the remaining level
-    std::vector<int32_t> m_paramsEnc = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS, 0);
+    std::vector<int32_t> m_paramsEnc = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS);
 
     // level budget for homomorphic decoding, number of layers to collapse in one level,
     // number of layers remaining to be collapsed in one level to have exactly the number
@@ -98,7 +81,7 @@ public:
     // the baby step and giant step in the baby-step giant-step strategy, the number of
     // rotations in the remaining level, the baby step and giant step in the baby-step
     // giant-step strategy for the remaining level
-    std::vector<int32_t> m_paramsDec = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS, 0);
+    std::vector<int32_t> m_paramsDec = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS);
 
     // Linear map U0; used in decoding
     std::vector<ReadOnlyPlaintext> m_U0Pre;
@@ -135,7 +118,7 @@ class FHECKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
 public:
-    virtual ~FHECKKSRNS() {}
+    virtual ~FHECKKSRNS() = default;
 
     //------------------------------------------------------------------------------
     // Bootstrap Wrapper
@@ -291,7 +274,7 @@ private:
         6;  // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static const uint32_t R_SPARSE =
         3;  // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
-    uint32_t m_correctionFactor = 0;  // correction factor, which we scale the message by to improve precision
+    uint32_t m_correctionFactor;  // correction factor, which we scale the message by to improve precision
 
     // key tuple is dim1, levelBudgetEnc, levelBudgetDec
     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
@@ -338,7 +321,7 @@ private:
         1.1421575296031385e-14};
 
     // Chebyshev series coefficients for the COMPOSITESCALING case where d > 2
-    const std::vector<double> g_coefficientsUniformExt{
+    static const inline std::vector<double> g_coefficientsUniformExt{
         // New Coefficients (K_UNIFORM = 768)
         0.12602195635248634,    -0.0030834928649740388,  0.1293538007310393,      -0.0029150296085609707,
         0.13880323885842225,    -0.0025534902415420128,  0.15259900956315636,     -0.0019572806381606537,

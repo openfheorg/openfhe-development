@@ -50,7 +50,7 @@ namespace lbcrypto {
  */
 class FHERNS : public FHEBase<DCRTPoly> {
 public:
-    virtual ~FHERNS() {}
+    virtual ~FHERNS() = default;
 
     /////////////////////////////////////
     // SERIALIZATION

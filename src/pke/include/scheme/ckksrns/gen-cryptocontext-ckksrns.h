@@ -36,13 +36,13 @@
 #ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_H__
 #define __GEN_CRYPTOCONTEXT_CKKSRNS_H__
 
+#include "cryptocontextfactory.h"
 #include "lattice/lat-hal.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns-internal.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns-params.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-scheme.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns-internal.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns-params.h"
 #include "scheme/gen-cryptocontext-params-validation.h"
-#include "cryptocontextfactory.h"
 
 namespace lbcrypto {
 

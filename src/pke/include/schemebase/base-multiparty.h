@@ -87,7 +87,7 @@ class MultipartyBase {
     using TugType  = typename Element::TugType;
 
 public:
-    virtual ~MultipartyBase() {}
+    virtual ~MultipartyBase() = default;
 
     /**
    * Threshold FHE: Generates a public key from a vector of secret shares.

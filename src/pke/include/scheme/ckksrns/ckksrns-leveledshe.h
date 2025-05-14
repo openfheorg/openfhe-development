@@ -47,7 +47,7 @@ namespace lbcrypto {
 
 class LeveledSHECKKSRNS : public LeveledSHERNS {
 public:
-    virtual ~LeveledSHECKKSRNS() {}
+    virtual ~LeveledSHECKKSRNS() = default;
 
     /////////////////////////////////////////
     // SHE ADDITION

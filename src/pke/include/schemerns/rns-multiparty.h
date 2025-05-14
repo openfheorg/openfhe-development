@@ -78,7 +78,7 @@ class MultipartyRNS : public MultipartyBase<DCRTPoly> {
     using TugType  = typename DCRTPoly::TugType;
 
 public:
-    virtual ~MultipartyRNS() {}
+    virtual ~MultipartyRNS() = default;
 
     Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
                                                const PrivateKey<DCRTPoly> privateKey) const override;

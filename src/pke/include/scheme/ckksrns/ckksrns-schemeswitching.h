@@ -32,18 +32,17 @@
 #ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
 #define LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
 
+#include "binfhecontext.h"
 #include "constants.h"
+#include "lwe-ciphertext.h"
+#include "lwe-pke.h"
+#include "scheme/scheme-swch-params.h"
 #include "schemerns/rns-fhe.h"
 
-#include "binfhecontext.h"
-#include "lwe-pke.h"
-#include "lwe-ciphertext.h"
-#include "scheme/scheme-swch-params.h"
-
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
-#include <map>
 #include <vector>
 
 /**
@@ -56,7 +55,7 @@ class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
 public:
-    virtual ~SWITCHCKKSRNS() {}
+    virtual ~SWITCHCKKSRNS() = default;
 
     //------------------------------------------------------------------------------
     // Scheme Switching Wrappers

@@ -707,7 +707,7 @@ public:
     * @brief Clears EvalMultKey cache for the given context
     * @param cc the context to clear all EvalMultKey for
     */
-    static void ClearEvalMultKeys(const CryptoContext<Element> cc);
+    static void ClearEvalMultKeys(const CryptoContext<Element>& cc);
 
     /**
     * @brief Adds the given vector of keys for the given keyTag to the map of all EvalMult keys
@@ -1861,7 +1861,7 @@ public:
     * @param key secret key
     * @note the new evaluation key is stored in cryptocontext
     */
-    void EvalMultKeyGen(const PrivateKey<Element> key);
+    void EvalMultKeyGen(const PrivateKey<Element>& key);
 
     /**
     * @brief Creates a vector evalmult keys that can be used with the OpenFHE EvalMult operator
@@ -1871,7 +1871,7 @@ public:
     * 2nd key (for s^3) is used for multiplication of ciphertexts of depth 2, etc.
     * A vector of new evaluation keys is stored in crytpocontext
     */
-    void EvalMultKeysGen(const PrivateKey<Element> key);
+    void EvalMultKeysGen(const PrivateKey<Element>& key);
 
     /**
     * @brief Homomorphic multiplication of two ciphertexts using a relinearization key.

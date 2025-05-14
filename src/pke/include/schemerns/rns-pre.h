@@ -56,7 +56,7 @@ class PRERNS : public PREBase<DCRTPoly> {
     using TugType  = typename DCRTPoly::TugType;
 
 public:
-    virtual ~PRERNS() {}
+    virtual ~PRERNS() = default;
 
     /////////////////////////////////////
     // SERIALIZATION

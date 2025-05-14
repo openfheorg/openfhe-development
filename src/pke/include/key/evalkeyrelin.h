@@ -61,16 +61,18 @@ public:
    *
    * @param &cryptoParams is the reference to cryptoParams
    */
-    explicit EvalKeyRelinImpl(CryptoContext<Element> cc = 0) : EvalKeyImpl<Element>(cc) {}
+    EvalKeyRelinImpl() = default;
 
-    virtual ~EvalKeyRelinImpl() {}
+    explicit EvalKeyRelinImpl(const CryptoContext<Element>& cc) : EvalKeyImpl<Element>(cc) {}
+
+    virtual ~EvalKeyRelinImpl() = default;
 
     /**
    * Copy constructor
    *
    *@param &rhs key to copy from
    */
-    explicit EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
+    EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
         : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(rhs.m_rKey) {}
 
     /**
@@ -78,11 +80,11 @@ public:
    *
    *@param &rhs key to move from
    */
-    explicit EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
+    EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
         : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(std::move(rhs.m_rKey)) {}
 
     operator bool() const {
-        return static_cast<bool>(this->context) && m_rKey.size() != 0;
+        return (this->context != nullptr) && (m_rKey.size() != 0);
     }
 
     /**
@@ -92,7 +94,7 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
-        this->m_rKey  = rhs.m_rKey;
+        m_rKey        = rhs.m_rKey;
         return *this;
     }
 
@@ -101,9 +103,8 @@ public:
    *
    * @param &rhs key to move from
    */
-    EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) {
-        this->context = rhs.context;
-        rhs.context   = 0;
+    EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
+        this->context = std::move(rhs.context);
         m_rKey        = std::move(rhs.m_rKey);
         return *this;
     }

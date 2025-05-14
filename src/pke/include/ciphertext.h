@@ -69,7 +69,7 @@ public:
    *
    * @param cc
    */
-    explicit CiphertextImpl(CryptoContext<Element> cc, const std::string& id = "",
+    explicit CiphertextImpl(const CryptoContext<Element>& cc, const std::string& id = "",
                             PlaintextEncodings encType = INVALID_ENCODING)
         : CryptoObject<Element>(cc, id), m_encodingType(encType) {}
 
@@ -215,7 +215,7 @@ public:
    *
    * @param &&element is a polynomial ring element.
    */
-    void SetElements(std::vector<Element>&& elements) {
+    void SetElements(std::vector<Element>&& elements) noexcept {
         m_elements = std::move(elements);
     }
 

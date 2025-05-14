@@ -62,7 +62,7 @@ class PKEBase {
     using TugType  = typename Element::TugType;
 
 public:
-    virtual ~PKEBase() {}
+    virtual ~PKEBase() = default;
 
     /**
    * Function to generate public and private keys

@@ -50,7 +50,7 @@ namespace lbcrypto {
  */
 class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
 public:
-    virtual ~AdvancedSHERNS() {}
+    virtual ~AdvancedSHERNS() = default;
 
     /////////////////////////////////////
     // SERIALIZATION

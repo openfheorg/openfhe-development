@@ -47,7 +47,7 @@ public:
     PublicKey<Element> publicKey;
     PrivateKey<Element> secretKey;
 
-    KeyPair(PublicKey<Element> a, PrivateKey<Element> b) : publicKey(a), secretKey(b) {}
+    KeyPair(const PublicKey<Element>& a, const PrivateKey<Element>& b) : publicKey(a), secretKey(b) {}
 
     explicit KeyPair(PublicKeyImpl<Element>* a = nullptr, PrivateKeyImpl<Element>* b = nullptr)
         : publicKey(a), secretKey(b) {}

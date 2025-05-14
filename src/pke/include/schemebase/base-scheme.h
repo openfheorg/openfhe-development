@@ -89,9 +89,9 @@ protected:
     }
 
 public:
-    SchemeBase() {}
+    SchemeBase() = default;
 
-    virtual ~SchemeBase() {}
+    virtual ~SchemeBase() = default;
 
     virtual bool operator==(const SchemeBase& sch) const {
         OPENFHE_THROW("operator== is not supported");

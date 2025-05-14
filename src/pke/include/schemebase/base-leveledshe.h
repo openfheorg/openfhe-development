@@ -65,7 +65,7 @@ class LeveledSHEBase {
     using TugType  = typename Element::TugType;
 
 public:
-    virtual ~LeveledSHEBase() {}
+    virtual ~LeveledSHEBase() = default;
 
     /////////////////////////////////////////
     // SHE NEGATION

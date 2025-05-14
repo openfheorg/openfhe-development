@@ -212,11 +212,11 @@ public:
      */
     explicit Params(const std::vector<std::string>& vals);
 
-    Params(const Params& obj) = default;
-    Params(Params&& obj)      = default;
-
+    Params(const Params& obj)            = default;
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj)      = default;
+
+    Params(Params&& obj) noexcept            = default;
+    Params& operator=(Params&& obj) noexcept = default;
 
     virtual ~Params() = default;
 

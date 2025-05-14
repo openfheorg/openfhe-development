@@ -34,18 +34,18 @@
 
 #include "schemerns/rns-scheme.h"
 
+#include "scheme/ckksrns/ckksrns-advancedshe.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-parametergeneration.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
+#include "scheme/ckksrns/ckksrns-leveledshe.h"
+#include "scheme/ckksrns/ckksrns-multiparty.h"
+#include "scheme/ckksrns/ckksrns-parametergeneration.h"
 #include "scheme/ckksrns/ckksrns-pke.h"
 #include "scheme/ckksrns/ckksrns-pre.h"
-#include "scheme/ckksrns/ckksrns-leveledshe.h"
-#include "scheme/ckksrns/ckksrns-advancedshe.h"
-#include "scheme/ckksrns/ckksrns-multiparty.h"
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
 
-#include <string>
 #include <memory>
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -59,7 +59,7 @@ public:
         this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
     }
 
-    virtual ~SchemeCKKSRNS() {}
+    virtual ~SchemeCKKSRNS() = default;
 
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
         return dynamic_cast<const SchemeCKKSRNS*>(&sch) != nullptr;

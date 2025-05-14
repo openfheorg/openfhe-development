@@ -60,9 +60,9 @@ class KeySwitchBV : public KeySwitchRNS {
     using TugType  = typename DCRTPoly::TugType;
 
 public:
-    KeySwitchBV(){};
+    KeySwitchBV() = default;
 
-    virtual ~KeySwitchBV(){};
+    virtual ~KeySwitchBV() = default;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PrivateKey<DCRTPoly> newPrivateKey) const override;

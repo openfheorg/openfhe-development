@@ -68,9 +68,9 @@ class KeySwitchHYBRID : public KeySwitchRNS {
     using TugType  = typename DCRTPoly::TugType;
 
 public:
-    KeySwitchHYBRID(){};
+    KeySwitchHYBRID() = default;
 
-    virtual ~KeySwitchHYBRID(){};
+    virtual ~KeySwitchHYBRID() = default;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PrivateKey<DCRTPoly> newPrivateKey) const override;

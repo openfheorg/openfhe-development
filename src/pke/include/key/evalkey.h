@@ -57,10 +57,11 @@ public:
    *
    * @param &cryptoParams is the reference to cryptoParams
    */
+    EvalKeyImpl() = default;
 
-    explicit EvalKeyImpl(CryptoContext<Element> cc = 0) : Key<Element>(cc) {}
+    explicit EvalKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc) {}
 
-    virtual ~EvalKeyImpl() {}
+    virtual ~EvalKeyImpl() = default;
 
     /**
    * Setter function to store Relinearization Element Vector A.
@@ -249,6 +250,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         ar(::cereal::base_class<Key<Element>>(this));
     }
+
     std::string SerializedObjectName() const {
         return "EvalKey";
     }

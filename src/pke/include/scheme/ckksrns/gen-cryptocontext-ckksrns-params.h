@@ -56,9 +56,9 @@ class CCParams<CryptoContextCKKSRNS> : public Params {
 public:
     CCParams() : Params(CKKSRNS_SCHEME) {}
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj)      = default;
-    ~CCParams()                   = default;
+    CCParams(const CCParams& obj)     = default;
+    CCParams(CCParams&& obj) noexcept = default;
+    ~CCParams()                       = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to CKKSRNS
@@ -66,24 +66,31 @@ public:
     void SetPlaintextModulus(PlaintextModulus ptModulus0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetEvalAddCount(uint32_t evalAddCount0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetKeySwitchCount(uint32_t keySwitchCount0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetPRENumHops(uint32_t PRENumHops0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetMultipartyMode(MultipartyMode multipartyMode0) override {
         DISABLED_FOR_CKKSRNS;
     }
+
     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) override {
         DISABLED_FOR_CKKSRNS;
     }

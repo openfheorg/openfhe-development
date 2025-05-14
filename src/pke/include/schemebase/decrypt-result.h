@@ -37,13 +37,13 @@
 namespace lbcrypto {
 
 struct EncryptResult {
-    EncryptResult() : isValid(false), numBytesEncrypted(0) {}
+    EncryptResult() = default;
 
-    explicit EncryptResult(size_t len) : isValid(true), numBytesEncrypted(len) {}
+    explicit EncryptResult(uint32_t len) : isValid(true), numBytesEncrypted(len) {}
 
     bool isValid;  // whether the encryption was successful
     // count of the number of plaintext bytes that were encrypted
-    usint numBytesEncrypted;
+    uint32_t numBytesEncrypted;
 };
 
 /**
@@ -64,24 +64,24 @@ struct DecryptResult {
     /**
    * Constructor that initializes all message lengths to 0.
    */
-    DecryptResult() : isValid(false), messageLength(0), scalingFactorInt(1) {}
+    DecryptResult() = default;
 
     /**
    * Constructor that initializes all message lengths.
    * @param len the new length.
    */
-    explicit DecryptResult(size_t len) : isValid(true), messageLength(len), scalingFactorInt(1) {}
+    explicit DecryptResult(uint32_t len) : isValid(true), messageLength(len) {}
 
     /**
    * Constructor that initializes all message lengths.
    * @param len the new length.
    * @param scf the new scaling factor.
    */
-    explicit DecryptResult(size_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
+    DecryptResult(uint32_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
 
-    bool isValid;                   /**< whether the decryption was successful */
-    usint messageLength;            /**< the length of the decrypted plaintext message */
-    NativeInteger scalingFactorInt; /**< Scaling factor for BGV FlexibleAuto mode. */
+    bool isValid;                      /**< whether the decryption was successful */
+    uint32_t messageLength;            /**< the length of the decrypted plaintext message */
+    NativeInteger scalingFactorInt{1}; /**< Scaling factor for BGV FlexibleAuto mode. */
 };
 
 }  // namespace lbcrypto

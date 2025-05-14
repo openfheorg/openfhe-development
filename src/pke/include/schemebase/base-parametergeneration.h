@@ -58,7 +58,7 @@ class ParameterGenerationBase {
     using TugType  = typename Element::TugType;
 
 public:
-    virtual ~ParameterGenerationBase() {}
+    virtual ~ParameterGenerationBase() = default;
 
     /**
    * Method for computing all derived parameters based on chosen primitive
