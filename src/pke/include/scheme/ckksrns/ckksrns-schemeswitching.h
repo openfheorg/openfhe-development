@@ -230,7 +230,7 @@ private:
     Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                    const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const;
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *

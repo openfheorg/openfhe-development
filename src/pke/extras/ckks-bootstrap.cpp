@@ -85,7 +85,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
     std::vector<uint32_t> levelBudget5 = {1, 2};
     std::vector<uint32_t> levelBudget6 = {3, 1};
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDMANUAL;
     usint dcrtBits               = 78;
     usint firstMod               = 89; /*firstMod*/
@@ -123,7 +123,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
                HYBRID,
                3, /*numLargeDigits*/
                2, /*maxRelinSkDeg*/
-    #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    #if NATIVEINT == 128
                89, /*firstMod*/
     #else
                60, /*firstMod*/
@@ -253,7 +253,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
     // Choose a number smaller than ceil(log2(slots))
     std::vector<uint32_t> levelBudget = {4, 4};
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDMANUAL;
     usint dcrtBits               = 78;
     usint firstMod               = 89; /*firstMod*/
@@ -291,7 +291,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
                HYBRID,
                3, /*numLargeDigits*/
                2, /*maxRelinSkDeg*/
-    #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    #if NATIVEINT == 128
                89, /*firstMod*/
     #else
                60, /*firstMod*/

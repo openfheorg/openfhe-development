@@ -76,7 +76,7 @@ void SimpleBootstrapExample() {
     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
     * below unless you are an FHE expert.
     */
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
     usint dcrtBits               = 78;
     usint firstMod               = 89;
