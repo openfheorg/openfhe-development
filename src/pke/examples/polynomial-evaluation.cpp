@@ -49,12 +49,15 @@ int main(int argc, char* argv[]) {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(6);
     parameters.SetScalingModSize(50);
+    parameters.SetFirstModSize(57);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
+
+    std::cerr << *cc->GetCryptoParameters() << std::endl;
 
     std::vector<std::complex<double>> input({0.5, 0.7, 0.9, 0.95, 0.93});
 
@@ -77,6 +80,8 @@ int main(int argc, char* argv[]) {
     TIC(t);
 
     auto result = cc->EvalPoly(ciphertext1, coefficients1);
+
+    result = cc->Compress(result);
 
     timeEvalPoly1 = TOC(t);
 

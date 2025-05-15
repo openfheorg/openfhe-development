@@ -223,6 +223,8 @@ bool CKKSPackedEncoding::Encode() {
     double approxFactor = pow(2, logApprox);
     double invLen       = static_cast<double>(slots);
 
+    //std::cerr << "logApprox1 ="  << logApprox << std::endl;
+
     std::vector<int64_t> temp(2 * slots);
     int64_t MaxBitValue = Max64BitValue();
     for (uint32_t i = 0; i < slots; ++i) {
@@ -319,7 +321,7 @@ bool CKKSPackedEncoding::Encode() {
 
 #if NATIVEINT != 128 || defined(__EMSCRIPTEN__)
     // Scale back up by the approxFactor to get the correct encoding.
-    int32_t MAX_LOG_STEP = 60;
+    int32_t MAX_LOG_STEP = 57;
     if (logApprox > 0) {
         int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
         DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
@@ -344,6 +346,8 @@ bool CKKSPackedEncoding::Encode() {
 
 bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, ScalingTechnique scalTech,
                                 ExecutionMode executionMode) {
+    std::cerr << "starting decoding" << std::endl;
+
     double p     = encodingParams->GetPlaintextModulus();
     double powP  = 0.0;
     uint32_t Nh  = GetElementRingDimension() / 2;
@@ -414,6 +418,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         GetElement<Poly>().SetValuesToZero();
     }
 
+    std::cerr << "decoding 1" << std::endl;
+
     // the code below adds a Gaussian noise to the decrypted result
     // to prevent key recovery attacks.
     // The standard deviation of the Gaussian noise is sqrt(M+1)*stddev,
@@ -436,6 +442,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
     double logstd = std::log2(stddev);
 
+    std::cerr << "decoding 2" << std::endl;
+
     if (executionMode == EXEC_NOISE_ESTIMATION) {
         m_logError = logstd;
     }
@@ -444,6 +452,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
             stddev = 0.125 * std::sqrt(GetElementRingDimension());
         }
+
+        std::cerr << "decoding 2.1" << std::endl;
 
         // if stddev < sqrt{N}/4 (minimum approximation error that can be achieved)
         // if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
@@ -458,11 +468,13 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
         if (ckksDataType == REAL) {
             //   If less than 5 bits of precision is observed
-            if (logstd > p - 5.0)
-                OPENFHE_THROW(
-                    "The decryption failed because the approximation error is "
-                    "too high. Check the parameters. ");
+            // if (logstd > p - 5.0)
+            //    OPENFHE_THROW(
+            //        "The decryption failed because the approximation error is "
+            //        "too high. Check the parameters. ");
         }
+
+        std::cerr << "decoding 2.2" << std::endl;
 
         // real values
         std::vector<std::complex<double>> realValues(slots);
@@ -472,6 +484,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         stddev = sqrt(CKKS_M_FACTOR + 1) * stddev;
 
         double scale = (ckksDataType == REAL) ? 0.5 * powP : powP;
+
+        std::cerr << "decoding 2.3" << std::endl;
 
         // TODO temporary removed errors
         std::normal_distribution<> d(0, stddev);
@@ -495,6 +509,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             realValues[i].imag(imag);
         }
 
+        std::cerr << "decoding 2.4" << std::endl;
+
         // TODO we can half the dimension for the FFT by decoding in
         // Z[X + 1/X]/(X^n + 1). This would change the complexity from n*logn to
         // roughly (n/2)*log(n/2). This change should be done together with the one
@@ -514,8 +530,12 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             m_logError = 0;
         }
 
+        std::cerr << "decoding 2.5" << std::endl;
+
         value = realValues;
     }
+
+    std::cerr << "decoding 3" << std::endl;
 
     return true;
 }

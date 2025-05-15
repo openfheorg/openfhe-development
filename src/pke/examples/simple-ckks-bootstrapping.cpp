@@ -82,8 +82,8 @@ void SimpleBootstrapExample() {
     usint firstMod               = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    usint dcrtBits               = 59;
-    usint firstMod               = 60;
+    usint dcrtBits               = 56;
+    usint firstMod               = 57;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -99,7 +99,7 @@ void SimpleBootstrapExample() {
     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping 
+    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
     uint32_t levelsAvailableAfterBootstrap = 10;
@@ -125,6 +125,8 @@ void SimpleBootstrapExample() {
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
+    std::cerr << " I am here" << std::endl;
+
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
     size_t encodedLength  = x.size();
 
@@ -146,8 +148,13 @@ void SimpleBootstrapExample() {
               << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl
               << std::endl;
 
+    std::cerr << " STEP 2" << std::endl;
+
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
+
+    std::cerr << " STEP 3" << std::endl;
+
     result->SetLength(encodedLength);
     std::cout << "Output after bootstrapping \n\t" << result << std::endl;
 }

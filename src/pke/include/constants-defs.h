@@ -110,8 +110,8 @@ enum PlaintextEncodings {
 };
 
 enum LargeScalingFactorConstants {
-    MAX_BITS_IN_WORD = 61,
-    MAX_LOG_STEP     = 60,
+    MAX_BITS_IN_WORD = 58,
+    MAX_LOG_STEP     = 57,
 };
 
 enum CKKSDataType {

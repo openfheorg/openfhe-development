@@ -121,6 +121,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly> ciphe
 }
 
 void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const {
+    std::cerr << "operand = " << operand << std::endl;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
@@ -319,6 +320,8 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     int32_t logApprox_cp = logApprox;
     double approxFactor  = pow(2, logApprox);
 
+    //std::cerr << "logApprox_cp=" << logApprox_cp << std::endl;
+
     DCRTPoly::Integer scConstant = static_cast<uint64_t>(operand * scFactor / approxFactor + 0.5);
     std::vector<DCRTPoly::Integer> crtConstant(sizeQl, scConstant);
 
@@ -495,6 +498,8 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
         logApprox        = logSF - logValid;
     }
     double approxFactor = pow(2, logApprox);
+
+    //std::cerr << "logApprox_mult=" << logApprox << std::endl;
 
     DoubleInteger large     = static_cast<DoubleInteger>(operand / approxFactor * scFactor + 0.5);
     DoubleInteger large_abs = (large < 0 ? -large : large);

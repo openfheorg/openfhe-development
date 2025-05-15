@@ -2455,7 +2455,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     double powP = scFact;
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    constexpr int32_t MAX_BITS_IN_WORD = 61;
+    constexpr int32_t MAX_BITS_IN_WORD = 58;
 
     int32_t logc = std::numeric_limits<int32_t>::min();
     for (uint32_t i = 0; i < slots; ++i) {

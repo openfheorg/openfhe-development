@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(2048);
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
-    parameters.SetFirstModSize(60);
+    parameters.SetFirstModSize(57);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

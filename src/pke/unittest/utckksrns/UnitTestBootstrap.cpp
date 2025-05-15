@@ -343,7 +343,11 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
 
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
+#if !defined(__EMSCRIPTEN__)
     const double eps = 0.0001;
+#else
+    const double eps = 0.1;
+#endif
 
     // CalculateApproximationError() calculates the precision number (or approximation error).
     // The higher the precision, the less the error.

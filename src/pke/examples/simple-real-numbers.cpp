@@ -192,7 +192,7 @@ int main() {
     auto cSub = cc->EvalSub(c1, c2);
 
     // Homomorphic scalar multiplication
-    auto cScalar = cc->EvalMult(c1, 4.0);
+    auto cScalar = cc->EvalMult(c1, 4.35);
 
     // Homomorphic multiplication
     auto cMul = cc->EvalMult(c1, c2);
