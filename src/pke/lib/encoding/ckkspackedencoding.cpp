@@ -317,7 +317,7 @@ bool CKKSPackedEncoding::Encode() {
     if (noiseScaleDeg > 1)
         encodedVectorDCRT = encodedVectorDCRT.Times(currPowP);
 
-#if NATIVEINT != 128
+#if NATIVEINT == 64
     // Scale back up by the approxFactor to get the correct encoding.
     int32_t MAX_LOG_STEP = 60;
     if (logApprox > 0) {
