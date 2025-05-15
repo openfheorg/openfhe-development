@@ -112,7 +112,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_EVAL
     return os << test.toString();
 }
 //===========================================================================================================
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 constexpr usint SCALE = 78;
 #else
 constexpr usint SCALE = 50;

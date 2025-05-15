@@ -53,7 +53,7 @@ class CCParams;
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     const CCParams<ContextGeneratorType>& parameters) {
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
         parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
         parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {

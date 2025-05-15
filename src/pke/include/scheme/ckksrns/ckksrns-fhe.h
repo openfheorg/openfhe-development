@@ -271,7 +271,7 @@ private:
     void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                            NativeVector* nativeVec) const;
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *

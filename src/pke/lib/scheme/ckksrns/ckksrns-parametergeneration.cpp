@@ -47,7 +47,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 const size_t AUXMODSIZE = 119;
 #elif NATIVEINT == 32
 const size_t AUXMODSIZE = 28;

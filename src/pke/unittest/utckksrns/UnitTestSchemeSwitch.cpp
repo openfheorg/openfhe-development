@@ -132,7 +132,7 @@ constexpr uint32_t MULT_DEPTH1  = 13;
 constexpr uint32_t RDIM         = 64;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 constexpr uint32_t SMODSIZE = 70;
 constexpr uint32_t FMODSIZE = 80;
 #else

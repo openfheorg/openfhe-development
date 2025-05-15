@@ -402,7 +402,7 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { EVAL_FAST_ROTATION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   BATCH},
     { EVAL_FAST_ROTATION, "40", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   BATCH},
 #endif
-#if !defined(EMSCRIPTEN)
+#if !defined(__EMSCRIPTEN__)
     { EVAL_FAST_ROTATION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
     { EVAL_FAST_ROTATION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
     { EVAL_FAST_ROTATION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},

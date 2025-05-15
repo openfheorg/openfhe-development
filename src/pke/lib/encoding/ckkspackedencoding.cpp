@@ -140,7 +140,7 @@ bool CKKSPackedEncoding::Encode() {
     uint32_t ringDim = GetElementRingDimension();
     DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     uint64_t pBits     = encodingParams->GetPlaintextModulus();
     uint32_t precision = 52;
 
@@ -541,7 +541,7 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
     }
 }
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 void CKKSPackedEncoding::FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound,
                                            NativeVector* nativeVec) const {
     NativeInteger bigValueHf((uint128_t)bigBound >> 1);
