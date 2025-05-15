@@ -42,6 +42,9 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <iterator>
+#include <algorithm>
+#include <memory>
+#include <string>
 
 using namespace lbcrypto;
 using namespace std::literals;
@@ -171,7 +174,7 @@ constexpr usint RING_DIM      = 512;
 constexpr usint RING_DIM_HALF = 256;
 constexpr usint DSIZE         = 10;
 constexpr usint BATCH         = 8;
-#if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT != 128
 constexpr usint RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 #endif
 // MIN_PRECISION_DIFF is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT

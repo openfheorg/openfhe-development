@@ -36,6 +36,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 #include "gtest/gtest.h"
 
 #include "ciphertext-ser.h"
