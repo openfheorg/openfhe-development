@@ -41,6 +41,18 @@
 
 using namespace lbcrypto;
 
+#if defined(__EMSCRIPTEN__)
+    #define UNIT_TEST_EXCEPTION_TYPE_NAME_BINFHE "EMSCRIPTEN_UNKNOWN"
+#else
+    #define UNIT_TEST_EXCEPTION_TYPE_NAME_BINFHE demangle(__cxxabiv1::__cxa_current_exception_type()->name())
+#endif
+// UNIT_TEST_HANDLE_ALL_EXCEPTIONS must always fail
+#define UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE                                                                 \
+    std::string name(UNIT_TEST_EXCEPTION_TYPE_NAME_BINFHE);                                                           \
+    std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl; \
+    EXPECT_TRUE(0 == 1) << failmsg;
+
+
 //===========================================================================================================
 enum TEST_CASE_TYPE {
     FHEW_AND = 0,
@@ -272,14 +284,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 
@@ -321,14 +326,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 
@@ -362,14 +360,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 
@@ -414,14 +405,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 
@@ -469,14 +453,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 
@@ -528,14 +505,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-#if defined EMSCRIPTEN
-            std::string name("EMSCRIPTEN_UNKNOWN");
-#else
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-#endif
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 };
