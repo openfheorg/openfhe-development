@@ -48,8 +48,8 @@ Blake2Engine::~Blake2Engine() {
 void Blake2Engine::Generate() {
     // m_counter is the input to the hash function
     // m_buffer is the output
-    if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(PRNG::result_type), &m_counter, sizeof(m_counter),
-                 m_seed.cbegin(), m_seed.size() * sizeof(PRNG::result_type)) != 0) {
+    if (blake2xb(static_cast<void*>(m_buffer.data()), m_buffer.size() * sizeof(PRNG::result_type), &m_counter, sizeof(m_counter),
+    static_cast<const void*>(m_seed.data()), m_seed.size() * sizeof(PRNG::result_type)) != 0) {
         OPENFHE_THROW("PRNG: blake2xb failed");
     }
     m_counter++;
@@ -96,7 +96,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
     // On a 64-bit machine, the thread id is 64 bits long
     // skip on 32-bit arm architectures
     #if !defined(__arm__) && !defined(__EMSCRIPTEN__)
-    if (sizeof(size_t) == 8)
+    if constexpr (sizeof(size_t) == 8)
         initKey[2] = (std::hash<std::thread::id>{}(std::this_thread::get_id()) >> 32);
     #endif
     // heap variable; we are going to use up to 64 bits of its memory location as the counter.
