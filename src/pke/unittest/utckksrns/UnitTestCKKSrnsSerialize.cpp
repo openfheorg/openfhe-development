@@ -29,20 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "UnitTestUtils.h"
-#include "UnitTestSer.h"
+#include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "globals.h"  // for SERIALIZE_PRECOMPUTE
+#include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestSer.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
 #include <vector>
 #include <string>
-#include "gtest/gtest.h"
-
-#include "ciphertext-ser.h"
-#include "cryptocontext-ser.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
-#include "globals.h"  // for SERIALIZE_PRECOMPUTE
 
 using namespace lbcrypto;
 
