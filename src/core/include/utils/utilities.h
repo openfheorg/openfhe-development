@@ -124,8 +124,10 @@ inline bool isConvertableToNativeInt(double d) {
         return std::abs(d) <= static_cast<double>(std::numeric_limits<int32_t>::max());
     if constexpr (NATIVEINT == 64)
         return std::abs(d) <= static_cast<double>(Max64BitValue());
+#if NATIVEINT == 128
     if constexpr (NATIVEINT == 128)
         return std::abs(d) <= static_cast<double>(Max128BitValue());
+#endif
 }
 
 }  // namespace lbcrypto
