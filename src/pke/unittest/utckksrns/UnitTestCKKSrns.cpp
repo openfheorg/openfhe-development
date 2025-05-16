@@ -33,18 +33,18 @@
   Unit tests for the CKKS scheme
  */
 
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
+#include "UnitTestUtils.h"
 
-#include <iostream>
-#include <vector>
-#include "gtest/gtest.h"
-#include <iterator>
 #include <algorithm>
+#include <iostream>
+#include <iterator>
 #include <memory>
 #include <string>
+#include <vector>
 
 using namespace lbcrypto;
 using namespace std::literals;
