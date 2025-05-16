@@ -28,17 +28,19 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+
 #include "BaseTestCase.h"
-#include "UnitTestReadCSVData.h"
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestReadCSVData.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
 #include <unordered_map>
-#include "gtest/gtest.h"
+#include <vector>
 
+#if !defined(__EMSCRIPTEN__)
 using namespace lbcrypto;
 class Params;
 
@@ -665,3 +667,4 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_INTERACTIVE_BOOT,
                          ::testing::ValuesIn(testCasesUTCKKSRNS_INTERACTIVE_BOOT), testName);
+#endif // __EMSCRIPTEN__

@@ -41,7 +41,7 @@
 // https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive
 // https://docs.microsoft.com/en-us/windows/win32/debug/retrieving-undecorated-symbol-names
 #if defined(__EMSCRIPTEN__)
-    #define UNIT_TEST_EXCEPTION_TYPE_NAME "EMSCRIPTEN_UNKNOWN";
+    #define UNIT_TEST_EXCEPTION_TYPE_NAME "EMSCRIPTEN_UNKNOWN"
 #else
     #define UNIT_TEST_EXCEPTION_TYPE_NAME demangle(__cxxabiv1::__cxa_current_exception_type()->name())
 #endif
@@ -53,4 +53,3 @@
     EXPECT_TRUE(0 == 1) << failmsg;
 
 #endif  // __UNIT_TEST_EXCEPTION_H__
-

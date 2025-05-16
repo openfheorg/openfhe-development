@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
    *
    */
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     AutomaticRescaleDemo(FIXEDAUTO);
     // Note that FLEXIBLEAUTO is not supported for 128-bit CKKS
 

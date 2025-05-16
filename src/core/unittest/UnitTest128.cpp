@@ -50,7 +50,7 @@ using namespace lbcrypto;
 /************************************************
  *	TESTING Modular operations for 128-bit backend
  ************************************************/
-#if (NATIVEINT == 128) && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 TEST(UT128, modular_operations) {
     intnat::NativeInteger modulus = ((intnat::NativeInteger(1) << 120) + intnat::NativeInteger(123456789));
     intnat::NativeInteger mu      = modulus.ComputeMu();

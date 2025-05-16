@@ -55,7 +55,7 @@ if(BUILD_UNITTESTS)
     add_executable(binfhe_tests ${BINFHE_TEST_SRC_FILES} ${UNITTESTMAIN})
     set_property(TARGET binfhe_tests PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/unittest)
     target_link_libraries(binfhe_tests ${BINFHELIBS} ${ADDITIONAL_LIBS})
-    if(NOT ${WITH_OPENMP})
+    if(NOT ${WITH_OPENMP} AND NOT EMSCRIPTEN)
         target_link_libraries(binfhe_tests PRIVATE Threads::Threads)
     endif()
 
