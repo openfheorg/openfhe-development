@@ -1,3 +1,37 @@
+HPDIC MOD
+=========
+* Steup on ChameleonCloud (5/16/2025):
+    * Update system
+        ```
+        sudo apt update
+        sudo apt install cmake
+        ```
+    * Install cnpy
+        ```    
+        cd
+        git clone https://github.com/hpdic/cnpy.git
+        cd cnpy
+        mkdir build && cd build
+        cmake ..
+        make -j 16
+        sudo make install
+        ```
+    * Install OpenFHE
+        ```
+        cd ~/github/openfhe-development
+        mkdir build && cd build
+        cmake ..
+        make -j 16
+        sudo make install        
+        ```
+    * Test OpenFHE
+        ```
+        cd ~/github/openfhe-development/build
+        ./bin/examples/pke/simple-integers
+        ```
+* VS Code setup:
+    * On ChameleonCloud, if VS Code complains about missing header files, then open C/C++ configuration and set the compiler to '/usr/bin/g++-11'
+
 OpenFHE - Open-Source Fully Homomorphic Encryption Library
 =====================================
 

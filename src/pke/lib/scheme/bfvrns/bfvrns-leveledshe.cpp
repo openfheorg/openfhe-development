@@ -751,6 +751,9 @@ void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
     for (auto& cvi : ciphertext->GetElements())
         cvi *= constant;
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
+
+    std::cout << "Current position: File: " << __FILE__ << ", Line: " << __LINE__ << std::endl;
+    
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalAutomorphism(ConstCiphertext<DCRTPoly> ciphertext, uint32_t i,
