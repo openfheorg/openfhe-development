@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2025, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
     std::vector<double> coefficients2({1,   2,   3,   4,   5,   -1,   -2,   -3,   -4,   -5,
                                        0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5,
                                        0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
-  
+
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
 
     auto keyPair = cc->KeyGen();
