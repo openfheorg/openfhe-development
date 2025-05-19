@@ -6,7 +6,7 @@
 * Makes OpenFHE compatible with Emscripten 3.x and 4.x (see https://github.com/openfheorg/openfhe-wasm for more details)
 * Adds a cleartext version of EvalChebyshevFunction (#959)
 * Optimizes the hybrid key switching (#237)
-* Fixes many bugs
+* Fixes several bugs
 
 The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.3.0%22
 
