@@ -1,7 +1,19 @@
+05/21/2025: OpenFHE 1.3.0 (development) is released
+
+* Adds the composite scaling modes to CKKS based on https://eprint.iacr.org/2023/1462 (see https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/COMPOSITE_SCALING.md for more details)
+* Adds two-party interactive CKKS bootstrapping from https://eprint.iacr.org/2023/1203 (see https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/INTERACTIVE_BOOTSTRAPPING.md for more details)
+* Enables the complex-number arithmetic in CKKS (#964)
+* Makes OpenFHE compatible with Emscripten 3.x and 4.x (see https://github.com/openfheorg/openfhe-wasm for more details)
+* Adds a cleartext version of EvalChebyshevFunction (#959)
+* Optimizes the hybrid key switching (#237)
+* Fixes many bugs
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.3.0%22
+
 03/21/2025: OpenFHE 1.2.4 (stable) is released
 
 * Improves the support for STL threads (when OMP is disabled)
-* Fixes the bugs identified in [CVE-2024-56430](https://nvd.nist.gov/vuln/detail/CVE-2024-56430) 
+* Fixes the bugs identified in [CVE-2024-56430](https://nvd.nist.gov/vuln/detail/CVE-2024-56430)
 
 The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.2.4%22
 
