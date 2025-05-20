@@ -83,8 +83,11 @@ protected:
     * @return whether the two plaintext are equivalent.
     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
-        const auto* el = dynamic_cast<const CoefPackedEncoding*>(&rhs);
-        return (el != nullptr) && value == el->value;
+        if (typeid(rhs) != typeid(CoefPackedEncoding))
+            return false;
+
+        const auto& el = static_cast<const CoefPackedEncoding&>(rhs);
+        return value == el.value;
     }
 
 public:

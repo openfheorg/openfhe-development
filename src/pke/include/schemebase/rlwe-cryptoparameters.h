@@ -568,24 +568,25 @@ protected:
     * @return whether the two CryptoParametersRLWE objects are equivalent.
     */
     bool CompareTo(const CryptoParametersBase<Element>& rhs) const override {
-        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
-        if (el == nullptr)
+        if (typeid(rhs) != typeid(CryptoParametersRLWE<Element>))
             return false;
+            
+        const auto& el = static_cast<const CryptoParametersRLWE<Element>&>(rhs);
 
-        return CryptoParametersBase<Element>::CompareTo(*el) &&
-               m_distributionParameter == el->m_distributionParameter &&
-               m_assuranceMeasure == el->m_assuranceMeasure && m_noiseScale == el->m_noiseScale &&
-               m_digitSize == el->m_digitSize && m_noiseEstimate == el->m_noiseEstimate &&
-               m_multiplicativeDepth == el->m_multiplicativeDepth && m_evalAddCount == el->m_evalAddCount &&
-               m_keySwitchCount == el->m_keySwitchCount && m_PRENumHops == el->m_PRENumHops &&
-               m_secretKeyDist == el->m_secretKeyDist &&
-               m_stdLevel == el->m_stdLevel && m_maxRelinSkDeg == el->m_maxRelinSkDeg &&
-               m_PREMode == el->m_PREMode && m_multipartyMode == el->m_multipartyMode &&
-               m_executionMode == el->m_executionMode &&
-               m_floodingDistributionParameter == el->m_floodingDistributionParameter &&
-               m_statisticalSecurity == el->m_statisticalSecurity &&
-               m_numAdversarialQueries == el->m_numAdversarialQueries &&
-               m_thresholdNumOfParties == el->m_thresholdNumOfParties;
+        return CryptoParametersBase<Element>::CompareTo(el) &&
+               m_distributionParameter == el.m_distributionParameter &&
+               m_assuranceMeasure == el.m_assuranceMeasure && m_noiseScale == el.m_noiseScale &&
+               m_digitSize == el.m_digitSize && m_noiseEstimate == el.m_noiseEstimate &&
+               m_multiplicativeDepth == el.m_multiplicativeDepth && m_evalAddCount == el.m_evalAddCount &&
+               m_keySwitchCount == el.m_keySwitchCount && m_PRENumHops == el.m_PRENumHops &&
+               m_secretKeyDist == el.m_secretKeyDist &&
+               m_stdLevel == el.m_stdLevel && m_maxRelinSkDeg == el.m_maxRelinSkDeg &&
+               m_PREMode == el.m_PREMode && m_multipartyMode == el.m_multipartyMode &&
+               m_executionMode == el.m_executionMode &&
+               m_floodingDistributionParameter == el.m_floodingDistributionParameter &&
+               m_statisticalSecurity == el.m_statisticalSecurity &&
+               m_numAdversarialQueries == el.m_numAdversarialQueries &&
+               m_thresholdNumOfParties == el.m_thresholdNumOfParties;
     }
 
     void PrintParameters(std::ostream& os) const override {

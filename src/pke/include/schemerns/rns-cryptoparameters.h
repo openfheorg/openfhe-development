@@ -154,17 +154,18 @@ protected:
     * @return whether the two CryptoParametersRNS objects are equivalent.
     */
     bool CompareTo(const CryptoParametersBase<DCRTPoly>& rhs) const override {
-        const auto* el = dynamic_cast<const CryptoParametersRNS*>(&rhs);
-        if (el == nullptr)
+        if (typeid(rhs) != typeid(CryptoParametersRNS))
             return false;
 
-        return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->m_scalTechnique &&
-               m_ksTechnique == el->m_ksTechnique && m_multTechnique == el->m_multTechnique &&
-               m_encTechnique == el->m_encTechnique && m_numPartQ == el->m_numPartQ &&
-               m_auxBits == el->m_auxBits && m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
-               m_multipartyMode == el->m_multipartyMode && m_executionMode == el->m_executionMode &&
-               m_compositeDegree == el->m_compositeDegree && m_registerWordSize == el->m_registerWordSize &&
-               m_ckksDataType == el->m_ckksDataType;
+        const auto& el = static_cast<const CryptoParametersRNS&>(rhs);
+
+        return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el.m_scalTechnique &&
+               m_ksTechnique == el.m_ksTechnique && m_multTechnique == el.m_multTechnique &&
+               m_encTechnique == el.m_encTechnique && m_numPartQ == el.m_numPartQ &&
+               m_auxBits == el.m_auxBits && m_extraBits == el.m_extraBits && m_PREMode == el.m_PREMode &&
+               m_multipartyMode == el.m_multipartyMode && m_executionMode == el.m_executionMode &&
+               m_compositeDegree == el.m_compositeDegree && m_registerWordSize == el.m_registerWordSize &&
+               m_ckksDataType == el.m_ckksDataType;
     }
 
     void PrintParameters(std::ostream& os) const override {
