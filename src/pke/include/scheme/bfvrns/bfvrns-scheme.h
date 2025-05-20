@@ -61,7 +61,7 @@ public:
     virtual ~SchemeBFVRNS() {}
 
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
-        return dynamic_cast<const SchemeBFVRNS*>(&sch) != nullptr;
+        return (typeid(sch) == typeid(SchemeBFVRNS));
     }
 
     void Enable(PKESchemeFeature feature) override;

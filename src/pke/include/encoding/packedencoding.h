@@ -198,8 +198,11 @@ protected:
     * @return whether the two plaintext are equivalent.
     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
-        const auto* el = dynamic_cast<const PackedEncoding*>(&rhs);
-        return (el != nullptr) && value == el->value;
+        if (typeid(rhs) != typeid(PackedEncoding))
+            return false;
+
+        const auto& el = static_cast<const PackedEncoding&>(rhs);
+        return value == el.value;
     }
 
 private:

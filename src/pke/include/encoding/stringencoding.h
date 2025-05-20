@@ -113,8 +113,11 @@ protected:
     * @return whether the two plaintext are equivalent.
     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
-        const auto* el = dynamic_cast<const StringEncoding*>(&rhs);
-        return (el != nullptr) && ptx == el->ptx;
+        if (typeid(rhs) != typeid(StringEncoding))
+            return false;
+
+        const auto& el = static_cast<const StringEncoding&>(rhs);
+        return ptx == el.ptx;
     }
 
     /**

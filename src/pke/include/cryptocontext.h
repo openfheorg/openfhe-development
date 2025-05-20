@@ -266,9 +266,9 @@ class CryptoContextImpl : public Serializable {
 
 protected:
     // crypto parameters
-    std::shared_ptr<CryptoParametersBase<Element>> params{nullptr};
+    std::shared_ptr<CryptoParametersBase<Element>> m_params{nullptr};
     // algorithm used; accesses all crypto methods
-    std::shared_ptr<SchemeBase<Element>> scheme{nullptr};
+    std::shared_ptr<SchemeBase<Element>> m_scheme{nullptr};
 
     SCHEME m_schemeId{SCHEME::INVALID_SCHEME};
 
@@ -454,7 +454,7 @@ protected:
     * @return integer value corresponding to composite degree
     */
     uint32_t GetCompositeDegreeFromCtxt() const {
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
         if (!cryptoParams) {
             std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
             OPENFHE_THROW(errorMsg);
@@ -518,8 +518,8 @@ public:
     // and the other one takes shared_ptr
     CryptoContextImpl(CryptoParametersBase<Element>* params = nullptr, SchemeBase<Element>* scheme = nullptr,
                       SCHEME schemeId = SCHEME::INVALID_SCHEME) {
-        this->params.reset(params);
-        this->scheme.reset(scheme);
+        this->m_params.reset(params);
+        this->m_scheme.reset(scheme);
         this->m_keyGenLevel = 0;
         this->m_schemeId    = schemeId;
     }
@@ -533,8 +533,8 @@ public:
     */
     CryptoContextImpl(std::shared_ptr<CryptoParametersBase<Element>> params,
                       std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME) {
-        this->params        = params;
-        this->scheme        = scheme;
+        this->m_params      = params;
+        this->m_scheme      = scheme;
         this->m_keyGenLevel = 0;
         this->m_schemeId    = schemeId;
     }
@@ -544,8 +544,8 @@ public:
     * @param other cryptocontext to copy from
     */
     CryptoContextImpl(const CryptoContextImpl<Element>& other) {
-        params        = other.params;
-        scheme        = other.scheme;
+        m_params      = other.m_params;
+        m_scheme      = other.m_scheme;
         m_keyGenLevel = 0;
         m_schemeId    = other.m_schemeId;
     }
@@ -556,8 +556,8 @@ public:
     * @return this
     */
     CryptoContextImpl<Element>& operator=(const CryptoContextImpl<Element>& rhs) {
-        params        = rhs.params;
-        scheme        = rhs.scheme;
+        m_params      = rhs.m_params;
+        m_scheme      = rhs.m_scheme;
         m_keyGenLevel = rhs.m_keyGenLevel;
         m_schemeId    = rhs.m_schemeId;
         return *this;
@@ -568,7 +568,7 @@ public:
     * @return true if params and scheme exists in the object
     */
     operator bool() const {
-        return params && scheme;
+        return m_params && m_scheme;
     }
 
     /**
@@ -582,25 +582,25 @@ public:
     friend bool operator==(const CryptoContextImpl<Element>& a, const CryptoContextImpl<Element>& b) {
         // Identical if the parameters and the schemes are identical... the exact
         // same object, OR the same type and the same values
-        if (a.params.get() == b.params.get()) {
+        if (a.m_params.get() == b.m_params.get()) {
             return true;
         }
         else {
-            if (typeid(*a.params.get()) != typeid(*b.params.get())) {
+            if (typeid(*a.m_params.get()) != typeid(*b.m_params.get())) {
                 return false;
             }
-            if (*a.params.get() != *b.params.get())
+            if (*a.m_params.get() != *b.m_params.get())
                 return false;
         }
 
-        if (a.scheme.get() == b.scheme.get()) {
+        if (a.m_scheme.get() == b.m_scheme.get()) {
             return true;
         }
         else {
-            if (typeid(*a.scheme.get()) != typeid(*b.scheme.get())) {
+            if (typeid(*a.m_scheme.get()) != typeid(*b.m_scheme.get())) {
                 return false;
             }
-            if (*a.scheme.get() != *b.scheme.get())
+            if (*a.m_scheme.get() != *b.m_scheme.get())
                 return false;
         }
 
@@ -954,7 +954,7 @@ public:
     * @param feature the feature that should be enabled
     */
     void Enable(PKESchemeFeature feature) {
-        scheme->Enable(feature);
+        m_scheme->Enable(feature);
     }
 
     /**
@@ -962,7 +962,7 @@ public:
     * @param featureMask bitwise value of several PKESchemeFeatures
     */
     void Enable(uint32_t featureMask) {
-        scheme->Enable(featureMask);
+        m_scheme->Enable(featureMask);
     }
 
     // GETTERS
@@ -971,7 +971,7 @@ public:
     * @return Scheme object
     */
     const std::shared_ptr<SchemeBase<Element>> GetScheme() const {
-        return scheme;
+        return m_scheme;
     }
 
     /**
@@ -979,7 +979,7 @@ public:
     * @return CryptoParams
     */
     const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const {
-        return params;
+        return m_params;
     }
 
     /**
@@ -1004,7 +1004,7 @@ public:
     * @return ElementParams
     */
     const std::shared_ptr<ParmType> GetElementParams() const {
-        return params->GetElementParams();
+        return m_params->GetElementParams();
     }
 
     /**
@@ -1012,7 +1012,7 @@ public:
     * @return EncodingParams
     */
     const EncodingParams GetEncodingParams() const {
-        return params->GetEncodingParams();
+        return m_params->GetEncodingParams();
     }
 
     /**
@@ -1020,7 +1020,7 @@ public:
     * @return CyclotomicOrder
     */
     uint32_t GetCyclotomicOrder() const {
-        return params->GetElementParams()->GetCyclotomicOrder();
+        return m_params->GetElementParams()->GetCyclotomicOrder();
     }
 
     /**
@@ -1028,7 +1028,7 @@ public:
     * @return RingDimension
     */
     uint32_t GetRingDimension() const {
-        return params->GetElementParams()->GetRingDimension();
+        return m_params->GetElementParams()->GetRingDimension();
     }
 
     /**
@@ -1036,7 +1036,7 @@ public:
     * @return modulus
     */
     const IntType& GetModulus() const {
-        return params->GetElementParams()->GetModulus();
+        return m_params->GetElementParams()->GetModulus();
     }
 
     /**
@@ -1044,7 +1044,7 @@ public:
     * @return RootOfUnity
     */
     const IntType& GetRootOfUnity() const {
-        return params->GetElementParams()->GetRootOfUnity();
+        return m_params->GetElementParams()->GetRootOfUnity();
     }
 
     /**
@@ -1052,7 +1052,7 @@ public:
      * @return data type of the CKKS data
      */
     CKKSDataType GetCKKSDataType() const {
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(params);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
         if (!cryptoParams) {
             std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
             OPENFHE_THROW(errorMsg);
@@ -3841,8 +3841,8 @@ public:
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(cereal::make_nvp("cc", params));
-        ar(cereal::make_nvp("kt", scheme));
+        ar(cereal::make_nvp("cc", m_params));
+        ar(cereal::make_nvp("kt", m_scheme));
         ar(cereal::make_nvp("si", m_schemeId));
     }
 
@@ -3852,8 +3852,8 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-        ar(cereal::make_nvp("cc", params));
-        ar(cereal::make_nvp("kt", scheme));
+        ar(cereal::make_nvp("cc", m_params));
+        ar(cereal::make_nvp("kt", m_scheme));
         ar(cereal::make_nvp("si", m_schemeId));
         SetKSTechniqueInScheme();
 

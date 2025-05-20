@@ -51,16 +51,16 @@ std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>
 template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
-    auto schemeRNSPtr = dynamic_cast<SchemeRNS*>(&(*scheme));
-    if (schemeRNSPtr != nullptr) {
-        // check if the parameter object is RNS-based
-        auto elPtr = dynamic_cast<const CryptoParametersRNS*>(&(*params));
-        if (elPtr != nullptr) {
-            schemeRNSPtr->SetKeySwitchingTechnique(elPtr->GetKeySwitchTechnique());
-            return;
-        }
-        OPENFHE_THROW("Cannot set KeySwitchingTechnique as the parameter object is not RNS-based");
-    }
+    auto schemeRNSPtr = std::dynamic_pointer_cast<SchemeRNS>(m_scheme);
+    if (schemeRNSPtr == nullptr)
+        OPENFHE_THROW("The scheme is not RNS-based");
+
+    // check if the parameter object is RNS-based
+    auto elPtr = std::dynamic_pointer_cast<const CryptoParametersRNS>(m_params);
+    if (elPtr == nullptr)
+        OPENFHE_THROW("The parameter object is not RNS-based");
+
+    schemeRNSPtr->SetKeySwitchingTechnique(elPtr->GetKeySwitchTechnique());
 }
 
 /////////////////////////////////////////
