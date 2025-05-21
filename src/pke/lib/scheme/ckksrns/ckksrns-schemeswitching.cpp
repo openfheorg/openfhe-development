@@ -44,6 +44,7 @@
 #include "math/dftransform.h"
 
 #include <iterator>
+#include <limits>
 
 // K = 16
 static constexpr std::initializer_list<double> g_coefficientsFHEW16{
@@ -153,7 +154,7 @@ namespace lbcrypto {
 // Complex Plaintext Functions, copied from ckksrns-fhe. TODO: fix this
 //------------------------------------------------------------------------------
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                           const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
                                           uint32_t level, usint slots) const {
@@ -162,7 +163,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
     Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
-                                                                 level, scFact, slots));
+                                                                 level, scFact, slots, COMPLEX));
 
     DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
 
@@ -309,7 +310,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
     Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
-                                                                 level, scFact, slots));
+                                                                 level, scFact, slots, COMPLEX));
 
     DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
 
@@ -325,8 +326,8 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
     constexpr int32_t MAX_BITS_IN_WORD = 61;
 
-    int32_t logc = 0;
-    for (size_t i = 0; i < slots; ++i) {
+    int32_t logc = std::numeric_limits<int32_t>::min();
+    for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
         if (inverse[i].real() != 0) {
             int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
@@ -339,9 +340,10 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
                 logc = logci;
         }
     }
-    if (logc < 0) {
-        OPENFHE_THROW("Too small scaling factor");
-    }
+    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
+    if (logc < 0)
+        OPENFHE_THROW("Scaling factor too small");
+
     int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
     int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
@@ -539,7 +541,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> cipherte
     return result;
 }
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                                       NativeVector* nativeVec) const {
     if (nativeVec == nullptr)
@@ -775,7 +777,7 @@ std::shared_ptr<LWECiphertextImpl> ExtractLWECiphertext(const std::vector<std::v
 // TODO: fix this.
 //------------------------------------------------------------------------------
 
-std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
+std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
     const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale = 1) const {
     uint32_t slots = A.size();
@@ -816,7 +818,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
 
     std::vector<std::vector<std::complex<double>>> newA(slots);
-    std::vector<ConstPlaintext> result(slots);
+    std::vector<ReadOnlyPlaintext> result(slots);
 
     //  A and B are concatenated horizontally
     for (uint32_t i = 0; i < A.size(); i++) {
@@ -844,7 +846,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     return result;
 }
 
-std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
+std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1,
     uint32_t L, double scale = 1) const {
     if (A[0].size() != A.size()) {
@@ -888,7 +890,7 @@ std::vector<ConstPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
 
-    std::vector<ConstPlaintext> result(slots);
+    std::vector<ReadOnlyPlaintext> result(slots);
 #pragma omp parallel for
     for (uint32_t j = 0; j < gStep; j++) {
         int32_t offset = -static_cast<int32_t>(bStep * j);
@@ -960,7 +962,7 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                                ConstCiphertext<DCRTPoly> ctxt,
-                                                               const std::vector<ConstPlaintext>& A,
+                                                               const std::vector<ReadOnlyPlaintext>& A,
                                                                uint32_t dim1) const {
     uint32_t slots = A.size();
 
@@ -1245,6 +1247,7 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
     parameters.SetSecurityLevel(params.GetSecurityLevelCKKS());
     parameters.SetRingDim(ringDim);
     parameters.SetBatchSize(params.GetBatchSize());
+    parameters.SetCKKSDataType(REAL);
 
     m_ccKS = GenCryptoContext(parameters);
 
@@ -1286,7 +1289,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS to FHEW scheme switching is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
@@ -1726,7 +1729,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS to FHEW scheme switching is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif

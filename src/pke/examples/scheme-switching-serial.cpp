@@ -30,24 +30,28 @@
 //==================================================================================
 
 /*
-  Real number serialization in a simple context. The goal of this is to show a simple setup for real number
+  Scheme switching serialization in a simple context. The goal of this is to show a simple setup for scheme switching
   serialization before progressing into the next logical step - serialization and communication across
   2 separate entities
  */
 
-#include <iomanip>
-#include <tuple>
-#include <unistd.h>
-
 #include "openfhe.h"
 #include "binfhecontext.h"
-#include "scheme/ckksrns/schemeswitching-data-serializer.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
+#include "schemeswitching-data-serializer.h"
+
+#include <iomanip>
+#include <tuple>
+#include <unistd.h>
+#include <string>
+#include <vector>
+#include <memory>
+#include <iostream>
 
 using namespace lbcrypto;
 
@@ -60,19 +64,7 @@ using namespace lbcrypto;
 // std::string DATAFOLDER = std::string(getcwd(buff, 1024));
 
 // Save-Load locations for keys
-const std::string DATAFOLDER      = "demoData";
-std::string ccLocation            = "/cryptocontext.txt";     // cc
-std::string pubKeyLocation        = "/key_pub.txt";           // Pub key
-std::string multKeyLocation       = "/key_mult.txt";          // relinearization key
-std::string rotKeyLocation        = "/key_rot.txt";           // automorphism / rotation key
-std::string paramssLocation       = "/paramss.txt";           // cc
-std::string binccLocation         = "/bincryptocontext.txt";  // binfhe cc
-std::string btRkLocation          = "/bt_rk.txt";             // binfhe bootstrapping refreshing key
-std::string btSwkLocation         = "/bt_swk.txt";            // binfhe bootstrapping rotation key
-std::string FHEWtoCKKSKeyLocation = "/key_swkFC.txt";         // switching key from FHEW to CKKS
-
-// Save-load locations for RAW ciphertexts
-std::string cipherLocation = "/ciphertext.txt";
+const std::string DATAFOLDER = "demoData";
 
 // Save-load locations for evaluated ciphertext
 std::string cipherArgminLocation = "/ciphertextArgmin.txt";

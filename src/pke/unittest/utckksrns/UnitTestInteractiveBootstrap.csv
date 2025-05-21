@@ -1,18 +1,52 @@
-#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,numParties
-INTERACTIVE_MP_BOOT,1,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
-INTERACTIVE_MP_BOOT,2,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
-INTERACTIVE_MP_BOOT,3,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
-INTERACTIVE_MP_BOOT,4,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,3
-INTERACTIVE_MP_BOOT,5,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
-INTERACTIVE_MP_BOOT,6,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
-INTERACTIVE_MP_BOOT,7,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
-INTERACTIVE_MP_BOOT,8,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,3
-#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,numParties
-INTERACTIVE_MP_BOOT_CHEBYSHEV,1,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,2,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,3,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,4,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,5,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,6,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,7,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
-INTERACTIVE_MP_BOOT_CHEBYSHEV,8,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT,1,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,3,
+INTERACTIVE_MP_BOOT,2,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,3,
+INTERACTIVE_MP_BOOT,3,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,3,
+INTERACTIVE_MP_BOOT,4,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,3,
+INTERACTIVE_MP_BOOT,5,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,3,
+INTERACTIVE_MP_BOOT,6,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,3,
+INTERACTIVE_MP_BOOT,7,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,3,
+INTERACTIVE_MP_BOOT,8,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,4,,7,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,3,
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT_CHEBYSHEV,1,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,2,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,3,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,4,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,SLACK,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,5,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,6,CKKSRNS_SCHEME,,,,,,,FLEXIBLEAUTOEXT,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,7,CKKSRNS_SCHEME,,,,,,,FIXEDAUTO,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV,8,CKKSRNS_SCHEME,,,,,,,FIXEDMANUAL,,16,,10,,HEStd_NotSet,64,,,,,,,,,,,,,,,COMPACT,,,,,
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,1,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,2,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTOEXT,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,3,CKKSRNS_SCHEME,,,,,,BV,FIXEDAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,4,CKKSRNS_SCHEME,,,,,,BV,FIXEDMANUAL,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,5,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,6,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTOEXT,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,7,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY,8,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDMANUAL,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,2
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,1,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,2,CKKSRNS_SCHEME,,,,,,BV,FIXEDAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,3,CKKSRNS_SCHEME,,,,,,BV,FIXEDMANUAL,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,4,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,5,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,6,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDMANUAL,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,1,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTO,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,2,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTOEXT,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,3,CKKSRNS_SCHEME,,,,,,BV,FIXEDAUTO,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,4,CKKSRNS_SCHEME,,,,,,BV,FIXEDMANUAL,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,5,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTO,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,6,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTOEXT,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,7,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDAUTO,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,8,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDMANUAL,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,1,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTO,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,2,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTOEXT,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,3,CKKSRNS_SCHEME,,,,,,BV,FIXEDAUTO,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,4,CKKSRNS_SCHEME,,,,,,BV,FIXEDMANUAL,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,5,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTO,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,6,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUTOEXT,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,7,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDAUTO,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,8,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDMANUAL,,16,,8,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,

@@ -42,13 +42,54 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "schemebase/base-scheme.h"
 
+#include <vector>
+
 namespace lbcrypto {
+
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalMultMany(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                      const std::vector<EvalKey<DCRTPoly>>& evalKeys) const {
+    const size_t inSize = ciphertextVec.size();
+
+    if (inSize == 0)
+        OPENFHE_THROW("Input ciphertext vector is empty.");
+
+    if (inSize == 1)
+        return ciphertextVec[0];
+
+    const size_t lim = inSize * 2 - 2;
+    std::vector<Ciphertext<DCRTPoly>> ciphertextMultVec;
+    ciphertextMultVec.resize(inSize - 1);
+
+    auto algo               = ciphertextVec[0]->GetCryptoContext()->GetScheme();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
+    uint32_t levelsToDrop   = cryptoParams->GetCompositeDegree();
+
+    size_t ctrIndex = 0;
+    size_t i        = 0;
+    for (; i < (inSize - 1); i += 2) {
+        ciphertextMultVec[ctrIndex] = algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextVec[(i + 1)], evalKeys);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
+    }
+    if (i < inSize) {
+        ciphertextMultVec[ctrIndex] =
+            algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextMultVec[i + 1 - inSize], evalKeys);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
+        i += 2;
+    }
+    for (; i < lim; i += 2) {
+        ciphertextMultVec[ctrIndex] =
+            algo->EvalMultAndRelinearize(ciphertextMultVec[i - inSize], ciphertextMultVec[i + 1 - inSize], evalKeys);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], levelsToDrop);
+    }
+
+    return ciphertextMultVec.back();
+}
 
 //------------------------------------------------------------------------------
 // LINEAR WEIGHTED SUM
 //------------------------------------------------------------------------------
 
-Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts,
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                                         const std::vector<double>& constants) const {
     std::vector<Ciphertext<DCRTPoly>> cts(ciphertexts.size());
 
@@ -62,6 +103,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ConstCiphert
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                                                const std::vector<double>& constants) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
+
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     auto cc   = ciphertexts[0]->GetCryptoContext();
     auto algo = cc->GetScheme();
@@ -89,7 +132,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphe
 
         if (ciphertexts[maxIdx]->GetNoiseScaleDeg() == 2) {
             for (uint32_t i = 0; i < ciphertexts.size(); i++) {
-                algo->ModReduceInternalInPlace(ciphertexts[i], BASE_NUM_LEVELS_TO_DROP);
+                algo->ModReduceInternalInPlace(ciphertexts[i], compositeDegree);
             }
         }
     }
@@ -148,7 +191,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
             // non-power of 2
             if (coefficients[i] != 0) {
                 indices[i - 1]   = 1;
-                int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
+                int64_t powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(i)));
                 int64_t rem      = i % powerOf2;
                 if (indices[rem - 1] == 0)
                     indices[rem - 1] = 1;
@@ -156,7 +199,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
                 // while rem is not a power of 2
                 // set indices required to compute rem to 1
                 while ((rem & (rem - 1))) {
-                    powerOf2 = 1 << (int64_t)std::floor(std::log2(rem));
+                    powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(rem)));
                     rem      = rem % powerOf2;
                     if (indices[rem - 1] == 0)
                         indices[rem - 1] = 1;
@@ -166,8 +209,10 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
     }
 
     std::vector<Ciphertext<DCRTPoly>> powers(k);
-    powers[0] = x->Clone();
-    auto cc   = x->GetCryptoContext();
+    powers[0]                = x->Clone();
+    auto cc                  = x->GetCryptoContext();
+    auto cryptoParams        = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters());
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     // computes all powers up to k for x
     for (size_t i = 2; i <= k; i++) {
@@ -179,10 +224,10 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
         else {
             if (indices[i - 1] == 1) {
                 // non-power of 2
-                int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
+                int64_t powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(i)));
                 int64_t rem      = i % powerOf2;
                 usint levelDiff  = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
-                cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff);
+                cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff / compositeDegree);
 
                 powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
                 cc->ModReduceInPlace(powers[i - 1]);
@@ -194,7 +239,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
     for (size_t i = 1; i < k; i++) {
         if (indices[i - 1] == 1) {
             usint levelDiff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
-            cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff);
+            cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff / compositeDegree);
         }
     }
 
@@ -228,19 +273,19 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
     uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
     // Divide coefficients by x^{k*2^{m-1}}
-    std::vector<double> xkm(int32_t(k2m2k + k) + 1, 0.0);
+    std::vector<double> xkm(static_cast<int32_t>(k2m2k + k) + 1, 0.0);
     xkm.back() = 1;
 
     auto divqr = LongDivisionPoly(coefficients, xkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
-    if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
-        r2[int32_t(k2m2k)] -= 1;
+    if (static_cast<int32_t>(k2m2k - Degree(divqr->r)) <= 0) {
+        r2[static_cast<int32_t>(k2m2k)] -= 1;
         r2.resize(Degree(r2) + 1);
     }
     else {
-        r2.resize(int32_t(k2m2k + 1), 0.0);
+        r2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
         r2.back() = -1;
     }
 
@@ -249,7 +294,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
-    s2.resize(int32_t(k2m2k + 1), 0.0);
+    s2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
     s2.back() = 1;
 
     Ciphertext<DCRTPoly> cu;
@@ -393,7 +438,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
         else {
             // non-power of 2
             indices[i - 1]   = 1;
-            int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
+            int64_t powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(i)));
             int64_t rem      = i % powerOf2;
             if (indices[rem - 1] == 0)
                 indices[rem - 1] = 1;
@@ -401,7 +446,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
             // while rem is not a power of 2
             // set indices required to compute rem to 1
             while ((rem & (rem - 1))) {
-                powerOf2 = 1 << (int64_t)std::floor(std::log2(rem));
+                powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(rem)));
                 rem      = rem % powerOf2;
                 if (indices[rem - 1] == 0)
                     indices[rem - 1] = 1;
@@ -412,6 +457,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
     std::vector<Ciphertext<DCRTPoly>> powers(k);
     powers[0] = x->Clone();
     auto cc   = x->GetCryptoContext();
+    uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
 
     // computes all powers up to k for x
     for (size_t i = 2; i <= k; i++) {
@@ -423,10 +470,10 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
         else {
             if (indices[i - 1] == 1) {
                 // non-power of 2
-                int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
+                int64_t powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(i)));
                 int64_t rem      = i % powerOf2;
                 usint levelDiff  = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
-                cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff);
+                cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff / compositeDegree);
                 powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
                 cc->ModReduceInPlace(powers[i - 1]);
             }
@@ -479,18 +526,18 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
     f2.back() = 1;
 
     // Divide f2 by x^{k*2^{m-1}}
-    std::vector<double> xkm(int32_t(k2m2k + k) + 1, 0.0);
+    std::vector<double> xkm(static_cast<int32_t>(k2m2k + k) + 1, 0.0);
     xkm.back() = 1;
     auto divqr = LongDivisionPoly(f2, xkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
-    if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
-        r2[int32_t(k2m2k)] -= 1;
+    if (static_cast<int32_t>(k2m2k - Degree(divqr->r)) <= 0) {
+        r2[static_cast<int32_t>(k2m2k)] -= 1;
         r2.resize(Degree(r2) + 1);
     }
     else {
-        r2.resize(int32_t(k2m2k + 1), 0.0);
+        r2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
         r2.back() = -1;
     }
 
@@ -499,7 +546,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
-    s2.resize(int32_t(k2m2k + 1), 0.0);
+    s2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
     s2.back() = 1;
 
     // Evaluate c at u
@@ -658,6 +705,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(ConstCipherte
     }
 
     Ciphertext<DCRTPoly> yReduced = T[0]->Clone();
+    uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
 
     // Computes Chebyshev polynomials up to degree k
     // for y: T_1(y) = y, T_2(y), ... , T_k(y)
@@ -706,7 +755,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(ConstCipherte
     }
     for (size_t i = 1; i < k; i++) {
         usint levelDiff = T[k - 1]->GetLevel() - T[i - 1]->GetLevel();
-        cc->LevelReduceInPlace(T[i - 1], nullptr, levelDiff);
+        cc->LevelReduceInPlace(T[i - 1], nullptr, levelDiff / compositeDegree);
     }
 
     // perform scalar multiplication for the highest-order term
@@ -734,23 +783,25 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
                                                               uint32_t m, std::vector<Ciphertext<DCRTPoly>>& T,
                                                               std::vector<Ciphertext<DCRTPoly>>& T2) const {
     auto cc = x->GetCryptoContext();
+    uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
 
     // Compute k*2^{m-1}-k because we use it a lot
     uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
     // Divide coefficients by T^{k*2^{m-1}}
-    std::vector<double> Tkm(int32_t(k2m2k + k) + 1, 0.0);
+    std::vector<double> Tkm(static_cast<int32_t>(k2m2k + k) + 1, 0.0);
     Tkm.back() = 1;
     auto divqr = LongDivisionChebyshev(coefficients, Tkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
-    if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
-        r2[int32_t(k2m2k)] -= 1;
+    if (static_cast<int32_t>(k2m2k - Degree(divqr->r)) <= 0) {
+        r2[static_cast<int32_t>(k2m2k)] -= 1;
         r2.resize(Degree(r2) + 1);
     }
     else {
-        r2.resize(int32_t(k2m2k + 1), 0.0);
+        r2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
         r2.back() = -1;
     }
 
@@ -759,7 +810,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
-    s2.resize(int32_t(k2m2k + 1), 0.0);
+    s2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
     s2.back() = 1;
 
     // Evaluate c at u
@@ -792,7 +843,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
         cc->EvalAddInPlace(cu, divcs->q.front() / 2);
         // Need to reduce levels up to the level of T2[m-1].
         usint levelDiff = T2[m - 1]->GetLevel() - cu->GetLevel();
-        cc->LevelReduceInPlace(cu, nullptr, levelDiff);
+        cc->LevelReduceInPlace(cu, nullptr, levelDiff / compositeDegree);
 
         flag_c = true;
     }
@@ -1013,18 +1064,18 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
     f2.back() = 1;
 
     // Divide f2 by T^{k*2^{m-1}}
-    std::vector<double> Tkm(int32_t(k2m2k + k) + 1, 0.0);
+    std::vector<double> Tkm(static_cast<int32_t>(k2m2k + k) + 1, 0.0);
     Tkm.back() = 1;
     auto divqr = LongDivisionChebyshev(f2, Tkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
-    if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
-        r2[int32_t(k2m2k)] -= 1;
+    if (static_cast<int32_t>(k2m2k - Degree(divqr->r)) <= 0) {
+        r2[static_cast<int32_t>(k2m2k)] -= 1;
         r2.resize(Degree(r2) + 1);
     }
     else {
-        r2.resize(int32_t(k2m2k + 1), 0.0);
+        r2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
         r2.back() = -1;
     }
 
@@ -1033,7 +1084,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
-    s2.resize(int32_t(k2m2k + 1), 0.0);
+    s2.resize(static_cast<int32_t>(k2m2k + 1), 0.0);
     s2.back() = 1;
 
     // Evaluate c at u

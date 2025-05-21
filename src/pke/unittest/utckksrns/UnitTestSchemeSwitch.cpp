@@ -39,9 +39,9 @@
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "scheme/ckksrns/schemeswitching-data-serializer.h"
 #include "ciphertext-ser.h"
 #include "key/key-ser.h"
+#include "schemeswitching-data-serializer.h"
 
 #include <iostream>
 #include <vector>
@@ -128,11 +128,11 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SCHE
 //===========================================================================================================
 
 constexpr uint32_t MULT_DEPTH1  = 13;
-constexpr uint32_t MULT_DEPTH2  = 16;
+[[maybe_unused]] constexpr uint32_t MULT_DEPTH2  = 16;
 constexpr uint32_t RDIM         = 64;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 constexpr uint32_t SMODSIZE = 70;
 constexpr uint32_t FMODSIZE = 80;
 #else
@@ -196,6 +196,8 @@ static std::vector<TEST_CASE_UTCKKSRNS_SCHEMESWITCH> testCases = {
     { SCHEME_SWITCH_COMPARISON, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH1, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, RDIM/2 },
     { SCHEME_SWITCH_COMPARISON, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH1, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, RDIM/2 },
 #endif
+
+#if !defined(__EMSCRIPTEN__)
     // ==========================================
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Dim1, LogQ, NumValues, Slots, OneHot
     { SCHEME_SWITCH_ARGMIN, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8, true },
@@ -246,6 +248,8 @@ static std::vector<TEST_CASE_UTCKKSRNS_SCHEMESWITCH> testCases = {
     { SCHEME_SWITCH_SERIALIZE, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8},
     { SCHEME_SWITCH_SERIALIZE, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8},
 #endif
+
+#endif // __EMSCRIPTEN__
 };
 // clang-format on
 //===========================================================================================================
@@ -376,7 +380,6 @@ protected:
             std::vector<int32_t> x2_values{0, -1, 2, -3, 4, -8, 16, -32};
             std::copy(x2_values.begin(), x2_values.end(), x2.begin());
             std::vector<LWECiphertext> ctxtsLWE1(testData.slots);
-            // TODO: Andreea: number of slots is 32 here
             for (uint32_t i = 0; i < testData.slots; i++) {
                 // encrypted under small plantext modulus p = 4 and ciphertext modulus
                 ctxtsLWE1[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, 4, modulus_LWE);

@@ -192,6 +192,14 @@ public:
         OPENFHE_THROW("double scalar addition is not implemented for this scheme");
     }
 
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar addition is not implemented for this scheme");
+    }
+
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar addition is not implemented for this scheme");
+    }
+
     /////////////////////////////////////////
     // SHE SUBTRACTION
     /////////////////////////////////////////
@@ -435,11 +443,19 @@ public:
         OPENFHE_THROW("double scalar multiplication is not implemented for this scheme");
     }
 
-    virtual Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar multiplication is not implemented for this scheme");
+    }
+
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        OPENFHE_THROW("complex scalar multiplication is not implemented for this scheme");
+    }
+
+    virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element> ciphertext, uint64_t integer) const {
         OPENFHE_THROW("MultByInteger is not implemented for this scheme");
     }
 
-    virtual void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
+    virtual void MultByIntegerInPlace(Ciphertext<Element>& ciphertext, uint64_t integer) const {
         OPENFHE_THROW("MultByIntegerInPlace is not implemented for this scheme");
     }
 
@@ -783,9 +799,9 @@ protected:
     /////////////////////////////////////////
     // CORE OPERATIONS
     /////////////////////////////////////////
-    void VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext1, const ConstCiphertext<Element>& ciphertext,
+    void VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext,
                            CALLER_INFO_ARGS_HDR) const;
-    void VerifyNumOfTowers(const ConstCiphertext<Element>& ciphertext, const Element& plaintext,
+    void VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext, const Element& plaintext,
                            CALLER_INFO_ARGS_HDR) const;
 
     /**
@@ -838,20 +854,16 @@ protected:
    * @return result of homomorphic multiplication of input ciphertexts.
    */
     Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const;
-
-    Ciphertext<Element> EvalSquareCore(ConstCiphertext<Element> ciphertext) const;
+    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext, const Element& plaintext) const;
+    void EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element& plaintext) const;
 
     virtual Ciphertext<Element> EvalAddCore(ConstCiphertext<Element> ciphertext, const Element& plaintext) const;
-
     void EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element& plaintext) const;
 
     virtual Ciphertext<Element> EvalSubCore(ConstCiphertext<Element> ciphertext1, const Element& plaintext) const;
-
     void EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1, const Element& plaintext) const;
 
-    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext, const Element& plaintext) const;
-
-    void EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element& plaintext) const;
+    Ciphertext<Element> EvalSquareCore(ConstCiphertext<Element> ciphertext) const;
 };
 
 }  // namespace lbcrypto

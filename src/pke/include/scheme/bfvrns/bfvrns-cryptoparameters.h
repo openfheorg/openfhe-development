@@ -46,6 +46,7 @@ namespace lbcrypto {
 
 class CryptoParametersBFVRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
+    #define DISABLED_FOR_BFVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BFVRNS.");
 
 public:
     CryptoParametersBFVRNS() : CryptoParametersRNS() {}
@@ -84,6 +85,14 @@ public:
                              uint32_t extraBits) override;
 
     uint64_t FindAuxPrimeStep() const override;
+
+    uint32_t GetPRENumHops() const override {
+        DISABLED_FOR_BFVRNS_PARAMS;
+    }
+
+    double GetNoiseEstimate() const override {
+        DISABLED_FOR_BFVRNS_PARAMS;
+    }
 
     /////////////////////////////////////
     // SERIALIZATION

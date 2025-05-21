@@ -79,6 +79,10 @@ ScalingTechnique convertToScalingTechnique(const std::string& str) {
         return FLEXIBLEAUTO;
     else if (str == "FLEXIBLEAUTOEXT")
         return FLEXIBLEAUTOEXT;
+    else if (str == "COMPOSITESCALINGAUTO")
+        return COMPOSITESCALINGAUTO;
+    else if (str == "COMPOSITESCALINGMANUAL")
+        return COMPOSITESCALINGMANUAL;
     else if (str == "NORESCALE")
         return NORESCALE;
 
@@ -92,6 +96,8 @@ ScalingTechnique convertToScalingTechnique(uint32_t num) {
         case FIXEDAUTO:
         case FLEXIBLEAUTO:
         case FLEXIBLEAUTOEXT:
+        case COMPOSITESCALINGAUTO:
+        case COMPOSITESCALINGMANUAL:
         case NORESCALE:
             // case INVALID_RS_TECHNIQUE:
             return scTech;
@@ -115,6 +121,12 @@ std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
             break;
         case FLEXIBLEAUTOEXT:
             s << "FLEXIBLEAUTOEXT";
+            break;
+        case COMPOSITESCALINGAUTO:
+            s << "COMPOSITESCALINGAUTO";
+            break;
+        case COMPOSITESCALINGMANUAL:
+            s << "COMPOSITESCALINGMANUAL";
             break;
         case NORESCALE:
             s << "NORESCALE";
@@ -470,6 +482,44 @@ std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL p) {
             break;
         case SLACK:
             s << "SLACK";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+CKKSDataType convertToCKKSDataType(const std::string& str) {
+    if (str == "REAL")
+        return REAL;
+    else if (str == "COMPLEX")
+        return COMPLEX;
+
+    std::string errMsg(std::string("Unknown CKKSDataType ") + str);
+    OPENFHE_THROW(errMsg);
+}
+CKKSDataType convertToCKKSDataType(uint32_t num) {
+    auto dataType = static_cast<CKKSDataType>(num);
+    switch (dataType) {
+        case REAL:
+            return dataType;
+        case COMPLEX:
+            return dataType;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for CKKSDataType ") + std::to_string(num));
+    OPENFHE_THROW(errMsg);
+}
+std::ostream& operator<<(std::ostream& s, CKKSDataType t) {
+    switch (t) {
+        case REAL:
+            s << "REAL";
+            break;
+        case COMPLEX:
+            s << "COMPLEX";
             break;
         default:
             s << "UNKNOWN";

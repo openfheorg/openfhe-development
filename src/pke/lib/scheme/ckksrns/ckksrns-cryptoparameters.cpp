@@ -38,6 +38,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
+#include <vector>
+
 namespace lbcrypto {
 
 // Precomputation of CRT tables encryption, decryption, and  homomorphic
@@ -47,7 +49,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                                                   uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
-    size_t sizeQ = GetElementParams()->GetParams().size();
+    size_t sizeQ             = GetElementParams()->GetParams().size();
+    uint32_t compositeDegree = this->GetCompositeDegree();
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
@@ -82,16 +85,19 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     }
 
     // Pre-compute scaling factors for each level (used in FLEXIBLE* scaling techniques)
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+        m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
         m_scalingFactorsReal.resize(sizeQ);
 
-        if ((sizeQ == 1) && (extraBits == 0)) {
+        if ((sizeQ == 1) && (extraBits == 0) && (m_scalTechnique != COMPOSITESCALINGAUTO) &&
+            (m_scalTechnique != COMPOSITESCALINGMANUAL)) {
             // mult depth = 0 and FLEXIBLEAUTO
             // when multiplicative depth = 0, we use the scaling mod size instead of modulus size
             // Plaintext modulus is used in EncodingParamsImpl to store the exponent p of the scaling factor
             m_scalingFactorsReal[0] = pow(2, GetPlaintextModulus());
         }
-        else if ((sizeQ == 2) && (extraBits > 0)) {
+        else if ((sizeQ == 2) && (extraBits > 0) && (m_scalTechnique != COMPOSITESCALINGAUTO) &&
+                 (m_scalTechnique != COMPOSITESCALINGMANUAL)) {
             // mult depth = 0 and FLEXIBLEAUTOEXT
             // when multiplicative depth = 0, we use the scaling mod size instead of modulus size
             // Plaintext modulus is used in EncodingParamsImpl to store the exponent p of the scaling factor
@@ -100,19 +106,45 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         }
         else {
             m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
-            if (extraBits > 0)
+            if (m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                for (uint32_t j = 1; j < compositeDegree; j++) {
+                    m_scalingFactorsReal[0] *= moduliQ[sizeQ - j - 1].ConvertToDouble();
+                }
+            }
+            if (extraBits > 0 && m_scalTechnique != COMPOSITESCALINGAUTO && m_scalTechnique != COMPOSITESCALINGMANUAL)
                 m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
+
             const double lastPresetFactor = (extraBits == 0) ? m_scalingFactorsReal[0] : m_scalingFactorsReal[1];
             // number of levels with pre-calculated factors
-            const size_t numPresetFactors = (extraBits == 0) ? 1 : 2;
+            const size_t numPresetFactors = (extraBits == 0 || (m_scalTechnique == COMPOSITESCALINGAUTO ||
+                                                                m_scalTechnique == COMPOSITESCALINGMANUAL)) ?
+                                                1 :
+                                                2;
 
             for (size_t k = numPresetFactors; k < sizeQ; k++) {
-                double prevSF           = m_scalingFactorsReal[k - 1];
-                m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
-                double ratio            = m_scalingFactorsReal[k] / lastPresetFactor;
-                if (ratio <= 0.5 || ratio >= 2.0)
-                    OPENFHE_THROW(
-                        "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL or FIXEDAUTO instead.");
+                if (m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                    if (k % compositeDegree == 0) {
+                        double prevSF           = m_scalingFactorsReal[k - compositeDegree];
+                        m_scalingFactorsReal[k] = prevSF * prevSF;
+                        for (uint32_t j = 0; j < compositeDegree; j++) {
+                            m_scalingFactorsReal[k] /= moduliQ[sizeQ - k + j].ConvertToDouble();
+                        }
+                    }
+                    else {
+                        m_scalingFactorsReal[k] = 1;
+                    }
+                }
+                else {
+                    double prevSF           = m_scalingFactorsReal[k - 1];
+                    m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
+                }
+
+                if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+                    double ratio = m_scalingFactorsReal[k] / lastPresetFactor;
+                    if (ratio <= 0.5 || ratio >= 2.0)
+                        OPENFHE_THROW(
+                            "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL or FIXEDAUTO instead.");
+                }
             }
         }
 
@@ -152,6 +184,32 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 uint64_t CryptoParametersCKKSRNS::FindAuxPrimeStep() const {
     size_t n = GetElementParams()->GetRingDimension();
     return static_cast<uint64_t>(2 * n);
+}
+
+void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) {
+    // Add logic to determine whether composite scaling is feasible or not
+    if (GetScalingTechnique() == COMPOSITESCALINGAUTO) {
+        uint32_t registerWordSize = GetRegisterWordSize();
+        if (registerWordSize <= 64) {
+            if (registerWordSize < scalingModSize) {
+                uint32_t compositeDegree =
+                    static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
+                // Assert minimum allowed moduli size on composite scaling mode
+                // @fdiasmor TODO: make it more robust for a range of multiplicative depth
+                if (static_cast<float>(scalingModSize) / compositeDegree < 19) {
+                    std::string errMsg = "Moduli size (";
+                    errMsg += std::to_string(static_cast<float>(scalingModSize) / compositeDegree);
+                    errMsg +=
+                        ") is too short (< 19) for target multiplicative depth. Consider increasing the scaling factor or the register word size.";
+                    OPENFHE_THROW(errMsg);
+                }
+                m_compositeDegree = compositeDegree;
+            }  // else composite degree remains set to 1
+        }
+        else {
+            OPENFHE_THROW("COMPOSITESCALING scaling technique only supports register word size <= 64.");
+        }
+    }
 }
 
 }  // namespace lbcrypto

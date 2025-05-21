@@ -128,7 +128,9 @@ protected:
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
                         uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                        usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT,
+                        CKKSDataType ckksDataType = REAL)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
                                          PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
@@ -138,9 +140,36 @@ protected:
         m_encTechnique                        = encTech;
         m_multTechnique                       = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
+        m_compositeDegree                     = compositeDegree;
+        m_registerWordSize                    = registerWordSize;
+        m_ckksDataType                        = ckksDataType;
     }
 
-    virtual ~CryptoParametersRNS() {}
+    ~CryptoParametersRNS() override = default;
+
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersRNS objects.
+    *        It is called by CryptoParametersBase::operator==()
+    * @param rhs - the other CryptoParametersRNS object to compare to.
+    * @return whether the two CryptoParametersRNS objects are equivalent.
+    */
+    bool CompareTo(const CryptoParametersBase<DCRTPoly>& rhs) const override {
+        const auto* el = dynamic_cast<const CryptoParametersRNS*>(&rhs);
+        if (el == nullptr)
+            return false;
+
+        return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->m_scalTechnique &&
+               m_ksTechnique == el->m_ksTechnique && m_multTechnique == el->m_multTechnique &&
+               m_encTechnique == el->m_encTechnique && m_numPartQ == el->m_numPartQ &&
+               m_auxBits == el->m_auxBits && m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
+               m_multipartyMode == el->m_multipartyMode && m_executionMode == el->m_executionMode &&
+               m_compositeDegree == el->m_compositeDegree && m_registerWordSize == el->m_registerWordSize &&
+               m_ckksDataType == el->m_ckksDataType;
+    }
+
+    void PrintParameters(std::ostream& os) const override {
+        CryptoParametersRLWE<DCRTPoly>::PrintParameters(os);
+    }
 
 public:
     /**
@@ -166,13 +195,14 @@ public:
    * @param extraModulusSize bit size for extra modulus in FLEXIBLEAUTOEXT (CKKS and BGV only)
    * @param numPrimes number of moduli witout extraModulus
    * @param auxBits size of auxiliar moduli used for hybrid key switching
+   * @param scalTech scaling technique
    * @param addOne should an extra bit be added (for CKKS and BGV)
    *
    * @return log2 of the modulus and number of RNS limbs.
    */
     static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits,
-                                                    bool addOne = false);
+                                                    ScalingTechnique scalTech, bool addOne = false);
 
     /*
    * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)
@@ -181,28 +211,6 @@ public:
    */
     static constexpr double EstimateMultipartyFloodingLogQ() {
         return static_cast<double>(NoiseFlooding::MULTIPARTY_MOD_SIZE * NoiseFlooding::NUM_MODULI_MULTIPARTY);
-    }
-
-    /**
-   * == operator to compare to this instance of CryptoParametersBase object.
-   *
-   * @param &rhs CryptoParameters to check equality against.
-   */
-    bool operator==(const CryptoParametersBase<DCRTPoly>& rhs) const override {
-        const auto* el = dynamic_cast<const CryptoParametersRNS*>(&rhs);
-
-        if (el == nullptr)
-            return false;
-
-        return CryptoParametersBase<DCRTPoly>::operator==(rhs) && m_scalTechnique == el->GetScalingTechnique() &&
-               m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
-               m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
-               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() && m_PREMode == el->GetPREMode() &&
-               m_multipartyMode == el->GetMultipartyMode() && m_executionMode == el->GetExecutionMode();
-    }
-
-    void PrintParameters(std::ostream& os) const override {
-        CryptoParametersBase<DCRTPoly>::PrintParameters(os);
     }
 
     /////////////////////////////////////
@@ -603,12 +611,13 @@ public:
     /**
    * Method to retrieve the scaling factor of level l.
    * For FIXEDMANUAL scaling technique method always returns 2^p, where p corresponds to plaintext modulus
-   * @param l For FLEXIBLEAUTO scaling technique the level whose scaling factor we want to learn.
+   * @param l For FLEXIBLEAUTO and COMPOSITESCALING scaling techniques the level whose scaling factor we want to learn.
    * Levels start from 0 (no scaling done - all towers) and go up to K-1, where K is the number of towers supported.
    * @return the scaling factor.
    */
     double GetScalingFactorReal(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsReal.size()) {
                 // TODO: Return an error here.
                 return m_approxSF;
@@ -621,7 +630,8 @@ public:
     }
 
     double GetScalingFactorRealBig(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
                 return m_approxSF;
@@ -636,15 +646,42 @@ public:
     /**
    * Method to retrieve the modulus to be dropped of level l.
    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
-   * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
+   * @param l index of modulus to be dropped for FLEXIBLEAUTO and COMPOSITESCALING scaling techniques
    * @return the precomputed table
    */
     double GetModReduceFactor(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_dmoduliQ[l];
         }
 
         return m_approxSF;
+    }
+
+    /////////////////////////////////////
+    // CKKS RNS Composite Scaling Params
+    /////////////////////////////////////
+
+    /**
+     * Returns the composite scaling degree d. Its values is determined at runtime based on
+     * input scaling factor and architecture register size (e.g., 32 bits, 48 bits, 64 bits).
+     * This parameter is only relevant when using the CKKS scheme and .
+     *
+     * @return the composite degree value for COMPOSITESCALING scaling technique
+     **/
+    uint32_t const& GetCompositeDegree() const {
+        // If not CKKS scheme, same value as BASE_NUM_LEVELS_TO_DROP
+        return m_compositeDegree;
+    }
+    /**
+     * Returns the architecture register word size (e.g., 32 bits, 48 bits, 64 bits).
+     * Used to determine the size of prime moduli in the CKKS scheme on
+     * composite scaling mode (COMPOSITESCALINGAUTO).
+     *
+     * @return the register word size for COMPOSITESCALING scaling technique
+     **/
+    uint32_t const& GetRegisterWordSize() const {
+        return m_registerWordSize;
     }
 
     /////////////////////////////////////
@@ -938,7 +975,8 @@ public:
     }
 
     const NativeInteger& GetScalingFactorInt(usint l) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsInt.size()) {
                 // TODO: Return an error here.
                 return m_fixedSF;
@@ -949,7 +987,8 @@ public:
     }
 
     const NativeInteger& GetScalingFactorIntBig(usint l) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsIntBig.size()) {
                 // TODO: Return an error here.
                 return m_fixedSF;
@@ -960,7 +999,8 @@ public:
     }
 
     const NativeInteger& GetModReduceFactorInt(uint32_t l = 0) const {
-        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
+            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_qModt[l];
         }
         return m_fixedSF;
@@ -1348,6 +1388,15 @@ public:
         return m_MPIntBootCiphertextCompressionLevel;
     }
 
+    /**
+   * Method to retrieve the CKKS data type.
+   *
+   * @return the CKKS data type.
+   */
+    CKKSDataType GetCKKSDataType() const {
+        return m_ckksDataType;
+    }
+
 protected:
     /////////////////////////////////////
     // PrecomputeCRTTables
@@ -1481,6 +1530,15 @@ protected:
 
     // Stores 2^ptm where ptm - plaintext modulus
     double m_approxSF = 0;
+
+    /////////////////////////////////////
+    // CKKS RNS Composite Scaling Params
+    /////////////////////////////////////
+
+    // Stores composite degree for composite modulus chain
+    uint32_t m_compositeDegree = BASE_NUM_LEVELS_TO_DROP;
+    // Stores the architecture register word size
+    uint32_t m_registerWordSize = NATIVEINT;
 
     /////////////////////////////////////
     // BFVrns : Encrypt
@@ -1775,6 +1833,9 @@ protected:
     /////////////////////////////////////
     COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
 
+    // CKKS Data Type
+    CKKSDataType m_ckksDataType;
+
 public:
     /////////////////////////////////////
     // SERIALIZATION
@@ -1791,6 +1852,9 @@ public:
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
         ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
+        ar(cereal::make_nvp("cd", m_compositeDegree));
+        ar(cereal::make_nvp("rws", m_registerWordSize));
+        ar(cereal::make_nvp("cdt", m_ckksDataType));
     }
 
     template <class Archive>
@@ -1816,6 +1880,9 @@ public:
         catch (cereal::Exception&) {
             m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
         }
+        ar(cereal::make_nvp("cd", m_compositeDegree));
+        ar(cereal::make_nvp("rws", m_registerWordSize));
+        ar(cereal::make_nvp("cdt", m_ckksDataType));
     }
 
     std::string SerializedObjectName() const override {

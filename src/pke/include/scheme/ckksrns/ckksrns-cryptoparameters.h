@@ -46,6 +46,7 @@ namespace lbcrypto {
 
 class CryptoParametersCKKSRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
+    #define DISABLED_FOR_CKKSRNS_PARAMS OPENFHE_THROW("This parameter is not available for CKKSRNS.");
 
 public:
     CryptoParametersCKKSRNS() : CryptoParametersRNS() {}
@@ -77,11 +78,14 @@ public:
                             DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                             PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                             uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
-                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                            usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT,
+                            CKKSDataType ckksDataType = REAL)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
                               multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
-                              numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel) {}
+                              numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel,
+                              compositeDegree, registerWordSize, ckksDataType) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 
@@ -90,6 +94,22 @@ public:
                              uint32_t extraBits) override;
 
     uint64_t FindAuxPrimeStep() const override;
+
+    void ConfigureCompositeDegree(usint scalingModSize);
+    
+    //PlaintextModulus GetPlaintextModulus() const override {
+        //DISABLED_FOR_CKKSRNS_PARAMS;
+    //}
+
+    uint32_t GetEvalAddCount() const override {
+        DISABLED_FOR_CKKSRNS_PARAMS;
+    }
+    uint32_t GetKeySwitchCount() const override {
+        DISABLED_FOR_CKKSRNS_PARAMS;
+    }
+    uint32_t GetPRENumHops() const override {
+        DISABLED_FOR_CKKSRNS_PARAMS;
+    }
 
     /////////////////////////////////////
     // SERIALIZATION

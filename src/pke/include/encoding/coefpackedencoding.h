@@ -36,17 +36,56 @@
 #ifndef SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_
 #define SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_
 
+#include "encoding/plaintext.h"
+
 #include <initializer_list>
 #include <memory>
-#include <vector>
 #include <string>
-
-#include "encoding/plaintext.h"
+#include <vector>
 
 namespace lbcrypto {
 
 class CoefPackedEncoding : public PlaintextImpl {
+private:
     std::vector<int64_t> value;
+
+protected:
+    /**
+    * @brief PrintValue() is called by operator<<
+    * @param out stream to print to
+    */
+    void PrintValue(std::ostream& out) const override {
+        out << "(";
+
+        // for sanity's sake: get rid of all trailing zeroes and print "..." instead
+        size_t i       = value.size();
+        bool allZeroes = true;
+        while (i > 0) {
+            --i;
+            if (value[i] != 0) {
+                allZeroes = false;
+                break;
+            }
+        }
+
+        if (allZeroes == false) {
+            for (size_t j = 0; j <= i; ++j)
+                out << value[j] << ", ";
+        }
+        out << "... )";
+    }
+
+    /**
+    * Method to compare two plaintext to test for equivalence
+    * Testing that the plaintexts are of the same type done in operator==
+    *
+    * @param rhs - the other plaintext to compare to.
+    * @return whether the two plaintext are equivalent.
+    */
+    bool CompareTo(const PlaintextImpl& rhs) const override {
+        const auto* el = dynamic_cast<const CoefPackedEncoding*>(&rhs);
+        return (el != nullptr) && value == el->value;
+    }
 
 public:
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
@@ -54,7 +93,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)
-        : PlaintextImpl(vp, ep, schemeId) {}
+        : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
@@ -62,15 +101,15 @@ public:
                                                   bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs,
                        SCHEME schemeId = SCHEME::INVALID_SCHEME)
-        : PlaintextImpl(vp, ep, schemeId), value(coeffs) {}
+        : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId), value(coeffs) {}
 
-    virtual ~CoefPackedEncoding() = default;
+    ~CoefPackedEncoding() override = default;
 
     /**
    * GetCoeffsValue
    * @return the un-encoded scalar
    */
-    const std::vector<int64_t>& GetCoefPackedValue() const {
+    const std::vector<int64_t>& GetCoefPackedValue() const override {
         return value;
     }
 
@@ -78,7 +117,7 @@ public:
    * SetIntVectorValue
    * @param val integer vector to initialize the plaintext
    */
-    void SetIntVectorValue(const std::vector<int64_t>& val) {
+    void SetIntVectorValue(const std::vector<int64_t>& val) override {
         value = val;
     }
 
@@ -86,28 +125,20 @@ public:
    * Encode the plaintext into the Poly
    * @return true on success
    */
-    bool Encode();
+    bool Encode() override;
 
     /**
    * Decode the Poly into the string
    * @return true on success
    */
-    bool Decode();
-
-    /**
-   * GetEncodingType
-   * @return this is a COEF_PACKED_ENCODING encoding
-   */
-    PlaintextEncodings GetEncodingType() const {
-        return COEF_PACKED_ENCODING;
-    }
+    bool Decode() override;
 
     /**
    * Get length of the plaintext
    *
    * @return number of elements in this plaintext
    */
-    size_t GetLength() const {
+    size_t GetLength() const override {
         return value.size();
     }
 
@@ -115,38 +146,8 @@ public:
    * SetLength of the plaintext to the given size
    * @param siz
    */
-    void SetLength(size_t siz) {
+    void SetLength(size_t siz) override {
         value.resize(siz);
-    }
-
-    /**
-   * Method to compare two plaintext to test for equivalence
-   * Testing that the plaintexts are of the same type done in operator==
-   *
-   * @param other - the other plaintext to compare to.
-   * @return whether the two plaintext are equivalent.
-   */
-    bool CompareTo(const PlaintextImpl& other) const {
-        const auto& oth = static_cast<const CoefPackedEncoding&>(other);
-        return oth.value == this->value;
-    }
-
-    /**
-   * PrintValue - used by operator<< for this object
-   * @param out
-   */
-    void PrintValue(std::ostream& out) const {
-        // for sanity's sake, trailing zeros get elided into "..."
-        out << "(";
-        size_t i = value.size();
-        while (--i > 0)
-            if (value[i] != 0)
-                break;
-
-        for (size_t j = 0; j <= i; j++)
-            out << ' ' << value[j];
-
-        out << " ... )";
     }
 };
 

@@ -94,6 +94,15 @@ public:
     void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BFVRNS;
     }
+    void SetCompositeDegree(uint32_t compositeDegree0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetRegisterWordSize(uint32_t registerWordSize0) override {
+        DISABLED_FOR_BFVRNS;
+    }
+    void SetCKKSDataType(CKKSDataType ckksDataType0) override {
+        DISABLED_FOR_BFVRNS;
+    }
 };
 //====================================================================================================================
 

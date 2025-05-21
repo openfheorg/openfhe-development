@@ -101,16 +101,16 @@ public:
     std::vector<int32_t> m_paramsDec = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS, 0);
 
     // Linear map U0; used in decoding
-    std::vector<ConstPlaintext> m_U0Pre;
+    std::vector<ReadOnlyPlaintext> m_U0Pre;
 
     // Conj(U0^T); used in encoding
-    std::vector<ConstPlaintext> m_U0hatTPre;
+    std::vector<ReadOnlyPlaintext> m_U0hatTPre;
 
     // coefficients corresponding to U0; used in decoding
-    std::vector<std::vector<ConstPlaintext>> m_U0PreFFT;
+    std::vector<std::vector<ReadOnlyPlaintext>> m_U0PreFFT;
 
     // coefficients corresponding to conj(U0^T); used in encoding
-    std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
+    std::vector<std::vector<ReadOnlyPlaintext>> m_U0hatTPreFFT;
 
     template <class Archive>
     void save(Archive& ar) const {
@@ -154,38 +154,26 @@ public:
                                        uint32_t precision) const override;
 
     //------------------------------------------------------------------------------
-    // Find Rotation Indices
-    //------------------------------------------------------------------------------
-
-    std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
-
-    std::vector<int32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
-
-    std::vector<int32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
-
-    std::vector<int32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
-
-    //------------------------------------------------------------------------------
     // Precomputations for CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
-    std::vector<ConstPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                               const std::vector<std::vector<std::complex<double>>>& A,
                                                               double scale = 1, uint32_t L = 0) const;
 
-    std::vector<ConstPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                               const std::vector<std::vector<std::complex<double>>>& A,
                                                               const std::vector<std::vector<std::complex<double>>>& B,
                                                               uint32_t orientation = 0, double scale = 1,
                                                               uint32_t L = 0) const;
 
-    std::vector<std::vector<ConstPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<std::vector<ReadOnlyPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                          const std::vector<std::complex<double>>& A,
                                                                          const std::vector<uint32_t>& rotGroup,
                                                                          bool flag_i, double scale = 1,
                                                                          uint32_t L = 0) const;
 
-    std::vector<std::vector<ConstPlaintext>> EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
+    std::vector<std::vector<ReadOnlyPlaintext>> EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                          const std::vector<std::complex<double>>& A,
                                                                          const std::vector<uint32_t>& rotGroup,
                                                                          bool flag_i, double scale = 1,
@@ -195,12 +183,12 @@ public:
     // EVALUATION: CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
-    Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ConstPlaintext>& A, ConstCiphertext<DCRTPoly> ct) const;
+    Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly> ct) const;
 
-    Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ConstPlaintext>>& A,
+    Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly> ctxt) const;
 
-    Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ConstPlaintext>>& A,
+    Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly> ctxt) const;
 
     //------------------------------------------------------------------------------
@@ -233,6 +221,18 @@ public:
 
 private:
     //------------------------------------------------------------------------------
+    // Find Rotation Indices
+    //------------------------------------------------------------------------------
+    std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
+
+    // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
+    // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
+    // These methods completely depend on FindBootstrapRotationIndices() to do that.
+    std::vector<uint32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<uint32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<uint32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
+
+    //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions
     //------------------------------------------------------------------------------
     uint32_t GetBootstrapDepthInternal(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
@@ -240,6 +240,9 @@ private:
     static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
+
+    void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
+                          const std::shared_ptr<DCRTPoly::Params> params) const;
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
@@ -268,7 +271,7 @@ private:
     void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                            NativeVector* nativeVec) const;
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
@@ -282,6 +285,8 @@ private:
 
     const uint32_t K_SPARSE  = 28;   // upper bound for the number of overflows in the sparse secret case
     const uint32_t K_UNIFORM = 512;  // upper bound for the number of overflows in the uniform secret case
+    const uint32_t K_UNIFORMEXT =
+        768;  // upper bound for the number of overflows in the uniform secret case for compositeDegreee > 2
     static const uint32_t R_UNIFORM =
         6;  // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static const uint32_t R_SPARSE =
@@ -331,6 +336,40 @@ private:
         7.5943206779351725e-11, 6.4679566322060472e-13,  -9.0081200925539902e-12,  -7.4396949275292252e-14,
         1.0057423059167244e-12, 8.1701187638005194e-15,  -1.0611736208855373e-13,  -8.9597492970451533e-16,
         1.1421575296031385e-14};
+
+    // Chebyshev series coefficients for the COMPOSITESCALING case where d > 2
+    const std::vector<double> g_coefficientsUniformExt{
+        // New Coefficients (K_UNIFORM = 768)
+        0.12602195635248634,    -0.0030834928649740388,  0.1293538007310393,      -0.0029150296085609707,
+        0.13880323885842225,    -0.0025534902415420128,  0.15259900956315636,     -0.0019572806381606537,
+        0.16740348080390202,    -0.0010852123927167594,  0.17795704156012629,     7.3594791671716396e-05,
+        0.17708229644467954,    0.0014573280941530976,   0.15661113656175465,     0.0028850600459592078,
+        0.10984969661272398,    0.0040295575406054489,   0.035829873357113948,    0.004449523200499763,
+        -0.055520186697616318,  0.0037264589074560098,   -0.14007871037019429,    0.001719720247528076,
+        -0.18281801001428047,   -0.0011373848818829857,  -0.15209319897288492,    -0.0037123962122311092,
+        -0.043785371196750272,  -0.0045107273507656552,  0.09756154430583093,     -0.002604845726688627,
+        0.18481556762187912,    0.0012462519210521535,   0.1403768476069214,      0.0043541760219966428,
+        -0.024293645826662724,  0.0037846793397644275,   -0.17560536795332429,    -0.0005605968506360667,
+        -0.1519811728143392,    -0.0045192348096649545,  0.048231020943727741,    -0.0032001529516056853,
+        0.19692074387699257,    0.0024419388214462485,   0.078182928643403107,    0.0047838249172446005,
+        -0.16476594792427054,   -0.00036614509861925492, -0.14537982038722122,    -0.0050995116137312257,
+        0.13564231010825495,    -0.00050653194386865278, 0.16465075644913021,     0.0052831338103145531,
+        -0.1493249604350485,    -0.00016209880585104635, -0.13934114757550983,    -0.0054247353644288178,
+        0.20649654831497111,    0.0026431561325639561,   0.032277990808412343,    0.0039463054621702767,
+        -0.23636345040634044,   -0.0059041496654351176,  0.17831596275657194,     0.0017594032442182191,
+        0.05094162125752931,    0.0040150842221901416,   -0.24841268578463685,    -0.0073080801617375155,
+        0.3122522704364516,     0.0073316847629231194,   -0.26606798599442621,    -0.0054892692910619113,
+        0.17878607636323862,    0.0033586935001791839,   -0.10066311654486482,    -0.001754132071278842,
+        0.049074577561330504,   0.00080234886593034873,  -0.021150143470356698,   -0.0003269871328764949,
+        0.0081757002802533667,  0.00012021127618051574,  -0.0028652357611661534,  -4.0244300629116574e-05,
+        0.00091801734966694636, 1.2361006806444711e-05,  -0.0002707191913116332,  -3.504631720275642e-06,
+        7.3888955616723944e-05, 9.2189772261859728e-07,  -1.8752943907614565e-05, -2.2597387576370175e-07,
+        4.4436168671606267e-06, 5.1807959456553769e-08,  -9.8651004908533913e-07, -1.1146078152883018e-08,
+        2.0582706963882007e-07, 2.2568126993711184e-09,  -4.0469622058265335e-08, -4.31163542777443e-10,
+        7.517057515198321e-09,  7.7904840375183328e-11,  -1.3219720621636946e-09, -1.3342979848924908e-11,
+        2.2055962238660182e-10, 2.1724065123826773e-12,  -3.4974624736954921e-11, -3.3609296485004418e-13,
+        5.2789108285402917e-12, 4.9471164793087018e-14,  -7.5998777765849013e-13, -4.2492853307002972e-15,
+        1.0768090434260388e-13, -2.1478500584069139e-15, -1.3891315735425435e-14};
 };
 
 }  // namespace lbcrypto

@@ -222,7 +222,7 @@ public:
    */
     virtual void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE, double scaleSign,
                                              bool unit) {
-        OPENFHE_THROW(not_implemented_error, "EvalCompareSwitchPrecompute is not supported for this scheme");
+        OPENFHE_THROW("EvalCompareSwitchPrecompute is not supported for this scheme");
     }
 
     /**

@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     cc->EvalMultKeyGen(keyPair.secretKey);
     std::cout << "Completed." << std::endl;
 
-    std::vector<ConstCiphertext<DCRTPoly>> ciphertextVec;
+    std::vector<ReadOnlyCiphertext<DCRTPoly>> ciphertextVec;
     for (usint i = 0; i < encodedLength; ++i) {
         Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input[i]);
         ciphertextVec.push_back(cc->Encrypt(keyPair.publicKey, plaintext));

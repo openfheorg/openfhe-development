@@ -54,6 +54,8 @@ enum ScalingTechnique {
     FIXEDAUTO,
     FLEXIBLEAUTO,
     FLEXIBLEAUTOEXT,
+    COMPOSITESCALINGAUTO,
+    COMPOSITESCALINGMANUAL,
     NORESCALE,
     INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
 };
@@ -110,6 +112,11 @@ enum PlaintextEncodings {
 enum LargeScalingFactorConstants {
     MAX_BITS_IN_WORD = 61,
     MAX_LOG_STEP     = 60,
+};
+
+enum CKKSDataType {
+    REAL = 0,
+    COMPLEX,
 };
 
 /**

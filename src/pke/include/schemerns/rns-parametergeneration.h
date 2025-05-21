@@ -53,67 +53,6 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
 public:
     virtual ~ParameterGenerationRNS() {}
 
-    /**
-   * Method for computing all derived parameters based on chosen primitive
-   * parameters
-   *
-   * @param *cryptoParams the crypto parameters object to be populated with
-   * parameters.
-   * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch
-   * operations are performed.
-   * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and
-   * KeySwitch operations are performed.
-   * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd
-   * and EvalMult operations are performed.
-   * @param dcrtBits number of bits in each CRT modulus*
-   * @param n ring dimension in case the user wants to use a custom ring
-   * dimension
-   */
-    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                         uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
-                         uint32_t n) const override {
-        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
-    }
-
-    /**
-   * Method for computing all derived parameters based on chosen primitive
-   * parameters.
-   *
-   * @param cryptoParams the crypto parameters object to be populated with parameters.
-   * @param cyclOrder the cyclotomic order.
-   * @param numPrimes number of modulus towers to support.
-   * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
-   * @param firstModSize the bit-size of the first modulus
-   * @param numPartQ number of partitions of Q for HYBRID key switching
-   *
-   */
-    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t cyclOrder,
-                          uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t mulPartQ,
-                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override {
-        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
-    }
-
-    /**
-   * Method for computing all derived parameters based on chosen primitive
-   * parameters. This is intended for BGVrns
-   * @param *cryptoParams the crypto parameters object to be populated with
-   * parameters.
-   * @param evalAddCount number of EvalAdds per level.
-   * @param keySwitchCount number of KeySwitch operations per level.
-   * @param cyclOrder the cyclotomic order.
-   * @param numPrimes number of modulus towers to support.
-   * @param digitSize the digit size
-   * @param secretKeyDist
-   * @param ksTech the key switching technique used (e.g., BV or GHS)
-   * @param firstModSize the bit-size of the first modulus
-   * @param dcrtBits the bit-width of moduli.
-   */
-    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                         uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
-                         uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const override {
-        OPENFHE_THROW("This signature for ParamsGen is not supported for this scheme.");
-    }
-
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

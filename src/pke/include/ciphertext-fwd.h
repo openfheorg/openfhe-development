@@ -45,7 +45,11 @@ template <typename Element>
 using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
 
 template <typename Element>
-using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
+using ConstCiphertext = const std::shared_ptr<const CiphertextImpl<Element>>;
+
+// reqiured for std::vector
+template <typename Element>
+using ReadOnlyCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
 
 }  // namespace lbcrypto
 

@@ -38,7 +38,6 @@
 
 #include "utils/get-call-stack.h"
 #include <exception>
-#include <iostream>
 #include <mutex>
 #include <stdexcept>
 #include <string>
@@ -100,7 +99,9 @@ public:
 //   });
 // }
 // e.Rethrow();
-class openfhe_error : public std::runtime_error {
+
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
+openfhe_error : public std::runtime_error {
     std::string filename;
     int linenum;
     std::string message;
@@ -123,40 +124,47 @@ public:
     }
 };
 
-class config_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
+config_error : public openfhe_error {
 public:
     config_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
-class math_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now."))) math_error
+    : public openfhe_error {
 public:
     math_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
-class not_implemented_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
+not_implemented_error : public openfhe_error {
 public:
     not_implemented_error(const std::string& file, int line, const std::string& what)
         : openfhe_error(file, line, what) {}
 };
 
-class not_available_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
+not_available_error : public openfhe_error {
 public:
     not_available_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
-class type_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now."))) type_error
+    : public openfhe_error {
 public:
     type_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
 // use this error when serializing openfhe objects
-class serialize_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
+serialize_error : public openfhe_error {
 public:
     serialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
 // use this error when deserializing openfhe objects
-class deserialize_error : public openfhe_error {
+class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
+deserialize_error : public openfhe_error {
 public:
     deserialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
@@ -185,12 +193,12 @@ public:
         return m_errorMessage.c_str();
     }
 
-    std::vector<std::string> getCallStackAsVector() {
+    std::vector<std::string> getCallStackAsVector() const {
         return m_callStack;
     }
 
     // getCallStackAsString() was added to be used by JSON logger. the implementtion will follow
-    std::string getCallStackAsString() {
+    std::string getCallStackAsString() const {
         return std::string();
     }
 };

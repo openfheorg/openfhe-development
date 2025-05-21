@@ -94,9 +94,9 @@ public:
    * @param numHops numbers of hops for HRA-secure PRE
    * @return A boolean.
    */
-    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                         uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
-                         uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const override;
+    bool ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                                 uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

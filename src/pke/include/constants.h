@@ -34,8 +34,7 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
-#include "constants-defs.h"             // all enum definitions
-#include "lattice/constants-lattice.h"  // additional definitions
+#include "constants-defs.h"  // all enum definitions
 
 #include <iosfwd>
 #include <string>
@@ -82,6 +81,10 @@ std::ostream& operator<<(std::ostream& s, PlaintextEncodings p);
 COMPRESSION_LEVEL convertToCompressionLevel(const std::string& str);
 COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num);
 std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL t);
+//======================================================================================================================
+CKKSDataType convertToCKKSDataType(const std::string& str);
+CKKSDataType convertToCKKSDataType(uint32_t num);
+std::ostream& operator<<(std::ostream& s, CKKSDataType t);
 //======================================================================================================================
 
 }  // namespace lbcrypto

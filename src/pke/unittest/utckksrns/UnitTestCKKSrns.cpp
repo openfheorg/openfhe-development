@@ -33,17 +33,21 @@
   Unit tests for the CKKS scheme
  */
 
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
+#include "UnitTestUtils.h"
 
+#include <algorithm>
 #include <iostream>
-#include <vector>
-#include "gtest/gtest.h"
 #include <iterator>
+#include <memory>
+#include <string>
+#include <vector>
 
 using namespace lbcrypto;
+using namespace std::literals;
 
 //===========================================================================================================
 enum TEST_CASE_TYPE {
@@ -63,6 +67,7 @@ enum TEST_CASE_TYPE {
     MULT_PACKED_PRECISION,
     EVALSQUARE,
     SMALL_SCALING_MOD_SIZE,
+    EVALCOMPLEX,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -116,6 +121,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case SMALL_SCALING_MOD_SIZE:
             typeName = "SMALL_SCALING_MOD_SIZE";
             break;
+        case EVALCOMPLEX:
+            typeName = "EVALCOMPLEX";
+            break;
         default:
             typeName = "UNKNOWN";
             break;
@@ -166,7 +174,7 @@ constexpr usint RING_DIM      = 512;
 constexpr usint RING_DIM_HALF = 256;
 constexpr usint DSIZE         = 10;
 constexpr usint BATCH         = 8;
-#if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT != 128
 constexpr usint RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 #endif
 // MIN_PRECISION_DIFF is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
@@ -394,7 +402,7 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { EVAL_FAST_ROTATION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   BATCH},
     { EVAL_FAST_ROTATION, "40", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   BATCH},
 #endif
-#if !defined(EMSCRIPTEN)
+#if !defined(__EMSCRIPTEN__)
     { EVAL_FAST_ROTATION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
     { EVAL_FAST_ROTATION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
     { EVAL_FAST_ROTATION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
@@ -523,6 +531,18 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,              Descr, Scheme,        RDim,   MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,    LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { SMALL_SCALING_MOD_SIZE, "01", {CKKSRNS_SCHEME, 32768, 19,        22,       DFLT,  DFLT,    DFLT,       DFLT,          23,       DFLT,         DFLT,   FIXEDMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { SMALL_SCALING_MOD_SIZE, "02", {CKKSRNS_SCHEME, 32768, 16,        50,       DFLT,  DFLT,    DFLT,       DFLT,          50,       HEStd_NotSet, DFLT,   DFLT,        DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#endif
+    // ==========================================
+    // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, compositeDegree, CKKSDataType
+    { EVALCOMPLEX, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+    { EVALCOMPLEX, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+    { EVALCOMPLEX, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+    { EVALCOMPLEX, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+#if NATIVEINT != 128
+    { EVALCOMPLEX, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+    { EVALCOMPLEX, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+    { EVALCOMPLEX, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
+    { EVALCOMPLEX, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     DFLT,     DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX}, },
 #endif
     // ==========================================
 };
@@ -1679,7 +1699,7 @@ protected:
             Ciphertext<Element> cIn3 = cc->Encrypt(kp.publicKey, pIn3);
 
             std::vector<Ciphertext<Element>> ciphertexts{cIn1, cIn2, cIn3};
-            std::vector<ConstCiphertext<Element>> constCiphertexts{cIn1, cIn2, cIn3};
+            std::vector<ReadOnlyCiphertext<Element>> constCiphertexts{cIn1, cIn2, cIn3};
 
             auto cResult = cc->EvalLinearWSum(constCiphertexts, weights);
             Plaintext results;
@@ -1994,7 +2014,7 @@ protected:
             for (int i = 0; i < 2; i++)
                 weights[i] = i;
 
-            std::vector<ConstCiphertext<Element>> ciphertexts{ciphertext1, ciphertext2};
+            std::vector<ReadOnlyCiphertext<Element>> ciphertexts{ciphertext1, ciphertext2};
 
             // Checking if metadata is carried over in EvalLinearWSum
             auto cLWS       = cc->EvalLinearWSum(ciphertexts, weights);
@@ -2054,6 +2074,87 @@ protected:
             results->SetLength(intArrayExpectedSixth->GetLength());
             checkEquality(intArrayExpectedSixth->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                           failmsg + " EvalSquare Sixth (CKKSPacked) fails");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    void UnitTest_EvalComplex(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            const std::vector<std::complex<double>> vectorOfComps = {1.,       0. + 1.i, 3. - 2.i, 1. + 3.i,
+                                                                     0. - 3.i, 1. + 2.i, 2. - 1.i, 1. + 1.i};
+            Plaintext plaintext                                   = cc->MakeCKKSPackedPlaintext(vectorOfComps);
+
+            const std::complex<double> complexConst = 2. - 1.i;
+
+            // For cyclotomic order != 16, the expected result is the convolution of
+            // vectorOfInt21 and vectorOfInts2
+            const std::vector<std::complex<double>> vectorOfCompsSquare = {1.,  -1.,       5. - 12.i, -8. + 6.i,
+                                                                           -9., -3. + 4.i, 3. - 4.i,  2.i};
+            Plaintext arrayExpectedSquare = cc->MakeCKKSPackedPlaintext(vectorOfCompsSquare);
+
+            const std::vector<std::complex<double>> vectorOfCompsThird = {1.,   -1.i,       -9. - 46.i, -26. - 18.i,
+                                                                          27.i, -11. - 2.i, 2. - 11.i,  -2. + 2.i};
+            Plaintext arrayExpectedThird = cc->MakeCKKSPackedPlaintext(vectorOfCompsThird);
+
+            const std::vector<std::complex<double>> vectorOfCompsDouble = {2.,       0. + 2.i, 6. - 4.i, 2. + 6.i,
+                                                                           0. - 6.i, 2. + 4.i, 4. - 2.i, 2. + 2.i};
+            Plaintext arrayExpectedDouble = cc->MakeCKKSPackedPlaintext(vectorOfCompsDouble);
+
+            const std::vector<std::complex<double>> vectorOfCompsAdd = {3. - 1.i, 2.,       5. - 3.i, 3. + 2.i,
+                                                                        2. - 4.i, 3. + 1.i, 4. - 2.i, 3.};
+            Plaintext arrayExpectedAdd                               = cc->MakeCKKSPackedPlaintext(vectorOfCompsAdd);
+
+            const std::vector<std::complex<double>> vectorOfCompsMult = {2. - 1.i,  1. + 2.i, 4. - 7.i, 5. + 5.i,
+                                                                         -3. - 6.i, 4. + 3.i, 3. - 4.i, 3. + 1.i};
+            Plaintext arrayExpectedMult                               = cc->MakeCKKSPackedPlaintext(vectorOfCompsMult);
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
+
+            cc->EvalMultKeyGen(kp.secretKey);
+
+            Plaintext results;
+
+            Ciphertext<Element> ciphertextSq = cc->EvalSquare(ciphertext);
+            cc->Decrypt(kp.secretKey, ciphertextSq, &results);
+            results->SetLength(arrayExpectedSquare->GetLength());
+            checkEquality(arrayExpectedSquare->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalSquare (CKKSPacked) fails");
+
+            Ciphertext<Element> ciphertextThird = cc->EvalMult(ciphertextSq, plaintext);
+            cc->Decrypt(kp.secretKey, ciphertextThird, &results);
+            results->SetLength(arrayExpectedThird->GetLength());
+            checkEquality(arrayExpectedThird->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalMult with plaintext (CKKSPacked) fails");
+
+            Ciphertext<Element> ciphertextDouble = cc->EvalAdd(ciphertext, ciphertext);
+            cc->Decrypt(kp.secretKey, ciphertextDouble, &results);
+            results->SetLength(arrayExpectedDouble->GetLength());
+            checkEquality(arrayExpectedDouble->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
+                          failmsg + " EvalAdd (CKKSPacked) fails");
+
+            Ciphertext<Element> ciphertextAddConst = cc->EvalAdd(ciphertext, complexConst);
+            cc->Decrypt(kp.secretKey, ciphertextAddConst, &results);
+            results->SetLength(arrayExpectedAdd->GetLength());
+            checkEquality(arrayExpectedAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
+                          failmsg + " EvalAdd with constant (CKKSPacked) fails");
+
+            Ciphertext<Element> ciphertextMultConst = cc->EvalMult(ciphertext, complexConst);
+            cc->Decrypt(kp.secretKey, ciphertextMultConst, &results);
+            results->SetLength(arrayExpectedMult->GetLength());
+            checkEquality(arrayExpectedMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalMult with constant (CKKSPacked) fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -2159,6 +2260,9 @@ TEST_P(UTCKKSRNS, CKKSRNS) {
             break;
         case SMALL_SCALING_MOD_SIZE:
             UnitTest_Small_ScalingModSize(test, test.buildTestName());
+            break;
+        case EVALCOMPLEX:
+            UnitTest_EvalComplex(test, test.buildTestName());
             break;
         default:
             break;

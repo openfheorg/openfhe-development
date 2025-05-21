@@ -252,6 +252,16 @@ void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
     }
 }
 
+void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+    LeveledSHERNS::EvalMultInPlace(ciphertext, plaintext);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
+    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+        ciphertext->SetScalingFactorInt(
+            ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
+    }
+}
+
 usint LeveledSHEBGVRNS::FindAutomorphismIndex(usint index, usint m) const {
     return FindAutomorphismIndex2n(index, m);
 }

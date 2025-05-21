@@ -69,6 +69,8 @@ public:
 
     void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
 
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
+    
     void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                      Ciphertext<DCRTPoly>& ciphertext2) const override;
 

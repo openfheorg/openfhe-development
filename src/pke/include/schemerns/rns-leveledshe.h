@@ -291,6 +291,15 @@ public:
 
     Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const override;
 
+    ////////////////////////////////////////
+    // SHE LEVELED ComposedEvalMult
+    ////////////////////////////////////////
+
+    using LeveledSHEBase<DCRTPoly>::ComposedEvalMult;
+
+    Ciphertext<DCRTPoly> ComposedEvalMult(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2,
+                                          const EvalKey<DCRTPoly> evalKey) const override;
+
 protected:
     /////////////////////////////////////
     // RNS Core

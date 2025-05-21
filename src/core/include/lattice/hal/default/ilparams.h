@@ -126,8 +126,12 @@ public:
    * DCRTPoly, False otherwise
    */
     bool operator==(const ElemParams<IntType>& rhs) const override {
-        if (!dynamic_cast<const ILParamsImpl<IntType>*>(&rhs))
+        // ATTENTION: dynamic_cast was replaced with typeid() to fix failures in unittests linked with clang++-18 and running on MacOS
+        // ===========================================================================================================================
+        // see a similar change in "operator==()" for "class ILDCRTParams" (ildcrtparams.h)
+        if (typeid(rhs) != typeid(const ILParamsImpl<IntType>))
             return false;
+
         return ElemParams<IntType>::operator==(rhs);
     }
 
@@ -152,7 +156,7 @@ public:
         return 1;
     }
 
-private:
+protected:
     std::ostream& doprint(std::ostream& out) const override {
         out << "ILParams ";
         ElemParams<IntType>::doprint(out);

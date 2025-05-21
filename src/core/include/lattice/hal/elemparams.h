@@ -43,7 +43,7 @@
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
 
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <utility>
 

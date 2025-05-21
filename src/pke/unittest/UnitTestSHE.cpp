@@ -57,7 +57,8 @@ enum TEST_CASE_TYPE {
     KS_SINGLE_CRT,
     KS_MOD_REDUCE_DCRT,
     EVALSQUARE,
-    RING_DIM_ERROR_HANDLING
+    RING_DIM_ERROR_HANDLING,
+    EVAL_MUTABLE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -98,6 +99,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case RING_DIM_ERROR_HANDLING:
             typeName = "RING_DIM_ERROR_HANDLING";
+            break;
+        case EVAL_MUTABLE:
+            typeName = "EVAL_MUTABLE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -297,7 +301,6 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { MULT_PACKED, "62", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
     { MULT_PACKED, "63", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
     { MULT_PACKED, "64", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
-
     // ==========================================
     // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { EVALATINDEX, "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
@@ -364,7 +367,6 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALATINDEX, "62", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQ,        EXTENDED,  DFLT}, },
     { EVALATINDEX, "63", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     { EVALATINDEX, "64", {BFVRNS_SCHEME, DFLT, 0,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         HYBRID, DFLT,            DFLT,    PTM_XTR_LRG, DFLT,   DFLT,      1,    HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
-
     // ==========================================
     // TestType,   Descr, Scheme,       RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech          EncTech,   PREMode
     { EVALMERGE,  "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
@@ -450,6 +452,7 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { KS_MOD_REDUCE_DCRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         DFLT,     1,     DFLT,    DFLT,       DFLT,          DFLT,     DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    256,     4,      DFLT,      DFLT, DFLT,     STANDARD,  DFLT}, },
     // Calling ModReduce in the AUTO modes doesn't do anything because we automatically mod reduce before multiplication,
     // so we don't need unit tests for KS_MOD_REDUCE_DCRT in the AUTO modes.
+#if !defined(__EMSCRIPTEN__)
     // ==========================================
     // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { EVALSQUARE,  "01", {BGVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
@@ -476,14 +479,20 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALSQUARE,  "22", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
     { EVALSQUARE,  "23", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     { EVALSQUARE,  "24", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
-    // ==========================================
+#endif // __EMSCRIPTEN__
+// ==========================================
     // TestType,               Descr, Scheme,        RDim,  MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod,      StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { RING_DIM_ERROR_HANDLING, "01", {BFVRNS_SCHEME, 1<<13, 3,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    4293918721, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
- };
+    // ==========================================
+    // TestType,    Descr, Scheme,        RDim,  MultDepth, SModSize, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,            KSTech, ScalTech, LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_MUTABLE, "01", {BGVRNS_SCHEME, DFLT,  2,         DFLT,     DFLT, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   DFLT,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MUTABLE, "02", {CKKSRNS_SCHEME, DFLT, 2,         DFLT,     DFLT, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   DFLT,     DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+};
 // clang-format on
 //===========================================================================================================
 class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
     using Element = DCRTPoly;
+    const double eps = EPSILON;
 
 protected:
     void SetUp() {}
@@ -1227,7 +1236,157 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+// clang-format off
+    // helper function for UnitTest_EvalMutable()
+    template <typename Func1, typename Func2>
+    void EvalMutableOperations(const CryptoContext<DCRTPoly>& cryptoContext,
+                               const KeyPair<DCRTPoly>& keyPair,
+                               SCHEME schemeId,
+                               Func1 operation1, // (ctxt, ctxt)
+                               Func2 operation2, // (ctxt, ptxt)
+                               const Plaintext& plaintext1,
+                               const Plaintext& plaintext2,
+                               const Plaintext& plaintextResult1,
+                               const Plaintext& plaintextResult2,
+                               const std::string& errMsg) {
+        auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+        auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
+
+        auto ciphertext12 = ((*cryptoContext).*operation1)(ciphertext1, ciphertext2);
+        Plaintext plaintextResult12{nullptr};
+        cryptoContext->Decrypt(keyPair.secretKey, ciphertext12, &plaintextResult12);
+        plaintextResult12->SetLength(plaintextResult1->GetLength());
+
+        std::string errMsg1 = errMsg + " (1)";
+        if (CKKSRNS_SCHEME == schemeId)
+            checkEquality(plaintextResult12->GetCKKSPackedValue(), plaintextResult1->GetCKKSPackedValue(), eps,
+                          errMsg1);
+        else
+            checkEquality(plaintextResult12->GetPackedValue(), plaintextResult1->GetPackedValue(), eps, errMsg1);
+
+        auto ciphertextResult122 = ((*cryptoContext).*operation2)(ciphertext12, plaintext2);
+        Plaintext plaintextResult122{nullptr};
+        cryptoContext->Decrypt(keyPair.secretKey, ciphertextResult122, &plaintextResult122);
+        plaintextResult122->SetLength(plaintextResult2->GetLength());
+
+        std::string errMsg2 = errMsg + " (2)";
+        if (CKKSRNS_SCHEME == schemeId)
+            checkEquality(plaintextResult122->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps,
+                          errMsg2);
+        else
+            checkEquality(plaintextResult122->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg2);
+    }
+
+    void UnitTest_EvalMutable(const TEST_CASE_UTGENERAL_SHE& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<DCRTPoly> cryptoContext(UnitTestGenerateContext(testData.params));
+
+            auto keyPair = cryptoContext->KeyGen();
+            ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
+            cryptoContext->EvalMultKeysGen(keyPair.secretKey);
+
+            // test data for all cases
+            std::vector<int64_t> vectorOfInts1 = {0, 1, 2, 3, 4, 5, 6, 7};
+            std::vector<int64_t> vectorOfInts2 = {7, 6, 5, 4, 3, 2, 1, 0};
+
+            std::vector<int64_t> vectorOfIntsMultResult1 = {0, 6, 10, 12, 12, 10, 6, 0};
+            std::vector<int64_t> vectorOfIntsMultResult2 = {0, 36, 50, 48, 36, 20, 6, 0};
+
+            std::vector<int64_t> vectorOfIntsAddResult1 = {7, 7, 7, 7, 7, 7, 7, 7};
+            std::vector<int64_t> vectorOfIntsAddResult2 = {14, 13, 12, 11, 10, 9, 8, 7};
+
+            std::vector<int64_t> vectorOfIntsSubResult1 = {-7, -5, -3, -1, 1, 3, 5, 7};
+            std::vector<int64_t> vectorOfIntsSubResult2 = {-14, -11, -8, -5, -2, 1, 4, 7};
+
+            Plaintext plaintext1(nullptr);
+            Plaintext plaintext2(nullptr);
+
+            Plaintext plaintextMultResult1(nullptr);
+            Plaintext plaintextMultResult2(nullptr);
+            Plaintext plaintextAddResult1(nullptr);
+            Plaintext plaintextAddResult2(nullptr);
+            Plaintext plaintextSubResult1(nullptr);
+            Plaintext plaintextSubResult2(nullptr);
+            if (CKKSRNS_SCHEME == testData.params.schemeId) {
+                std::vector<std::complex<double>> vectorOfDbls1(vectorOfInts1.begin(), vectorOfInts1.end());
+                std::vector<std::complex<double>> vectorOfDbls2(vectorOfInts2.begin(), vectorOfInts2.end());
+                plaintext1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDbls1);
+                plaintext2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDbls2);
+
+                std::vector<std::complex<double>> vectorOfDblsMultResult1(vectorOfIntsMultResult1.begin(), vectorOfIntsMultResult1.end());
+                std::vector<std::complex<double>> vectorOfDblsMultResult2(vectorOfIntsMultResult2.begin(), vectorOfIntsMultResult2.end());
+                plaintextMultResult1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsMultResult1);
+                plaintextMultResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsMultResult2);
+
+                std::vector<std::complex<double>> vectorOfDblsAddResult1(vectorOfIntsAddResult1.begin(), vectorOfIntsAddResult1.end());
+                std::vector<std::complex<double>> vectorOfDblsAddResult2(vectorOfIntsAddResult2.begin(), vectorOfIntsAddResult2.end());
+                plaintextAddResult1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsAddResult1);
+                plaintextAddResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsAddResult2);
+
+                std::vector<std::complex<double>> vectorOfDblsSubResult1(vectorOfIntsSubResult1.begin(), vectorOfIntsSubResult1.end());
+                std::vector<std::complex<double>> vectorOfDblsSubResult2(vectorOfIntsSubResult2.begin(), vectorOfIntsSubResult2.end());
+                plaintextSubResult1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsSubResult1);
+                plaintextSubResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsSubResult2);
+            }
+            else {
+                plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+                plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+
+                plaintextMultResult1 = cryptoContext->MakePackedPlaintext(vectorOfIntsMultResult1);
+                plaintextMultResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsMultResult2);
+
+                plaintextAddResult1 = cryptoContext->MakePackedPlaintext(vectorOfIntsAddResult1);
+                plaintextAddResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsAddResult2);
+
+                plaintextSubResult1 = cryptoContext->MakePackedPlaintext(vectorOfIntsSubResult1);
+                plaintextSubResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsSubResult2);
+            }
+
+            EvalMutableOperations(cryptoContext,
+                                  keyPair,
+                                  testData.params.schemeId,
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Ciphertext<DCRTPoly>&) const>(&CryptoContextImpl<DCRTPoly>::EvalMultMutable),
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext) const>(&CryptoContextImpl<DCRTPoly>::EvalMultMutable),
+                                  plaintext1,
+                                  plaintext2,
+                                  plaintextMultResult1,
+                                  plaintextMultResult2,
+                                  failmsg + " EvalMultMutable() failed");
+
+            EvalMutableOperations(cryptoContext,
+                                  keyPair,
+                                  testData.params.schemeId,
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Ciphertext<DCRTPoly>&) const>(&CryptoContextImpl<DCRTPoly>::EvalAddMutable),
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext) const>(&CryptoContextImpl<DCRTPoly>::EvalAddMutable),
+                                  plaintext1,
+                                  plaintext2,
+                                  plaintextAddResult1,
+                                  plaintextAddResult2,
+                                  failmsg + " EvalAddMutable() failed");
+
+            EvalMutableOperations(cryptoContext,
+                                  keyPair,
+                                  testData.params.schemeId,
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Ciphertext<DCRTPoly>&) const>(&CryptoContextImpl<DCRTPoly>::EvalSubMutable),
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext) const>(&CryptoContextImpl<DCRTPoly>::EvalSubMutable),
+                                  plaintext1,
+                                  plaintext2,
+                                  plaintextSubResult1,
+                                  plaintextSubResult2,
+                                  failmsg + " EvalSubMutable() failed");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
+// clang-format on
 //===========================================================================================================
 TEST_P(UTGENERAL_SHE, SHE) {
     setupSignals();
@@ -1269,6 +1428,9 @@ TEST_P(UTGENERAL_SHE, SHE) {
             break;
         case RING_DIM_ERROR_HANDLING:
             UnitTest_BFV_Ringdimension_Security_Check(test, test.buildTestName());
+            break;
+        case EVAL_MUTABLE:
+            UnitTest_EvalMutable(test, test.buildTestName());
             break;
         default:
             break;

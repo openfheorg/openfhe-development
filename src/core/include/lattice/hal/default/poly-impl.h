@@ -43,9 +43,9 @@
 #include "utils/inttypes.h"
 
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -401,6 +401,16 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
                                       const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->SwitchModulus(modulus);
+        auto c{m_params->GetCyclotomicOrder()};
+        m_params = std::make_shared<PolyImpl::Params>(c, modulus, rootOfUnity, modulusArb, rootOfUnityArb);
+    }
+}
+
+template <typename VecType>
+void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                                          const Integer& rootOfUnityArb) {
+    if (m_values != nullptr) {
+        m_values->LazySwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
         m_params = std::make_shared<PolyImpl::Params>(c, modulus, rootOfUnity, modulusArb, rootOfUnityArb);
     }

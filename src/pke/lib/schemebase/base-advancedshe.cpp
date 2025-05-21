@@ -34,14 +34,23 @@
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
+#include <vector>
+#include <string>
+#include <memory>
+#include <map>
+#include <set>
+
 namespace lbcrypto {
 
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
     const size_t inSize = ciphertextVec.size();
 
-    if (ciphertextVec.size() < 1)
-        OPENFHE_THROW("Input ciphertext vector size should be 1 or more");
+    if (inSize == 0)
+        OPENFHE_THROW("Input ciphertext vector is empty.");
+
+    if (inSize == 1)
+        return ciphertextVec[0];
 
     const size_t lim = inSize * 2 - 2;
     std::vector<Ciphertext<Element>> ciphertextSumVec;
@@ -103,7 +112,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
         ciphertextMultVec[ctrIndex] = algo->EvalMultAndRelinearize(
             i < inSize ? ciphertextVec[i] : ciphertextMultVec[i - inSize],
             i + 1 < inSize ? ciphertextVec[i + 1] : ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], 1);
+        algo->ModReduceInPlace(ciphertextMultVec[ctrIndex++], BASE_NUM_LEVELS_TO_DROP);
     }
 
     return ciphertextMultVec.back();
@@ -395,7 +404,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(const std::vector<Cipher
 
     for (size_t i = 1; i < ciphertextVec.size(); i++) {
         ciphertextMerged = algo->EvalAdd(
-            ciphertextMerged, algo->EvalAtIndex(algo->EvalMult(ciphertextVec[i], plaintext), -(int32_t)i, evalKeyMap));
+            ciphertextMerged,
+            algo->EvalAtIndex(algo->EvalMult(ciphertextVec[i], plaintext), -static_cast<int32_t>(i), evalKeyMap));
     }
 
     return ciphertextMerged;

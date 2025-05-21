@@ -36,10 +36,10 @@
 #ifndef SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
 #define SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
 
+#include "encoding/plaintext.h"
+
 #include <memory>
 #include <string>
-
-#include "encoding/plaintext.h"
 
 namespace lbcrypto {
 
@@ -53,25 +53,25 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    StringEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {}
+    StringEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, STRING_ENCODING) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     StringEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::string& str)
-        : PlaintextImpl(vp, ep), ptx(str) {}
+        : PlaintextImpl(vp, ep, STRING_ENCODING), ptx(str) {}
 
     // TODO provide wide-character version (for unicode); right now this class
     // only supports strings of 7-bit ASCII characters
 
-    virtual ~StringEncoding() {}
+    ~StringEncoding() override = default;
 
     /**
    * GetStringValue
    * @return the un-encoded string
    */
-    const std::string& GetStringValue() const {
+    const std::string& GetStringValue() const override {
         return ptx;
     }
 
@@ -79,7 +79,7 @@ public:
    * SetStringValue
    * @param val to initialize the Plaintext
    */
-    void SetStringValue(const std::string& value) {
+    void SetStringValue(const std::string& value) override {
         ptx = value;
     }
 
@@ -87,48 +87,41 @@ public:
    * Encode the plaintext into the Poly
    * @return true on success
    */
-    bool Encode();
+    bool Encode() override;
 
     /**
    * Decode the Poly into the string
    * @return true on success
    */
-    bool Decode();
-
-    /**
-   * GetEncodingType
-   * @return STRING_ENCODING
-   */
-    PlaintextEncodings GetEncodingType() const {
-        return STRING_ENCODING;
-    }
+    bool Decode() override;
 
     /**
    * Get length of the plaintext
    *
    * @return number of elements in this plaintext
    */
-    size_t GetLength() const {
+    size_t GetLength() const override {
         return ptx.size();
     }
 
+protected:
     /**
-   * Method to compare two plaintext to test for equivalence
-   * Testing that the plaintexts are of the same type done in operator==
-   *
-   * @param other - the other plaintext to compare to.
-   * @return whether the two plaintext are equivalent.
-   */
-    bool CompareTo(const PlaintextImpl& other) const {
-        const auto& oth = static_cast<const StringEncoding&>(other);
-        return oth.ptx == this->ptx;
+    * Method to compare two plaintext to test for equivalence
+    * Testing that the plaintexts are of the same type done in operator==
+    *
+    * @param rhs - the other plaintext to compare to.
+    * @return whether the two plaintext are equivalent.
+    */
+    bool CompareTo(const PlaintextImpl& rhs) const override {
+        const auto* el = dynamic_cast<const StringEncoding*>(&rhs);
+        return (el != nullptr) && ptx == el->ptx;
     }
 
     /**
-   * PrintValue - used by operator<< for this object
-   * @param out
-   */
-    void PrintValue(std::ostream& out) const {
+    * PrintValue - used by operator<< for this object
+    * @param out
+    */
+    void PrintValue(std::ostream& out) const override {
         out << ptx;
     }
 };

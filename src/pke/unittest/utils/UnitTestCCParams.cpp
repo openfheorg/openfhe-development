@@ -58,7 +58,9 @@ std::string UnitTestCCParams::toString() const {
        << "multipartyMode [" << multipartyMode << "], "
        << "decryptionNoiseMode [" << decryptionNoiseMode << "], "
        << "executionMode [" << executionMode << "], "
-       << "noiseEstimate [" << noiseEstimate << "], ";
+       << "noiseEstimate [" << noiseEstimate << "], "
+       << "registerWordSize [" << registerWordSize << "], "
+       << "compositeDegree [" << compositeDegree << "] ";
     return ss.str();
 }
 //===========================================================================================================

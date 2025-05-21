@@ -36,9 +36,9 @@
 #ifndef LBCRYPTO_ENCODING_ENCODINGPARAMS_H
 #define LBCRYPTO_ENCODING_ENCODINGPARAMS_H
 
-#include "utils/serializable.h"
 #include "lattice/lat-hal.h"
 #include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 #include <memory>
 #include <string>
@@ -71,9 +71,9 @@ public:
                        NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
                        NativeInteger plaintextBigRootOfUnity = 0)
         : m_plaintextModulus(plaintextModulus),
-          m_plaintextRootOfUnity(std::move(plaintextRootOfUnity)),
+          m_plaintextRootOfUnity(plaintextRootOfUnity),
           m_plaintextBigModulus(plaintextBigModulus),
-          m_plaintextBigRootOfUnity(std::move(plaintextBigRootOfUnity)),
+          m_plaintextBigRootOfUnity(plaintextBigRootOfUnity),
           m_plaintextGenerator(plaintextGenerator),
           m_batchSize(batchSize) {}
 
@@ -124,7 +124,7 @@ public:
     /**
    * Destructor.
    */
-    virtual ~EncodingParamsImpl() {}
+    virtual ~EncodingParamsImpl() = default;
 
     // ACCESSORS
 
@@ -134,7 +134,7 @@ public:
    * @brief Getter for the plaintext modulus.
    * @return The plaintext modulus.
    */
-    const PlaintextModulus& GetPlaintextModulus() const {
+    PlaintextModulus GetPlaintextModulus() const {
         return m_plaintextModulus;
     }
 
@@ -149,14 +149,14 @@ public:
    * @brief Getter for the plaintext modulus root of unity.
    * @return The plaintext modulus root of unity.
    */
-    const NativeInteger& GetPlaintextRootOfUnity() const {
+    NativeInteger GetPlaintextRootOfUnity() const {
         return m_plaintextRootOfUnity;
     }
 
     /**
    * @brief Setter for the plaintext modulus root of unity.
    */
-    void SetPlaintextRootOfUnity(const NativeInteger& plaintextRootOfUnity) {
+    void SetPlaintextRootOfUnity(NativeInteger plaintextRootOfUnity) {
         m_plaintextRootOfUnity = plaintextRootOfUnity;
     }
 
@@ -164,14 +164,14 @@ public:
    * @brief Getter for the big plaintext modulus.
    * @return The plaintext modulus.
    */
-    const NativeInteger& GetPlaintextBigModulus() const {
+    NativeInteger GetPlaintextBigModulus() const {
         return m_plaintextBigModulus;
     }
 
     /**
    * @brief Setter for the big plaintext modulus.
    */
-    void SetPlaintextBigModulus(const NativeInteger& plaintextBigModulus) {
+    void SetPlaintextBigModulus(NativeInteger plaintextBigModulus) {
         m_plaintextBigModulus = plaintextBigModulus;
     }
 
@@ -179,14 +179,14 @@ public:
    * @brief Getter for the big plaintext modulus root of unity.
    * @return The big plaintext modulus root of unity.
    */
-    const NativeInteger& GetPlaintextBigRootOfUnity() const {
+    NativeInteger GetPlaintextBigRootOfUnity() const {
         return m_plaintextBigRootOfUnity;
     }
 
     /**
    * @brief Setter for the big plaintext modulus root of unity.
    */
-    void SetPlaintextBigRootOfUnity(const NativeInteger& plaintextBigRootOfUnity) {
+    void SetPlaintextBigRootOfUnity(NativeInteger plaintextBigRootOfUnity) {
         m_plaintextBigRootOfUnity = plaintextBigRootOfUnity;
     }
 
@@ -194,14 +194,14 @@ public:
    * @brief Getter for the plaintext generator.
    * @return The plaintext generator.
    */
-    usint GetPlaintextGenerator() const {
+    uint32_t GetPlaintextGenerator() const {
         return m_plaintextGenerator;
     }
 
     /**
    * @brief Setter for the plaintext generator.
    */
-    void SetPlaintextGenerator(usint& plaintextGenerator) {
+    void SetPlaintextGenerator(uint32_t plaintextGenerator) {
         m_plaintextGenerator = plaintextGenerator;
     }
 
@@ -216,7 +216,7 @@ public:
     /**
    * @brief Setter for the batch size
    */
-    void SetBatchSize(usint batchSize) {
+    void SetBatchSize(uint32_t batchSize) {
         m_batchSize = batchSize;
     }
 
@@ -253,29 +253,6 @@ public:
         return !(*this == other);
     }
 
-private:
-    std::ostream& doprint(std::ostream& out) const {
-        out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
-            << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
-            << "]";
-        return out;
-    }
-
-    // plaintext modulus that is used by all schemes
-    PlaintextModulus m_plaintextModulus;
-    // root of unity for plaintext modulus
-    NativeInteger m_plaintextRootOfUnity;
-    // big plaintext modulus that is used for arbitrary cyclotomics
-    NativeInteger m_plaintextBigModulus;
-    // root of unity for big plaintext modulus
-    NativeInteger m_plaintextBigRootOfUnity;
-    // plaintext generator is used for packed encoding (to find the correct
-    // automorphism index)
-    uint32_t m_plaintextGenerator;
-    // maximum batch size used by EvalSumKeyGen for packed encoding
-    uint32_t m_batchSize;
-
-public:
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_plaintextModulus));
@@ -306,6 +283,29 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
+
+protected:
+    std::ostream& doprint(std::ostream& out) const {
+        out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
+            << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
+            << "]";
+        return out;
+    }
+
+private:
+    // plaintext modulus that is used by all schemes
+    PlaintextModulus m_plaintextModulus;
+    // root of unity for plaintext modulus
+    NativeInteger m_plaintextRootOfUnity;
+    // big plaintext modulus that is used for arbitrary cyclotomics
+    NativeInteger m_plaintextBigModulus;
+    // root of unity for big plaintext modulus
+    NativeInteger m_plaintextBigRootOfUnity;
+    // plaintext generator is used for packed encoding (to find the correct
+    // automorphism index)
+    uint32_t m_plaintextGenerator;
+    // maximum batch size used by EvalSumKeyGen for packed encoding
+    uint32_t m_batchSize;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<EncodingParamsImpl>& o) {

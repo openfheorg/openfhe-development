@@ -63,6 +63,9 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        3. [Simple CKKS Bootstrapping Example](src/pke/examples/simple-ckks-bootstrapping.cpp)
        4. [Advanced CKKS Bootstrapping Example](src/pke/examples/advanced-ckks-bootstrapping.cpp)
        5. [Double-Precision (Iterative) Bootstrapping Example](src/pke/examples/iterative-ckks-bootstrapping.cpp)
+       6. [Basic CKKS Arithmetic in the CKKS Composite Scaling Mode](src/pke/examples/simple-real-numbers-composite-scaling.cpp)
+   1. FHE for arithmetic over complex numbers (CKKS):
+       1. [Leveled and Boostrapping Code Examples](src/pke/examples/simple-complex-numbers.cpp)
    1. FHE for Boolean circuits and larger plaintext spaces (FHEW/TFHE):
        1. [Simple Code Example with Symmetric Encryption](src/binfhe/examples/boolean.cpp)
        2. [Simple Code Example with PKE](src/binfhe/examples/pke/boolean-pke.cpp)
@@ -75,8 +78,9 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        1. [Examples with Scheme Switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
-       1. [Simple Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)
-       1. [Interactive Bootstrapping after Chebyshev Approximation](src/pke/examples/tckks-interactive-mp-bootstrapping-Chebyshev.cpp)
+       1. [$2$-party Interactive Bootstrapping Examples](src/pke/examples/interactive-bootstrapping.cpp)
+       1. [Simple $n$-party Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)
+       1. [$n$-party Interactive Bootstrapping after Chebyshev Approximation](src/pke/examples/tckks-interactive-mp-bootstrapping-Chebyshev.cpp)
        1. [Code Example for BFV with 5 parties](src/pke/examples/threshold-fhe-5p.cpp)
 
 ## Main API

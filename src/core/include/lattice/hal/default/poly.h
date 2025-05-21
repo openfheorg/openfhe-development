@@ -317,6 +317,14 @@ public:
 
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
                        const Integer& rootOfUnityArb) override;
+    void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                           const Integer& rootOfUnityArb) override;
+
+    PolyImpl& MultAccEqNoCheck(const PolyImpl& V, const Integer& I) override {
+        m_values->MultAccEqNoCheck(*V.m_values, I);
+        return *this;
+    }
+
     void SwitchFormat() override;
     void MakeSparse(uint32_t wFactor) override;
     bool InverseExists() const override;

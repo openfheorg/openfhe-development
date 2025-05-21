@@ -92,20 +92,11 @@ public:
     }
 
     /**
-   * A method that prints the contents of metadata objects.
-   * Please override in subclasses to print all members.
-   */
-    virtual std::ostream& print(std::ostream& out) const {
-        out << "[ ]" << std::endl;
-        return out;
-    }
-
-    /**
-   * << operator implements by calling member method print.
+   * << operator implements by calling member method PrintMetadata.
    * This is a friend method and cannot be overriden by subclasses.
    */
     friend std::ostream& operator<<(std::ostream& out, const Metadata& m) {
-        m.print(out);
+        m.PrintMetadata(out);
         return out;
     }
 
@@ -138,6 +129,15 @@ public:
    */
     static uint32_t SerializedVersion() {
         return 1;
+    }
+
+protected:
+    /**
+    * A method that prints the contents of metadata objects.
+    * Please override in subclasses to print all members.
+    */
+    virtual std::ostream& PrintMetadata(std::ostream& out) const {
+        OPENFHE_THROW("Not implemented");
     }
 };
 

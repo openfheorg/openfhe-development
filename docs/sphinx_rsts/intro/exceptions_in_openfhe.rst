@@ -1,44 +1,14 @@
 Throwing Exceptions in OpenFHE
 ===============================
 
-The OpenFHE library will throw a openfhe_error exception in the event of certain unrecoverable errors. A openfhe_error is a subclass of ``std::exception``. The library *actually* throws an exception which is a subclass of openfhe_error.
+The OpenFHE library will throw an OpenFHEException exception in the event of an unrecoverable error. A openfhe_error is a subclass of ``std::exception``.
 
 
-Programmers use the OPENFHE_THROW macro in exception.h to generate an exception. Each exception includes the filename and line number at which the exception was thrown as well as a programmer-defined message.
+Programmers use the OPENFHE_THROW macro in exception.h to generate an exception. Each exception includes the filename, the function name and line number at which the exception was thrown as well as a programmer-defined message.
 
 
-Exceptions and the methods associated with them are defined in ``src/core/include/utils/exception.h``.
+OpenFHEException is defined in ``src/core/include/utils/exception.h``.
 
-
-Available Exceptions
------------------------
-
-The available exceptions are as follows
-
-config_error
-^^^^^^^^^^^^^^^^
-
-This exception is thrown whenever the user of the library supplies configuration parameters that cannot be used to configure OpenFHE. An example of this would be providing a ciphertext modulus that is not a prime number, or providing a plaintext modulus that cannot be used with a particular encoding type.
-
-math_error
-^^^^^^^^^^^^^^^^
-
-This exception is thrown whenever a math error occurs during the operation of the library. An example of this would be an overflow.
-
-serialization_error
-^^^^^^^^^^^^^^^^^^^^
-
-This exception is thrown whenever a fatal serialization error occurs. For example, if a required field is missing, this exception is thrown.
-
-not_implemented_error
-^^^^^^^^^^^^^^^^^^^^^
-
-This exception is thrown if a method is unimplemented. An example of this is a circumstance where a default implementation is provided in a base class, but an overridden exception is not provided in the derived class.
-
-not_available_error
-^^^^^^^^^^^^^^^^^^^
-
-This exception is thrown if a method is not available for a given configuration. For example, an arbitrary cyclotomics method is not available for a power-of-2 configuration.
 
 Exceptions in critical regions and OMP threads
 -----------------------------------------------

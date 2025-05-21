@@ -34,6 +34,9 @@
 #include "cryptocontext.h"
 #include "schemerns/rns-leveledshe.h"
 
+#include <memory>
+#include <vector>
+
 namespace lbcrypto {
 
 /////////////////////////////////////////
@@ -212,7 +215,13 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(ConstCiphertext<DCRTPoly> ciphert
     }
 
     auto c = ciphertext->Clone();
-    ModReduceInternalInPlace(c, BASE_NUM_LEVELS_TO_DROP);
+    if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+        ModReduceInternalInPlace(c, cryptoParams->GetCompositeDegree());
+    }
+    else {
+        ModReduceInternalInPlace(c, BASE_NUM_LEVELS_TO_DROP);
+    }
 
     return EvalSquareCore(c);
 }
@@ -222,7 +231,13 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquareMutable(Ciphertext<DCRTPoly>& ciph
 
     if (cryptoParams->GetScalingTechnique() != NORESCALE && cryptoParams->GetScalingTechnique() != FIXEDMANUAL &&
         ciphertext->GetNoiseScaleDeg() == 2) {
-        ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+            cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+            ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
+        }
+        else {
+            ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        }
     }
 
     return EvalSquareCore(ciphertext);
@@ -246,15 +261,6 @@ void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlain
         EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 
         ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
-        // TODO (Andrey) : This part is only used in CKKS scheme
-        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
-        // TODO (Andrey) : This part is only used in BGV scheme
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-            const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-            ciphertext->SetScalingFactorInt(
-                ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
-        }
     }
 }
 
@@ -375,11 +381,26 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
 // SHE LEVELED Compress
 /////////////////////////////////////////
 
+/*
+ * On COMPOSITESCALING technique, the number of towers to drop passed
+ * must be a multiple of composite degree.
+ */
 Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
     Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
+    const auto cryptoParams     = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+
+    usint levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
+    if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+        usint compositeDegree = cryptoParams->GetCompositeDegree();
+        levelsToDrop          = compositeDegree;
+        if (towersLeft % compositeDegree != 0) {
+            OPENFHE_THROW("Number of towers to drop must be a multiple of composite degree.");
+        }
+    }
 
     while (result->GetNoiseScaleDeg() > 1) {
-        ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
+        ModReduceInternalInPlace(result, levelsToDrop);
     }
     const std::vector<DCRTPoly>& cv = result->GetElements();
     usint sizeQl                    = cv[0].GetNumOfElements();
@@ -505,6 +526,22 @@ void LeveledSHERNS::AdjustForMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciph
     else if (cryptoParams->GetScalingTechnique() != NORESCALE) {
         AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
     }
+}
+
+Ciphertext<DCRTPoly> LeveledSHERNS::ComposedEvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
+                                                     ConstCiphertext<DCRTPoly> ciphertext2,
+                                                     const EvalKey<DCRTPoly> evalKey) const {
+    auto algo               = ciphertext1->GetCryptoContext()->GetScheme();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
+    Ciphertext<DCRTPoly> ciphertext = EvalMult(ciphertext1, ciphertext2);
+    algo->KeySwitchInPlace(ciphertext, evalKey);
+    uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
+    if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+        levelsToDrop = cryptoParams->GetCompositeDegree();
+    }
+    ModReduceInPlace(ciphertext, levelsToDrop);
+    return ciphertext;
 }
 
 }  // namespace lbcrypto

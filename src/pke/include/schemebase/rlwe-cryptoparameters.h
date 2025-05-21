@@ -42,6 +42,7 @@
 #include "lattice/lat-hal.h"
 #include "schemebase/base-cryptoparameters.h"
 #include "constants.h"
+#include "lattice/constants-lattice.h"
 
 // TODO - temp include for the SecurityLevel
 #include "lattice/stdlatticeparms.h"
@@ -69,6 +70,11 @@ public:
         m_assuranceMeasure              = rhs.m_assuranceMeasure;
         m_noiseScale                    = rhs.m_noiseScale;
         m_digitSize                     = rhs.m_digitSize;
+        m_noiseEstimate                 = rhs.m_noiseEstimate;
+        m_multiplicativeDepth           = rhs.m_multiplicativeDepth;
+        m_evalAddCount                  = rhs.m_evalAddCount;
+        m_keySwitchCount                = rhs.m_keySwitchCount;
+        m_PRENumHops                    = rhs.m_PRENumHops;
         m_maxRelinSkDeg                 = rhs.m_maxRelinSkDeg;
         m_secretKeyDist                 = rhs.m_secretKeyDist;
         m_stdLevel                      = rhs.m_stdLevel;
@@ -100,7 +106,7 @@ public:
    * @param noiseScale used in HRA-secure PRE
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
-                         float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, usint digitSize,
+                         float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, uint32_t digitSize,
                          int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                          ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
                          ExecutionMode executionMode             = EXEC_EVALUATION,
@@ -126,9 +132,9 @@ public:
     }
 
     /**
-   * Destructor
+   * Virtual Destructor
    */
-    virtual ~CryptoParametersRLWE() {}
+    ~CryptoParametersRLWE() override = default;
 
     /**
    * Returns the value of standard deviation r for discrete Gaussian
@@ -173,8 +179,24 @@ public:
    *
    * @return the digit size.
    */
-    usint GetDigitSize() const {
+    uint32_t GetDigitSize() const override {
         return m_digitSize;
+    }
+
+    virtual double GetNoiseEstimate() const {
+        return m_noiseEstimate;
+    }
+    virtual uint32_t GetMultiplicativeDepth() const {
+        return m_multiplicativeDepth;
+    }
+    virtual uint32_t GetEvalAddCount() const {
+        return m_evalAddCount;
+    }
+    virtual uint32_t GetKeySwitchCount() const {
+        return m_keySwitchCount;
+    }
+    virtual uint32_t GetPRENumHops() const {
+        return m_PRENumHops;
     }
 
     /**
@@ -183,7 +205,7 @@ public:
    *
    * @return maximum power of secret key
    */
-    uint32_t GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const override {
         return m_maxRelinSkDeg;
     }
 
@@ -336,8 +358,24 @@ public:
    * Sets the value of digit size
    * @param digitSize
    */
-    void SetDigitSize(usint digitSize) {
+    void SetDigitSize(uint32_t digitSize) {
         m_digitSize = digitSize;
+    }
+
+    void SetNoiseEstimate(double noiseEstimate) {
+        m_noiseEstimate = noiseEstimate;
+    }
+    void SetMultiplicativeDepth(uint32_t multiplicativeDepth) {
+        m_multiplicativeDepth = multiplicativeDepth;
+    }
+    void SetEvalAddCount(uint32_t evalAddCount) {
+        m_evalAddCount = evalAddCount;
+    }
+    void SetKeySwitchCount(uint32_t keySwitchCount) {
+        m_keySwitchCount = keySwitchCount;
+    }
+    void SetPRENumHops(uint32_t PRENumHops) {
+        m_PRENumHops = PRENumHops;
     }
 
     /**
@@ -413,41 +451,6 @@ public:
         m_thresholdNumOfParties = thresholdNumOfParties;
     }
 
-    /**
-   * == operator to compare to this instance of CryptoParametersRLWE object.
-   *
-   * @param &rhs CryptoParameters to check equality against.
-   */
-    bool operator==(const CryptoParametersBase<Element>& rhs) const {
-        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
-
-        if (el == nullptr)
-            return false;
-
-        return CryptoParametersBase<Element>::operator==(*el) &&
-               this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
-               *this->GetElementParams() == *el->GetElementParams() &&
-               *this->GetEncodingParams() == *el->GetEncodingParams() &&
-               m_distributionParameter == el->GetDistributionParameter() &&
-               m_assuranceMeasure == el->GetAssuranceMeasure() && m_noiseScale == el->GetNoiseScale() &&
-               m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
-               m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
-               m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
-               m_executionMode == el->GetExecutionMode() &&
-               m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
-               m_statisticalSecurity == el->GetStatisticalSecurity() &&
-               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
-               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
-    }
-
-    void PrintParameters(std::ostream& os) const {
-        CryptoParametersBase<Element>::PrintParameters(os);
-
-        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
-           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
-           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
-    }
-
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
@@ -455,6 +458,11 @@ public:
         ar(::cereal::make_nvp("am", m_assuranceMeasure));
         ar(::cereal::make_nvp("ns", m_noiseScale));
         ar(::cereal::make_nvp("rw", m_digitSize));
+        ar(::cereal::make_nvp("nest", m_noiseEstimate));
+        ar(::cereal::make_nvp("muld", m_multiplicativeDepth));
+        ar(::cereal::make_nvp("addc", m_evalAddCount));
+        ar(::cereal::make_nvp("kswc", m_keySwitchCount));
+        ar(::cereal::make_nvp("phops", m_PRENumHops));
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
@@ -475,6 +483,11 @@ public:
         ar(::cereal::make_nvp("am", m_assuranceMeasure));
         ar(::cereal::make_nvp("ns", m_noiseScale));
         ar(::cereal::make_nvp("rw", m_digitSize));
+        ar(::cereal::make_nvp("nest", m_noiseEstimate));
+        ar(::cereal::make_nvp("muld", m_multiplicativeDepth));
+        ar(::cereal::make_nvp("addc", m_evalAddCount));
+        ar(::cereal::make_nvp("kswc", m_keySwitchCount));
+        ar(::cereal::make_nvp("phops", m_PRENumHops));
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
@@ -491,7 +504,7 @@ public:
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "CryptoParametersRLWE";
     }
 
@@ -505,7 +518,14 @@ protected:
     // noise scale
     PlaintextModulus m_noiseScale = 1;
     // digit size
-    usint m_digitSize = 1;
+    uint32_t m_digitSize = 1;
+
+    double m_noiseEstimate{0};
+    uint32_t m_multiplicativeDepth{1};
+    uint32_t m_evalAddCount{0};
+    uint32_t m_keySwitchCount{0};
+    uint32_t m_PRENumHops{0};
+
     // the highest power of secret key for which relinearization key is generated
     uint32_t m_maxRelinSkDeg = 2;
     // specifies whether the secret polynomials are generated from discrete
@@ -539,7 +559,42 @@ protected:
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
     double m_numAdversarialQueries = 1;
 
-    usint m_thresholdNumOfParties = 1;
+    uint32_t m_thresholdNumOfParties = 1;
+
+    /**
+    * @brief CompareTo() is a method to compare two CryptoParametersRLWE objects.
+    *        It is called by CryptoParametersBase::operator==()
+    * @param rhs - the other CryptoParametersRLWE object to compare to.
+    * @return whether the two CryptoParametersRLWE objects are equivalent.
+    */
+    bool CompareTo(const CryptoParametersBase<Element>& rhs) const override {
+        const auto* el = dynamic_cast<const CryptoParametersRLWE<Element>*>(&rhs);
+        if (el == nullptr)
+            return false;
+
+        return CryptoParametersBase<Element>::CompareTo(*el) &&
+               m_distributionParameter == el->m_distributionParameter &&
+               m_assuranceMeasure == el->m_assuranceMeasure && m_noiseScale == el->m_noiseScale &&
+               m_digitSize == el->m_digitSize && m_noiseEstimate == el->m_noiseEstimate &&
+               m_multiplicativeDepth == el->m_multiplicativeDepth && m_evalAddCount == el->m_evalAddCount &&
+               m_keySwitchCount == el->m_keySwitchCount && m_PRENumHops == el->m_PRENumHops &&
+               m_secretKeyDist == el->m_secretKeyDist &&
+               m_stdLevel == el->m_stdLevel && m_maxRelinSkDeg == el->m_maxRelinSkDeg &&
+               m_PREMode == el->m_PREMode && m_multipartyMode == el->m_multipartyMode &&
+               m_executionMode == el->m_executionMode &&
+               m_floodingDistributionParameter == el->m_floodingDistributionParameter &&
+               m_statisticalSecurity == el->m_statisticalSecurity &&
+               m_numAdversarialQueries == el->m_numAdversarialQueries &&
+               m_thresholdNumOfParties == el->m_thresholdNumOfParties;
+    }
+
+    void PrintParameters(std::ostream& os) const override {
+        CryptoParametersBase<Element>::PrintParameters(os);
+
+        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
+           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
+           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
+    }
 };
 
 }  // namespace lbcrypto

@@ -194,31 +194,31 @@ public:
     // PARAMETER GENERATION WRAPPER
     //------------------------------------------------------------------------------
 
-    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
-                                 uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
-                                 uint32_t numPartQ) const {
+    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
+                         uint32_t numPartQ) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
-        return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, multiplicativeDepth, keySwitchCount, dcrtBits,
-                                            n, numPartQ);
+        return m_ParamsGen->ParamsGenBFVRNSInternal(cryptoParams, evalAddCount, multiplicativeDepth, keySwitchCount,
+                                                    dcrtBits, n, numPartQ);
     }
 
-    virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t cyclOrder,
-                                  uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t numPartQ,
-                                  COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
+    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t cyclOrder,
+                          uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t numPartQ,
+                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
-        return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize, numPartQ,
-                                             mPIntBootCiphertextCompressionLevel);
+        return m_ParamsGen->ParamsGenCKKSRNSInternal(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
+                                                     numPartQ, mPIntBootCiphertextCompressionLevel);
     }
 
-    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                                 uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
-                                 uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const {
+    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                         uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
-        return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
-                                            firstModSize, dcrtBits, numPartQ, PRENumHops);
+        return m_ParamsGen->ParamsGenBGVRNSInternal(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
+                                                    firstModSize, dcrtBits, numPartQ, PRENumHops);
     }
 
     /////////////////////////////////////////
@@ -526,6 +526,21 @@ public:
     }
 
     virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        m_LeveledSHE->EvalAddInPlace(ciphertext, constant);
+        return;
+    }
+
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        return m_LeveledSHE->EvalAdd(ciphertext, constant);
+    }
+
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -852,14 +867,29 @@ public:
         return;
     }
 
-    virtual Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, std::complex<double> constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        return m_LeveledSHE->EvalMult(ciphertext, constant);
+    }
+
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        m_LeveledSHE->EvalMultInPlace(ciphertext, constant);
+        return;
+    }
+
+    virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element> ciphertext, uint64_t integer) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
         return m_LeveledSHE->MultByInteger(ciphertext, integer);
     }
 
-    virtual void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
+    virtual void MultByIntegerInPlace(Ciphertext<Element>& ciphertext, uint64_t integer) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -1046,7 +1076,7 @@ public:
         return m_LeveledSHE->Compress(ciphertext, towersLeft);
     }
 
-    virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext1)
             OPENFHE_THROW("Input ciphertext1 is nullptr");
@@ -1056,8 +1086,7 @@ public:
         return;
     }
 
-    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                             Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext1)
             OPENFHE_THROW("Input ciphertext1 is nullptr");
@@ -1067,8 +1096,8 @@ public:
         return;
     }
 
-    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                                  Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<Element>& ciphertext1,
+                                                  Ciphertext<Element>& ciphertext2) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext1)
             OPENFHE_THROW("Input ciphertext1 is nullptr");
@@ -1111,7 +1140,7 @@ public:
     // Advanced SHE LINEAR WEIGHTED SUM
     /////////////////////////////////////
 
-    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ConstCiphertext<Element>>& ciphertextVec,
+    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
                                                const std::vector<double>& constantVec) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
@@ -1337,44 +1366,55 @@ public:
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                                   const std::string& keyId);
 
-    virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootAdjustScale(ciphertext);
-        }
-        OPENFHE_THROW("IntMPBootAdjustScale operation has not been enabled");
+    Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootAdjustScale(ciphertext);
     }
 
-    virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
-                                                          const PublicKey<Element> publicKey) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
-        }
-        OPENFHE_THROW("IntMPBootRandomElementGen operation has not been enabled");
+    Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
+                                       ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootDecrypt(privateKey, ciphertext);
     }
 
-    virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-                                                              ConstCiphertext<Element> ciphertext,
-                                                              ConstCiphertext<Element> a) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootDecrypt(privateKey, ciphertext, a);
-        }
-        OPENFHE_THROW("IntMPBootDecrypt operation has not been enabled");
+    Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey, ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootEncrypt(publicKey, ciphertext);
+    }
+
+    Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntBootAdd(ciphertext1, ciphertext2);
+    }
+
+    Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootAdjustScale(ciphertext);
+    }
+
+    Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
+                                                  const PublicKey<Element> publicKey) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
+    }
+
+    std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+                                                      ConstCiphertext<Element> ciphertext,
+                                                      ConstCiphertext<Element> a) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootDecrypt(privateKey, ciphertext, a);
     }
 
     std::vector<Ciphertext<Element>> IntMPBootAdd(std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootAdd(sharesPairVec);
-        }
-        OPENFHE_THROW("IntMPBootAdd operation has not been enabled");
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootAdd(sharesPairVec);
     }
 
     Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                          const std::vector<Ciphertext<Element>>& sharesPair, ConstCiphertext<Element> a,
                                          ConstCiphertext<Element> ciphertext) const {
-        if (m_Multiparty) {
-            return m_Multiparty->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
-        }
-        OPENFHE_THROW("IntMPBootEncrypt operation has not been enabled");
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
     }
 
     // FHE METHODS
@@ -1432,7 +1472,7 @@ public:
         return m_SchemeSwitch->EvalCKKStoFHEW(ciphertext, numCtxts);
     }
 
-    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const std::shared_ptr<BinFHEContext>& ccLWE,
+    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<Element>& ccCKKS, const std::shared_ptr<BinFHEContext>& ccLWE,
                              uint32_t numSlotsCKKS = 0, uint32_t logQ = 25) {
         VerifySchemeSwitchEnabled(__func__);
         m_SchemeSwitch->EvalFHEWtoCKKSSetup(ccCKKS, ccLWE, numSlotsCKKS, logQ);

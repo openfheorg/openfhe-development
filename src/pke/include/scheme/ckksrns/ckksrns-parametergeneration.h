@@ -34,6 +34,7 @@
 
 #include "schemerns/rns-parametergeneration.h"
 
+#include <vector>
 #include <string>
 #include <memory>
 
@@ -44,12 +45,21 @@
 namespace lbcrypto {
 
 class ParameterGenerationCKKSRNS : public ParameterGenerationRNS {
+protected:
+    void CompositePrimeModuliGen(std::vector<NativeInteger>& moduliQ, std::vector<NativeInteger>& rootsQ,
+                                 uint32_t compositeDegree, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
+                                 uint32_t cyclOrder, uint32_t registerWordSize) const;
+
+    void SinglePrimeModuliGen(std::vector<NativeInteger>& moduliQ, std::vector<NativeInteger>& rootsQ,
+                              ScalingTechnique scalTech, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
+                              uint32_t cyclOrder, uint32_t extraModsize) const;
+
 public:
     virtual ~ParameterGenerationCKKSRNS() {}
 
-    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-                          usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,
-                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override;
+    bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,
+                                  COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

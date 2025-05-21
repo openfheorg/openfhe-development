@@ -42,7 +42,9 @@ namespace lbcrypto {
 class PlaintextImpl;
 
 using Plaintext      = std::shared_ptr<PlaintextImpl>;
-using ConstPlaintext = std::shared_ptr<PlaintextImpl>;
+using ConstPlaintext = const std::shared_ptr<const PlaintextImpl>;
+
+using ReadOnlyPlaintext = std::shared_ptr<const PlaintextImpl>;
 
 }  // namespace lbcrypto
 

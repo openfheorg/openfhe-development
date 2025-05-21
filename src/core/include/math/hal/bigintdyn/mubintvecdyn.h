@@ -47,7 +47,7 @@
         #include "utils/serializable.h"
 
         #include <initializer_list>
-        #include <iostream>
+        #include <ostream>
         #include <string>
         #include <utility>
         #include <vector>
@@ -315,6 +315,11 @@ public:
    * @param value is the value to set.
    */
     void SwitchModulus(const ubint_el_t& value);
+    void LazySwitchModulus(const ubint_el_t& value);
+
+    mubintvec& MultAccEqNoCheck(const mubintvec& v, const ubint_el_t& i) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecdyn");
+    }
 
     /**
    * Gets the vector modulus.

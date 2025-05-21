@@ -424,16 +424,18 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
     pDiff->SetLength(slots);
     if (slots <= 64) {  // Otherwise, supress output
         std::cout << "Difference of inputs: ";
+        auto pDiff_rpv = pDiff->GetRealPackedValue();
         for (uint32_t i = 0; i < slots; ++i) {
-            std::cout << pDiff->GetRealPackedValue()[i] << " ";
+            std::cout << pDiff_rpv[i] << " ";
         }
     }
 
     if (numValues <= 64) {  // Otherwise, supress output
         const double eps = 0.0001;
         std::cout << "\nExpected sign result from CKKS: ";
+        auto pDiff_rpv = pDiff->GetRealPackedValue();
         for (uint32_t i = 0; i < numValues; ++i) {
-            std::cout << int(std::round(pDiff->GetRealPackedValue()[i] / eps) * eps < 0) << " ";
+            std::cout << int(std::round(pDiff_rpv[i] / eps) * eps < 0) << " ";
         }
         std::cout << "\n";
     }
@@ -1183,16 +1185,18 @@ void Comparison(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t rin
     pDiff->SetLength(slots);
     if (slots <= 64) {  // Otherwise, supress output
         std::cout << "Difference of inputs: ";
+        auto pDiff_rpv = pDiff->GetRealPackedValue();
         for (uint32_t i = 0; i < slots; ++i) {
-            std::cout << pDiff->GetRealPackedValue()[i] << " ";
+            std::cout << pDiff_rpv[i] << " ";
         }
     }
 
     if (numValues <= 64) {  // Otherwise, supress output
         const double eps = 0.0001;
         std::cout << "\nExpected sign result from CKKS: ";
+        auto pDiff_rpv = pDiff->GetRealPackedValue();
         for (uint32_t i = 0; i < numValues; ++i) {
-            std::cout << int(std::round(pDiff->GetRealPackedValue()[i] / eps) * eps < 0) << " ";
+            std::cout << int(std::round(pDiff_rpv[i] / eps) * eps < 0) << " ";
         }
         std::cout << "\n";
     }

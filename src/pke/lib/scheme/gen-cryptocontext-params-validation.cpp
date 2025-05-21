@@ -40,14 +40,32 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (NORESCALE == parameters.GetScalingTechnique()) {
             OPENFHE_THROW("NORESCALE is not supported in CKKSRNS");
         }
+        else if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique()) {
+            if (1 != parameters.GetCompositeDegree()) {
+                OPENFHE_THROW("Composite degree can be set for COMPOSITESCALINGMANUAL only.");
+            }
+        }
+        else if (COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
+            if (parameters.GetCompositeDegree() < 1 || parameters.GetCompositeDegree() > 4) {
+                OPENFHE_THROW("Composite degree valid values: 1, 2, 3, and 4.");
+            }
+        }
         if (NOISE_FLOODING_HRA == parameters.GetPREMode()) {
             OPENFHE_THROW("NOISE_FLOODING_HRA is not supported in CKKSRNS");
         }
         if (NOISE_FLOODING_MULTIPARTY == parameters.GetMultipartyMode()) {
-            OPENFHE_THROW("NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS");
+            OPENFHE_THROW(
+                "NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS. Use NOISE_FLOODING_DECRYPT and EXEC_EVALUATION instead.");
         }
-        if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize()) {
+        if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
+            COMPOSITESCALINGAUTO != parameters.GetScalingTechnique() &&
+            COMPOSITESCALINGMANUAL != parameters.GetScalingTechnique()) {
             OPENFHE_THROW("scalingModSize should be less than " + std::to_string(MAX_MODULUS_SIZE));
+        }
+        else if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
+                 (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
+                  COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique())) {
+            OPENFHE_THROW("scalingModSize should be less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
         }
         if (30 != parameters.GetStatisticalSecurity()) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
@@ -58,6 +76,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
                 OPENFHE_THROW("numAdversarialQueries is allowed for multipartyMode == NOISE_FLOODING_MULTIPARTY only");
             }
+        }
+        if (parameters.GetExecutionMode() == EXEC_NOISE_ESTIMATION && parameters.GetCKKSDataType() == COMPLEX) {
+            OPENFHE_THROW("EXEC_NOISE_ESTIMATION mode is not compatible with complex data types.");
         }
     }
     else if (isBFVRNS(scheme)) {
@@ -132,6 +153,13 @@ void validateParametersForCryptocontext(const Params& parameters) {
         std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(parameters.GetRingDim()) +
                              "]. Ring dimension must be a power of 2.");
         OPENFHE_THROW(errorMsg);
+    }
+    if (BV == parameters.GetKeySwitchTechnique()) {
+        const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE / 2));
+        if (maxDigitSize < parameters.GetDigitSize()) {
+            OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
+                          " for keySwitchTechnique == BV");
+        }
     }
     //====================================================================================================================
     constexpr usint maxMultiplicativeDepthValue = 1000;

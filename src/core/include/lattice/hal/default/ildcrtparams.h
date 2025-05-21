@@ -286,15 +286,22 @@ public:
    * @return the equality check results.
    */
     bool operator==(const ElemParams<IntType>& other) const override {
-        const auto* dcrtParams = dynamic_cast<const ILDCRTParams*>(&other);
-        if (!dcrtParams)
+        // ATTENTION: the following changes was made to fix failures in openfhe-python tests linked with clang++-18
+        // ========================================================================================================
+        // make sure that "other" is of the ILDCRTParams<IntType> datatype as we have to "static_cast" it.
+        // dynamic_cast doesn't work. only after removing "final" from ILDCRTParams, dynamic_cast starts working.
+        // it suggests that clang handles "final" differently in templates. most likely, it optimizes some things
+        // more aggressively, which affects RTTI and base class behavior (especially in templates).
+        if (typeid(other) != typeid(ILDCRTParams<IntType>))
             return false;
-        if (ElemParams<IntType>::operator==(other) == false)
+        const auto& dcrtParams = static_cast<const ILDCRTParams<IntType>&>(other);
+
+        if (ElemParams<IntType>::operator==(dcrtParams) == false)
             return false;
-        if (m_params.size() != dcrtParams->m_params.size())
+        if (m_params.size() != dcrtParams.m_params.size())
             return false;
         for (size_t i = 0; i < m_params.size(); ++i) {
-            if (*m_params[i] != *dcrtParams->m_params[i])
+            if (*m_params[i] != *(dcrtParams.m_params[i]))
                 return false;
         }
         return true;
@@ -345,7 +352,7 @@ public:
         return 1;
     }
 
-private:
+protected:
     std::ostream& doprint(std::ostream& out) const override {
         out << "ILDCRTParams ";
         ElemParams<IntType>::doprint(out);
@@ -355,6 +362,7 @@ private:
         return out << std::endl;
     }
 
+private:
     // array of smaller ILParams
     std::vector<std::shared_ptr<ILNativeParams>> m_params;
 };

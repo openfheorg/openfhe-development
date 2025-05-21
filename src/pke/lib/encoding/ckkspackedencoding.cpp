@@ -42,6 +42,10 @@
 
 #include <complex>
 #include <cmath>
+#include <limits>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace lbcrypto {
@@ -49,7 +53,7 @@ namespace lbcrypto {
 std::vector<std::complex<double>> Conjugate(const std::vector<std::complex<double>>& vec) {
     uint32_t n = vec.size();
     std::vector<std::complex<double>> result(n);
-    for (size_t i = 1; i < n; i++) {
+    for (uint32_t i = 1; i < n; ++i) {
         result[i] = {-vec[n - i].imag(), -vec[n - i].real()};
     }
     result[0] = {vec[0].real(), -vec[0].imag()};
@@ -105,344 +109,259 @@ double StdDev(const std::vector<std::complex<double>>& vec, const std::vector<st
     // exclude the real part at index 0 as it is always 0
     variance /= static_cast<double>(dslots) - 2.0;
     // scale down by 2 as we have worked with 2*Im(z) up to this point
-    double stddev = 0.5 * std::sqrt(variance);
-
-    return stddev;
+    return 0.5 * std::sqrt(variance);
 }
 
 std::vector<DCRTPoly::Integer> CKKSPackedEncoding::CRTMult(const std::vector<DCRTPoly::Integer>& a,
                                                            const std::vector<DCRTPoly::Integer>& b,
                                                            const std::vector<DCRTPoly::Integer>& mods) {
     std::vector<DCRTPoly::Integer> result(mods.size());
-
-    for (usint i = 0; i < a.size(); i++) {
+    for (uint32_t i = 0; i < a.size(); ++i)
         result[i] = a[i].ModMulFast(b[i], mods[i]);
-    }
-
     return result;
 }
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 bool CKKSPackedEncoding::Encode() {
-    if (this->isEncoded)
+    if (isEncoded)
         return true;
 
-    uint32_t ringDim                          = GetElementRingDimension();
-    usint slots                               = this->GetSlots();
-    std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
-    if (slots < inverse.size()) {
+    if (typeFlag != IsDCRTPoly)
+        OPENFHE_THROW("Only DCRTPoly is supported for CKKS.");
+
+    if (slots < value.size()) {
         std::string errMsg = std::string("The number of slots [") + std::to_string(slots) +
-                             "] is less than the size of data [" + std::to_string(inverse.size()) + "]";
+                             "] is less than the size of data [" + std::to_string(value.size()) + "]";
         OPENFHE_THROW(errMsg);
     }
 
-    // clears all imaginary values as CKKS for complex numbers
-    for (size_t i = 0; i < inverse.size(); i++)
-        inverse[i].imag(0.0);
-
+    auto inverse{value};
     inverse.resize(slots);
 
-    if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
-        uint64_t pBits     = encodingParams->GetPlaintextModulus();
-        uint32_t precision = 52;
+    uint32_t ringDim = GetElementRingDimension();
+    DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
 
-        double powP      = std::pow(2, precision);
-        int32_t pCurrent = pBits - precision;
+#if NATIVEINT == 128
+    uint64_t pBits     = encodingParams->GetPlaintextModulus();
+    uint32_t precision = 52;
 
-        // the idea is to break down real and imaginary parts
-        // expressed as input_mantissa * 2^input_exponent
-        // into (input_mantissa * 2^52) * 2^(p - 52 + input_exponent)
-        // to preserve 52-bit precision of doubles
-        // when converting to 128-bit numbers
-        std::vector<int128_t> temp(2 * slots);
-        for (size_t i = 0; i < slots; ++i) {
-            // Check for possible overflow in llround function
-            int32_t n1 = 0;
-            // extract the mantissa of real part and multiply it by 2^52
-            double dre = static_cast<double>(std::frexp(inverse[i].real(), &n1) * powP);
-            int32_t n2 = 0;
-            // extract the mantissa of imaginary part and multiply it by 2^52
-            double dim = static_cast<double>(std::frexp(inverse[i].imag(), &n2) * powP);
-            if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
-                OPENFHE_THROW("Overflow, try to decrease scaling factor");
-            }
+    double powP      = std::pow(2, precision);
+    int32_t pCurrent = pBits - precision;
 
-            int64_t re64       = std::llround(dre);
-            int32_t pRemaining = pCurrent + n1;
-            int128_t re        = 0;
-            if (pRemaining < 0) {
-                re = re64 >> (-pRemaining);
-            }
-            else {
-                int128_t pPowRemaining = ((int128_t)1) << pRemaining;
-                re                     = pPowRemaining * re64;
-            }
-
-            int64_t im64 = std::llround(dim);
-            pRemaining   = pCurrent + n2;
-            int128_t im  = 0;
-            if (pRemaining < 0) {
-                im = im64 >> (-pRemaining);
-            }
-            else {
-                int128_t pPowRemaining = ((int64_t)1) << pRemaining;
-                im                     = pPowRemaining * im64;
-            }
-
-            temp[i]         = (re < 0) ? Max128BitValue() + re : re;
-            temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
-
-            if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
-                OPENFHE_THROW("Overflow, try to decrease scaling factor");
-            }
+    // the idea is to break down real and imaginary parts
+    // expressed as input_mantissa * 2^input_exponent
+    // into (input_mantissa * 2^52) * 2^(p - 52 + input_exponent)
+    // to preserve 52-bit precision of doubles
+    // when converting to 128-bit numbers
+    std::vector<int128_t> temp(2 * slots);
+    int128_t MaxBitValue = Max128BitValue();
+    for (uint32_t i = 0; i < slots; ++i) {
+        // Check for possible overflow in llround function
+        int32_t n1 = 0;
+        // extract the mantissa of real part and multiply it by 2^52
+        double dre = static_cast<double>(std::frexp(inverse[i].real(), &n1) * powP);
+        int32_t n2 = 0;
+        // extract the mantissa of imaginary part and multiply it by 2^52
+        double dim = static_cast<double>(std::frexp(inverse[i].imag(), &n2) * powP);
+        if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
+            OPENFHE_THROW("Overflow, try to decrease scaling factor");
         }
 
-        const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
-        const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
-
-        for (size_t i = 0; i < nativeParams.size(); i++) {
-            NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
-            FitToNativeVector(temp, Max128BitValue(), &nativeVec);
-            NativePoly element = this->GetElement<DCRTPoly>().GetElementAtIndex(i);
-            element.SetValues(std::move(nativeVec), Format::COEFFICIENT);  // output was in coefficient format
-            this->encodedVectorDCRT.SetElementAtIndex(i, std::move(element));
+        int64_t re64       = std::llround(dre);
+        int32_t pRemaining = pCurrent + n1;
+        int128_t re        = 0;
+        if (pRemaining < 0) {
+            re = re64 >> (-pRemaining);
+        }
+        else {
+            int128_t pPowRemaining = ((int128_t)1) << pRemaining;
+            re                     = pPowRemaining * re64;
         }
 
-        usint numTowers = nativeParams.size();
-        std::vector<DCRTPoly::Integer> moduli(numTowers);
-        for (usint i = 0; i < numTowers; i++) {
-            moduli[i] = nativeParams[i]->GetModulus();
+        int64_t im64 = std::llround(dim);
+        pRemaining   = pCurrent + n2;
+        int128_t im  = 0;
+        if (pRemaining < 0) {
+            im = im64 >> (-pRemaining);
+        }
+        else {
+            int128_t pPowRemaining = (static_cast<int64_t>(1)) << pRemaining;
+            im                     = pPowRemaining * im64;
         }
 
-        DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
-        std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
+        temp[i]         = (re < 0) ? MaxBitValue + re : re;
+        temp[i + slots] = (im < 0) ? MaxBitValue + im : im;
 
-        auto currPowP = crtPowP;
-
-        // We want to scale temp by 2^(pd), and the loop starts from j=2
-        // because temp is already scaled by 2^p in the re/im loop above,
-        // and currPowP already is 2^p.
-        for (size_t i = 2; i < noiseScaleDeg; i++) {
-            currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
+        if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
+            OPENFHE_THROW("Overflow, try to decrease scaling factor");
         }
-
-        if (noiseScaleDeg > 1) {
-            this->encodedVectorDCRT = this->encodedVectorDCRT.Times(currPowP);
-        }
-
-        this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
-
-        scalingFactor = pow(scalingFactor, noiseScaleDeg);
     }
-    else {
-        OPENFHE_THROW("Only DCRTPoly is supported for CKKS.");
-    }
-
-    this->isEncoded = true;
-    return true;
-}
+    DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
 #else  // NATIVEINT == 64
-bool CKKSPackedEncoding::Encode() {
-    if (this->isEncoded)
-        return true;
-    usint ringDim                             = GetElementRingDimension();
-    usint slots                               = this->GetSlots();
-    std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
-    if (slots < inverse.size()) {
-        std::string errMsg = std::string("The number of slots [") + std::to_string(slots) +
-                             "] is less than the size of data [" + std::to_string(inverse.size()) + "]";
-        OPENFHE_THROW(errMsg);
+    int32_t logc = std::numeric_limits<int32_t>::min();
+    for (uint32_t i = 0; i < slots; ++i) {
+        inverse[i] *= scalingFactor;
+        if (inverse[i].real() != 0.) {
+            auto logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
+            if (logc < logci)
+                logc = logci;
+        }
+        if (inverse[i].imag() != 0.) {
+            auto logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
+            if (logc < logci)
+                logc = logci;
+        }
     }
+    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
+    if (logc < 0)
+        OPENFHE_THROW("Scaling factor too small");
 
-    // clears all imaginary values as CKKS for complex numbers
-    for (size_t i = 0; i < inverse.size(); i++)
-        inverse[i].imag(0.0);
+    // Compute approxFactor, a value to scale down by in case the value exceeds a 64-bit integer.
+    constexpr int32_t MAX_BITS_IN_WORD = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
 
-    inverse.resize(slots);
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
+    double approxFactor = pow(2, logApprox);
+    double invLen       = static_cast<double>(slots);
 
-    if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
-        double powP = scalingFactor;
+    std::vector<int64_t> temp(2 * slots);
+    int64_t MaxBitValue = Max64BitValue();
+    for (uint32_t i = 0; i < slots; ++i) {
+        // Scale down by approxFactor in case the value exceeds a 64-bit integer.
+        double dre = inverse[i].real() / approxFactor;
+        double dim = inverse[i].imag() / approxFactor;
 
-        // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-        int32_t MAX_BITS_IN_WORD = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+        // Check for possible overflow
+        if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
+            // IFFT formula:
+            // x[n] = (1/N) * \Sum^(N-1)_(k=0) X[k] * exp( j*2*pi*n*k/N )
+            // n is i
+            // k is idx below
+            // N is inverse.size()
+            //
+            // In the following, we switch to original data domain,
+            // and we identify the component that has the maximum
+            // contribution to the values in the iFFT domain. We do
+            // this to report it to the user, so they can identify
+            // large inputs.
 
-        int32_t logc = 0;
-        for (size_t i = 0; i < slots; ++i) {
-            inverse[i] *= powP;
-            if (inverse[i].real() != 0) {
-                int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
-                if (logc < logci)
-                    logc = logci;
-            }
-            if (inverse[i].imag() != 0) {
-                int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
-                if (logc < logci)
-                    logc = logci;
-            }
-        }
-        if (logc < 0) {
-            OPENFHE_THROW("Too small scaling factor");
-        }
-        int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-        int32_t logApprox   = logc - logValid;
-        double approxFactor = pow(2, logApprox);
+            DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 2);
 
-        std::vector<int64_t> temp(2 * slots);
-        for (size_t i = 0; i < slots; ++i) {
-            // Scale down by approxFactor in case the value exceeds a 64-bit integer.
-            double dre = inverse[i].real() / approxFactor;
-            double dim = inverse[i].imag() / approxFactor;
+            double factor  = 2 * M_PI * i;
+            double realMax = -1, imagMax = -1;
+            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
 
-            // Check for possible overflow
-            if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
-                // IFFT formula:
-                // x[n] = (1/N) * \Sum^(N-1)_(k=0) X[k] * exp( j*2*pi*n*k/N )
-                // n is i
-                // k is idx below
-                // N is inverse.size()
-                //
-                // In the following, we switch to original data domain,
-                // and we identify the component that has the maximum
-                // contribution to the values in the iFFT domain. We do
-                // this to report it to the user, so they can identify
-                // large inputs.
+            for (uint32_t idx = 0; idx < slots; ++idx) {
+                // exp( j*2*pi*n*k/N )
+                std::complex<double> expFactor = {cos((factor * idx) / invLen), sin((factor * idx) / invLen)};
 
-                DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 2);
+                // X[k] * exp( j*2*pi*n*k/N )
+                std::complex<double> prodFactor = inverse[idx] * expFactor;
 
-                double invLen = static_cast<double>(inverse.size());
-                double factor = 2 * M_PI * i;
+                double realVal = prodFactor.real();
+                double imagVal = prodFactor.imag();
 
-                double realMax = -1, imagMax = -1;
-                uint32_t realMaxIdx = -1, imagMaxIdx = -1;
-
-                for (uint32_t idx = 0; idx < inverse.size(); idx++) {
-                    // exp( j*2*pi*n*k/N )
-                    std::complex<double> expFactor = {cos((factor * idx) / invLen), sin((factor * idx) / invLen)};
-
-                    // X[k] * exp( j*2*pi*n*k/N )
-                    std::complex<double> prodFactor = inverse[idx] * expFactor;
-
-                    double realVal = prodFactor.real();
-                    double imagVal = prodFactor.imag();
-
-                    if (realVal > realMax) {
-                        realMax    = realVal;
-                        realMaxIdx = idx;
-                    }
-                    if (imagVal > imagMax) {
-                        imagMax    = imagVal;
-                        imagMaxIdx = idx;
-                    }
+                if (realVal > realMax) {
+                    realMax    = realVal;
+                    realMaxIdx = idx;
                 }
-
-                auto scaledInputSize = ceil(log2(dre));
-
-                std::stringstream buffer;
-                buffer << std::endl
-                       << "Overflow in data encoding - scaled input is too large to fit "
-                          "into a NativeInteger (60 bits). Try decreasing scaling factor."
-                       << std::endl;
-                buffer << "Overflow at slot number " << i << std::endl;
-                buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
-                buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax
-                       << std::endl;
-                buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
-                buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-                OPENFHE_THROW(buffer.str());
+                if (imagVal > imagMax) {
+                    imagMax    = imagVal;
+                    imagMaxIdx = idx;
+                }
             }
 
-            int64_t re = std::llround(dre);
-            int64_t im = std::llround(dim);
+            auto scaledInputSize = ceil(log2(dre));
 
-            temp[i]         = (re < 0) ? Max64BitValue() + re : re;
-            temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
-        }
-        const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
-        const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
-
-        for (size_t i = 0; i < nativeParams.size(); i++) {
-            NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
-            FitToNativeVector(temp, Max64BitValue(), &nativeVec);
-            NativePoly element = this->GetElement<DCRTPoly>().GetElementAtIndex(i);
-            element.SetValues(std::move(nativeVec), Format::COEFFICIENT);  // output was in coefficient format
-            this->encodedVectorDCRT.SetElementAtIndex(i, std::move(element));
+            std::stringstream buffer;
+            buffer << std::endl
+                   << "Overflow in data encoding - scaled input is too large to fit "
+                      "into a NativeInteger (60 bits). Try decreasing scaling factor."
+                   << std::endl;
+            buffer << "Overflow at slot number " << i << std::endl;
+            buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
+            buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
+            buffer << "Scaling factor is " << ceil(log2(scalingFactor)) << " bits " << std::endl;
+            buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
+            OPENFHE_THROW(buffer.str());
         }
 
-        usint numTowers = nativeParams.size();
-        std::vector<DCRTPoly::Integer> moduli(numTowers);
-        for (usint i = 0; i < numTowers; i++) {
-            moduli[i] = nativeParams[i]->GetModulus();
-        }
+        int64_t re = std::llround(dre);
+        int64_t im = std::llround(dim);
 
-        DCRTPoly::Integer intPowP(static_cast<uint64_t>(std::llround(powP)));
-        std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
-
-        auto currPowP = crtPowP;
-
-        // We want to scale temp by 2^(pd), and the loop starts from j=2
-        // because temp is already scaled by 2^p in the re/im loop above,
-        // and currPowP already is 2^p.
-        for (size_t i = 2; i < noiseScaleDeg; i++) {
-            currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
-        }
-
-        if (noiseScaleDeg > 1) {
-            this->encodedVectorDCRT = this->encodedVectorDCRT.Times(currPowP);
-        }
-
-        // Scale back up by the approxFactor to get the correct encoding.
-        int32_t MAX_LOG_STEP = 60;
-        if (logApprox > 0) {
-            int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
-            std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
-            logApprox -= logStep;
-
-            while (logApprox > 0) {
-                int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-                DCRTPoly::Integer intStep = uint64_t(1) << logStep;
-                std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
-                crtApprox = CRTMult(crtApprox, crtSF, moduli);
-                logApprox -= logStep;
-            }
-            encodedVectorDCRT = encodedVectorDCRT.Times(crtApprox);
-        }
-
-        this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
-
-        scalingFactor = pow(scalingFactor, noiseScaleDeg);
+        temp[i]         = (re < 0) ? MaxBitValue + re : re;
+        temp[i + slots] = (im < 0) ? MaxBitValue + im : im;
     }
-    else {
-        OPENFHE_THROW("Only DCRTPoly is supported for CKKS.");
-    }
-
-    this->isEncoded = true;
-    return true;
-}
+    DCRTPoly::Integer intPowP(static_cast<uint64_t>(std::llround(scalingFactor)));
 #endif
+
+    auto nativeParams  = encodedVectorDCRT.GetParams()->GetParams();
+    uint32_t numTowers = nativeParams.size();
+    std::vector<DCRTPoly::Integer> moduli(numTowers);
+    for (uint32_t i = 0; i < numTowers; i++) {
+        moduli[i] = nativeParams[i]->GetModulus();
+        NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
+        FitToNativeVector(temp, MaxBitValue, &nativeVec);
+        NativePoly element = GetElement<DCRTPoly>().GetElementAtIndex(i);
+        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);  // output was in coefficient format
+        encodedVectorDCRT.SetElementAtIndex(i, std::move(element));
+    }
+
+    // We want to scale temp by 2^(pd), and the loop starts from j=2
+    // because temp is already scaled by 2^p in the re/im loop above,
+    // and currPowP already is 2^p.
+    std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
+    auto currPowP = crtPowP;
+    for (size_t i = 2; i < noiseScaleDeg; ++i)
+        currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
+
+    if (noiseScaleDeg > 1)
+        encodedVectorDCRT = encodedVectorDCRT.Times(currPowP);
+
+#if NATIVEINT == 64
+    // Scale back up by the approxFactor to get the correct encoding.
+    int32_t MAX_LOG_STEP = 60;
+    if (logApprox > 0) {
+        int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+        DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
+        std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
+        logApprox -= logStep;
+
+        while (logApprox > 0) {
+            int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
+            std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
+            crtApprox = CRTMult(crtApprox, crtSF, moduli);
+            logApprox -= logStep;
+        }
+        encodedVectorDCRT = encodedVectorDCRT.Times(crtApprox);
+    }
+#endif
+
+    GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
+    scalingFactor    = pow(scalingFactor, noiseScaleDeg);
+    return isEncoded = true;
+}
 
 bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, ScalingTechnique scalTech,
                                 ExecutionMode executionMode) {
-    double p       = encodingParams->GetPlaintextModulus();
-    double powP    = 0.0;
-    uint32_t Nh    = GetElementRingDimension() / 2;
-    uint32_t slots = this->GetSlots();
-    uint32_t gap   = Nh / slots;
+    double p     = encodingParams->GetPlaintextModulus();
+    double powP  = 0.0;
+    uint32_t Nh  = GetElementRingDimension() / 2;
+    uint32_t gap = Nh / slots;
     value.clear();
     std::vector<std::complex<double>> curValues(slots);
 
-    if (this->typeFlag == IsNativePoly) {
-        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
+    if (typeFlag == IsNativePoly) {
+        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
+            scalTech == COMPOSITESCALINGMANUAL)
             powP = pow(scalingFactor, -1);
         else
             powP = pow(2, -p);
 
-        const NativeInteger& q = this->GetElementModulus().ConvertToInt();
-        NativeInteger qHalf    = q >> 1;
+        NativeInteger q     = GetElementModulus().ConvertToInt();
+        NativeInteger qHalf = q >> 1;
 
-        for (size_t i = 0, idx = 0; i < slots; ++i, idx += gap) {
+        for (uint32_t i = 0, idx = 0; i < slots; ++i, idx += gap) {
             std::complex<double> cur;
 
             if (GetElement<NativePoly>()[idx] > qHalf)
@@ -466,7 +385,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
         // we will bring down the scaling factor to 2^p
         double scalingFactorPre = 0.0;
-        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
+        if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
+            scalTech == COMPOSITESCALINGMANUAL)
             scalingFactorPre = pow(scalingFactor, -1) * pow(2, p);
         else
             scalingFactorPre = pow(2, -p * (noiseScaleDeg - 1));
@@ -536,11 +456,13 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         //  }
         // }
 
-        //   If less than 5 bits of precision is observed
-        if (logstd > p - 5.0)
-            OPENFHE_THROW(
-                "The decryption failed because the approximation error is "
-                "too high. Check the parameters. ");
+        if (ckksDataType == REAL) {
+            //   If less than 5 bits of precision is observed
+            if (logstd > p - 5.0)
+                OPENFHE_THROW(
+                    "The decryption failed because the approximation error is "
+                    "too high. Check the parameters. ");
+        }
 
         // real values
         std::vector<std::complex<double>> realValues(slots);
@@ -549,7 +471,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // set to 1 by default
         stddev = sqrt(CKKS_M_FACTOR + 1) * stddev;
 
-        double scale = 0.5 * powP;
+        double scale = (ckksDataType == REAL) ? 0.5 * powP : powP;
 
         // TODO temporary removed errors
         std::normal_distribution<> d(0, stddev);
@@ -561,12 +483,14 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // We would add sampling only for even indices of i.
         // This change should be done together with the one below.
         for (size_t i = 0; i < slots; ++i) {
-            double real = scale * (curValues[i].real() + conjugate[i].real());
-            // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-            real += powP * d(g);
-            double imag = scale * (curValues[i].imag() + conjugate[i].imag());
-            // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-            imag += powP * d(g);
+            double real = scale * curValues[i].real();
+            double imag = scale * curValues[i].imag();
+            if (ckksDataType == REAL) {
+                real += scale * conjugate[i].real() + powP * d(g);
+                // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
+                imag += scale * conjugate[i].imag() + powP * d(g);
+                // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
+            }
             realValues[i].real(real);
             realValues[i].imag(imag);
         }
@@ -577,12 +501,18 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // above.
         DiscreteFourierTransform::FFTSpecial(realValues, GetElementRingDimension() * 2);
 
-        // clears all imaginary values for security reasons
-        for (size_t i = 0; i < realValues.size(); ++i)
-            realValues[i].imag(0.0);
+        if (ckksDataType == REAL) {
+            // clears all imaginary values for security reasons
+            for (auto& val : realValues) {
+                val.imag(0.0);
+            }
 
-        // sets an estimate of the approximation error
-        m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
+            // sets an estimate of the approximation error
+            m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
+        }
+        else {
+            m_logError = 0;
+        }
 
         value = realValues;
     }
@@ -600,7 +530,7 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
     uint32_t ringDim   = GetElementRingDimension();
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
-    for (usint i = 0; i < vec.size(); i++) {
+    for (uint32_t i = 0; i < vec.size(); i++) {
         NativeInteger n(vec[i]);
         if (n > bigValueHf) {
             (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
@@ -611,7 +541,7 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
     }
 }
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 void CKKSPackedEncoding::FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound,
                                            NativeVector* nativeVec) const {
     NativeInteger bigValueHf((uint128_t)bigBound >> 1);
@@ -620,7 +550,7 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int128_t>& vec, int
     uint32_t ringDim   = GetElementRingDimension();
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
-    for (usint i = 0; i < vec.size(); i++) {
+    for (uint32_t i = 0; i < vec.size(); i++) {
         NativeInteger n((uint128_t)vec[i]);
         if (n > bigValueHf) {
             (*nativeVec)[gap * i] = n.ModSub(diff, modulus);

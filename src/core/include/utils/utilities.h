@@ -53,7 +53,7 @@ namespace lbcrypto {
  * @param Input to test if it is a power of 2.
  * @return is true if the unsigned int is a power of 2.
  */
-template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+template <typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, bool> = true>
 inline constexpr bool IsPowerOfTwo(T Input) {
     return Input && !(Input & (Input - 1));
 }
@@ -107,7 +107,7 @@ inline bool is64BitOverflow(double d) {
     return std::abs(d) > static_cast<double>(Max64BitValue());
 }
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
 inline constexpr __int128 Max128BitValue() {
     return static_cast<__int128>(((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1);
 }
@@ -124,7 +124,7 @@ inline bool isConvertableToNativeInt(double d) {
         return std::abs(d) <= static_cast<double>(std::numeric_limits<int32_t>::max());
     if constexpr (NATIVEINT == 64)
         return std::abs(d) <= static_cast<double>(Max64BitValue());
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     if constexpr (NATIVEINT == 128)
         return std::abs(d) <= static_cast<double>(Max128BitValue());
 #endif

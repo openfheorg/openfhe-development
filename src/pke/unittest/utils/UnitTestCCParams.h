@@ -51,7 +51,7 @@ struct UnitTestCCParams {
     double batchSize               = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
     double secretKeyDist           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
     double maxRelinSkDeg           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double firstModSize            = DFLT;  // BGVRNS
+    double firstModSize            = DFLT;  // CKKSRNS, BGVRNS
     double securityLevel           = DFLT;  // BFVRNS, BGVRNS
     double ksTech                  = DFLT;  // CKKSRNS, BGVRNS
     double scalTech                = DFLT;  // CKKSRNS, BGVRNS
@@ -67,6 +67,9 @@ struct UnitTestCCParams {
     double decryptionNoiseMode     = DFLT;  // CKKSRNS
     double executionMode           = DFLT;  // CKKSRNS
     double noiseEstimate           = DFLT;  // CKKSRNS
+    double registerWordSize        = DFLT;  // CKKSRNS
+    double compositeDegree         = DFLT;  // CKKSRNS
+    double ckksDataType            = DFLT;  // CKKSRNS
 
     std::string toString() const;
 };

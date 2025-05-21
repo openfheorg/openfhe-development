@@ -39,6 +39,11 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
 
+#include <vector>
+#include <memory>
+#include <string>
+#include <utility>
+
 namespace lbcrypto {
 
 uint32_t ParameterGenerationBGVRNS::computeRingDimension(
@@ -112,20 +117,23 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     else {
         double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
         double numDigits         = cryptoParamsBGVRNS->GetNumPartQ();
-        keySwitchingNoise        = numTowersPerDigit * numDigits * expansionFactor * Berr / 2.0;
-        keySwitchingNoise += auxTowers * (1 + expansionFactor * Bkey) / 2.0;
+        keySwitchingNoise        = numTowersPerDigit * numDigits * expansionFactor * Berr;
+        keySwitchingNoise += auxTowers * (1. + expansionFactor * Bkey);
+#if defined(WITH_REDUCED_NOISE)
+        keySwitchingNoise /= 2.0;
+#endif
     }
 
     // V_ms
-    auto modSwitchingNoise = (1 + expansionFactor * Bkey) / 2.;
+    auto modSwitchingNoise = (1. + expansionFactor * Bkey) / 2.;
 
     // V_c
     double noisePerLevel = 0;
     if (scalTech == FLEXIBLEAUTOEXT) {
-        noisePerLevel = 1 + expansionFactor * Bkey;
+        noisePerLevel = 1. + expansionFactor * Bkey;
     }
     else {
-        noisePerLevel = (evalAddCount + 1) * freshEncryptionNoise + (keySwitchCount + 1) * keySwitchingNoise;
+        noisePerLevel = (evalAddCount + 1.) * freshEncryptionNoise + (keySwitchCount + 1.) * keySwitchingNoise;
     }
 
     return BGVNoiseEstimates(Berr, Bkey, expansionFactor, freshEncryptionNoise, keySwitchingNoise, modSwitchingNoise,
@@ -151,7 +159,7 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
+        lcmCyclOrderPtm = static_cast<uint64_t>(pow2ptm) * plaintextModulus;
     }
     else {
         lcmCyclOrderPtm = cyclOrder;
@@ -347,10 +355,10 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
     cryptoParamsRNS->SetFloodingDistributionParameter(noise_param);
 }
 
-bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder,
-                                                uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
-                                                uint32_t numPartQ, uint32_t numHops) const {
+bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                                        uint32_t evalAddCount, uint32_t keySwitchCount,
+                                                        uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
+                                                        uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     uint32_t ptm                     = cryptoParamsBGVRNS->GetPlaintextModulus();
@@ -451,8 +459,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
 
     uint32_t auxTowers = 0;
     if (ksTech == HYBRID) {
-        auto hybridKSInfo =
-            CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes, auxBits, true);
+        auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, dcrtBits, extraModSize, numPrimes,
+                                                              auxBits, scalTech, true);
         qBound += std::get<0>(hybridKSInfo);
         auxTowers = std::get<1>(hybridKSInfo);
     }
@@ -484,7 +492,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                     numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
                     (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0,
                     (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
-                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, false);
+                    (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size(), auxBits, scalTech, false);
                 newQBound += std::get<0>(hybridKSInfo);
             }
         } while (qBound < newQBound);
@@ -511,7 +519,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        modulusOrder = (uint64_t)pow2ptm * plaintextModulus;
+        modulusOrder = static_cast<uint64_t>(pow2ptm) * plaintextModulus;
 
         // Get the largest prime with size less or equal to firstModSize bits.
         moduliQ[0] = LastPrime<NativeInteger>(firstModSize, modulusOrder);
@@ -592,10 +600,10 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         else {
             // set batchsize to the actual batchsize i.e. n/d where d is the
             // order of ptm mod CyclOrder
-            a = (uint64_t)ptm % cyclOrder;
+            a = static_cast<uint64_t>(ptm) % cyclOrder;
             b = 1;
             while (a != 1) {
-                a = ((uint64_t)(a * ptm)) % cyclOrder;
+                a = static_cast<uint64_t>(a * ptm) % cyclOrder;
                 b++;
             }
 
