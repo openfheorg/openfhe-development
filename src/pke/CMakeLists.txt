@@ -121,7 +121,7 @@ if( BUILD_STATIC )
 	set(_pal_pke_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
 endif()
 
-# === MySQL UDF Plugin ===
+# === HPDIC MOD: MySQL UDF Plugin ===
 add_library(hpdic_hermes SHARED udf/hpdic_hermes.cpp)
 
 target_include_directories(hpdic_hermes PRIVATE
