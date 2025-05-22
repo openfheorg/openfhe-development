@@ -120,3 +120,24 @@ if( BUILD_STATIC )
 	get_target_property(_compile_defs_static OPENFHEpke_static COMPILE_DEFINITIONS)
 	set(_pal_pke_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
 endif()
+
+# === MySQL UDF Plugin ===
+add_library(hpdic_hermes SHARED udf/hpdic_hermes.cpp)
+
+target_include_directories(hpdic_hermes PRIVATE
+	${PKE_INCLUDE_DIRS}
+	${CORE_INCLUDE_DIRS}
+	/usr/include/mysql
+)
+
+target_link_libraries(hpdic_hermes
+	PUBLIC OPENFHEpke
+	PUBLIC OPENFHEcore
+	PUBLIC OPENFHEbinfhe
+	${THIRDPARTYLIBS}
+	${OpenMP_CXX_FLAGS}
+)
+
+set_target_properties(hpdic_hermes PROPERTIES
+	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mysqlplugin
+)
