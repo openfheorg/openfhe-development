@@ -122,22 +122,46 @@ if( BUILD_STATIC )
 endif()
 
 # === HPDIC MOD: MySQL UDF Plugin ===
-add_library(hpdic_hermes SHARED udf/hpdic_hermes.cpp)
+# add_library(hpdic_hermes SHARED udf/hpdic_hermes.cpp)
 
-target_include_directories(hpdic_hermes PRIVATE
-	${PKE_INCLUDE_DIRS}
-	${CORE_INCLUDE_DIRS}
-	/usr/include/mysql
-)
+# target_include_directories(hpdic_hermes PRIVATE
+# ${PKE_INCLUDE_DIRS}
+# ${CORE_INCLUDE_DIRS}
+# /usr/include/mysql
+# )
 
-target_link_libraries(hpdic_hermes
-	PUBLIC OPENFHEpke
-	PUBLIC OPENFHEcore
-	PUBLIC OPENFHEbinfhe
-	${THIRDPARTYLIBS}
-	${OpenMP_CXX_FLAGS}
-)
+# target_link_libraries(hpdic_hermes
+# PUBLIC OPENFHEpke
+# PUBLIC OPENFHEcore
+# PUBLIC OPENFHEbinfhe
+# ${THIRDPARTYLIBS}
+# ${OpenMP_CXX_FLAGS}
+# )
 
-set_target_properties(hpdic_hermes PROPERTIES
-	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mysqlplugin
-)
+# set_target_properties(hpdic_hermes PROPERTIES
+# LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mysqlplugin
+# )
+file(GLOB UDF_SOURCES "udf/*.cpp")
+
+foreach(udf_src ${UDF_SOURCES})
+	get_filename_component(udf_name ${udf_src} NAME_WE)
+	add_library(${udf_name} SHARED ${udf_src})
+
+	target_include_directories(${udf_name} PRIVATE
+		${PKE_INCLUDE_DIRS}
+		${CORE_INCLUDE_DIRS}
+		/usr/include/mysql
+	)
+
+	target_link_libraries(${udf_name}
+		PUBLIC OPENFHEpke
+		PUBLIC OPENFHEcore
+		PUBLIC OPENFHEbinfhe
+		${THIRDPARTYLIBS}
+		${OpenMP_CXX_FLAGS}
+	)
+
+	set_target_properties(${udf_name} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mysqlplugin
+	)
+endforeach()
