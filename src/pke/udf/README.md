@@ -1,79 +1,134 @@
 /==============================================\
 |          HPDIC MOD: Project Hermes           |
 |         OpenFHE + MySQL Integration          |
-|           dzhao@cs.washington.edu            |
+|           <dzhao@cs.washington.edu>          |
 \==============================================/
 
-This directory contains a MySQL UDF plugin named HERMES_ENC_SINGULAR, developed using
-the OpenFHE library (BFV scheme). The plugin demonstrates native homomorphic encryption
-over integer inputs inside MySQL queries, with debug string output for verification.
+This directory contains a MySQL UDF plugin module named **Hermes_Singular**, built using
+the OpenFHE library (BFV scheme). It demonstrates how single-slot homomorphic encryption
+can be natively integrated into relational queries, including encryption, decryption, and
+homomorphic evaluation operations inside MySQL.
 
 -------------------------------------------------------------------------------
+
+SUPPORTED UDFs (BFV, single-slot)
+-------------------------------------------------------------------------------
+
+The plugin registers the following UDFs:
+
+- `HERMES_ENC_SINGULAR_BFV(INT)` → `LONGTEXT`  
+  Encrypts a single integer into a base64-encoded BFV ciphertext.
+
+- `HERMES_DEC_SINGULAR_BFV(LONGTEXT)` → `INT`  
+  Decrypts a base64-encoded ciphertext and returns the original plaintext.
+
+- `HERMES_SUM_BFV(LONGTEXT)` → `INT`  
+  Aggregates ciphertexts using homomorphic addition and returns the decrypted total.
+  Fully supports `GROUP BY` SQL queries as a native aggregate function.
+
+- `HERMES_ENC_SINGULAR(INT|STRING)` → `STRING`  
+  A debug-only variant that returns internal memory address, decrypted value,
+  and ciphertext size as a printable string. Useful for pointer debugging and tracing.
+
+-------------------------------------------------------------------------------
+
 FILES IN THIS DIRECTORY
 -------------------------------------------------------------------------------
 
-  hpdic_hermes_encsingular.cpp
-      Core plugin implementation. Registers a UDF named HERMES_ENC_SINGULAR,
-      encrypts a single INT input using OpenFHE BFV, and returns a debug string
-      (pointer + decrypted value + ciphertext size).
+- `hpdic_hermes_singular.cpp`  
+  Main plugin source file. Implements the BFV-based UDFs with MySQL loadable function interface.
 
-  test_encsingular.sh
-      One-click test script. Builds the plugin, copies the .so and OpenFHE libs
-      to the MySQL plugin directory, injects LD_LIBRARY_PATH via systemd,
-      restarts MySQL, creates a test table, registers the UDF, and runs a SELECT query.
+- `test_singular.sh`  
+  One-click setup + demo script. Compiles the plugin, installs shared objects,
+  configures MySQL environment, and runs full encryption/decryption/aggregation tests.
 
-  deploy_hermes_noinput.sh
-      Alternate setup script for testing a plugin that does not take input
-      (used for isolated plugin loading tests).
+- `deploy_hermes_noinput.sh`  
+  Minimal plugin load check (for `no-input` UDFs or debugging deployment issues).
 
-  register_hermes_udf.sql
-      SQL script to DROP + CREATE the UDF inside MySQL.
+- `register_hermes_udf.sql`  
+  Registers the plugin’s UDFs inside MySQL via SQL commands.
 
-  tbl_create_employee.sh
-      Initializes a toy table `employee(id, name, salary)` with example data.
+- `tbl_create_employee.sh`  
+  Initializes a demo table `employee(id, name, salary)` with sample values.
 
-  README.md
-      This file.
+- `README.md`  
+  This file.
 
 -------------------------------------------------------------------------------
+
 HOW TO RUN
 -------------------------------------------------------------------------------
 
-From this directory, execute:
+Simply execute:
 
-    ./test_encsingular.sh
+```bash
+./test_singular.sh
+```
 
-This will compile the plugin, set up the MySQL runtime environment, and run:
+This will:
 
-    SELECT id, name, CAST(HERMES_ENC_SINGULAR(salary) as CHAR) FROM employee;
+1. Build and install the plugin + OpenFHE shared libs.
+2. Patch MySQL systemd service to support dynamic OpenFHE linkage.
+3. Restart MySQL with new environment.
+4. Register and invoke the following test queries:
 
-You should see output like:
+#### Encrypt + insert
 
-    +----+-------+--------------------------------------------+
-    | id | name  | HERMES_ENC_SINGULAR(salary)                |
-    +----+-------+--------------------------------------------+
-    |  1 | Alice | 0x7fae0001b2c0 (5200, size=136)            |
-    |  2 | Bob   | 0x7fae0001b2c0 (4800, size=136)            |
-    +----+-------+--------------------------------------------+
+```sql
+INSERT INTO employee_enc_bfv (id, name, salary_enc_bfv)
+SELECT id, name, HERMES_ENC_SINGULAR_BFV(salary)
+FROM employee;
+```
 
-Each output is a debug string showing:
-  - the ciphertext pointer (only valid within this process)
-  - the decrypted plaintext (verification)
-  - the internal ciphertext object size in bytes
+#### Decrypt
+
+```sql
+SELECT id, name, HERMES_DEC_SINGULAR_BFV(salary_enc_bfv) AS salary_plain
+FROM employee_enc_bfv;
+```
+
+#### Homomorphic sum
+
+```sql
+SELECT department, HERMES_SUM_BFV(salary_enc_bfv) AS total_salary
+FROM employee_enc_grouped
+GROUP BY department;
+```
+
+Expected output:
+
+```
++-------------+--------------+
+| department  | total_salary |
++-------------+--------------+
+| ENG         |        11900 |
+| HR          |        10000 |
++-------------+--------------+
+```
 
 -------------------------------------------------------------------------------
+
 NOTES
 -------------------------------------------------------------------------------
 
-- This is a research prototype, not a secure or persistent encryption layer.
-- Ciphertexts are not serialized or stored between queries.
-- All cryptographic state is held globally in memory and reused.
+- This is a research prototype for **single-slot BFV** encryption. It does not yet support:
+  - Multi-slot packed encodings
+  - Rotation / EvalSum / SIMD slotwise operations
+  - External key management or key separation
+
+- All cryptographic state (context, keys) is stored statically in plugin memory.
+
+- Base64 is used for serialization to ensure compatibility with `TEXT` and `LONGTEXT` SQL types.
+
+- This prototype enables **true encrypted SQL workflows** inside MySQL, including encrypted insert, select, group-by aggregation, and round-trip decryption.
 
 -------------------------------------------------------------------------------
+
 CONTACT
 -------------------------------------------------------------------------------
 
 Dongfang Zhao  
-HPDIC Lab, University of Washington  
-Email: dzhao@cs.washington.edu  
-Website: https://faculty.washington.edu/dzhao
+High-Performance Data Intelligence Computing (HPDIC) Lab  
+University of Washington  
+Email: <dzhao@cs.washington.edu>  
+Website: <https://faculty.washington.edu/dzhao>

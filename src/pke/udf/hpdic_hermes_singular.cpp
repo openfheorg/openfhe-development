@@ -1,3 +1,44 @@
+/*
+ * HERMES MySQL UDF Plugin
+ * ----------------------------------------------
+ * This file implements a set of MySQL user-defined functions (UDFs)
+ * that support homomorphic encryption (HE) operations via OpenFHE,
+ * including encryption, decryption, and ciphertext aggregation.
+ *
+ * Author: Dongfang Zhao
+ * Institution: University of Washington
+ * Last Updated: 2025
+ *
+ * Overview:
+ * This plugin provides a minimal pipeline for performing encrypted
+ * computation over single-slot BFV ciphertexts inside MySQL.
+ *
+ * Key Features:
+ * - `HERMES_ENC_SINGULAR_BFV`: Encrypts an integer input into a BFV ciphertext (base64).
+ * - `HERMES_DEC_SINGULAR_BFV`: Decrypts a base64-encoded BFV ciphertext back to plaintext.
+ * - `HERMES_SUM_BFV`: A true SQL-compliant AGGREGATE FUNCTION that performs homomorphic summation over BFV ciphertexts and returns the plaintext total.
+ * - `HERMES_ENC_SINGULAR`: A debugging variant that returns a pointer string and decrypted value preview.
+ *
+ * Technical Highlights:
+ * - Uses OpenFHE (BFV scheme) with plaintext modulus 65537 and multiplicative depth 2.
+ * - Implements MySQL’s UDF interface including full six-piece aggregation (init, add, func, clear, reset, deinit).
+ * - Supports direct integration with SQL queries including GROUP BY.
+ * - Encodes and decodes ciphertexts using OpenFHE's binary serializer and manual base64 encoding.
+ *
+ * Limitations:
+ * - Only supports single-slot packed plaintexts (i.e., vectors of size 1).
+ * - Encryption and decryption use static, in-memory keys shared across all UDF calls.
+ * - No support yet for key separation or rotation.
+ *
+ * Recommended Usage:
+ *   SELECT HERMES_SUM_BFV(salary_enc_bfv) FROM employee_enc_bfv;
+ *   SELECT department, HERMES_SUM_BFV(salary_enc_bfv) FROM employee_enc_bfv GROUP BY department;
+ *   INSERT INTO table (...) VALUES (..., HERMES_ENC_SINGULAR_BFV(12345));
+ *
+ * Note:
+ * This code is part of the HERMES project exploring practical encrypted data processing inside relational databases.
+ */
+
 #include <mysql.h>
 #include <cstring>
 #include <iostream>
@@ -8,6 +49,33 @@
 #include "openfhe.h"
 
 using namespace lbcrypto;
+
+// ========== 聚合上下文结构 ==========
+struct HermesSumContext {
+    Ciphertext<DCRTPoly> acc;
+    bool initialized;
+};
+
+// ========== Base64 解码 ==========
+static std::string decodeBase64(const std::string& in) {
+    static const std::string b64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string out;
+    std::vector<int> T(256, -1);
+    for (int i = 0; i < 64; i++)
+        T[b64_chars[i]] = i;
+    int val = 0, valb = -8;
+    for (uint8_t c : in) {
+        if (T[c] == -1)
+            break;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(char((val >> valb) & 0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
 
 // === 全局上下文 ===
 CryptoContext<DCRTPoly> g_context;
@@ -36,6 +104,89 @@ void InitBFVContext() {
 }
 
 extern "C" {
+
+// ========== INIT ==========
+bool HERMES_SUM_BFV_init(UDF_INIT* initid, UDF_ARGS* args, char* message) {
+    if (args->arg_count != 1 || args->arg_type[0] != STRING_RESULT) {
+        std::strcpy(message, "HERMES_SUM_BFV expects one base64-encoded ciphertext string.");
+        return 1;
+    }
+    auto* ctx          = new HermesSumContext();
+    ctx->initialized   = false;
+    initid->ptr        = reinterpret_cast<char*>(ctx);
+    initid->maybe_null = 1;
+    return 0;
+}
+
+// ========== ADD ==========
+bool HERMES_SUM_BFV_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char* error) {
+    try {
+        InitBFVContext();
+        if (!args->args[0])
+            return 0;
+
+        std::string encoded(args->args[0], args->lengths[0]);
+        std::string bin = decodeBase64(encoded);
+        std::stringstream ss(bin);
+
+        Ciphertext<DCRTPoly> ct;
+        Serial::Deserialize(ct, ss, SerType::BINARY);
+
+        auto* ctx = reinterpret_cast<HermesSumContext*>(initid->ptr);
+        if (!ctx->initialized) {
+            ctx->acc         = ct;
+            ctx->initialized = true;
+        }
+        else {
+            ctx->acc = g_context->EvalAdd(ctx->acc, ct);
+        }
+        return 0;
+    }
+    catch (...) {
+        *is_null = 1;
+        *error   = 1;
+        return 1;
+    }
+}
+
+// ========== FUNC ==========
+long long HERMES_SUM_BFV(UDF_INIT* initid, UDF_ARGS*, char* is_null, char* error) {
+    try {
+        InitBFVContext();
+        auto* ctx = reinterpret_cast<HermesSumContext*>(initid->ptr);
+        if (!ctx->initialized) {
+            *is_null = 1;
+            return 0;
+        }
+        Plaintext pt;
+        g_context->Decrypt(g_kp.secretKey, ctx->acc, &pt);
+        pt->SetLength(1);
+        auto packed = pt->GetPackedValue();
+        return static_cast<long long>(packed.empty() ? 0 : packed[0]);
+    }
+    catch (...) {
+        *is_null = 1;
+        *error   = 1;
+        return 0;
+    }
+}
+
+// ========== CLEAR ==========
+void HERMES_SUM_BFV_clear(UDF_INIT* initid, char*, char*) {
+    auto* ctx        = reinterpret_cast<HermesSumContext*>(initid->ptr);
+    ctx->initialized = false;
+}
+
+// ========== RESET ==========
+bool HERMES_SUM_BFV_reset(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char* error) {
+    HERMES_SUM_BFV_clear(initid, is_null, error);
+    return HERMES_SUM_BFV_add(initid, args, is_null, error);
+}
+
+// ========== DEINIT ==========
+void HERMES_SUM_BFV_deinit(UDF_INIT* initid) {
+    delete reinterpret_cast<HermesSumContext*>(initid->ptr);
+}
 
 bool HERMES_DEC_SINGULAR_BFV_init(UDF_INIT* initid, UDF_ARGS* args, char* message) {
     if (args->arg_count != 1 || args->arg_type[0] != STRING_RESULT) {
