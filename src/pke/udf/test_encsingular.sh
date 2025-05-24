@@ -81,3 +81,30 @@ SELECT id, name, ${UDF_NAME}(salary) AS enc_salary FROM employee;
 EOF
 
 echo "[✓] 插件 ${PLUGIN_NAME} 编译 + 部署 + 测试全部完成"
+
+# ===========================================
+# ✅ Step 7: Materialize Encrypted Table
+# ===========================================
+
+echo "[*] Step 7: 加密字段并生成 employee_enc 表 ..."
+mysql -u "$MYSQL_USER" -p"$MYSQL_PASS" <<EOF
+USE hpdic_db;
+
+-- 创建新表（如已存在则重建）
+DROP TABLE IF EXISTS employee_enc;
+CREATE TABLE employee_enc (
+    id INT,
+    name VARCHAR(255),
+    enc_salary TEXT
+);
+
+-- 插入加密数据
+INSERT INTO employee_enc (id, name, enc_salary)
+SELECT id, name, ${UDF_NAME}(salary)
+FROM employee;
+
+-- 可选：查看加密表内容
+SELECT * FROM employee_enc LIMIT 5;
+EOF
+
+echo "[✓] 已完成加密表 employee_enc 的生成和填充"
