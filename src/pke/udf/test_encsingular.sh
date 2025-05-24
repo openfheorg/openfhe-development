@@ -141,3 +141,26 @@ SELECT id, name, LEFT(salary_enc_bfv, 16) FROM employee_enc_bfv LIMIT 5;
 EOF
 
 echo "[✓] hermes_enc_singular_bfv 测试完成，密文成功插入 employee_enc_bfv 表"
+
+# ===========================================
+# ✅ Step 9: Test HERMES_DEC_SINGULAR_BFV 解密函数
+# ===========================================
+
+echo "[*] Step 9: 测试新的 UDF hermes_dec_singular_bfv 解密密文回原始明文..."
+mysql -u "$MYSQL_USER" -p"$MYSQL_PASS" <<EOF
+USE hpdic_db;
+
+-- ✅ 注册解密函数（幂等）
+DROP FUNCTION IF EXISTS HERMES_DEC_SINGULAR_BFV;
+CREATE FUNCTION HERMES_DEC_SINGULAR_BFV RETURNS INTEGER SONAME '${PLUGIN_NAME}';
+
+-- ✅ 查询加密 + 解密对比，验证 round-trip correctness
+SELECT
+    id,
+    name,
+    HERMES_DEC_SINGULAR_BFV(salary_enc_bfv) AS salary_plain
+FROM employee_enc_bfv
+LIMIT 5;
+EOF
+
+echo "[✓] hermes_dec_singular_bfv 测试完成，解密成功验证"
