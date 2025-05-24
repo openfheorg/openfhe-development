@@ -142,10 +142,18 @@ endif()
 # LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/mysqlplugin
 # )
 file(GLOB UDF_SOURCES "udf/*.cpp")
+set(FORCE_SERIALIZATION_SRC udf/force_serialization_link.cpp)
 
 foreach(udf_src ${UDF_SOURCES})
+	# 跳过 force_serialization_link.cpp 自身（它不是主插件）
+	if(udf_src STREQUAL ${FORCE_SERIALIZATION_SRC})
+		continue()
+	endif()
+
 	get_filename_component(udf_name ${udf_src} NAME_WE)
-	add_library(${udf_name} SHARED ${udf_src})
+
+	# 👇 关键：每个插件 .so 都加上这个 cpp 作为链接输入
+	add_library(${udf_name} SHARED ${udf_src} ${FORCE_SERIALIZATION_SRC})
 
 	target_include_directories(${udf_name} PRIVATE
 		${PKE_INCLUDE_DIRS}
