@@ -108,3 +108,36 @@ SELECT * FROM employee_enc LIMIT 5;
 EOF
 
 echo "[✓] 已完成加密表 employee_enc 的生成和填充"
+
+# ===========================================
+# ✅ Step 8: Test HERMES_ENC_SINGULAR_BFV 密文输出
+# ===========================================
+
+echo "[*] Step 8: 测试新的 UDF hermes_enc_singular_bfv 返回密文（base64 编码）..."
+mysql -u "$MYSQL_USER" -p"$MYSQL_PASS" <<EOF
+USE hpdic_db;
+
+-- ✅ 注册新函数（只需执行一次，但为了脚本幂等可放这里）
+DROP FUNCTION IF EXISTS HERMES_ENC_SINGULAR_BFV;
+CREATE FUNCTION HERMES_ENC_SINGULAR_BFV RETURNS STRING SONAME '${PLUGIN_NAME}';
+
+-- 单独调用新函数查看输出
+SELECT id, name, salary, LEFT(HERMES_ENC_SINGULAR_BFV(salary), 16) AS enc_bfv_preview16
+FROM employee;
+
+-- 可选：将 base64 密文插入新表验证落库兼容性
+DROP TABLE IF EXISTS employee_enc_bfv;
+CREATE TABLE employee_enc_bfv (
+    id INT,
+    name VARCHAR(255),
+    salary_enc_bfv LONGTEXT
+);
+
+INSERT INTO employee_enc_bfv (id, name, salary_enc_bfv)
+SELECT id, name, HERMES_ENC_SINGULAR_BFV(salary)
+FROM employee;
+
+SELECT id, name, LEFT(salary_enc_bfv, 16) FROM employee_enc_bfv LIMIT 5;
+EOF
+
+echo "[✓] hermes_enc_singular_bfv 测试完成，密文成功插入 employee_enc_bfv 表"

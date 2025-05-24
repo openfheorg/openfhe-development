@@ -36,6 +36,80 @@ void InitBFVContext() {
 
 extern "C" {
 
+    bool HERMES_ENC_SINGULAR_BFV_init(UDF_INIT* initid, UDF_ARGS* args, char* message) {
+        if (args->arg_count != 1 || args->arg_type[0] != INT_RESULT) {
+            std::strcpy(message, "HERMES_ENC_SINGULAR_BFV requires 1 integer argument.");
+            return 1;
+        }
+    
+        initid->maybe_null = 1;
+        initid->max_length = 65535; // TEXT 支持
+        initid->ptr = nullptr;
+        return 0;
+    }
+
+    char* HERMES_ENC_SINGULAR_BFV(UDF_INIT* initid, UDF_ARGS* args, char* /*result*/, unsigned long* length,
+                                  char* is_null, char* error) {
+        try {
+            InitBFVContext();
+
+            if (!args->args[0]) {
+                *is_null = 1;
+                return nullptr;
+            }
+
+            int64_t val  = *reinterpret_cast<long long*>(args->args[0]);
+            Plaintext pt = g_context->MakePackedPlaintext({val});
+            pt->SetLength(1);
+
+            auto ct = g_context->Encrypt(g_kp.publicKey, pt);
+
+            // 序列化密文
+            std::stringstream ss;
+            Serial::Serialize(ct, ss, SerType::BINARY);
+            std::string raw = ss.str();
+
+            // Base64 编码
+            static const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            auto encode64                   = [&](const std::string& input) -> std::string {
+                std::string out;
+                int val = 0, valb = -6;
+                for (uint8_t c : input) {
+                    val = (val << 8) + c;
+                    valb += 8;
+                    while (valb >= 0) {
+                        out.push_back(base64_chars[(val >> valb) & 0x3F]);
+                        valb -= 6;
+                    }
+                }
+                if (valb > -6)
+                    out.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+                while (out.size() % 4)
+                    out.push_back('=');
+                return out;
+            };
+
+            std::string encoded = encode64(raw);
+            char* output        = strdup(encoded.c_str());
+
+            *length  = encoded.size();
+            *is_null = 0;
+            *error   = 0;
+            return output;
+        }
+        catch (...) {
+            *is_null = 1;
+            return nullptr;
+        }
+    }
+
+void HERMES_ENC_SINGULAR_BFV_deinit(UDF_INIT* initid) {
+    if (initid->ptr) {
+        delete[] static_cast<char*>(initid->ptr);
+        initid->ptr = nullptr;
+    }
+}
+
 bool HERMES_ENC_SINGULAR_init(UDF_INIT* initid, UDF_ARGS* args, char* message) {
     if (args->arg_count != 1) {
         std::strcpy(message, "HERMES_ENC_SINGULAR expects exactly 1 argument.");
