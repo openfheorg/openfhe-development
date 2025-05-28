@@ -32,28 +32,27 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_SCHEME_H
 #define LBCRYPTO_CRYPTO_BASE_SCHEME_H
 
+#include "ciphertext.h"
 #include "key/evalkey-fwd.h"
-#include "schemebase/base-parametergeneration.h"
+#include "key/keypair.h"
 #include "keyswitch/keyswitch-base.h"
+#include "scheme/scheme-swch-params.h"
 #include "schemebase/base-advancedshe.h"
+#include "schemebase/base-fhe.h"
 #include "schemebase/base-leveledshe.h"
 #include "schemebase/base-multiparty.h"
-#include "schemebase/base-fhe.h"
+#include "schemebase/base-parametergeneration.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-pre.h"
-#include "ciphertext.h"
-
-#include "key/keypair.h"
-#include "scheme/scheme-swch-params.h"
-
-#include "utils/exception.h"
 #include "utils/caller_info.h"
+#include "utils/exception.h"
 
-#include <vector>
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -1140,16 +1139,18 @@ public:
     // Advanced SHE LINEAR WEIGHTED SUM
     /////////////////////////////////////
 
-    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
-                                               const std::vector<double>& constantVec) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
+                                       const std::vector<VectorDataType>& constantVec) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW("Input ciphertext vector is empty");
         return m_AdvancedSHE->EvalLinearWSum(ciphertextVec, constantVec);
     }
 
-    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
-                                                      const std::vector<double>& constantVec) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
+                                              const std::vector<VectorDataType>& constantVec) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW("Input ciphertext vector is empty");
@@ -1160,53 +1161,51 @@ public:
     // Advanced SHE EVAL POLYNOMIAL
     /////////////////////////////////////
 
-    Ciphertext<Element> EvalPoly(ConstCiphertext<Element> ciphertext, const std::vector<double>& coefficients) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coefficients,
+                                 size_t precomp = 0) const {
         VerifyAdvancedSHEEnabled(__func__);
-        if (!ciphertext)
-            OPENFHE_THROW("Input ciphertext is nullptr");
-        return m_AdvancedSHE->EvalPoly(ciphertext, coefficients);
+        return m_AdvancedSHE->EvalPoly(ciphertext, coefficients, precomp);
     }
 
-    Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element> ciphertext,
-                                       const std::vector<double>& coefficients) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
+                                       const std::vector<VectorDataType>& coefficients) const {
         VerifyAdvancedSHEEnabled(__func__);
-        if (!ciphertext)
-            OPENFHE_THROW("Input ciphertext is nullptr");
         return m_AdvancedSHE->EvalPolyLinear(ciphertext, coefficients);
     }
 
-    Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element> ciphertext, const std::vector<double>& coefficients) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& ciphertext,
+                                   const std::vector<VectorDataType>& coefficients, size_t precomp = 0) const {
         VerifyAdvancedSHEEnabled(__func__);
-        if (!ciphertext)
-            OPENFHE_THROW("Input ciphertext is nullptr");
-        return m_AdvancedSHE->EvalPolyPS(ciphertext, coefficients);
+        return m_AdvancedSHE->EvalPolyPS(ciphertext, coefficients, precomp);
     }
 
     /////////////////////////////////////
     // Advanced SHE EVAL CHEBYSHEV SERIES
     /////////////////////////////////////
 
-    Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
-                                            const std::vector<double>& coefficients, double a, double b) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
+                                            const std::vector<VectorDataType>& coefficients, double a, double b) const {
         VerifyAdvancedSHEEnabled(__func__);
-        if (!ciphertext)
-            OPENFHE_THROW("Input ciphertext is nullptr");
         return m_AdvancedSHE->EvalChebyshevSeries(ciphertext, coefficients, a, b);
     }
 
-    Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element> ciphertext,
-                                                  const std::vector<double>& coefficients, double a, double b) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
+                                                  const std::vector<VectorDataType>& coefficients, double a,
+                                                  double b) const {
         VerifyAdvancedSHEEnabled(__func__);
-        if (!ciphertext)
-            OPENFHE_THROW("Input ciphertext is nullptr");
         return m_AdvancedSHE->EvalChebyshevSeriesLinear(ciphertext, coefficients, a, b);
     }
 
-    Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element> ciphertext,
-                                              const std::vector<double>& coefficients, double a, double b) const {
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
+                                              const std::vector<VectorDataType>& coefficients, double a,
+                                              double b) const {
         VerifyAdvancedSHEEnabled(__func__);
-        if (!ciphertext)
-            OPENFHE_THROW("Input ciphertext is nullptr");
         return m_AdvancedSHE->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
     }
 
@@ -1427,7 +1426,6 @@ public:
                             uint32_t correctionFactor = 0, bool precompute = true) {
         VerifyFHEEnabled(__func__);
         m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute);
-        return;
     }
 
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
@@ -1439,13 +1437,37 @@ public:
     void EvalBootstrapPrecompute(const CryptoContextImpl<Element>& cc, uint32_t slots = 0) {
         VerifyFHEEnabled(__func__);
         m_FHE->EvalBootstrapPrecompute(cc, slots);
-        return;
     }
 
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalBootstrap(ciphertext, numIterations, precision);
+    }
+
+    void EvalFuncBTSetup(const CryptoContextImpl<Element>& cc, uint32_t numSlots, uint32_t digitSize,
+                         std::vector<std::complex<double>>& coeffs, std::tuple<uint32_t, uint32_t> dim1,
+                         std::tuple<uint32_t, uint32_t> levelBudget, long double scaleMod,
+                         uint32_t depthLeveledComputation = 0, size_t order = 1) {
+        VerifyFHEEnabled(__func__);
+        m_FHE->EvalFuncBTSetup(cc, numSlots, digitSize, coeffs, dim1, levelBudget, scaleMod, depthLeveledComputation,
+                               order);
+    }
+
+    Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, std::vector<std::complex<double>>& coeffs,
+                                   uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
+                                   uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalFuncBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, precomp,
+                                 order);
+    }
+
+    Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
+                                               const std::vector<std::complex<double>>& coefficientsCheb, double a,
+                                               double b, const std::vector<std::complex<double>>& coefficientsHerm,
+                                               size_t precomp = 0) {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalHermiteTrigSeries(ciphertext, coefficientsCheb, a, b, coefficientsHerm, precomp);
     }
 
     // SCHEMESWITCHING methods
@@ -1558,6 +1580,7 @@ public:
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->GetBinCCForSchemeSwitch();
     }
+
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
         VerifySchemeSwitchEnabled(__func__);
         m_SchemeSwitch->SetBinCCForSchemeSwitch(ccLWE);
@@ -1567,6 +1590,7 @@ public:
         VerifySchemeSwitchEnabled(__func__);
         return m_SchemeSwitch->GetSwkFC();
     }
+
     void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
         VerifySchemeSwitchEnabled(__func__);
         m_SchemeSwitch->SetSwkFC(FHEWtoCKKSswk);

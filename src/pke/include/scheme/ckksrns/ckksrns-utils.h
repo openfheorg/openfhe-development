@@ -45,13 +45,52 @@
 
 namespace lbcrypto {
 
+template <typename VectorDataType>
 struct longDiv {
-    std::vector<double> q;
-    std::vector<double> r;
-
+    std::vector<VectorDataType> q;
+    std::vector<VectorDataType> r;
     longDiv() {}
-    longDiv(const std::vector<double>& q0, const std::vector<double>& r0) : q(q0), r(r0) {}
+    longDiv(const std::vector<VectorDataType>& q0, const std::vector<VectorDataType>& r0) : q(q0), r(r0) {}
 };
+
+template <typename VectorDataType>
+struct ctxtPowers {
+    std::vector<VectorDataType> powers;
+    std::vector<VectorDataType> powers2;
+    VectorDataType power2km1;
+    ctxtPowers() {}
+    ctxtPowers(const std::vector<VectorDataType>& powers0, const std::vector<VectorDataType>& powers20,
+               const VectorDataType& power2km10)
+        : powers(powers0), powers2(powers20), power2km1(power2km10) {}
+    ~ctxtPowers() {}
+};
+
+inline bool IsNotEqualOne(double v) {
+    constexpr double delta = 0x1p-30;
+    return std::fabs(v - 1.0) >= delta;
+}
+inline bool IsNotEqualZero(double v) {
+    constexpr double delta = 0x1p-30;
+    return std::fabs(v) >= delta;
+}
+inline bool IsNotEqualOne(std::complex<double> val) {
+    return IsNotEqualOne(val.real()) || IsNotEqualZero(val.imag());
+}
+inline bool IsNotEqualZero(std::complex<double> val) {
+    return IsNotEqualZero(val.real()) || IsNotEqualZero(val.imag());
+}
+
+inline double ToReal(double val) {
+    return val;
+}
+
+inline double ToReal(int64_t val) {
+    return val;
+}
+
+inline double ToReal(std::complex<double> val) {
+    return val.real();
+}
 
 /**
  * @brief Gets the degree of a polynomial specified by its coefficients, which is the index of
@@ -59,7 +98,17 @@ struct longDiv {
  * @param coefficients vector of coefficients of a polynomial (can not be empty)
  * @return the integer degree of the polynomial.
  */
-uint32_t Degree(const std::vector<double>& coefficients);
+template <typename VectorDataType>
+uint32_t Degree(const std::vector<VectorDataType>& coefficients) {
+    uint32_t i = coefficients.size();
+    if (i == 0)
+        OPENFHE_THROW("The coefficients vector can not be empty");
+    while (i > 0) {
+        if (IsNotEqualZero(coefficients[--i]))
+            break;
+    }
+    return i;
+}
 
 /**
  * Computes the quotient and remainder of the long division of two polynomials in the power series basis.
@@ -68,7 +117,9 @@ uint32_t Degree(const std::vector<double>& coefficients);
  * @param &g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
-std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
+template <typename VectorDataType>
+std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<VectorDataType>& f,
+                                                          const std::vector<VectorDataType>& g);
 
 /**
  * Computes the quotient and remainder of the long division of two polynomials in the Chebyshev series basis
@@ -77,7 +128,9 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
  * @param &g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
-std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, const std::vector<double>& g);
+template <typename VectorDataType>
+std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector<VectorDataType>& f,
+                                                               const std::vector<VectorDataType>& g);
 
 /**
  * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
@@ -86,8 +139,9 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
  * @param n the degree of a polynomial.
  * @return a vector containing k and m.
  */
-std::vector<uint32_t> ComputeDegreesPS(const uint32_t n);
+std::vector<uint32_t> ComputeDegreesPS(uint32_t n);
 
+uint32_t GetDepthByDegree(size_t degree);
 /**
  * Get the depth for a given vector of coefficients for the Paterson-Stockmeyer algorithm.
  * The functions is based on the table described in src/pke/examples/FUNCTION_EVALUATION.md
@@ -96,7 +150,12 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n);
  * @param isNormalized true if the vector normalized. false is the default value
  * @return multiplicative depth
  */
-uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized = false);
+template <typename VectorDataType>
+uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<VectorDataType>& vec, bool isNormalized = false) {
+    if (vec.size() == 0)
+        OPENFHE_THROW("Cannot perform operation on empty vector. vec.size() == 0");
+    return GetDepthByDegree(vec.size() - 1) - isNormalized;
+}
 
 /**
  * Extracts shifted diagonal of matrix A.

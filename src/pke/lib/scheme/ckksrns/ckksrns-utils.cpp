@@ -33,8 +33,8 @@
 #include "utils/exception.h"
 #include "utils/utilities.h"
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <vector>
 
@@ -82,7 +82,6 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4) {
 enum { UPPER_BOUND_PS = 2204 };
 std::vector<uint32_t> PopulateParameterPS(const uint32_t upperBoundDegree) {
     std::vector<uint32_t> mlist(upperBoundDegree);
-
     std::fill(mlist.begin(), mlist.begin() + 2, 1);            // n in [1,2], m = 1
     std::fill(mlist.begin() + 2, mlist.begin() + 11, 2);       // n in [3,11], m = 2
     std::fill(mlist.begin() + 11, mlist.begin() + 13, 3);      // n in [12,13], m = 3
@@ -99,7 +98,6 @@ std::vector<uint32_t> PopulateParameterPS(const uint32_t upperBoundDegree) {
     std::fill(mlist.begin() + 1083, mlist.begin() + 2015, 6);  // n in [1084,2015], m = 6
     std::fill(mlist.begin() + 2015, mlist.begin() + 2031, 7);  // n in [2016,2031], m = 7
     std::fill(mlist.begin() + 2031, mlist.end(), 6);           // n in [2032,2204], m = 6
-
     return mlist;
 }
 
@@ -107,11 +105,10 @@ std::vector<uint32_t> PopulateParameterPS(const uint32_t upperBoundDegree) {
 // Populate the conversion table Degree-to-Multiplicative Depth
 enum {
     LOWER_BOUND_DEGREE = 5,
-    UPPER_BOUND_DEGREE = 2031,
+    UPPER_BOUND_DEGREE = 261631,
 };
 std::vector<uint32_t> GenerateDepthByDegreeTable() {
-    std::vector<uint32_t> depthTable(UPPER_BOUND_DEGREE+1);
-
+    std::vector<uint32_t> depthTable(UPPER_BOUND_DEGREE + 1);
     std::fill(depthTable.begin(),        depthTable.begin() + 5,     3);  // degree in [0,4], depth = 3 - the Paterson-Stockmeyer algorithm is not used when degree < 5
     std::fill(depthTable.begin() + 5,    depthTable.begin() + 6,     4);  // degree in [5],         depth = 4
     std::fill(depthTable.begin() + 6,    depthTable.begin() + 14,    5);  // degree in [6,13],      depth = 5
@@ -121,62 +118,52 @@ std::vector<uint32_t> GenerateDepthByDegreeTable() {
     std::fill(depthTable.begin() + 120,  depthTable.begin() + 248,   9);  // degree in [120,247],   depth = 9
     std::fill(depthTable.begin() + 248,  depthTable.begin() + 496,  10);  // degree in [248,495],   depth = 10
     std::fill(depthTable.begin() + 496,  depthTable.begin() + 1008, 11);  // degree in [496,1007],  depth = 11
-    std::fill(depthTable.begin() + 1008, depthTable.end(),          12);  // degree in [1008,2031], depth = 12
-
+    std::fill(depthTable.begin() + 1008, depthTable.begin() + 2031, 12);  // degree in [1008,2031], depth = 12
+    std::fill(depthTable.begin() + 2032, depthTable.begin() + 4031, 13);  // degree in [2031,4031], depth = 13
+    std::fill(depthTable.begin() + 4032, depthTable.begin() + 8127, 14);  // degree in [4032,8127], depth = 14
+    std::fill(depthTable.begin() + 8128, depthTable.begin() + 16255, 15);  // degree in [8128, 16255], depth = 15
+    std::fill(depthTable.begin() + 16256, depthTable.begin() + 32639, 16);  // degree in [16256, 32639], depth = 16
+    std::fill(depthTable.begin() + 32640, depthTable.begin() + 65279, 17);  // degree in [32640, 65279], depth = 17
+    std::fill(depthTable.begin() + 65280, depthTable.begin() + 130815, 18);  // degree in [65280, 130815], depth = 18
+    std::fill(depthTable.begin() + 130816, depthTable.end(), 19);  // degree in [130816, 261631], depth = 19
     return depthTable;
 }
 // clang-format on
 
-uint32_t GetDepthByDegree(size_t degree) {
-    static const std::vector<uint32_t> depthTable = GenerateDepthByDegreeTable();
-    if (degree >= LOWER_BOUND_DEGREE && degree <= UPPER_BOUND_DEGREE)
-        return depthTable[degree];
+}  // namespace
 
-    std::string errMsg("Polynomial degree is supported from 5 to 2031 inclusive. Its current value is ");
+uint32_t GetDepthByDegree(size_t degree) {
+    if (degree >= LOWER_BOUND_DEGREE && degree <= UPPER_BOUND_DEGREE)
+        return GenerateDepthByDegreeTable()[degree];
+
+    std::string errMsg("Polynomial degree is supported from " + std::to_string(LOWER_BOUND_DEGREE) + " to " +
+                       std::to_string(UPPER_BOUND_DEGREE) + " inclusive. Its current value is ");
     errMsg += std::to_string(degree);
     OPENFHE_THROW(errMsg);
 }
 
-}  // namespace
-
-inline bool IsNotEqualOne(double v) {
-    constexpr double delta = 0x1p-20;  // 2**-20
-    return std::fabs(v - 1.0) >= delta;
-}
-
-uint32_t Degree(const std::vector<double>& coefficients) {
-    uint32_t i = coefficients.size();
-    if (i == 0)
-        OPENFHE_THROW("The coefficients vector can not be empty");
-    while (i > 0) {
-        if (coefficients[--i] != 0.)
-            break;
-    }
-    return i;
-}
+template struct longDiv<double>;
+template struct longDiv<std::complex<double>>;
 
 /* f and g are vectors of coefficients of the two polynomials. We assume their dominant
 coefficient is not zero. LongDivisionPoly returns the vector of coefficients for the
 quotient and remainder of the division f/g. longDiv is a struct that contains the
 vectors of coefficients for the quotient and rest. */
-std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g) {
-    uint32_t n = Degree(f);
-    uint32_t k = Degree(g);
-
-    if (n != f.size() - 1) {
-        OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divident is zero.");
-    }
-
-    if (k != g.size() - 1) {
-        OPENFHE_THROW("LongDivisionPoly: The dominant coefficient of the divisor is zero.");
-    }
-
+template <typename VectorDataType>
+std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<VectorDataType>& f,
+                                                          const std::vector<VectorDataType>& g) {
+    auto n = Degree(f);
+    if (n != f.size() - 1)
+        OPENFHE_THROW("The dominant coefficient of the divident is zero");
+    auto k = Degree(g);
+    if (k != g.size() - 1)
+        OPENFHE_THROW("The dominant coefficient of the divisor is zero");
     if (n < k)
-        return std::make_shared<longDiv>(std::vector<double>(1), f);
+        return std::make_shared<longDiv<VectorDataType>>(std::vector<VectorDataType>(1), f);
 
-    std::vector<double> q(n - k + 1);
-    std::vector<double> r(f);
-    std::vector<double> d;
+    std::vector<VectorDataType> q(n - k + 1);
+    std::vector<VectorDataType> r(f);
+    std::vector<VectorDataType> d;
     d.reserve(g.size() + n);
 
     while (n >= k) {
@@ -191,16 +178,20 @@ std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const st
 
         // d *= q[n - k]
         std::transform(d.begin(), d.end(), d.begin(),
-                       std::bind(std::multiplies<double>(), std::placeholders::_1, q[n - k]));
+                       std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, q[n - k]));
         // f-=d
-        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<VectorDataType>());
         if (r.size() > 1) {
             n = Degree(r);
             r.resize(n + 1);
         }
     }
-    return std::make_shared<longDiv>(q, r);
+    return std::make_shared<longDiv<VectorDataType>>(q, r);
 }
+
+template std::shared_ptr<longDiv<double>> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
+template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionPoly(const std::vector<std::complex<double>>& f,
+                                                                         const std::vector<std::complex<double>>& g);
 
 /* f and g are vectors of Chebyshev interpolation coefficients of the two polynomials.
 We assume their dominant coefficient is not zero. LongDivisionChebyshev returns the
@@ -208,44 +199,40 @@ vector of Chebyshev interpolation coefficients for the quotient and remainder of
 division f/g. longDiv is a struct that contains the vectors of coefficients for the
 quotient and rest. We assume that the zero-th coefficient is c0, not c0/2 and returns
 the same format.*/
-std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, const std::vector<double>& g) {
-    uint32_t n = Degree(f);
-    uint32_t k = Degree(g);
-
-    if (n != f.size() - 1) {
-        OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
-    }
-
-    if (k != g.size() - 1) {
-        OPENFHE_THROW("LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
-    }
-
+template <typename VectorDataType>
+std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector<VectorDataType>& f,
+                                                               const std::vector<VectorDataType>& g) {
+    auto n = Degree(f);
+    if (n != f.size() - 1)
+        OPENFHE_THROW("The dominant coefficient of the divident is zero");
+    auto k = Degree(g);
+    if (k != g.size() - 1)
+        OPENFHE_THROW("The dominant coefficient of the divisor is zero");
     if (n < k)
-        return std::make_shared<longDiv>(std::vector<double>(1), f);
+        return std::make_shared<longDiv<VectorDataType>>(std::vector<VectorDataType>(1), f);
 
-    std::vector<double> q(n - k + 1);
-    std::vector<double> r(f);
-    std::vector<double> d;
+    std::vector<VectorDataType> q(n - k + 1);
+    std::vector<VectorDataType> r(f);
+    std::vector<VectorDataType> d;
     d.reserve(g.size() + n);
 
     while (n > k) {
         d.clear();
         d.resize(n + 1);
 
-        q[n - k] = 2 * r.back();
+        q[n - k] = 2.0 * r.back();
         if (IsNotEqualOne(g[k]))
             q[n - k] /= g.back();
 
         if (k == n - k) {
-            d.front() = 2 * g[n - k];
+            d.front() = 2.0 * g[n - k];
 
-            for (size_t i = 1; i < 2 * k + 1; i++) {
+            for (size_t i = 1; i < 2 * k + 1; i++)
                 d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(n - k - i)))];
-            }
         }
         else {
             if (k > (n - k)) {
-                d.front() = 2 * g[n - k];
+                d.front() = 2.0 * g[n - k];
                 for (size_t i = 1; i < k - (n - k) + 1; i++) {
                     d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(n - k - i)))] +
                            g[static_cast<size_t>(n - k + i)];
@@ -267,15 +254,15 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
         if (IsNotEqualOne(r.back())) {
             // d *= f[n]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
+                           std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, r.back()));
         }
         if (IsNotEqualOne(g.back())) {
             // d /= g[k]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
+                           std::bind(std::divides<VectorDataType>(), std::placeholders::_1, g.back()));
         }
         // f-=d
-        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<VectorDataType>());
         if (r.size() > 1) {
             n = Degree(r);
             r.resize(n + 1);
@@ -292,24 +279,29 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
         if (IsNotEqualOne(r.back())) {
             // d *= f[n]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::multiplies<double>(), std::placeholders::_1, r.back()));
+                           std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, r.back()));
         }
         if (IsNotEqualOne(g.back())) {
             // d /= g[k]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::divides<double>(), std::placeholders::_1, g.back()));
+                           std::bind(std::divides<VectorDataType>(), std::placeholders::_1, g.back()));
         }
         // f-=d
-        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<double>());
+        std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<VectorDataType>());
         if (r.size() > 1) {
             n = Degree(r);
             r.resize(n + 1);
         }
     }
-    q.front() *= 2;  // Because we want to have [c0] in the last spot, not [c0/2]
+    q.front() *= 2.0;  // Because we want to have [c0] in the last spot, not [c0/2]
 
-    return std::make_shared<longDiv>(q, r);
+    return std::make_shared<longDiv<VectorDataType>>(q, r);
 }
+
+template std::shared_ptr<longDiv<double>> LongDivisionChebyshev(const std::vector<double>& f,
+                                                                const std::vector<double>& g);
+template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionChebyshev(
+    const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
 
 /*	Compute positive integers k,m such that n < k(2^m-1), k is close to sqrt(n/2)
 	and the depth = ceil(log2(k))+m is minimized. Moreover, for that depth the
@@ -318,10 +310,9 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
 	hardcode them for commonly used degrees, and provide a heuristic which
 	minimizes the number of homomorphic multiplications for the rest of the
 	degrees.*/
-std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
-    if (n == 0) {
+std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
+    if (n == 0)
         OPENFHE_THROW("ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
-    }
 
     // index n-1 in the vector corresponds to degree n
     if (n <= UPPER_BOUND_PS) {  // hard-coded values
@@ -332,38 +323,26 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
 
         return std::vector<uint32_t>{k, m};
     }
-    else {  // heuristic for larger degrees
-        std::vector<uint32_t> klist;
-        std::vector<uint32_t> mlist;
-        std::vector<uint32_t> multlist;
 
-        for (size_t k = 1; k <= n; k++) {
-            for (size_t m = 1; m <= static_cast<uint32_t>(std::ceil(log2(n / k) + 1) + 1); m++) {
-                if (n < (k * ((1U << m) - 1))) {
-                    if (std::abs(std::floor(log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1) {
-                        klist.push_back(k);
-                        mlist.push_back(m);
-                        multlist.push_back(k + 2 * m + (1U << (m - 1)) - 4);
-                    }
+    // heuristic for larger degrees
+    std::vector<uint32_t> klist;
+    std::vector<uint32_t> mlist;
+    std::vector<uint32_t> multlist;
+
+    for (size_t k = 1; k <= n; k++) {
+        for (size_t m = 1; m <= static_cast<uint32_t>(std::ceil(log2(n / k) + 1) + 1); m++) {
+            if (n < (k * ((1U << m) - 1))) {
+                if (std::abs(std::floor(log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1) {
+                    klist.push_back(k);
+                    mlist.push_back(m);
+                    multlist.push_back(k + 2 * m + (1U << (m - 1)) - 4);
                 }
             }
         }
-        uint32_t minIndex = std::min_element(multlist.begin(), multlist.end()) - multlist.begin();
-
-        return std::vector<uint32_t>{klist[minIndex], mlist[minIndex]};
     }
-}
+    uint32_t minIndex = std::min_element(multlist.begin(), multlist.end()) - multlist.begin();
 
-uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized) {
-    size_t vecSize = vec.size();
-    if (!vecSize) {
-        OPENFHE_THROW("Cannot perform operation on empty vector. vec.size() == 0");
-    }
-
-    size_t degree      = vecSize - 1;
-    uint32_t multDepth = GetDepthByDegree(degree);
-
-    return (isNormalized) ? (multDepth - 1) : multDepth;
+    return std::vector<uint32_t>{klist[minIndex], mlist[minIndex]};
 }
 
 std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
@@ -721,9 +700,9 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 }
 
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {
-    if (!slots)
+    if (slots == 0)
         OPENFHE_THROW("slots can not be 0");
-    if (!levelBudget)
+    if (levelBudget == 0)
         OPENFHE_THROW("levelBudget can not be 0");
 
     // even for the case of (slots = 1) we need one level for rescaling as (std::log2(1) = 0)
@@ -781,11 +760,7 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
 }
 
 uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
-    if (slots <= 1) {
-        return 1;
-    }
-    // return (1U << (static_cast<uint32_t>(std::log2(ceil(sqrt(slots))))));
-    return (1U << (static_cast<uint32_t>(std::log2(std::ceil(std::sqrt(slots))) + 1)));
+    return (slots <= 1) ? 1 : (1U << (static_cast<uint32_t>(std::log2(std::ceil(std::sqrt(slots))) + 1)));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {

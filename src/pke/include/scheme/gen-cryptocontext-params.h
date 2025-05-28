@@ -305,11 +305,9 @@ public:
     double GetNumAdversarialQueries() const {
         return numAdversarialQueries;
     }
-
     uint32_t GetThresholdNumOfParties() const {
         return thresholdNumOfParties;
     }
-
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }

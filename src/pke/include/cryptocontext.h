@@ -58,11 +58,13 @@
 #include "utils/type_name.h"
 
 #include <algorithm>
+#include <complex>
 #include <functional>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -642,7 +644,6 @@ public:
 
             Serial::Serialize(omap, ser, sertype);
         }
-
         return true;
     }
 
@@ -2640,8 +2641,9 @@ public:
     * @param constantVec    Corresponding weights.
     * @return Weighted sum as a ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
-                                       const std::vector<double>& constantVec) const {
+                                       const std::vector<VectorDataType>& constantVec) const {
         return GetScheme()->EvalLinearWSum(ciphertextVec, constantVec);
     }
 
@@ -2652,7 +2654,8 @@ public:
     * @param ciphertextVec  List of ciphertexts.
     * @return Weighted sum as a ciphertext.
     */
-    Ciphertext<Element> EvalLinearWSum(const std::vector<double>& constantsVec,
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalLinearWSum(const std::vector<VectorDataType>& constantsVec,
                                        std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec) const {
         return EvalLinearWSum(ciphertextVec, constantsVec);
     }
@@ -2664,8 +2667,9 @@ public:
     * @param constantsVec   Corresponding weights.
     * @return Weighted sum as a ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
-                                              const std::vector<double>& constantsVec) const {
+                                              const std::vector<VectorDataType>& constantsVec) const {
         return GetScheme()->EvalLinearWSumMutable(ciphertextVec, constantsVec);
     }
 
@@ -2676,7 +2680,8 @@ public:
     * @param ciphertextVec  List of mutable ciphertexts.
     * @return Weighted sum as a ciphertext.
     */
-    Ciphertext<Element> EvalLinearWSumMutable(const std::vector<double>& constantsVec,
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalLinearWSumMutable(const std::vector<VectorDataType>& constantsVec,
                                               std::vector<Ciphertext<Element>>& ciphertextVec) const {
         return EvalLinearWSumMutable(ciphertextVec, constantsVec);
     }
@@ -2693,10 +2698,12 @@ public:
     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
     * @return Resulting ciphertext.
     */
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
-                                         const std::vector<double>& coefficients) const {
+
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coefficients,
+                                 size_t precomp = 0) const {
         ValidateCiphertext(ciphertext);
-        return GetScheme()->EvalPoly(ciphertext, coefficients);
+        return GetScheme()->EvalPoly(ciphertext, coefficients, precomp);
     }
 
     /**
@@ -2707,8 +2714,9 @@ public:
     * @param coefficients  Polynomial coefficients (vector's size = degree).
     * @return Resulting ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
-                                       const std::vector<double>& coefficients) const {
+                                       const std::vector<VectorDataType>& coefficients) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->EvalPolyLinear(ciphertext, coefficients);
     }
@@ -2721,10 +2729,11 @@ public:
     * @param coefficients  Polynomial coefficients (vector's size = degree).
     * @return Resulting ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& ciphertext,
-                                   const std::vector<double>& coefficients) const {
+                                   const std::vector<VectorDataType>& coefficients, size_t precomp = 0) const {
         ValidateCiphertext(ciphertext);
-        return GetScheme()->EvalPolyPS(ciphertext, coefficients);
+        return GetScheme()->EvalPolyPS(ciphertext, coefficients, precomp);
     }
 
     //------------------------------------------------------------------------------
@@ -2743,8 +2752,9 @@ public:
     * @param b             Upper bound of argument for which the coefficients were found.
     * @return Resulting ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
-                                            const std::vector<double>& coefficients, double a, double b) const {
+                                            const std::vector<VectorDataType>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->EvalChebyshevSeries(ciphertext, coefficients, a, b);
     }
@@ -2759,8 +2769,10 @@ public:
     * @param b             Upper bound of argument for which the coefficients were found.
     * @return Resulting ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
-                                                  const std::vector<double>& coefficients, double a, double b) const {
+                                                  const std::vector<VectorDataType>& coefficients, double a,
+                                                  double b) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->EvalChebyshevSeriesLinear(ciphertext, coefficients, a, b);
     }
@@ -2775,8 +2787,10 @@ public:
     * @param b             Upper bound of argument for which the coefficients were found.
     * @return Resulting ciphertext.
     */
+    template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
-                                              const std::vector<double>& coefficients, double a, double b) const {
+                                              const std::vector<VectorDataType>& coefficients, double a,
+                                              double b) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
     }
@@ -3481,6 +3495,27 @@ public:
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
         return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
+    }
+
+    void EvalFuncBTSetup(uint32_t numSlots, uint32_t digitSize, std::vector<std::complex<double>>& coeffs,
+                         std::tuple<uint32_t, uint32_t> dim1, std::tuple<uint32_t, uint32_t> levelBudget,
+                         long double scaleMod, uint32_t depthLeveledComputation = 0, size_t order = 1) {
+        GetScheme()->EvalFuncBTSetup(*this, numSlots, digitSize, coeffs, dim1, levelBudget, scaleMod,
+                                     depthLeveledComputation, order);
+    }
+
+    Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, std::vector<std::complex<double>>& coeffs,
+                                   uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
+                                   uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) {
+        return GetScheme()->EvalFuncBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce,
+                                       precomp, order);
+    }
+
+    Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
+                                               const std::vector<std::complex<double>>& coefficientsCheb, double a,
+                                               double b, const std::vector<std::complex<double>>& coefficientsHerm,
+                                               size_t precomp = 0) {
+        return GetScheme()->EvalHermiteTrigSeries(ciphertext, coefficientsCheb, a, b, coefficientsHerm, precomp);
     }
 
     //------------------------------------------------------------------------------
