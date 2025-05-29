@@ -900,6 +900,7 @@ public:
    * @return double representation of the value.
    */
     double ConvertToDouble() const;
+    long double ConvertToLongDouble() const;
 
     /**
    * Convert a value from an int to a BigIntegerFixedT.

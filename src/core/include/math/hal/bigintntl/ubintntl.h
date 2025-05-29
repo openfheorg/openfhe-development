@@ -895,6 +895,7 @@ public:
     }
     uint64_t ConvertToUint64() const;
     double ConvertToDouble() const;
+    long double ConvertToLongDouble() const;
 
     /**
    * Convert a string representation of a binary number to a myZZ.

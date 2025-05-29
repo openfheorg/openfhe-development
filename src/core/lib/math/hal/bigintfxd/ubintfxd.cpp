@@ -1563,6 +1563,20 @@ inline double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToDouble() const {
 }
 
 template <typename uint_type, usint BITLENGTH>
+inline long double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToLongDouble() const {
+    long double result = 0.0;
+    usint ceilInt      = m_nSize - ceilIntByUInt(m_MSB);
+    long double factor = pow(2.0, m_uintBitLength);
+    long double power  = 1.0;
+    // copy the values by shift and add
+    for (usint i = 0; (m_nSize - i - 1) >= ceilInt; i++) {
+        result += static_cast<long double>(this->m_value[m_nSize - i - 1]) * power;
+        power *= factor;
+    }
+    return result;
+}
+
+template <typename uint_type, usint BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::FromBinaryString(
     const std::string& bitString) {
     BigIntegerFixedT value;
