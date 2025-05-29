@@ -65,29 +65,25 @@ struct ctxtPowers {
     ~ctxtPowers() {}
 };
 
-inline bool IsNotEqualOne(double v) {
-    constexpr double delta = 0x1p-30;
-    return std::fabs(v - 1.0) >= delta;
+inline bool IsNotEqualOne(double v, double delta = 0x1p-44) {
+    return std::abs(v - 1.0) > delta;
 }
-inline bool IsNotEqualZero(double v) {
-    constexpr double delta = 0x1p-30;
-    return std::fabs(v) >= delta;
+inline bool IsNotEqualZero(double v, double delta = 0x1p-44) {
+    return std::abs(v) > delta;
 }
-inline bool IsNotEqualOne(std::complex<double> val) {
-    return IsNotEqualOne(val.real()) || IsNotEqualZero(val.imag());
+inline bool IsNotEqualOne(std::complex<double> val, double delta = 0x1p-44) {
+    return IsNotEqualOne(val.real(), delta) || IsNotEqualZero(val.imag(), delta);
 }
-inline bool IsNotEqualZero(std::complex<double> val) {
-    return IsNotEqualZero(val.real()) || IsNotEqualZero(val.imag());
+inline bool IsNotEqualZero(std::complex<double> val, double delta = 0x1p-44) {
+    return IsNotEqualZero(val.real(), delta) || IsNotEqualZero(val.imag(), delta);
 }
 
 inline double ToReal(double val) {
     return val;
 }
-
 inline double ToReal(int64_t val) {
     return val;
 }
-
 inline double ToReal(std::complex<double> val) {
     return val.real();
 }
@@ -104,7 +100,7 @@ uint32_t Degree(const std::vector<VectorDataType>& coefficients) {
     if (i == 0)
         OPENFHE_THROW("The coefficients vector can not be empty");
     while (i > 0) {
-        if (IsNotEqualZero(coefficients[--i]))
+        if (IsNotEqualZero(coefficients[--i], 0.0))
             break;
     }
     return i;

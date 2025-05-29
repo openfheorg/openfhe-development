@@ -298,7 +298,7 @@ private:
     // upper bound for the number of overflows in the sparse secret case
 
     // TODO: should this be 25 or 28?
-    static constexpr uint32_t K_SPARSE = 25;
+    static constexpr uint32_t K_SPARSE = 28;
 
     // upper bound for the number of overflows in the uniform secret case
     static constexpr uint32_t K_UNIFORM = 512;

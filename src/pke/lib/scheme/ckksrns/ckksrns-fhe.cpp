@@ -442,7 +442,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto finalCiphertext = cc->EvalSub(ctInitialBootstrap, ctBootstrappedError);
 
         // Step 10: Scale back down by powerOfTwoModulus to get the original message.
-        cc->EvalMultInPlace(finalCiphertext, static_cast<double>(1) / powerOfTwoModulus);
+        cc->EvalMultInPlace(finalCiphertext, 1.0 / powerOfTwoModulus);
         return finalCiphertext;
     }
 
