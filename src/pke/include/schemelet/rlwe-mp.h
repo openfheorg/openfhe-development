@@ -30,6 +30,8 @@
 //==================================================================================
 
 #include "openfhe.h"
+
+#include <memory>
 #include <vector>
 
 namespace lbcrypto {
@@ -41,15 +43,26 @@ class SchemeletRLWEMP {
 public:
     ~SchemeletRLWEMP() = default;
 
+    static std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> GetElementParams(const PrivateKey<DCRTPoly>& privateKey,
+                                                                             uint32_t level = 0);
+
     static std::vector<Poly> EncryptCoeff(std::vector<int64_t> input, const BigInteger& Q, const BigInteger& p,
-                                          const PrivateKey<DCRTPoly>& privateKey, uint32_t level,
+                                          const PrivateKey<DCRTPoly>& privateKey,
+                                          const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& elementParams,
                                           bool bitReverse = false);
 
     static std::vector<int64_t> DecryptCoeff(const std::vector<Poly>& input, const BigInteger& Q, const BigInteger& p,
-                                             const PrivateKey<DCRTPoly>& privateKey, uint32_t level, uint32_t numSlots,
-                                             bool bitReverse = false);
+                                             const PrivateKey<DCRTPoly>& privateKey,
+                                             const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& elementParams,
+                                             uint32_t numSlots, bool bitReverse = false);
 
     static void ModSwitch(std::vector<Poly>& input, const BigInteger& Q1, const BigInteger& Q2);
+
+    static Ciphertext<DCRTPoly> convert(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<Poly>& coeffs,
+                                        const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq, uint32_t slots,
+                                        uint32_t level = 0);
+
+    static std::vector<Poly> convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q, const BigInteger& QPrime);
 };
 
 }  // namespace lbcrypto

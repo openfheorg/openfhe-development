@@ -395,15 +395,19 @@ uint32_t ReduceRotation(int32_t index, uint32_t slots) {
     return (islots + index % islots) % islots;
 }
 
-std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, int slots) {
+std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, const uint32_t slots) {
     const size_t usedSlots = a.size();
-
     std::vector<std::complex<double>> result(slots);
-
-    for (int32_t i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; ++i)
         result[i] = a[i % usedSlots];
-    }
+    return result;
+}
 
+std::vector<int64_t> Fillint64(const std::vector<int64_t>& a, const uint32_t slots) {
+    const size_t usedSlots = a.size();
+    std::vector<int64_t> result(slots);
+    for (uint32_t i = 0; i < slots; ++i)
+        result[i] = a[i % usedSlots];
     return result;
 }
 

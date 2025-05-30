@@ -175,14 +175,15 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::
 std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>& a, int32_t index);
 
 /**
- * Clones the current vector up to the size indicated by the "slote" variable
+ * Clones the current vector up to the size indicated by the 'slots' variable
  *
  * @param &a square linear map.
  * @param slots the new size of the vector.
  *
  * @return the vector with cloned values
  */
-std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, int slots);
+std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, const uint32_t slots);
+std::vector<int64_t> Fillint64(const std::vector<int64_t>& a, const uint32_t slots);
 
 /**
  * Computes the coefficients for the FFT encoding for CoeffEncodingCollapse such that every

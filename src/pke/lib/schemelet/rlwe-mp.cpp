@@ -83,32 +83,25 @@ namespace lbcrypto {
 
 namespace {
 
-template <typename typeT>
 static std::vector<DCRTPoly> ModSwitchUp(const std::vector<Poly>& input, const BigInteger& Qfrom, const BigInteger& Qto,
-                                         const typeT& elementParams) {
+                                         const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
     Poly bPoly = input[0];
     bPoly.SwitchModulus(Qto, 1, 0, 0);  // need to switch to modulus before because the new modulus is bigger
-    bPoly = bPoly.MultiplyAndRound(Qto, Qfrom);
 
     Poly aPoly = input[1];
     aPoly.SwitchModulus(Qto, 1, 0, 0);  // need to switch to modulus before because the new modulus is bigger
-    aPoly = aPoly.MultiplyAndRound(Qto, Qfrom);
 
-    // Going to Double-CRT
-    std::vector<DCRTPoly> output(2);
-    output[0] = DCRTPoly(bPoly, elementParams);
-    output[1] = DCRTPoly(aPoly, elementParams);
-
-    // Switching to NTT representation
+    std::vector<DCRTPoly> output{DCRTPoly(bPoly.MultiplyAndRound(Qto, Qfrom), ep),
+                                 DCRTPoly(aPoly.MultiplyAndRound(Qto, Qfrom), ep)};
     output[0].SetFormat(Format::EVALUATION);
     output[1].SetFormat(Format::EVALUATION);
 
     return output;
 }
 
-template <typename typeT>
 static std::vector<DCRTPoly> ModSwitchDown(const std::vector<Poly>& input, const BigInteger& Qfrom,
-                                           const BigInteger& Qto, const typeT& elementParams) {
+                                           const BigInteger& Qto,
+                                           const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
     Poly bPoly = input[0];
     bPoly      = bPoly.MultiplyAndRound(Qto, Qfrom);
     bPoly.SwitchModulus(Qto, 1, 0, 0);
@@ -117,12 +110,7 @@ static std::vector<DCRTPoly> ModSwitchDown(const std::vector<Poly>& input, const
     aPoly      = aPoly.MultiplyAndRound(Qto, Qfrom);
     aPoly.SwitchModulus(Qto, 1, 0, 0);
 
-    // Going to Double-CRT
-    std::vector<DCRTPoly> output(2);
-    output[0] = DCRTPoly(bPoly, elementParams);
-    output[1] = DCRTPoly(aPoly, elementParams);
-
-    // Switching to NTT representation
+    std::vector<DCRTPoly> output{DCRTPoly(bPoly, ep), DCRTPoly(aPoly, ep)};
     output[0].SetFormat(Format::EVALUATION);
     output[1].SetFormat(Format::EVALUATION);
 
@@ -131,23 +119,32 @@ static std::vector<DCRTPoly> ModSwitchDown(const std::vector<Poly>& input, const
 
 }  // namespace
 
+std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> SchemeletRLWEMP::GetElementParams(
+    const PrivateKey<DCRTPoly>& privateKey, uint32_t level) {
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
+
+    auto ep = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(*(cryptoParams->GetElementParams()));
+    for (uint32_t i = 0; i < level; ++i)
+        ep->PopLastParam();
+
+    return ep;
+}
+
 std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, const BigInteger& Q, const BigInteger& p,
-                                                const PrivateKey<DCRTPoly>& privateKey, uint32_t level,
+                                                const PrivateKey<DCRTPoly>& privateKey,
+                                                const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
                                                 bool bitReverse) {
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
 
-    auto elementParams = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(*(cryptoParams->GetElementParams()));
-    for (uint32_t i = 0; i < level; ++i)
-        elementParams->PopLastParam();
-
     DugType dug;
-    DCRTPoly a(dug, elementParams, Format::EVALUATION);
-    DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), elementParams, Format::EVALUATION);
+    DCRTPoly a(dug, ep, Format::EVALUATION);
+    DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), ep, Format::EVALUATION);
 
     const DCRTPoly& s = privateKey->GetPrivateElement();
     auto scopy(s);
-    scopy.DropLastElements(s.GetParams()->GetParams().size() - elementParams->GetParams().size());
+    scopy.DropLastElements(s.GetParams()->GetParams().size() - ep->GetParams().size());
 
     DCRTPoly b = e - a * scopy;  // encryption of 0 using Q'
 
@@ -202,20 +199,16 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
 
 std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& input, const BigInteger& Q,
                                                    const BigInteger& p, const PrivateKey<DCRTPoly>& privateKey,
-                                                   uint32_t level, uint32_t numSlots, bool bitReverse) {
-    const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
+                                                   const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
+                                                   uint32_t numSlots, bool bitReverse) {
+    const auto& bigQPrime = ep->GetModulus();
 
-    auto elementParams = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(*(cryptoParams->GetElementParams()));
-
-    const auto& bigQPrime = elementParams->GetModulus();
-
-    std::vector<lbcrypto::DCRTPoly> ba = (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, elementParams) :
-                                                           ModSwitchDown(input, Q, bigQPrime, elementParams);
+    std::vector<lbcrypto::DCRTPoly> ba =
+        (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
 
     const DCRTPoly& s = privateKey->GetPrivateElement();
     size_t sizeQ      = s.GetParams()->GetParams().size();
-    size_t sizeQl     = elementParams->GetParams().size();
+    size_t sizeQl     = ep->GetParams().size();
     size_t diffQl     = sizeQ - sizeQl;
 
     auto scopy(s);
@@ -274,6 +267,52 @@ void SchemeletRLWEMP::ModSwitch(std::vector<Poly>& input, const BigInteger& Q1, 
     input[0].SwitchModulus(Q1, 1, 0, 0);
     input[1] = input[1].MultiplyAndRound(Q1, Q2);
     input[1].SwitchModulus(Q1, 1, 0, 0);
+}
+
+Ciphertext<DCRTPoly> SchemeletRLWEMP::convert(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<Poly>& coeffs,
+                                              const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq, uint32_t slots,
+                                              uint32_t level) {
+    std::vector<std::complex<double>> y(1);
+    auto ptxt = cc.MakeCKKSPackedPlaintext(y, 1, level);
+    ptxt->SetLength(slots);
+
+    auto ctxt = cc.Encrypt(pubKey, ptxt);
+
+    auto ep = ptxt->GetElement<DCRTPoly>().GetParams();
+
+    auto& qPrimeCKKS = ep->GetModulus();
+
+    auto elementsCKKS =
+        (qPrimeCKKS > Bigq) ? ModSwitchUp(coeffs, Bigq, qPrimeCKKS, ep) : ModSwitchDown(coeffs, Bigq, qPrimeCKKS, ep);
+    ctxt->SetElements(elementsCKKS);
+    return ctxt;
+}
+
+std::vector<Poly> SchemeletRLWEMP::convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q,
+                                           const BigInteger& QPrime) {
+    auto b = ctxt->GetElements()[0];
+    b.SetFormat(Format::COEFFICIENT);
+    auto bPoly = b.CRTInterpolate();
+
+    auto a = ctxt->GetElements()[1];
+    a.SetFormat(Format::COEFFICIENT);
+    auto aPoly = a.CRTInterpolate();
+
+    if (Q < QPrime) {
+        bPoly = bPoly.MultiplyAndRound(Q, QPrime);
+        bPoly.SwitchModulus(Q, 1, 0, 0);
+
+        aPoly = aPoly.MultiplyAndRound(Q, QPrime);
+        aPoly.SwitchModulus(Q, 1, 0, 0);
+    }
+    else {
+        bPoly.SwitchModulus(Q, 1, 0, 0);
+        bPoly = bPoly.MultiplyAndRound(Q, QPrime);
+
+        aPoly.SwitchModulus(Q, 1, 0, 0);
+        aPoly = aPoly.MultiplyAndRound(Q, QPrime);
+    }
+    return {bPoly, aPoly};
 }
 
 }  // namespace lbcrypto

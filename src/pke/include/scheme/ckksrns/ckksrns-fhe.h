@@ -226,6 +226,9 @@ public:
 
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
+    static uint32_t AdjustDepthFuncBT(const std::vector<std::complex<double>>& coefficients, const BigInteger& PInput,
+                                      size_t order);
+
     std::string SerializedObjectName() const {
         return "FHECKKSRNS";
     }
@@ -297,8 +300,9 @@ private:
 
     // upper bound for the number of overflows in the sparse secret case
 
-    // TODO: should this be 25 or 28?
-    static constexpr uint32_t K_SPARSE = 28;
+    // TODO: unify this
+    static constexpr uint32_t K_SPARSE     = 28;
+    static constexpr uint32_t K_SPARSE_ALT = 25;
 
     // upper bound for the number of overflows in the uniform secret case
     static constexpr uint32_t K_UNIFORM = 512;

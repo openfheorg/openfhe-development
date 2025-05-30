@@ -2816,7 +2816,7 @@ void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t
     long double qDouble = q.ConvertToLongDouble();
     uint128_t factor    = ((uint128_t)1 << ((uint128_t)std::round(std::log2(qDouble))));
     double pre          = qDouble / factor;
-    double k            = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
+    double k            = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE_ALT : 1.0;
 
     double scaleEnc = pre / k;
     // double scaleDec  = 1.0; // 1.0 / pre;
@@ -2834,7 +2834,6 @@ void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t
     uint32_t extraDepth(0);
     switch (digitBitSize) {
         case 1:
-            extraDepth = 0;
             if (order > 1) {
                 extraDepth = 3;
             }
@@ -3263,6 +3262,37 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>
     cc->EvalAddInPlace(result, conj);  // Division by 2 was already performed
 
     return result;
+}
+
+uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<std::complex<double>>& coefficients, const BigInteger& PInput,
+                                       size_t order) {
+    uint32_t depth = 0;
+    switch (PInput.ConvertToInt()) {
+        case 2:
+            if (order > 1) {
+                depth += 3;
+            }
+            break;
+        case 4:
+            if (order == 1) {
+                depth += 3;
+            }
+            else {
+                depth += GetMultiplicativeDepthByCoeffVector(coefficients, true);
+            }
+            depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_58, false);
+            break;
+        default:
+            depth += GetMultiplicativeDepthByCoeffVector(coefficients, true);
+            if (PInput.ConvertToInt() > 1024) {
+                depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_118, false);
+            }
+            else {
+                depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_58, false);
+            }
+            break;
+    }
+    return depth;
 }
 
 }  // namespace lbcrypto
