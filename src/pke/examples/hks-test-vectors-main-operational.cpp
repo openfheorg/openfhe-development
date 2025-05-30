@@ -51,9 +51,9 @@ int main() {
     std::cout << "HKS-test-vectors-main-operational started ..." << std::endl;
 
     // HKS parameters (changeable parameters to test for different ring dimensions and multiplicative depth)
-    uint32_t multDepth    = 8; // change this to set number of towers: num_towers = multDepth+1
-    uint32_t ringDim      = 8; // ring dimension (N)
-    uint32_t dnum         = 3; // number of small digits in HKS
+    uint32_t multDepth    = 20; // change this to set number of towers: num_towers = multDepth+1
+    uint32_t ringDim      = 1<<13; // ring dimension (N)
+    uint32_t dnum         = 3; // number of digits in HKS
 
     // I do not think you should change the parameters below, but if you want smaller numbers for easier debugging and tracking, change the moduli sizes below
     uint32_t scaleModSize = 50; // change this to set the bit width of moduli q1 to q_L in ciphertext modulus Q
@@ -140,7 +140,7 @@ int main() {
     // 2.  Hybrid Key Switching (HKS) to correct the resulting ciphertext structure.
     // Note: OpenFHE internally reverses this order, performing HKS-related mixing before rotation.
     //      This pre-mixing ensures the subsequent rotation's internal mixing cancels the initial adjustment.
-    for (uint32_t l = multDepth ; l > 0 ; l--)
+    for (uint32_t l = multDepth ; l > 1 ; l--)
     {
       std::cout << "Multiplication at l = " << l << std::endl;
 
@@ -172,8 +172,6 @@ int main() {
     std::cout.precision(8);
 
     std::cout << std::endl << "Results of homomorphic computations: " << std::endl;
-
-    // Decrypt the result of rotations
 
     cc->Decrypt(keys.secretKey, ct_x, &result);
     result->SetLength(batchSize);
