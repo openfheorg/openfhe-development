@@ -3682,7 +3682,6 @@ uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<VectorDataType>& coeffi
             if (order > 1) {
                 depth += 3;
             }
-            // depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_58, false);
             depth += GetMultiplicativeDepthByCoeffVector(coeff_cos_25_double, false);
             break;
         case 4:
