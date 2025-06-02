@@ -1696,15 +1696,14 @@ void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(const std::shared_ptr<Params>& p
                                                 const std::vector<NativeInteger>& pInvModq) {
     m_params = paramsQ;
 
-    const uint32_t sizeQ   = m_vectors.size() - 1;
-    const auto& q          = m_params->GetParams();
-    const uint32_t ringDim = m_params->GetRingDimension();
+    const uint32_t sizeQ = m_vectors.size() - 1;
+    const auto& lastPoly = m_vectors.back();
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQ))
     for (uint32_t i = 0; i < sizeQ; ++i) {
-        const auto& qi = q[i]->GetModulus();
-        for (uint32_t ri = 0; ri < ringDim; ++ri)
-            m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
+        auto tmp = lastPoly;
+        tmp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
+        m_vectors[i] -= tmp;
         m_vectors[i] *= pInvModq[i];
     }
     m_vectors.resize(sizeQ);
