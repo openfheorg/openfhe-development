@@ -56,10 +56,14 @@ public:
     //------------------------------------------------------------------------------
 
     Ciphertext<DCRTPoly> EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
+                                        const std::vector<int64_t>& constants) const override;
+    Ciphertext<DCRTPoly> EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                         const std::vector<double>& constants) const override;
     Ciphertext<DCRTPoly> EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                         const std::vector<std::complex<double>>& constants) const override;
 
+    Ciphertext<DCRTPoly> EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+                                               const std::vector<int64_t>& constants) const override;
     Ciphertext<DCRTPoly> EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                                const std::vector<double>& constants) const override;
     Ciphertext<DCRTPoly> EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
@@ -69,6 +73,8 @@ public:
     // EVAL POLYNOMIAL
     //------------------------------------------------------------------------------
 
+    Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
+                                  size_t precomp = 0) const override;
     Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<double>& coefficients,
                                   size_t precomp = 0) const override;
     Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -76,10 +82,14 @@ public:
                                   size_t precomp = 0) const override;
 
     Ciphertext<DCRTPoly> EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
+                                        const std::vector<int64_t>& coefficients) const override;
+    Ciphertext<DCRTPoly> EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
                                         const std::vector<double>& coefficients) const override;
     Ciphertext<DCRTPoly> EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
                                         const std::vector<std::complex<double>>& coefficients) const override;
 
+    Ciphertext<DCRTPoly> EvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::vector<int64_t>& coefficients,
+                                    size_t precomp = 0) const override;
     Ciphertext<DCRTPoly> EvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::vector<double>& coefficients,
                                     size_t precomp = 0) const override;
     Ciphertext<DCRTPoly> EvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients,
@@ -90,6 +100,9 @@ public:
     //------------------------------------------------------------------------------
 
     Ciphertext<DCRTPoly> EvalChebyshevSeries(ConstCiphertext<DCRTPoly>& ciphertext,
+                                             const std::vector<int64_t>& coefficients, double a,
+                                             double b) const override;
+    Ciphertext<DCRTPoly> EvalChebyshevSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                              const std::vector<double>& coefficients, double a,
                                              double b) const override;
     Ciphertext<DCRTPoly> EvalChebyshevSeries(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -97,12 +110,18 @@ public:
                                              double b) const override;
 
     Ciphertext<DCRTPoly> EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                   const std::vector<int64_t>& coefficients, double a,
+                                                   double b) const override;
+    Ciphertext<DCRTPoly> EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const std::vector<double>& coefficients, double a,
                                                    double b) const override;
     Ciphertext<DCRTPoly> EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const std::vector<std::complex<double>>& coefficients, double a,
                                                    double b) const override;
 
+    Ciphertext<DCRTPoly> EvalChebyshevSeriesPS(ConstCiphertext<DCRTPoly>& ciphertext,
+                                               const std::vector<int64_t>& coefficients, double a,
+                                               double b) const override;
     Ciphertext<DCRTPoly> EvalChebyshevSeriesPS(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<double>& coefficients, double a,
                                                double b) const override;

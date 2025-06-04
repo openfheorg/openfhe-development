@@ -108,7 +108,7 @@ const BigInteger POUTPUT(256);
 const BigInteger QDFLT(1UL << 47);
 constexpr double SCALE(32.0);
 constexpr double SCALESTEP(1.0);
-constexpr size_t ORDER(1);
+// constexpr size_t ORDER(1);
 constexpr uint32_t SLOTS(16);
 constexpr uint32_t AFTERBOOT(0);
 constexpr uint32_t BEFOREBOOT(0);
@@ -170,21 +170,23 @@ protected:
                 return (x % a - a / 2) % b;
             };
 
-            std::vector<int64_t> x = {static_cast<int64_t>(t.PInput.ConvertToInt() / 2),
-                                      static_cast<int64_t>(t.PInput.ConvertToInt() / 2) + 1,
-                                      0,
-                                      3,
-                                      16,
-                                      33,
-                                      64,
-                                      static_cast<int64_t>(t.PInput.ConvertToInt() - 1)};
+            std::vector<int64_t> x = {
+                (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+                (t.PInput.ConvertToInt<int64_t>() - 1)};
             if (x.size() < t.numSlots * 2)
                 x = Fillint64(x, t.numSlots * 2);
 
-            auto coefficients = GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scale);
+            std::vector<int64_t> coeffint;
+            std::vector<std::complex<double>> coeffcomp;
+            bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+
+            if (binaryLUT)
+                coeffint = {func(0) + func(1), func(0) - func(1)};
+            else
+                coeffcomp = GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scale);
+
             uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             uint32_t firstMod = t.Bigq.GetMSB() - 1;
-
             CCParams<CryptoContextCKKSRNS> parameters;
             SecretKeyDist secretKeyDist = SPARSE_TERNARY;
             parameters.SetSecretKeyDist(secretKeyDist);
@@ -198,7 +200,10 @@ protected:
 
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2;
 
-            depth += FHECKKSRNS::AdjustDepthFuncBT(coefficients, t.PInput, t.order);
+            if (binaryLUT)
+                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint, t.PInput, t.order);
+            else
+                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp, t.PInput, t.order);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -223,7 +228,10 @@ protected:
             double scaleMod =
                 QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * t.PInput.ConvertToDouble());
 
-            cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coefficients, {0, 0}, t.lvlb, scaleMod, 0, t.order);
+            if (binaryLUT)
+                cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coeffint, {0, 0}, t.lvlb, scaleMod, 0, t.order);
+            else
+                cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coeffcomp, {0, 0}, t.lvlb, scaleMod, 0, t.order);
 
             cc->EvalBootstrapKeyGen(keyPair.secretKey, t.numSlots);
 
@@ -237,8 +245,13 @@ protected:
             auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, t.numSlots,
                                                  depth - (t.levelsAvailableBeforeBootstrap > 0));
 
-            auto ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coefficients, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0,
-                                                  false, t.order);  // Apply LUT
+            Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+            if (binaryLUT)
+                ctxtAfterFuncBT =
+                    cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, false, t.order);
+            else
+                ctxtAfterFuncBT =
+                    cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, false, t.order);
 
             // Scalar addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
@@ -368,7 +381,6 @@ protected:
             auto coefficients   = coefficientsMod;
             double scale        = t.scale;
 
-            uint32_t iter       = 0;
             bool step           = false;
             bool go             = QBFVDouble > qDigitDouble;
             size_t levelsToDrop = 0;
@@ -416,7 +428,6 @@ protected:
                     pBFVDouble /= pDigitDouble;
                     Q      = QNew;
                     PInput = PNew;
-                    iter++;
                 }
                 else {
                     ctxtBFV[0] = polys[0];

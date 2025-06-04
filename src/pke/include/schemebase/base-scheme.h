@@ -1445,8 +1445,9 @@ public:
         return m_FHE->EvalBootstrap(ciphertext, numIterations, precision);
     }
 
+    template <typename VectorDataType>
     void EvalFuncBTSetup(const CryptoContextImpl<Element>& cc, uint32_t numSlots, uint32_t digitSize,
-                         std::vector<std::complex<double>>& coeffs, const std::vector<uint32_t>& dim1,
+                         const std::vector<VectorDataType>& coeffs, const std::vector<uint32_t>& dim1,
                          const std::vector<uint32_t>& levelBudget, long double scaleMod,
                          uint32_t depthLeveledComputation = 0, size_t order = 1) {
         VerifyFHEEnabled(__func__);
@@ -1454,7 +1455,8 @@ public:
                                order);
     }
 
-    Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, std::vector<std::complex<double>>& coeffs,
+    template <typename VectorDataType>
+    Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                    uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
                                    uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) {
         VerifyFHEEnabled(__func__);
@@ -1462,9 +1464,10 @@ public:
                                  order);
     }
 
+    template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
-                                               double b, const std::vector<std::complex<double>>& coefficientsHerm,
+                                               double b, const std::vector<VectorDataType>& coefficientsHerm,
                                                size_t precomp = 0) {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalHermiteTrigSeries(ciphertext, coefficientsCheb, a, b, coefficientsHerm, precomp);

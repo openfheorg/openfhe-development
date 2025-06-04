@@ -110,6 +110,10 @@ public:
    * @return A ciphertext containing the linear weighted sum.
    */
     virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
+                                               const std::vector<int64_t>& weights) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
                                                const std::vector<double>& weights) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
@@ -127,6 +131,10 @@ public:
    * @param constants vector containing double weights.
    * @return A ciphertext containing the linear weighted sum.
    */
+    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
+                                                      const std::vector<int64_t>& weights) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
     virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
                                                       const std::vector<double>& weights) const {
         OPENFHE_THROW("Not implemented for this scheme");
@@ -150,6 +158,10 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
+    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients,
+                                         size_t precomp = 0) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
     virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients,
                                          size_t precomp = 0) const {
         OPENFHE_THROW("Not implemented for this scheme");
@@ -171,6 +183,10 @@ public:
    * @return the result of polynomial evaluation.
    */
     virtual Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
+                                               const std::vector<int64_t>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
                                                const std::vector<double>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
@@ -179,6 +195,10 @@ public:
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
+    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x, const std::vector<int64_t>& coefficients,
+                                           size_t precomp = 0) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
     virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x, const std::vector<double>& coefficients,
                                            size_t precomp = 0) const {
         OPENFHE_THROW("Not implemented for this scheme");
@@ -206,6 +226,11 @@ public:
    * @return the result of polynomial evaluation.
    */
     virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
+                                                    const std::vector<int64_t>& coefficients, double a,
+                                                    double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
                                                     const std::vector<double>& coefficients, double a, double b) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
@@ -215,6 +240,11 @@ public:
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
+    virtual Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
+                                                          const std::vector<int64_t>& coefficients, double a,
+                                                          double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
     virtual Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
                                                           const std::vector<double>& coefficients, double a,
                                                           double b) const {
@@ -226,6 +256,11 @@ public:
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
+    virtual Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
+                                                      const std::vector<int64_t>& coefficients, double a,
+                                                      double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
     virtual Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
                                                       const std::vector<double>& coefficients, double a,
                                                       double b) const {

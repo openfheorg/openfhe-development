@@ -146,6 +146,10 @@ static inline Ciphertext<DCRTPoly> internalEvalLinearWSumMutable(std::vector<Cip
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
+                                                        const std::vector<int64_t>& constants) const {
+    return internalEvalLinearWSum(ciphertexts, constants);
+}
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                                         const std::vector<double>& constants) const {
     return internalEvalLinearWSum(ciphertexts, constants);
 }
@@ -154,6 +158,10 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiph
     return internalEvalLinearWSum(ciphertexts, constants);
 }
 
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+                                                               const std::vector<int64_t>& constants) const {
+    return internalEvalLinearWSumMutable(ciphertexts, constants);
+}
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                                                const std::vector<double>& constants) const {
     return internalEvalLinearWSumMutable(ciphertexts, constants);
@@ -659,6 +667,10 @@ static inline Ciphertext<DCRTPoly> internalEvalPolyPS(ConstCiphertext<DCRTPoly>&
     return result;
 }
 
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPoly(ConstCiphertext<DCRTPoly>& x, const std::vector<int64_t>& coeffs,
+                                                  size_t precomp) const {
+    return (Degree(coeffs) < 5) ? EvalPolyLinear(x, coeffs) : EvalPolyPS(x, coeffs, precomp);
+}
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPoly(ConstCiphertext<DCRTPoly>& x, const std::vector<double>& coeffs,
                                                   size_t precomp) const {
     return (Degree(coeffs) < 5) ? EvalPolyLinear(x, coeffs) : EvalPolyPS(x, coeffs, precomp);
@@ -668,6 +680,11 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPoly(ConstCiphertext<DCRTPoly>& x,
                                                   size_t precomp) const {
     return (Degree(coeffs) < 5) ? EvalPolyLinear(x, coeffs) : EvalPolyPS(x, coeffs, precomp);
 }
+
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
+                                                        const std::vector<int64_t>& coeffs) const {
+    return internalEvalPolyLinear(x, coeffs);
+}
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
                                                         const std::vector<double>& coeffs) const {
     return internalEvalPolyLinear(x, coeffs);
@@ -675,6 +692,11 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
                                                         const std::vector<std::complex<double>>& coeffs) const {
     return internalEvalPolyLinear(x, coeffs);
+}
+
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::vector<int64_t>& coeffs,
+                                                    size_t precomp) const {
+    return internalEvalPolyPS(x, coeffs, precomp);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::vector<double>& coeffs,
                                                     size_t precomp) const {
@@ -1246,6 +1268,11 @@ static inline Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPS(ConstCiphertext
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeries(ConstCiphertext<DCRTPoly>& x,
+                                                             const std::vector<int64_t>& coeffs, double a,
+                                                             double b) const {
+    return (Degree(coeffs) < 5) ? EvalChebyshevSeriesLinear(x, coeffs, a, b) : EvalChebyshevSeriesPS(x, coeffs, a, b);
+}
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeries(ConstCiphertext<DCRTPoly>& x,
                                                              const std::vector<double>& coeffs, double a,
                                                              double b) const {
     return (Degree(coeffs) < 5) ? EvalChebyshevSeriesLinear(x, coeffs, a, b) : EvalChebyshevSeriesPS(x, coeffs, a, b);
@@ -1254,6 +1281,12 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeries(ConstCiphertext<DCR
                                                              const std::vector<std::complex<double>>& coeffs, double a,
                                                              double b) const {
     return (Degree(coeffs) < 5) ? EvalChebyshevSeriesLinear(x, coeffs, a, b) : EvalChebyshevSeriesPS(x, coeffs, a, b);
+}
+
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly>& x,
+                                                                   const std::vector<int64_t>& coeffs, double a,
+                                                                   double b) const {
+    return internalEvalChebyshevSeriesLinear(x, coeffs, a, b);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly>& x,
                                                                    const std::vector<double>& coeffs, double a,
@@ -1264,6 +1297,12 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(ConstCipherte
                                                                    const std::vector<std::complex<double>>& coeffs,
                                                                    double a, double b) const {
     return internalEvalChebyshevSeriesLinear(x, coeffs, a, b);
+}
+
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<DCRTPoly>& x,
+                                                               const std::vector<int64_t>& coeffs, double a,
+                                                               double b) const {
+    return internalEvalChebyshevSeriesPS(x, coeffs, a, b);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<DCRTPoly>& x,
                                                                const std::vector<double>& coeffs, double a,

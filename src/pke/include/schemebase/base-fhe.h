@@ -131,16 +131,28 @@ public:
     }
 
     virtual void EvalFuncBTSetup(const CryptoContextImpl<Element>& cc, uint32_t numSlots, uint32_t digitSize,
-                                 std::vector<std::complex<double>>& coeffs, const std::vector<uint32_t>& dim1,
+                                 const std::vector<std::complex<double>>& coeffs, const std::vector<uint32_t>& dim1,
+                                 const std::vector<uint32_t>& levelBudget, long double scaleMod,
+                                 uint32_t depthLeveledComputation = 0, size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+    virtual void EvalFuncBTSetup(const CryptoContextImpl<Element>& cc, uint32_t numSlots, uint32_t digitSize,
+                                 const std::vector<int64_t>& coeffs, const std::vector<uint32_t>& dim1,
                                  const std::vector<uint32_t>& levelBudget, long double scaleMod,
                                  uint32_t depthLeveledComputation = 0, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 
     virtual Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
-                                           std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
+                                           const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
                                            const BigInteger& initialScaling, uint64_t postScaling,
                                            uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+    virtual Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coeffs,
+                                           uint32_t digitBitSize, const BigInteger& initialScaling,
+                                           uint64_t postScaling, uint32_t levelToReduce = 0, bool precomp = false,
+                                           size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 
@@ -148,6 +160,12 @@ public:
                                                        const std::vector<std::complex<double>>& coefficientsCheb,
                                                        double a, double b,
                                                        const std::vector<std::complex<double>>& coefficientsHerm,
+                                                       size_t precomp = 0) {
+        OPENFHE_THROW("Not supported");
+    }
+    virtual Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                       const std::vector<std::complex<double>>& coefficientsCheb,
+                                                       double a, double b, const std::vector<int64_t>& coefficientsHerm,
                                                        size_t precomp = 0) {
         OPENFHE_THROW("Not supported");
     }

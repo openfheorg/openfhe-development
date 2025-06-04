@@ -150,18 +150,29 @@ public:
                                        uint32_t precision) const override;
 
     void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, uint32_t digitSize,
-                         std::vector<std::complex<double>>& coefficients, const std::vector<uint32_t>& dim1,
+                         const std::vector<std::complex<double>>& coefficients, const std::vector<uint32_t>& dim1,
+                         const std::vector<uint32_t>& levelBudget, long double scaleMod,
+                         uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, uint32_t digitSize,
+                         const std::vector<int64_t>& coefficients, const std::vector<uint32_t>& dim1,
                          const std::vector<uint32_t>& levelBudget, long double scaleMod,
                          uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
-                                    std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
+                                    const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                     const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
                                     bool precomp = false, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
+                                    uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
+                                    uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
                                                double b, const std::vector<std::complex<double>>& coefficientsHerm,
+                                               size_t precomp) override;
+    Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
+                                               const std::vector<std::complex<double>>& coefficientsCheb, double a,
+                                               double b, const std::vector<int64_t>& coefficientsHerm,
                                                size_t precomp) override;
 
     //------------------------------------------------------------------------------
@@ -226,7 +237,8 @@ public:
 
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
-    static uint32_t AdjustDepthFuncBT(const std::vector<std::complex<double>>& coefficients, const BigInteger& PInput,
+    template <typename VectorDataType>
+    static uint32_t AdjustDepthFuncBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                       size_t order);
 
     std::string SerializedObjectName() const {
@@ -297,6 +309,25 @@ private:
     void FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                            NativeVector* nativeVec) const;
 #endif
+
+    template <typename VectorDataType>
+    void EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, uint32_t digitSize,
+                                 const std::vector<VectorDataType>& coefficients, const std::vector<uint32_t>& dim1,
+                                 const std::vector<uint32_t>& levelBudget, long double scaleMod,
+                                 uint32_t depthLeveledComputation = 0, size_t order = 1);
+
+    template <typename VectorDataType>
+    Ciphertext<DCRTPoly> EvalFuncBTInternal(ConstCiphertext<DCRTPoly>& ciphertext,
+                                            const std::vector<VectorDataType>& coefficients, uint32_t digitBitSize,
+                                            const BigInteger& initialScaling, uint64_t postScaling,
+                                            uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1);
+
+    template <typename VectorDataType>
+    Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                       const std::vector<std::complex<double>>& coefficientsCheb,
+                                                       double a, double b,
+                                                       const std::vector<VectorDataType>& coefficientsHerm,
+                                                       size_t precomp);
 
     // upper bound for the number of overflows in the sparse secret case
 
@@ -396,37 +427,6 @@ private:
     // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-25, 25] of degree 58
     // Needs two double-angle iterations to get std::exp(1i * 2Pi * x)
     static const inline std::vector<std::complex<double>> coeff_exp_25_double_58{
-        // 0.1806280036244622 + 8.430168051391019e-16i,     -2.681470864560759e-17 + 0.1817961086671394i,
-        // 0.1713692038391032 + 1.241944400428141e-16i,     -3.322436487887783e-17 + 0.1992516324333586i,
-        // 0.1409257969070406 + -6.021548608136442e-17i,    -1.712377885438801e-16 + 0.2279608000326155i,
-        // 0.08287605585684224 + -4.290353383297215e-16i,   5.203582386074158e-16 + 0.2532858572234825i,
-        // -0.007422143614101241 + 3.424755770877601e-16i,  2.816132449645061e-16 + 0.2502618038615065i,
-        // -0.122133704690862 + 6.661338147750939e-16i,     -1.646517197537308e-18 + 0.1880596188385419i,
-        // -0.2274894798190053 + 2.521523479657135e-16i,    3.218353079329175e-16 + 0.04902829001448273i,
-        // -0.259950353800741 + -3.95164127408954e-16i,     1.835866675254099e-16 + -0.1363199892566385i,
-        // -0.1558095531650871 + 2.18281137044946e-16i,     -1.275933219720161e-15 + -0.2632850353605123i,
-        // 0.07214339145435229 + 5.268855032119387e-17i,    -1.283695372222837e-16 + -0.1971488457589978i,
-        // 0.2629168484849823 + -6.661338147750939e-16i,    5.233572520743587e-16 + 0.07065605701558017i,
-        // 0.1873486963564516 + 5.155950995716829e-16i,     8.420759381690806e-16 + 0.2805710536085196i,
-        // -0.1413067313609359 + 4.892508244110859e-16i,    6.79247148169766e-16 + 0.1078504280347478i,
-        // -0.2786261612513923 + 1.392483115631552e-15i,    3.54471630955532e-16 + -0.2610977325364005i,
-        // 0.08040899350311996 + 2.258080728051166e-16i,    7.235266999463944e-16 + -0.1464322330222128i,
-        // 0.2966832327641165 + 1.038717134903536e-15i,     -4.061605101210782e-16 + 0.3068663560359554i,
-        // -0.1878025977585435 + -1.09140568522473e-16i,    8.215532773854905e-16 + 0.0007957076261381522i,
-        // -0.1891399246271978 + 8.543072087793577e-16i,    -2.62501884635948e-16 + -0.3267200792459258i,
-        // 0.3932501703096886 + -1.174201978586606e-15i,    5.459086572620572e-16 + 0.3942903224035447i,
-        // -0.3497483549643549 + -2.186574838329545e-15i,   1.436351038108796e-15 + -0.2825861006914204i,
-        // 0.211539330216459 + 9.690929791219588e-16i,      -8.479563567317139e-17 + 0.1483582841059948i,
-        // -0.09824950972854794 + 7.526935760170552e-16i,   -9.959370898603794e-16 + -0.06180158643654247i,
-        // 0.03709423517027996 + 3.612929164881866e-16i,    3.077223033825977e-16 + 0.02132294446026258i,
-        // -0.01177435380461313 + -7.997369245181213e-16i,  -1.019194145275594e-15 + -0.006261549633755878i,
-        // 0.003213857096252545 + 1.49786021627394e-15i,    5.93628253897826e-17 + 0.001595109451329828i,
-        // -0.000766817546854298 + 1.689797078158289e-15i,  -7.417853995833706e-16 + -0.0003575752780313858i,
-        // 0.0001619519564040075 + 5.654610489828128e-16i,  1.125732628584102e-15 + 7.132712118951749e-05i,
-        // -3.058257826123803e-05 + 8.862966857600826e-16i, 1.052440561724082e-15 + -1.277048055238554e-05i,
-        // 5.219938298843079e-06 + -5.692245168628981e-16i, 6.481323834502329e-17 + 2.028849383161462e-06i,
-        // -9.176009573655692e-07 + 1.088465475943413e-15i
-        // same degree, larger precision
         0.18062800362446218561 + 8.4301680513910193717e-16i,
         -2.6814708645607593834e-17 + 0.18179610866713943884i,
         0.17136920383910317356 + 1.2419444004281411103e-16i,

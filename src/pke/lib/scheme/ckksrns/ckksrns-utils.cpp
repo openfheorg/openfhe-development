@@ -142,6 +142,7 @@ uint32_t GetDepthByDegree(size_t degree) {
     OPENFHE_THROW(errMsg);
 }
 
+template struct longDiv<int64_t>;
 template struct longDiv<double>;
 template struct longDiv<std::complex<double>>;
 
@@ -189,6 +190,8 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
     return std::make_shared<longDiv<VectorDataType>>(q, r);
 }
 
+template std::shared_ptr<longDiv<int64_t>> LongDivisionPoly(const std::vector<int64_t>& f,
+                                                            const std::vector<int64_t>& g);
 template std::shared_ptr<longDiv<double>> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
 template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionPoly(const std::vector<std::complex<double>>& f,
                                                                          const std::vector<std::complex<double>>& g);
@@ -298,6 +301,8 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
     return std::make_shared<longDiv<VectorDataType>>(q, r);
 }
 
+template std::shared_ptr<longDiv<int64_t>> LongDivisionChebyshev(const std::vector<int64_t>& f,
+                                                                 const std::vector<int64_t>& g);
 template std::shared_ptr<longDiv<double>> LongDivisionChebyshev(const std::vector<double>& f,
                                                                 const std::vector<double>& g);
 template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionChebyshev(
