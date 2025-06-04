@@ -56,14 +56,7 @@ namespace lbcrypto {
  * @return the coefficients of the intermediate Hermite trigonometric interpolation.
  */
 std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                             double scale);
-std::vector<std::complex<double>> GetHermiteTrig2Coefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                              double scale);
-std::vector<std::complex<double>> GetHermiteTrig3Coefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                              double scale);
-
-// TODO: find better place to put these
-uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<std::complex<double>>& vec, bool isNormalized);
+                                                             size_t order, double scale);
 
 }  // namespace lbcrypto
 

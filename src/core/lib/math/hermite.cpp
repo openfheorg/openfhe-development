@@ -50,142 +50,137 @@ static bool IsNotEqualZero(std::complex<double> v) {
 namespace lbcrypto {
 
 std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                             double scale) {
+                                                             size_t order, double scale) {
     using namespace std::complex_literals;
     if (p == 0)
         OPENFHE_THROW("The degree of approximation can not be zero");
 
-    uint32_t degree = 0;
-    std::vector<std::complex<double>> coeffs(p);
+    switch (order) {
+        case 1: {
+            uint32_t degree = 0;
+            std::vector<std::complex<double>> coeffs(p);
 
-    for (uint32_t i = 0; i < p; ++i) {
-        for (uint32_t j = 0; j < p; ++j)
-            coeffs[i] += static_cast<double>(func(j)) * std::exp((-2. * M_PI * i * j / p) * 1i);
-        // No multiplication by 2 is to account for taking the real part
-        coeffs[i] *= static_cast<double>(p - i) / static_cast<double>(p * p) / scale;
-        if (IsNotEqualZero(coeffs[i]))
-            degree = i;
+            for (uint32_t i = 0; i < p; ++i) {
+                for (uint32_t j = 0; j < p; ++j)
+                    coeffs[i] += static_cast<double>(func(j)) * std::exp((-2. * M_PI * i * j / p) * 1i);
+                // No multiplication by 2 is to account for taking the real part
+                coeffs[i] *= static_cast<double>(p - i) / static_cast<double>(p * p) / scale;
+                if (IsNotEqualZero(coeffs[i]))
+                    degree = i;
+            }
+            coeffs[0] /= 2.0;
+            coeffs.resize(degree + 1);
+            return coeffs;
+        } break;
+        case 2: {
+            uint32_t pby2{p >> 1};
+            uint32_t coeffTotal{p + pby2 + 1};
+            std::vector<std::complex<double>> coeffs(coeffTotal);
+            std::vector<std::complex<double>> alpha(p);
+            std::vector<std::complex<double>> beta(pby2);
+            std::vector<double> gamma(pby2);
+            std::vector<std::complex<double>> delta(pby2);
+            std::vector<std::complex<double>> omega(pby2);
+
+            for (uint32_t i = 0; i < p; ++i) {
+                for (uint32_t j = 0; j < p; ++j)
+                    alpha[i] += static_cast<double>(func(j)) * std::exp((-2. * M_PI * i * j / p) * 1i);
+                // The last /2 is to account for taking the real part
+                alpha[i] *= 2. * static_cast<double>(p - i) / static_cast<double>(p * p) / 2. / scale;
+            }
+            alpha[0] /= 2.0;
+
+            if ((p & 1) == 0)
+                gamma.back() = 1.0;
+
+            double factor = 1.0;
+            for (uint32_t i = 1; i <= pby2; ++i) {
+                for (uint32_t j = 0; j < p; ++j) {
+                    auto y = static_cast<double>(func(j));
+                    beta[i - 1] += y * std::exp((-2. * M_PI * i * j / p) * 1i);
+                    delta[i - 1] += y * std::exp((-2. * M_PI * (p + i) * j / p) * 1i);
+                    omega[i - 1] += y * std::exp((-2. * M_PI * (p - i) * j / p) * 1i);
+                }
+                // The last /2 is to account for taking the real part
+                // factor = (2. - gamma[i - 1]) * i * static_cast<double>(p - i) / static_cast<double>(p * p * p) / 2. / scale;
+                factor = (2. - gamma[i - 1]) * i * static_cast<double>(p - i) / static_cast<double>(p * p) /
+                         static_cast<double>(p) / 2. /
+                         scale;  // for large p, p*p*p overflows, so we separate the division
+                beta[i - 1] *= factor;
+                delta[i - 1] *= factor / 2.;
+                omega[i - 1] *= factor / 2.;
+            }
+
+            uint32_t degree = 0;
+            coeffs[0]       = alpha[0];
+            for (uint32_t i = 1; i < coeffTotal; ++i) {
+                if (i < p)
+                    coeffs[i] = alpha[i];
+                if (i <= pby2)
+                    coeffs[i] += beta[i - 1];
+                if (pby2 <= i && i < p)
+                    coeffs[i] -= omega[p - i - 1];
+                if (i > p)
+                    coeffs[i] -= delta[i - p - 1];
+                if (IsNotEqualZero(coeffs[i]))
+                    degree = i;
+            }
+            coeffs.resize(degree + 1);
+            return coeffs;
+        } break;
+        case 3: {
+            uint32_t coeffTotal{p + p};
+            std::vector<std::complex<double>> coeffs(coeffTotal);
+            std::vector<std::complex<double>> alpha(p);
+            std::vector<std::complex<double>> beta(p - 1);
+            std::vector<std::complex<double>> delta(p - 1);
+            std::vector<std::complex<double>> omega(p - 1);
+
+            for (uint32_t i = 0; i < p; ++i) {
+                for (uint32_t j = 0; j < p; ++j)
+                    alpha[i] += static_cast<double>(func(j)) * std::exp((-2. * M_PI * i * j / p) * 1i);
+                // The last /2 is to account for taking the real part
+                alpha[i] *= 2. * static_cast<double>(p - i) / static_cast<double>(p * p) / 2. / scale;
+            }
+            alpha[0] /= 2.0;
+
+            double factor = 1.0;
+            for (uint32_t i = 1; i <= p - 1; ++i) {
+                for (uint32_t j = 0; j < p; ++j) {
+                    auto y = static_cast<double>(func(j));
+                    beta[i - 1] += y * std::exp((-2. * M_PI * i * j / p) * 1i);
+                    delta[i - 1] += y * std::exp((-2. * M_PI * (p + i) * j / p) * 1i);
+                    omega[i - 1] += y * std::exp((-2. * M_PI * (p - i) * j / p) * 1i);
+                }
+                // The last /2 is to account for taking the real part
+                factor = 2. * i * static_cast<double>(p - i) * static_cast<double>(2. * p - i) / 3. /
+                         static_cast<double>(p * p) / static_cast<double>(p * p) / 2. /
+                         scale;  // for large p, p*p*p*p overflows, so we separate the division
+                beta[i - 1] *= factor;
+                delta[i - 1] *= factor / 2.;
+                omega[i - 1] *= factor / 2.;
+            }
+
+            uint32_t degree = 0;
+            coeffs[0]       = alpha[0];
+            for (uint32_t i = 1; i < coeffTotal; ++i) {
+                if (i < p)
+                    coeffs[i] = alpha[i];
+                if (i <= p - 1)
+                    coeffs[i] += beta[i - 1];
+                if (1 <= i && i < p)
+                    coeffs[i] -= omega[p - i - 1];
+                if (i > p)
+                    coeffs[i] -= delta[i - p - 1];
+                if (IsNotEqualZero(coeffs[i]))
+                    degree = i;
+            }
+            coeffs.resize(degree + 1);
+            return coeffs;
+        } break;
+        default:
+            OPENFHE_THROW("Order must be 1, 2, or 3");
     }
-    coeffs[0] /= 2.0;
-    coeffs.resize(degree + 1);
-    return coeffs;
-}
-
-std::vector<std::complex<double>> GetHermiteTrig2Coefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                              double scale) {
-    using namespace std::complex_literals;
-    if (p == 0)
-        OPENFHE_THROW("The degree of approximation can not be zero");
-
-    uint32_t pby2{p >> 1};
-    uint32_t coeffTotal{p + pby2 + 1};
-    std::vector<std::complex<double>> coeffs(coeffTotal);
-    std::vector<std::complex<double>> alpha(p);
-    std::vector<std::complex<double>> beta(pby2);
-    std::vector<double> gamma(pby2);
-    std::vector<std::complex<double>> delta(pby2);
-    std::vector<std::complex<double>> omega(pby2);
-
-    for (uint32_t i = 0; i < p; ++i) {
-        for (uint32_t j = 0; j < p; ++j)
-            alpha[i] += static_cast<double>(func(j)) * std::exp((-2. * M_PI * i * j / p) * 1i);
-        // The last /2 is to account for taking the real part
-        alpha[i] *= 2. * static_cast<double>(p - i) / static_cast<double>(p * p) / 2. / scale;
-    }
-    alpha[0] /= 2.0;
-
-    if ((p & 1) == 0)
-        gamma.back() = 1.0;
-
-    double factor = 1.0;
-    for (uint32_t i = 1; i <= pby2; ++i) {
-        for (uint32_t j = 0; j < p; ++j) {
-            auto y = static_cast<double>(func(j));
-            beta[i - 1] += y * std::exp((-2. * M_PI * i * j / p) * 1i);
-            delta[i - 1] += y * std::exp((-2. * M_PI * (p + i) * j / p) * 1i);
-            omega[i - 1] += y * std::exp((-2. * M_PI * (p - i) * j / p) * 1i);
-        }
-        // The last /2 is to account for taking the real part
-        // factor = (2. - gamma[i - 1]) * i * static_cast<double>(p - i) / static_cast<double>(p * p * p) / 2. / scale;
-        factor = (2. - gamma[i - 1]) * i * static_cast<double>(p - i) / static_cast<double>(p * p) /
-                 static_cast<double>(p) / 2. / scale;  // for large p, p*p*p overflows, so we separate the division
-        beta[i - 1] *= factor;
-        delta[i - 1] *= factor / 2.;
-        omega[i - 1] *= factor / 2.;
-    }
-
-    uint32_t degree = 0;
-    coeffs[0]       = alpha[0];
-    for (uint32_t i = 1; i < coeffTotal; ++i) {
-        if (i < p)
-            coeffs[i] = alpha[i];
-        if (i <= pby2)
-            coeffs[i] += beta[i - 1];
-        if (pby2 <= i && i < p)
-            coeffs[i] -= omega[p - i - 1];
-        if (i > p)
-            coeffs[i] -= delta[i - p - 1];
-        if (IsNotEqualZero(coeffs[i]))
-            degree = i;
-    }
-    coeffs.resize(degree + 1);
-    return coeffs;
-}
-
-std::vector<std::complex<double>> GetHermiteTrig3Coefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                              double scale) {
-    using namespace std::complex_literals;
-    if (!p)
-        OPENFHE_THROW("The degree of approximation can not be zero");
-
-    uint32_t coeffTotal{p + p};
-    std::vector<std::complex<double>> coeffs(coeffTotal);
-    std::vector<std::complex<double>> alpha(p);
-    std::vector<std::complex<double>> beta(p - 1);
-    std::vector<std::complex<double>> delta(p - 1);
-    std::vector<std::complex<double>> omega(p - 1);
-
-    for (uint32_t i = 0; i < p; ++i) {
-        for (uint32_t j = 0; j < p; ++j)
-            alpha[i] += static_cast<double>(func(j)) * std::exp((-2. * M_PI * i * j / p) * 1i);
-        // The last /2 is to account for taking the real part
-        alpha[i] *= 2. * static_cast<double>(p - i) / static_cast<double>(p * p) / 2. / scale;
-    }
-    alpha[0] /= 2.0;
-
-    double factor = 1.0;
-    for (uint32_t i = 1; i <= p - 1; ++i) {
-        for (uint32_t j = 0; j < p; ++j) {
-            auto y = static_cast<double>(func(j));
-            beta[i - 1] += y * std::exp((-2. * M_PI * i * j / p) * 1i);
-            delta[i - 1] += y * std::exp((-2. * M_PI * (p + i) * j / p) * 1i);
-            omega[i - 1] += y * std::exp((-2. * M_PI * (p - i) * j / p) * 1i);
-        }
-        // The last /2 is to account for taking the real part
-        factor = 2. * i * static_cast<double>(p - i) * static_cast<double>(2. * p - i) / 3. /
-                 static_cast<double>(p * p) / static_cast<double>(p * p) / 2. /
-                 scale;  // for large p, p*p*p*p overflows, so we separate the division
-        beta[i - 1] *= factor;
-        delta[i - 1] *= factor / 2.;
-        omega[i - 1] *= factor / 2.;
-    }
-
-    uint32_t degree = 0;
-    coeffs[0]       = alpha[0];
-    for (uint32_t i = 1; i < coeffTotal; ++i) {
-        if (i < p)
-            coeffs[i] = alpha[i];
-        if (i <= p - 1)
-            coeffs[i] += beta[i - 1];
-        if (1 <= i && i < p)
-            coeffs[i] -= omega[p - i - 1];
-        if (i > p)
-            coeffs[i] -= delta[i - p - 1];
-        if (IsNotEqualZero(coeffs[i]))
-            degree = i;
-    }
-    coeffs.resize(degree + 1);
-    return coeffs;
 }
 
 }  // namespace lbcrypto

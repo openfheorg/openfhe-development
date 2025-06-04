@@ -3498,7 +3498,7 @@ public:
     }
 
     void EvalFuncBTSetup(uint32_t numSlots, uint32_t digitSize, std::vector<std::complex<double>>& coeffs,
-                         std::tuple<uint32_t, uint32_t> dim1, std::tuple<uint32_t, uint32_t> levelBudget,
+                         const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
                          long double scaleMod, uint32_t depthLeveledComputation = 0, size_t order = 1) {
         GetScheme()->EvalFuncBTSetup(*this, numSlots, digitSize, coeffs, dim1, levelBudget, scaleMod,
                                      depthLeveledComputation, order);

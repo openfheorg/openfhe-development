@@ -2766,8 +2766,8 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>
 #endif
 
 void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, uint32_t digitBitSize,
-                                 std::vector<std::complex<double>>& coefficients, std::tuple<uint32_t, uint32_t> dim1,
-                                 std::tuple<uint32_t, uint32_t> levelBudget, long double scaleMod,
+                                 std::vector<std::complex<double>>& coefficients, const std::vector<uint32_t>& dim1,
+                                 const std::vector<uint32_t>& levelBudget, long double scaleMod,
                                  uint32_t depthLeveledComputation, size_t order) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -2782,14 +2782,13 @@ void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t
     auto& precom           = m_bootPrecomMap[slots];
 
     precom->m_slots = slots;
-    precom->m_dim1  = std::get<0>(dim1);
-    precom->m_gs    = std::get<1>(dim1);
+    precom->m_dim1  = dim1[0];
+    precom->m_gs    = dim1[1];
 
-    auto [lenc, ldec]   = levelBudget;
-    precom->m_levelEnc  = lenc;
-    precom->m_levelDec  = ldec;
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, lenc, std::get<0>(dim1));
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, ldec, std::get<1>(dim1));
+    precom->m_levelEnc  = levelBudget[0];
+    precom->m_levelDec  = levelBudget[1];
+    precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
+    precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
 
     uint32_t m = 4 * slots;
 
@@ -2850,15 +2849,15 @@ void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t
             extraDepth = GetMultiplicativeDepthByCoeffVector(coefficients, true);
             break;
     }
-    uint32_t depthBT = approxModDepth + lenc + ldec + extraDepth + depthLeveledComputation;
+    uint32_t depthBT = approxModDepth + levelBudget[0] + levelBudget[1] + extraDepth + depthLeveledComputation;
 
     // compute # of levels to remain when encoding the coefficients
     uint32_t L0   = cryptoParams->GetElementParams()->GetParams().size();
-    uint32_t lEnc = L0 - lenc - 1;
+    uint32_t lEnc = L0 - levelBudget[0] - 1;
     uint32_t lDec = L0 - depthBT;
 
     bool isSparse      = (M != m);
-    bool isLTBootstrap = (lenc == 1) && (ldec == 1);
+    bool isLTBootstrap = (levelBudget[0] == 1) && (levelBudget[1] == 1);
     if (isLTBootstrap) {
         // allocate all vectors
         std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
@@ -3272,6 +3271,7 @@ uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<std::complex<double>>& 
             if (order > 1) {
                 depth += 3;
             }
+            depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_58, false);
             break;
         case 4:
             if (order == 1) {

@@ -150,8 +150,8 @@ public:
                                        uint32_t precision) const override;
 
     void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, uint32_t digitSize,
-                         std::vector<std::complex<double>>& coefficients, std::tuple<uint32_t, uint32_t> dim1,
-                         std::tuple<uint32_t, uint32_t> levelBudget, long double scaleMod,
+                         std::vector<std::complex<double>>& coefficients, const std::vector<uint32_t>& dim1,
+                         const std::vector<uint32_t>& levelBudget, long double scaleMod,
                          uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
