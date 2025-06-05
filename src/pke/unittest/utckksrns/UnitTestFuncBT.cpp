@@ -181,9 +181,11 @@ protected:
             bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
 
             if (binaryLUT)
-                coeffint = {func(0) + func(1), func(0) - func(1)};
+                coeffint = {func(1),
+                            func(0) - func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)]
             else
-                coeffcomp = GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scale);
+                coeffcomp =
+                    GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scale);  // divided by 2
 
             uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             uint32_t firstMod = t.Bigq.GetMSB() - 1;
