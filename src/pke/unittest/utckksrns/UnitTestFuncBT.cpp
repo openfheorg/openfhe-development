@@ -329,7 +329,7 @@ protected:
             std::transform(exact.begin(), exact.end(), exact.begin(),
                            [&](const int64_t& elem) { return (std::abs(elem)) % (t.PInput.ConvertToInt()); });
             auto max_error_it = std::max_element(exact.begin(), exact.end());
-            std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
+            // std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
 
             checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
         }
