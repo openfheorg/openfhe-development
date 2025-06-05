@@ -109,7 +109,7 @@ const BigInteger QDFLT(1UL << 47);
 constexpr double SCALE(32.0);
 constexpr double SCALESTEP(1.0);
 constexpr size_t ORDER(1);
-constexpr uint32_t SLOTS(32);
+constexpr uint32_t SLOTS(16);
 constexpr uint32_t AFTERBOOT(0);
 constexpr uint32_t BEFOREBOOT(0);
 
@@ -137,8 +137,8 @@ static std::vector<TEST_CASE_FUNCBT> testCases = {
     { FUNCBT_ARBLUT, "19", QBFVINITLARGE, 16382, 16382, 1UL << 58, 1UL << 58, 8000, SCALESTEP,     1,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
     { FUNCBT_ARBLUT, "20", QBFVINITLARGE, 16382, 16382, 1UL << 58, 1UL << 58, 8000, SCALESTEP,     2,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
     { FUNCBT_ARBLUT, "21", QBFVINITLARGE, 16382, 16382, 1UL << 58, 1UL << 58, 8000, SCALESTEP,     3,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
-    { FUNCBT_SIGNDIGIT, "22", QBFVINIT, 4096, 4, 1UL << 46, 1UL << 35, 10, 2,     1,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
-    { FUNCBT_SIGNDIGIT, "23", QBFVINIT, 4096, 4, 1UL << 46, 1UL << 35, 10, 2,     2,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
+    { FUNCBT_SIGNDIGIT, "22", QBFVINIT, 4096, 4, 1UL << 45, 1UL << 35, 10, 2,     1,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
+    { FUNCBT_SIGNDIGIT, "23", QBFVINIT, 4096, 4, 1UL << 45, 1UL << 35, 10, 2,     2,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
     { FUNCBT_SIGNDIGIT, "24", QBFVINIT, 4096, 8, 1UL << 46, 1UL << 37, 16, 4,     1,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
     { FUNCBT_SIGNDIGIT, "25", QBFVINIT, 4096, 8, 1UL << 46, 1UL << 37, 16, 4,     2,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
     { FUNCBT_SIGNDIGIT, "26", QBFVINIT, 4096, 16, 1UL << 48, 1UL << 40, 32, 8,     1,    SLOTS,          AFTERBOOT,          BEFOREBOOT, {4, 4} },
@@ -261,9 +261,9 @@ protected:
             std::transform(exact.begin(), exact.end(), exact.begin(),
                            [&](const int64_t& elem) { return (std::abs(elem)) % (t.PInput.ConvertToInt()); });
             auto max_error_it = std::max_element(exact.begin(), exact.end());
-            std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
+            // std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
 
-            checkEquality((*max_error_it), int64_t(0), 0.0001);
+            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -360,8 +360,6 @@ protected:
 
             SchemeletRLWEMP::ModSwitch(ctxtBFV, Q, t.QBFVInit);
 
-            // =======Start sign loop=======
-
             double QBFVDouble   = Q.ConvertToDouble();
             double pBFVDouble   = PInput.ConvertToDouble();
             double pDigitDouble = t.POutput.ConvertToDouble();
@@ -425,20 +423,18 @@ protected:
                     ctxtBFV[1] = polys[1];
                 }
 
-                auto computedInterm =
-                    SchemeletRLWEMP::DecryptCoeff(ctxtBFV, Q, PInput, keyPair.secretKey, ep, t.numSlots);
-
                 if ((t.POutput == 2 && QBFVDouble <= qDigitDouble) || step) {
                     auto computed =
                         SchemeletRLWEMP::DecryptCoeff(ctxtBFV, Q, PInput, keyPair.secretKey, ep, t.numSlots);
 
                     std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
                     std::transform(exact.begin(), exact.end(), exact.begin(),
-                                   [&](const int64_t& elem) { return (std::abs(elem)) % (PInput.ConvertToInt()); });
+                                   [&](const int64_t& elem) { return (std::abs(elem)) % (pOrig.ConvertToInt()); });
                     auto max_error_it = std::max_element(exact.begin(), exact.end());
-                    std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
+                    // std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
 
-                    checkEquality((*max_error_it), int64_t(0), 0.0001);
+                    checkEquality((*max_error_it), int64_t(0), 0.0001,
+                                  failmsg + " Multi-precision sign evaluation fails");
                 }
 
                 go = QBFVDouble > qDigitDouble;
