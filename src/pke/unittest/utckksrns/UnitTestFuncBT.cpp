@@ -113,6 +113,7 @@ constexpr uint32_t SLOTS(16);
 constexpr uint32_t AFTERBOOT(0);
 constexpr uint32_t BEFOREBOOT(0);
 
+// These are for the benchmarks, keep only a few as unit tests.
 // clang-format off
 static std::vector<TEST_CASE_FUNCBT> testCases = {
     // TestCaseType, Desc, QBFVInit, PInput, POutput,     Q,  Bigq, scale, scaleStep, order, numSlots, lvlsAfterBootstrap, lvlsBeforeBootstrap, levelBudget
@@ -319,9 +320,23 @@ protected:
             std::transform(x.begin(), x.end(), exact.begin(),
                            [&](const int64_t& elem) { return (elem >= PInput.ConvertToDouble() / 2.); });
 
-            auto coefficientsMod = GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scale);
-            auto coefficientsStep =
-                GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order, t.scaleStep);
+            std::vector<int64_t> coeffintMod;
+            std::vector<std::complex<double>> coeffcompMod;
+            std::vector<std::complex<double>> coeffcompStep;
+            bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
+
+            if (binaryLUT) {
+                coeffintMod = {
+                    funcMod(1),
+                    funcMod(0) - funcMod(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)]
+            }
+            else {
+                coeffcompMod =
+                    GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scale);  // divided by 2
+                coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
+                                                           t.scaleStep);  // divided by 2
+            }
+
             uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             uint32_t firstMod = t.Bigq.GetMSB() - 1;
 
@@ -338,7 +353,10 @@ protected:
 
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2;
 
-            depth += FHECKKSRNS::AdjustDepthFuncBT(coefficientsMod, t.POutput, t.order);
+            if (binaryLUT)
+                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffintMod, t.POutput, t.order);
+            else
+                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcompMod, t.POutput, t.order);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -363,8 +381,12 @@ protected:
             double scaleOutput =
                 QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * PInput.ConvertToDouble());
 
-            cc->EvalFuncBTSetup(t.numSlots, t.POutput.GetMSB() - 1, coefficientsMod, {0, 0}, t.lvlb, scaleOutput, 0,
-                                t.order);
+            if (binaryLUT)
+                cc->EvalFuncBTSetup(t.numSlots, t.POutput.GetMSB() - 1, coeffintMod, {0, 0}, t.lvlb, scaleOutput, 0,
+                                    t.order);
+            else
+                cc->EvalFuncBTSetup(t.numSlots, t.POutput.GetMSB() - 1, coeffcompMod, {0, 0}, t.lvlb, scaleOutput, 0,
+                                    t.order);
 
             cc->EvalBootstrapKeyGen(keyPair.secretKey, t.numSlots);
 
@@ -380,8 +402,13 @@ protected:
             double pDigitDouble = t.POutput.ConvertToDouble();
             double qDigitDouble = t.Bigq.ConvertToDouble();
             BigInteger pOrig    = PInput;
-            auto coefficients   = coefficientsMod;
-            double scale        = t.scale;
+            std::vector<int64_t> coeffint;
+            std::vector<std::complex<double>> coeffcomp;
+            if (binaryLUT)
+                coeffint = coeffintMod;
+            else
+                coeffcomp = coeffcompMod;
+            double scale = t.scale;
 
             bool step           = false;
             bool go             = QBFVDouble > qDigitDouble;
@@ -400,9 +427,16 @@ protected:
                                                      depth - (t.levelsAvailableBeforeBootstrap > 0));
 
                 // Bootstrap the digit.
-                auto ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coefficients, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                   pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, false, t.order);
+                Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+                if (binaryLUT)
+                    ctxtAfterFuncBT =
+                        cc->EvalFuncBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                       pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, false, t.order);
+                else
+                    ctxtAfterFuncBT =
+                        cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                       pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, false, t.order);
+
                 // Scale to address the division in Hermite Interpolation
                 cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);
                 cc->ModReduceInPlace(ctxtAfterFuncBT);
@@ -453,14 +487,15 @@ protected:
                 go = QBFVDouble > qDigitDouble;
 
                 if (t.POutput > 2 && !go && !step) {
-                    coefficients = coefficientsStep;
-                    scale        = t.scaleStep;
-                    step         = true;
-                    go           = true;
-                    if (coefficientsMod.size() > 4 && GetMultiplicativeDepthByCoeffVector(coefficientsMod, true) >
-                                                          GetMultiplicativeDepthByCoeffVector(coefficientsStep, true)) {
-                        levelsToDrop = GetMultiplicativeDepthByCoeffVector(coefficientsMod, true) -
-                                       GetMultiplicativeDepthByCoeffVector(coefficientsStep, true);
+                    if (!binaryLUT)
+                        coeffcomp = coeffcompStep;
+                    scale = t.scaleStep;
+                    step  = true;
+                    go    = true;
+                    if (coeffcompMod.size() > 4 && GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) >
+                                                       GetMultiplicativeDepthByCoeffVector(coeffcompStep, true)) {
+                        levelsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
+                                       GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
                     }
                 }
             }
