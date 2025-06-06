@@ -458,12 +458,14 @@ protected:
             double pDigitDouble = t.POutput.ConvertToDouble();
             double qDigitDouble = t.Bigq.ConvertToDouble();
             BigInteger pOrig    = PInput;
+
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
             if (binaryLUT)
                 coeffint = coeffintMod;
             else
                 coeffcomp = coeffcompMod;
+
             double scale        = t.scale;
             bool step           = false;
             bool go             = QBFVDouble > qDigitDouble;
