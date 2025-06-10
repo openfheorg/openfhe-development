@@ -156,6 +156,24 @@ public:
         OPENFHE_THROW("Not supported");
     }
 
+    virtual Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                     const std::vector<std::complex<double>>& coeffs,
+                                                     uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                     bool precomp = false, size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+    virtual Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                     const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
+                                                     const BigInteger& initialScaling, bool precomp = false,
+                                                     size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+
+    virtual Ciphertext<Element> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
+                                                uint32_t levelToReduce = 0) {
+        OPENFHE_THROW("Not supported");
+    }
+
     virtual Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                        const std::vector<std::complex<double>>& coefficientsCheb,
                                                        double a, double b,

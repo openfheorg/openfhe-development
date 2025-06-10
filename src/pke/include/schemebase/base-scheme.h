@@ -1465,6 +1465,20 @@ public:
     }
 
     template <typename VectorDataType>
+    Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                             const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
+                                             const BigInteger& initialScaling, bool precomp = false, size_t order = 1) {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalFuncBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, precomp, order);
+    }
+
+    Ciphertext<Element> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
+                                        uint32_t levelToReduce = 0) {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
+    }
+
+    template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
                                                double b, const std::vector<VectorDataType>& coefficientsHerm,
