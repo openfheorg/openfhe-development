@@ -90,6 +90,7 @@ struct TEST_CASE_FUNCBT {
     uint32_t levelsAvailableBeforeBootstrap;
     uint32_t dnum;
     std::vector<uint32_t> lvlb;
+    uint32_t dnum;
 
     std::string buildTestName() const {
         std::stringstream ss;
