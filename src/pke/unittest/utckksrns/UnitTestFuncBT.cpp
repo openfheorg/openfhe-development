@@ -113,10 +113,13 @@ const BigInteger POUTPUT(256);
 const BigInteger QDFLT(1UL << 47);
 constexpr double SCALE(32.0);
 constexpr double SCALESTEP(1.0);
-// constexpr size_t ORDER(1);
-// constexpr uint32_t SLOTS(16);
 constexpr uint32_t AFTERBOOT(0);
 constexpr uint32_t BEFOREBOOT(0);
+
+#ifndef BENCH
+constexpr uint32_t SLOTDFLT(16);
+constexpr uint32_t DNUMDFLT(3);
+#endif
 
 // These are for the benchmarks, keep only a few as unit tests.
 // clang-format off
@@ -180,8 +183,8 @@ protected:
 #ifdef BENCH
             auto start = std::chrono::high_resolution_clock::now();
 #else
-            t.numSlots = 16;
-            t.dnum     = 3;
+            t.numSlots = SLOTDFLT;
+            t.dnum     = DNUMDFLT;
 #endif
 
             auto a    = t.PInput.ConvertToInt<int64_t>();
@@ -209,8 +212,7 @@ protected:
 
 #ifdef BENCH
             auto stop = std::chrono::high_resolution_clock::now();
-            std::cerr << "Coefficient Generation: " << std::chrono::duration<double>(stop - start).count() << " s"
-                      << std::endl;
+            std::cerr << "Coefficient Generation: " << std::chrono::duration<double>(stop - start).count() << " s\n";
             start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -243,7 +245,6 @@ protected:
             cc->Enable(FHE);
 
             auto keyPair = cc->KeyGen();
-            cc->EvalMultKeyGen(keyPair.secretKey);
 
             BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
             uint32_t cnt      = 1;
@@ -256,17 +257,29 @@ protected:
             double scaleMod =
                 QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * t.PInput.ConvertToDouble());
 
+#ifdef BENCH
+            stop = std::chrono::high_resolution_clock::now();
+            std::cerr << "Cryptocontext Generation: " << std::chrono::duration<double>(stop - start).count() << " s\n";
+            start = std::chrono::high_resolution_clock::now();
+#endif
+
             if (binaryLUT)
                 cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coeffint, {0, 0}, t.lvlb, scaleMod, 0, t.order);
             else
                 cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coeffcomp, {0, 0}, t.lvlb, scaleMod, 0, t.order);
 
+#ifdef BENCH
+            stop = std::chrono::high_resolution_clock::now();
+            std::cerr << "FuncBootstrapping Setup: " << std::chrono::duration<double>(stop - start).count() << " s\n";
+            start = std::chrono::high_resolution_clock::now();
+#endif
+
             cc->EvalBootstrapKeyGen(keyPair.secretKey, t.numSlots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
-            std::cerr << "FuncBootstrapping Setup: " << std::chrono::duration<double>(stop - start).count() << " s"
-                      << std::endl;
+            std::cerr << "FuncBootstrapping KeyGen: " << std::chrono::duration<double>(stop - start).count() << " s\n";
             start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -277,8 +290,7 @@ protected:
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
-            std::cerr << "Coefficient Encryption: " << std::chrono::duration<double>(stop - start).count() << " s"
-                      << std::endl;
+            std::cerr << "Coefficient Encryption: " << std::chrono::duration<double>(stop - start).count() << " s\n";
             start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -306,8 +318,7 @@ protected:
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
-            std::cerr << "FuncBootstrapping: " << std::chrono::duration<double>(stop - start).count() << " s"
-                      << std::endl;
+            std::cerr << "FuncBootstrapping Eval: " << std::chrono::duration<double>(stop - start).count() << " s\n";
             start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -315,8 +326,7 @@ protected:
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
-            std::cerr << "Poly Decryption: " << std::chrono::duration<double>(stop - start).count() << " s"
-                      << std::endl;
+            std::cerr << "Poly Decryption: " << std::chrono::duration<double>(stop - start).count() << " s\n";
 #endif
 
             auto exact(x);
@@ -345,8 +355,8 @@ protected:
     void UnitTest_SignDigit(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
         try {
 #ifndef BENCH
-            t.numSlots = 16;
-            t.dnum     = 3;
+            t.numSlots = SLOTDFLT;
+            t.dnum     = DNUMDFLT;
 #endif
             auto PInput  = t.PInput;  // Will get modified in the loop.
             BigInteger Q = t.Q;       // Will get modified in the loop.
