@@ -916,7 +916,8 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
 
     for (int32_t s = static_cast<int32_t>(levelBudget) - 1; s >= static_cast<int32_t>(flagRem); --s) {
         const uint32_t scalingFactor = 1U << ((s - flagRem) * layersCollapse + remCollapse);
-        for (int32_t j = (1 - (numRotations + 1) / 2); j < static_cast<int32_t>(g); ++j) {
+        const int32_t halfRots       = (1 - (numRotations + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(g + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, slots));
         }
         for (size_t i = 0; i < b; i++) {
@@ -925,7 +926,8 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
     }
 
     if (flagRem) {
-        for (int32_t j = (1 - (numRotationsRem + 1) / 2); j < static_cast<int32_t>(gRem); ++j) {
+        const int32_t halfRots = (1 - (numRotationsRem + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(gRem + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j, slots));
         }
         for (size_t i = 0; i < bRem; i++) {
@@ -979,7 +981,8 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
 
     for (size_t s = 0; s < (levelBudget - flagRem); ++s) {
         const uint32_t scalingFactor = 1U << (s * layersCollapse);
-        for (int32_t j = (1 - (numRotations + 1) / 2); j <= static_cast<int32_t>(g); ++j) {
+        const int32_t halfRots       = (1 - (numRotations + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(g + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, M / 4));
         }
         for (size_t i = 0; i < b; ++i) {
@@ -990,7 +993,8 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     if (flagRem) {
         uint32_t s                   = levelBudget - flagRem;
         const uint32_t scalingFactor = 1U << (s * layersCollapse);
-        for (int32_t j = (1 - (numRotationsRem + 1) / 2); j <= static_cast<int32_t>(gRem); ++j) {
+        const int32_t halfRots       = (1 - (numRotationsRem + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(gRem + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, M / 4));
         }
         for (size_t i = 0; i < bRem; ++i) {
