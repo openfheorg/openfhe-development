@@ -329,12 +329,6 @@ private:
                                  uint32_t depthLeveledComputation = 0, size_t order = 1);
 
     template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalFuncBTInternal(ConstCiphertext<DCRTPoly>& ciphertext,
-                                            const std::vector<VectorDataType>& coefficients, uint32_t digitBitSize,
-                                            const BigInteger& initialScaling, uint64_t postScaling,
-                                            uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1);
-
-    template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalFuncBTNoDecodingInternal(ConstCiphertext<DCRTPoly>& ciphertext,
                                                       const std::vector<VectorDataType>& coefficients,
                                                       uint32_t digitBitSize, const BigInteger& initialScaling,

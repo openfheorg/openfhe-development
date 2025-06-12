@@ -388,6 +388,42 @@ std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>
     return result;
 }
 
+template <typename VectorDataType>
+std::vector<VectorDataType> RotateTwoHalves(const std::vector<VectorDataType>& a, int32_t index) {
+    int32_t slots     = a.size();
+    int32_t slotsHalf = slots / 2;
+
+    std::vector<VectorDataType> result(slots);
+
+    if (index < 0 || index > slotsHalf) {
+        index = ReduceRotation(index, slotsHalf);
+    }
+
+    if (index == 0) {
+        result = a;
+    }
+
+    else {
+        // two cases: i+index <= slots and i+index > slots
+        for (int32_t i = 0; i < slotsHalf - index; i++) {
+            result[i] = a[i + index];
+        }
+        for (int32_t i = slotsHalf - index; i < slotsHalf; i++) {
+            result[i] = a[i + index - slotsHalf];
+        }
+        for (int32_t i = slotsHalf; i < slots - index; i++) {
+            result[i] = a[i + index];
+        }
+        for (int32_t i = slots - index; i < slots; i++) {
+            result[i] = a[i + index - slotsHalf];
+        }
+    }
+
+    return result;
+}
+
+template std::vector<int64_t> RotateTwoHalves(const std::vector<int64_t>& a, int32_t index);
+
 uint32_t ReduceRotation(int32_t index, uint32_t slots) {
     int32_t islots = int32_t(slots);
 
@@ -404,6 +440,14 @@ uint32_t ReduceRotation(int32_t index, uint32_t slots) {
 std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, const uint32_t slots) {
     const size_t usedSlots = a.size();
     std::vector<std::complex<double>> result(slots);
+    for (uint32_t i = 0; i < slots; ++i)
+        result[i] = a[i % usedSlots];
+    return result;
+}
+
+std::vector<double> FillDouble(const std::vector<double>& a, const uint32_t slots) {
+    const size_t usedSlots = a.size();
+    std::vector<double> result(slots);
     for (uint32_t i = 0; i < slots; ++i)
         result[i] = a[i % usedSlots];
     return result;
