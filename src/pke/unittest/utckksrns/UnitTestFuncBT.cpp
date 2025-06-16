@@ -56,6 +56,7 @@ enum TEST_CASE_TYPE {
     FUNCBT_ARBLUT = 0,
     FUNCBT_SIGNDIGIT,
     FUNCBT_CONSECLEV,
+    FUNCBT_MVB,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -69,6 +70,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FUNCBT_CONSECLEV:
             typeName = "FUNCBT_CONSECLEV";
+            break;
+        case FUNCBT_MVB:
+            typeName = "FUNCBT_MVB";
             break;
         default:
             typeName = "UNKNOWN";
@@ -172,8 +176,10 @@ static std::vector<TEST_CASE_FUNCBT> testCases = {
     { FUNCBT_SIGNDIGIT, "40",   QBFVINITMED, 1UL << 21,     128,   1UL << 57, 1UL << 43,   256,        16,     2,  1 << 15,          AFTERBOOT,          BEFOREBOOT,    3,  0,   {4, 4} },  // not needed for benchmark
     { FUNCBT_SIGNDIGIT, "41", QBFVINITLARGE, 1UL << 32,     256, QBFVINITMED, 1UL << 47,   256,        16,     1,  1 << 15,          AFTERBOOT,          BEFOREBOOT,    4,  0,   {3, 3} },
     { FUNCBT_SIGNDIGIT, "42", QBFVINITLARGE, 1UL << 32,     256, QBFVINITMED, 1UL << 47,   256,        16,     2,  1 << 15,          AFTERBOOT,          BEFOREBOOT,    4,  0,   {3, 3} },  // not needed for benchmark
-    { FUNCBT_CONSECLEV, "43", QBFVINIT,    2, 2,       1UL << 33,     1UL << 33, 1, SCALESTEP,     1,  1 << 15,          AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },
-    { FUNCBT_CONSECLEV, "44", QBFVINIT,    PINPUT, 128,       QDFLT,     QDFLT, SCALE, SCALESTEP,     1,  1 << 16,          AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },
+    { FUNCBT_CONSECLEV, "43", QBFVINIT,    2, 2,       1UL << 35,     1UL << 35, 1, SCALESTEP,     1,  1 << 15,          AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    { FUNCBT_CONSECLEV, "44", QBFVINIT,    PINPUT, PINPUT, 1UL << 48,     1UL << 48, SCALE, SCALESTEP,     1,  1 << 16,          AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    { FUNCBT_MVB, "45", QBFVINIT,    2, 2,       1UL << 35,     1UL << 35, 1, SCALESTEP,     1,  1 << 15,          AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    { FUNCBT_MVB, "46", QBFVINIT,    PINPUT, PINPUT, 1UL << 48,     1UL << 48, SCALE, SCALESTEP,     1,  1 << 16,          AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
 };
 // clang-format on
 
@@ -309,10 +315,10 @@ protected:
             Ciphertext<DCRTPoly> ctxtAfterFuncBT;
             if (binaryLUT)
                 ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, false, t.order);
+                    cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, t.order);
             else
                 ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, false, t.order);
+                    cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, t.order);
 
             // Scalar addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
@@ -503,13 +509,11 @@ protected:
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFuncBT;
                 if (binaryLUT)
-                    ctxtAfterFuncBT =
-                        cc->EvalFuncBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                       pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, false, t.order);
+                    ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                                     pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, t.order);
                 else
-                    ctxtAfterFuncBT =
-                        cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                       pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, false, t.order);
+                    ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                                     pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, t.order);
 
                 // Scale to address the division in Hermite Interpolation
                 cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);
@@ -681,14 +685,14 @@ protected:
             auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, t.numSlots,
                                                  depth - (t.levelsAvailableBeforeBootstrap > 0));
 
-            // Apply LUT, save the computed powers and remain in slots encodings. Currently, the powers are saved by default. TODO: Expose what is saved to be able to store multiple precomputations?
+            // Apply LUT and remain in slots encodings.
             Ciphertext<DCRTPoly> ctxtAfterFuncBT;
             if (binaryLUT)
                 ctxtAfterFuncBT =
-                    cc->EvalFuncBTNoDecoding(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), false, t.order);
+                    cc->EvalFuncBTNoDecoding(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
             else
                 ctxtAfterFuncBT =
-                    cc->EvalFuncBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), false, t.order);
+                    cc->EvalFuncBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
 
             // Scalar addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
@@ -724,21 +728,27 @@ protected:
             auto computed =
                 SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, t.numSlots, true);
 
+            auto exact3 = exact2;
+
             std::transform(exact2.begin(), exact2.end(), computed.begin(), exact2.begin(), std::minus<int64_t>());
             std::transform(exact2.begin(), exact2.end(), exact2.begin(),
                            [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+
             auto max_error_it = std::max_element(exact2.begin(), exact2.end());
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
 
             checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
 
-            // Apply another LUT on the initial ciphertext using the precomputed powers
+            // Apply a subsequent LUT
+            ctxt = SchemeletRLWEMP::convert(*cc, polys, keyPair.publicKey, t.Bigq, t.numSlots,
+                                            depth - (t.levelsAvailableBeforeBootstrap > 0));
+
             if (binaryLUT)
                 ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0,
-                                                 t.levelsComputation, true, t.order);
+                                                 t.levelsComputation, t.order);
             else
                 ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0,
-                                                 t.levelsComputation, true, t.order);
+                                                 t.levelsComputation, t.order);
 
             // Scalar addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
@@ -750,6 +760,192 @@ protected:
             polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q, QPrime);
 
             computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, t.numSlots, true);
+
+            std::transform(exact3.begin(), exact3.end(), exact.begin(), [&](const int64_t& elem) {
+                return (func(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
+                           func(elem) - t.POutput.ConvertToInt() :
+                           func(elem);
+            });
+
+            std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
+            std::transform(exact.begin(), exact.end(), exact.begin(),
+                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+            max_error_it = std::max_element(exact.begin(), exact.end());
+            // std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
+
+            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    void UnitTest_MVB(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
+        try {
+            t.numSlots = SLOTDFLT;
+            t.dnum     = DNUMDFLT;
+
+            auto a     = t.PInput.ConvertToInt<int64_t>();
+            auto b     = t.POutput.ConvertToInt<int64_t>();
+            auto func1 = [a, b](int64_t x) -> int64_t {
+                return (x % a - a / 2) % b;
+            };
+
+            auto func2 = [a, b](int64_t x) -> int64_t {
+                return (x % a) % b;
+            };
+
+            std::vector<int64_t> x = {
+                (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+                (t.PInput.ConvertToInt<int64_t>() - 1)};
+            if (x.size() < t.numSlots * 2)
+                x = Fillint64(x, t.numSlots * 2);
+
+            std::vector<int64_t> coeffint1;
+            std::vector<int64_t> coeffint2;
+            std::vector<std::complex<double>> coeffcomp1;
+            std::vector<std::complex<double>> coeffcomp2;
+            bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+
+            if (binaryLUT) {
+                coeffint1 = {func1(1), func1(0) - func1(1)};
+                coeffint2 = {func2(1), func2(0) - func2(1)};
+            }
+            else {
+                coeffcomp1 = GetHermiteTrigCoefficients(func1, t.PInput.ConvertToInt(), t.order, t.scale);
+                coeffcomp2 = GetHermiteTrigCoefficients(func2, t.PInput.ConvertToInt(), t.order, t.scale);
+            }
+
+            uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+            uint32_t firstMod = t.Bigq.GetMSB() - 1;
+            CCParams<CryptoContextCKKSRNS> parameters;
+            SecretKeyDist secretKeyDist = SPARSE_TERNARY;
+            parameters.SetSecretKeyDist(secretKeyDist);
+            parameters.SetSecurityLevel(HEStd_NotSet);
+            parameters.SetScalingModSize(dcrtBits);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetFirstModSize(firstMod);
+            parameters.SetNumLargeDigits(t.dnum);
+            parameters.SetBatchSize(t.numSlots);
+            parameters.SetRingDim(2 * t.numSlots);  // Currently not working for sparse packing
+            uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2 + t.levelsComputation;
+
+            if (binaryLUT)
+                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint1, t.PInput, t.order);
+            else
+                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp1, t.PInput, t.order);
+
+            parameters.SetMultiplicativeDepth(depth);
+
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+            cc->Enable(ADVANCEDSHE);
+            cc->Enable(FHE);
+
+            auto keyPair = cc->KeyGen();
+
+            BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
+            uint32_t cnt      = 1;
+            auto levels       = t.levelsAvailableAfterBootstrap;
+            while (levels > 0) {
+                QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
+                levels--;
+                cnt++;
+            }
+            double scaleMod =
+                QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * t.POutput.ConvertToDouble());
+
+            if (binaryLUT)
+                cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coeffint1, {0, 0}, t.lvlb, scaleMod,
+                                    t.levelsComputation, t.order);
+            else
+                cc->EvalFuncBTSetup(t.numSlots, t.PInput.GetMSB() - 1, coeffcomp1, {0, 0}, t.lvlb, scaleMod,
+                                    t.levelsComputation, t.order);
+
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, t.numSlots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+            cc->EvalAtIndexKeyGen(keyPair.secretKey, std::vector<int32_t>({-2}));
+
+            // Note that the real mask for full packing should have ringDim size, not ringDim/2
+            std::vector<double> mask_real = FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), 2 * t.numSlots);
+
+            // Note that the correcponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
+            Plaintext ptxt_mask =
+                cc->MakeCKKSPackedPlaintext(FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), t.numSlots));
+
+            auto ep =
+                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+
+            // Set bitReverse true to be able to perform correct rotations in CKKS
+            auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep, true);
+
+            SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
+
+            auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, t.numSlots,
+                                                 depth - (t.levelsAvailableBeforeBootstrap > 0));
+
+            // Compute the complex exponential to reuse. TODO Andreea: compute the powers in poly
+            auto complexExp = cc->EvalMVBPrecompute(ctxt, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+
+            // Apply multiple LUTs
+            Ciphertext<DCRTPoly> ctxtAfterFuncBT1, ctxtAfterFuncBT2;
+            if (binaryLUT) {
+                ctxtAfterFuncBT1 =
+                    cc->EvalMVB(complexExp, coeffint1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
+                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExp, coeffint2, t.PInput.GetMSB() - 1, t.order);
+                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
+            }
+            else {
+                ctxtAfterFuncBT1 =
+                    cc->EvalMVB(complexExp, coeffcomp1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
+                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExp, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
+                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
+            }
+
+            // Scalar addresses the division in Hermite Interpolation
+            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT1, t.scale);
+            cc->ModReduceInPlace(ctxtAfterFuncBT1);
+            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT2, t.scale);
+            cc->ModReduceInPlace(ctxtAfterFuncBT2);
+
+            if (QPrime != ctxtAfterFuncBT1->GetElements()[0].GetModulus())
+                OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
+
+            auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, t.Q, QPrime);
+
+            auto computed =
+                SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, t.numSlots, true);
+
+            auto exact(x);
+            std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+                return (func1(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
+                           func1(elem) - t.POutput.ConvertToInt() :
+                           func1(elem);
+            });
+
+            std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
+            std::transform(exact.begin(), exact.end(), exact.begin(),
+                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+            auto max_error_it = std::max_element(exact.begin(), exact.end());
+            // std::cerr << "\n=======Max absolute error: " << *max_error_it << std::endl << std::endl;
+
+            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+
+            polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, t.Q, QPrime);
+
+            computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, t.numSlots, true);
+
+            std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+                return (func2(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
+                           func2(elem) - t.POutput.ConvertToInt() :
+                           func2(elem);
+            });
 
             std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
             std::transform(exact.begin(), exact.end(), exact.begin(),
@@ -783,6 +979,9 @@ TEST_P(UTCKKSRNS_FUNCBT, CKKSRNS) {
             break;
         case FUNCBT_CONSECLEV:
             UnitTest_ConsecLevLUT(test, test.buildTestName());
+            break;
+        case FUNCBT_MVB:
+            UnitTest_MVB(test, test.buildTestName());
             break;
         default:
             break;

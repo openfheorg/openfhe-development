@@ -146,31 +146,57 @@ public:
     virtual Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
                                            const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
                                            const BigInteger& initialScaling, uint64_t postScaling,
-                                           uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) {
+                                           uint32_t levelToReduce = 0, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
     virtual Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coeffs,
                                            uint32_t digitBitSize, const BigInteger& initialScaling,
-                                           uint64_t postScaling, uint32_t levelToReduce = 0, bool precomp = false,
-                                           size_t order = 1) {
+                                           uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 
     virtual Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                                      const std::vector<std::complex<double>>& coeffs,
                                                      uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                     bool precomp = false, size_t order = 1) {
+                                                     size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
     virtual Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                                      const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
-                                                     const BigInteger& initialScaling, bool precomp = false,
-                                                     size_t order = 1) {
+                                                     const BigInteger& initialScaling, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 
     virtual Ciphertext<Element> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                                 uint32_t levelToReduce = 0) {
+        OPENFHE_THROW("Not supported");
+    }
+
+    virtual std::vector<Ciphertext<Element>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                               uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                               size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+
+    virtual Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                        const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
+                                        const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+    virtual Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                        const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
+                                        const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+
+    virtual Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                                  const std::vector<std::complex<double>>& coeffs,
+                                                  uint32_t digitBitSize, size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+    virtual Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                                  const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
+                                                  size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 

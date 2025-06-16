@@ -161,22 +161,38 @@ public:
     Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
                                     const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                     const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
-                                    bool precomp = false, size_t order = 1) override;
+                                    size_t order = 1) override;
     Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
                                     uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
-                                    uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) override;
+                                    uint32_t levelToReduce = 0, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                               const std::vector<std::complex<double>>& coefficients,
                                               uint32_t digitBitSize, const BigInteger& initialScaling,
-                                              bool precomp = false, size_t order = 1) override;
+                                              size_t order = 1) override;
     Ciphertext<DCRTPoly> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                               const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                              const BigInteger& initialScaling, bool precomp = false,
-                                              size_t order = 1) override;
+                                              const BigInteger& initialScaling, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                          uint32_t levelToReduce = 0) override;
+
+    std::vector<Ciphertext<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t digitBitSize,
+                                                        const BigInteger& initialScaling, size_t order = 1) override;
+
+    Ciphertext<DCRTPoly> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                 const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
+                                 const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                 const std::vector<int64_t>& coeffs, uint32_t digitBitSize, const uint64_t postScaling,
+                                 uint32_t levelToReduce = 0, size_t order = 1) override;
+
+    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                           const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
+                                           size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                           const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
+                                           size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
@@ -332,7 +348,7 @@ private:
     Ciphertext<DCRTPoly> EvalFuncBTNoDecodingInternal(ConstCiphertext<DCRTPoly>& ciphertext,
                                                       const std::vector<VectorDataType>& coefficients,
                                                       uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                      bool precomp = false, size_t order = 1);
+                                                      size_t order = 1);
 
     template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -340,6 +356,16 @@ private:
                                                        double a, double b,
                                                        const std::vector<VectorDataType>& coefficientsHerm,
                                                        size_t precomp);
+
+    template <typename VectorDataType>
+    Ciphertext<DCRTPoly> EvalMVBInternal(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                         const std::vector<VectorDataType>& coefficients, uint32_t digitBitSize,
+                                         uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1);
+
+    template <typename VectorDataType>
+    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                                   const std::vector<VectorDataType>& coefficients,
+                                                   uint32_t digitBitSize, size_t order = 1);
 
     // upper bound for the number of overflows in the sparse secret case
 

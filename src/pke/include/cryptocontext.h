@@ -3508,21 +3508,40 @@ public:
     template <typename VectorDataType>
     Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                    uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
-                                   uint32_t levelToReduce = 0, bool precomp = false, size_t order = 1) {
+                                   uint32_t levelToReduce = 0, size_t order = 1) {
         return GetScheme()->EvalFuncBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce,
-                                       precomp, order);
+                                       order);
     }
 
     template <typename VectorDataType>
     Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                              const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
-                                             const BigInteger& initialScaling, bool precomp = false, size_t order = 1) {
-        return GetScheme()->EvalFuncBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, precomp, order);
+                                             const BigInteger& initialScaling, size_t order = 1) {
+        return GetScheme()->EvalFuncBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
     Ciphertext<Element> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                         uint32_t levelToReduce = 0) {
         return GetScheme()->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
+    }
+
+    std::vector<Ciphertext<Element>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t digitBitSize,
+                                                       const BigInteger& initialScaling, size_t order = 1) {
+        return GetScheme()->EvalMVBPrecompute(ciphertext, digitBitSize, initialScaling, order);
+    }
+
+    template <typename VectorDataType>
+    Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
+                                const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
+        return GetScheme()->EvalMVB(ciphertext, coeffs, digitBitSize, postScaling, levelToReduce, order);
+    }
+
+    template <typename VectorDataType>
+    Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+                                          const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
+                                          size_t order = 1) {
+        return GetScheme()->EvalMVBNoDecoding(ciphertext, coeffs, digitBitSize, order);
     }
 
     template <typename VectorDataType>
