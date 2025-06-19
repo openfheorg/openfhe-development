@@ -345,22 +345,11 @@ private:
                                  uint32_t depthLeveledComputation = 0, size_t order = 1);
 
     template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalFuncBTNoDecodingInternal(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                      const std::vector<VectorDataType>& coefficients,
-                                                      uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                      size_t order = 1);
-
-    template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,
                                                        const std::vector<std::complex<double>>& coefficientsCheb,
                                                        double a, double b,
                                                        const std::vector<VectorDataType>& coefficientsHerm,
                                                        size_t precomp);
-
-    template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalMVBInternal(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
-                                         const std::vector<VectorDataType>& coefficients, uint32_t digitBitSize,
-                                         uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1);
 
     template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,

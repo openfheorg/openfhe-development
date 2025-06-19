@@ -54,7 +54,7 @@ public:
     static std::vector<int64_t> DecryptCoeff(const std::vector<Poly>& input, const BigInteger& Q, const BigInteger& p,
                                              const PrivateKey<DCRTPoly>& privateKey,
                                              const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& elementParams,
-                                             uint32_t numSlots, bool bitReverse = false);
+                                             uint32_t numSlots, uint32_t length = 0, bool bitReverse = false);
 
     static void ModSwitch(std::vector<Poly>& input, const BigInteger& Q1, const BigInteger& Q2);
 

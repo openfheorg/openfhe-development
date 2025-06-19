@@ -388,6 +388,29 @@ std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>
     return result;
 }
 
+std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index) {
+    const int32_t slots = a.size();
+
+    if (index < 0 || index > slots) {
+        index = ReduceRotation(index, slots);
+    }
+
+    if (index == 0) {
+        return a;
+    }
+
+    std::vector<int64_t> result(slots);
+    // two cases: i+index <= slots and i+index > slots
+    for (int32_t i = 0; i < slots - index; i++) {
+        result[i] = a[i + index];
+    }
+    for (int32_t i = slots - index; i < slots; i++) {
+        result[i] = a[i + index - slots];
+    }
+
+    return result;
+}
+
 template <typename VectorDataType>
 std::vector<VectorDataType> RotateTwoHalves(const std::vector<VectorDataType>& a, int32_t index) {
     int32_t slots     = a.size();

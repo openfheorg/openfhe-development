@@ -173,6 +173,7 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::
  * @return the rotated vector
  */
 std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>& a, int32_t index);
+std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index);
 
 /**
  * Rotates a vector by an index - left rotation

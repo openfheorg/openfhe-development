@@ -176,10 +176,10 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
 
     auto delta   = Q / p;
     uint32_t gap = mPoly.GetLength() / (2.0 * input.size());
-    gap          = (gap == 0) ? 1 : gap;
 
+    // Input here is not yet padded up to the ring dimension
     if (bitReverse) {
-        if (gap == 1) {
+        if (gap == 0) {
             BitReverseTwoHalves(input);
         }
         else {
@@ -187,11 +187,15 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
         }
     }
 
+    gap                  = (gap == 0) ? 1 : gap;
     const uint32_t limit = input.size() < mPoly.GetLength() ? input.size() : mPoly.GetLength();
     for (uint32_t i = 0; i < limit; ++i) {
         auto entry     = (input[i] < 0) ? mPoly.GetModulus() - BigInteger(static_cast<uint64_t>(llabs(input[i]))) :
                                           BigInteger{input[i]};
-        mPoly[i * gap] = delta * entry;
+        mPoly[(i)*gap] = delta * entry;
+        if (gap > 1) {
+            mPoly[(i + limit) * gap] = delta * entry;
+        }
     }
 
     return {bPoly += mPoly, aPoly};
@@ -200,7 +204,7 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
 std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& input, const BigInteger& Q,
                                                    const BigInteger& p, const PrivateKey<DCRTPoly>& privateKey,
                                                    const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
-                                                   uint32_t numSlots, bool bitReverse) {
+                                                   uint32_t numSlots, uint32_t length, bool bitReverse) {
     const auto& bigQPrime = ep->GetModulus();
 
     std::vector<lbcrypto::DCRTPoly> ba =
@@ -235,8 +239,7 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
 
     BigInteger half = p >> 1;
 
-    // uint32_t length = (gap == 1) ? 2 * numSlots : numSlots;
-    uint32_t length = 2 * numSlots;  // For complex entries
+    length = (length == 0) ? numSlots : length;
 
     std::vector<int64_t> output(length);
     for (size_t i = 0, idx = 0; i < length; ++i, idx += gap) {
@@ -251,7 +254,7 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
     }
 
     if (bitReverse) {
-        if (gap == 1) {
+        if (numSlots < length) {
             BitReverseTwoHalves(output);
         }
         else {
