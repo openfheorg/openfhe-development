@@ -74,6 +74,10 @@ public:
         return m_encodingParams->GetPlaintextModulus();
     }
 
+    uint32_t GetBatchSize() {
+        return m_encodingParams->GetBatchSize();
+    }
+
     /**
    * Returns the reference to IL params
    *
@@ -103,6 +107,10 @@ public:
    */
     void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
+    }
+
+    void SetBatchSize(uint32_t batchSize) {
+        m_encodingParams->SetBatchSize(batchSize);
     }
 
     bool operator==(const CryptoParametersBase<Element>& rhs) const {
