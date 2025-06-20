@@ -99,8 +99,10 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     // Bkey set to thresholdParties * 1 for ternary distribution
     double Bkey =
         (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? std::sqrt(thresholdParties) * Berr : thresholdParties;
-    // delta
+    // delta for multiplication of a Gaussian polynomial by a random polynomial
     auto expansionFactor = 2. * std::sqrt(ringDimension);
+    // delta for modulus switching
+    auto expansionFactorMS = 4. * std::sqrt(ringDimension);
     // Vnorm
     auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);
 
@@ -118,19 +120,19 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
         double numDigits         = cryptoParamsBGVRNS->GetNumPartQ();
         keySwitchingNoise        = numTowersPerDigit * numDigits * expansionFactor * Berr;
-        keySwitchingNoise += auxTowers * (1. + expansionFactor * Bkey);
+        keySwitchingNoise += auxTowers * (1. + expansionFactorMS * Bkey);
 #if defined(WITH_REDUCED_NOISE)
         keySwitchingNoise /= 2.0;
 #endif
     }
 
     // V_ms
-    auto modSwitchingNoise = (1. + expansionFactor * Bkey) / 2.;
+    auto modSwitchingNoise = (1. + expansionFactorMS * Bkey) / 2.;
 
     // V_c
     double noisePerLevel = 0;
     if (scalTech == FLEXIBLEAUTOEXT) {
-        noisePerLevel = 1. + expansionFactor * Bkey;
+        noisePerLevel = 1. + expansionFactorMS * Bkey;
     }
     else {
         noisePerLevel = (evalAddCount + 1.) * freshEncryptionNoise + (keySwitchCount + 1.) * keySwitchingNoise;
@@ -313,8 +315,10 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
         noise_param = NoiseFlooding::PRE_SD;
     }
     else if (PREMode == NOISE_FLOODING_HRA) {
-        // expansion factor
+        // delta for multiplication of a Gaussian polynomial by a random polynomial
         auto expansionFactor = 2. * std::sqrt(ringDimension);
+        // delta for modulus switching
+        auto expansionFactorMS = 4. * std::sqrt(ringDimension);
         // re-randomization noise
         auto freshEncryptionNoise = B_e * (1. + 2. * expansionFactor * Bkey);
 
@@ -340,7 +344,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
                 // we use numPrimes here as an approximation of numDigits * [towers per digit]
                 noise_param += numPrimes * expansionFactor * B_e / 2.0;
                 // we use numPrimes (larger bound) instead of auxPrimes because we do not know auxPrimes yet
-                noise_param += numPrimes * (1 + expansionFactor * Bkey) / 2.0;
+                noise_param += numPrimes * (1 + expansionFactorMS * Bkey) / 2.0;
                 // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
                 noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half) * noise_param;
             }
