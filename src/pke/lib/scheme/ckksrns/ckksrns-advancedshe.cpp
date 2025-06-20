@@ -174,17 +174,10 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
 //------------------------------------------------------------------------------
 // EVAL POLYNOMIAL
 //------------------------------------------------------------------------------
-
 template <typename VectorDataType>
-static inline Ciphertext<DCRTPoly> internalEvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
-                                                          const std::vector<VectorDataType>& coefficients) {
+std::shared_ptr<AdvancedSHECKKSRNS::powersList> internalEvalPowersLinear(
+    ConstCiphertext<DCRTPoly>& x, const std::vector<VectorDataType>& coefficients) {
     uint32_t k = coefficients.size() - 1;
-    if (k <= 1)
-        OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
-
-    if (!IsNotEqualZero(coefficients[k]))
-        OPENFHE_THROW("EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
-
     std::vector<int32_t> indices(k);
     // set the indices for the powers of x that need to be computed to 1
     for (uint32_t i = k; i > 0; --i) {
@@ -247,6 +240,94 @@ static inline Ciphertext<DCRTPoly> internalEvalPolyLinear(ConstCiphertext<DCRTPo
             cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff / compositeDegree);
         }
     }
+
+    return std::make_shared<AdvancedSHECKKSRNS::powersList>(powers);
+}
+
+// std::shared_ptr<AdvancedSHECKKSRNS::powersList> AdvancedSHECKKSRNS::EvalPowersLinear(ConstCiphertext<DCRTPoly>& x, const std::vector<int64_t>& coefficients) const {
+//     return internalEvalPowersLinear(x, coefficients);
+// }
+// std::shared_ptr<AdvancedSHECKKSRNS::powersList> AdvancedSHECKKSRNS::EvalPowersLinear(ConstCiphertext<DCRTPoly>& x, const std::vector<double>& coefficients) const {
+//     return internalEvalPowersLinear(x, coefficients);
+// }
+// std::shared_ptr<AdvancedSHECKKSRNS::powersList> AdvancedSHECKKSRNS::EvalPowersLinear(ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const {
+//     return internalEvalPowersLinear(x, coefficients);
+// }
+
+std::shared_ptr<AdvancedSHECKKSRNS::powersList> internalEvalPowersPS(ConstCiphertext<DCRTPoly>& x, uint32_t k,
+                                                                     uint32_t m) {
+    std::vector<Ciphertext<DCRTPoly>> powers;
+    powers.reserve(k);
+    powers.push_back(x->Clone());
+
+    auto cc = x->GetCryptoContext();
+    uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+
+    // computes all powers up to k for x
+    uint32_t powerOf2 = 2;
+    uint32_t rem      = 0;
+    for (uint32_t i = 2; i <= k; i++) {
+        if (rem == 0) {
+            powers.push_back(cc->EvalSquare(powers[(powerOf2 >> 1) - 1]));
+        }
+        else {
+            uint32_t levelDiff = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
+            cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff / compositeDegree);
+            powers.push_back(cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]));
+        }
+        cc->ModReduceInPlace(powers[powerOf2 - 1 + rem]);
+        if (++rem == powerOf2) {
+            powerOf2 <<= 1;
+            rem = 0;
+        }
+    }
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
+    auto algo               = cc->GetScheme();
+
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        // brings all powers of x to the same level
+        for (size_t i = 1; i < k; i++) {
+            uint32_t levelDiff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
+            cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff);
+        }
+    }
+    else {
+        for (size_t i = 1; i < k; i++) {
+            algo->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
+        }
+    }
+
+    // computes powers of form k*2^i for x and the product of the powers in power2, that yield x^{k(2*m - 1)}
+    std::vector<Ciphertext<DCRTPoly>> powers2;
+    powers2.reserve(m);
+    powers2.push_back(powers.back()->Clone());
+    auto power2km1 = powers.back()->Clone();
+
+    for (uint32_t i = 1; i < m; i++) {
+        powers2.push_back(cc->EvalSquare(powers2[i - 1]));
+        cc->ModReduceInPlace(powers2[i]);
+        power2km1 = cc->EvalMult(power2km1, powers2.back());
+        cc->ModReduceInPlace(power2km1);
+    }
+
+    return std::make_shared<AdvancedSHECKKSRNS::powersList>(powers, powers2, power2km1);
+}
+
+template <typename VectorDataType>
+static inline Ciphertext<DCRTPoly> internalEvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
+                                                          const std::vector<VectorDataType>& coefficients) {
+    uint32_t k = coefficients.size() - 1;
+    if (k <= 1)
+        OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
+
+    if (!IsNotEqualZero(coefficients[k]))
+        OPENFHE_THROW("EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
+
+    std::vector<Ciphertext<DCRTPoly>> powers = internalEvalPowersLinear(x, coefficients)->powers;
+
+    auto cc = x->GetCryptoContext();
 
     // perform scalar multiplication for the highest-order term
     auto result = cc->EvalMult(powers[k - 1], coefficients[k]);
@@ -428,95 +509,12 @@ static inline Ciphertext<DCRTPoly> internalEvalPolyPS(ConstCiphertext<DCRTPoly>&
     uint32_t k = degs[0];
     uint32_t m = degs[1];
 
-    // TODO: (Andrey) Below all indices are set to 1?
-    // set the indices for the powers of x that need to be computed to 1
-    std::vector<int32_t> indices(k);
-    for (uint32_t i = k; i > 0; --i) {
-        if (!(i & (i - 1))) {
-            // if i is a power of 2
-            indices[i - 1] = 1;
-        }
-        else {
-            // non-power of 2
-            indices[i - 1]   = 1;
-            int64_t powerOf2 = int64_t(1) << static_cast<int64_t>(std::floor(std::log2(i)));
-            int64_t rem      = i % powerOf2;
-            if (indices[rem - 1] == 0)
-                indices[rem - 1] = 1;
+    auto cc = x->GetCryptoContext();
 
-            // while rem is not a power of 2
-            // set indices required to compute rem to 1
-            while ((rem & (rem - 1))) {
-                powerOf2 = 1 << static_cast<int64_t>(std::floor(std::log2(rem)));
-                rem      = rem % powerOf2;
-                if (indices[rem - 1] == 0)
-                    indices[rem - 1] = 1;
-            }
-        }
-    }
-
-    std::vector<Ciphertext<DCRTPoly>> powers(k);
-    powers[0] = x->Clone();
-    auto cc   = x->GetCryptoContext();
-    uint32_t compositeDegree =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
-
-    // computes all powers up to k for x
-    for (uint32_t i = 2; i <= k; ++i) {
-        if (!(i & (i - 1))) {
-            // if i is a power of two
-            powers[i - 1] = cc->EvalSquare(powers[i / 2 - 1]);
-            cc->ModReduceInPlace(powers[i - 1]);
-        }
-        else {
-            if (indices[i - 1] == 1) {
-                // non-power of 2
-                int64_t powerOf2   = int64_t(1) << static_cast<int64_t>(std::floor(std::log2(i)));
-                int64_t rem        = i % powerOf2;
-                uint32_t levelDiff = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
-                cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff / compositeDegree);
-                powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
-                cc->ModReduceInPlace(powers[i - 1]);
-            }
-        }
-    }
-
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
-
-    auto algo = cc->GetScheme();
-
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-        // brings all powers of x to the same level
-        for (size_t i = 1; i < k; i++) {
-            if (indices[i - 1] == 1) {
-                uint32_t levelDiff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
-                cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff);
-            }
-        }
-    }
-    else {
-        for (size_t i = 1; i < k; i++) {
-            if (indices[i - 1] == 1) {
-                algo->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
-            }
-        }
-    }
-
-    std::vector<Ciphertext<DCRTPoly>> powers2(m);
-
-    // computes powers of form k*2^i for x
-    powers2.front() = powers.back()->Clone();
-    for (uint32_t i = 1; i < m; i++) {
-        powers2[i] = cc->EvalSquare(powers2[i - 1]);
-        cc->ModReduceInPlace(powers2[i]);
-    }
-
-    // computes the product of the powers in power2, that yield x^{k(2*m - 1)}
-    auto power2km1 = powers2.front()->Clone();
-    for (uint32_t i = 1; i < m; i++) {
-        power2km1 = cc->EvalMult(power2km1, powers2[i]);
-        cc->ModReduceInPlace(power2km1);
-    }
+    auto ctxtPowers = internalEvalPowersPS(x, k, m);
+    auto powers     = ctxtPowers->powers;
+    auto powers2    = ctxtPowers->powers2;
+    auto power2km1  = ctxtPowers->power2km1;
 
     // Compute k*2^{m-1}-k because we use it a lot
     uint32_t k2m2k = k * (1 << (m - 1)) - k;

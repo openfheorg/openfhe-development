@@ -103,8 +103,6 @@ public:
 
     Ciphertext<DCRTPoly> m_precompExp;
     Ciphertext<DCRTPoly> m_precompExpI;
-    std::shared_ptr<ctxtPowers<Ciphertext<DCRTPoly>>> m_precompPowers;
-    std::shared_ptr<ctxtPowers<Ciphertext<DCRTPoly>>> m_precompPowersI;
 
     template <class Archive>
     void save(Archive& ar) const {

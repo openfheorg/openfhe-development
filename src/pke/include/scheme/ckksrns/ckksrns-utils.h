@@ -53,18 +53,6 @@ struct longDiv {
     longDiv(const std::vector<VectorDataType>& q0, const std::vector<VectorDataType>& r0) : q(q0), r(r0) {}
 };
 
-template <typename VectorDataType>
-struct ctxtPowers {
-    std::vector<VectorDataType> powers;
-    std::vector<VectorDataType> powers2;
-    VectorDataType power2km1;
-    ctxtPowers() {}
-    ctxtPowers(const std::vector<VectorDataType>& powers0, const std::vector<VectorDataType>& powers20,
-               const VectorDataType& power2km10)
-        : powers(powers0), powers2(powers20), power2km1(power2km10) {}
-    ~ctxtPowers() {}
-};
-
 inline bool IsNotEqualOne(double v, double delta = 0x1p-44) {
     return std::abs(v - 1.0) > delta;
 }
