@@ -588,16 +588,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plain
                                                             ConstCiphertext<Element> ciphertext) const {
     auto result = ciphertext->CloneEmpty();
 
-    result->SetNoiseScaleDeg(plaintext->GetNoiseScaleDeg());
+    auto elem = plaintext->GetElement<Element>();
+    elem.SetFormat(EVALUATION);
+    result->SetElement(std::move(elem));
+    result->SetSlots(plaintext->GetSlots());
     result->SetLevel(plaintext->GetLevel());
+    result->SetNoiseScaleDeg(plaintext->GetNoiseScaleDeg());
     result->SetScalingFactor(plaintext->GetScalingFactor());
     result->SetScalingFactorInt(plaintext->GetScalingFactorInt());
-    result->SetSlots(plaintext->GetSlots());
-
-    Element pt = plaintext->GetElement<Element>();
-    pt.SetFormat(EVALUATION);
-    result->SetElements({pt});
-
     return result;
 }
 
@@ -606,8 +604,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plain
 /////////////////////////////////////////
 template <class Element>
 void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext1,
-                                                ConstCiphertext<Element>& ciphertext2,
-                                                CALLER_INFO_ARGS_CPP) const {
+                                                ConstCiphertext<Element>& ciphertext2, CALLER_INFO_ARGS_CPP) const {
     uint32_t numTowers1 = ciphertext1->GetElements()[0].GetNumOfElements();
     uint32_t numTowers2 = ciphertext2->GetElements()[0].GetNumOfElements();
     if (numTowers1 != numTowers2) {
@@ -696,7 +693,7 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element> ciphertext1,
                                                           ConstCiphertext<Element> ciphertext2) const {
     VerifyNumOfTowers(ciphertext1, ciphertext2);
-    Ciphertext<Element> result = ciphertext1->CloneZero();
+    auto result = ciphertext1->CloneEmpty();
 
     std::vector<Element> cv1        = ciphertext1->GetElements();
     const std::vector<Element>& cv2 = ciphertext2->GetElements();
@@ -737,7 +734,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Elemen
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Element> ciphertext) const {
-    Ciphertext<Element> result = ciphertext->CloneZero();
+    auto result = ciphertext->CloneEmpty();
 
     const std::vector<Element>& cv = ciphertext->GetElements();
 

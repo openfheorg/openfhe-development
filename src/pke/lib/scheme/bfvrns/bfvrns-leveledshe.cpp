@@ -347,7 +347,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     for (size_t i = 0; i < cv1Size; i++) {
         for (size_t j = 0; j < cv2Size; j++) {
             if (isFirstAdd[i + j] == true) {
-                cvMult[i + j]     = cv1[i] * cv2[j];
+                cvMult[i + j] = cv1[i] * cv2[j];
                 isFirstAdd[i + j] = false;
             }
             else {
@@ -424,7 +424,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
         }
     }
 
-    ciphertextMult->SetElements(std::move(cvMult));
+    ciphertextMult->SetElements({std::move(cvMult)});
     ciphertextMult->SetNoiseScaleDeg(std::max(ciphertext1->GetNoiseScaleDeg(), ciphertext2->GetNoiseScaleDeg()) + 1);
     return ciphertextMult;
 }
@@ -617,7 +617,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
                         cvSquare[i + j] = cv[i] * cv[j];
                     }
                     else {
-                        cvtemp          = cv[i] * cv[j];
+                        cvtemp = cv[i] * cv[j];
                         cvSquare[i + j] = cvtemp;
                         cvSquare[i + j] += cvtemp;
                     }
@@ -640,7 +640,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
         for (size_t i = 0; i < cvSize; i++) {
             for (size_t j = 0; j < cvSize; j++) {
                 if (isFirstAdd[i + j] == true) {
-                    cvSquare[i + j]   = cv[i] * cvPoverQ[j];
+                    cvSquare[i + j] = cv[i] * cvPoverQ[j];
                     isFirstAdd[i + j] = false;
                 }
                 else {

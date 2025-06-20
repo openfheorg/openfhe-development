@@ -594,10 +594,8 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
     (*cTilda)[0] = (*cTilda)[0].AutomorphismTransform(autoIndex, vec);
     (*cTilda)[1] = (*cTilda)[1].AutomorphismTransform(autoIndex, vec);
 
-    Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-
+    auto result = ciphertext->CloneEmpty();
     result->SetElements({std::move((*cTilda)[0]), std::move((*cTilda)[1])});
-
     return result;
 }
 
@@ -609,7 +607,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(ConstCiphertext<DCRTPoly> 
     for (const auto& elem : cv)
         resultDCRT.push_back(elem.Times(NativeInteger(integer)));
 
-    Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
+    auto result = ciphertext->CloneEmpty();
     result->SetElements(std::move(resultDCRT));
     return result;
 }

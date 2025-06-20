@@ -129,13 +129,13 @@ public:
     CiphertextImpl<Element>& operator=(const CiphertextImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
         m_elements         = rhs.m_elements;
-        m_noiseScaleDeg    = rhs.m_noiseScaleDeg;
+        m_slots            = rhs.m_slots;
         m_level            = rhs.m_level;
         m_hopslevel        = rhs.m_hopslevel;
+        m_noiseScaleDeg    = rhs.m_noiseScaleDeg;
         m_scalingFactor    = rhs.m_scalingFactor;
         m_scalingFactorInt = rhs.m_scalingFactorInt;
         m_encodingType     = rhs.m_encodingType;
-        m_slots            = rhs.m_slots;
         m_metadataMap      = rhs.m_metadataMap;
         return *this;
     }
@@ -417,27 +417,21 @@ public:
    * and metadata.
    */
     virtual Ciphertext<Element> CloneEmpty() const {
-        Ciphertext<Element> ct(
-            std::make_shared<CiphertextImpl<Element>>(this->GetCryptoContext(), this->GetKeyTag(), m_encodingType));
-        *(ct->m_metadataMap) = *(m_metadataMap);
+        auto ct(std::make_shared<CiphertextImpl<Element>>(this->GetCryptoContext(), this->GetKeyTag(), m_encodingType));
+        ct->m_slots            = m_slots;
+        ct->m_level            = m_level;
+        ct->m_hopslevel        = m_hopslevel;
+        ct->m_noiseScaleDeg    = m_noiseScaleDeg;
+        ct->m_scalingFactor    = m_scalingFactor;
+        ct->m_scalingFactorInt = m_scalingFactorInt;
+        *(ct->m_metadataMap)   = *(m_metadataMap);
         return ct;
     }
 
     virtual Ciphertext<Element> Clone() const {
-        Ciphertext<Element> cRes = this->CloneZero();
-        cRes->SetElements(m_elements);
-        return cRes;
-    }
-
-    virtual Ciphertext<Element> CloneZero() const {
-        Ciphertext<Element> cRes = this->CloneEmpty();
-        cRes->SetNoiseScaleDeg(this->GetNoiseScaleDeg());
-        cRes->SetLevel(this->GetLevel());
-        cRes->SetHopLevel(this->GetHopLevel());
-        cRes->SetScalingFactor(this->GetScalingFactor());
-        cRes->SetScalingFactorInt(this->GetScalingFactorInt());
-        cRes->SetSlots(this->GetSlots());
-        return cRes;
+        auto ct        = this->CloneEmpty();
+        ct->m_elements = m_elements;
+        return ct;
     }
 
     bool operator==(const CiphertextImpl<Element>& rhs) const {

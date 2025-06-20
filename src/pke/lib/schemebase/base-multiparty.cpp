@@ -40,7 +40,6 @@
 
 #include "schemebase/base-scheme.h"
 
-
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme
@@ -239,8 +238,8 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(ConstCipherte
     Element b = cv[0] + s * cv[1] + ns * e;
     //  b.SwitchFormat();
 
-    Ciphertext<Element> result = ciphertext->CloneEmpty();
-    result->SetElements({std::move(b)});
+    auto result = ciphertext->CloneEmpty();
+    result->SetElement(std::move(b));
     return result;
 }
 
@@ -262,8 +261,8 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(ConstCipherte
     // e is added to do noise flooding
     Element b = s * cv[1] + es * e;
 
-    Ciphertext<Element> result = ciphertext->CloneEmpty();
-    result->SetElements({std::move(b)});
+    auto result = ciphertext->CloneEmpty();
+    result->SetElement(std::move(b));
     return result;
 }
 

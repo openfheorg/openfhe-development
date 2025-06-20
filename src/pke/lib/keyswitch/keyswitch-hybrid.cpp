@@ -236,20 +236,20 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
     const auto paramsP   = cryptoParams->GetParamsP();
     const auto paramsQlP = cv[0].GetExtendedCRTBasis(paramsP);
 
-    size_t sizeQl = paramsQl->GetParams().size();
-    usint sizeCv  = cv.size();
+    uint32_t sizeQl = paramsQl->GetParams().size();
+    uint32_t sizeCv = cv.size();
     std::vector<DCRTPoly> resultElements(sizeCv);
-    for (usint k = 0; k < sizeCv; k++) {
+    for (uint32_t k = 0; k < sizeCv; ++k) {
         resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         if ((addFirst) || (k > 0)) {
             auto cMult = cv[k].TimesNoCheck(cryptoParams->GetPModq());
-            for (usint i = 0; i < sizeQl; i++) {
+            for (uint32_t i = 0; i < sizeQl; ++i) {
                 resultElements[k].SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
             }
         }
     }
 
-    Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
+    auto result = ciphertext->CloneEmpty();
     result->SetElements(std::move(resultElements));
     return result;
 }
@@ -286,8 +286,8 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
                                            cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
                                            cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 
-    Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
-    result->SetElements(std::vector<DCRTPoly>{std::move(ct0), std::move(ct1)});
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements({std::move(ct0), std::move(ct1)});
     return result;
 }
 
