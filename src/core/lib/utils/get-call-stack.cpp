@@ -35,6 +35,7 @@
 #include "utils/demangle.h"
 
 #include <execinfo.h>
+#include <cstdlib>
 #include <cxxabi.h>
 #include <memory>
 // clang-format on

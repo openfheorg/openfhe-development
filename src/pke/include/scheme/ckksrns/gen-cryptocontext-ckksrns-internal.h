@@ -38,6 +38,7 @@
 
 #include "encoding/encodingparams.h"
 #include "constants.h"
+#include "cryptocontext.h"
 #include "utils/exception.h"
 #include "scheme/scheme-utils.h"
 #include "scheme/scheme-id.h"

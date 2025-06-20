@@ -29,7 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "utils/demangle.h"
-#include <memory>
+
+#include <cstdlib>
+#include <string>
 
 #if defined(__clang__) || defined(__GNUC__)
     #include <cxxabi.h>
