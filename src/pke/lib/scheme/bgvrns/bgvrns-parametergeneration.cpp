@@ -226,14 +226,15 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         // Compute bounds.
         double modLowerBound = 0;
         if (scalTech == FLEXIBLEAUTOEXT) {
-            modLowerBound = 2 * noiseEstimates.noisePerLevel + 2 + 1.0 / noiseEstimates.noisePerLevel;
+            modLowerBound =
+                2 * noiseEstimates.noisePerLevel + 2 + std::sqrt(ringDimension) / 2.0 / noiseEstimates.noisePerLevel;
             modLowerBound *= noiseEstimates.expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
             modLowerBound += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
             modLowerBound *= 2;
         }
         else {
-            double modLowerBoundNumerator =
-                2 * noiseEstimates.noisePerLevel * noiseEstimates.noisePerLevel + 2 * noiseEstimates.noisePerLevel + 1;
+            double modLowerBoundNumerator = 2 * noiseEstimates.noisePerLevel * noiseEstimates.noisePerLevel +
+                                            2 * noiseEstimates.noisePerLevel + ringDimension;
             modLowerBoundNumerator *= noiseEstimates.expansionFactor * plainModulus / 2. * (evalAddCount + 1);
             modLowerBoundNumerator += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise;
             double modLowerBoundDenom = noiseEstimates.noisePerLevel - noiseEstimates.modSwitchingNoise;
