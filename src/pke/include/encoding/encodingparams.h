@@ -96,7 +96,7 @@ public:
    *
    * @param &rhs the input set of parameters which is copied.
    */
-    EncodingParamsImpl(EncodingParamsImpl&& rhs) {
+    EncodingParamsImpl(EncodingParamsImpl&& rhs) noexcept {
         m_plaintextModulus        = std::move(rhs.m_plaintextModulus);
         m_plaintextRootOfUnity    = std::move(rhs.m_plaintextRootOfUnity);
         m_plaintextBigModulus     = std::move(rhs.m_plaintextBigModulus);
