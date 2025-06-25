@@ -207,7 +207,7 @@ set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 # Installation logic
 #--------------------------------------------------------------------
 ### set up for install
-include(GNUInstallDirs)
+# include(GNUInstallDirs)
 
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH "Installation directory for headers")
@@ -727,8 +727,9 @@ file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
-# ... for the install tree (relocatable)
-set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/../../include/openfhe")
+# ... for the install tree
+set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+# set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/../../include/openfhe") # supposed to be relocatable?
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
 # ... for both
 configure_file(OpenFHEConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
@@ -740,7 +741,5 @@ install(FILES
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # Install the export set for use with the install-tree
-install(EXPORT OpenFHETargets DESTINATION
-  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
-# install(EXPORT OpenFHETargets DESTINATION
-#   "${INSTALL_CMAKE_DIR}" NAMESPACE OpenFHE:: COMPONENT dev)
+install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+# install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" NAMESPACE OpenFHE:: COMPONENT dev)
