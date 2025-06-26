@@ -234,7 +234,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         }
         else {
             double modLowerBoundNumerator = 2 * noiseEstimates.noisePerLevel * noiseEstimates.noisePerLevel +
-                                            2 * noiseEstimates.noisePerLevel + ringDimension;
+                                            2 * noiseEstimates.noisePerLevel + std::sqrt(ringDimension) / 2.0;
             modLowerBoundNumerator *= noiseEstimates.expansionFactor * plainModulus / 2. * (evalAddCount + 1);
             modLowerBoundNumerator += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise;
             double modLowerBoundDenom = noiseEstimates.noisePerLevel - noiseEstimates.modSwitchingNoise;
