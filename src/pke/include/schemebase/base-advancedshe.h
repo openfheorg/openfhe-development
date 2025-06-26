@@ -158,17 +158,51 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients,
-                                         size_t precomp = 0) const {
+    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
+                                                              const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients,
-                                         size_t precomp = 0) const {
+    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
+                                                              const std::vector<double>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(
+        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+
+    /**
+   * Method for computing the powers of a ciphertext to be used when evaluating a polynomial.
+   * Uses EvalPowersLinear() for low polynomial degrees (degree < 5), or EvalPowersPS() for higher degrees.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * size of the vector is the degree of the polynomial + 1
+   * @return the resulting data structure of powers.
+   */
+    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
+                                         const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
     virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
-                                         const std::vector<std::complex<double>>& coefficients,
-                                         size_t precomp = 0) const {
+                                         const std::vector<double>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
+                                         const std::vector<std::complex<double>>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+
+    virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
+                                                    const std::vector<int64_t>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
+                                                    const std::vector<double>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
+                                                    const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
@@ -195,17 +229,37 @@ public:
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
-    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x, const std::vector<int64_t>& coefficients,
-                                           size_t precomp = 0) const {
+    // virtual Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
+    //                                                       const std::vector<int64_t>& coefficients) const {
+    //     OPENFHE_THROW("Not implemented for this scheme");
+    // }
+    // virtual Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
+    //                                                       const std::vector<double>& coefficients) const {
+    //     OPENFHE_THROW("Not implemented for this scheme");
+    // }
+    // virtual Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
+    //                                                       const std::vector<std::complex<double>>& coefficients) const {
+    //     OPENFHE_THROW("Not implemented for this scheme");
+    // }
+
+    /**
+   * Method for polynomial evaluation for polynomials represented in the power
+   * series. This uses the Paterson-Stockmeyer algorith,.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * size of the vector is the degree of the polynomial + 1
+   * @return the result of polynomial evaluation.
+   */
+    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x,
+                                           const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
-    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x, const std::vector<double>& coefficients,
-                                           size_t precomp = 0) const {
+    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x, const std::vector<double>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
     virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x,
-                                           const std::vector<std::complex<double>>& coefficients,
-                                           size_t precomp = 0) const {
+                                           const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
 

@@ -175,20 +175,26 @@ public:
     Ciphertext<DCRTPoly> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                          uint32_t levelToReduce = 0) override;
 
-    std::vector<Ciphertext<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t digitBitSize,
-                                                        const BigInteger& initialScaling, size_t order = 1) override;
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                              const std::vector<std::complex<double>>& coeffs,
+                                                              uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                              size_t order = 1) override;
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                              const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
+                                                              const BigInteger& initialScaling,
+                                                              size_t order = 1) override;
 
-    Ciphertext<DCRTPoly> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                  const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
                                  const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                  const std::vector<int64_t>& coeffs, uint32_t digitBitSize, const uint64_t postScaling,
                                  uint32_t levelToReduce = 0, size_t order = 1) override;
 
-    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                            const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                            size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                            const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
                                            size_t order = 1) override;
 
@@ -350,7 +356,14 @@ private:
                                                        size_t precomp);
 
     template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecomputeInternal(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                                      const std::vector<VectorDataType>& coefficients,
+                                                                      uint32_t digitBitSize,
+                                                                      const BigInteger& initialScaling,
+                                                                      size_t order = 1);
+
+    template <typename VectorDataType>
+    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(std::shared_ptr<seriesPowers<DCRTPoly>> ciphertext,
                                                    const std::vector<VectorDataType>& coefficients,
                                                    uint32_t digitBitSize, size_t order = 1);
 

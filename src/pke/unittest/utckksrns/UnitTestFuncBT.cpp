@@ -917,18 +917,24 @@ protected:
             auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
                                                  depth - (t.levelsAvailableBeforeBootstrap > 0));
 
-            // Compute the complex exponential to reuse. TODO Andreea: compute the powers in poly
-            auto complexExp = cc->EvalMVBPrecompute(ctxt, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
-
-            // Apply multiple LUTs
+            std::vector<Ciphertext<DCRTPoly>> complexExp;
             Ciphertext<DCRTPoly> ctxtAfterFuncBT1, ctxtAfterFuncBT2;
+
             if (binaryLUT) {
+                // Compute the complex exponential to reuse. TODO Andreea: compute the powers in poly
+                auto complexExp =
+                    cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                // Apply multiple LUTs
                 ctxtAfterFuncBT1 =
                     cc->EvalMVB(complexExp, coeffint1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
                 ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExp, coeffint2, t.PInput.GetMSB() - 1, t.order);
                 ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
             }
             else {
+                // Compute the complex exponential to reuse. TODO Andreea: compute the powers in poly
+                auto complexExp =
+                    cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                // Apply multiple LUTs
                 ctxtAfterFuncBT1 =
                     cc->EvalMVB(complexExp, coeffcomp1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
                 ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExp, coeffcomp2, t.PInput.GetMSB() - 1, t.order);

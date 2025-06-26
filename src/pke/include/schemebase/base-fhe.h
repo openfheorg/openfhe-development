@@ -172,29 +172,39 @@ public:
         OPENFHE_THROW("Not supported");
     }
 
-    virtual std::vector<Ciphertext<Element>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                               uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                               size_t order = 1) {
+    virtual std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                                      const std::vector<std::complex<double>>& coeffs,
+                                                                      uint32_t digitBitSize,
+                                                                      const BigInteger& initialScaling,
+                                                                      size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 
-    virtual Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    virtual std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                                      const std::vector<int64_t>& coeffs,
+                                                                      uint32_t digitBitSize,
+                                                                      const BigInteger& initialScaling,
+                                                                      size_t order = 1) {
+        OPENFHE_THROW("Not supported");
+    }
+
+    virtual Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                         const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
                                         const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
-    virtual Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    virtual Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                         const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
                                         const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
 
-    virtual Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    virtual Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                                   const std::vector<std::complex<double>>& coeffs,
                                                   uint32_t digitBitSize, size_t order = 1) {
         OPENFHE_THROW("Not supported");
     }
-    virtual Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    virtual Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                                   const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
                                                   size_t order = 1) {
         OPENFHE_THROW("Not supported");

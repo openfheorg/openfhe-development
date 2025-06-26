@@ -1162,10 +1162,24 @@ public:
     /////////////////////////////////////
 
     template <typename VectorDataType = double>
-    Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coefficients,
-                                 size_t precomp = 0) const {
+    std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
+                                                      const std::vector<VectorDataType>& coefficients) const {
         VerifyAdvancedSHEEnabled(__func__);
-        return m_AdvancedSHE->EvalPoly(ciphertext, coefficients, precomp);
+        return m_AdvancedSHE->EvalPowers(ciphertext, coefficients);
+    }
+
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
+                                 const std::vector<VectorDataType>& coefficients) const {
+        VerifyAdvancedSHEEnabled(__func__);
+        return m_AdvancedSHE->EvalPoly(ciphertext, coefficients);
+    }
+
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
+                                            const std::vector<VectorDataType>& coefficients) const {
+        VerifyAdvancedSHEEnabled(__func__);
+        return m_AdvancedSHE->EvalPolyWithPrecomp(powers, coefficients);
     }
 
     template <typename VectorDataType = double>
@@ -1175,11 +1189,18 @@ public:
         return m_AdvancedSHE->EvalPolyLinear(ciphertext, coefficients);
     }
 
+    // template <typename VectorDataType = double>
+    // Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
+    //                                               const std::vector<VectorDataType>& coefficients) const {
+    //     VerifyAdvancedSHEEnabled(__func__);
+    //     return m_AdvancedSHE->EvalPolyLinearWithPrecomp(powers, coefficients);
+    // }
+
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& ciphertext,
-                                   const std::vector<VectorDataType>& coefficients, size_t precomp = 0) const {
+                                   const std::vector<VectorDataType>& coefficients) const {
         VerifyAdvancedSHEEnabled(__func__);
-        return m_AdvancedSHE->EvalPolyPS(ciphertext, coefficients, precomp);
+        return m_AdvancedSHE->EvalPolyPS(ciphertext, coefficients);
     }
 
     /////////////////////////////////////
@@ -1477,26 +1498,29 @@ public:
         return m_FHE->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
     }
 
-    std::vector<Ciphertext<Element>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t digitBitSize,
-                                                       const BigInteger& initialScaling, size_t order = 1) {
+    template <typename VectorDataType>
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                              const std::vector<VectorDataType>& coeffs,
+                                                              uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                              size_t order = 1) {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalMVBPrecompute(ciphertext, digitBitSize, initialScaling, order);
+        return m_FHE->EvalMVBPrecompute(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                 const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize, uint64_t postScaling,
                                 uint32_t levelToReduce = 0, size_t order = 1) {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalMVB(ciphertext, coeffs, digitBitSize, postScaling, levelToReduce, order);
+        return m_FHE->EvalMVB(ciphertexts, coeffs, digitBitSize, postScaling, levelToReduce, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
                                           size_t order = 1) {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalMVBNoDecoding(ciphertext, coeffs, digitBitSize, order);
+        return m_FHE->EvalMVBNoDecoding(ciphertexts, coeffs, digitBitSize, order);
     }
 
     template <typename VectorDataType>

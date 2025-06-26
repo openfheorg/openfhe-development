@@ -366,6 +366,22 @@ protected:
         }
     }
 
+    void ValidateSeriesPowers(std::shared_ptr<seriesPowers<Element>> powers, CALLER_INFO_ARGS_HDR) const {
+        if (powers == nullptr) {
+            std::string errorMsg(std::string("The object for powers is nullptr") + CALLER_INFO);
+            OPENFHE_THROW(errorMsg);
+        }
+        if (powers->powersRe.size() == 0) {
+            std::string errorMsg(std::string("The powersRe member is empty") + CALLER_INFO);
+            OPENFHE_THROW(errorMsg);
+        }
+        if (Mismatched(powers->powersRe[0]->GetCryptoContext())) {
+            std::string errorMsg(std::string("Power ciphertext was not generated with the same crypto context") +
+                                 CALLER_INFO);
+            OPENFHE_THROW(errorMsg);
+        }
+    }
+
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, uint32_t slots) const {
@@ -2691,6 +2707,22 @@ public:
     //------------------------------------------------------------------------------
 
     /**
+    * @brief Computes the powers of a ciphertext to be used when evaluating a polynomial (CKKS only).
+    *        Uses EvalPowersLinear() for low polynomial degrees (degree < 5), or EvalPowersPS() for higher degrees.
+    *
+    * @param ciphertext    Input ciphertext.
+    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+    * @return Resulting structure of powers.
+    */
+
+    template <typename VectorDataType = double>
+    std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
+                                                      const std::vector<VectorDataType>& coefficients) const {
+        ValidateCiphertext(ciphertext);
+        return GetScheme()->EvalPowers(ciphertext, coefficients);
+    }
+
+    /**
     * @brief Evaluates a polynomial (given as a power series) on a ciphertext (CKKS only).
     *        Use EvalPolyLinear() for low polynomial degrees (degree < 5), or EvalPolyPS() for higher degrees.
     *
@@ -2700,10 +2732,17 @@ public:
     */
 
     template <typename VectorDataType = double>
-    Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coefficients,
-                                 size_t precomp = 0) const {
+    Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
+                                 const std::vector<VectorDataType>& coefficients) const {
         ValidateCiphertext(ciphertext);
-        return GetScheme()->EvalPoly(ciphertext, coefficients, precomp);
+        return GetScheme()->EvalPoly(ciphertext, coefficients);
+    }
+
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
+                                            const std::vector<VectorDataType>& coefficients) const {
+        ValidateSeriesPowers(powers);
+        return GetScheme()->EvalPolyWithPrecomp(powers, coefficients);
     }
 
     /**
@@ -2721,6 +2760,22 @@ public:
         return GetScheme()->EvalPolyLinear(ciphertext, coefficients);
     }
 
+    // /**
+    // * @brief Naive polynomial evaluation using a binary tree approach (efficient for low-degree polynomials, <10)
+    // *        for when powers are precomputed.
+    // *        Polynomials are given as a power series. Supported only in CKKS.
+    // *
+    // * @param powers    Required powers corresponding to coefficients.
+    // * @param coefficients  Polynomial coefficients (vector's size = degree).
+    // * @return Resulting ciphertext.
+    // */
+    // template <typename VectorDataType = double>
+    // Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>> powers,
+    //                                               const std::vector<VectorDataType>& coefficients) const {
+    //     ValidateCiphertext(powers);
+    //     return GetScheme()->EvalPolyLinearEvalPolyLinearWithPrecomp(powers, coefficients);
+    // }
+
     /**
     * @brief Evaluates a polynomial (given as a power series) using the Paterson-Stockmeyer method (efficient for high-degree polynomials).
     *        Supported only in CKKS.
@@ -2731,9 +2786,9 @@ public:
     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& ciphertext,
-                                   const std::vector<VectorDataType>& coefficients, size_t precomp = 0) const {
+                                   const std::vector<VectorDataType>& coefficients) const {
         ValidateCiphertext(ciphertext);
-        return GetScheme()->EvalPolyPS(ciphertext, coefficients, precomp);
+        return GetScheme()->EvalPolyPS(ciphertext, coefficients);
     }
 
     //------------------------------------------------------------------------------
@@ -3525,23 +3580,26 @@ public:
         return GetScheme()->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
     }
 
-    std::vector<Ciphertext<Element>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t digitBitSize,
-                                                       const BigInteger& initialScaling, size_t order = 1) {
-        return GetScheme()->EvalMVBPrecompute(ciphertext, digitBitSize, initialScaling, order);
+    template <typename VectorDataType>
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                              const std::vector<VectorDataType>& coeffs,
+                                                              uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                              size_t order = 1) {
+        return GetScheme()->EvalMVBPrecompute(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVB(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                 const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
                                 const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
-        return GetScheme()->EvalMVB(ciphertext, coeffs, digitBitSize, postScaling, levelToReduce, order);
+        return GetScheme()->EvalMVB(ciphertexts, coeffs, digitBitSize, postScaling, levelToReduce, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVBNoDecoding(const std::vector<Ciphertext<DCRTPoly>>& ciphertext,
+    Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
                                           size_t order = 1) {
-        return GetScheme()->EvalMVBNoDecoding(ciphertext, coeffs, digitBitSize, order);
+        return GetScheme()->EvalMVBNoDecoding(ciphertexts, coeffs, digitBitSize, order);
     }
 
     template <typename VectorDataType>

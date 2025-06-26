@@ -192,7 +192,7 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
     for (uint32_t i = 0; i < limit; ++i) {
         auto entry     = (input[i] < 0) ? mPoly.GetModulus() - BigInteger(static_cast<uint64_t>(llabs(input[i]))) :
                                           BigInteger{input[i]};
-        mPoly[(i)*gap] = delta * entry;
+        mPoly[i * gap] = delta * entry;
         if (gap > 1) {
             mPoly[(i + limit) * gap] = delta * entry;
         }
