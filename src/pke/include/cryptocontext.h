@@ -2760,22 +2760,6 @@ public:
         return GetScheme()->EvalPolyLinear(ciphertext, coefficients);
     }
 
-    // /**
-    // * @brief Naive polynomial evaluation using a binary tree approach (efficient for low-degree polynomials, <10)
-    // *        for when powers are precomputed.
-    // *        Polynomials are given as a power series. Supported only in CKKS.
-    // *
-    // * @param powers    Required powers corresponding to coefficients.
-    // * @param coefficients  Polynomial coefficients (vector's size = degree).
-    // * @return Resulting ciphertext.
-    // */
-    // template <typename VectorDataType = double>
-    // Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>> powers,
-    //                                               const std::vector<VectorDataType>& coefficients) const {
-    //     ValidateCiphertext(powers);
-    //     return GetScheme()->EvalPolyLinearEvalPolyLinearWithPrecomp(powers, coefficients);
-    // }
-
     /**
     * @brief Evaluates a polynomial (given as a power series) using the Paterson-Stockmeyer method (efficient for high-degree polynomials).
     *        Supported only in CKKS.
@@ -2796,6 +2780,27 @@ public:
     //------------------------------------------------------------------------------
 
     /**
+    * @brief Computes the Chebyshev polynomials for a ciphertext to be used when evaluating a polynomial (CKKS only).
+    *        Uses EvalChebyPolyLinear() for low polynomial degrees (degree < 5), or EvalChebyPolyPS() for higher degrees.
+    *        Uses a linear transformation to map [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a),
+    *        then applies either EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS depending on degree.
+    *
+    * @param ciphertext    Input ciphertext.
+    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+    * @param a             Lower bound of argument for which the coefficients were found.
+    * @param b             Upper bound of argument for which the coefficients were found.
+    * @return Resulting structure of Chebyshev polynomials.
+    */
+
+    template <typename VectorDataType = double>
+    std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
+                                                          const std::vector<VectorDataType>& coefficients, double a,
+                                                          double b) const {
+        ValidateCiphertext(ciphertext);
+        return GetScheme()->EvalChebyPolys(ciphertext, coefficients, a, b);
+    }
+
+    /**
     * @brief Evaluates a Chebyshev interpolated polynomial on a ciphertext.
     *        Uses a linear transformation to map [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a),
     *        then applies either EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS depending on degree.
@@ -2812,6 +2817,13 @@ public:
                                             const std::vector<VectorDataType>& coefficients, double a, double b) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->EvalChebyshevSeries(ciphertext, coefficients, a, b);
+    }
+
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
+                                                       const std::vector<VectorDataType>& coefficients) const {
+        ValidateSeriesPowers(polys);
+        return GetScheme()->EvalChebyshevSeriesWithPrecomp(polys, coefficients);
     }
 
     /**
@@ -3561,7 +3573,7 @@ public:
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<VectorDataType>& coeffs,
+    Ciphertext<Element> EvalFuncBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                    uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
                                    uint32_t levelToReduce = 0, size_t order = 1) {
         return GetScheme()->EvalFuncBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce,
@@ -3569,44 +3581,44 @@ public:
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+    Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<Element>& ciphertext,
                                              const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
                                              const BigInteger& initialScaling, size_t order = 1) {
         return GetScheme()->EvalFuncBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
-    Ciphertext<Element> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
+    Ciphertext<Element> EvalHomDecoding(ConstCiphertext<Element>& ciphertext, uint64_t postScaling,
                                         uint32_t levelToReduce = 0) {
         return GetScheme()->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
     }
 
     template <typename VectorDataType>
-    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                              const std::vector<VectorDataType>& coeffs,
-                                                              uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                              size_t order = 1) {
+    std::shared_ptr<seriesPowers<Element>> EvalMVBPrecompute(ConstCiphertext<Element>& ciphertext,
+                                                             const std::vector<VectorDataType>& coeffs,
+                                                             uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                             size_t order = 1) {
         return GetScheme()->EvalMVBPrecompute(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
+    Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                 const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
                                 const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
         return GetScheme()->EvalMVB(ciphertexts, coeffs, digitBitSize, postScaling, levelToReduce, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
+    Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
                                           size_t order = 1) {
         return GetScheme()->EvalMVBNoDecoding(ciphertexts, coeffs, digitBitSize, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
-                                               const std::vector<std::complex<double>>& coefficientsCheb, double a,
-                                               double b, const std::vector<VectorDataType>& coefficientsHerm,
-                                               size_t precomp = 0) {
+    Ciphertext<Element> EvalHermiteTrigSeries(ConstCiphertext<Element>& ciphertext,
+                                              const std::vector<std::complex<double>>& coefficientsCheb, double a,
+                                              double b, const std::vector<VectorDataType>& coefficientsHerm,
+                                              size_t precomp = 0) {
         return GetScheme()->EvalHermiteTrigSeries(ciphertext, coefficientsCheb, a, b, coefficientsHerm, precomp);
     }
 

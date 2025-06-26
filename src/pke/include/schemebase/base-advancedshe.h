@@ -149,7 +149,7 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * Method for polynomial evaluation for polynomials represented in the power
+   * Method for computing the powers for polynomials represented in the power
    * series. This uses a binary tree computation of
    * the polynomial powers.
    *
@@ -229,19 +229,6 @@ public:
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
-    // virtual Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
-    //                                                       const std::vector<int64_t>& coefficients) const {
-    //     OPENFHE_THROW("Not implemented for this scheme");
-    // }
-    // virtual Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
-    //                                                       const std::vector<double>& coefficients) const {
-    //     OPENFHE_THROW("Not implemented for this scheme");
-    // }
-    // virtual Ciphertext<Element> EvalPolyLinearWithPrecomp(std::vector<Ciphertext<Element>> powers,
-    //                                                       const std::vector<std::complex<double>>& coefficients) const {
-    //     OPENFHE_THROW("Not implemented for this scheme");
-    // }
-
     /**
    * Method for polynomial evaluation for polynomials represented in the power
    * series. This uses the Paterson-Stockmeyer algorith,.
@@ -268,6 +255,33 @@ public:
     //------------------------------------------------------------------------------
 
     /**
+   * Method for computing the Chebyshev polynomials to be used in polynomial interpolation via the Chebyshev series.
+   * This uses a binary tree computation of the Chebyshev polynomials.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * size of the vector is the degree of the polynomial + 1
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @return the result of polynomial evaluation.
+   */
+    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
+                                                                  const std::vector<int64_t>& coefficients, double a,
+                                                                  double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
+                                                                  const std::vector<double>& coefficients, double a,
+                                                                  double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
+                                                                  const std::vector<std::complex<double>>& coefficients,
+                                                                  double a, double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+
+    /**
    * Method for evaluating Chebyshev polynomial interpolation;
    * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
    * (x-a)/(b-a) If the degree of the polynomial is less than 5, use
@@ -291,6 +305,19 @@ public:
     virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
                                                     const std::vector<std::complex<double>>& coefficients, double a,
                                                     double b) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+
+    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
+                                                               const std::vector<int64_t>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
+                                                               const std::vector<double>& coefficients) const {
+        OPENFHE_THROW("Not implemented for this scheme");
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(
+        std::shared_ptr<seriesPowers<Element>> polys, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW("Not implemented for this scheme");
     }
 
