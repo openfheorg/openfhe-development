@@ -128,7 +128,7 @@ constexpr uint32_t BEFOREBOOT(0);
 
 #ifndef BENCH
 constexpr uint32_t SLOTDFLT(8);  // sparse
-// constexpr uint32_t SLOTDFLT(32); // full complex packing
+// constexpr uint32_t SLOTDFLT(32);  // full complex packing
 constexpr uint32_t RINGDIMDFLT(32);
 constexpr uint32_t DNUMDFLT(3);
 std::vector<uint32_t> LVLBDFLT = {3, 3};
@@ -909,7 +909,6 @@ protected:
             auto ep =
                 SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
 
-            // Set bitReverse true to be able to perform correct rotations in CKKS
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
@@ -921,23 +920,23 @@ protected:
             Ciphertext<DCRTPoly> ctxtAfterFuncBT1, ctxtAfterFuncBT2;
 
             if (binaryLUT) {
-                // Compute the complex exponential to reuse. TODO Andreea: compute the powers in poly
-                auto complexExp =
+                // Compute the complex exponential and its powers to reuse
+                auto complexExpPowers =
                     cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
                 ctxtAfterFuncBT1 =
-                    cc->EvalMVB(complexExp, coeffint1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
-                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExp, coeffint2, t.PInput.GetMSB() - 1, t.order);
+                    cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
+                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
                 ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
             }
             else {
-                // Compute the complex exponential to reuse. TODO Andreea: compute the powers in poly
-                auto complexExp =
+                // Compute the complex exponential and its powers to reuse
+                auto complexExpPowers =
                     cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
                 ctxtAfterFuncBT1 =
-                    cc->EvalMVB(complexExp, coeffcomp1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
-                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExp, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
+                    cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
+                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
                 ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
             }
 
