@@ -207,8 +207,14 @@ set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 # Installation logic
 #--------------------------------------------------------------------
 ### set up for install
+# include(GNUInstallDirs)
+
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH "Installation directory for headers")
+if(NOT IS_ABSOLUTE "${INSTALL_INCLUDE_DIR}")
+    set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}")
+endif()
+
 if(WIN32 AND NOT CYGWIN)
     set(DEF_INSTALL_CMAKE_DIR CMake)
 else()
@@ -717,19 +723,16 @@ export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 export(PACKAGE OpenFHE)
 
 # Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
-   "${INSTALL_INCLUDE_DIR}")
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(OpenFHEConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
+configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
 # ... for the install tree
 set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(OpenFHEConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
+# set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/../../include/openfhe") # supposed to be relocatable?
+configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
 # ... for both
-configure_file(OpenFHEConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
+configure_file(OpenFHEConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
 
 # Install the OpenFHEConfig.cmake and OpenFHEConfigVersion.cmake
 install(FILES
@@ -738,5 +741,5 @@ install(FILES
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # Install the export set for use with the install-tree
-install(EXPORT OpenFHETargets DESTINATION
-  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+# install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" NAMESPACE OpenFHE:: COMPONENT dev)

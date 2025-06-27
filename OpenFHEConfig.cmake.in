@@ -10,6 +10,8 @@ if(NOT OpenFHE_BINARY_DIR)
 endif()
 
 # These are IMPORTED targets created by OpenFHETargets.cmake
+# set(OpenFHE_INCLUDE "${OpenFHE_CMAKE_DIR}/../../include/openfhe")
+# set(OpenFHE_LIBDIR "${OpenFHE_CMAKE_DIR}/../../lib")
 set(OpenFHE_INCLUDE "@INSTALL_INCLUDE_DIR@")
 set(OpenFHE_LIBDIR "@INSTALL_LIB_DIR@")
 set(OpenFHE_LIBRARIES @OpenFHE_PACKAGE_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
