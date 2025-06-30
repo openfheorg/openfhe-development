@@ -332,7 +332,7 @@ protected:
                 ctxtAfterFuncBT =
                     cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, t.order);
 
-            // Scalar addresses the division in Hermite Interpolation
+            // Scalar multiplication addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
             cc->ModReduceInPlace(ctxtAfterFuncBT);
 
@@ -614,7 +614,7 @@ protected:
             t.dnum     = DNUMDFLT;
             t.lvlb     = LVLBDFLT;
 
-            bool flagBR = (t.lvlb[0] != 1 || t.lvlb[1] == 1);
+            bool flagBR = (t.lvlb[0] != 1 || t.lvlb[1] != 1);
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
             // t.numSlots represents the number of values to be encrypted in BFV. If this number is the same as the ring dimension, then the CKKS slots is half.
@@ -697,7 +697,7 @@ protected:
 
             std::vector<double> mask_real = FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), t.numSlots);
 
-            // Note that the correcponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
+            // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
             Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
                 FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), numSlotsCKKS), 1,
                 depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation, nullptr, numSlotsCKKS);
@@ -722,7 +722,7 @@ protected:
                 ctxtAfterFuncBT =
                     cc->EvalFuncBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
 
-            // Scalar addresses the division in Hermite Interpolation
+            // Scalar multiplication addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
 
             auto exact(x);
@@ -778,7 +778,7 @@ protected:
                 ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0,
                                                  t.levelsComputation, t.order);
 
-            // Scalar addresses the division in Hermite Interpolation
+            // Scalar multiplication addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
             cc->ModReduceInPlace(ctxtAfterFuncBT);
 
@@ -940,7 +940,7 @@ protected:
                 ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
             }
 
-            // Scalar addresses the division in Hermite Interpolation
+            // Scalar multiplication addresses the division in Hermite Interpolation
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT1, t.scale);
             cc->ModReduceInPlace(ctxtAfterFuncBT1);
             cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT2, t.scale);
