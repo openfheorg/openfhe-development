@@ -1510,7 +1510,7 @@ public:
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        TypeCheck((ConstCiphertext<Element>)ciphertext, (ConstPlaintext)plaintext);
+        TypeCheck(ciphertext, plaintext);
         plaintext->SetFormat(EVALUATION);
         return GetScheme()->EvalAddMutable(ciphertext, plaintext);
     }
@@ -1721,7 +1721,7 @@ public:
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        TypeCheck((ConstCiphertext<Element>)ciphertext, (ConstPlaintext)plaintext);
+        TypeCheck(ciphertext, plaintext);
         return GetScheme()->EvalSubMutable(ciphertext, plaintext);
     }
 
