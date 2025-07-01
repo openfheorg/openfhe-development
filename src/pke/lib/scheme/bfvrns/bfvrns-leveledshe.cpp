@@ -424,7 +424,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
         }
     }
 
-    ciphertextMult->SetElements({std::move(cvMult)});
+    ciphertextMult->SetElements(std::move(cvMult));
     ciphertextMult->SetNoiseScaleDeg(std::max(ciphertext1->GetNoiseScaleDeg(), ciphertext2->GetNoiseScaleDeg()) + 1);
     return ciphertextMult;
 }
