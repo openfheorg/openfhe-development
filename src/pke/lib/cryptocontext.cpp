@@ -34,12 +34,11 @@
  */
 
 #include "cryptocontext.h"
-
 #include "key/privatekey.h"
 #include "key/publickey.h"
 #include "math/chebyshev.h"
-#include "schemerns/rns-scheme.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "schemerns/rns-scheme.h"
 
 namespace lbcrypto {
 
@@ -374,8 +373,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element>& ciphertext,
-                                                            uint32_t numRows,
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Element>& ciphertext, uint32_t numRows,
                                                             const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
                                                             uint32_t subringDim) const {
     ValidateCiphertext(ciphertext);
@@ -393,8 +391,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Element>& ciphertext,
-                                                            int32_t index) const {
+Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Element>& ciphertext, int32_t index) const {
     ValidateCiphertext(ciphertext);
 
     // If the index is zero, no rotation is needed, copy the ciphertext and return
@@ -424,19 +421,19 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
     if (ct2 == nullptr || ct1->GetKeyTag() != ct2->GetKeyTag())
         OPENFHE_THROW("Information was not generated with this crypto context");
 
-    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
-    auto ek          = CryptoContextImpl<Element>::GetEvalMultKeyVector(ct1->GetKeyTag());
+    auto& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
+    auto& ek          = CryptoContextImpl<Element>::GetEvalMultKeyVector(ct1->GetKeyTag());
     return GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys, ek[0]);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext<Element>& ct1,
-                                                                 ConstPlaintext ct2, uint32_t batchSize) const {
+Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext<Element>& ct1, ConstPlaintext& ct2,
+                                                                 uint32_t batchSize) const {
     ValidateCiphertext(ct1);
     if (ct2 == nullptr)
         OPENFHE_THROW("Information was not generated with this crypto context");
 
-    auto evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
+    auto& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
     return GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys);
 }
 
@@ -453,7 +450,7 @@ Plaintext CryptoContextImpl<Element>::GetPlaintextForDecrypt(PlaintextEncodings 
 
 template <typename Element>
 DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element>& ciphertext,
-                                                  const PrivateKey<Element> privateKey, Plaintext* plaintext) {
+                                                  const PrivateKey<Element>& privateKey, Plaintext* plaintext) {
     if (ciphertext == nullptr)
         OPENFHE_THROW("ciphertext is empty");
     if (plaintext == nullptr)
@@ -508,8 +505,8 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element>& ciph
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalChebyshevFunction(std::function<double(double)> func,
-                                                                      ConstCiphertext<Element>& ciphertext,
-                                                                      double a, double b, uint32_t degree) const {
+                                                                      ConstCiphertext<Element>& ciphertext, double a,
+                                                                      double b, uint32_t degree) const {
     std::vector<double> coefficients = EvalChebyshevCoefficients(func, a, b, degree);
     return EvalChebyshevSeries(ciphertext, coefficients, a, b);
 }
@@ -527,14 +524,14 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalCos(ConstCiphertext<Element>
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalLogistic(ConstCiphertext<Element>& ciphertext, double a,
-                                                             double b, uint32_t degree) const {
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLogistic(ConstCiphertext<Element>& ciphertext, double a, double b,
+                                                             uint32_t degree) const {
     return EvalChebyshevFunction([](double x) -> double { return 1 / (1 + std::exp(-x)); }, ciphertext, a, b, degree);
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Element>& ciphertext, double a,
-                                                           double b, uint32_t degree) const {
+Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Element>& ciphertext, double a, double b,
+                                                           uint32_t degree) const {
     return EvalChebyshevFunction([](double x) -> double { return 1 / x; }, ciphertext, a, b, degree);
 }
 
@@ -559,7 +556,7 @@ Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings
 
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                   const PrivateKey<DCRTPoly> privateKey, Plaintext* plaintext) {
+                                                   const PrivateKey<DCRTPoly>& privateKey, Plaintext* plaintext) {
     if (ciphertext == nullptr)
         OPENFHE_THROW("ciphertext is empty");
     if (plaintext == nullptr)
@@ -668,9 +665,9 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const 
 }
 
 template <typename Element>
-std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(
-    const PrivateKey<Element> privateKey, ConstCiphertext<Element>& ciphertext,
-    ConstCiphertext<Element>& a) const {
+std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+                                                                              ConstCiphertext<Element>& ciphertext,
+                                                                              ConstCiphertext<Element>& a) const {
     return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
 }
 
