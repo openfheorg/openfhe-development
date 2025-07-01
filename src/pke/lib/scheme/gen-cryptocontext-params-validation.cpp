@@ -60,12 +60,12 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
             COMPOSITESCALINGAUTO != parameters.GetScalingTechnique() &&
             COMPOSITESCALINGMANUAL != parameters.GetScalingTechnique()) {
-            OPENFHE_THROW("scalingModSize should be less than " + std::to_string(MAX_MODULUS_SIZE));
+            OPENFHE_THROW("scalingModSize should be greater than 0 and less than " + std::to_string(MAX_MODULUS_SIZE));
         }
         else if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
                  (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
                   COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique())) {
-            OPENFHE_THROW("scalingModSize should be less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
+            OPENFHE_THROW("scalingModSize should be greater than 0 and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
         }
         if (30 != parameters.GetStatisticalSecurity()) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {
@@ -79,6 +79,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
         if (parameters.GetExecutionMode() == EXEC_NOISE_ESTIMATION && parameters.GetCKKSDataType() == COMPLEX) {
             OPENFHE_THROW("EXEC_NOISE_ESTIMATION mode is not compatible with complex data types.");
+        }
+        if (parameters.GetFirstModSize() < parameters.GetScalingModSize()) {
+            OPENFHE_THROW("firstModSize cannot be less than scalingModSize");
         }
     }
     else if (isBFVRNS(scheme)) {

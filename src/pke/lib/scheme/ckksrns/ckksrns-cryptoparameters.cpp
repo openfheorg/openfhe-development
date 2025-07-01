@@ -111,7 +111,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                     m_scalingFactorsReal[0] *= moduliQ[sizeQ - j - 1].ConvertToDouble();
                 }
             }
-            if (extraBits > 0 && m_scalTechnique != COMPOSITESCALINGAUTO && m_scalTechnique != COMPOSITESCALINGMANUAL)
+            else if (extraBits > 0)
                 m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
 
             const double lastPresetFactor = (extraBits == 0) ? m_scalingFactorsReal[0] : m_scalingFactorsReal[1];
@@ -137,13 +137,13 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 else {
                     double prevSF           = m_scalingFactorsReal[k - 1];
                     m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
-                }
 
-                if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-                    double ratio = m_scalingFactorsReal[k] / lastPresetFactor;
-                    if (ratio <= 0.5 || ratio >= 2.0)
-                        OPENFHE_THROW(
-                            "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL or FIXEDAUTO instead.");
+                    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+                        double ratio = m_scalingFactorsReal[k] / lastPresetFactor;
+                        if (ratio <= 0.5 || ratio >= 2.0)
+                            OPENFHE_THROW(
+                                "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL or FIXEDAUTO instead.");
+                    }
                 }
             }
         }
