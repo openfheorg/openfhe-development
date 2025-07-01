@@ -126,19 +126,7 @@ public:
    * @param &rhs the CiphertextImpl to assign from
    * @return this CiphertextImpl
    */
-    CiphertextImpl<Element>& operator=(const CiphertextImpl<Element>& rhs) {
-        CryptoObject<Element>::operator=(rhs);
-        m_elements         = rhs.m_elements;
-        m_slots            = rhs.m_slots;
-        m_level            = rhs.m_level;
-        m_hopslevel        = rhs.m_hopslevel;
-        m_noiseScaleDeg    = rhs.m_noiseScaleDeg;
-        m_scalingFactor    = rhs.m_scalingFactor;
-        m_scalingFactorInt = rhs.m_scalingFactorInt;
-        m_encodingType     = rhs.m_encodingType;
-        m_metadataMap      = rhs.m_metadataMap;
-        return *this;
-    }
+    CiphertextImpl<Element>& operator=(const CiphertextImpl<Element>& rhs) = default;
 
     /**
    * Move Assignment Operator.
@@ -146,19 +134,7 @@ public:
    * @param &rhs the CiphertextImpl to move from
    * @return this CiphertextImpl
    */
-    CiphertextImpl<Element>& operator=(CiphertextImpl<Element>&& rhs) noexcept {
-        CryptoObject<Element>::operator=(std::move(rhs));
-        m_elements         = std::move(rhs.m_elements);
-        m_noiseScaleDeg    = std::move(rhs.m_noiseScaleDeg);
-        m_level            = std::move(rhs.m_level);
-        m_hopslevel        = std::move(rhs.m_hopslevel);
-        m_scalingFactor    = std::move(rhs.m_scalingFactor);
-        m_scalingFactorInt = std::move(rhs.m_scalingFactorInt);
-        m_encodingType     = std::move(rhs.m_encodingType);
-        m_slots            = std::move(rhs.m_slots);
-        m_metadataMap      = std::move(rhs.m_metadataMap);
-        return *this;
-    }
+    CiphertextImpl<Element>& operator=(CiphertextImpl<Element>&& rhs) noexcept = default;
 
     /**
    * GetElement - get the ring element for the cases that use only one element
