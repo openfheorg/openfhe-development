@@ -364,30 +364,6 @@ protected:
         }
     }
 
-    void ValidateEvalMult(ConstCiphertext<Element> a, ConstCiphertext<Element> b = nullptr, CALLER_INFO_ARGS_HDR) const {
-        std::cerr << "================================ in ValidateEvalMult()" << CALLER_INFO << std::endl;
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        if (!cryptoParams) {
-            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
-            OPENFHE_THROW(errorMsg + CALLER_INFO);
-        }
-        // auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS<Element>>(GetCryptoParameters());
-        uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
-        // const uint32_t multDepth = GetCryptoParameters()->GetMultiplicativeDepth();
-        if (a->GetLevel() >= multDepth) {
-            std::string errorMsg("Ciphertext level is too deep [" + std::to_string(a->GetLevel()));
-            errorMsg += ("]. It exceeds multiplicative depth [" + std::to_string(multDepth) + "].");
-            OPENFHE_THROW(errorMsg + CALLER_INFO);
-        }
-        if (b) {
-            if (b->GetLevel() >= multDepth) {
-                std::string errorMsg("Ciphertext2 level is too deep [" + std::to_string(b->GetLevel()));
-                errorMsg += ("]. It exceeds multiplicative depth [" + std::to_string(multDepth) + "].");
-                OPENFHE_THROW(errorMsg + CALLER_INFO);
-            }
-        }
-    }
-
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, uint32_t slots) const {
@@ -1906,7 +1882,6 @@ public:
     */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
-        ValidateEvalMult(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size())
@@ -1924,7 +1899,6 @@ public:
     */
     Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
-        ValidateEvalMult(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size())
@@ -1941,7 +1915,6 @@ public:
     */
     void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
-        ValidateEvalMult(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size())
@@ -2007,7 +1980,6 @@ public:
     Ciphertext<Element> EvalMultNoRelin(ConstCiphertext<Element>& ciphertext1,
                                         ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
-        ValidateEvalMult(ciphertext1, ciphertext2);
 
         return GetScheme()->EvalMult(ciphertext1, ciphertext2);
     }
@@ -2059,7 +2031,6 @@ public:
                                                ConstCiphertext<Element>& ciphertext2) const {
         if (!ciphertext1 || !ciphertext2)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        ValidateEvalMult(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
 
@@ -2080,7 +2051,6 @@ public:
     */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
-        ValidateEvalMult(ciphertext);
         return GetScheme()->EvalMult(ciphertext, plaintext);
     }
 
@@ -2092,7 +2062,6 @@ public:
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalMult(ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext) const {
-        ValidateEvalMult(ciphertext);
         return EvalMult(ciphertext, plaintext);
     }
 
@@ -2105,7 +2074,6 @@ public:
     */
     Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
-        ValidateEvalMult(ciphertext);
         return GetScheme()->EvalMultMutable(ciphertext, plaintext);
     }
 
@@ -2117,7 +2085,6 @@ public:
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalMultMutable(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
-        ValidateEvalMult(ciphertext);
         return EvalMultMutable(ciphertext, plaintext);
     }
 
@@ -2158,7 +2125,6 @@ public:
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        ValidateEvalMult(ciphertext);
         return GetScheme()->EvalMult(ciphertext, scalar);
     }
 
@@ -2170,7 +2136,6 @@ public:
     * @return Resulting ciphertext.
     */
     inline Ciphertext<Element> EvalMult(double scalar, ConstCiphertext<Element>& ciphertext) const {
-        ValidateEvalMult(ciphertext);
         return EvalMult(ciphertext, scalar);
     }
 
@@ -2183,7 +2148,6 @@ public:
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        ValidateEvalMult(ciphertext);
         GetScheme()->EvalMultInPlace(ciphertext, scalar);
     }
 
@@ -2194,7 +2158,6 @@ public:
     * @param ciphertext  Ciphertext to modify (multiplicand).
     */
     inline void EvalMultInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
-        ValidateEvalMult(ciphertext);
         EvalMultInPlace(ciphertext, scalar);
     }
 
@@ -2208,7 +2171,6 @@ public:
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        ValidateEvalMult(ciphertext);
         return GetScheme()->EvalMult(ciphertext, scalar);
     }
 
@@ -2220,7 +2182,6 @@ public:
     * @return Resulting ciphertext.
     */
     inline Ciphertext<Element> EvalMult(std::complex<double> scalar, ConstCiphertext<Element>& ciphertext) const {
-        ValidateEvalMult(ciphertext);
         return EvalMult(ciphertext, scalar);
     }
 
@@ -2233,7 +2194,6 @@ public:
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
-        ValidateEvalMult(ciphertext);
         GetScheme()->EvalMultInPlace(ciphertext, scalar);
     }
 
@@ -2244,7 +2204,6 @@ public:
     * @param ciphertext  Ciphertext to modify (multiplicand).
     */
     inline void EvalMultInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
-        ValidateEvalMult(ciphertext);
         EvalMultInPlace(ciphertext, scalar);
     }
 
@@ -2524,7 +2483,6 @@ public:
                                          ConstCiphertext<Element>& ciphertext2) const {
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
-        ValidateEvalMult(ciphertext1, ciphertext2);
 
         auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (!evalKeyVec.size())

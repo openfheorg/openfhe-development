@@ -30,8 +30,31 @@
 //==================================================================================
 
 #include "ciphertext.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
+
+template <>
+void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
+    m_level = level;
+    // check if the multiplication depth value is sufficient. The check should be in this function as
+    // SetLevel() gets always called
+    uint32_t limbNum = m_elements[0].GetNumOfElements();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(
+        CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
+    if (!cryptoParams) {
+        OPENFHE_THROW("dynamic_pointer_cast<CryptoParametersRNS> failed");
+    }
+
+    uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
+    // std::cout << "level: " << level << "; limbNum: " << limbNum << "; multDepth: " << multDepth << std::endl;
+
+    if (limbNum > multDepth) {
+        OPENFHE_THROW("The multiplicative depth of [" + std::to_string(multDepth) +
+                      "] is insufficient for ciphertext with " + std::to_string(limbNum) + " limbs.");
+    }
+}
 
 template class CiphertextImpl<Poly>;
 template class CiphertextImpl<NativePoly>;

@@ -140,9 +140,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
                     if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
                         double ratio = m_scalingFactorsReal[k] / lastPresetFactor;
-                        if (ratio <= 0.5 || ratio >= 2.0)
-                            OPENFHE_THROW(
-                                "FLEXIBLEAUTO cannot support this number of levels in this parameter setting. Please use FIXEDMANUAL or FIXEDAUTO instead.");
+                        if (ratio <= 0.5 || ratio >= 2.0) {
+                            OPENFHE_THROW("FLEXIBLEAUTO scaling failed at level " + std::to_string(k) +
+                                          " with scaling factor ratio " + std::to_string(ratio) +
+                                          ". Use FIXEDMANUAL or FIXEDAUTO instead.");
+                        }
                     }
                 }
             }
