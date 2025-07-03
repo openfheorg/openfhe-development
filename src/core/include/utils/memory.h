@@ -38,6 +38,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <iterator>
 #include <utility>
 #include <vector>
 

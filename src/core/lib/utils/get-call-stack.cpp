@@ -34,8 +34,9 @@
 // clang-format off
 #include "utils/demangle.h"
 
-#include <execinfo.h>
+#include <cstdlib>
 #include <cxxabi.h>
+#include <execinfo.h>
 #include <memory>
 // clang-format on
 
