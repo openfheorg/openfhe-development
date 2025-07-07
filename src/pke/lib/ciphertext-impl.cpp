@@ -31,28 +31,27 @@
 
 #include "ciphertext.h"
 #include "cryptocontext.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 namespace lbcrypto {
 
 template <>
 void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
     m_level = level;
-    // check if the multiplication depth value is sufficient. The check should be in this function as
-    // SetLevel() gets always called
-    uint32_t limbNum = m_elements[0].GetNumOfElements();
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(
+    // check if the multiplication depth value is sufficient in SetLevel() as it always gets called
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
         CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
-    if (!cryptoParams) {
-        OPENFHE_THROW("dynamic_pointer_cast<CryptoParametersRNS> failed");
-    }
-
-    uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
-    // std::cout << "level: " << level << "; limbNum: " << limbNum << "; multDepth: " << multDepth << std::endl;
-
-    if (limbNum > multDepth) {
-        OPENFHE_THROW("The multiplicative depth of [" + std::to_string(multDepth) +
-                      "] is insufficient for ciphertext with " + std::to_string(limbNum) + " limbs.");
+    // the multDepth check is added for CKKS only
+    if (cryptoParams) {
+        uint32_t limbNum   = m_elements[0].GetNumOfElements();
+        if (limbNum > GetNoiseScaleDeg()) {
+            uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
+            std::string extraInfo{"limbNum: " + std::to_string(limbNum) + "; level: " + std::to_string(level) +
+                             "; noiseScaleDeg(): " + std::to_string(GetNoiseScaleDeg())};
+            OPENFHE_THROW("The multiplicative depth of [" + std::to_string(multDepth) +
+                          "] is insufficient. Additional information: " + extraInfo);
+        }
     }
 }
 
