@@ -44,7 +44,7 @@
 
 #include <chrono>
 #include <complex>
-#include <iostream>
+#include <ostream>
 #include <iterator>
 #include <vector>
 
@@ -609,11 +609,12 @@ protected:
 
     void UnitTest_ConsecLevLUT(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
         try {
+#ifndef BENCH
             t.numSlots = SLOTDFLT;
             t.ringDim  = RINGDIMDFLT;
             t.dnum     = DNUMDFLT;
             t.lvlb     = LVLBDFLT;
-
+#endif
             bool flagBR = (t.lvlb[0] != 1 || t.lvlb[1] != 1);
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -815,11 +816,12 @@ protected:
 
     void UnitTest_MVB(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
         try {
+#ifndef BENCH
             t.numSlots = SLOTDFLT;
             t.ringDim  = RINGDIMDFLT;
             t.dnum     = DNUMDFLT;
             t.lvlb     = LVLBDFLT;
-
+#endif
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
             // t.numSlots represents the number of values to be encrypted in BFV. If this number is the same as the ring dimension, then the CKKS slots is half.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;

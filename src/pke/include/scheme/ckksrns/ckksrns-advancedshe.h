@@ -75,11 +75,11 @@ public:
     //------------------------------------------------------------------------------
 
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(ConstCiphertext<DCRTPoly>& x,
-                                                       const std::vector<int64_t>& coefficients) const;
+                                                       const std::vector<int64_t>& coefficients) const override;
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(ConstCiphertext<DCRTPoly>& x,
-                                                       const std::vector<double>& coefficients) const;
-    std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(ConstCiphertext<DCRTPoly>& x,
-                                                       const std::vector<std::complex<double>>& coefficients) const;
+                                                       const std::vector<double>& coefficients) const override;
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(
+        ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const override;
 
     Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext,
                                   const std::vector<int64_t>& coefficients) const override;
@@ -115,13 +115,13 @@ public:
 
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalChebyPolys(ConstCiphertext<DCRTPoly>& x,
                                                            const std::vector<int64_t>& coefficients, double a,
-                                                           double b) const;
+                                                           double b) const override;
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalChebyPolys(ConstCiphertext<DCRTPoly>& x,
                                                            const std::vector<double>& coefficients, double a,
-                                                           double b) const;
+                                                           double b) const override;
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalChebyPolys(ConstCiphertext<DCRTPoly>& x,
                                                            const std::vector<std::complex<double>>& coefficients,
-                                                           double a, double b) const;
+                                                           double a, double b) const override;
 
     Ciphertext<DCRTPoly> EvalChebyshevSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                              const std::vector<int64_t>& coefficients, double a,
