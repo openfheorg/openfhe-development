@@ -57,15 +57,17 @@ void validateParametersForCryptocontext(const Params& parameters) {
             OPENFHE_THROW(
                 "NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS. Use NOISE_FLOODING_DECRYPT and EXEC_EVALUATION instead.");
         }
-        if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
-            COMPOSITESCALINGAUTO != parameters.GetScalingTechnique() &&
-            COMPOSITESCALINGMANUAL != parameters.GetScalingTechnique()) {
-            OPENFHE_THROW("scalingModSize should be greater than 0 and less than " + std::to_string(MAX_MODULUS_SIZE));
+        if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() || COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
+            if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() || 15 > parameters.GetScalingModSize()) {
+                OPENFHE_THROW(
+                    "scalingModSize should be greater than 15 and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
+            }
         }
-        else if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() &&
-                 (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
-                  COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique())) {
-            OPENFHE_THROW("scalingModSize should be greater than 0 and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
+        else {
+            if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() || 15 > parameters.GetScalingModSize()) {
+                OPENFHE_THROW(
+                    "scalingModSize should be greater than 15 and less than " + std::to_string(MAX_MODULUS_SIZE));
+            }
         }
         if (30 != parameters.GetStatisticalSecurity()) {
             if (NOISE_FLOODING_MULTIPARTY != parameters.GetMultipartyMode()) {

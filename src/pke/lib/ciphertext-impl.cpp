@@ -42,15 +42,13 @@ void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
     // check if the multiplication depth value is sufficient in SetLevel() as it always gets called
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
         CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
-    // the multDepth check is added for CKKS only
+    // the multDepth check applies only to CKKS, when cryptoParams is of type CryptoParametersCKKSRNS.
     if (cryptoParams) {
         uint32_t limbNum   = m_elements[0].GetNumOfElements();
-        if (limbNum > GetNoiseScaleDeg()) {
+        if (limbNum >= GetNoiseScaleDeg()) {
             uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
-            std::string extraInfo{"limbNum: " + std::to_string(limbNum) + "; level: " + std::to_string(level) +
-                             "; noiseScaleDeg(): " + std::to_string(GetNoiseScaleDeg())};
-            OPENFHE_THROW("The multiplicative depth of [" + std::to_string(multDepth) +
-                          "] is insufficient. Additional information: " + extraInfo);
+            OPENFHE_THROW("The current multiplicative depth [" + std::to_string(multDepth) +
+                          "] is insufficient; increase it.");
         }
     }
 }
