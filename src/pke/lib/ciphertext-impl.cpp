@@ -44,8 +44,8 @@ void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
         CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
     // the multDepth check applies only to CKKS, when cryptoParams is of type CryptoParametersCKKSRNS.
     if (cryptoParams) {
-        uint32_t limbNum   = m_elements[0].GetNumOfElements();
-        if (limbNum >= GetNoiseScaleDeg()) {
+        uint32_t limbNum = m_elements[0].GetNumOfElements();
+        if (limbNum < GetNoiseScaleDeg()) {
             uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
             OPENFHE_THROW("The current multiplicative depth [" + std::to_string(multDepth) +
                           "] is insufficient; increase it.");
