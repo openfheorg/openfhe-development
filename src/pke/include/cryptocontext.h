@@ -1980,6 +1980,7 @@ public:
     Ciphertext<Element> EvalMultNoRelin(ConstCiphertext<Element>& ciphertext1,
                                         ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
+
         return GetScheme()->EvalMult(ciphertext1, ciphertext2);
     }
 
