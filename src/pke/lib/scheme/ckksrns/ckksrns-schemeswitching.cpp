@@ -46,6 +46,12 @@
 #include <cmath>
 #include <iterator>
 #include <limits>
+#include <string>
+#include <utility>
+#include <map>
+#include <algorithm>
+#include <memory>
+#include <vector>
 
 // K = 16
 static constexpr std::initializer_list<double> g_coefficientsFHEW16{
@@ -252,7 +258,7 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
             im = im64 >> (-pRemaining);
         }
         else {
-            __int128 pPowRemaining = ((int64_t)1) << pRemaining;
+            __int128 pPowRemaining = (static_cast<int64_t>(1)) << pRemaining;
             im                     = pPowRemaining * im64;
         }
 
@@ -447,13 +453,13 @@ Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc,
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
         int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
+        auto intStep    = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
         while (logApprox > 0) {
             logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-            intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
+            intStep = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
             std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -1242,7 +1248,8 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(0);
     parameters.SetFirstModSize(params.GetCtxtModSizeFHEWIntermedSwch());
-    parameters.SetScalingModSize(params.GetScalingModSize());
+    // scaling mod size is not used in this case
+    parameters.SetScalingModSize(params.GetCtxtModSizeFHEWIntermedSwch());
     // This doesn't need this to be the same scaling technique as the outer cryptocontext, since we only do a key switch
     parameters.SetScalingTechnique(FIXEDMANUAL);
     parameters.SetSecurityLevel(params.GetSecurityLevelCKKS());

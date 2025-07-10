@@ -243,6 +243,7 @@ public:
     /**
    * Set the number of scalings
    */
+    // Generic case: no multiplicativeDepth validation. SetLevel() has a specialization for DCRTPoly
     void SetLevel(size_t level) {
         m_level = level;
     }
@@ -522,6 +523,9 @@ private:
     // A map to hold different Metadata objects - used for flexible extensions of Ciphertext
     MetadataMap m_metadataMap{std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>()};
 };
+
+template <>
+void CiphertextImpl<DCRTPoly>::SetLevel(size_t level);
 
 /**
  * operator+ overload for Ciphertexts.  Performs EvalAdd.
