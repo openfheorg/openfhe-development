@@ -1,3 +1,13 @@
+07/11/2025: OpenFHE 1.3.1 (stable) is released
+
+* Updates the noise estimation models for BGV and BFV, making them slightly more conservative (roughly 1 extra bit is added for each multiplicative level) (#1004)
+* Removes extra rotation indices in CKKS bootstrapping (#998)
+* Fixes a bug with CKKS bootstrapping for N=2^17 (#996)
+* Improves exception handling
+* Fixes several other bugs
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.3.1%22
+
 05/21/2025: OpenFHE 1.3.0 (development) is released
 
 * Adds the composite scaling modes to CKKS based on https://eprint.iacr.org/2023/1462 (see https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/COMPOSITE_SCALING.md for more details)

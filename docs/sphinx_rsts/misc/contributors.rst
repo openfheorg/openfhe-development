@@ -55,6 +55,8 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Kevin King (Massachusetts Institute of Technology)
 
+* Jeremy Kuhn (Google)
+
 * Yongwoo Lee (Samsung Advanced Institute of Technology, Inha University)
 
 * Thomas (Zeyu) Liu (Duality Technologies, Columbia University, Yale University)
@@ -108,6 +110,8 @@ We gratefully acknowledge intellectual and software contributions to the library
 * Vinod Vaikuntanathan (Massachusetts Institute of Technology & Duality Technologies)
 
 * Michael Walter (University of California San Diego)
+
+* Hongren Zheng (Tsinghua University)
 
 * Vincent Zucca (Universite de Perpignan Via Domitia, LIRMM, University of Montpellier, KU Leuven)
 
