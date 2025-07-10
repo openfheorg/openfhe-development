@@ -55,7 +55,7 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Kevin King (Massachusetts Institute of Technology)
 
-* Jeremy Kuhn (Google)
+* Jeremy Kun (Google)
 
 * Yongwoo Lee (Samsung Advanced Institute of Technology, Inha University)
 
