@@ -78,9 +78,9 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        1. [Examples with Scheme Switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
-       1. [$2$-party Interactive Bootstrapping Examples](src/pke/examples/interactive-bootstrapping.cpp)
-       1. [Simple $n$-party Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)
-       1. [$n$-party Interactive Bootstrapping after Chebyshev Approximation](src/pke/examples/tckks-interactive-mp-bootstrapping-Chebyshev.cpp)
+       1. [2-party Interactive Bootstrapping Examples](src/pke/examples/interactive-bootstrapping.cpp)
+       1. [Simple n-party Interactive Bootstrapping Example](src/pke/examples/tckks-interactive-mp-bootstrapping.cpp)
+       1. [n-party Interactive Bootstrapping after Chebyshev Approximation](src/pke/examples/tckks-interactive-mp-bootstrapping-Chebyshev.cpp)
        1. [Code Example for BFV with 5 parties](src/pke/examples/threshold-fhe-5p.cpp)
 
 ## Main API

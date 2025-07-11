@@ -42,6 +42,13 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "cryptocontext.h"
 #include "ciphertext.h"
 
+#include <algorithm>
+#include <map>
+#include <utility>
+#include <memory>
+#include <vector>
+#include <string>
+
 namespace lbcrypto {
 
 void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
@@ -110,15 +117,20 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
 
     double w = std::pow(2, relinWindow == 0 ? dcrtBits : relinWindow);
 
-    // expansion factor delta
+    // expansion factor delta for a multiplication of a Gaussian polynomial by a random polynomial
     auto delta = [](uint32_t n) -> double {
         return (2. * std::sqrt(n));
+    };
+
+    // expansion factor delta for modulus switching
+    auto deltaMS = [](uint32_t n) -> double {
+        return (4. * std::sqrt(n));
     };
 
     // norm of fresh ciphertext polynomial (for EXTENDED the noise is reduced to modulus switching noise)
     auto Vnorm = [&](uint32_t n) -> double {
         if (encTech == EXTENDED)
-            return (1. + delta(n) * Bkey) / 2.;
+            return (1. + deltaMS(n) * Bkey) / 2.;
         else
             return Berr * (1. + 2. * delta(n) * Bkey);
     };
@@ -128,7 +140,7 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
 #if defined(WITH_REDUCED_NOISE)
             return k * (numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
 #else
-            return k * (numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0);
+            return k * (numPartQ * delta(n) * Berr + deltaMS(n) * Bkey + 1.0);
 #endif
         else {
             double numDigitsPerTower = (relinWindow == 0) ? 1 : ((dcrtBits / relinWindow) + 1);
@@ -138,12 +150,12 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
 
     // function used in the EvalMult constraint
     auto C1 = [&](uint32_t n) -> double {
-        return delta(n) * delta(n) * p * Bkey;
+        return delta(n) * deltaMS(n) * p * Bkey;
     };
 
     // function used in the EvalMult constraint
     auto C2 = [&](uint32_t n, double logqPrev) -> double {
-        return delta(n) * delta(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w);
+        return delta(n) * deltaMS(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w);
     };
 
     // main correctness constraint
@@ -167,7 +179,7 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
     // get an estimate of the error q / (4t)
     double loge = logq / log(2) - 2 - log2(p);
 
-    double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(delta(n));
+    double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(deltaMS(n));
 
     // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
     // adjusted empirical parameter to 16 from 4 for threshold scenarios to work correctly, this might need to
@@ -347,7 +359,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     for (size_t i = 0; i < cv1Size; i++) {
         for (size_t j = 0; j < cv2Size; j++) {
             if (isFirstAdd[i + j] == true) {
-                cvMult[i + j]     = cv1[i] * cv2[j];
+                cvMult[i + j] = cv1[i] * cv2[j];
                 isFirstAdd[i + j] = false;
             }
             else {
@@ -617,7 +629,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
                         cvSquare[i + j] = cv[i] * cv[j];
                     }
                     else {
-                        cvtemp          = cv[i] * cv[j];
+                        cvtemp = cv[i] * cv[j];
                         cvSquare[i + j] = cvtemp;
                         cvSquare[i + j] += cvtemp;
                     }
@@ -640,7 +652,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
         for (size_t i = 0; i < cvSize; i++) {
             for (size_t j = 0; j < cvSize; j++) {
                 if (isFirstAdd[i + j] == true) {
-                    cvSquare[i + j]   = cv[i] * cvPoverQ[j];
+                    cvSquare[i + j] = cv[i] * cvPoverQ[j];
                     isFirstAdd[i + j] = false;
                 }
                 else {

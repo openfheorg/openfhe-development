@@ -68,10 +68,9 @@ protected:
     PtxtPolyType typeFlag;
     EncodingParams encodingParams;
 
-    // TODO: remove mutable
-    mutable Poly encodedVector;
-    mutable NativePoly encodedNativeVector;
-    mutable DCRTPoly encodedVectorDCRT;
+    Poly encodedVector;
+    NativePoly encodedNativeVector;
+    DCRTPoly encodedVectorDCRT;
 
     PlaintextEncodings ptxtEncoding{INVALID_ENCODING};
     SCHEME schemeID{SCHEME::INVALID_SCHEME};
@@ -124,37 +123,9 @@ public:
           ptxtEncoding(encoding),
           schemeID(schemeTag) {}
 
-    PlaintextImpl(const PlaintextImpl& rhs)
-        : isEncoded(rhs.isEncoded),
-          typeFlag(rhs.typeFlag),
-          encodingParams(rhs.encodingParams),
-          encodedVector(rhs.encodedVector),
-          encodedNativeVector(rhs.encodedNativeVector),
-          encodedVectorDCRT(rhs.encodedVectorDCRT),
-          ptxtEncoding(rhs.ptxtEncoding),
-          schemeID(rhs.schemeID),
-          ckksDataType(rhs.ckksDataType),
-          scalingFactor(rhs.scalingFactor),
-          scalingFactorInt(rhs.scalingFactorInt),
-          level(rhs.level),
-          noiseScaleDeg(rhs.noiseScaleDeg),
-          slots(rhs.slots) {}
+    PlaintextImpl(const PlaintextImpl& rhs) = default;
 
-    PlaintextImpl(PlaintextImpl&& rhs)
-        : isEncoded(rhs.isEncoded),
-          typeFlag(rhs.typeFlag),
-          encodingParams(std::move(rhs.encodingParams)),
-          encodedVector(std::move(rhs.encodedVector)),
-          encodedNativeVector(std::move(rhs.encodedNativeVector)),
-          encodedVectorDCRT(std::move(rhs.encodedVectorDCRT)),
-          ptxtEncoding(rhs.ptxtEncoding),
-          schemeID(rhs.schemeID),
-          ckksDataType(rhs.ckksDataType),
-          scalingFactor(rhs.scalingFactor),
-          scalingFactorInt(rhs.scalingFactorInt),
-          level(rhs.level),
-          noiseScaleDeg(rhs.noiseScaleDeg),
-          slots(rhs.slots) {}
+    PlaintextImpl(PlaintextImpl&& rhs) noexcept = default;
 
     virtual ~PlaintextImpl() = default;
 
@@ -272,8 +243,7 @@ public:
    *
    * @param fmt
    */
-    // TODO: remove const
-    void SetFormat(Format fmt) const {
+    void SetFormat(Format fmt) {
         if (typeFlag == IsPoly)
             encodedVector.SetFormat(fmt);
         else if (typeFlag == IsNativePoly)

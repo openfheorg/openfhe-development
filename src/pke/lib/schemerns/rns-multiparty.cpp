@@ -103,16 +103,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
     // e is added to do noise flooding
     DCRTPoly b = cv[0] + s * cv[1] + ns * noise;
 
-    Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
-
-    result->SetElements({std::move(b)});
-
-    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
-    result->SetLevel(ciphertext->GetLevel());
-    result->SetScalingFactor(ciphertext->GetScalingFactor());
-    result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
-    result->SetSlots(ciphertext->GetSlots());
-
+    auto result = ciphertext->CloneEmpty();
+    result->SetElement(std::move(b));
     return result;
 }
 
@@ -172,16 +164,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
     // noise is added to do noise flooding
     DCRTPoly b = s * cv[1] + ns * noise;
 
-    Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
-
-    result->SetElements({std::move(b)});
-
-    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
-    result->SetLevel(ciphertext->GetLevel());
-    result->SetScalingFactor(ciphertext->GetScalingFactor());
-    result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
-    result->SetSlots(ciphertext->GetSlots());
-
+    auto result = ciphertext->CloneEmpty();
+    result->SetElement(std::move(b));
     return result;
 }
 
@@ -257,7 +241,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
 // it prevents an overflow during interactive bootstrapping
 void PolynomialRound(DCRTPoly& dcrtpoly) {
     const uint32_t NUM_TOWERS = dcrtpoly.GetNumOfElements();
-    if ( 2 != NUM_TOWERS) {
+    if (2 != NUM_TOWERS) {
         OPENFHE_THROW("The input polynomial has " + std::to_string(NUM_TOWERS) + " instead of 2 RNS limbs");
     }
 
@@ -390,8 +374,8 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
 Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
                                                    ConstCiphertext<DCRTPoly> ciphertext) const {
     const size_t NUM_POLYNOMIALS = ciphertext->NumberCiphertextElements();
-    if(NUM_POLYNOMIALS != 1 && NUM_POLYNOMIALS != 2) {
-        std::string msg ="Ciphertext should contain either one or two polynomials. The input ciphertext has " +
+    if (NUM_POLYNOMIALS != 1 && NUM_POLYNOMIALS != 2) {
+        std::string msg = "Ciphertext should contain either one or two polynomials. The input ciphertext has " +
                           std::to_string(NUM_POLYNOMIALS) + ".";
         OPENFHE_THROW(msg);
     }
@@ -402,7 +386,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> pr
     size_t sizeQl = c[0].GetParams()->GetParams().size();
 
     const DCRTPoly& s = privateKey->GetPrivateElement();
-    size_t sizeQ  = s.GetParams()->GetParams().size();
+    size_t sizeQ      = s.GetParams()->GetParams().size();
 
     size_t diffQl = sizeQ - sizeQl;
 
@@ -429,7 +413,6 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     using TugType  = typename DCRTPoly::TugType;
     using ParmType = typename DCRTPoly::Params;
 
-
     const auto cryptoParams =
         std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(publicKey->GetCryptoParameters());
 
@@ -440,7 +423,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     ExtendBasis(ptxt, cryptoParams->GetElementParams());
 
     const std::shared_ptr<ParmType> ptxtParams = ptxt.GetParams();
-    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    const DggType& dgg                         = cryptoParams->GetDiscreteGaussianGenerator();
     TugType tug;
 
     // Supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution (UNIFORM_TERNARY) cases

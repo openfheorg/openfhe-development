@@ -479,7 +479,7 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALSQUARE,  "22", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
     { EVALSQUARE,  "23", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     { EVALSQUARE,  "24", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
-#endif // __EMSCRIPTEN__
+#endif  // __EMSCRIPTEN__
 // ==========================================
     // TestType,               Descr, Scheme,        RDim,  MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod,      StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { RING_DIM_ERROR_HANDLING, "01", {BFVRNS_SCHEME, 1<<13, 3,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    4293918721, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
@@ -491,7 +491,7 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
 // clang-format on
 //===========================================================================================================
 class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
-    using Element = DCRTPoly;
+    using Element    = DCRTPoly;
     const double eps = EPSILON;
 
 protected:
@@ -1237,18 +1237,18 @@ protected:
         }
     }
 
-// clang-format off
+    // clang-format off
     // helper function for UnitTest_EvalMutable()
     template <typename Func1, typename Func2>
     void EvalMutableOperations(const CryptoContext<DCRTPoly>& cryptoContext,
                                const KeyPair<DCRTPoly>& keyPair,
                                SCHEME schemeId,
-                               Func1 operation1, // (ctxt, ctxt)
-                               Func2 operation2, // (ctxt, ptxt)
-                               const Plaintext& plaintext1,
-                               const Plaintext& plaintext2,
-                               const Plaintext& plaintextResult1,
-                               const Plaintext& plaintextResult2,
+                               Func1 operation1,  // (ctxt, ctxt)
+                               Func2 operation2,  // (ctxt, ptxt)
+                               Plaintext& plaintext1,
+                               Plaintext& plaintext2,
+                               Plaintext& plaintextResult1,
+                               Plaintext& plaintextResult2,
                                const std::string& errMsg) {
         auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
         auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
@@ -1347,7 +1347,7 @@ protected:
                                   keyPair,
                                   testData.params.schemeId,
                                   static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Ciphertext<DCRTPoly>&) const>(&CryptoContextImpl<DCRTPoly>::EvalMultMutable),
-                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext) const>(&CryptoContextImpl<DCRTPoly>::EvalMultMutable),
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext&) const>(&CryptoContextImpl<DCRTPoly>::EvalMultMutable),
                                   plaintext1,
                                   plaintext2,
                                   plaintextMultResult1,
@@ -1358,7 +1358,7 @@ protected:
                                   keyPair,
                                   testData.params.schemeId,
                                   static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Ciphertext<DCRTPoly>&) const>(&CryptoContextImpl<DCRTPoly>::EvalAddMutable),
-                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext) const>(&CryptoContextImpl<DCRTPoly>::EvalAddMutable),
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext&) const>(&CryptoContextImpl<DCRTPoly>::EvalAddMutable),
                                   plaintext1,
                                   plaintext2,
                                   plaintextAddResult1,
@@ -1369,7 +1369,7 @@ protected:
                                   keyPair,
                                   testData.params.schemeId,
                                   static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Ciphertext<DCRTPoly>&) const>(&CryptoContextImpl<DCRTPoly>::EvalSubMutable),
-                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext) const>(&CryptoContextImpl<DCRTPoly>::EvalSubMutable),
+                                  static_cast<Ciphertext<DCRTPoly> (CryptoContextImpl<DCRTPoly>::*)(Ciphertext<DCRTPoly>&, Plaintext&) const>(&CryptoContextImpl<DCRTPoly>::EvalSubMutable),
                                   plaintext1,
                                   plaintext2,
                                   plaintextSubResult1,

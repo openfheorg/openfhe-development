@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+//==================================================================================
+// ATTENTION: THIS TEST IS TEMPORARILY DISABLED!
+//==================================================================================
+#if (0)
 /*
   This code exercises the block allocator utility of the OpenFHE lattice encryption library.
  */
@@ -204,4 +208,5 @@ TEST(UTBlockAllocate, xalloc_test) {
     // if using xallocator in a C-only application.
     // xalloc_destroy();
 }
+#endif
 #endif

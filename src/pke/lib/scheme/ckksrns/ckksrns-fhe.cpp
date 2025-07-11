@@ -181,9 +181,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         // Extract the modulus prior to bootstrapping
         double qDouble = GetBigModulus(cryptoParams);
 
-        int exponent{0};
-        std::frexp(qDouble, &exponent);
-        uint128_t factor = static_cast<uint128_t>(1) << static_cast<uint32_t>(exponent - 1);
+        uint128_t factor = ((uint128_t)1 << (static_cast<uint32_t>(std::round(std::log2(qDouble)))));
         double pre       = (compositeDegree > 1) ? 1.0 : qDouble / factor;
         double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
         double scaleEnc  = pre / k;
@@ -311,9 +309,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     // Extract the modulus prior to bootstrapping
     double qDouble = GetBigModulus(cryptoParams);
 
-    int exponent{0};
-    std::frexp(qDouble, &exponent);
-    uint128_t factor = static_cast<uint128_t>(1) << static_cast<uint32_t>(exponent - 1);
+    uint128_t factor = ((uint128_t)1 << (static_cast<uint32_t>(std::round(std::log2(qDouble)))));
     double pre       = qDouble / factor;
     double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
     double scaleEnc  = (compositeDegree > 1) ? 1.0 / k : pre / k;
@@ -916,7 +912,8 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
 
     for (int32_t s = static_cast<int32_t>(levelBudget) - 1; s >= static_cast<int32_t>(flagRem); --s) {
         const uint32_t scalingFactor = 1U << ((s - flagRem) * layersCollapse + remCollapse);
-        for (int32_t j = (1 - (numRotations + 1) / 2); j < static_cast<int32_t>(g); ++j) {
+        const int32_t halfRots       = (1 - (numRotations + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(g + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, slots));
         }
         for (size_t i = 0; i < b; i++) {
@@ -925,7 +922,8 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
     }
 
     if (flagRem) {
-        for (int32_t j = (1 - (numRotationsRem + 1) / 2); j < static_cast<int32_t>(gRem); ++j) {
+        const int32_t halfRots = (1 - (numRotationsRem + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(gRem + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j, slots));
         }
         for (size_t i = 0; i < bRem; i++) {
@@ -979,7 +977,8 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
 
     for (size_t s = 0; s < (levelBudget - flagRem); ++s) {
         const uint32_t scalingFactor = 1U << (s * layersCollapse);
-        for (int32_t j = (1 - (numRotations + 1) / 2); j <= static_cast<int32_t>(g); ++j) {
+        const int32_t halfRots       = (1 - (numRotations + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(g + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, M / 4));
         }
         for (size_t i = 0; i < b; ++i) {
@@ -990,7 +989,8 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     if (flagRem) {
         uint32_t s                   = levelBudget - flagRem;
         const uint32_t scalingFactor = 1U << (s * layersCollapse);
-        for (int32_t j = (1 - (numRotationsRem + 1) / 2); j <= static_cast<int32_t>(gRem); ++j) {
+        const int32_t halfRots       = (1 - (numRotationsRem + 1) / 2);
+        for (int32_t j = halfRots; j < static_cast<int32_t>(gRem + halfRots); ++j) {
             indexList.emplace_back(ReduceRotation(j * scalingFactor, M / 4));
         }
         for (size_t i = 0; i < bRem; ++i) {

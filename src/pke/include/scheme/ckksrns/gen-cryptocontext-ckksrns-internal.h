@@ -36,11 +36,12 @@
 #ifndef _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
 #define _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
 
-#include "encoding/encodingparams.h"
 #include "constants.h"
-#include "utils/exception.h"
-#include "scheme/scheme-utils.h"
+#include "cryptocontext.h"
+#include "encoding/encodingparams.h"
 #include "scheme/scheme-id.h"
+#include "scheme/scheme-utils.h"
+#include "utils/exception.h"
 
 #include <memory>
 

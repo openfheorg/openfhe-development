@@ -72,6 +72,7 @@ bool StringEncoding::Encode() {
 
     if (this->typeFlag == IsDCRTPoly) {
         this->encodedVectorDCRT = this->encodedVector;
+        this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
     }
 
     this->isEncoded = true;

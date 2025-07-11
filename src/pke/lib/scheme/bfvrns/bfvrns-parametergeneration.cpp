@@ -101,15 +101,20 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         distType = HEStd_ternary;
     }
 
-    // expansion factor delta
+    // expansion factor delta for a multiplication of a Gaussian polynomial by a random polynomial
     auto delta = [](uint32_t n) -> double {
         return (2. * std::sqrt(n));
+    };
+
+    // expansion factor delta for modulus switching
+    auto deltaMS = [](uint32_t n) -> double {
+        return (4. * std::sqrt(n));
     };
 
     // norm of fresh ciphertext polynomial (for EXTENDED the noise is reduced to modulus switching noise)
     auto Vnorm = [&](uint32_t n) -> double {
         if (encTech == EXTENDED)
-            return (1. + delta(n) * Bkey) / 2.;
+            return (1. + deltaMS(n) * Bkey) / 2.;
         else
             return Berr * (1. + 2. * delta(n) * Bkey);
     };
@@ -145,9 +150,9 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
             // of digits and moduli at this point and use upper bounds
             double numTowers = std::ceil(logqPrev / dcrtBits);
 #if defined(WITH_REDUCED_NOISE)
-            return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0) / 2.0;
+            return numTowers * (delta(n) * Berr + deltaMS(n) * Bkey + 1.0) / 2.0;
 #else
-            return numTowers * (delta(n) * Berr + delta(n) * Bkey + 1.0);
+            return numTowers * (delta(n) * Berr + deltaMS(n) * Bkey + 1.0);
 #endif
         }
         else {
@@ -249,12 +254,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
 
         // function used in the EvalMult constraint
         auto C1 = [&](uint32_t n) -> double {
-            return delta(n) * delta(n) * p * Bkey;
+            return delta(n) * deltaMS(n) * p * Bkey;
         };
 
         // function used in the EvalMult constraint
         auto C2 = [&](uint32_t n, double logqPrev) -> double {
-            return delta(n) * delta(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w, true);
+            return delta(n) * deltaMS(n) * Bkey * Bkey / 2.0 + noiseKS(n, logqPrev, w, true);
         };
 
         // main correctness constraint

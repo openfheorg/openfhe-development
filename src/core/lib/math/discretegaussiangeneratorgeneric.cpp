@@ -47,6 +47,7 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <random>

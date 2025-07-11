@@ -30,8 +30,28 @@
 //==================================================================================
 
 #include "ciphertext.h"
+#include "cryptocontext.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 namespace lbcrypto {
+
+template <>
+void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
+    m_level = level;
+
+    // check if the multiplication depth value is sufficient in SetLevel() as it always gets called
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+        CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
+    // the multDepth check applies only to CKKS, when cryptoParams is of type CryptoParametersCKKSRNS.
+    if (cryptoParams) {
+        uint32_t limbNum = m_elements[0].GetNumOfElements();
+        if (limbNum < GetNoiseScaleDeg()) {
+            uint32_t multDepth = cryptoParams->GetMultiplicativeDepth();
+            OPENFHE_THROW("The current multiplicative depth [" + std::to_string(multDepth) +
+                          "] is insufficient; increase it.");
+        }
+    }
+}
 
 template class CiphertextImpl<Poly>;
 template class CiphertextImpl<NativePoly>;

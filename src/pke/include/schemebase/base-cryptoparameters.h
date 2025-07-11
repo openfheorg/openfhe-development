@@ -32,9 +32,8 @@
 #define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 
 #include "utils/serializable.h"
-#include "encoding/plaintext.h"
-
 #include "encoding/encodings.h"
+#include "encoding/plaintext.h"
 
 #include <memory>
 #include <string>
@@ -74,6 +73,10 @@ public:
         return m_encodingParams->GetPlaintextModulus();
     }
 
+    uint32_t GetBatchSize() const {
+        return m_encodingParams->GetBatchSize();
+    }
+
     /**
    * Returns the reference to IL params
    *
@@ -105,9 +108,14 @@ public:
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
     }
 
+    void SetBatchSize(uint32_t batchSize) {
+        m_encodingParams->SetBatchSize(batchSize);
+    }
+
     bool operator==(const CryptoParametersBase<Element>& rhs) const {
         return CompareTo(rhs);
     }
+
     bool operator!=(const CryptoParametersBase<Element>& rhs) const {
         return !(*this == rhs);
     }
