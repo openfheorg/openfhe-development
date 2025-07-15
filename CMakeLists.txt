@@ -8,7 +8,7 @@
 ## An option has the value of ON or OFF
 ## See below for the list of options
 
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.16.3)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -147,23 +147,40 @@ if("${isSystemDir}" STREQUAL "-1")
 endif("${isSystemDir}" STREQUAL "-1")
 
 # Compiler flags
+set(C_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
+set(CXX_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
+if(WITH_NATIVEOPT)
+    string(APPEND C_COMPILE_FLAGS " -march=native")
+    string(APPEND CXX_COMPILE_FLAGS " -march=native")
+endif()
 
-# Added -Wno-parentheses for compatibility with g++
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+set(IGNORE_WARNINGS "") # initialize IGNORE_WARNINGS
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Add -Wno-parentheses for compatibility with g++
     set (IGNORE_WARNINGS "-Wno-parentheses")
     # we can use GNU built-in functions provided by GCC for debugging. ex: __builtin_LINE (), __builtin_FUNCTION (), __builtin_FILE ()
     add_definitions(-DBUILTIN_INFO_AVAILABLE)
     message(STATUS "BUILTIN_INFO_AVAILABLE is defined")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(IGNORE_WARNINGS "-Wno-unused-private-field -Wno-shift-op-parentheses")
+    endif()
+endif()
+if(IGNORE_WARNINGS)
+    # for C++ only
+    string(APPEND CXX_COMPILE_FLAGS " ${IGNORE_WARNINGS}")
 endif()
 
-if(WITH_NATIVEOPT)
-    set(NATIVE_OPT "-march=native")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_C_FLAGS_RELEASE "-O0 -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O0 -DNDEBUG")
+
+    set(C_COMPILE_FLAGS "${C_COMPILE_FLAGS} -O0 -g")
+    set(CXX_COMPILE_FLAGS "${CXX_COMPILE_FLAGS} -O0 -g")
 else()
-    set(NATIVE_OPT "")
+    set(C_COMPILE_FLAGS "${C_COMPILE_FLAGS} -O3")
+    set(CXX_COMPILE_FLAGS "${CXX_COMPILE_FLAGS} -O3")
 endif()
-
-set(C_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION}")
-set(CXX_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION} ${IGNORE_WARNINGS}")
 
 if(EMSCRIPTEN)
     set(EMSCRIPTEN_IGNORE_WARNINGS "-Wno-unused-but-set-variable -Wno-unknown-warning-option")
