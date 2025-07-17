@@ -677,9 +677,24 @@ add_subdirectory(src/pke)
 add_subdirectory(src/binfhe)
 
 ### build the google test handlers
-###if(BUILD_UNITTESTS)
-###	add_subdirectory(third-party/google-test EXCLUDE_FROM_ALL)
-###endif()
+if(BUILD_UNITTESTS)
+    ##############################################################################################################
+    ### Handle third-party/google-test/googletest's uninitialized variable dummy. Remove
+    ### add_compile_options(-Wno-error=maybe-uninitialized)
+    ### once googletest has been updated to v1.11.0 or later.
+    ##############################################################################################################
+    ### 1. This applies to gtest only
+    ### 2. Build does not fail because of "uninitialized error"
+    ### 3. We still see a warning if the variable is truly uninitialized
+    ### 4. All other warnings still remain errors
+    ##############################################################################################################
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        add_compile_options(-Wno-error=maybe-uninitialized)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        add_compile_options(-Wno-uninitialized)
+    endif()
+	add_subdirectory(third-party/google-test EXCLUDE_FROM_ALL)
+endif()
 
 ### build the google benchmark handlers (just the parts we need)
 if(BUILD_BENCHMARKS)
