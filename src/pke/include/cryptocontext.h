@@ -1757,6 +1757,28 @@ public:
     }
 
     /**
+    * @brief In-place subtraction of a plaintext from a ciphertext.
+    *
+    * @param ciphertext  Minuend (modified in place).
+    * @param plaintext  Subtrahend.
+    */
+    void EvalSubInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
+        TypeCheck(ciphertext, plaintext);
+        GetScheme()->EvalSubInPlace(ciphertext, plaintext);
+    }
+
+    /**
+    * @brief In-place subtraction of a ciphertext from a plaintext.
+    *
+    * @param plaintext  Minuend (may be modified).
+    * @param ciphertext  Ciphertext to modify.
+    */
+    void EvalSubInPlace(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
+        EvalNegateInPlace(ciphertext);
+        EvalAddInPlace(ciphertext, plaintext);
+    }
+
+    /**
     * @brief Homomorphic subtraction of a real number from a ciphertext (CKKS only).
     *
     * @param ciphertext  Input ciphertext.
