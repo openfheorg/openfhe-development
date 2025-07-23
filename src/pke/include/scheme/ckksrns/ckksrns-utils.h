@@ -70,7 +70,7 @@ inline double ToReal(double val) {
     return val;
 }
 inline double ToReal(int64_t val) {
-    return val;
+    return static_cast<double>(val);
 }
 inline double ToReal(std::complex<double> val) {
     return val.real();
@@ -83,12 +83,12 @@ inline double ToReal(std::complex<double> val) {
  * @return the integer degree of the polynomial.
  */
 template <typename VectorDataType>
-uint32_t Degree(const std::vector<VectorDataType>& coefficients) {
+uint32_t Degree(const std::vector<VectorDataType>& coefficients, double delta = 0.0) {
     uint32_t i = coefficients.size();
     if (i == 0)
         OPENFHE_THROW("The coefficients vector can not be empty");
     while (i > 0) {
-        if (IsNotEqualZero(coefficients[--i], 0.0))
+        if (IsNotEqualZero(coefficients[--i], delta))
             break;
     }
     return i;
@@ -150,7 +150,7 @@ uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<VectorDataType>& 
  * @return the vector corresponding to the shifted diagonal
  */
 std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
-                                                         int index);
+                                                         int i);
 
 /**
  * Rotates a vector by an index - left rotation

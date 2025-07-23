@@ -2837,7 +2837,7 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, 
     uint32_t approxModDepth = 1 + 1;  // one level for division and double-angle formula
     // Increase interpolation degree for large precision
     if (digitBitSize > 10) {
-        approxModDepth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_118, false);
+        approxModDepth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_66, false);
     }
     else {
         approxModDepth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_58, false);
@@ -3128,7 +3128,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             cc->ModReduceInPlace(ctxtEnc[1]);  // cos^2(pi x)
         }
         else {
-            auto& coeff_exp = (digitBitSize > 10) ? coeff_exp_25_double_118 : coeff_exp_25_double_58;
+            auto& coeff_exp = (digitBitSize > 10) ? coeff_exp_25_double_66 : coeff_exp_25_double_58;
 
             // Obtain exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = cc->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -3215,7 +3215,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         else {
             std::vector<std::complex<double>> coeff_exp;
             if (digitBitSize > 10) {
-                coeff_exp = coeff_exp_25_double_118;
+                coeff_exp = coeff_exp_25_double_66;
             }
             else {
                 coeff_exp = coeff_exp_25_double_58;
@@ -3352,7 +3352,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
         else {
             std::vector<std::complex<double>> coeff_exp;
             if (digitBitSize > 10) {
-                coeff_exp = coeff_exp_25_double_118;
+                coeff_exp = coeff_exp_25_double_66;
             }
             else {
                 coeff_exp = coeff_exp_25_double_58;
@@ -3544,7 +3544,7 @@ uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<VectorDataType>& coeffi
         default:
             depth += GetMultiplicativeDepthByCoeffVector(coefficients, true);
             if (PInput.ConvertToInt() > 1024) {
-                depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_118, false);
+                depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_66, false);
             }
             else {
                 depth += GetMultiplicativeDepthByCoeffVector(coeff_exp_25_double_58, false);

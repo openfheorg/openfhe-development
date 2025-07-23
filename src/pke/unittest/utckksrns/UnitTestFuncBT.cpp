@@ -127,8 +127,8 @@ constexpr uint32_t AFTERBOOT(0);
 constexpr uint32_t BEFOREBOOT(0);
 
 #ifndef BENCH
-constexpr uint32_t SLOTDFLT(8);  // sparse
-// constexpr uint32_t SLOTDFLT(32);  // full complex packing
+// constexpr uint32_t SLOTDFLT(8);  // sparse
+constexpr uint32_t SLOTDFLT(32);  // full complex packing
 constexpr uint32_t RINGDIMDFLT(32);
 constexpr uint32_t DNUMDFLT(3);
 std::vector<uint32_t> LVLBDFLT = {3, 3};
@@ -180,10 +180,10 @@ static std::vector<TEST_CASE_FUNCBT> testCases = {
     { FUNCBT_SIGNDIGIT, "40",   QBFVINITMED, 1UL << 21,     128,   1UL << 57, 1UL << 43,   256,        16,     2,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    3,  0,   {4, 4} },  // not needed for benchmark
     { FUNCBT_SIGNDIGIT, "41", QBFVINITLARGE, 1UL << 32,     256, QBFVINITMED, 1UL << 47,   256,        16,     1,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    4,  0,   {3, 3} },
     { FUNCBT_SIGNDIGIT, "42", QBFVINITLARGE, 1UL << 32,     256, QBFVINITMED, 1UL << 47,   256,        16,     2,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    4,  0,   {3, 3} },  // not needed for benchmark
-    { FUNCBT_CONSECLEV, "43", QBFVINIT,    2, 2,       1UL << 35,     1UL << 35, 1, SCALESTEP,     1,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
-    { FUNCBT_CONSECLEV, "44", QBFVINIT,    PINPUT, PINPUT, 1UL << 48,     1UL << 48, SCALE, SCALESTEP,     1,  1 << 17, 1 << 17,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
-    { FUNCBT_MVB, "45", QBFVINIT,    2, 2,       1UL << 35,     1UL << 35, 1, SCALESTEP,     1,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
-    { FUNCBT_MVB, "46", QBFVINIT,    PINPUT, PINPUT, 1UL << 48,     1UL << 48, SCALE, SCALESTEP,     1,  1 << 17, 1 << 17,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    { FUNCBT_CONSECLEV, "43",      QBFVINIT,         2,       2,   1UL << 35, 1UL << 35,     1, SCALESTEP,     1,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    { FUNCBT_CONSECLEV, "44",      QBFVINIT,    PINPUT,  PINPUT,   1UL << 48, 1UL << 48, SCALE, SCALESTEP,     1,  1 << 17, 1 << 17,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    {       FUNCBT_MVB, "45",      QBFVINIT,         2,       2,   1UL << 35, 1UL << 35,     1, SCALESTEP,     1,  1 << 16, 1 << 16,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
+    {       FUNCBT_MVB, "46",      QBFVINIT,    PINPUT,  PINPUT,   1UL << 48, 1UL << 48, SCALE, SCALESTEP,     1,  1 << 17, 1 << 17,    AFTERBOOT,          BEFOREBOOT,    3,  1,   {3, 3} },  // not needed for benchmark
 };
 // clang-format on
 
