@@ -40,7 +40,8 @@
 
 using namespace lbcrypto;
 
-const BigInteger QBFVINIT("1152921504606846976");  // 2^60
+const BigInteger QBFVINIT(static_cast<uint128_t>(1) << 60);
+const BigInteger QBFVINITLARGE(static_cast<uint128_t>(1) << 80);
 
 void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
                   double scale, size_t order, uint32_t numSlots, uint32_t ringDim,
@@ -52,40 +53,44 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
                         double scale, double scaleStep, size_t order, uint32_t numSlots, uint32_t ringDim);
 
 int main() {
-    std::cerr << "\n1. Compute the function (x % PInput - POutput / 2) % POutput." << std::endl << std::endl;
+    std::cerr << "\n*1.* Compute the function (x % PInput - POutput / 2) % POutput." << std::endl << std::endl;
     // Boolean LUT
     std::cerr << "=====Boolean LUT order 1 sparsely packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 1, 8, 1024,
+    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 1, 8, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
     std::cerr << "=====Boolean LUT order 2 sparsely packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 2, 8, 1024,
+    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 2, 8, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
     std::cerr << "=====Boolean LUT order 1 fully packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 1, 1024, 1024,
+    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 1, 1024, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
     // LUT with 8-bit input and 4-bit output
     std::cerr << "=====8-to-4 bit LUT order 1 sparsely packed=====" << std::endl << std::endl;
     ArbitraryLUT(QBFVINIT, BigInteger(256), BigInteger(16), BigInteger(1UL << 47), BigInteger(1UL << 47), 32, 1, 8,
-                 1024, [](int64_t x) { return (x % 256 - 16 / 2) % 16; });
+                 4096, [](int64_t x) { return (x % 256 - 16 / 2) % 16; });
 
-    std::cerr << "\n2. Compute multiple functions over the same ciphertext." << std::endl << std::endl;
+    std::cerr << "\n\n*2.* Compute multiple functions over the same ciphertext." << std::endl << std::endl;
     // Two LUTs with 8-bit input and 8-bit output and intermediate leveled computations
     std::cerr << "=====Multivalue bootstrapping for two 8-to-8 bit LUTs order 1 fully packed=====" << std::endl
               << std::endl;
     MultiValueBootstrapping(QBFVINIT, BigInteger(256), BigInteger(256), BigInteger(1UL << 47), BigInteger(1UL << 47),
-                            32, 1, 256, 256, 1);
+                            32, 1, 256, 2048, 1);
 
-    std::cerr << "\n3. Homomorphically evaluate the sign." << std::endl << std::endl;
+    std::cerr << "\n\n*3.* Homomorphically evaluate the sign." << std::endl << std::endl;
     // Compute the sign of a 12-bit input using 1-bit and 4-bit digits
     // The following needs to hold true: log2(PInput) - log2(PDigit) = log2(Q) - log2(Bigq)
     std::cerr << "=====Sign evaluation of a 12-bit input using 1-bit digits order 1 sparsely packed=====" << std::endl
               << std::endl;
     MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(2), BigInteger(1UL << 46), BigInteger(1UL << 35), 1, 1, 1,
-                       32, 64);
+                       32, 2048);
     std::cerr << "=====Sign evaluation of a 12-bit input using 4-bit digits order 1 fully packed=====" << std::endl
               << std::endl;
     MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(16), BigInteger(1UL << 48), BigInteger(1UL << 40), 32, 8,
-                       1, 64, 64);
+                       1, 64, 2048);
+    std::cerr << "=====Sign evaluation of a 32-bit input using 8-bit digits order 1 fully packed=====" << std::endl
+              << std::endl;
+    MultiPrecisionSign(QBFVINITLARGE, BigInteger(static_cast<uint128_t>(1) << 32), BigInteger(256),
+                       BigInteger(static_cast<uint128_t>(1) << 71), BigInteger(1UL << 47), 256, 32, 1, 64, 2048);
 
     return 0;
 }
@@ -187,6 +192,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
         cnt++;
     }
     double scaleMod = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * POutput.ConvertToDouble());
+    // TODO: move the computation of scaleMod and QPrime inside.
 
     if (binaryLUT)
         cc->EvalFuncBTSetup(numSlotsCKKS, PInput.GetMSB() - 1, coeffint, {0, 0}, lvlb, scaleMod, 0, order);
@@ -219,7 +225,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
         ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, order);
 
     // Scalar multiplication addresses the division in Hermite Interpolation
-    cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);
+    cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);  // TODO: include this after the decoding part.
     cc->ModReduceInPlace(ctxtAfterFuncBT);
 
     if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
@@ -687,8 +693,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
          */
         auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q, QPrime);
 
-        BigInteger QNew(std::to_string(static_cast<uint64_t>(QBFVDouble / pDigitDouble)));
-        BigInteger PNew(std::to_string(static_cast<uint64_t>(pBFVDouble / pDigitDouble)));
+        BigInteger QNew(static_cast<uint128_t>(1)
+                        << static_cast<uint32_t>(std::log2(QBFVDouble) - std::log2(pDigitDouble)));
+        BigInteger PNew(static_cast<uint128_t>(1)
+                        << static_cast<uint32_t>(std::log2(pBFVDouble) - std::log2(pDigitDouble)));
 
         if (!step) {
             /* 9.4 If not in the last iteration, subtract the digit from the ciphertext. */
