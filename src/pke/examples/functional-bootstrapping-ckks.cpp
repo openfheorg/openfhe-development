@@ -40,8 +40,8 @@
 
 using namespace lbcrypto;
 
-const BigInteger QBFVINIT(static_cast<uint128_t>(1) << 60);
-const BigInteger QBFVINITLARGE(static_cast<uint128_t>(1) << 80);
+const BigInteger QBFVINIT(BigInteger(1) << 60);
+const BigInteger QBFVINITLARGE(BigInteger(1) << 80);
 
 void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
                   double scale, size_t order, uint32_t numSlots, uint32_t ringDim,
@@ -89,8 +89,8 @@ int main() {
                        1, 64, 2048);
     std::cerr << "=====Sign evaluation of a 32-bit input using 8-bit digits order 1 fully packed=====" << std::endl
               << std::endl;
-    MultiPrecisionSign(QBFVINITLARGE, BigInteger(static_cast<uint128_t>(1) << 32), BigInteger(256),
-                       BigInteger(static_cast<uint128_t>(1) << 71), BigInteger(1UL << 47), 256, 32, 1, 64, 2048);
+    MultiPrecisionSign(QBFVINITLARGE, BigInteger(1) << 32, BigInteger(256), BigInteger(1) << 71, BigInteger(1) << 47,
+                       256, 32, 1, 64, 2048);
 
     return 0;
 }
@@ -693,10 +693,8 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
          */
         auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q, QPrime);
 
-        BigInteger QNew(static_cast<uint128_t>(1)
-                        << static_cast<uint32_t>(std::log2(QBFVDouble) - std::log2(pDigitDouble)));
-        BigInteger PNew(static_cast<uint128_t>(1)
-                        << static_cast<uint32_t>(std::log2(pBFVDouble) - std::log2(pDigitDouble)));
+        BigInteger QNew(BigInteger(1) << static_cast<uint32_t>(std::log2(QBFVDouble) - std::log2(pDigitDouble)));
+        BigInteger PNew(BigInteger(1) << static_cast<uint32_t>(std::log2(pBFVDouble) - std::log2(pDigitDouble)));
 
         if (!step) {
             /* 9.4 If not in the last iteration, subtract the digit from the ciphertext. */

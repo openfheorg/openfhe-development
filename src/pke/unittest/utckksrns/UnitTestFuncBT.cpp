@@ -118,9 +118,9 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FUNCBT>& test) 
 };
 
 // TODO: update default values
-[[maybe_unused]] const BigInteger QBFVINIT(static_cast<uint128_t>(1) << 60);
-[[maybe_unused]] const BigInteger QBFVINITMED(static_cast<uint128_t>(1) << 71);
-[[maybe_unused]] const BigInteger QBFVINITLARGE(static_cast<uint128_t>(1) << 80);
+[[maybe_unused]] const BigInteger QBFVINIT(BigInteger(1) << 60);
+[[maybe_unused]] const BigInteger QBFVINITMED(BigInteger(1) << 71);
+[[maybe_unused]] const BigInteger QBFVINITLARGE(BigInteger(1) << 80);
 [[maybe_unused]] const BigInteger PINPUT(256);
 [[maybe_unused]] const BigInteger POUTPUT(256);
 [[maybe_unused]] const BigInteger QDFLT(1UL << 47);
