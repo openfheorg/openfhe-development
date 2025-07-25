@@ -127,10 +127,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SCHE
 }
 //===========================================================================================================
 
-constexpr uint32_t MULT_DEPTH1  = 13;
-[[maybe_unused]] constexpr uint32_t MULT_DEPTH2  = 16;
-constexpr uint32_t RDIM         = 64;
-constexpr uint32_t NUM_LRG_DIGS = 3;
+constexpr uint32_t MULT_DEPTH1                  = 13;
+[[maybe_unused]] constexpr uint32_t MULT_DEPTH2 = 16;
+constexpr uint32_t RDIM                         = 64;
+constexpr uint32_t NUM_LRG_DIGS                 = 3;
 
 #if NATIVEINT == 128
 constexpr uint32_t SMODSIZE = 70;
@@ -249,7 +249,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_SCHEMESWITCH> testCases = {
     { SCHEME_SWITCH_SERIALIZE, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH2, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25, 8, 8},
 #endif
 
-#endif // __EMSCRIPTEN__
+#endif  // __EMSCRIPTEN__
 };
 // clang-format on
 //===========================================================================================================
@@ -327,8 +327,7 @@ protected:
             double scale     = 1.0 / pLWE;
             cc->EvalCKKStoFHEWPrecompute(scale);
 
-            std::vector<std::complex<double>> input(
-                Fill({0, 1, -2, -3, pLWE / 8.0, pLWE / 4.0, pLWE / 2.0, pLWE / 1.0}, testData.slots));
+            auto input(FillCompDouble({0, 1, -2, -3, pLWE / 8.0, pLWE / 4.0, pLWE / 2.0, pLWE / 1.0}, testData.slots));
 
             size_t encodedLength = input.size();
             std::vector<int32_t> inputInt(encodedLength);

@@ -57,8 +57,8 @@ protected:
 public:
     virtual ~ParameterGenerationCKKSRNS() = default;
 
-    bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ,
+    bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t cyclOrder,
+                                  uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t mulPartQ,
                                   COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const override;
 
     /////////////////////////////////////

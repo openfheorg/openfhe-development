@@ -86,10 +86,10 @@ namespace {
 static std::vector<DCRTPoly> ModSwitchUp(const std::vector<Poly>& input, const BigInteger& Qfrom, const BigInteger& Qto,
                                          const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
     Poly bPoly = input[0];
-    bPoly.SwitchModulus(Qto, 1, 0, 0);  // need to switch to modulus before because the new modulus is bigger
+    bPoly.SwitchModulus(Qto, 1, 0, 0);
 
     Poly aPoly = input[1];
-    aPoly.SwitchModulus(Qto, 1, 0, 0);  // need to switch to modulus before because the new modulus is bigger
+    aPoly.SwitchModulus(Qto, 1, 0, 0);
 
     std::vector<DCRTPoly> output{DCRTPoly(bPoly.MultiplyAndRound(Qto, Qfrom), ep),
                                  DCRTPoly(aPoly.MultiplyAndRound(Qto, Qfrom), ep)};
@@ -102,12 +102,10 @@ static std::vector<DCRTPoly> ModSwitchUp(const std::vector<Poly>& input, const B
 static std::vector<DCRTPoly> ModSwitchDown(const std::vector<Poly>& input, const BigInteger& Qfrom,
                                            const BigInteger& Qto,
                                            const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
-    Poly bPoly = input[0];
-    bPoly      = bPoly.MultiplyAndRound(Qto, Qfrom);
+    Poly bPoly = input[0].MultiplyAndRound(Qto, Qfrom);
     bPoly.SwitchModulus(Qto, 1, 0, 0);
 
-    Poly aPoly = input[1];
-    aPoly      = aPoly.MultiplyAndRound(Qto, Qfrom);
+    Poly aPoly = input[1].MultiplyAndRound(Qto, Qfrom);
     aPoly.SwitchModulus(Qto, 1, 0, 0);
 
     std::vector<DCRTPoly> output{DCRTPoly(bPoly, ep), DCRTPoly(aPoly, ep)};
@@ -142,9 +140,8 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
     DCRTPoly a(dug, ep, Format::EVALUATION);
     DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), ep, Format::EVALUATION);
 
-    const DCRTPoly& s = privateKey->GetPrivateElement();
-    auto scopy(s);
-    scopy.DropLastElements(s.GetParams()->GetParams().size() - ep->GetParams().size());
+    auto scopy(privateKey->GetPrivateElement());
+    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
 
     DCRTPoly b = e - a * scopy;  // encryption of 0 using Q'
 
@@ -207,16 +204,10 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
                                                    uint32_t numSlots, uint32_t length, bool bitReverse) {
     const auto& bigQPrime = ep->GetModulus();
 
-    std::vector<lbcrypto::DCRTPoly> ba =
-        (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
+    auto ba = (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
 
-    const DCRTPoly& s = privateKey->GetPrivateElement();
-    size_t sizeQ      = s.GetParams()->GetParams().size();
-    size_t sizeQl     = ep->GetParams().size();
-    size_t diffQl     = sizeQ - sizeQl;
-
-    auto scopy(s);
-    scopy.DropLastElements(diffQl);
+    auto scopy(privateKey->GetPrivateElement());
+    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
 
     auto m = ba[0] + ba[1] * scopy;
 
@@ -242,16 +233,9 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
     length = (length == 0) ? numSlots : length;
 
     std::vector<int64_t> output(length);
-    for (size_t i = 0, idx = 0; i < length; ++i, idx += gap) {
-        int64_t val;
-        if (mPoly[idx] > half) {
-            val = (-(p - mPoly[idx]).ConvertToInt());
-        }
-        else {
-            val = mPoly[idx].ConvertToInt();
-        }
-        output[i] = val;
-    }
+    for (uint32_t i = 0, idx = 0; i < length; ++i, idx += gap)
+        output[i] =
+            (mPoly[idx] > half) ? -(p - mPoly[idx]).ConvertToInt<int64_t>() : mPoly[idx].ConvertToInt<int64_t>();
 
     if (bitReverse) {
         if (numSlots < length) {

@@ -49,9 +49,9 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 #define DISABLED_FOR_CKKSRNS_PARAMS OPENFHE_THROW("This parameter is not available for CKKSRNS.");
 
 public:
-    CryptoParametersCKKSRNS() = default;
-
-    CryptoParametersCKKSRNS(const CryptoParametersCKKSRNS& rhs) : CryptoParametersRNS(rhs) {}
+    CryptoParametersCKKSRNS()                                       = default;
+    CryptoParametersCKKSRNS(const CryptoParametersCKKSRNS& rhs)     = default;
+    CryptoParametersCKKSRNS(CryptoParametersCKKSRNS&& rhs) noexcept = default;
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,

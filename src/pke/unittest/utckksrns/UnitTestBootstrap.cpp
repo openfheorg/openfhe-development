@@ -384,12 +384,13 @@ protected:
             std::vector<std::complex<double>> input;
             // If CKKSDataType is set to REAL, the imaginary parts are ignored.
             if (testData.slots < 8) {
-                input = Fill({0.1415926 + 0.1415926i}, testData.slots);
+                input = FillCompDouble({0.1415926 + 0.1415926i}, testData.slots);
             }
             else {
-                input = Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
-                              0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
-                             testData.slots);
+                input = FillCompDouble(
+                    {0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
+                     0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
+                    testData.slots);
             }
 
             size_t encodedLength = input.size();
@@ -529,10 +530,10 @@ protected:
             cc->EvalMultKeyGen(keyPair.secretKey);
 
             // If CKKSDataType is set to REAL, the imaginary parts are ignored.
-            std::vector<std::complex<double>> input(
-                Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
-                      0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
-                     testData.slots));
+            auto input(
+                FillCompDouble({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
+                                0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
+                               testData.slots));
             size_t encodedLength = input.size();
 
             Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
@@ -603,8 +604,8 @@ protected:
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            std::vector<std::complex<double>> input(
-                Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
+            auto input(FillCompDouble({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
+                                      testData.slots));
             size_t encodedLength = input.size();
 
             // We start with a ciphertext with 0 levels consumed.
@@ -698,10 +699,10 @@ protected:
             cc->EvalBootstrapPrecompute(testData.slots / 2);
             //====================================================================================================
             // If CKKSDataType is set to REAL, the imaginary parts are ignored.
-            std::vector<std::complex<double>> input(
-                Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
-                      0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
-                     testData.slots));
+            auto input(
+                FillCompDouble({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
+                                0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
+                               testData.slots));
             size_t encodedLength = input.size();
 
             Plaintext plaintext1  = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
@@ -716,9 +717,9 @@ protected:
                           failmsg + " Bootstrapping for fully packed ciphertexts fails");
 
             //====================================================================================================
-            std::vector<std::complex<double>> input2(
-                Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i},
-                     testData.slots / 2));
+            auto input2(
+                FillCompDouble({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i},
+                               testData.slots / 2));
             size_t encodedLength2 = input2.size();
 
             Plaintext plaintext2  = cc->MakeCKKSPackedPlaintext(input2, 1, MULT_DEPTH - 1, nullptr, testData.slots / 2);

@@ -45,9 +45,8 @@
 namespace lbcrypto {
 
 std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func, double a, double b, uint32_t degree) {
-    if (!degree) {
+    if (degree == 0)
         OPENFHE_THROW("The degree of approximation can not be zero");
-    }
     // the number of coefficients to be generated should be degree+1 as zero is also included
     size_t coeffTotal{degree + 1};
     double bMinusA = 0.5 * (b - a);

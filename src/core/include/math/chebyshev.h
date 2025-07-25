@@ -59,7 +59,7 @@ namespace lbcrypto {
  * @param degree Desired degree of approximation
  * @return the coefficients of the Chebyshev approximation.
  */
-std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func, double a, double b, uint32_t degree);
+std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> f, double a, double b, uint32_t d);
 
 /**
  * A cleartext version of CryptoContext<...>::EvalChebyshevFunction(...).
@@ -73,8 +73,8 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
  * @param degree is the desired degree of approximation
  * @return Evaluation of the approximated function over the plaintexts.
  */
-std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double>& ptxt,
-                                              double a, double b, size_t degree);
+std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> f, const std::vector<double>& ptxt,
+                                              double a, double b, size_t d);
 
 }  // namespace lbcrypto
 

@@ -48,6 +48,10 @@ using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
 template <typename Element>
 using ConstCiphertext = const std::shared_ptr<const CiphertextImpl<Element>>;
 
+// reqiured for std::vector
+template <typename Element>
+using ReadOnlyCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
+
 template <typename Element>
 struct seriesPowers {
     std::vector<Ciphertext<Element>> powersRe;
@@ -58,13 +62,20 @@ struct seriesPowers {
     std::vector<Ciphertext<Element>> powersIm;
     std::vector<Ciphertext<Element>> powers2Im;
     ConstCiphertext<Element> power2km1Im;
-    seriesPowers() {}
+
+    seriesPowers() = default;
+
+    ~seriesPowers() = default;
+
     explicit seriesPowers(const std::vector<Ciphertext<Element>>& powers0) : powersRe(powers0) {}
+
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers1)
         : powersRe(powers0), powersIm(powers1) {}
+
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
                  ConstCiphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
         : powersRe(powers0), powers2Re(powers20), power2km1Re(power2km10), k(k0), m(m0) {}
+
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
                  ConstCiphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
                  const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,
@@ -77,12 +88,7 @@ struct seriesPowers {
           powersIm(powers1),
           powers2Im(powers21),
           power2km1Im(power2km11) {}
-    ~seriesPowers() {}
 };
-
-// reqiured for std::vector
-template <typename Element>
-using ReadOnlyCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
 
 }  // namespace lbcrypto
 

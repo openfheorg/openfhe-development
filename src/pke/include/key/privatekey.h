@@ -144,7 +144,7 @@ public:
    * Set accessor for private element.
    * @private &x private element to set to.
    */
-    void SetPrivateElement(Element&& x) {
+    void SetPrivateElement(Element&& x) noexcept {
         m_sk = std::move(x);
     }
 

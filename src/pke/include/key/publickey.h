@@ -144,7 +144,7 @@ public:
    * Sets the public key Element at index idx.
    * @param &element is the public key Element to be copied.
    */
-    void SetPublicElementAtIndex(usint idx, const Element& element) {
+    void SetPublicElementAtIndex(uint32_t idx, const Element& element) {
         m_h.insert(m_h.begin() + idx, element);
     }
 
@@ -152,7 +152,7 @@ public:
    * Sets the public key Element at index idx.
    * @param &&element is the public key Element to be moved.
    */
-    void SetPublicElementAtIndex(usint idx, Element&& element) {
+    void SetPublicElementAtIndex(uint32_t idx, Element&& element) noexcept {
         m_h.insert(m_h.begin() + idx, std::move(element));
     }
 

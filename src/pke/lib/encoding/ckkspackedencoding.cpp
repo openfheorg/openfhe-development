@@ -112,15 +112,6 @@ double StdDev(const std::vector<std::complex<double>>& vec, const std::vector<st
     return 0.5 * std::sqrt(variance);
 }
 
-std::vector<DCRTPoly::Integer> CKKSPackedEncoding::CRTMult(const std::vector<DCRTPoly::Integer>& a,
-                                                           const std::vector<DCRTPoly::Integer>& b,
-                                                           const std::vector<DCRTPoly::Integer>& mods) {
-    std::vector<DCRTPoly::Integer> result(mods.size());
-    for (uint32_t i = 0; i < a.size(); ++i)
-        result[i] = a[i].ModMulFast(b[i], mods[i]);
-    return result;
-}
-
 bool CKKSPackedEncoding::Encode() {
     if (isEncoded)
         return true;

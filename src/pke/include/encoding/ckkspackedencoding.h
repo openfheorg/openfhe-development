@@ -160,11 +160,19 @@ public:
    *
    * @param a is the first number in CRT representation.
    * @param b is the second number in CRT representation.
+   * @param m
    * @return the product of the two numbers in CRT representation.
    */
     static std::vector<DCRTPoly::Integer> CRTMult(const std::vector<DCRTPoly::Integer>& a,
                                                   const std::vector<DCRTPoly::Integer>& b,
-                                                  const std::vector<DCRTPoly::Integer>& mods);
+                                                  const std::vector<DCRTPoly::Integer>& m) {
+        // TODO: add check that vector lengths match?
+        std::vector<DCRTPoly::Integer> r;
+        r.reserve(m.size());
+        for (uint32_t i = 0; i < a.size(); ++i)
+            r.emplace_back(a[i].ModMulFast(b[i], m[i]));
+        return r;
+    }
 
     /**
    * Get method to return the length of plaintext

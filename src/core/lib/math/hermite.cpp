@@ -43,7 +43,8 @@
 #include <vector>
 
 static bool IsNotEqualZero(std::complex<double> v) {
-    constexpr double delta = 0x1p-30;  // 2**-30
+    // TODO: tune this delta value during the fbt refactor
+    constexpr double delta = 0x1p-32;  // 2**-32
     return (std::fabs(v.real()) >= delta) || (std::fabs(v.imag()) >= delta);
 }
 

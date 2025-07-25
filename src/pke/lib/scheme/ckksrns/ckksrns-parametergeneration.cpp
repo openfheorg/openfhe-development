@@ -48,16 +48,17 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 namespace lbcrypto {
 
 #if NATIVEINT == 128
-const size_t AUXMODSIZE = 119;
+constexpr size_t AUXMODSIZE = 119;
 #elif NATIVEINT == 32
-const size_t AUXMODSIZE = 28;
+constexpr size_t AUXMODSIZE = 28;
 #else
-const size_t AUXMODSIZE = 60;
+constexpr size_t AUXMODSIZE = 60;
 #endif
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                          uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
-                                                          uint32_t firstModSize, uint32_t numPartQ,
+                                                          uint32_t cyclOrder, uint32_t numPrimes,
+                                                          uint32_t scalingModSize, uint32_t firstModSize,
+                                                          uint32_t numPartQ,
                                                           COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
     // the "const" modifier for cryptoParamsCKKSRNS and encodingParams below doesn't mean that the objects those 2 pointers
     // point to are const (not changeable). it means that the pointers themselves are const only.
@@ -89,7 +90,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
             OPENFHE_THROW(errorMsg);
         }
         else if (compositeDegree == 1 && registerWordSize < 64) {
-            OPENFHE_THROW("This COMPOSITESCALING* version does not support composite degree == 1 with register size < 64.");
+            OPENFHE_THROW(
+                "This COMPOSITESCALING* version does not support composite degree == 1 with register size < 64.");
         }
         else if (compositeDegree < 1) {
             OPENFHE_THROW("Composite degree must be greater than or equal to 1.");
@@ -97,7 +99,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
 
         if (registerWordSize < 20 && scalTech == COMPOSITESCALINGAUTO) {
             OPENFHE_THROW(
-            "Register word size must be greater than or equal to 20 for COMPOSITESCALINGAUTO. Otherwise, try it with COMPOSITESCALINGMANUAL.");
+                "Register word size must be greater than or equal to 20 for COMPOSITESCALINGAUTO. Otherwise, try it with COMPOSITESCALINGMANUAL.");
         }
     }
 
@@ -115,7 +117,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
     // TODO Duhyeong: Let's check if auxBits = registerWordSize makes an error in the P prime generation.
     uint32_t auxBits =
         ((scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) && registerWordSize <= AUXMODSIZE) ?
-            (registerWordSize - 1) : AUXMODSIZE;
+            (registerWordSize - 1) :
+            AUXMODSIZE;
     uint32_t n = cyclOrder / 2;
 
     // GAUSSIAN security constraint
@@ -126,15 +129,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
         // we add an extra bit to account for the alternating logic of selecting the RNS moduli in CKKS
         // ignore the case when there is only one max size modulus
         if (qBound != auxBits)
-            qBound++;
-    
+            ++qBound;
+
         // Estimate ciphertext modulus Q*P bound (in case of HYBRID P*Q)
-        if (ksTech == HYBRID) {
-            auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize, extraModSize,
-                                                                  numPrimes, auxBits, scalTech, true);
-    
-            qBound += std::get<0>(hybridKSInfo);
-        }
+        if (ksTech == HYBRID)
+            qBound += std::get<0>(CryptoParametersRNS::EstimateLogP(numPartQ, firstModSize, scalingModSize,
+                                                                    extraModSize, numPrimes, auxBits, scalTech, true));
+
         uint32_t he_std_n = StdLatticeParm::FindRingDim(distType, stdLevel, qBound);
 
         if (n == 0) {
@@ -383,7 +384,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                 flag = false;
             }
         }  // for loop
-    }  // if numPrimes > 1
+    }      // if numPrimes > 1
 
     for (uint32_t d = 1, remBits = firstModSize; d <= compositeDegree; ++d) {
         uint32_t qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));

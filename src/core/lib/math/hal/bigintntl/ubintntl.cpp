@@ -177,6 +177,8 @@ double myZZ::ConvertToDouble() const {
 }
 
 long double myZZ::ConvertToLongDouble() const {
+    // TODO: fix this
+    // return (conv<long double>(*this));
     return (conv<double>(*this));
 }
 

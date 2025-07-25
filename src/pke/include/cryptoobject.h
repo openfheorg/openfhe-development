@@ -61,15 +61,9 @@ public:
 
     explicit CryptoObject(const CryptoContext<Element>& cc, const std::string& tag = "") : context(cc), keyTag(tag) {}
 
-    CryptoObject(const CryptoObject& rhs) {
-        context = rhs.context;
-        keyTag  = rhs.keyTag;
-    }
+    CryptoObject(const CryptoObject& rhs) = default;
 
-    CryptoObject(CryptoObject&& rhs) noexcept {
-        context = std::move(rhs.context);
-        keyTag  = std::move(rhs.keyTag);
-    }
+    CryptoObject(CryptoObject&& rhs) noexcept = default;
 
     virtual ~CryptoObject() = default;
 

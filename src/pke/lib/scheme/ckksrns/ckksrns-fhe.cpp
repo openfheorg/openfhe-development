@@ -49,7 +49,7 @@
 #include <cmath>
 #include <functional>
 #ifdef BOOTSTRAPTIMING
-    #include <iostream>
+    #include <ostream>
 #endif
 #include <limits>
 #include <map>
@@ -2111,6 +2111,7 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(const std::vector<uint32_t>& levelBudget,
 
     return approxModDepth + levelBudget[0] + levelBudget[1];
 }
+
 //------------------------------------------------------------------------------
 // Auxiliary Bootstrap Functions
 //------------------------------------------------------------------------------
@@ -2129,6 +2130,7 @@ uint32_t FHECKKSRNS::GetModDepthInternal(SecretKeyDist secretKeyDist) {
     }
 }
 
+// TODO: merge AdjustCiphertext and tAdjustCiphertext into single function
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -2613,13 +2615,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // We want to scale temp by 2^(pd), and the loop starts from j=2
     // because temp is already scaled by 2^p in the re/im loop above,
     // and currPowP already is 2^p.
-    for (size_t i = 2; i < noiseScaleDeg; i++) {
+    for (size_t i = 2; i < noiseScaleDeg; i++)
         currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
-    }
-
-    if (noiseScaleDeg > 1) {
+    if (noiseScaleDeg > 1)
         plainElement = plainElement.Times(currPowP);
-    }
 
     // Scale back up by the approxFactor to get the correct encoding.
     if (logApprox > 0) {
@@ -2663,10 +2662,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
 void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const {
     std::vector<DCRTPoly>& cv1       = ciphertext1->GetElements();
     const std::vector<DCRTPoly>& cv2 = ciphertext2->GetElements();
-
-    for (size_t i = 0; i < cv1.size(); ++i) {
+    for (size_t i = 0; i < cv1.size(); ++i)
         cv1[i] += cv2[i];
-    }
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,
@@ -2784,19 +2781,16 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, 
 
     uint32_t logSlots = std::log2(slots);
     // even for the case of a single slot we need one level for rescaling
-    if (logSlots == 0) {
+    if (logSlots == 0)
         logSlots = 1;
-    }
 
     // Perform some checks on the level budget. Because the level budget is used outside this function,
     // changing it here leads to exceptions later. Alternatively, move this check outside or update all
     // the uses of levelBudget.
-    if (levelBudget[0] > logSlots || levelBudget[1] > logSlots) {
+    if (levelBudget[0] > logSlots || levelBudget[1] > logSlots)
         OPENFHE_THROW("The level budget is too large. Please set it to be at least one and at most log(slots).");
-    }
-    if (levelBudget[0] < 1 || levelBudget[1] < 1) {
+    if (levelBudget[0] < 1 || levelBudget[1] < 1)
         OPENFHE_THROW("The level budget cannot be zero. Please set it to be at least one and at most log(slots).");
-    }
 
     precom->m_levelEnc  = levelBudget[0];
     precom->m_levelDec  = levelBudget[1];
@@ -3060,8 +3054,8 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     auto& p = pair->second;
 
     // no linear transformations are needed for Chebyshev series as the range has been normalized to [-1,1]
-    double coeffLowerBound = -1;
-    double coeffUpperBound = 1;
+    double coeffLowerBound = -1.0;
+    double coeffUpperBound = 1.0;
 
     std::vector<Ciphertext<DCRTPoly>> ctxtEnc;
     std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers;
@@ -3071,8 +3065,6 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
         // FULLY PACKED CASE
         //------------------------------------------------------------------------------
-
-        ctxtEnc.reserve(2);
 
         //------------------------------------------------------------------------------
         // Running CoeffToSlot
@@ -3161,8 +3153,6 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
         // SPARSELY PACKED CASE
         //------------------------------------------------------------------------------
-
-        ctxtEnc.reserve(1);
 
         //------------------------------------------------------------------------------
         // Running PartialSum

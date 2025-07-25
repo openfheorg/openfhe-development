@@ -1216,20 +1216,6 @@ static inline Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPSWithPrecomp(
                 ctxs[i]    = T[i];
                 weights[i] = divqr->q[i + 1];
             }
-            /*
-            qu = cc->EvalLinearWSumMutable(ctxs, weights);
-            // the highest order coefficient will always be 2 after one division because of the Chebyshev division rule
-            Ciphertext<DCRTPoly> sum = cc->EvalAdd(T[k - 1], T[k - 1]);
-            cc->EvalAddInPlace(qu, sum);
-        }
-        else {
-            qu = T[k - 1]->Clone();
-
-            for (uint32_t i = 1; i < divqr->q.back(); i++) {
-                cc->EvalAddInPlace(qu, T[k - 1]);
-            }
-        }
-*/
             qu = internalEvalLinearWSumMutable(ctxs, weights);
             // the highest order coefficient will always be a power of two up to 2^{m-1} because q is "monic" but the Chebyshev rule adds a factor of 2
             // we don't need to increase the depth by multiplying the highest order coefficient, but instead checking and summing, since we work with m <= 4.

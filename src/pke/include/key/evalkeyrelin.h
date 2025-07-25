@@ -125,7 +125,7 @@ public:
    *
    * @param &&a is the Element vector to be moved.
    */
-    virtual void SetAVector(std::vector<Element>&& a) {
+    virtual void SetAVector(std::vector<Element>&& a) noexcept {
         m_rKey.insert(m_rKey.begin() + 0, std::move(a));
     }
 
@@ -155,7 +155,7 @@ public:
    *
    * @param &&b is the Element vector to be moved.
    */
-    virtual void SetBVector(std::vector<Element>&& b) {
+    virtual void SetBVector(std::vector<Element>&& b) noexcept {
         m_rKey.insert(m_rKey.begin() + 1, std::move(b));
     }
 
@@ -186,7 +186,7 @@ public:
    *
    * @param &&a is the Element to be moved.
    */
-    virtual void SetAinDCRT(Element&& a) {
+    virtual void SetAinDCRT(Element&& a) noexcept {
         m_dcrtKeys.insert(m_dcrtKeys.begin() + 0, std::move(a));
     }
 
@@ -218,7 +218,7 @@ public:
    *
    * @param &&b is the Element to be moved.
    */
-    virtual void SetBinDCRT(Element&& b) {
+    virtual void SetBinDCRT(Element&& b) noexcept {
         m_dcrtKeys.insert(m_dcrtKeys.begin() + 1, std::move(b));
     }
 

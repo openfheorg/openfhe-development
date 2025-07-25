@@ -45,12 +45,12 @@
 
 namespace lbcrypto {
 
-template <typename VectorDataType>
+template <typename VecDType>
 struct longDiv {
-    std::vector<VectorDataType> q;
-    std::vector<VectorDataType> r;
-    longDiv() {}
-    longDiv(const std::vector<VectorDataType>& q0, const std::vector<VectorDataType>& r0) : q(q0), r(r0) {}
+    std::vector<VecDType> q;
+    std::vector<VecDType> r;
+    longDiv() = default;
+    longDiv(const std::vector<VecDType>& q0, const std::vector<VecDType>& r0) : q(q0), r(r0) {}
 };
 
 inline bool IsNotEqualOne(double v, double delta = 0x1p-44) {
@@ -82,11 +82,11 @@ inline double ToReal(std::complex<double> val) {
  * @param coefficients vector of coefficients of a polynomial (can not be empty)
  * @return the integer degree of the polynomial.
  */
-template <typename VectorDataType>
-uint32_t Degree(const std::vector<VectorDataType>& coefficients, double delta = 0.0) {
+template <typename VecDType>
+uint32_t Degree(const std::vector<VecDType>& coefficients, double delta = 0.0) {
     uint32_t i = coefficients.size();
     if (i == 0)
-        OPENFHE_THROW("The coefficients vector can not be empty");
+        OPENFHE_THROW("Coefficients vector can not be empty");
     while (i > 0) {
         if (IsNotEqualZero(coefficients[--i], delta))
             break;
@@ -101,9 +101,8 @@ uint32_t Degree(const std::vector<VectorDataType>& coefficients, double delta = 
  * @param &g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
-template <typename VectorDataType>
-std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<VectorDataType>& f,
-                                                          const std::vector<VectorDataType>& g);
+template <typename VecDType>
+std::shared_ptr<longDiv<VecDType>> LongDivisionPoly(const std::vector<VecDType>& f, const std::vector<VecDType>& g);
 
 /**
  * Computes the quotient and remainder of the long division of two polynomials in the Chebyshev series basis
@@ -112,9 +111,9 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
  * @param &g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
-template <typename VectorDataType>
-std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector<VectorDataType>& f,
-                                                               const std::vector<VectorDataType>& g);
+template <typename VecDType>
+std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(const std::vector<VecDType>& f,
+                                                         const std::vector<VecDType>& g);
 
 /**
  * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
@@ -126,6 +125,7 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
 std::vector<uint32_t> ComputeDegreesPS(uint32_t n);
 
 uint32_t GetDepthByDegree(size_t degree);
+
 /**
  * Get the depth for a given vector of coefficients for the Paterson-Stockmeyer algorithm.
  * The functions is based on the table described in src/pke/examples/FUNCTION_EVALUATION.md
@@ -134,8 +134,8 @@ uint32_t GetDepthByDegree(size_t degree);
  * @param isNormalized true if the vector normalized. false is the default value
  * @return multiplicative depth
  */
-template <typename VectorDataType>
-uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<VectorDataType>& vec, bool isNormalized = false) {
+template <typename VecDType>
+uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<VecDType>& vec, bool isNormalized = false) {
     if (vec.size() == 0)
         OPENFHE_THROW("Cannot perform operation on empty vector. vec.size() == 0");
     return GetDepthByDegree(vec.size() - 1) - isNormalized;
@@ -171,8 +171,8 @@ std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index);
  *
  * @return the rotated vector, mimicking the BFV subring rotations
  */
-template <typename VectorDataType>
-std::vector<VectorDataType> RotateTwoHalves(const std::vector<VectorDataType>& a, int32_t index);
+template <typename VecDType>
+std::vector<VecDType> RotateTwoHalves(const std::vector<VecDType>& a, int32_t index);
 
 /**
  * Clones the current vector up to the size indicated by the 'slots' variable
@@ -182,9 +182,14 @@ std::vector<VectorDataType> RotateTwoHalves(const std::vector<VectorDataType>& a
  *
  * @return the vector with cloned values
  */
-std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, const uint32_t slots);
-std::vector<double> FillDouble(const std::vector<double>& a, const uint32_t slots);
-std::vector<int64_t> Fillint64(const std::vector<int64_t>& a, const uint32_t slots);
+std::vector<std::complex<double>> FillCompDouble(const std::vector<std::complex<double>>& a, uint32_t slots);
+std::vector<double> FillDouble(const std::vector<double>& a, uint32_t slots);
+std::vector<int64_t> Fillint64(const std::vector<int64_t>& a, uint32_t slots);
+
+/*
+template <typename VecDType = std::complex<double>>
+std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots);
+*/
 
 /**
  * Computes the coefficients for the FFT encoding for CoeffEncodingCollapse such that every
@@ -285,9 +290,8 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
 std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols);
 
 namespace CKKS_BOOT_PARAMS {
-/**
-   * Enums representing indices for the vector returned by GetCollapsedFFTParams()
-   */
+
+// Enums representing indices for the vector returned by GetCollapsedFFTParams()
 enum {
     LEVEL_BUDGET,  // the level budget
     LAYERS_COLL,   // the number of layers to collapse in one level
