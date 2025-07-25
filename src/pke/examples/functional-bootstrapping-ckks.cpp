@@ -44,13 +44,13 @@ const BigInteger QBFVINIT(BigInteger(1) << 60);
 const BigInteger QBFVINITLARGE(BigInteger(1) << 80);
 
 void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
-                  double scale, size_t order, uint32_t numSlots, uint32_t ringDim,
+                  uint32_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
                   std::function<int64_t(int64_t)> func);
 void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
-                             double scale, size_t order, uint32_t numSlots, uint32_t ringDim,
+                             uint32_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
                              uint32_t levelComputation);
 void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigit, BigInteger Q, BigInteger Bigq,
-                        double scale, double scaleStep, size_t order, uint32_t numSlots, uint32_t ringDim);
+                        uint32_t scaleTHI, uint32_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim);
 
 int main() {
     std::cerr << "\n*1.* Compute the function (x % PInput - POutput / 2) % POutput." << std::endl << std::endl;
@@ -96,7 +96,7 @@ int main() {
 }
 
 void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
-                  double scale, size_t order, uint32_t numSlots, uint32_t ringDim,
+                  uint32_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
                   std::function<int64_t(int64_t)> func) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
@@ -135,7 +135,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
                 func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)] as in the general case.
     }
     else {
-        coeffcomp = GetHermiteTrigCoefficients(func, PInput.ConvertToInt(), order, scale);  // divided by 2
+        coeffcomp = GetHermiteTrigCoefficients(func, PInput.ConvertToInt(), order, scaleTHI);  // divided by 2
     }
 
     /* 4. Set up the cryptoparameters.
@@ -220,13 +220,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     */
     Ciphertext<DCRTPoly> ctxtAfterFuncBT;
     if (binaryLUT)
-        ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, order);
+        ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
     else
-        ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, order);
-
-    // Scalar multiplication addresses the division in Hermite Interpolation
-    cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);  // TODO: include this after the decoding part.
-    cc->ModReduceInPlace(ctxtAfterFuncBT);
+        ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
 
     if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
         OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -254,7 +250,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 }
 
 void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
-                             double scale, size_t order, uint32_t numSlots, uint32_t ringDim,
+                             uint32_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
                              uint32_t levelsComputation) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
@@ -303,8 +299,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
         coeffint2 = {func2(1), func2(0) - func2(1)};
     }
     else {
-        coeffcomp1 = GetHermiteTrigCoefficients(func1, PInput.ConvertToInt(), order, scale);
-        coeffcomp2 = GetHermiteTrigCoefficients(func2, PInput.ConvertToInt(), order, scale);
+        coeffcomp1 = GetHermiteTrigCoefficients(func1, PInput.ConvertToInt(), order, scaleTHI);
+        coeffcomp2 = GetHermiteTrigCoefficients(func2, PInput.ConvertToInt(), order, scaleTHI);
     }
 
     /* 5. Set up the cryptoparameters.
@@ -424,7 +420,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     if (binaryLUT) {
         auto complexExpPowers = cc->EvalMVBPrecompute(ctxt, coeffint1, PInput.GetMSB() - 1, ep->GetModulus(), order);
 
-        ctxtAfterFuncBT1 = cc->EvalMVB(complexExpPowers, coeffint1, PInput.GetMSB() - 1, 1.0, levelsComputation, order);
+        ctxtAfterFuncBT1 =
+            cc->EvalMVB(complexExpPowers, coeffint1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order);
 
         ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, PInput.GetMSB() - 1, order);
 
@@ -439,13 +436,13 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
         std::transform(exact2.begin(), exact2.end(), mask_real.begin(), exact2.begin(), std::multiplies<double>());
 
         // Back to coefficient encoding
-        ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, levelsComputation - 1);
+        ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, scaleTHI, levelsComputation - 1);
     }
     else {
         auto complexExpPowers = cc->EvalMVBPrecompute(ctxt, coeffcomp1, PInput.GetMSB() - 1, ep->GetModulus(), order);
 
         ctxtAfterFuncBT1 =
-            cc->EvalMVB(complexExpPowers, coeffcomp1, PInput.GetMSB() - 1, 1.0, levelsComputation, order);
+            cc->EvalMVB(complexExpPowers, coeffcomp1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order);
 
         ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, PInput.GetMSB() - 1, order);
 
@@ -461,14 +458,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
         // Back to coefficient encoding
 
-        ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, levelsComputation - 1);
+        ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, scaleTHI, levelsComputation - 1);
     }
-
-    // Scalar multiplication addresses the division in Hermite Interpolation
-    cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT1, scale);
-    cc->ModReduceInPlace(ctxtAfterFuncBT1);
-    cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT2, scale);
-    cc->ModReduceInPlace(ctxtAfterFuncBT2);
 
     if (QPrime != ctxtAfterFuncBT1->GetElements()[0].GetModulus())
         OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -506,7 +497,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 }
 
 void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigit, BigInteger Q, BigInteger Bigq,
-                        double scale, double scaleStep, size_t order, uint32_t numSlots, uint32_t ringDim) {
+                        uint32_t scaleTHI, uint32_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
      * If this number is the same as the ring dimension, then the CKKS slots is half.
@@ -561,9 +552,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         coeffintMod = {funcMod(1), funcMod(0) - funcMod(1)};
     }
     else {
-        coeffcompMod  = GetHermiteTrigCoefficients(funcMod, PDigit.ConvertToInt(), order, scale);  // divided by 2
+        coeffcompMod  = GetHermiteTrigCoefficients(funcMod, PDigit.ConvertToInt(), order, scaleTHI);  // divided by 2
         coeffcompStep = GetHermiteTrigCoefficients(funcStep, PDigit.ConvertToInt(), order,
-                                                   scaleStep);  // divided by 2
+                                                   scaleStepTHI);  // divided by 2
     }
 
     /* 5. Set up the cryptoparameters.
@@ -676,14 +667,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         Ciphertext<DCRTPoly> ctxtAfterFuncBT;
         if (binaryLUT)
             ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, PDigit.GetMSB() - 1, ep->GetModulus(),
-                                             pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, order);
+                                             pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
         else
             ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PDigit.GetMSB() - 1, ep->GetModulus(),
-                                             pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, order);
-
-        // Scalar multiplication address the division in Hermite Interpolation
-        cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);
-        cc->ModReduceInPlace(ctxtAfterFuncBT);
+                                             pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
 
         if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
             OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -740,9 +727,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         if (PDigit > 2 && !go && !step) {
             if (!binaryLUT)
                 coeffcomp = coeffcompStep;
-            scale = scaleStep;
-            step  = true;
-            go    = true;
+            scaleTHI = scaleStepTHI;
+            step     = true;
+            go       = true;
             if (coeffcompMod.size() > 4 && GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) >
                                                GetMultiplicativeDepthByCoeffVector(coeffcompStep, true)) {
                 levelsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -

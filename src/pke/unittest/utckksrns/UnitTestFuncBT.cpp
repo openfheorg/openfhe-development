@@ -93,8 +93,8 @@ struct TEST_CASE_FUNCBT {
     BigInteger POutput;
     BigInteger Q;
     BigInteger Bigq;
-    double scale;
-    double scaleStep;
+    double scaleTHI;
+    double scaleStepTHI;
     size_t order;
     uint32_t numSlots;
     uint32_t ringDim;
@@ -124,8 +124,8 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FUNCBT>& test) 
 [[maybe_unused]] const BigInteger PINPUT(256);
 [[maybe_unused]] const BigInteger POUTPUT(256);
 [[maybe_unused]] const BigInteger QDFLT(1UL << 47);
-[[maybe_unused]] constexpr double SCALE(32.0);
-[[maybe_unused]] constexpr double SCALESTEP(1.0);
+[[maybe_unused]] constexpr double SCALETHI(32.0);
+[[maybe_unused]] constexpr double SCALESTEPTHI(1.0);
 [[maybe_unused]] constexpr uint32_t AFTERBOOT(0);
 [[maybe_unused]] constexpr uint32_t BEFOREBOOT(0);
 [[maybe_unused]] constexpr uint32_t LVLSCOMP(0);
@@ -144,31 +144,31 @@ static std::vector<TEST_CASE_FUNCBT> testCases = {
 // Functional Bootstrapping does not support NATIVE_SIZE == 128
 // For higher precision, consider using composite scaling instead
 #if NATIVEINT != 128
-    //    TestCaseType, Desc,      QBFVInit,    PInput, POutput,           Q,      Bigq, scale, scaleStep, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, levelBudget
-    {    FUNCBT_ARBLUT, "01",      QBFVINIT,         2,       2,   1UL << 33, 1UL << 33,     1, SCALESTEP,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "02",      QBFVINIT,         2,       2,   1UL << 33, 1UL << 33,     1, SCALESTEP,     2,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "03",      QBFVINIT,         2,       2,   1UL << 33, 1UL << 33,     1, SCALESTEP,     3,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "04",      QBFVINIT,         4,       4,   1UL << 35, 1UL << 35,    16, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "05",      QBFVINIT,         4,       4,   1UL << 35, 1UL << 35,    16, SCALESTEP,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "06",      QBFVINIT,         4,       4,   1UL << 35, 1UL << 35,    16, SCALESTEP,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "07",      QBFVINIT,         8,       8,   1UL << 37, 1UL << 37,    16, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "08",      QBFVINIT,         8,       8,   1UL << 37, 1UL << 37,    16, SCALESTEP,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "09",      QBFVINIT,         8,       8,   1UL << 37, 1UL << 37,    16, SCALESTEP,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "10",      QBFVINIT,        16,      16,   1UL << 38, 1UL << 38,    32, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "11",      QBFVINIT,        16,      16,   1UL << 38, 1UL << 38,    32, SCALESTEP,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "12",      QBFVINIT,        16,      16,   1UL << 38, 1UL << 38,    32, SCALESTEP,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "13",      QBFVINIT,    PINPUT, POUTPUT,       QDFLT,     QDFLT, SCALE, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "14",      QBFVINIT,    PINPUT, POUTPUT,       QDFLT,     QDFLT, SCALE, SCALESTEP,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "15",      QBFVINIT,    PINPUT, POUTPUT,       QDFLT,     QDFLT, SCALE, SCALESTEP,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "16",      QBFVINIT,       512,     512,   1UL << 48, 1UL << 48,    45, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "17",      QBFVINIT,       512,     512,   1UL << 48, 1UL << 48,    45, SCALESTEP,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "18",      QBFVINIT,       512,     512,   1UL << 48, 1UL << 48,    45, SCALESTEP,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP, {3, 3} },
-    {    FUNCBT_ARBLUT, "19", QBFVINITLARGE,      4096,    4096,   1UL << 55, 1UL << 55,  2000, SCALESTEP,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "20", QBFVINITLARGE,      4096,    4096,   1UL << 55, 1UL << 55,  2000, SCALESTEP,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "21", QBFVINITLARGE,      4096,    4096,   1UL << 55, 1UL << 55,  2000, SCALESTEP,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "22", QBFVINITLARGE,     16382,   16382,   1UL << 58, 1UL << 58,  8000, SCALESTEP,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "23", QBFVINITLARGE,     16382,   16382,   1UL << 58, 1UL << 58,  8000, SCALESTEP,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
-    {    FUNCBT_ARBLUT, "24", QBFVINITLARGE,     16382,   16382,   1UL << 58, 1UL << 58,  8000, SCALESTEP,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    //    TestCaseType, Desc,      QBFVInit,    PInput, POutput,           Q,      Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, levelBudget
+    {    FUNCBT_ARBLUT, "01",      QBFVINIT,         2,       2,   1UL << 33, 1UL << 33,     1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "02",      QBFVINIT,         2,       2,   1UL << 33, 1UL << 33,     1, SCALESTEPTHI,     2,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "03",      QBFVINIT,         2,       2,   1UL << 33, 1UL << 33,     1, SCALESTEPTHI,     3,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "04",      QBFVINIT,         4,       4,   1UL << 35, 1UL << 35,    16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "05",      QBFVINIT,         4,       4,   1UL << 35, 1UL << 35,    16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "06",      QBFVINIT,         4,       4,   1UL << 35, 1UL << 35,    16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "07",      QBFVINIT,         8,       8,   1UL << 37, 1UL << 37,    16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "08",      QBFVINIT,         8,       8,   1UL << 37, 1UL << 37,    16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "09",      QBFVINIT,         8,       8,   1UL << 37, 1UL << 37,    16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "10",      QBFVINIT,        16,      16,   1UL << 38, 1UL << 38,    32, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "11",      QBFVINIT,        16,      16,   1UL << 38, 1UL << 38,    32, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "12",      QBFVINIT,        16,      16,   1UL << 38, 1UL << 38,    32, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "13",      QBFVINIT,    PINPUT, POUTPUT,       QDFLT,     QDFLT, SCALETHI, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "14",      QBFVINIT,    PINPUT, POUTPUT,       QDFLT,     QDFLT, SCALETHI, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "15",      QBFVINIT,    PINPUT, POUTPUT,       QDFLT,     QDFLT, SCALETHI, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "16",      QBFVINIT,       512,     512,   1UL << 48, 1UL << 48,    45, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "17",      QBFVINIT,       512,     512,   1UL << 48, 1UL << 48,    45, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "18",      QBFVINIT,       512,     512,   1UL << 48, 1UL << 48,    45, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP, {3, 3} },
+    {    FUNCBT_ARBLUT, "19", QBFVINITLARGE,      4096,    4096,   1UL << 55, 1UL << 55,  2000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "20", QBFVINITLARGE,      4096,    4096,   1UL << 55, 1UL << 55,  2000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "21", QBFVINITLARGE,      4096,    4096,   1UL << 55, 1UL << 55,  2000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "22", QBFVINITLARGE,     16382,   16382,   1UL << 58, 1UL << 58,  8000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "23", QBFVINITLARGE,     16382,   16382,   1UL << 58, 1UL << 58,  8000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
+    {    FUNCBT_ARBLUT, "24", QBFVINITLARGE,     16382,   16382,   1UL << 58, 1UL << 58,  8000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
     { FUNCBT_SIGNDIGIT, "25",      QBFVINIT,      4096,       2,   1UL << 46, 1UL << 35,     1,         1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
     { FUNCBT_SIGNDIGIT, "26",      QBFVINIT,      4096,       2,   1UL << 46, 1UL << 35,     1,         1,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },  // not needed for benchmark
     { FUNCBT_SIGNDIGIT, "27",      QBFVINIT,      4096,       4,   1UL << 45, 1UL << 35,    10,         2,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },
@@ -187,10 +187,10 @@ static std::vector<TEST_CASE_FUNCBT> testCases = {
     { FUNCBT_SIGNDIGIT, "40",   QBFVINITMED, 1UL << 21,     128,   1UL << 57, 1UL << 43,   256,        16,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP, {4, 4} },  // not needed for benchmark
     { FUNCBT_SIGNDIGIT, "41", QBFVINITLARGE, 1UL << 32,     256, QBFVINITMED, 1UL << 47,   256,        16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP, {3, 3} },
     { FUNCBT_SIGNDIGIT, "42", QBFVINITLARGE, 1UL << 32,     256, QBFVINITMED, 1UL << 47,   256,        16,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP, {3, 3} },  // not needed for benchmark
-    { FUNCBT_CONSECLEV, "43",      QBFVINIT,         2,       2,   1UL << 35, 1UL << 35,     1, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
-    { FUNCBT_CONSECLEV, "44",      QBFVINIT,    PINPUT,  PINPUT,   1UL << 48, 1UL << 48, SCALE, SCALESTEP,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
-    {       FUNCBT_MVB, "45",      QBFVINIT,         2,       2,   1UL << 35, 1UL << 35,     1, SCALESTEP,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
-    {       FUNCBT_MVB, "46",      QBFVINIT,    PINPUT,  PINPUT,   1UL << 48, 1UL << 48, SCALE, SCALESTEP,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
+    { FUNCBT_CONSECLEV, "43",      QBFVINIT,         2,       2,   1UL << 35, 1UL << 35,     1, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
+    { FUNCBT_CONSECLEV, "44",      QBFVINIT,    PINPUT,  PINPUT,   1UL << 48, 1UL << 48, SCALETHI, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
+    {       FUNCBT_MVB, "45",      QBFVINIT,         2,       2,   1UL << 35, 1UL << 35,     1, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
+    {       FUNCBT_MVB, "46",      QBFVINIT,    PINPUT,  PINPUT,   1UL << 48, 1UL << 48, SCALETHI, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3,        1, {3, 3} },  // not needed for benchmark
 #endif
 };
 // clang-format on
@@ -238,7 +238,7 @@ protected:
                             func(0) - func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)]
             else
                 coeffcomp =
-                    GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scale);  // divided by 2
+                    GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
 
 #ifdef BENCH
             auto stop = std::chrono::high_resolution_clock::now();
@@ -334,14 +334,10 @@ protected:
             Ciphertext<DCRTPoly> ctxtAfterFuncBT;
             if (binaryLUT)
                 ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, t.order);
+                    cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
             else
                 ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0, 0, t.order);
-
-            // Scalar multiplication addresses the division in Hermite Interpolation
-            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
-            cc->ModReduceInPlace(ctxtAfterFuncBT);
+                    cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
 
             if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
                 OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -438,9 +434,9 @@ protected:
             }
             else {
                 coeffcompMod =
-                    GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scale);  // divided by 2
+                    GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
                 coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
-                                                           t.scaleStep);  // divided by 2
+                                                           t.scaleStepTHI);  // divided by 2
             }
 
             uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
@@ -516,7 +512,7 @@ protected:
             else
                 coeffcomp = coeffcompMod;
 
-            double scale        = t.scale;
+            double scaleTHI     = t.scaleTHI;
             bool step           = false;
             bool go             = QBFVDouble > qDigitDouble;
             size_t levelsToDrop = 0;
@@ -536,15 +532,13 @@ protected:
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFuncBT;
                 if (binaryLUT)
-                    ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                                     pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, t.order);
+                    ctxtAfterFuncBT =
+                        cc->EvalFuncBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                       pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
                 else
-                    ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                                     pOrig.ConvertToDouble() / pBFVDouble, levelsToDrop, t.order);
-
-                // Scale to address the division in Hermite Interpolation
-                cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, scale);
-                cc->ModReduceInPlace(ctxtAfterFuncBT);
+                    ctxtAfterFuncBT =
+                        cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                       pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
 
                 if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
                     OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -594,9 +588,9 @@ protected:
                 if (t.POutput > 2 && !go && !step) {
                     if (!binaryLUT)
                         coeffcomp = coeffcompStep;
-                    scale = t.scaleStep;
-                    step  = true;
-                    go    = true;
+                    scaleTHI = t.scaleStepTHI;
+                    step     = true;
+                    go       = true;
                     if (coeffcompMod.size() > 4 && GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) >
                                                        GetMultiplicativeDepthByCoeffVector(coeffcompStep, true)) {
                         levelsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
@@ -649,7 +643,7 @@ protected:
                             func(0) - func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)]
             else
                 coeffcomp =
-                    GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scale);  // divided by 2
+                    GetHermiteTrigCoefficients(func, t.PInput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
 
             uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             uint32_t firstMod = t.Bigq.GetMSB() - 1;
@@ -730,9 +724,6 @@ protected:
                 ctxtAfterFuncBT =
                     cc->EvalFuncBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
 
-            // Scalar multiplication addresses the division in Hermite Interpolation
-            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
-
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
                 return (func(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
@@ -752,9 +743,8 @@ protected:
 
             // Back to coefficients encoding
             ctxtAfterFuncBT =
-                cc->EvalHomDecoding(ctxtAfterFuncBT, 1.0,
+                cc->EvalHomDecoding(ctxtAfterFuncBT, t.scaleTHI,
                                     0);  // Go back to coefficients, 0 because there are no extra levels to remove
-            cc->ModReduceInPlace(ctxtAfterFuncBT);
 
             if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
                 OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -780,15 +770,11 @@ protected:
                                             depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             if (binaryLUT)
-                ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0,
+                ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
                                                  t.levelsComputation, t.order);
             else
-                ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), 1.0,
+                ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
                                                  t.levelsComputation, t.order);
-
-            // Scalar multiplication addresses the division in Hermite Interpolation
-            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT, t.scale);
-            cc->ModReduceInPlace(ctxtAfterFuncBT);
 
             if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
                 OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
@@ -860,8 +846,8 @@ protected:
                 coeffint2 = {func2(1), func2(0) - func2(1)};
             }
             else {
-                coeffcomp1 = GetHermiteTrigCoefficients(func1, t.PInput.ConvertToInt(), t.order, t.scale);
-                coeffcomp2 = GetHermiteTrigCoefficients(func2, t.PInput.ConvertToInt(), t.order, t.scale);
+                coeffcomp1 = GetHermiteTrigCoefficients(func1, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
+                coeffcomp2 = GetHermiteTrigCoefficients(func2, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
             }
 
             uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
@@ -933,27 +919,21 @@ protected:
                 auto complexExpPowers =
                     cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
-                ctxtAfterFuncBT1 =
-                    cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
+                ctxtAfterFuncBT1 = cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, t.scaleTHI,
+                                               t.levelsComputation, t.order);
                 ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
-                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
+                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, t.scaleTHI, t.levelsComputation);
             }
             else {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
                     cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
-                ctxtAfterFuncBT1 =
-                    cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, 1.0, t.levelsComputation, t.order);
+                ctxtAfterFuncBT1 = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
+                                               t.levelsComputation, t.order);
                 ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
-                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, 1.0, t.levelsComputation);
+                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, t.scaleTHI, t.levelsComputation);
             }
-
-            // Scalar multiplication addresses the division in Hermite Interpolation
-            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT1, t.scale);
-            cc->ModReduceInPlace(ctxtAfterFuncBT1);
-            cc->GetScheme()->MultByIntegerInPlace(ctxtAfterFuncBT2, t.scale);
-            cc->ModReduceInPlace(ctxtAfterFuncBT2);
 
             if (QPrime != ctxtAfterFuncBT1->GetElements()[0].GetModulus())
                 OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");

@@ -2959,10 +2959,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciph
     }
 
     // Because the linear transform might be scaled differently, we might need to scale up the result separately
+    // Often, this scaling addreesses the previous division in the trigonometric Hermite coefficients
     if (postScaling > 1)
         algo->MultByIntegerInPlace(ctxtDec, postScaling);
 
-    // // 64-bit only: No need to scale back the message to its original scale.
+    cc->ModReduceInPlace(ctxtDec);
+    // 64-bit only: No need to scale back the message to its original scale.
     return ctxtDec;
 }
 
