@@ -27,7 +27,7 @@ project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
 set(OPENFHE_VERSION_MINOR 3)
-set(OPENFHE_VERSION_PATCH 0)
+set(OPENFHE_VERSION_PATCH 1)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -677,9 +677,26 @@ add_subdirectory(src/pke)
 add_subdirectory(src/binfhe)
 
 ### build the google test handlers
-###if(BUILD_UNITTESTS)
-###	add_subdirectory(third-party/google-test EXCLUDE_FROM_ALL)
-###endif()
+if(BUILD_UNITTESTS)
+    add_subdirectory(third-party/google-test EXCLUDE_FROM_ALL)
+    ##############################################################################################################
+    ### Handle third-party/google-test/googletest's uninitialized variable dummy. Remove
+    ### add_compile_options(-Wno-error=maybe-uninitialized)
+    ### once googletest has been updated to v1.11.0 or later.
+    ##############################################################################################################
+    ### 1. This applies to gtest only
+    ### 2. Build does not fail because of "uninitialized error"
+    ### 3. We still see a warning if the variable is truly uninitialized
+    ### 4. All other warnings still remain errors
+    ##############################################################################################################
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(gtest PRIVATE -Wno-error=maybe-uninitialized)
+        target_compile_options(gtest_main PRIVATE -Wno-error=maybe-uninitialized)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(gtest PRIVATE -Wno-uninitialized)
+        target_compile_options(gtest_main PRIVATE -Wno-uninitialized)
+    endif()
+endif()
 
 ### build the google benchmark handlers (just the parts we need)
 if(BUILD_BENCHMARKS)
