@@ -654,9 +654,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     else
         coeffcomp = coeffcompMod;
 
-    bool step           = false;
-    bool go             = QBFVDouble > qDigitDouble;
-    size_t levelsToDrop = 0;
+    bool step            = false;
+    bool go              = QBFVDouble > qDigitDouble;
+    size_t levelsToDrop  = 0;
+    const BigInteger TWO = 2;
 
     /* 9. Start the sign loop. For arbitrary digit size, pNew > 2, the last iteration needs
      * to evaluate step pNew not mod pNew.
@@ -719,7 +720,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         }
 
         /* 9.7 If in the last iteration, decrypt and assess correctness. */
-        if ((PDigit == 2 && QBFVDouble <= qDigitDouble) || step) {
+        if ((PDigit == TWO && QBFVDouble <= qDigitDouble) || step) {
             auto computed =
                 SchemeletRLWEMP::DecryptCoeff(ctxtBFV, Q, PInput, keyPair.secretKey, ep, numSlotsCKKS, numSlots);
 
@@ -737,7 +738,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         /* 9.8 Determine whether it is the last iteration and if not, update the parameters for the next iteration. */
         go = QBFVDouble > qDigitDouble;
 
-        if (PDigit > 2 && !go && !step) {
+        if (PDigit > TWO && !go && !step) {
             if (!binaryLUT)
                 coeffcomp = coeffcompStep;
             scale = scaleStep;

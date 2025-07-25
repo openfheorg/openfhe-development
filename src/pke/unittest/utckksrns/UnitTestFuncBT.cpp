@@ -516,10 +516,11 @@ protected:
             else
                 coeffcomp = coeffcompMod;
 
-            double scale        = t.scale;
-            bool step           = false;
-            bool go             = QBFVDouble > qDigitDouble;
-            size_t levelsToDrop = 0;
+            double scale         = t.scale;
+            bool step            = false;
+            bool go              = QBFVDouble > qDigitDouble;
+            size_t levelsToDrop  = 0;
+            const BigInteger TWO = 2;
 
             // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
             // Currently this only works when log(pNew) divides log(p).
@@ -575,7 +576,7 @@ protected:
                     ctxtBFV[1] = polys[1];
                 }
 
-                if ((t.POutput == 2 && QBFVDouble <= qDigitDouble) || step) {
+                if ((t.POutput == TWO && QBFVDouble <= qDigitDouble) || step) {
                     auto computed = SchemeletRLWEMP::DecryptCoeff(ctxtBFV, Q, PInput, keyPair.secretKey, ep,
                                                                   numSlotsCKKS, t.numSlots);
 
@@ -591,7 +592,7 @@ protected:
 
                 go = QBFVDouble > qDigitDouble;
 
-                if (t.POutput > 2 && !go && !step) {
+                if (t.POutput > TWO && !go && !step) {
                     if (!binaryLUT)
                         coeffcomp = coeffcompStep;
                     scale = t.scaleStep;
