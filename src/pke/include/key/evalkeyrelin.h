@@ -32,13 +32,13 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
 #define LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
 
-#include "key/evalkeyrelin-fwd.h"
 #include "key/evalkey.h"
+#include "key/evalkeyrelin-fwd.h"
 
 #include <memory>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 // TODO: fix insert issue if SetBVector used before SetAVector
 // TODO: fix vector growth issue if SetAVector/SetBVector called multiple times
@@ -169,73 +169,8 @@ public:
         return m_rKey.at(1);
     }
 
-    /**
-   * Setter function to store key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @param &a is the Element to be copied.
-   */
-
-    virtual void SetAinDCRT(const Element& a) {
-        m_dcrtKeys.insert(m_dcrtKeys.begin() + 0, a);
-    }
-
-    /**
-   * Setter function to store key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @param &&a is the Element to be moved.
-   */
-    virtual void SetAinDCRT(Element&& a) noexcept {
-        m_dcrtKeys.insert(m_dcrtKeys.begin() + 0, std::move(a));
-    }
-
-    /**
-   * Getter function to access key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @return  Element.
-   */
-
-    virtual const Element& GetAinDCRT() const {
-        return m_dcrtKeys.at(0);
-    }
-
-    /**
-   * Setter function to store key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @param &b is the Element to be copied.
-   */
-
-    virtual void SetBinDCRT(const Element& b) {
-        m_dcrtKeys.insert(m_dcrtKeys.begin() + 1, b);
-    }
-
-    /**
-   * Setter function to store key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @param &&b is the Element to be moved.
-   */
-    virtual void SetBinDCRT(Element&& b) noexcept {
-        m_dcrtKeys.insert(m_dcrtKeys.begin() + 1, std::move(b));
-    }
-
-    /**
-   * Getter function to access key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @return  Element.
-   */
-
-    virtual const Element& GetBinDCRT() const {
-        return m_dcrtKeys.at(1);
-    }
-
     virtual void ClearKeys() {
         m_rKey.clear();
-        m_dcrtKeys.clear();
     }
 
     bool key_compare(const EvalKeyImpl<Element>& other) const {
@@ -282,9 +217,6 @@ public:
 private:
     // private member to store vector of vector of Element.
     std::vector<std::vector<Element>> m_rKey;
-
-    // Used for hybrid key switching
-    std::vector<DCRTPoly> m_dcrtKeys;
 };
 
 }  // namespace lbcrypto

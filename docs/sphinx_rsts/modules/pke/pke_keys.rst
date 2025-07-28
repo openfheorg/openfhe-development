@@ -39,8 +39,6 @@ Key Class File Listings
 
 - Get and set relinearization elements
 
-- Get and set key switches for ``BinDCRT`` and ``DCRT``
-
 - Inherits from ``Eval Key``
 
 `Key (key.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/key/key.h>`_

@@ -21,12 +21,11 @@ graph TD
 - Top-level `#include` for access to all capabilities
 
 [Eval Key](evalkey.h)
-- Inherits from the base [Key](key.h) class. 
+- Inherits from the base [Key](key.h) class.
 - Serves as base class for [Eval Key Relin](evalkeyrelin.h)
 
 [Eval Key Relin](evalkeyrelin.h)
 - Get and set relinearization elements
-- Get and set key switches for `BinDCRT` and `DCRT` 
 - Inherits from [Eval Key](evalkey.h)
 
 [Key](key.h)
