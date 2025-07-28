@@ -36,12 +36,12 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
 #define LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
 
-#include "key/privatekey-fwd.h"
 #include "key/key.h"
+#include "key/privatekey-fwd.h"
 
 #include <iomanip>
-#include <memory>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -119,7 +119,7 @@ public:
    * @return the resulting PrivateKeyImpl
    */
     PrivateKeyImpl<Element>& operator=(PrivateKeyImpl<Element>&& rhs) noexcept {
-        CryptoObject<Element>::operator=(rhs);
+        CryptoObject<Element>::operator=(std::move(rhs));
         m_sk = std::move(rhs.m_sk);
         return *this;
     }
@@ -172,7 +172,7 @@ public:
         ar(::cereal::make_nvp("s", m_sk));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "PrivateKey";
     }
 

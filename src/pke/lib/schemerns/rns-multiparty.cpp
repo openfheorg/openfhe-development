@@ -229,7 +229,6 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
 
     evalKeyResult->SetAVector(std::move(a));
     evalKeyResult->SetBVector(std::move(b));
-
     return evalKeyResult;
 }
 

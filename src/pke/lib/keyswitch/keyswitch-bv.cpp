@@ -118,7 +118,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
-
     return ek;
 }
 
@@ -204,7 +203,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     evalKey->SetAVector(std::move(av));
     evalKey->SetBVector(std::move(bv));
     evalKey->SetKeyTag(newKey->GetKeyTag());
-
     return evalKey;
 }
 
@@ -275,7 +273,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newPk->GetKeyTag());
-
     return ek;
 }
 

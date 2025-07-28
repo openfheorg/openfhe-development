@@ -129,38 +129,6 @@ public:
         OPENFHE_THROW("GetBVector operation not supported");
     }
 
-    /**
-   * Setter function to store key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @param &a is the Element to be copied.
-   */
-
-    virtual void SetA(const Element& a) {
-        OPENFHE_THROW("SetA copy operation not supported");
-    }
-
-    /**
-   * Setter function to store key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @param &&a is the Element to be moved.
-   */
-    virtual void SetA(Element&& a) {
-        OPENFHE_THROW("SetA move operation not supported");
-    }
-
-    /**
-   * Getter function to access key switch Element.
-   * Throws exception, to be overridden by derived class.
-   *
-   * @return  Element.
-   */
-
-    virtual const Element& GetA() const {
-        OPENFHE_THROW("GetA operation not supported");
-    }
-
     virtual void ClearKeys() {
         OPENFHE_THROW("ClearKeys operation is not supported");
     }
@@ -187,7 +155,7 @@ public:
         ar(::cereal::base_class<Key<Element>>(this));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "EvalKey";
     }
 };

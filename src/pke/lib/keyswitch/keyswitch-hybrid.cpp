@@ -205,7 +205,6 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
-
     return ek;
 }
 
@@ -386,11 +385,11 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         uint32_t sizePartQl = partsCt[part].GetNumOfElements();
         partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
-             cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
-             cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
-             cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
-             cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
-             cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+            cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
+            cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
+            cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
+            cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
+            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
 
         partsCtCompl[part].SetFormat(Format::EVALUATION);
 

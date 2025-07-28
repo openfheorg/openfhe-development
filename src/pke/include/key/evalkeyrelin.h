@@ -40,9 +40,6 @@
 #include <utility>
 #include <vector>
 
-// TODO: fix insert issue if SetBVector used before SetAVector
-// TODO: fix vector growth issue if SetAVector/SetBVector called multiple times
-
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -55,15 +52,19 @@ namespace lbcrypto {
  */
 template <class Element>
 class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
+private:
+    std::vector<Element> m_AKey;
+    std::vector<Element> m_BKey;
+
 public:
     /**
    * Basic constructor for setting crypto params
    *
    * @param &cryptoParams is the reference to cryptoParams
    */
-    EvalKeyRelinImpl() = default;
-
     explicit EvalKeyRelinImpl(const CryptoContext<Element>& cc) : EvalKeyImpl<Element>(cc) {}
+
+    EvalKeyRelinImpl() = default;
 
     virtual ~EvalKeyRelinImpl() = default;
 
@@ -73,7 +74,7 @@ public:
    *@param &rhs key to copy from
    */
     EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
-        : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(rhs.m_rKey) {}
+        : EvalKeyImpl<Element>(rhs.context), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
 
     /**
    * Move constructor
@@ -81,10 +82,10 @@ public:
    *@param &rhs key to move from
    */
     EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
-        : EvalKeyImpl<Element>(rhs.GetCryptoContext()), m_rKey(std::move(rhs.m_rKey)) {}
+        : EvalKeyImpl<Element>(rhs.context), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
 
     operator bool() const {
-        return (this->context != nullptr) && (m_rKey.size() != 0);
+        return (this->context != nullptr) && (m_AKey.size() != 0) && (m_BKey.size() != 0);
     }
 
     /**
@@ -94,7 +95,8 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
-        m_rKey        = rhs.m_rKey;
+        m_AKey        = rhs.m_AKey;
+        m_BKey        = rhs.m_BKey;
         return *this;
     }
 
@@ -105,7 +107,8 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
         this->context = std::move(rhs.context);
-        m_rKey        = std::move(rhs.m_rKey);
+        m_AKey        = std::move(rhs.m_AKey);
+        m_BKey        = std::move(rhs.m_BKey);
         return *this;
     }
 
@@ -115,8 +118,8 @@ public:
    *
    * @param &a is the Element vector to be copied.
    */
-    virtual void SetAVector(const std::vector<Element>& a) {
-        m_rKey.insert(m_rKey.begin() + 0, a);
+    void SetAVector(const std::vector<Element>& a) override {
+        m_AKey = a;
     }
 
     /**
@@ -125,8 +128,8 @@ public:
    *
    * @param &&a is the Element vector to be moved.
    */
-    virtual void SetAVector(std::vector<Element>&& a) noexcept {
-        m_rKey.insert(m_rKey.begin() + 0, std::move(a));
+    void SetAVector(std::vector<Element>&& a) noexcept override {
+        m_AKey = std::move(a);
     }
 
     /**
@@ -135,8 +138,8 @@ public:
    *
    * @return Element vector A.
    */
-    virtual const std::vector<Element>& GetAVector() const {
-        return m_rKey.at(0);
+    const std::vector<Element>& GetAVector() const override {
+        return m_AKey;
     }
 
     /**
@@ -145,8 +148,8 @@ public:
    *
    * @param &b is the Element vector to be copied.
    */
-    virtual void SetBVector(const std::vector<Element>& b) {
-        m_rKey.insert(m_rKey.begin() + 1, b);
+    void SetBVector(const std::vector<Element>& b) override {
+        m_BKey = b;
     }
 
     /**
@@ -155,8 +158,8 @@ public:
    *
    * @param &&b is the Element vector to be moved.
    */
-    virtual void SetBVector(std::vector<Element>&& b) noexcept {
-        m_rKey.insert(m_rKey.begin() + 1, std::move(b));
+    void SetBVector(std::vector<Element>&& b) noexcept override {
+        m_BKey = std::move(b);
     }
 
     /**
@@ -165,37 +168,25 @@ public:
    *
    * @return Element vector B.
    */
-    virtual const std::vector<Element>& GetBVector() const {
-        return m_rKey.at(1);
+    const std::vector<Element>& GetBVector() const override {
+        return m_BKey;
     }
 
-    virtual void ClearKeys() {
-        m_rKey.clear();
+    void ClearKeys() override {
+        m_AKey.clear();
+        m_BKey.clear();
     }
 
-    bool key_compare(const EvalKeyImpl<Element>& other) const {
-        const auto& oth = static_cast<const EvalKeyRelinImpl<Element>&>(other);
-
-        if (!CryptoObject<Element>::operator==(other))
-            return false;
-
-        if (this->m_rKey.size() != oth.m_rKey.size())
-            return false;
-        for (size_t i = 0; i < this->m_rKey.size(); i++) {
-            if (this->m_rKey[i].size() != oth.m_rKey[i].size())
-                return false;
-            for (size_t j = 0; j < this->m_rKey[i].size(); j++) {
-                if (this->m_rKey[i][j] != oth.m_rKey[i][j])
-                    return false;
-            }
-        }
-        return true;
+    bool key_compare(const EvalKeyImpl<Element>& rhs) const override {
+        const auto& r = static_cast<const EvalKeyRelinImpl<Element>&>(rhs);
+        return CryptoObject<Element>::operator==(rhs) && m_AKey == r.m_AKey && m_BKey == r.m_BKey;
     }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
-        ar(::cereal::make_nvp("k", m_rKey));
+        ar(::cereal::make_nvp("ak", m_AKey));
+        ar(::cereal::make_nvp("bk", m_BKey));
     }
 
     template <class Archive>
@@ -205,18 +196,17 @@ public:
                           " is from a later version of the library");
         }
         ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
-        ar(::cereal::make_nvp("k", m_rKey));
+        ar(::cereal::make_nvp("ak", m_AKey));
+        ar(::cereal::make_nvp("bk", m_BKey));
     }
-    std::string SerializedObjectName() const {
+
+    std::string SerializedObjectName() const override {
         return "EvalKeyRelin";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }
-
-private:
-    // private member to store vector of vector of Element.
-    std::vector<std::vector<Element>> m_rKey;
 };
 
 }  // namespace lbcrypto

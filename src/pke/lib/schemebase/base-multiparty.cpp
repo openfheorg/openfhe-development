@@ -318,7 +318,6 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalKeys(EvalKey<Element> eval
 
     evalKeySum->SetAVector(a);
     evalKeySum->SetBVector(std::move(b));
-
     return evalKeySum;
 }
 
@@ -346,7 +345,6 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> 
 
     evalKeySum->SetAVector(std::move(a));
     evalKeySum->SetBVector(std::move(b));
-
     return evalKeySum;
 }
 
@@ -380,7 +378,6 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> p
 
     evalKeyResult->SetAVector(std::move(a));
     evalKeyResult->SetBVector(std::move(b));
-
     return evalKeyResult;
 }
 

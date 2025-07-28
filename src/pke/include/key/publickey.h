@@ -36,13 +36,13 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
 #define LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
 
-#include "key/publickey-fwd.h"
 #include "key/key.h"
+#include "key/publickey-fwd.h"
 
 #include <memory>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -107,7 +107,7 @@ public:
    * @param &rhs PublicKeyImpl to copy from
    */
     PublicKeyImpl<Element>& operator=(PublicKeyImpl<Element>&& rhs) noexcept {
-        CryptoObject<Element>::operator=(rhs);
+        CryptoObject<Element>::operator=(std::move(rhs));
         m_h = std::move(rhs.m_h);
         return *this;
     }
@@ -140,35 +140,8 @@ public:
         m_h = std::move(element);
     }
 
-    /**
-   * Sets the public key Element at index idx.
-   * @param &element is the public key Element to be copied.
-   */
-    void SetPublicElementAtIndex(uint32_t idx, const Element& element) {
-        m_h.insert(m_h.begin() + idx, element);
-    }
-
-    /**
-   * Sets the public key Element at index idx.
-   * @param &&element is the public key Element to be moved.
-   */
-    void SetPublicElementAtIndex(uint32_t idx, Element&& element) noexcept {
-        m_h.insert(m_h.begin() + idx, std::move(element));
-    }
-
-    bool operator==(const PublicKeyImpl& other) const {
-        if (!CryptoObject<Element>::operator==(other)) {
-            return false;
-        }
-        if (m_h.size() != other.m_h.size()) {
-            return false;
-        }
-        for (size_t i = 0; i < m_h.size(); ++i) {
-            if (m_h[i] != other.m_h[i]) {
-                return false;
-            }
-        }
-        return true;
+    bool operator==(const PublicKeyImpl& rhs) const {
+        return CryptoObject<Element>::operator==(rhs) && m_h == rhs.m_h;
     }
 
     bool operator!=(const PublicKeyImpl& other) const {
@@ -191,7 +164,7 @@ public:
         ar(::cereal::make_nvp("h", m_h));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "PublicKey";
     }
 

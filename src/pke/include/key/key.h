@@ -33,7 +33,6 @@
 #define LBCRYPTO_CRYPTO_KEY_KEY_H
 
 #include "cryptoobject.h"
-
 #include "utils/serial.h"
 
 #include <memory>
