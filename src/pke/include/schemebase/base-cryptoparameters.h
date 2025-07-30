@@ -31,9 +31,9 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 #define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 
-#include "utils/serializable.h"
 #include "encoding/encodings.h"
 #include "encoding/plaintext.h"
+#include "utils/serializable.h"
 
 #include <memory>
 #include <string>
