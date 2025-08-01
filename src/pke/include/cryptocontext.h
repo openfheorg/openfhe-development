@@ -1444,6 +1444,14 @@ public:
         GetScheme()->EvalAddInPlace(ciphertext1, ciphertext2);
     }
 
+    void EvalAddInPlaceNoCheck(Ciphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
+        auto& cv1  = ctxt1->GetElements();
+        auto& cv2  = ctxt2->GetElements();
+        uint32_t n = cv1.size();
+        for (uint32_t i = 0; i < n; ++i)
+            cv1[i] += cv2[i];
+    }
+
     /**
     * @brief Homomorphic addition of two mutable ciphertexts.
     *
@@ -1971,8 +1979,48 @@ public:
     Ciphertext<Element> EvalMultNoRelin(ConstCiphertext<Element>& ciphertext1,
                                         ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
-
         return GetScheme()->EvalMult(ciphertext1, ciphertext2);
+    }
+
+    Ciphertext<Element> EvalMultNoRelinNoCheck(ConstCiphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
+        auto& cv1 = ctxt1->GetElements();
+        auto& cv2 = ctxt2->GetElements();
+
+        uint32_t n1 = cv1.size();
+        uint32_t n2 = cv2.size();
+        uint32_t nr = n1 + n2 - 1;
+
+        std::vector<DCRTPoly> cvr;
+        cvr.reserve(nr);
+
+        if (n1 == 2 && n2 == 2) {
+            cvr.emplace_back(cv1[0] * cv2[0]);
+            cvr.emplace_back((cv1[0] * cv2[1]) += (cv1[1] * cv2[0]));
+            cvr.emplace_back(cv1[1] * cv2[1]);
+        }
+        else {
+            uint32_t m = 0;
+            for (uint32_t i = 0; i < n1; ++i) {
+                auto& cv1i = cv1[i];
+                for (uint32_t j = 0, k = i; j < n2; ++j, ++k) {
+                    if (k == m) {
+                        cvr.emplace_back(cv1i * cv2[j]);
+                        ++m;
+                    }
+                    else {
+                        cvr[k] += (cv1i * cv2[j]);
+                    }
+                }
+            }
+        }
+
+        auto result = ctxt1->CloneEmpty();
+        result->SetElements(std::move(cvr));
+        result->SetNoiseScaleDeg(ctxt1->GetNoiseScaleDeg() + ctxt2->GetNoiseScaleDeg());
+        result->SetScalingFactor(ctxt1->GetScalingFactor() * ctxt2->GetScalingFactor());
+        result->SetScalingFactorInt(ctxt1->GetScalingFactorInt().ModMul(
+            ctxt2->GetScalingFactorInt(), ctxt1->GetCryptoParameters()->GetPlaintextModulus()));
+        return result;
     }
 
     /**
@@ -2031,6 +2079,15 @@ public:
         }
 
         return GetScheme()->EvalMultAndRelinearize(ciphertext1, ciphertext2, evalKeyVec);
+    }
+
+    Ciphertext<Element> EvalMultNoCheck(ConstCiphertext<Element>& ctxt, NativeInteger k) const {
+        auto result = ctxt->Clone();
+        auto& cv    = result->GetElements();
+        uint32_t n  = cv.size();
+        for (uint32_t i = 0; i < n; ++i)
+            cv[i] *= k;
+        return result;
     }
 
     /**
