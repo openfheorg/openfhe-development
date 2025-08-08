@@ -44,6 +44,35 @@ using namespace testing;
 static string lead = "****** ";
 
 class MinimalistPrinter : public EmptyTestEventListener {
+    // in modern GoogleTest (v1.11+ or v1.17.0) internal::COLOR_GREEN and internal::ColoredPrintf(...) are no longer accessible, so
+    enum class Color { kDefault, kRed, kGreen };
+
+    void ColoredPrintf(Color color, const char* fmt, ...) {
+        const char* color_code = "";
+        switch (color) {
+            case Color::kRed:
+                color_code = "\033[1;31m";
+                break;
+            case Color::kGreen:
+                color_code = "\033[1;32m";
+                break;
+            case Color::kDefault:
+            default:
+                color_code = "\033[0m";
+                break;
+        }
+
+        printf("%s", color_code);
+
+        va_list args;
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+
+        printf("\033[0m");  // reset color
+        fflush(stdout);
+    }
+
 public:
     void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
         cout << lead << "OpenFHE Version " << GetOPENFHEVersion() << endl;
@@ -71,7 +100,7 @@ public:
             if (pr.passed())
                 continue;
 
-            internal::ColoredPrintf(internal::COLOR_GREEN, "[ RUN      ] ");
+            ColoredPrintf(Color::kGreen, "[ RUN      ] ");
             printf("%s.%s\n", test_info.test_case_name(), test_info.name());
             fflush(stdout);
 
@@ -81,7 +110,7 @@ public:
 
             cout << pr.summary() << endl;
 
-            internal::ColoredPrintf(internal::COLOR_RED, "[  FAILED  ] ");
+            ColoredPrintf(Color::kRed, "[  FAILED  ] ");
             printf("%s.%s\n", test_info.test_case_name(), test_info.name());
             fflush(stdout);
             internal::PrintFullTestCommentIfPresent(test_info);
@@ -111,7 +140,7 @@ public:
                 if (!test_info.should_run() || test_info.result()->Passed()) {
                     continue;
                 }
-                internal::ColoredPrintf(internal::COLOR_RED, "[  FAILED  ] ");
+                ColoredPrintf(Color::kRed, "[  FAILED  ] ");
                 printf("%s.%s", test_case.name(), test_info.name());
                 internal::PrintFullTestCommentIfPresent(test_info);
                 printf("\n");
