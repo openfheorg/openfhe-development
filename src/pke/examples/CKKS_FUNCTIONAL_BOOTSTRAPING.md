@@ -90,6 +90,23 @@ For certain computations, such as sign, we can support LUTs over larger inputs t
 functions. In particular, we achieve this by performing homomorphic digit decomposition using functional bootstrapping for the
 smaller digits, and process these smaller digits separately.
 
+**Secret key distributions**
+
+Functional bootstrapping is supported for sparse secret keys.
+
+The SPARSE_TERNARY distribution is the distribution used in the original CKKS paper [[CKKS17](https://eprint.iacr.org/2016/421.pdf)],
+where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 25, this
+distribution leads to a larger probability of failure. For LUT input bit-sizes of over 10 bits, choosing this distribution leads
+to requiring an extra level in the complex exponential approximation to achieve correctness. This is the distribution used for
+the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
+
+The SPARSE_ENCAPSULATED distribution (described in [[BTH22]](https://eprint.iacr.org/2022/024.pdf)) uses a Hamming weight of 32
+for the key used in (functional) bootstrapping and 192 for other operations. With the set number of overflows K = 16, this
+distribution leads to a negligible probability of failure. Moreover, for all supported LUT sizes (up to 14 bits), the number of
+levels for the complex exponential approximation is the same. The only caveat for the current implementation is that when the
+scaling factor is very close to the first modulus size in CKKS (which happens for LUT of input bit-size 14), the noise introduced
+by the extra key switching is larger.
+
 **Current limitations**
 - There is no automated selection of parameters and approximation orders. The user needs to choose appropriate RLWE and CKKS
 cryptoparameters, trigonometric Hermite interpolation order and the scaling for the Hermite coefficients. These parameters
@@ -99,4 +116,7 @@ If the output is decrypted under CKKS, noise flooding should be applied in order
 security.
 - With a scaling factor fitting on native int size of 64 bits, LUTs up to 14 bits in size are supported.
 - The current multiprecision sign evaluation implementation requires that the digit bit size divides the input bit size.
-- Only sparse secrets are currently supported.
+- Only sparse secrets are currently supported, with the secret key distributions SPARSE_TERNARY (larger probability of
+failure) and SPARSE_ENCAPSULATED (negligible probability of failure).
+- Only the FIXEDMANUAL mode for rescaling is supported.
+- MULTIPARTY is not supported.

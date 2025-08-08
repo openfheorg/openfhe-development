@@ -141,16 +141,20 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     /* 4. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-     */
+    * The secret key distribution for CKKS should either be SPARSE_TERNARY or SPARSE_ENCAPSULATED.
+    * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
+    * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
+    * of failure at a cost of slightly more noise.
+    */
     uint32_t dcrtBits                       = Bigq.GetMSB() - 1;
     uint32_t firstMod                       = Bigq.GetMSB() - 1;
     uint32_t levelsAvailableAfterBootstrap  = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum                           = 3;
+    SecretKeyDist secretKeyDist             = SPARSE_ENCAPSULATED;
     std::vector<uint32_t> lvlb              = {3, 3};
 
     CCParams<CryptoContextCKKSRNS> parameters;
-    SecretKeyDist secretKeyDist = SPARSE_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
@@ -162,9 +166,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint, PInput, order);
+        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint, PInput, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp, PInput, order);
+        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp, PInput, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -306,16 +310,20 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     /* 5. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
+     * The secret key distribution for CKKS should either be SPARSE_TERNARY or SPARSE_ENCAPSULATED.
+     * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
+     * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
+     * of failure at a cost of slightly more noise.
      */
     uint32_t dcrtBits                       = Bigq.GetMSB() - 1;
     uint32_t firstMod                       = Bigq.GetMSB() - 1;
     uint32_t levelsAvailableAfterBootstrap  = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum                           = 3;
+    SecretKeyDist secretKeyDist             = SPARSE_TERNARY;
     std::vector<uint32_t> lvlb              = {3, 3};
 
     CCParams<CryptoContextCKKSRNS> parameters;
-    SecretKeyDist secretKeyDist = SPARSE_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
@@ -327,9 +335,9 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2 + levelsComputation;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint1, PInput, order);
+        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint1, PInput, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp1, PInput, order);
+        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp1, PInput, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -558,16 +566,20 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     /* 5. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus corresponding to the digit.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
+     * The secret key distribution for CKKS should either be SPARSE_TERNARY or SPARSE_ENCAPSULATED.
+     * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
+     * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
+     * of failure at a cost of slightly more noise.
      */
     uint32_t dcrtBits                       = Bigq.GetMSB() - 1;
     uint32_t firstMod                       = Bigq.GetMSB() - 1;
     uint32_t levelsAvailableAfterBootstrap  = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum                           = 3;
+    SecretKeyDist secretKeyDist             = SPARSE_ENCAPSULATED;
     std::vector<uint32_t> lvlb              = {3, 3};
 
     CCParams<CryptoContextCKKSRNS> parameters;
-    SecretKeyDist secretKeyDist = SPARSE_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
@@ -580,9 +592,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffintMod, PDigit, order);
+        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffintMod, PDigit, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcompMod, PDigit, order);
+        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcompMod, PDigit, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 

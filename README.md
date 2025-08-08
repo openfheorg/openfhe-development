@@ -8,6 +8,8 @@ OpenFHE is an open-source FHE library that includes efficient implementations of
   * Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic (includes approximate bootstrapping)
   * Ducas-Micciancio (DM/FHEW), Chillotti-Gama-Georgieva-Izabachene (CGGI/TFHE), and Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo (LMKCDEY) schemes for evaluating Boolean circuits and arbitrary functions over larger plaintext spaces using lookup tables
 
+OpenFHE also supports partial schemes, called schemelets, such as RLWE which is equivalent to the coefficient-encoded additive BFV scheme. In OpenFHE, the RLWE schemelet is the starting point for the vectorized functional bootstrapping capability, which allows the evaluation of arbitrary lookup tables over vectors of integers, e.g., modular reduction, comparison or Sbox, using CKKS in an intermediate step.
+
 OpenFHE also includes the following multiparty extensions of FHE:
   * Threshold FHE for BGV, BFV, and CKKS schemes
   * Interactive bootstrapping for Threshold CKKS
@@ -76,6 +78,8 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        4. [Small-Precison Arbitrary Function Evaluation](src/binfhe/examples/eval-function.cpp)
    1. Scheme Switching:
        1. [Examples with Scheme Switching between CKKS and FHEW/TFHE](src/pke/examples/scheme-switching.cpp)
+   1. Functional Bootstrapping over integers (RLWE and CKKS):
+       1. [Examples with Functional Bootstrapping using CKKS for lookup table evaluation, sign extraction and multivalue bootstrapping](src/pke/examples/functional-bootstrapping-ckks.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
        1. [2-party Interactive Bootstrapping Examples](src/pke/examples/interactive-bootstrapping.cpp)
