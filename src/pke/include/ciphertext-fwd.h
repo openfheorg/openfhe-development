@@ -34,6 +34,7 @@
 #ifndef __CIPHERTEXT_FWD_H__
 #define __CIPHERTEXT_FWD_H__
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
