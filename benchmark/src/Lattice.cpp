@@ -242,7 +242,7 @@ static void BM_add_LATTICE(benchmark::State& state) {
     E a;
     E b;
 
-    if (state.thread_index == 0) {
+    if (state.thread_index() == 0) {
         a = TestParameters.GetPoly<E>(state.range(0), 0);
         b = TestParameters.GetPoly<E>(state.range(0), 1);
     }
@@ -262,7 +262,7 @@ static void BM_addeq_LATTICE(benchmark::State& state) {
     E a;
     E b;
 
-    if (state.thread_index == 0) {
+    if (state.thread_index() == 0) {
         b = TestParameters.GetPoly<E>(state.range(0), 1);
         a = TestParameters.GetPoly<E>(state.range(0), 0);
     }
@@ -282,7 +282,7 @@ template <class E>
 static void BM_mult_LATTICE(benchmark::State& state) {
     E a, b;
 
-    if (state.thread_index == 0) {
+    if (state.thread_index() == 0) {
         a = TestParameters.GetPoly<E>(state.range(0), 0);
         b = TestParameters.GetPoly<E>(state.range(0), 1);
     }
@@ -301,7 +301,7 @@ template <class E>
 static void BM_multeq_LATTICE(benchmark::State& state) {
     E a, b;
 
-    if (state.thread_index == 0) {
+    if (state.thread_index() == 0) {
         b = TestParameters.GetPoly<E>(state.range(0), 1);
         a = TestParameters.GetPoly<E>(state.range(0), 0);
     }
