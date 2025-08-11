@@ -2136,33 +2136,6 @@ public:
         return EvalMultMutable(ciphertext, plaintext);
     }
 
-    // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, const NativeInteger& scalar) const {
-    //  if (!ciphertext) {
-    //    OPENFHE_THROW( "Input ciphertext is nullptr");
-    //  }
-    //  return GetScheme()->EvalMult(ciphertext, scalar);
-    // }
-
-    // TODO (dsuponit): commented the code below to avoid compiler errors
-    // Ciphertext<Element> EvalMult(const NativeInteger& scalar, ConstCiphertext<Element> ciphertext) const {
-    //  return EvalMult(ciphertext, scalar);
-    // }
-
-    // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalMultInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& scalar) const {
-    //  if (!ciphertext) {
-    //    OPENFHE_THROW( "Input ciphertext is nullptr");
-    //  }
-
-    //  GetScheme()->EvalMultInPlace(ciphertext, scalar);
-    // }
-
-    // TODO (dsuponit): commented the code below to avoid compiler errors
-    // void EvalMultInPlace(const NativeInteger& scalar, Ciphertext<Element>& ciphertext) const {
-    //  EvalMultInPlace(ciphertext, scalar);
-    // }
-
     /**
     * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
     *

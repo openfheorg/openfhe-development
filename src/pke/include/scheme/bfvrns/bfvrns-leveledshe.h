@@ -34,9 +34,9 @@
 
 #include "schemerns/rns-leveledshe.h"
 
-#include <string>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 /**
@@ -47,7 +47,7 @@ namespace lbcrypto {
 
 class LeveledSHEBFVRNS : public LeveledSHERNS {
 public:
-    virtual ~LeveledSHEBFVRNS() {}
+    virtual ~LeveledSHEBFVRNS() = default;
 
     using LeveledSHERNS::EvalAddInPlace;
 
@@ -58,7 +58,7 @@ public:
    * @param ciphertext the input ciphertext.
    * @param plaintext the input plaintext.
    */
-    void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
+    void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
     using LeveledSHERNS::EvalSubInPlace;
 
@@ -69,7 +69,7 @@ public:
    * @param ciphertext the input ciphertext.
    * @param plaintext the input plaintext.
    */
-    void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
+    void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
     using LeveledSHERNS::EvalMult;
     using LeveledSHERNS::EvalMultInPlace;
@@ -85,23 +85,23 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
-                                  ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                  ConstCiphertext<DCRTPoly>& ciphertext2) const override;
 
-    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly>& ciphertext) const override;
 
-    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2,
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly>& ciphertext2,
                                   const EvalKey<DCRTPoly> evalKey) const override;
 
-    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2,
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly>& ciphertext2,
                          const EvalKey<DCRTPoly> evalKey) const override;
 
-    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly> ciphertext,
+    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly>& ciphertext,
                                     const EvalKey<DCRTPoly> evalKey) const override;
 
     void EvalSquareInPlace(Ciphertext<DCRTPoly>& ciphertext1, const EvalKey<DCRTPoly> evalKey) const override;
 
-    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, NativeInteger scalar) const;
 
     // We do not need to support LeveledSHEBFVRNS::Eval*Mutable(InPlace) as no automated adjustment of ciphertexts is
     // typically done in BFV. These functions throw an exception if called
@@ -109,40 +109,40 @@ public:
                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
     Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2,
                                          const EvalKey<DCRTPoly> evalKey) const override;
-    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
     void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2,
                                 const EvalKey<DCRTPoly> evalKey) const override;
-    void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
     Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext1,
                                         Ciphertext<DCRTPoly>& ciphertext2) const override;
-    Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
-    virtual void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
-    virtual void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
+    void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
     Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext1,
                                         Ciphertext<DCRTPoly>& ciphertext2) const override;
-    Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
     void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
-    void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
+    void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
     /////////////////////////////////////
     // AUTOMORPHISM
     /////////////////////////////////////
 
-    Ciphertext<DCRTPoly> EvalAutomorphism(ConstCiphertext<DCRTPoly> ciphertext, usint i,
-                                          const std::map<usint, EvalKey<DCRTPoly>>& evalKeyMap,
+    Ciphertext<DCRTPoly> EvalAutomorphism(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t i,
+                                          const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap,
                                           CALLER_INFO_ARGS_HDR) const override;
 
-    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly> ciphertext, const usint index, const usint m,
+    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const uint32_t index, const uint32_t m,
                                           const std::shared_ptr<std::vector<DCRTPoly>> digits) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalFastRotationPrecompute(
-        ConstCiphertext<DCRTPoly> ciphertext) const override;
+        ConstCiphertext<DCRTPoly>& ciphertext) const override;
 
-    usint FindAutomorphismIndex(usint index, usint m) const override;
+    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
-    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const override;
+    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

@@ -137,7 +137,7 @@ public:
     void SetParamsFromCKKSCryptocontextCalled() {
         setParamsFromCKKSCryptocontextCalled = true;
     }
-    void SetInitialCKKSModulus(const NativeInteger& initialCKKSModulus0) {
+    void SetInitialCKKSModulus(NativeInteger initialCKKSModulus0) {
         initialCKKSModulus = initialCKKSModulus0;
     }
     void SetRingDimension(uint32_t ringDimension0) {

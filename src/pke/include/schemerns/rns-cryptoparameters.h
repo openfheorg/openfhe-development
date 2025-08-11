@@ -100,7 +100,7 @@ protected:
    */
     CryptoParametersRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
-                        usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                        uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
                         MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
@@ -119,7 +119,7 @@ protected:
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
-                        float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                        float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                         MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
@@ -129,7 +129,7 @@ protected:
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
                         uint32_t thresholdNumOfParties                        = 1,
                         COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
-                        usint compositeDegree = BASE_NUM_LEVELS_TO_DROP, usint registerWordSize = NATIVEINT,
+                        uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
                         CKKSDataType ckksDataType = REAL)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
@@ -160,12 +160,11 @@ protected:
 
         return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->m_scalTechnique &&
                m_ksTechnique == el->m_ksTechnique && m_multTechnique == el->m_multTechnique &&
-               m_encTechnique == el->m_encTechnique && m_numPartQ == el->m_numPartQ &&
-               m_auxBits == el->m_auxBits && m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
+               m_encTechnique == el->m_encTechnique && m_numPartQ == el->m_numPartQ && m_auxBits == el->m_auxBits &&
+               m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
                m_multipartyMode == el->m_multipartyMode && m_executionMode == el->m_executionMode &&
                m_compositeDegree == el->m_compositeDegree && m_registerWordSize == el->m_registerWordSize &&
                m_ckksDataType == el->m_ckksDataType;
-
     }
 
     void PrintParameters(std::ostream& os) const override {
@@ -288,7 +287,7 @@ public:
    *
    * @return the pre-computed values.
    */
-    const NativeInteger& GetNegtInvModq(usint l) const {
+    NativeInteger GetNegtInvModq(uint32_t l) const {
         return m_negtInvModq[l];
     }
 
@@ -297,7 +296,7 @@ public:
    *
    * @return the pre-computed values.
    */
-    const NativeInteger& GetNegtInvModqPrecon(usint l) const {
+    NativeInteger GetNegtInvModqPrecon(uint32_t l) const {
         return m_negtInvModqPrecon[l];
     }
 
@@ -719,15 +718,15 @@ public:
     // BFVrns : Mult : ExpandCRTBasis
     /////////////////////////////////////
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(usint l = 0) const {
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(uint32_t l = 0) const {
         return m_paramsQl[l];
     }
 
-    const std::vector<double>& GetQlQHatInvModqDivqFrac(usint l) const {
+    const std::vector<double>& GetQlQHatInvModqDivqFrac(uint32_t l) const {
         return m_QlQHatInvModqDivqFrac[l];
     }
 
-    const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(usint l) const {
+    const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(uint32_t l) const {
         return m_QlQHatInvModqDivqModq[l];
     }
 
@@ -737,7 +736,7 @@ public:
    *
    * @return the precomputed CRT params
    */
-    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(usint l = 0) const {
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(uint32_t l = 0) const {
         return m_paramsRl[l];
     }
 
@@ -747,7 +746,7 @@ public:
    *
    * @return the precomputed CRT params
    */
-    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(usint l = 0) const {
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(uint32_t l = 0) const {
         return m_paramsQlRl[l];
     }
 
@@ -756,7 +755,7 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<NativeInteger>& GetQlHatInvModq(usint l = 0) const {
+    const std::vector<NativeInteger>& GetQlHatInvModq(uint32_t l = 0) const {
         return m_QlHatInvModq[l];
     }
 
@@ -765,7 +764,7 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<NativeInteger>& GetQlHatInvModqPrecon(usint l = 0) const {
+    const std::vector<NativeInteger>& GetQlHatInvModqPrecon(uint32_t l = 0) const {
         return m_QlHatInvModqPrecon[l];
     }
 
@@ -774,7 +773,7 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<std::vector<NativeInteger>>& GetQlHatModr(usint l = 0) const {
+    const std::vector<std::vector<NativeInteger>>& GetQlHatModr(uint32_t l = 0) const {
         return m_QlHatModr[l];
     }
 
@@ -783,23 +782,23 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<std::vector<NativeInteger>>& GetalphaQlModr(usint l = 0) const {
+    const std::vector<std::vector<NativeInteger>>& GetalphaQlModr(uint32_t l = 0) const {
         return m_alphaQlModr[l];
     }
 
-    const std::vector<NativeInteger>& GetmNegRlQHatInvModq(usint l = 0) const {
+    const std::vector<NativeInteger>& GetmNegRlQHatInvModq(uint32_t l = 0) const {
         return m_negRlQHatInvModq[l];
     }
 
-    const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l = 0) const {
+    const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(uint32_t l = 0) const {
         return m_negRlQHatInvModqPrecon[l];
     }
 
-    const std::vector<NativeInteger>& GetmNegRlQlHatInvModq(usint l = 0) const {
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModq(uint32_t l = 0) const {
         return m_negRlQlHatInvModq[l];
     }
 
-    const std::vector<NativeInteger>& GetmNegRlQlHatInvModqPrecon(usint l = 0) const {
+    const std::vector<NativeInteger>& GetmNegRlQlHatInvModqPrecon(uint32_t l = 0) const {
         return m_negRlQlHatInvModqPrecon[l];
     }
 
@@ -858,7 +857,7 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<NativeInteger>& GetRlHatInvModr(usint l = 0) const {
+    const std::vector<NativeInteger>& GetRlHatInvModr(uint32_t l = 0) const {
         return m_RlHatInvModr[l];
     }
 
@@ -867,7 +866,7 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<NativeInteger>& GetRlHatInvModrPrecon(usint l = 0) const {
+    const std::vector<NativeInteger>& GetRlHatInvModrPrecon(uint32_t l = 0) const {
         return m_RlHatInvModrPrecon[l];
     }
 
@@ -876,7 +875,7 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<std::vector<NativeInteger>>& GetRlHatModq(usint l = 0) const {
+    const std::vector<std::vector<NativeInteger>>& GetRlHatModq(uint32_t l = 0) const {
         return m_RlHatModq[l];
     }
 
@@ -885,23 +884,23 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<std::vector<NativeInteger>>& GetalphaRlModq(usint l = 0) const {
+    const std::vector<std::vector<NativeInteger>>& GetalphaRlModq(uint32_t l = 0) const {
         return m_alphaRlModq[l];
     }
 
-    const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l) const {
+    const std::vector<double>& GettQlSlHatInvModsDivsFrac(uint32_t l) const {
         return m_tQlSlHatInvModsDivsFrac[l];
     }
 
-    const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l) const {
+    const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(uint32_t l) const {
         return m_tQlSlHatInvModsDivsModq[l];
     }
 
-    const std::vector<NativeInteger>& GetQlHatModq(usint l) const {
+    const std::vector<NativeInteger>& GetQlHatModq(uint32_t l) const {
         return m_QlHatModq[l];
     }
 
-    const std::vector<NativeInteger>& GetQlHatModqPrecon(usint l) const {
+    const std::vector<NativeInteger>& GetQlHatModqPrecon(uint32_t l) const {
         return m_QlHatModqPrecon[l];
     }
 
@@ -975,7 +974,7 @@ public:
         return m_tQHatInvModqBDivqModtPrecon;
     }
 
-    const NativeInteger& GetScalingFactorInt(usint l) const {
+    NativeInteger GetScalingFactorInt(uint32_t l) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsInt.size()) {
@@ -987,7 +986,7 @@ public:
         return m_fixedSF;
     }
 
-    const NativeInteger& GetScalingFactorIntBig(usint l) const {
+    NativeInteger GetScalingFactorIntBig(uint32_t l) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsIntBig.size()) {
@@ -999,7 +998,7 @@ public:
         return m_fixedSF;
     }
 
-    const NativeInteger& GetModReduceFactorInt(uint32_t l = 0) const {
+    NativeInteger GetModReduceFactorInt(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_qModt[l];
@@ -1329,7 +1328,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqAtIndex(usint l) const {
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqAtIndex(uint32_t l) const {
         return m_multipartyQHatInvModq[l];
     }
 
@@ -1338,7 +1337,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPreconAtIndex(usint l) const {
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPreconAtIndex(uint32_t l) const {
         return m_multipartyQHatInvModqPrecon[l];
     }
 
@@ -1347,7 +1346,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0AtIndex(usint l) const {
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0AtIndex(uint32_t l) const {
         return m_multipartyQHatModq0[l];
     }
 
@@ -1356,7 +1355,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0AtIndex(usint l) const {
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0AtIndex(uint32_t l) const {
         return m_multipartyAlphaQModq0[l];
     }
 

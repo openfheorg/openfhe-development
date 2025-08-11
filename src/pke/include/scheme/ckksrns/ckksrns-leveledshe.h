@@ -34,9 +34,9 @@
 
 #include "schemerns/rns-leveledshe.h"
 
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
 #include <vector>
 
 /**
@@ -64,11 +64,11 @@ public:
     // SHE ADDITION CONSTANT
     /////////////////////////////////////////
 
-    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext, double operand) const override;
+    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const override;
 
     void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const override;
 
-    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext, std::complex<double> operand) const override;
+    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const override;
 
     void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const override;
 
@@ -87,7 +87,7 @@ public:
     using LeveledSHERNS::EvalSub;
     using LeveledSHERNS::EvalSubInPlace;
 
-    Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext, double operand) const override;
+    Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const override;
 
     void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const override;
 
@@ -106,16 +106,16 @@ public:
     using LeveledSHEBase<DCRTPoly>::EvalMult;
     using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
 
-    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, double operand) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const override;
 
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const override;
-    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
-    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, std::complex<double> operand) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const override;
 
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const override;
 
-    Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const override;
+    Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t integer) const override;
 
     void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const override;
 
@@ -123,11 +123,11 @@ public:
     // AUTOMORPHISM
     /////////////////////////////////////
 
-    Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly> ciphertext, usint index,
+    Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index,
                                              const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
-                                             const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const override;
+                                             const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const override;
 
-    usint FindAutomorphismIndex(usint index, usint m) const override;
+    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
     /////////////////////////////////////
     // Mod Reduce
@@ -174,10 +174,10 @@ public:
     void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                           Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly> ciphertext,
+    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
                                                              double operand) const;
 
-    std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly> ciphertext, double operand) const;
+    std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const;
 
     /////////////////////////////////////
     // SERIALIZATION

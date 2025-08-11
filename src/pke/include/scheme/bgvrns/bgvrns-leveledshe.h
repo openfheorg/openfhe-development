@@ -44,13 +44,13 @@ namespace lbcrypto {
 
 class LeveledSHEBGVRNS : public LeveledSHERNS {
 public:
-    virtual ~LeveledSHEBGVRNS() {}
+    virtual ~LeveledSHEBGVRNS() = default;
 
     /////////////////////////////////////
     // AUTOMORPHISM
     /////////////////////////////////////
 
-    usint FindAutomorphismIndex(usint index, usint m) const override;
+    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
     /////////////////////////////////////
     // Mod Reduce
@@ -67,10 +67,10 @@ public:
 
     void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, NativeInteger constant) const;
 
-    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
-    
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
+
     void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                      Ciphertext<DCRTPoly>& ciphertext2) const override;
 

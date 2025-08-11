@@ -34,19 +34,16 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
 #include "cryptocontext.h"
-
 #include "math/hal/basicint.h"
-
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-leveledshe.h"
-
 #include "schemebase/base-scheme.h"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 namespace lbcrypto {
 
@@ -54,41 +51,43 @@ namespace lbcrypto {
 // SHE ADDITION CONSTANT
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext, double operand) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const {
+    auto result = ciphertext->Clone();
     EvalAddInPlace(result, operand);
     return result;
 }
 
 void LeveledSHECKKSRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const {
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    cv[0]                     = cv[0] + GetElementForEvalAddOrSub(ciphertext, operand);
+    auto& cv = ciphertext->GetElements();
+    cv[0]    = cv[0] + GetElementForEvalAddOrSub(ciphertext, operand);
 }
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext,
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext,
                                                 std::complex<double> operand) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    auto result = ciphertext->Clone();
     EvalAddInPlace(result, operand);
     return result;
 }
 
 void LeveledSHECKKSRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const {
-    std::vector<DCRTPoly>& cv              = ciphertext->GetElements();
-    std::vector<DCRTPoly::Integer> elemsRe = GetElementForEvalAddOrSub(ciphertext, std::fabs(operand.real()));
-    std::vector<DCRTPoly::Integer> elemsIm = GetElementForEvalAddOrSub(ciphertext, std::fabs(operand.imag()));
-    uint32_t N                             = cv[0].GetLength();
-    const auto elemParams                  = cv[0].GetParams();
+    auto& cv       = ciphertext->GetElements();
+    auto elemsRe   = GetElementForEvalAddOrSub(ciphertext, std::fabs(operand.real()));
+    auto elemsIm   = GetElementForEvalAddOrSub(ciphertext, std::fabs(operand.imag()));
+    uint32_t N     = cv[0].GetLength();
+    uint32_t Nhalf = N >> 1;
+    auto posreal   = operand.real() > 0.;
+    auto posimag   = operand.imag() > 0.;
 
-    DCRTPoly elemsComplex(elemParams, Format::COEFFICIENT, true);
+    DCRTPoly elemsComplex(cv[0].GetParams(), Format::COEFFICIENT, true);
     uint32_t sizeQl = elemsComplex.GetNumOfElements();
-    for (uint32_t i = 0; i < sizeQl; i++) {
-        NativeVector vec(N, cv[0].GetElementAtIndex(i).GetModulus());
-        NativeInteger mod = cv[0].GetElementAtIndex(i).GetModulus();
-        vec[0]            = (operand.real() > 0) ? NativeInteger(elemsRe[i].Mod(mod)) : mod.ModSub(elemsRe[i], mod);
-        vec[N / 2]        = (operand.imag() > 0) ? NativeInteger(elemsIm[i].Mod(mod)) : mod.ModSub(elemsIm[i], mod);
-        NativePoly element(cv[0].GetElementAtIndex(i));
-        element.SetValues(vec, Format::COEFFICIENT);
-        elemsComplex.SetElementAtIndex(i, element);
+    for (uint32_t i = 0; i < sizeQl; ++i) {
+        auto element = cv[0].GetElementAtIndex(i);
+        auto modulus = element.GetModulus();
+        NativeVector vec(N, modulus.ConvertToInt<BasicInteger>());
+        vec[0]     = posreal ? NativeInteger(elemsRe[i].Mod(modulus)) : modulus.ModSub(elemsRe[i], modulus);
+        vec[Nhalf] = posimag ? NativeInteger(elemsIm[i].Mod(modulus)) : modulus.ModSub(elemsIm[i], modulus);
+        element.SetValues(std::move(vec), Format::COEFFICIENT);
+        elemsComplex.SetElementAtIndex(i, std::move(element));
     }
     elemsComplex.SetFormat(Format::EVALUATION);
 
@@ -99,40 +98,37 @@ void LeveledSHECKKSRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, std::co
 // SHE SUBTRACTION CONSTANT
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSub(ConstCiphertext<DCRTPoly> ciphertext, double operand) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSub(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const {
+    auto result = ciphertext->Clone();
     EvalSubInPlace(result, operand);
     return result;
 }
 
 void LeveledSHECKKSRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const {
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    cv[0]                     = cv[0] - GetElementForEvalAddOrSub(ciphertext, operand);
+    auto& cv = ciphertext->GetElements();
+    cv[0]    = cv[0] - GetElementForEvalAddOrSub(ciphertext, operand);
 }
 
 /////////////////////////////////////////
 // SHE MULTIPLICATION
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertext, double operand) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const {
+    auto result = ciphertext->Clone();
     EvalMultInPlace(result, operand);
     return result;
 }
 
 void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-        if (ciphertext->GetNoiseScaleDeg() == 2) {
+        if (ciphertext->GetNoiseScaleDeg() == 2)
             ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
-        }
     }
-
     EvalMultCoreInPlace(ciphertext, operand);
 }
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertext,
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext,
                                                  std::complex<double> operand) const {
     Ciphertext<DCRTPoly> result = ciphertext->Clone();
     EvalMultInPlace(result, operand);
@@ -141,19 +137,15 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly> ciphe
 
 void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-        if (ciphertext->GetNoiseScaleDeg() == 2) {
+        if (ciphertext->GetNoiseScaleDeg() == 2)
             ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
-        }
     }
-
     EvalMultCoreInPlace(ciphertext, operand);
 }
 
-void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     LeveledSHERNS::EvalMultInPlace(ciphertext, plaintext);
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() != NORESCALE)
         ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ciphertext->GetScalingFactor());
@@ -170,7 +162,7 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstP
 void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    auto& cv = ciphertext->GetElements();
 
     size_t sizeQ  = cryptoParams->GetElementParams()->GetParams().size();
     size_t sizeQl = cv[0].GetNumOfElements();
@@ -186,7 +178,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 
-    for (uint32_t i = 0; i < levels; ++i) {
+    for (size_t i = 0; i < levels; ++i) {
         double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
         ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / modReduceFactor);
     }
@@ -197,10 +189,8 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
 /////////////////////////////////////
 
 void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
-    std::vector<DCRTPoly>& elements = ciphertext->GetElements();
-    for (auto& element : elements) {
+    for (auto& element : ciphertext->GetElements())
         element.DropLastElements(levels);
-    }
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 }
 
@@ -213,7 +203,7 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphert
 /////////////////////////////////////
 
 #if NATIVEINT == 128
-std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly> ciphertext,
+std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
                                                                             double operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -268,7 +258,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     return currPowP;
 }
 #else  // NATIVEINT == 64
-std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly> ciphertext,
+std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
                                                                             double operand) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     uint32_t sizeQl                 = cv[0].GetNumOfElements();
@@ -324,18 +314,18 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
 
     // Scale back up by approxFactor within the CRT multiplications.
     if (logApprox > 0) {
-        int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
-                                        logApprox :
-                                        LargeScalingFactorConstants::MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
+        int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
+                              logApprox :
+                              LargeScalingFactorConstants::MAX_LOG_STEP;
+        auto intStep    = static_cast<DCRTPoly::Integer>(1) << logStep;
         std::vector<DCRTPoly::Integer> crtApprox(sizeQl, intStep);
         logApprox -= logStep;
 
         while (logApprox > 0) {
-            int32_t logStep           = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
-                                            logApprox :
-                                            LargeScalingFactorConstants::MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = static_cast<uint64_t>(1) << logStep;
+            int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ?
+                                  logApprox :
+                                  LargeScalingFactorConstants::MAX_LOG_STEP;
+            auto intStep    = static_cast<DCRTPoly::Integer>(1) << logStep;
             std::vector<DCRTPoly::Integer> crtSF(sizeQl, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -404,7 +394,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
 #endif
 
 #if NATIVEINT == 128
-std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCiphertext<DCRTPoly> ciphertext,
+std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext,
                                                                         double operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -451,7 +441,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     return factors;
 }
 #else  // NATIVEINT == 64
-std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCiphertext<DCRTPoly> ciphertext,
+std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext,
                                                                         double operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -546,7 +536,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 #endif
 
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
-    ConstCiphertext<DCRTPoly> ciphertext, uint32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
+    ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
     bool addFirst, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const {
     //  if (index == 0) {
     //    Ciphertext<DCRTPoly> result = ciphertext->Clone();
@@ -599,7 +589,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
     return result;
 }
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     std::vector<DCRTPoly> resultDCRT;
@@ -777,11 +767,11 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& c
 void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
-    std::vector<DCRTPoly::Integer> factors = GetElementForEvalMult(ciphertext, operand);
-    std::vector<DCRTPoly>& cv              = ciphertext->GetElements();
-    for (uint32_t i = 0; i < cv.size(); ++i) {
+    auto factors = GetElementForEvalMult(ciphertext, operand);
+    auto& cv     = ciphertext->GetElements();
+    uint32_t len = cv.size();
+    for (uint32_t i = 0; i < len; ++i)
         cv[i] = cv[i] * factors;
-    }
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
 
     double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
@@ -794,12 +784,12 @@ void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, st
     double operandRe = operand.real();
     double operandIm = operand.imag();
 
-    std::vector<DCRTPoly::Integer> factorsRe = GetElementForEvalMult(ciphertext, operandRe);
-    std::vector<DCRTPoly::Integer> factorsIm = GetElementForEvalMult(ciphertext, operandIm);
-    std::vector<DCRTPoly>& cv                = ciphertext->GetElements();
+    auto factorsRe = GetElementForEvalMult(ciphertext, operandRe);
+    auto factorsIm = GetElementForEvalMult(ciphertext, operandIm);
+    auto& cv       = ciphertext->GetElements();
     std::vector<DCRTPoly> cvRe;
-    std::vector<DCRTPoly> cvIm;
     cvRe.reserve(cv.size());
+    std::vector<DCRTPoly> cvIm;
     cvIm.reserve(cv.size());
     for (uint32_t i = 0; i < cv.size(); ++i) {
         cvRe.emplace_back(cv[i] * factorsRe);

@@ -43,23 +43,21 @@ namespace lbcrypto {
 // SHE ADDITION
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext1,
-                                            ConstCiphertext<DCRTPoly> ciphertext2) const {
-    Ciphertext<DCRTPoly> result = ciphertext1->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                            ConstCiphertext<DCRTPoly>& ciphertext2) const {
+    auto result = ciphertext1->Clone();
     EvalAddInPlace(result, ciphertext2);
     return result;
 }
 
-void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly>& ciphertext2) const {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE) {
         EvalAddCoreInPlace(ciphertext1, ciphertext2);
     }
     else {
         auto c2 = ciphertext2->Clone();
         AdjustForAddOrSubInPlace(ciphertext1, c2);
-
         EvalAddCoreInPlace(ciphertext1, c2);
     }
 }
@@ -79,16 +77,15 @@ void LeveledSHERNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Cip
 // SHE ADDITION PLAINTEXT
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    auto result = ciphertext->Clone();
     EvalAddInPlace(result, plaintext);
     return result;
 }
 
-void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    // this branch is for BFV
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE) {
         EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
     }
     else {
@@ -98,13 +95,13 @@ void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaint
     }
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
     auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     return EvalAddCore(ciphertext, ctmorphed->GetElements()[0]);
 }
 
-void LeveledSHERNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+void LeveledSHERNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
     auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
@@ -114,23 +111,21 @@ void LeveledSHERNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plai
 // SHE SUBTRACTION
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly> ciphertext1,
-                                            ConstCiphertext<DCRTPoly> ciphertext2) const {
-    Ciphertext<DCRTPoly> result = ciphertext1->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                            ConstCiphertext<DCRTPoly>& ciphertext2) const {
+    auto result = ciphertext1->Clone();
     EvalSubInPlace(result, ciphertext2);
     return result;
 }
 
-void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly>& ciphertext2) const {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE) {
         EvalSubCoreInPlace(ciphertext1, ciphertext2);
     }
     else {
         auto c2 = ciphertext2->Clone();
         AdjustForAddOrSubInPlace(ciphertext1, c2);
-
         EvalSubCoreInPlace(ciphertext1, c2);
     }
 }
@@ -150,16 +145,15 @@ void LeveledSHERNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Cip
 // SHE SUBTRACTION PLAINTEXT
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    auto result = ciphertext->Clone();
     EvalSubInPlace(result, plaintext);
     return result;
 }
 
-void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    // this branch is for BFV
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE) {
         EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
     }
     else {
@@ -169,13 +163,13 @@ void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaint
     }
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
     auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     return EvalSubCore(ciphertext, ctmorphed->GetElements()[0]);
 }
 
-void LeveledSHERNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+void LeveledSHERNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
     auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
@@ -185,18 +179,15 @@ void LeveledSHERNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plai
 // SHE MULTIPLICATION
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
-                                             ConstCiphertext<DCRTPoly> ciphertext2) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                             ConstCiphertext<DCRTPoly>& ciphertext2) const {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE)
         return EvalMultCore(ciphertext1, ciphertext2);
-    }
 
     auto c1 = ciphertext1->Clone();
     auto c2 = ciphertext2->Clone();
     AdjustForMultInPlace(c1, c2);
-
     return EvalMultCore(c1, c2);
 }
 
@@ -206,127 +197,107 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& cipher
     return EvalMultCore(ciphertext1, ciphertext2);
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(ConstCiphertext<DCRTPoly> ciphertext) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(ConstCiphertext<DCRTPoly>& ciphertext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
-    if (cryptoParams->GetScalingTechnique() == NORESCALE || cryptoParams->GetScalingTechnique() == FIXEDMANUAL ||
-        ciphertext->GetNoiseScaleDeg() == 1) {
+    auto st = cryptoParams->GetScalingTechnique();
+    if (st == NORESCALE || st == FIXEDMANUAL || ciphertext->GetNoiseScaleDeg() == 1)
         return EvalSquareCore(ciphertext);
-    }
 
-    auto c = ciphertext->Clone();
-    if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        ModReduceInternalInPlace(c, cryptoParams->GetCompositeDegree());
-    }
-    else {
-        ModReduceInternalInPlace(c, BASE_NUM_LEVELS_TO_DROP);
-    }
-
-    return EvalSquareCore(c);
+    size_t lvls = (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ? cryptoParams->GetCompositeDegree() :
+                                                                                 BASE_NUM_LEVELS_TO_DROP;
+    return EvalSquareCore(ModReduceInternal(ciphertext, lvls));
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquareMutable(Ciphertext<DCRTPoly>& ciphertext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
-    if (cryptoParams->GetScalingTechnique() != NORESCALE && cryptoParams->GetScalingTechnique() != FIXEDMANUAL &&
-        ciphertext->GetNoiseScaleDeg() == 2) {
-        if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-            cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-            ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
-        }
-        else {
-            ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
-        }
+    auto st = cryptoParams->GetScalingTechnique();
+    if (st != NORESCALE && st != FIXEDMANUAL && ciphertext->GetNoiseScaleDeg() == 2) {
+        size_t lvls = (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ?
+                          cryptoParams->GetCompositeDegree() :
+                          BASE_NUM_LEVELS_TO_DROP;
+        ModReduceInternalInPlace(ciphertext, lvls);
     }
 
     return EvalSquareCore(ciphertext);
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    auto result = ciphertext->Clone();
     EvalMultInPlace(result, plaintext);
     return result;
 }
 
-void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    // this branch is for BFV
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE) {
         EvalMultCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
     }
     else {
         auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
         AdjustForMultInPlace(ciphertext, ctmorphed);
         EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
-
         ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
     }
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
     auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
     AdjustForMultInPlace(ciphertext, ctmorphed);
     auto result = EvalMultCore(ciphertext, ctmorphed->GetElements()[0]);
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
     result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
     // TODO (Andrey) : This part is only used in CKKS scheme
     result->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
     // TODO (Andrey) : This part is only used in BGV scheme
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        result->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
-    }
-
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT)
+        result->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(
+            ctmorphed->GetScalingFactorInt(), ciphertext->GetCryptoParameters()->GetPlaintextModulus()));
     return result;
 }
 
 // TODO (Andrey) : currently do same as EvalMultInPlace, as Plaintext element is immutable
-void LeveledSHERNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
+void LeveledSHERNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
     auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
     AdjustForMultInPlace(ciphertext, ctmorphed);
     EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
     // TODO (Andrey) : This part is only used in CKKS scheme
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
     // TODO (Andrey) : This part is only used in BGV scheme
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
-    }
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT)
+        ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(
+            ctmorphed->GetScalingFactorInt(), ciphertext->GetCryptoParameters()->GetPlaintextModulus()));
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::MultByMonomial(ConstCiphertext<DCRTPoly> ciphertext, usint power) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::MultByMonomial(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t power) const {
+    auto result = ciphertext->Clone();
     MultByMonomialInPlace(result, power);
     return result;
 }
 
-void LeveledSHERNS::MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, usint power) const {
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    const auto elemParams     = cv[0].GetParams();
-    auto paramsNative         = elemParams->GetParams()[0];
-    usint N                   = elemParams->GetRingDimension();
-    usint M                   = 2 * N;
+void LeveledSHERNS::MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, uint32_t power) const {
+    auto& cv          = ciphertext->GetElements();
+    auto elemParams   = cv[0].GetParams();
+    auto paramsNative = elemParams->GetParams()[0];
+    uint32_t N        = elemParams->GetRingDimension();
+    uint32_t M        = 2 * N;
 
     NativePoly monomial(paramsNative, Format::COEFFICIENT, true);
 
-    usint powerReduced = power % M;
-    usint index        = power % N;
-    monomial[index]    = powerReduced < N ? NativeInteger(1) : paramsNative->GetModulus() - NativeInteger(1);
+    uint32_t powerReduced = power % M;
+    monomial[power % N]   = powerReduced < N ? NativeInteger(1) : paramsNative->GetModulus() - NativeInteger(1);
 
     DCRTPoly monomialDCRT(elemParams, Format::COEFFICIENT, true);
     monomialDCRT = monomial;
     monomialDCRT.SetFormat(Format::EVALUATION);
 
-    for (usint i = 0; i < ciphertext->NumberCiphertextElements(); i++) {
+    for (uint32_t i = 0; i < ciphertext->NumberCiphertextElements(); ++i)
         cv[i] *= monomialDCRT;
-    }
 }
 
 /////////////////////////////////////////
@@ -337,18 +308,16 @@ void LeveledSHERNS::MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, usin
 // SHE LEVELED Mod Reduce
 /////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::ModReduce(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+Ciphertext<DCRTPoly> LeveledSHERNS::ModReduce(ConstCiphertext<DCRTPoly>& ciphertext, size_t levels) const {
+    auto result = ciphertext->Clone();
     ModReduceInPlace(result, levels);
     return result;
 }
 
 void LeveledSHERNS::ModReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == FIXEDMANUAL)
         ModReduceInternalInPlace(ciphertext, levels);
-    }
 }
 
 /////////////////////////////////////
@@ -356,9 +325,9 @@ void LeveledSHERNS::ModReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t le
 /////////////////////////////////////
 
 // TODO (Andrey) : remove evalKey as unused
-Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduce(ConstCiphertext<DCRTPoly> ciphertext, const EvalKey<DCRTPoly> evalKey,
+Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduce(ConstCiphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey,
                                                 size_t levels) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    auto result = ciphertext->Clone();
     LevelReduceInPlace(result, evalKey, levels);
     return result;
 }
@@ -366,15 +335,11 @@ Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduce(ConstCiphertext<DCRTPoly> cipher
 // TODO (Andrey) : remove evalKey as unused
 void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey,
                                        size_t levels) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == NORESCALE) {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters())->GetScalingTechnique();
+    if (st == NORESCALE)
         OPENFHE_THROW("LevelReduceInPlace is not implemented for NORESCALE rescaling technique");
-    }
-
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL && levels > 0) {
+    if (st == FIXEDMANUAL && levels > 0)
         LevelReduceInternalInPlace(ciphertext, levels);
-    }
 }
 
 /////////////////////////////////////////
@@ -385,29 +350,25 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
  * On COMPOSITESCALING technique, the number of towers to drop passed
  * must be a multiple of composite degree.
  */
-Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
-    Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
-    const auto cryptoParams     = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
-    usint levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
+    uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
     if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
         cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        usint compositeDegree = cryptoParams->GetCompositeDegree();
-        levelsToDrop          = compositeDegree;
-        if (towersLeft % compositeDegree != 0) {
+        uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+        levelsToDrop             = compositeDegree;
+        if (towersLeft % compositeDegree != 0)
             OPENFHE_THROW("Number of towers to drop must be a multiple of composite degree.");
-        }
     }
 
-    while (result->GetNoiseScaleDeg() > 1) {
+    auto result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
+    while (result->GetNoiseScaleDeg() > 1)
         ModReduceInternalInPlace(result, levelsToDrop);
-    }
-    const std::vector<DCRTPoly>& cv = result->GetElements();
-    usint sizeQl                    = cv[0].GetNumOfElements();
 
-    if (towersLeft < sizeQl) {
+    size_t sizeQl = result->GetElements()[0].GetNumOfElements();
+    if (towersLeft < sizeQl)
         LevelReduceInternalInPlace(result, sizeQl - towersLeft);
-    }
 
     return result;
 }
@@ -416,13 +377,13 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertex
 // SHE CORE OPERATION
 /////////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHERNS::ModReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::ModReduceInternal(ConstCiphertext<DCRTPoly>& ciphertext, size_t levels) const {
     auto result = ciphertext->Clone();
     ModReduceInternalInPlace(result, levels);
     return result;
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduceInternal(ConstCiphertext<DCRTPoly>& ciphertext, size_t levels) const {
     auto result = ciphertext->Clone();
     LevelReduceInternalInPlace(result, levels);
     return result;
@@ -431,13 +392,10 @@ Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduceInternal(ConstCiphertext<DCRTPoly
 void LeveledSHERNS::AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
     auto sizeQl1 = ciphertext1->GetElements()[0].GetNumOfElements();
     auto sizeQl2 = ciphertext2->GetElements()[0].GetNumOfElements();
-
-    if (sizeQl1 < sizeQl2) {
+    if (sizeQl1 < sizeQl2)
         LevelReduceInternalInPlace(ciphertext2, sizeQl2 - sizeQl1);
-    }
-    else if (sizeQl1 > sizeQl2) {
+    if (sizeQl1 > sizeQl2)
         LevelReduceInternalInPlace(ciphertext1, sizeQl1 - sizeQl2);
-    }
 }
 
 void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
@@ -456,7 +414,7 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
         DCRTPoly ptxt;
         uint32_t ptxtDepth = 0;
         uint32_t ctxtDepth = 0;
-        usint sizeQl       = 0;
+        uint32_t sizeQl    = 0;
         uint32_t ptxtIndex = 0;
 
         // Get moduli chain to create CRT representation of powP
@@ -468,7 +426,7 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
             ctxtDepth = ciphertext2->GetNoiseScaleDeg();
             sizeQl    = ciphertext2->GetElements()[0].GetNumOfElements();
             moduli.resize(sizeQl);
-            for (usint i = 0; i < sizeQl; i++) {
+            for (uint32_t i = 0; i < sizeQl; i++) {
                 moduli[i] = ciphertext2->GetElements()[0].GetElementAtIndex(i).GetModulus();
             }
             ptxtIndex = 1;
@@ -479,7 +437,7 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
             ctxtDepth = ciphertext1->GetNoiseScaleDeg();
             sizeQl    = ciphertext1->GetElements()[0].GetNumOfElements();
             moduli.resize(sizeQl);
-            for (usint i = 0; i < sizeQl; i++) {
+            for (uint32_t i = 0; i < sizeQl; i++) {
                 moduli[i] = ciphertext1->GetElements()[0].GetElementAtIndex(i).GetModulus();
             }
             ptxtIndex = 2;
@@ -495,7 +453,7 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
             DCRTPoly::Integer intSF = static_cast<NativeInteger::Integer>(scFactor + 0.5);
             std::vector<DCRTPoly::Integer> crtSF(sizeQl, intSF);
             auto crtPowSF = crtSF;
-            for (usint j = 0; j < diffDepth - 1; j++) {
+            for (uint32_t j = 0; j < diffDepth - 1; j++) {
                 crtPowSF = CKKSPackedEncoding::CRTMult(crtPowSF, crtSF, moduli);
             }
 
@@ -518,29 +476,25 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
 }
 
 void LeveledSHERNS::AdjustForMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
-
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+    auto st = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters())->GetScalingTechnique();
+    if (st == FIXEDMANUAL)
         AdjustLevelsInPlace(ciphertext1, ciphertext2);
-    }
-    else if (cryptoParams->GetScalingTechnique() != NORESCALE) {
+    else if (st != NORESCALE)
         AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
-    }
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::ComposedEvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
-                                                     ConstCiphertext<DCRTPoly> ciphertext2,
+Ciphertext<DCRTPoly> LeveledSHERNS::ComposedEvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                                     ConstCiphertext<DCRTPoly>& ciphertext2,
                                                      const EvalKey<DCRTPoly> evalKey) const {
-    auto algo               = ciphertext1->GetCryptoContext()->GetScheme();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
-    Ciphertext<DCRTPoly> ciphertext = EvalMult(ciphertext1, ciphertext2);
-    algo->KeySwitchInPlace(ciphertext, evalKey);
-    uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
-    if (cryptoParams->GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-        cryptoParams->GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        levelsToDrop = cryptoParams->GetCompositeDegree();
-    }
-    ModReduceInPlace(ciphertext, levelsToDrop);
+
+    auto st     = cryptoParams->GetScalingTechnique();
+    size_t lvls = (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ? cryptoParams->GetCompositeDegree() :
+                                                                                 BASE_NUM_LEVELS_TO_DROP;
+
+    auto ciphertext = EvalMult(ciphertext1, ciphertext2);
+    ciphertext->GetCryptoContext()->GetScheme()->KeySwitchInPlace(ciphertext, evalKey);
+    ModReduceInPlace(ciphertext, lvls);
     return ciphertext;
 }
 

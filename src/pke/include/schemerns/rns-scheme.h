@@ -32,10 +32,11 @@
 #ifndef LBCRYPTO_CRYPTO_RNS_SCHEME_H
 #define LBCRYPTO_CRYPTO_RNS_SCHEME_H
 
+#include "constants.h"
+#include "keyswitch/keyswitch-bv.h"
+#include "keyswitch/keyswitch-hybrid.h"
 #include "lattice/lat-hal.h"
-
 #include "schemebase/base-scheme.h"
-
 #include "schemerns/rns-cryptoparameters.h"
 #include "schemerns/rns-parametergeneration.h"
 #include "schemerns/rns-pke.h"
@@ -43,14 +44,10 @@
 #include "schemerns/rns-leveledshe.h"
 #include "schemerns/rns-advancedshe.h"
 #include "schemerns/rns-multiparty.h"
-
-#include "keyswitch/keyswitch-hybrid.h"
-#include "keyswitch/keyswitch-bv.h"
-#include "constants.h"
 #include "utils/exception.h"
 
-#include <string>
 #include <memory>
+#include <string>
 
 /**
  * @namespace lbcrypto

@@ -594,9 +594,9 @@ void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_
 // Key and modulus switch and extraction methods
 //------------------------------------------------------------------------------
 
-NativeInteger RoundqQAlter(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) {
-    return NativeInteger(
-               (BasicInteger)std::floor(0.5 + v.ConvertToDouble() * q.ConvertToDouble() / Q.ConvertToDouble()))
+static NativeInteger RoundqQAlter(NativeInteger v, NativeInteger q, NativeInteger Q) {
+    return NativeInteger(static_cast<BasicInteger>(
+                             std::floor(0.5 + v.ConvertToDouble() * q.ConvertToDouble() / Q.ConvertToDouble())))
         .Mod(q);
 }
 

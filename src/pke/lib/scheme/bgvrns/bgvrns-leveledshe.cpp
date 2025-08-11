@@ -35,10 +35,9 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
-#include "scheme/bgvrns/bgvrns-leveledshe.h"
-
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "ciphertext.h"
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "scheme/bgvrns/bgvrns-leveledshe.h"
 
 namespace lbcrypto {
 
@@ -47,8 +46,8 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
 
     const auto t = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
 
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    usint sizeQl              = cv[0].GetNumOfElements();
+    auto& cv      = ciphertext->GetElements();
+    size_t sizeQl = cv[0].GetNumOfElements();
 
     if (sizeQl > levels && sizeQl > 0) {
         for (auto& c : cv) {
@@ -60,15 +59,14 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
         }
     }
     else {
-        std::string errMsg = "ERROR: Not enough towers to support ModReduce.";
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW("Too few towers to support ModReduce.");
     }
 
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels);
 
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        for (usint i = 0; i < levels; ++i) {
+        for (size_t i = 0; i < levels; ++i) {
             NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
             NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(t);
             ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(modReduceFactorInv, t));
@@ -77,10 +75,8 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
 }
 
 void LeveledSHEBGVRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
-    std::vector<DCRTPoly>& elements = ciphertext->GetElements();
-    for (auto& element : elements) {
-        element.DropLastElements(levels);
-    }
+    for (auto& e : ciphertext->GetElements())
+        e.DropLastElements(levels);
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 }
 
@@ -90,12 +86,12 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
 
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
-    usint c1lvl   = ciphertext1->GetLevel();
-    usint c2lvl   = ciphertext2->GetLevel();
-    usint c1depth = ciphertext1->GetNoiseScaleDeg();
-    usint c2depth = ciphertext2->GetNoiseScaleDeg();
-    auto sizeQl1  = ciphertext1->GetElements()[0].GetNumOfElements();
-    auto sizeQl2  = ciphertext2->GetElements()[0].GetNumOfElements();
+    uint32_t c1lvl   = ciphertext1->GetLevel();
+    uint32_t c2lvl   = ciphertext2->GetLevel();
+    uint32_t c1depth = ciphertext1->GetNoiseScaleDeg();
+    uint32_t c2depth = ciphertext2->GetNoiseScaleDeg();
+    auto sizeQl1     = ciphertext1->GetElements()[0].GetNumOfElements();
+    auto sizeQl2     = ciphertext2->GetElements()[0].GetNumOfElements();
 
     if (c1lvl < c2lvl) {
         if (c1depth == 2) {
@@ -230,29 +226,27 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
 void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                                         Ciphertext<DCRTPoly>& ciphertext2) const {
     AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
-
     if (ciphertext1->GetNoiseScaleDeg() == 2) {
         ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
         ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
     }
 }
 
-void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const {
+void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, NativeInteger scalar) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
 
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    for (usint i = 0; i < cv.size(); ++i) {
-        cv[i] *= constant;
-    }
-    const NativeInteger t(cryptoParams->GetPlaintextModulus());
+    auto& cv = ciphertext->GetElements();
+    for (uint32_t i = 0; i < cv.size(); ++i)
+        cv[i] *= scalar;
 
+    const NativeInteger t(cryptoParams->GetPlaintextModulus());
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(constant, t));
+        ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(scalar, t));
     }
 }
 
-void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     LeveledSHERNS::EvalMultInPlace(ciphertext, plaintext);
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
@@ -262,7 +256,7 @@ void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPl
     }
 }
 
-usint LeveledSHEBGVRNS::FindAutomorphismIndex(usint index, usint m) const {
+uint32_t LeveledSHEBGVRNS::FindAutomorphismIndex(uint32_t index, uint32_t m) const {
     return FindAutomorphismIndex2n(index, m);
 }
 
