@@ -157,13 +157,16 @@ public:
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
 
-    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, const BigInteger& P,
-                         const std::vector<std::complex<double>>& coefficients, const std::vector<uint32_t>& dim1,
-                         const std::vector<uint32_t>& levelBudget, long double scaleMod,
+    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
+                         uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
                          uint32_t depthLeveledComputation = 0, size_t order = 1) override;
-    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, const BigInteger& P,
-                         const std::vector<int64_t>& coefficients, const std::vector<uint32_t>& dim1,
-                         const std::vector<uint32_t>& levelBudget, long double scaleMod,
+
+    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
+                         uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
                          uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -360,10 +363,11 @@ private:
 #endif
 
     template <typename VectorDataType>
-    void EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, const BigInteger& P,
-                                 const std::vector<VectorDataType>& coefficients, const std::vector<uint32_t>& dim1,
-                                 const std::vector<uint32_t>& levelBudget, long double scaleMod,
-                                 uint32_t depthLeveledComputation = 0, size_t order = 1);
+    void EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<VectorDataType>& coefficients,
+                                 uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
+                                 const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
+                                 const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
+                                 uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1);
 
     template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,

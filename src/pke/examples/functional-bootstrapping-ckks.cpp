@@ -186,22 +186,14 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     /* 5. Compute various moduli and scaling sizes, used for scheme conversions.
      * Then generate the setup parameters and necessary keys.
      */
-    auto keyPair      = cc->KeyGen();
-    BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-    uint32_t cnt      = 1;
-    auto levels       = levelsAvailableAfterBootstrap;
-    while (levels > 0) {
-        QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-        levels--;
-        cnt++;
-    }
-    double scaleMod = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * POutput.ConvertToDouble());
-    // TODO: move the computation of scaleMod and QPrime inside.
+    auto keyPair = cc->KeyGen();
 
     if (binaryLUT)
-        cc->EvalFuncBTSetup(numSlotsCKKS, PInput, coeffint, {0, 0}, lvlb, scaleMod, 0, order);
+        cc->EvalFuncBTSetup(coeffint, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                            levelsAvailableAfterBootstrap, 0, order);
     else
-        cc->EvalFuncBTSetup(numSlotsCKKS, PInput, coeffcomp, {0, 0}, lvlb, scaleMod, 0, order);
+        cc->EvalFuncBTSetup(coeffcomp, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                            levelsAvailableAfterBootstrap, 0, order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -228,12 +220,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     else
         ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
 
-    if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
-        OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
     /* 9. Convert the result back to RLWE.
     */
-    auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q, QPrime);
+    auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q);
 
     auto computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots);
 
@@ -357,20 +346,12 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
      */
     auto keyPair = cc->KeyGen();
 
-    BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-    uint32_t cnt      = 1;
-    auto levels       = levelsAvailableAfterBootstrap;
-    while (levels > 0) {
-        QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-        levels--;
-        cnt++;
-    }
-    double scaleMod = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * POutput.ConvertToDouble());
-
     if (binaryLUT)
-        cc->EvalFuncBTSetup(numSlotsCKKS, PInput, coeffint1, {0, 0}, lvlb, scaleMod, levelsComputation, order);
+        cc->EvalFuncBTSetup(coeffint1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                            levelsAvailableAfterBootstrap, levelsComputation, order);
     else
-        cc->EvalFuncBTSetup(numSlotsCKKS, PInput, coeffcomp1, {0, 0}, lvlb, scaleMod, levelsComputation, order);
+        cc->EvalFuncBTSetup(coeffcomp1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                            levelsAvailableAfterBootstrap, levelsComputation, order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -467,10 +448,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
         ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, scaleTHI, levelsComputation - 1);
     }
 
-    if (QPrime != ctxtAfterFuncBT1->GetElements()[0].GetModulus())
-        OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
-    auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, Q, QPrime);
+    auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, Q);
 
     /* 11. Convert the results back to RLWE.
     */
@@ -487,7 +465,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     auto max_error_it = std::max_element(exact.begin(), exact.end());
     std::cerr << "Max absolute error obtained in the first LUT: " << *max_error_it << std::endl << std::endl;
 
-    polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, Q, QPrime);
+    polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, Q);
 
     computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots, flagBR);
 
@@ -614,22 +592,14 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     /* 6. Compute various moduli and scaling sizes, used for scheme conversions.
      * Then generate the setup parameters and necessary keys.
      */
-    BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-    uint32_t cnt      = 1;
-    auto levels       = levelsAvailableAfterBootstrap;
-    while (levels > 0) {
-        QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-        levels--;
-        cnt++;
-    }
-    double scaleOutput = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * PInput.ConvertToDouble());
-
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     if (binaryLUT)
-        cc->EvalFuncBTSetup(numSlotsCKKS, PDigit, coeffintMod, {0, 0}, lvlb, scaleOutput, 0, order);
+        cc->EvalFuncBTSetup(coeffintMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                            levelsAvailableAfterBootstrap, 0, order);
     else
-        cc->EvalFuncBTSetup(numSlotsCKKS, PDigit, coeffcompMod, {0, 0}, lvlb, scaleOutput, 0, order);
+        cc->EvalFuncBTSetup(coeffcompMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                            levelsAvailableAfterBootstrap, 0, order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
 
@@ -682,13 +652,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
             ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PDigit.GetMSB() - 1, ep->GetModulus(),
                                              pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
 
-        if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
-            OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
         /* 9.3 Convert the result back to RLWE and update the
          * plaintext and ciphertext modulus of the ciphertext for the next iteration.
          */
-        auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q, QPrime);
+        auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q);
 
         BigInteger QNew(BigInteger(1) << static_cast<uint32_t>(std::log2(QBFVDouble) - std::log2(pDigitDouble)));
         BigInteger PNew(BigInteger(1) << static_cast<uint32_t>(std::log2(pBFVDouble) - std::log2(pDigitDouble)));

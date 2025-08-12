@@ -62,7 +62,9 @@ public:
                                         const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq, uint32_t slots,
                                         uint32_t level = 0);
 
-    static std::vector<Poly> convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q, const BigInteger& QPrime);
+    static std::vector<Poly> convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q);
+
+    static BigInteger GetQPrime(const PublicKey<DCRTPoly>& pubKey, uint32_t lvls);
 };
 
 }  // namespace lbcrypto

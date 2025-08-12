@@ -3571,11 +3571,12 @@ public:
     }
 
     template <typename VectorDataType>
-    void EvalFuncBTSetup(uint32_t numSlots, const BigInteger& P, const std::vector<VectorDataType>& coeffs,
+    void EvalFuncBTSetup(const std::vector<VectorDataType>& coeffs, uint32_t numSlots, const BigInteger& PIn,
+                         const BigInteger& POut, const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
                          const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                         long double scaleMod, uint32_t depthLeveledComputation = 0, size_t order = 1) {
-        GetScheme()->EvalFuncBTSetup(*this, numSlots, P, coeffs, dim1, levelBudget, scaleMod, depthLeveledComputation,
-                                     order);
+                         uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1) {
+        GetScheme()->EvalFuncBTSetup(*this, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
+                                     depthLeveledComputation, order);
     }
 
     template <typename VectorDataType>

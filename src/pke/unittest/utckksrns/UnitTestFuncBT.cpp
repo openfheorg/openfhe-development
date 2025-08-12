@@ -120,7 +120,7 @@ struct TEST_CASE_FUNCBT {
 static auto testName = [](const testing::TestParamInfo<TEST_CASE_FUNCBT>& test) {
     return test.param.buildTestName();
 };
-// TODO: finalize default values
+
 [[maybe_unused]] const BigInteger PINPUT(256);
 [[maybe_unused]] const BigInteger POUTPUT(256);
 [[maybe_unused]] const BigInteger Q21(BigInteger(1) << 21);
@@ -318,7 +318,6 @@ protected:
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
             bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
-
             if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
                 coeffint = {f(1), f(0) - f(1)};
             else  // divided by 2
@@ -359,17 +358,6 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-            uint32_t cnt      = 1;
-            auto levels       = t.levelsAvailableAfterBootstrap;
-            while (levels > 0) {
-                QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-                levels--;
-                cnt++;
-            }
-            double scaleMod =
-                QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * t.POutput.ConvertToDouble());
-
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
             std::cerr << "Cryptocontext Generation: " << std::chrono::duration<double>(stop - start).count() << " s\n";
@@ -377,9 +365,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.PInput, coeffint, {0, 0}, t.lvlb, scaleMod, 0, t.order);
+                cc->EvalFuncBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
             else
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.PInput, coeffcomp, {0, 0}, t.lvlb, scaleMod, 0, t.order);
+                cc->EvalFuncBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -420,10 +410,7 @@ protected:
                 ctxtAfterFuncBT =
                     cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
 
-            if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
-                OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
-            auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q, QPrime);
+            auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -441,7 +428,8 @@ protected:
 
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
-                return (f(elem) > t.POutput.ConvertToDouble() / 2.) ? f(elem) - t.POutput.ConvertToInt() : f(elem);
+                return (f(elem) > t.POutput.ConvertToDouble() / 2.) ? f(elem) - t.POutput.ConvertToInt<int64_t>() :
+                                                                      f(elem);
             });
 
             std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
@@ -483,14 +471,9 @@ protected:
                 return (x % a) >= (b / 2);
             };
 
-            std::vector<int64_t> x = {static_cast<int64_t>(PInput.ConvertToInt() / 2),
-                                      static_cast<int64_t>(PInput.ConvertToInt() / 2) + 1,
-                                      0,
-                                      3,
-                                      16,
-                                      33,
-                                      64,
-                                      static_cast<int64_t>(PInput.ConvertToInt() - 1)};
+            std::vector<int64_t> x = {
+                PInput.ConvertToInt<int64_t>() / 2, PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fillint64(x, t.numSlots);
 
@@ -502,7 +485,6 @@ protected:
             std::vector<std::complex<double>> coeffcompMod;
             std::vector<std::complex<double>> coeffcompStep;
             bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
-
             if (binaryLUT) {
                 coeffintMod = {funcMod(1),
                                funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
@@ -551,17 +533,6 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-            uint32_t cnt      = 1;
-            auto levels       = t.levelsAvailableAfterBootstrap;
-            while (levels > 0) {
-                QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-                levels--;
-                cnt++;
-            }
-            double scaleOutput =
-                QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * PInput.ConvertToDouble());
-
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
             std::cerr << "Cryptocontext Generation: " << std::chrono::duration<double>(stop - start).count() << " s\n";
@@ -569,9 +540,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.POutput, coeffintMod, {0, 0}, t.lvlb, scaleOutput, 0, t.order);
+                cc->EvalFuncBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
             else
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.POutput, coeffcompMod, {0, 0}, t.lvlb, scaleOutput, 0, t.order);
+                cc->EvalFuncBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -642,10 +615,7 @@ protected:
                         cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
                                        pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
 
-                if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
-                    OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
-                auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q, QPrime);
+                auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q);
 
                 BigInteger QNew(std::to_string(static_cast<uint64_t>(QBFVDouble / pDigitDouble)));
                 BigInteger PNew(std::to_string(static_cast<uint64_t>(pBFVDouble / pDigitDouble)));
@@ -740,15 +710,14 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-                (t.PInput.ConvertToInt<int64_t>() - 1)};
+                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fillint64(x, t.numSlots);
 
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
             bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
-
             if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
                 coeffint = {f(1), f(0) - f(1)};
             else  // divided by 2
@@ -789,17 +758,6 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-            uint32_t cnt      = 1;
-            auto levels       = t.levelsAvailableAfterBootstrap;
-            while (levels > 0) {
-                QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-                levels--;
-                cnt++;
-            }
-            double scaleMod =
-                QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * t.POutput.ConvertToDouble());
-
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
             std::cerr << "Cryptocontext Generation: " << std::chrono::duration<double>(stop - start).count() << " s\n";
@@ -807,11 +765,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.PInput, coeffint, {0, 0}, t.lvlb, scaleMod, t.levelsComputation,
-                                    t.order);
+                cc->EvalFuncBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
             else
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.PInput, coeffcomp, {0, 0}, t.lvlb, scaleMod, t.levelsComputation,
-                                    t.order);
+                cc->EvalFuncBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -872,10 +830,7 @@ protected:
             // Go back to coefficients, 0 because there are no extra levels to remove
             ctxtAfterFuncBT = cc->EvalHomDecoding(ctxtAfterFuncBT, t.scaleTHI, 0);
 
-            if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
-                OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
-            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q, QPrime);
+            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q);
 
             // Apply a subsequent LUT
             ctxt = SchemeletRLWEMP::convert(*cc, polys1, keyPair.publicKey, t.Bigq, numSlotsCKKS,
@@ -888,10 +843,7 @@ protected:
                 ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
                                                  t.levelsComputation, t.order);
 
-            if (QPrime != ctxtAfterFuncBT->GetElements()[0].GetModulus())
-                OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
-
-            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q, QPrime);
+            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -975,8 +927,8 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-                (t.PInput.ConvertToInt<int64_t>() - 1)};
+                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fillint64(x, t.numSlots);
 
@@ -985,7 +937,6 @@ protected:
             std::vector<std::complex<double>> coeffcomp1;
             std::vector<std::complex<double>> coeffcomp2;
             bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
-
             if (binaryLUT) {
                 coeffint1 = {f1(1), f1(0) - f1(1)};
                 coeffint2 = {f2(1), f2(0) - f2(1)};
@@ -1030,17 +981,6 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            BigInteger QPrime = keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[0]->GetModulus();
-            uint32_t cnt      = 1;
-            auto levels       = t.levelsAvailableAfterBootstrap;
-            while (levels > 0) {
-                QPrime *= keyPair.publicKey->GetPublicElements()[0].GetParams()->GetParams()[cnt]->GetModulus();
-                levels--;
-                cnt++;
-            }
-            double scaleMod =
-                QPrime.ConvertToLongDouble() / (t.Bigq.ConvertToLongDouble() * t.POutput.ConvertToDouble());
-
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
             std::cerr << "Cryptocontext Generation: " << std::chrono::duration<double>(stop - start).count() << " s\n";
@@ -1048,11 +988,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.PInput, coeffint1, {0, 0}, t.lvlb, scaleMod, t.levelsComputation,
-                                    t.order);
+                cc->EvalFuncBTSetup(coeffint1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
             else
-                cc->EvalFuncBTSetup(numSlotsCKKS, t.PInput, coeffcomp1, {0, 0}, t.lvlb, scaleMod, t.levelsComputation,
-                                    t.order);
+                cc->EvalFuncBTSetup(coeffcomp1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1109,12 +1049,9 @@ protected:
                 ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, t.scaleTHI, t.levelsComputation);
             }
 
-            if (QPrime != ctxtAfterFuncBT1->GetElements()[0].GetModulus())
-                OPENFHE_THROW("The ciphertext modulus after bootstrapping is not as expected.");
+            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, t.Q);
 
-            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, t.Q, QPrime);
-
-            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, t.Q, QPrime);
+            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();

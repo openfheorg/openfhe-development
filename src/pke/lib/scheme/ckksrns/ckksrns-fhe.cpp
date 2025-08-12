@@ -2781,9 +2781,11 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>
 #endif
 
 template <typename VectorDataType>
-void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, const BigInteger& P,
-                                         const std::vector<VectorDataType>& coeffs, const std::vector<uint32_t>& dim1,
-                                         const std::vector<uint32_t>& levelBudget, long double scaleMod,
+void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc,
+                                         const std::vector<VectorDataType>& coeffs, uint32_t numSlots,
+                                         const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
                                          uint32_t depthLeveledComputation, size_t order) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -2857,11 +2859,19 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, 
             OPENFHE_THROW("Unsupported SecretKeyDist.");
     }
 
+    auto& params = pubKey->GetPublicElements()[0].GetParams()->GetParams();
+    uint32_t cnt = 0;
+
+    BigInteger QPrime = params[0]->GetModulus();
+    while (lvlsAfterBoot-- > 0)
+        QPrime *= params[++cnt]->GetModulus();
+
     BigInteger q    = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt();
     auto qDouble    = q.ConvertToLongDouble();
     double factor   = static_cast<uint128_t>(1) << static_cast<uint32_t>(std::round(std::log2(qDouble)));
     double pre      = qDouble / factor;
     double scaleEnc = pre / k;
+    double scaleMod = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * POut.ConvertToDouble());
     double scaleDec = scaleMod / pre;
 
     // one level for division and double-angle formula
@@ -2869,7 +2879,7 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, 
 
     // Increase interpolation degree for large precision
     uint32_t depthBT = approxModDepth + levelBudget[0] + levelBudget[1] + depthLeveledComputation +
-                       AdjustDepthFuncBT(coeffs, P, order, skd);
+                       AdjustDepthFuncBT(coeffs, PIn, order, skd);
 
     // compute # of levels to remain when encoding the coefficients
     uint32_t L0   = cryptoParams->GetElementParams()->GetParams().size();
@@ -2908,17 +2918,23 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, 
     }
 }
 
-void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, const BigInteger& P,
-                                 const std::vector<std::complex<double>>& coefficients,
-                                 const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                                 long double scaleMod, uint32_t depthLeveledComputation, size_t order) {
-    EvalFuncBTSetupInternal(cc, numSlots, P, coefficients, dim1, levelBudget, scaleMod, depthLeveledComputation, order);
-}
-void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots, const BigInteger& P,
-                                 const std::vector<int64_t>& coefficients, const std::vector<uint32_t>& dim1,
-                                 const std::vector<uint32_t>& levelBudget, long double scaleMod,
+void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                                 const std::vector<std::complex<double>>& coefficients, uint32_t numSlots,
+                                 const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                                 const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                                 const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
                                  uint32_t depthLeveledComputation, size_t order) {
-    EvalFuncBTSetupInternal(cc, numSlots, P, coefficients, dim1, levelBudget, scaleMod, depthLeveledComputation, order);
+    EvalFuncBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
+                            depthLeveledComputation, order);
+}
+
+void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
+                                 uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
+                                 const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
+                                 const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
+                                 uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order) {
+    EvalFuncBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
+                            depthLeveledComputation, order);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,

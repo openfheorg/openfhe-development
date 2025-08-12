@@ -275,8 +275,7 @@ Ciphertext<DCRTPoly> SchemeletRLWEMP::convert(const CryptoContextImpl<DCRTPoly>&
     return ctxt;
 }
 
-std::vector<Poly> SchemeletRLWEMP::convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q,
-                                           const BigInteger& QPrime) {
+std::vector<Poly> SchemeletRLWEMP::convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q) {
     auto b = ctxt->GetElements()[0];
     b.SetFormat(Format::COEFFICIENT);
     auto bPoly = b.CRTInterpolate();
@@ -285,6 +284,7 @@ std::vector<Poly> SchemeletRLWEMP::convert(ConstCiphertext<DCRTPoly>& ctxt, cons
     a.SetFormat(Format::COEFFICIENT);
     auto aPoly = a.CRTInterpolate();
 
+    BigInteger QPrime = ctxt->GetElements()[0].GetModulus();
     if (Q < QPrime) {
         bPoly = bPoly.MultiplyAndRound(Q, QPrime);
         bPoly.SwitchModulus(Q, 1, 0, 0);
@@ -300,6 +300,17 @@ std::vector<Poly> SchemeletRLWEMP::convert(ConstCiphertext<DCRTPoly>& ctxt, cons
         aPoly = aPoly.MultiplyAndRound(Q, QPrime);
     }
     return {bPoly, aPoly};
+}
+
+BigInteger SchemeletRLWEMP::GetQPrime(const PublicKey<DCRTPoly>& pubKey, uint32_t lvls) {
+    auto& params = pubKey->GetPublicElements()[0].GetParams()->GetParams();
+    uint32_t cnt = 0;
+
+    BigInteger QPrime = params[0]->GetModulus();
+    while (lvls-- > 0)
+        QPrime *= params[++cnt]->GetModulus();
+
+    return QPrime;
 }
 
 }  // namespace lbcrypto
