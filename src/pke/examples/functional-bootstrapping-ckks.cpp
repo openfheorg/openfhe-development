@@ -111,9 +111,8 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
         (PInput.ConvertToInt<int64_t>() - 1)};
     std::cerr << "First 8 elements of the input (repeated) up to size " << numSlots << ":" << std::endl;
     std::cerr << x << std::endl;
-    if (x.size() < numSlots) {
-        x = Fillint64(x, numSlots);
-    }
+    if (x.size() < numSlots)
+        x = Fill<int64_t>(x, numSlots);
 
     /* 3. The case of Boolean LUTs using the first order Trigonometric Hermite Interpolation
      * supports an optimized implementation.
@@ -270,7 +269,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     std::cerr << "First 8 elements of the input (repeated) up to size " << numSlots << ":" << std::endl;
     std::cerr << x << std::endl;
     if (x.size() < numSlots)
-        x = Fillint64(x, numSlots);
+        x = Fill<int64_t>(x, numSlots);
 
     /* 4. The case of Boolean LUTs using the first order Trigonometric Hermite Interpolation
      * supports an optimized implementation.
@@ -357,11 +356,11 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     cc->EvalMultKeyGen(keyPair.secretKey);
     cc->EvalAtIndexKeyGen(keyPair.secretKey, std::vector<int32_t>({-2}));
 
-    std::vector<double> mask_real = FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), numSlots);
+    auto mask_real = Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlots);
 
     // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
     Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
-        FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), numSlotsCKKS), 1,
+        Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
         depth - lvlb[1] - levelsAvailableAfterBootstrap - levelsComputation, nullptr, numSlotsCKKS);
 
     /* 7. When leveled computations (multiplications, rotations) are desired to be performed while in
@@ -512,7 +511,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     std::cerr << "First 8 elements of the input (repeated) up to size " << numSlots << ":" << std::endl;
     std::cerr << x << std::endl;
     if (x.size() < numSlots)
-        x = Fillint64(x, numSlots);
+        x = Fill<int64_t>(x, numSlots);
 
     auto exact(x);
     std::transform(x.begin(), x.end(), exact.begin(),

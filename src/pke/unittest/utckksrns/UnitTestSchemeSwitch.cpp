@@ -327,7 +327,7 @@ protected:
             double scale     = 1.0 / pLWE;
             cc->EvalCKKStoFHEWPrecompute(scale);
 
-            auto input(FillCompDouble({0, 1, -2, -3, pLWE / 8.0, pLWE / 4.0, pLWE / 2.0, pLWE / 1.0}, testData.slots));
+            auto input(Fill<double>({0, 1, -2, -3, pLWE / 8.0, pLWE / 4.0, pLWE / 2.0, pLWE / 1.0}, testData.slots));
 
             size_t encodedLength = input.size();
             std::vector<int32_t> inputInt(encodedLength);

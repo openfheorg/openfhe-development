@@ -251,11 +251,11 @@ protected:
 
             std::vector<std::complex<double>> input;
             if (testData.slots < 8) {
-                input = FillCompDouble({0.1415926}, testData.slots);
+                input = Fill<std::complex<double>>({0.1415926}, testData.slots);
             }
             else {
-                input = FillCompDouble({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
-                                       testData.slots);
+                input = Fill<std::complex<double>>(
+                    {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots);
             }
 
             size_t encodedLength = input.size();
@@ -395,8 +395,8 @@ protected:
 
             auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-            auto input(FillCompDouble({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
-                                      testData.slots));
+            auto input(Fill<std::complex<double>>(
+                {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
             Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
@@ -464,8 +464,8 @@ protected:
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto input(FillCompDouble({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
-                                      testData.slots));
+            auto input(Fill<std::complex<double>>(
+                {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
             // We start with a ciphertext with 0 levels consumed.
@@ -558,8 +558,8 @@ protected:
             cc->EvalBootstrapPrecompute(testData.slots);
             cc->EvalBootstrapPrecompute(testData.slots / 2);
             //====================================================================================================
-            auto input(FillCompDouble({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
-                                      testData.slots));
+            auto input(Fill<std::complex<double>>(
+                {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
             auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -577,7 +577,7 @@ protected:
                           failmsg + " Bootstrapping for fully packed ciphertexts fails");
 
             //====================================================================================================
-            auto input2(FillCompDouble({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
+            auto input2(Fill<std::complex<double>>({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
             size_t encodedLength2 = input2.size();
 
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(

@@ -56,21 +56,21 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4) {
     uint32_t layers = std::ceil(static_cast<double>(logSlots) / budget);
     uint32_t rows   = logSlots / layers;
     uint32_t rem    = logSlots % layers;
-    uint32_t dim    = (rem == 0) ? rows : (rows + 1);
+    uint32_t dim    = rows + (rem != 0);
 
     // the above choice ensures dim <= budget
     if (dim < budget) {
         layers -= 1;
         rows = logSlots / layers;
         rem  = logSlots - rows * layers;
-        dim  = (rem == 0) ? rows : (rows + 1);
+        dim  = rows + (rem != 0);
 
         // the above choice endures dim >=budget
         if (dim > budget) {
             while (dim != budget) {
                 --rows;
                 rem = logSlots - rows * layers;
-                dim = (rem == 0) ? rows : (rows + 1);
+                dim = rows + (rem != 0);
             }
         }
     }
@@ -111,7 +111,6 @@ uint32_t GetDepthByDegree(size_t d) {
     OPENFHE_THROW("degree " + std::to_string(d) + " not in range [" + std::to_string(LOWER_BOUND_DEGREE) + ", " +
                   std::to_string(UPPER_BOUND_DEGREE) + "].");
 }
-
 template struct longDiv<int64_t>;
 template struct longDiv<double>;
 template struct longDiv<std::complex<double>>;
@@ -132,8 +131,14 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
     if (n < k)
         return std::make_shared<longDiv<VectorDataType>>(std::vector<VectorDataType>(1), f);
 
-    std::vector<VectorDataType> q(n - k + 1);
-    std::vector<VectorDataType> r(f);
+    auto res = std::make_shared<longDiv<VectorDataType>>();
+
+    auto& q = res->q;
+    q.resize(n - k + 1);
+
+    auto& r = res->r;
+    r       = f;
+
     std::vector<VectorDataType> d;
     d.reserve(g.size() + n);
 
@@ -157,9 +162,8 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
             r.resize(n + 1);
         }
     }
-    return std::make_shared<longDiv<VectorDataType>>(q, r);
+    return res;
 }
-
 template std::shared_ptr<longDiv<int64_t>> LongDivisionPoly(const std::vector<int64_t>& f,
                                                             const std::vector<int64_t>& g);
 template std::shared_ptr<longDiv<double>> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
@@ -184,8 +188,14 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
     if (n < k)
         return std::make_shared<longDiv<VectorDataType>>(std::vector<VectorDataType>(1), f);
 
-    std::vector<VectorDataType> q(n - k + 1);
-    std::vector<VectorDataType> r(f);
+    auto res = std::make_shared<longDiv<VectorDataType>>();
+
+    auto& q = res->q;
+    q.resize(n - k + 1);
+
+    auto& r = res->r;
+    r       = f;
+
     std::vector<VectorDataType> d;
     d.reserve(g.size() + n);
 
@@ -199,24 +209,23 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
 
         if (k == n - k) {
             d.front() = 2.0 * g[n - k];
-
-            for (size_t i = 1; i < 2 * k + 1; i++)
+            for (uint32_t i = 1; i < 2 * k + 1; ++i)
                 d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(n - k - i)))];
         }
         else {
             if (k > (n - k)) {
                 d.front() = 2.0 * g[n - k];
-                for (size_t i = 1; i < k - (n - k) + 1; i++) {
+                for (uint32_t i = 1; i < k - (n - k) + 1; ++i) {
                     d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(n - k - i)))] +
                            g[static_cast<size_t>(n - k + i)];
                 }
-                for (size_t i = k - (n - k) + 1; i < n + 1; i++) {
+                for (uint32_t i = k - (n - k) + 1; i < n + 1; ++i) {
                     d[i] = g[static_cast<size_t>(std::abs(static_cast<int32_t>(i - n + k)))];
                 }
             }
             else {
                 d[n - k] = g.front();
-                for (size_t i = n - 2 * k; i < n + 1; i++) {
+                for (uint32_t i = n - 2 * k; i < n + 1; ++i) {
                     if (i != n - k) {
                         d[i] = g[static_cast<size_t>(std::abs(int32_t(i - n + k)))];
                     }
@@ -267,9 +276,8 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
         }
     }
     q.front() *= 2.0;  // Because we want to have [c0] in the last spot, not [c0/2]
-    return std::make_shared<longDiv<VectorDataType>>(q, r);
+    return res;
 }
-
 template std::shared_ptr<longDiv<int64_t>> LongDivisionChebyshev(const std::vector<int64_t>& f,
                                                                  const std::vector<int64_t>& g);
 template std::shared_ptr<longDiv<double>> LongDivisionChebyshev(const std::vector<double>& f,
@@ -349,126 +357,58 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::
     return result;
 }
 
-std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>& a, int32_t index) {
+template <typename VecDType>
+std::vector<VecDType> Rotate(const std::vector<VecDType>& a, int32_t index) {
     const int32_t slots = a.size();
-
-    if (index < 0 || index > slots) {
+    if (index < 0 || index > slots)
         index = ReduceRotation(index, slots);
-    }
-
-    if (index == 0) {
+    if (index == 0)
         return a;
-    }
 
-    std::vector<std::complex<double>> result(slots);
+    std::vector<VecDType> result(slots);
     // two cases: i+index <= slots and i+index > slots
-    for (int32_t i = 0; i < slots - index; i++) {
+    for (int32_t i = 0; i < slots - index; ++i)
         result[i] = a[i + index];
-    }
-    for (int32_t i = slots - index; i < slots; i++) {
+    for (int32_t i = slots - index; i < slots; ++i)
         result[i] = a[i + index - slots];
-    }
-
     return result;
 }
-
-std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index) {
-    const int32_t slots = a.size();
-
-    if (index < 0 || index > slots) {
-        index = ReduceRotation(index, slots);
-    }
-
-    if (index == 0) {
-        return a;
-    }
-
-    std::vector<int64_t> result(slots);
-    // two cases: i+index <= slots and i+index > slots
-    for (int32_t i = 0; i < slots - index; i++) {
-        result[i] = a[i + index];
-    }
-    for (int32_t i = slots - index; i < slots; i++) {
-        result[i] = a[i + index - slots];
-    }
-
-    return result;
-}
+template std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>& a, int32_t index);
+template std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index);
 
 template <typename VectorDataType>
 std::vector<VectorDataType> RotateTwoHalves(const std::vector<VectorDataType>& a, int32_t index) {
-    int32_t slots     = a.size();
-    int32_t slotsHalf = slots / 2;
+    const int32_t slots     = a.size();
+    const int32_t slotsHalf = slots >> 1;
+    if (index < 0 || index > slotsHalf)
+        index = ReduceRotation(index, slotsHalf);
+    if (index == 0)
+        return a;
 
     std::vector<VectorDataType> result(slots);
-
-    if (index < 0 || index > slotsHalf) {
-        index = ReduceRotation(index, slotsHalf);
-    }
-
-    if (index == 0) {
-        result = a;
-    }
-
-    else {
-        // two cases: i+index <= slots and i+index > slots
-        for (int32_t i = 0; i < slotsHalf - index; i++) {
-            result[i] = a[i + index];
-        }
-        for (int32_t i = slotsHalf - index; i < slotsHalf; i++) {
-            result[i] = a[i + index - slotsHalf];
-        }
-        for (int32_t i = slotsHalf; i < slots - index; i++) {
-            result[i] = a[i + index];
-        }
-        for (int32_t i = slots - index; i < slots; i++) {
-            result[i] = a[i + index - slotsHalf];
-        }
-    }
-
+    for (int32_t i = 0; i < slotsHalf - index; ++i)
+        result[i] = a[i + index];
+    for (int32_t i = slotsHalf - index; i < slotsHalf; ++i)
+        result[i] = a[i + index - slotsHalf];
+    for (int32_t i = slotsHalf; i < slots - index; ++i)
+        result[i] = a[i + index];
+    for (int32_t i = slots - index; i < slots; ++i)
+        result[i] = a[i + index - slotsHalf];
     return result;
 }
-
 template std::vector<int64_t> RotateTwoHalves(const std::vector<int64_t>& a, int32_t index);
 
 uint32_t ReduceRotation(int32_t index, uint32_t slots) {
-    int32_t islots = int32_t(slots);
-
+    const auto islots = static_cast<int32_t>(slots);
     if (IsPowerOfTwo(slots)) {
-        uint32_t n = static_cast<uint32_t>(std::log2(slots));
-        if (index >= 0) {
+        const auto n = static_cast<uint32_t>(std::log2(slots));
+        if (index >= 0)
             return index - ((index >> n) << n);
-        }
         return index + islots + ((std::abs(index) >> n) << n);
     }
     return (islots + index % islots) % islots;
 }
 
-std::vector<std::complex<double>> FillCompDouble(const std::vector<std::complex<double>>& a, uint32_t slots) {
-    const uint32_t usedSlots = a.size();
-    std::vector<std::complex<double>> result(slots);
-    for (uint32_t i = 0; i < slots; ++i)
-        result[i] = a[i % usedSlots];
-    return result;
-}
-
-std::vector<double> FillDouble(const std::vector<double>& a, uint32_t slots) {
-    const uint32_t usedSlots = a.size();
-    std::vector<double> result(slots);
-    for (uint32_t i = 0; i < slots; ++i)
-        result[i] = a[i % usedSlots];
-    return result;
-}
-
-std::vector<int64_t> Fillint64(const std::vector<int64_t>& a, uint32_t slots) {
-    const uint32_t usedSlots = a.size();
-    std::vector<int64_t> result(slots);
-    for (uint32_t i = 0; i < slots; ++i)
-        result[i] = a[i % usedSlots];
-    return result;
-}
-
-/*
 template <typename VecDType>
 std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots) {
     const uint32_t usedSlots = a.size();
@@ -480,16 +420,29 @@ std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots) {
 template std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, uint32_t slots);
 template std::vector<double> Fill(const std::vector<double>& a, uint32_t slots);
 template std::vector<int64_t> Fill(const std::vector<int64_t>& a, uint32_t slots);
-*/
+
+template <typename VecDType>
+std::vector<VecDType> Fill(std::initializer_list<VecDType> a, uint32_t slots) {
+    const uint32_t usedSlots = a.size();
+    std::vector<VecDType> result;
+    result.reserve(slots);
+    auto it = a.begin();
+    for (uint32_t i = 0; i < slots; ++i)
+        result.push_back(*(std::next(it, i % usedSlots)));
+    return result;
+}
+template std::vector<std::complex<double>> Fill(std::initializer_list<std::complex<double>> a, uint32_t slots);
+template std::vector<double> Fill(std::initializer_list<double> a, uint32_t slots);
+template std::vector<int64_t> Fill(std::initializer_list<int64_t> a, uint32_t slots);
 
 std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::vector<std::complex<double>>& pows,
                                                                      const std::vector<uint32_t>& rotGroup,
                                                                      bool flag_i) {
     constexpr std::complex<double> I(0.0, 1.0);
-    const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
+    static const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
 
-    uint32_t dim   = pows.size() - 1;
-    uint32_t slots = rotGroup.size();
+    const uint32_t dim   = pows.size() - 1;
+    const uint32_t slots = rotGroup.size();
 
     // Each outer iteration from the FFT algorithm can be written a weighted sum of
     // three terms: the input shifted right by a power of two, the unshifted input,
@@ -498,41 +451,29 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
     // following order: the coefficients associated to the input shifted right,
     // the coefficients for the non-shifted input and the coefficients associated
     // to the input shifted left.
-    const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
-    std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots);
-
-    for (uint32_t i = 0; i < 3 * log2slots; i++) {
-        coeff[i] = std::vector<std::complex<double>>(slots);
-    }
+    const auto log2slots = static_cast<uint32_t>(std::log2(slots));
+    std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots, std::vector<std::complex<double>>(slots));
 
     for (uint32_t m = slots; m > 1; m >>= 1) {
-        uint32_t s = std::log2(m) - 1;
+        uint32_t s   = std::log2(m) - 1;
+        auto& coeff0 = coeff[s];
+        auto& coeff1 = coeff[(s += log2slots)];
+        auto& coeff2 = coeff[(s += log2slots)];
 
+        const std::complex<double> b = flag_i && (m == 2) ? neg_exp_M_PI : 1;
         for (uint32_t k = 0; k < slots; k += m) {
-            uint32_t lenh = m >> 1;
-            uint32_t lenq = m << 2;
-
-            for (uint32_t j = 0; j < lenh; j++) {
-                uint32_t jTwiddle = (lenq - (rotGroup[j] % lenq)) * (dim / lenq);
-
-                if (flag_i && (m == 2)) {
-                    std::complex<double> w             = neg_exp_M_PI * pows[jTwiddle];
-                    coeff[s + log2slots][j + k]        = neg_exp_M_PI;  // not shifted
-                    coeff[s + 2 * log2slots][j + k]    = neg_exp_M_PI;  // shifted left
-                    coeff[s + log2slots][j + k + lenh] = -w;            // not shifted
-                    coeff[s][j + k + lenh]             = w;             // shifted right
-                }
-                else {
-                    std::complex<double> w             = pows[jTwiddle];
-                    coeff[s + log2slots][j + k]        = 1;   // not shifted
-                    coeff[s + 2 * log2slots][j + k]    = 1;   // shifted left
-                    coeff[s + log2slots][j + k + lenh] = -w;  // not shifted
-                    coeff[s][j + k + lenh]             = w;   // shifted right
-                }
+            const uint32_t lenq  = m << 2;
+            const uint32_t lenh  = m >> 1;
+            const uint32_t klenh = k + lenh;
+            std::fill(coeff2.begin() + k, coeff2.begin() + klenh, b);  // shifted left
+            std::fill(coeff1.begin() + k, coeff1.begin() + klenh, b);  // not shifted
+            for (uint32_t j = 0, jklenh = klenh; j < lenh; ++j, ++jklenh) {
+                const auto w   = b * pows[(lenq - (rotGroup[j] % lenq)) * (dim / lenq)];
+                coeff1[jklenh] = -w;  // not shifted
+                coeff0[jklenh] = w;   // shifted right
             }
         }
     }
-
     return coeff;
 }
 
@@ -540,10 +481,10 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
                                                                      const std::vector<uint32_t>& rotGroup,
                                                                      bool flag_i) {
     constexpr std::complex<double> I(0.0, 1.0);
-    const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
+    static const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
 
-    uint32_t dim   = pows.size() - 1;
-    uint32_t slots = rotGroup.size();
+    const uint32_t dim   = pows.size() - 1;
+    const uint32_t slots = rotGroup.size();
 
     // Each outer iteration from the FFT algorithm can be written a weighted sum of
     // three terms: the input shifted right by a power of two, the unshifted input,
@@ -552,41 +493,29 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
     // following order: the coefficients associated to the input shifted right,
     // the coefficients for the non-shifted input and the coefficients associated
     // to the input shifted left.
-    const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
-    std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots);
-
-    for (uint32_t i = 0; i < 3 * log2slots; i++) {
-        coeff[i] = std::vector<std::complex<double>>(slots);
-    }
+    const auto log2slots = static_cast<uint32_t>(std::log2(slots));
+    std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots, std::vector<std::complex<double>>(slots));
 
     for (uint32_t m = 2; m <= slots; m <<= 1) {
-        uint32_t s = std::log2(m) - 1;
+        uint32_t s   = std::log2(m) - 1;
+        auto& coeff0 = coeff[s];
+        auto& coeff1 = coeff[(s += log2slots)];
+        auto& coeff2 = coeff[(s += log2slots)];
 
+        const std::complex<double> b = flag_i && (m == 2) ? pos_exp_M_PI : 1;
         for (uint32_t k = 0; k < slots; k += m) {
-            uint32_t lenh = m >> 1;
-            uint32_t lenq = m << 2;
-
-            for (uint32_t j = 0; j < lenh; j++) {
-                uint32_t jTwiddle = (rotGroup[j] % lenq) * (dim / lenq);
-
-                if (flag_i && (m == 2)) {
-                    std::complex<double> w             = pos_exp_M_PI * pows[jTwiddle];
-                    coeff[s + log2slots][j + k]        = pos_exp_M_PI;  // not shifted
-                    coeff[s + 2 * log2slots][j + k]    = w;             // shifted left
-                    coeff[s + log2slots][j + k + lenh] = -w;            // not shifted
-                    coeff[s][j + k + lenh]             = pos_exp_M_PI;  // shifted right
-                }
-                else {
-                    std::complex<double> w             = pows[jTwiddle];
-                    coeff[s + log2slots][j + k]        = 1;   // not shifted
-                    coeff[s + 2 * log2slots][j + k]    = w;   // shifted left
-                    coeff[s + log2slots][j + k + lenh] = -w;  // not shifted
-                    coeff[s][j + k + lenh]             = 1;   // shifted right
-                }
+            const uint32_t lenq  = m << 2;
+            const uint32_t lenh  = m >> 1;
+            const uint32_t klenh = k + lenh;
+            std::fill(coeff0.begin() + klenh, coeff0.begin() + klenh + lenh, b);  // shifted right
+            std::fill(coeff1.begin() + k, coeff1.begin() + klenh, b);             // not shifted
+            for (uint32_t j = 0, jk = k, jklenh = klenh; j < lenh; ++j, ++jk, ++jklenh) {
+                const auto w   = b * pows[(rotGroup[j] % lenq) * (dim / lenq)];
+                coeff1[jklenh] = -w;  // not shifted
+                coeff2[jk]     = w;   // shifted left
             }
         }
     }
-
     return coeff;
 }
 
@@ -794,33 +723,11 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     const uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the baby-step b and the giant-step g for the collapsed layers for decoding.
-    uint32_t g{0};
-    if (dim1 == 0 || dim1 > numRotations) {
-        if (numRotations > 7) {
-            g = (1U << (layersCollapse / 2 + 2));
-        }
-        else {
-            g = (1U << (layersCollapse / 2 + 1));
-        }
-    }
-    else {
-        g = dim1;
-    }
+    uint32_t g = (dim1 == 0 || dim1 > numRotations) ? (1U << (layersCollapse / 2 + 1 + (numRotations > 7))) : dim1;
     uint32_t b = (numRotations + 1) / g;
 
-    uint32_t bRem{0};
-    uint32_t gRem{0};
-
-    // bool flagRem = (remCollapse == 0) ? false : true;
-    if (remCollapse != 0) {
-        if (numRotationsRem > 7) {
-            gRem = (1U << (remCollapse / 2 + 2));
-        }
-        else {
-            gRem = (1U << (remCollapse / 2 + 1));
-        }
-        bRem = (numRotationsRem + 1) / gRem;
-    }
+    uint32_t gRem = (remCollapse != 0) ? (1U << (remCollapse / 2 + 1 + (numRotationsRem > 7))) : 0;
+    uint32_t bRem = (remCollapse != 0) ? (numRotationsRem + 1) / gRem : 0;
 
     // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well
     return {static_cast<int32_t>(levelBudget),
@@ -864,10 +771,8 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
 
     // Remove automorphisms corresponding to 0
     auto it = std::find(indexList.begin(), indexList.end(), 0);
-    if (it != indexList.end()) {
+    if (it != indexList.end())
         indexList.erase(it);
-    }
-
     return indexList;
 }
 
@@ -884,9 +789,9 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
     uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
     uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
 
+    // There will be a lot of intersection between the rotations, provide an upper bound
     std::vector<int32_t> indexList;
-    indexList.reserve(bStep + gStep +
-                      cols);  // There will be a lot of intersection between the rotations, provide an upper bound
+    indexList.reserve(bStep + gStep + cols);
 
     while (slots >= 1) {
         // Computing all indices for baby-step giant-step procedure
@@ -917,10 +822,8 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
     // Remove automorphisms corresponding to 0
     auto it = std::find(indexList.begin(), indexList.end(), 0);
-    if (it != indexList.end()) {
+    if (it != indexList.end())
         indexList.erase(it);
-    }
-
     return indexList;
 }
 

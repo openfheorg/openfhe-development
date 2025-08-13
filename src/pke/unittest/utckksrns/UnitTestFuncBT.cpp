@@ -313,7 +313,7 @@ protected:
                 (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
                 (t.PInput.ConvertToInt<int64_t>() - 1)};
             if (x.size() < t.numSlots)
-                x = Fillint64(x, t.numSlots);
+                x = Fill<int64_t>(x, t.numSlots);
 
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
@@ -475,7 +475,7 @@ protected:
                 PInput.ConvertToInt<int64_t>() / 2, PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
                 PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
-                x = Fillint64(x, t.numSlots);
+                x = Fill<int64_t>(x, t.numSlots);
 
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(),
@@ -713,7 +713,7 @@ protected:
                 t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
                 t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
-                x = Fillint64(x, t.numSlots);
+                x = Fill<int64_t>(x, t.numSlots);
 
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
@@ -787,11 +787,11 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            std::vector<double> mask_real = FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), t.numSlots);
+            auto mask_real = Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, t.numSlots);
 
             // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
             Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
-                FillDouble(std::vector<double>({1, 1, 1, 1, 0, 0, 0, 0}), numSlotsCKKS), 1,
+                Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
                 depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation, nullptr, numSlotsCKKS);
 
             auto ep =
@@ -930,7 +930,7 @@ protected:
                 t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
                 t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
-                x = Fillint64(x, t.numSlots);
+                x = Fill<int64_t>(x, t.numSlots);
 
             std::vector<int64_t> coeffint1;
             std::vector<int64_t> coeffint2;

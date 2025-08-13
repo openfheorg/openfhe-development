@@ -197,7 +197,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
         size_t encodedLength = a.size();
 
-        auto input(FillCompDouble(a, slotsvec[i]));
+        auto input(Fill(a, slotsvec[i]));
         Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1, nullptr, slotsvec[i]);
         auto ciphertext     = cc->Encrypt(keyPair.publicKey, plaintext);
 
@@ -323,7 +323,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 
     size_t encodedLength = a.size();
 
-    auto input(FillCompDouble(a, slots));
+    auto input(Fill(a, slots));
 
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1, nullptr, slots);
 

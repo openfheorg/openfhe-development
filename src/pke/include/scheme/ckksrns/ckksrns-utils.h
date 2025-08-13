@@ -160,8 +160,8 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::
  *
  * @return the rotated vector
  */
-std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>& a, int32_t index);
-std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t index);
+template <typename VecDType>
+std::vector<VecDType> Rotate(const std::vector<VecDType>& a, int32_t index);
 
 /**
  * Rotates a vector by an index - left rotation
@@ -182,9 +182,11 @@ std::vector<VecDType> RotateTwoHalves(const std::vector<VecDType>& a, int32_t in
  *
  * @return the vector with cloned values
  */
-std::vector<std::complex<double>> FillCompDouble(const std::vector<std::complex<double>>& a, uint32_t slots);
-std::vector<double> FillDouble(const std::vector<double>& a, uint32_t slots);
-std::vector<int64_t> Fillint64(const std::vector<int64_t>& a, uint32_t slots);
+template <typename VecDType = std::vector<std::complex<double>>>
+std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots);
+
+template <typename VecDType = std::vector<std::complex<double>>>
+std::vector<VecDType> Fill(std::initializer_list<VecDType> a, uint32_t slots);
 
 /*
 template <typename VecDType = std::complex<double>>
