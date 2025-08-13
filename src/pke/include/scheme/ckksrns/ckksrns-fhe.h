@@ -318,7 +318,7 @@ private:
     static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
-    void tAdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, long double correction) const;
+    void AdjustCiphertextFuncBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
                           const std::shared_ptr<DCRTPoly::Params> params) const;

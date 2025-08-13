@@ -2167,7 +2167,6 @@ uint32_t FHECKKSRNS::GetModDepthInternal(SecretKeyDist secretKeyDist) {
     }
 }
 
-// TODO: merge AdjustCiphertext and tAdjustCiphertext into single function
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -2213,7 +2212,7 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
     }
 }
 
-void FHECKKSRNS::tAdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, long double correction) const {
+void FHECKKSRNS::AdjustCiphertextFuncBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -3016,7 +3015,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     // because the message doesn't have to be scaled down.
     // Instead, we need to correct the encoding if it originates from a different ciphertext
     // (not typical CKKS).
-    long double correction = cryptoParams->GetScalingFactorRealBig(0) / initialScaling.ConvertToLongDouble();
+    double correction = cryptoParams->GetScalingFactorRealBig(0) / initialScaling.ConvertToDouble();
 
     //------------------------------------------------------------------------------
     // RAISING THE MODULUS
@@ -3028,7 +3027,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
 
     // If correction ~ 1, we should not do this adjustment and save a level
     if (std::llround(correction) != 1.0)
-        tAdjustCiphertext(raised, correction);
+        AdjustCiphertextFuncBT(raised, correction);
 
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
     if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
