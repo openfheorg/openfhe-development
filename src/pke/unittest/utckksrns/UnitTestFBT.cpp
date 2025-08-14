@@ -59,26 +59,26 @@
 using namespace lbcrypto;
 
 enum TEST_CASE_TYPE {
-    FUNCBT_ARBLUT = 0,
-    FUNCBT_SIGNDIGIT,
-    FUNCBT_CONSECLEV,
-    FUNCBT_MVB,
+    FBT_ARBLUT = 0,
+    FBT_SIGNDIGIT,
+    FBT_CONSECLEV,
+    FBT_MVB,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-        case FUNCBT_ARBLUT:
-            typeName = "FUNCBT_ARBLUT";
+        case FBT_ARBLUT:
+            typeName = "FBT_ARBLUT";
             break;
-        case FUNCBT_SIGNDIGIT:
-            typeName = "FUNCBT_SIGNDIGIT";
+        case FBT_SIGNDIGIT:
+            typeName = "FBT_SIGNDIGIT";
             break;
-        case FUNCBT_CONSECLEV:
-            typeName = "FUNCBT_CONSECLEV";
+        case FBT_CONSECLEV:
+            typeName = "FBT_CONSECLEV";
             break;
-        case FUNCBT_MVB:
-            typeName = "FUNCBT_MVB";
+        case FBT_MVB:
+            typeName = "FBT_MVB";
             break;
         default:
             typeName = "UNKNOWN";
@@ -87,7 +87,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 
-struct TEST_CASE_FUNCBT {
+struct TEST_CASE_FBT {
     TEST_CASE_TYPE testCaseType;
     std::string description;
 
@@ -117,7 +117,7 @@ struct TEST_CASE_FUNCBT {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE_FUNCBT>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
     return test.param.buildTestName();
 };
 
@@ -157,136 +157,136 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FUNCBT>& test) 
 [[maybe_unused]] const std::vector<uint32_t> LVLBDFLT = {3, 3};
 
 // clang-format off
-static std::vector<TEST_CASE_FUNCBT> testCases = {
+static std::vector<TEST_CASE_FBT> testCases = {
 // Functional Bootstrapping does not support NATIVE_SIZE == 128
 // For higher precision, consider using composite scaling instead
 #if NATIVEINT != 128
 #ifndef BENCH
-    //    TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
-    {    FUNCBT_ARBLUT, "01",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "02",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "03",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "04",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "05",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "06",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "07",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "08",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "09",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "10",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "11",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "12",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "13",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "14",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "15",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "16",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_CONSECLEV, "17",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_CONSECLEV, "18",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_CONSECLEV, "19",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    { FUNCBT_CONSECLEV, "20",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    {       FUNCBT_MVB, "21",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    {       FUNCBT_MVB, "22",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    {       FUNCBT_MVB, "23",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    {       FUNCBT_MVB, "24",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
-    //    TestCaseType,  Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
-    {    FUNCBT_ARBLUT, "101",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "102",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "103",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "104",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "105",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "106",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "107",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "108",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "109",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "110",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "111",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "112",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "113",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "114",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "115",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "116",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_CONSECLEV, "117",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_CONSECLEV, "118",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_CONSECLEV, "119",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    { FUNCBT_CONSECLEV, "120",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {       FUNCBT_MVB, "121",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {       FUNCBT_MVB, "122",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {       FUNCBT_MVB, "123",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
-    {       FUNCBT_MVB, "124",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
+    {    FBT_ARBLUT, "01",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "02",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "03",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "04",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "05",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "06",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "07",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "08",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "09",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "10",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "11",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "12",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "13",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "14",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "15",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "16",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_CONSECLEV, "17",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_CONSECLEV, "18",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_CONSECLEV, "19",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_CONSECLEV, "20",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    {       FBT_MVB, "21",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    {       FBT_MVB, "22",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    {       FBT_MVB, "23",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    {       FBT_MVB, "24",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    // TestCaseType,  Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
+    {    FBT_ARBLUT, "101",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "102",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "103",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "104",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "105",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "106",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "107",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "108",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "109",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "110",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "111",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "112",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "113",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "114",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "115",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "116",      Q71,    Q21,       2, Q55, Q35,        1,            1,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_CONSECLEV, "117",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_CONSECLEV, "118",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_CONSECLEV, "119",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    { FBT_CONSECLEV, "120",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {       FBT_MVB, "121",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {       FBT_MVB, "122",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {       FBT_MVB, "123",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    {       FBT_MVB, "124",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
 #else
-    //    TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
-    {    FUNCBT_ARBLUT, "01",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "02",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "03",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "04",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "05",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "06",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "07",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "08",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "09",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "10",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "11",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "12",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "13",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "14",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "15",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "16",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "17",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "18",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "19",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "20",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "21",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "22",      Q80,  16384,   16384, Q58, Q58,     8000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "23",      Q80,  16384,   16384, Q58, Q58,     8000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    {    FUNCBT_ARBLUT, "24",      Q80,  16384,   16384, Q58, Q58,     8000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "25",      Q60,   4096,       2, Q46, Q35,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "27",      Q60,   4096,       4, Q45, Q35,       10,            2,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "29",      Q60,   4096,       8, Q46, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "31",      Q60,   4096,      16, Q48, Q40,       32,            8,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "33",      Q60,   4096,      64, Q48, Q42,      128,           32,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "35",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "37",      Q71,    Q21,       8, Q55, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "39",      Q71,    Q21,     128, Q57, Q43,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
-    { FUNCBT_SIGNDIGIT, "41",      Q80,    Q32,     256, Q71, Q47,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
-    //    TestCaseType,  Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
-    {    FUNCBT_ARBLUT, "101",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "102",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "103",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "104",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "105",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "106",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "107",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "108",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "109",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "110",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "111",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "112",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "113",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "114",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "115",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "116",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "117",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "118",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "119",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "120",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "121",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "122",      Q80,  16384,   16384, Q59, Q59,     8000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "123",      Q80,  16384,   16384, Q59, Q59,     8000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    {    FUNCBT_ARBLUT, "124",      Q80,  16384,   16384, Q59, Q59,     8000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "125",      Q60,   4096,       2, Q46, Q35,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "127",      Q60,   4096,       4, Q45, Q35,       10,            2,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "129",      Q60,   4096,       8, Q46, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "131",      Q60,   4096,      16, Q48, Q40,       32,            8,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "133",      Q60,   4096,      64, Q48, Q42,      128,           32,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "135",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "137",      Q71,    Q21,       8, Q55, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "139",      Q71,    Q21,     128, Q57, Q43,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
-    { FUNCBT_SIGNDIGIT, "141",      Q80,    Q32,     256, Q71, Q47,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
+    {    FBT_ARBLUT, "01",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "02",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "03",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "04",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "05",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "06",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "07",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "08",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "09",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "10",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "11",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "12",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "13",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "14",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "15",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "16",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "17",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "18",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "19",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "20",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "21",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "22",      Q80,  16384,   16384, Q58, Q58,     8000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "23",      Q80,  16384,   16384, Q58, Q58,     8000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "24",      Q80,  16384,   16384, Q58, Q58,     8000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "25",      Q60,   4096,       2, Q46, Q35,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "27",      Q60,   4096,       4, Q45, Q35,       10,            2,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "29",      Q60,   4096,       8, Q46, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "31",      Q60,   4096,      16, Q48, Q40,       32,            8,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "33",      Q60,   4096,      64, Q48, Q42,      128,           32,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "35",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "37",      Q71,    Q21,       8, Q55, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "39",      Q71,    Q21,     128, Q57, Q43,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "41",      Q80,    Q32,     256, Q71, Q47,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
+    // TestCaseType,  Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
+    {    FBT_ARBLUT, "101",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "102",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "103",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     3,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "104",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "105",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "106",      Q60,      4,       4, Q35, Q35,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "107",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "108",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "109",      Q60,      8,       8, Q37, Q37,       16, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "110",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "111",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "112",      Q60,     16,      16, Q38, Q38,       32, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "113",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "114",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "115",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "116",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "117",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     2,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    5, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "118",      Q60,    512,     512, Q48, Q48,       45, SCALESTEPTHI,     3,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    7, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "119",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "120",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "121",      Q80,   4096,    4096, Q55, Q55,     2000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "122",      Q80,  16384,   16384, Q59, Q59,     8000, SCALESTEPTHI,     1,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "123",      Q80,  16384,   16384, Q59, Q59,     8000, SCALESTEPTHI,     2,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    {    FBT_ARBLUT, "124",      Q80,  16384,   16384, Q59, Q59,     8000, SCALESTEPTHI,     3,  1 << 17, 1 << 17,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "125",      Q60,   4096,       2, Q46, Q35,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "127",      Q60,   4096,       4, Q45, Q35,       10,            2,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "129",      Q60,   4096,       8, Q46, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "131",      Q60,   4096,      16, Q48, Q40,       32,            8,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "133",      Q60,   4096,      64, Q48, Q42,      128,           32,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "135",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "137",      Q71,    Q21,       8, Q55, Q37,       16,            4,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "139",      Q71,    Q21,     128, Q57, Q43,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {4, 4}, SPARSE_ENCAPSULATED},
+    { FBT_SIGNDIGIT, "141",      Q80,    Q32,     256, Q71, Q47,      256,           16,     1,  1 << 16, 1 << 16,     AFTERBOOT,     BEFOREBOOT,    4, LVLSCOMP,    {3, 3}, SPARSE_ENCAPSULATED},
 #endif
 #endif
 };
 // clang-format on
 
-class UTCKKSRNS_FUNCBT : public ::testing::TestWithParam<TEST_CASE_FUNCBT> {
+class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 protected:
     void SetUp(){};
 
@@ -294,7 +294,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_ArbLUT(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
+    void UnitTest_ArbLUT(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
 #ifdef BENCH
             auto start = std::chrono::high_resolution_clock::now();
@@ -343,9 +343,9 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -365,11 +365,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
+                                 t.levelsAvailableAfterBootstrap, 0, t.order);
             else
-                cc->EvalFuncBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -402,15 +402,15 @@ protected:
             auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
                                                  depth - (t.levelsAvailableBeforeBootstrap > 0));
 
-            Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+            Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
-                ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                ctxtAfterFBT =
+                    cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
             else
-                ctxtAfterFuncBT =
-                    cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                ctxtAfterFBT =
+                    cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
 
-            auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q);
+            auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -449,7 +449,7 @@ protected:
         }
     }
 
-    void UnitTest_SignDigit(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
+    void UnitTest_SignDigit(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
 #ifdef BENCH
             auto start = std::chrono::high_resolution_clock::now();
@@ -518,9 +518,9 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffintMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffintMod, t.POutput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcompMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffcompMod, t.POutput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -540,11 +540,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
             else
-                cc->EvalFuncBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -605,17 +605,15 @@ protected:
                                                      depth - (t.levelsAvailableBeforeBootstrap > 0));
 
                 // Bootstrap the digit.
-                Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+                Ciphertext<DCRTPoly> ctxtAfterFBT;
                 if (binaryLUT)
-                    ctxtAfterFuncBT =
-                        cc->EvalFuncBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                       pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                               pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
                 else
-                    ctxtAfterFuncBT =
-                        cc->EvalFuncBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                       pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
+                                               pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
 
-                auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q);
+                auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
 
                 BigInteger QNew(std::to_string(static_cast<uint64_t>(QBFVDouble / pDigitDouble)));
                 BigInteger PNew(std::to_string(static_cast<uint64_t>(pBFVDouble / pDigitDouble)));
@@ -692,7 +690,7 @@ protected:
         }
     }
 
-    void UnitTest_ConsecLevLUT(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
+    void UnitTest_ConsecLevLUT(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
 #ifdef BENCH
             auto start = std::chrono::high_resolution_clock::now();
@@ -743,9 +741,9 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2 + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -765,11 +763,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
+                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
             else
-                cc->EvalFuncBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -812,38 +810,36 @@ protected:
                                                  depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             // Apply LUT and remain in slots encodings.
-            Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+            Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
-                ctxtAfterFuncBT =
-                    cc->EvalFuncBTNoDecoding(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                ctxtAfterFBT = cc->EvalFBTNoDecoding(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
             else
-                ctxtAfterFuncBT =
-                    cc->EvalFuncBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                ctxtAfterFBT = cc->EvalFBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
 
             // Apply a rotation
-            ctxtAfterFuncBT = cc->EvalRotate(ctxtAfterFuncBT, -2);
+            ctxtAfterFBT = cc->EvalRotate(ctxtAfterFBT, -2);
 
             // Apply a multiplicative mask
-            ctxtAfterFuncBT = cc->EvalMult(ctxtAfterFuncBT, ptxt_mask);
-            cc->ModReduceInPlace(ctxtAfterFuncBT);
+            ctxtAfterFBT = cc->EvalMult(ctxtAfterFBT, ptxt_mask);
+            cc->ModReduceInPlace(ctxtAfterFBT);
 
             // Go back to coefficients, 0 because there are no extra levels to remove
-            ctxtAfterFuncBT = cc->EvalHomDecoding(ctxtAfterFuncBT, t.scaleTHI, 0);
+            ctxtAfterFBT = cc->EvalHomDecoding(ctxtAfterFBT, t.scaleTHI, 0);
 
-            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q);
+            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFBT, t.Q);
 
             // Apply a subsequent LUT
             ctxt = SchemeletRLWEMP::convert(*cc, polys1, keyPair.publicKey, t.Bigq, numSlotsCKKS,
                                             depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             if (binaryLUT)
-                ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
-                                                 t.levelsComputation, t.order);
+                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
+                                           t.levelsComputation, t.order);
             else
-                ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
-                                                 t.levelsComputation, t.order);
+                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
+                                           t.levelsComputation, t.order);
 
-            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFuncBT, t.Q);
+            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFBT, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -908,7 +904,7 @@ protected:
         }
     }
 
-    void UnitTest_MVB(TEST_CASE_FUNCBT t, const std::string& failmsg = std::string()) {
+    void UnitTest_MVB(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
 #ifdef BENCH
             auto start = std::chrono::high_resolution_clock::now();
@@ -966,9 +962,9 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2 + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffint1, t.PInput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp1, t.PInput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -988,11 +984,11 @@ protected:
 #endif
 
             if (binaryLUT)
-                cc->EvalFuncBTSetup(coeffint1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                cc->EvalFBTSetup(coeffint1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
             else
-                cc->EvalFuncBTSetup(coeffcomp1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                    t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1026,32 +1022,32 @@ protected:
                                                  depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             std::vector<Ciphertext<DCRTPoly>> complexExp;
-            Ciphertext<DCRTPoly> ctxtAfterFuncBT1, ctxtAfterFuncBT2;
+            Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;
 
             if (binaryLUT) {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
                     cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
-                ctxtAfterFuncBT1 = cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, t.scaleTHI,
-                                               t.levelsComputation, t.order);
-                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
-                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, t.scaleTHI, t.levelsComputation);
+                ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, t.scaleTHI,
+                                            t.levelsComputation, t.order);
+                ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
+                ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
             }
             else {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
                     cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
-                ctxtAfterFuncBT1 = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
-                                               t.levelsComputation, t.order);
-                ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
-                ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, t.scaleTHI, t.levelsComputation);
+                ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
+                                            t.levelsComputation, t.order);
+                ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
+                ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
             }
 
-            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, t.Q);
+            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFBT1, t.Q);
 
-            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, t.Q);
+            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFBT2, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1110,21 +1106,21 @@ protected:
 };
 
 // ===========================================================================================================
-TEST_P(UTCKKSRNS_FUNCBT, CKKSRNS) {
+TEST_P(UTCKKSRNS_FBT, CKKSRNS) {
     setupSignals();
     auto test = GetParam();
 
     switch (test.testCaseType) {
-        case FUNCBT_ARBLUT:
+        case FBT_ARBLUT:
             UnitTest_ArbLUT(test, test.buildTestName());
             break;
-        case FUNCBT_SIGNDIGIT:
+        case FBT_SIGNDIGIT:
             UnitTest_SignDigit(test, test.buildTestName());
             break;
-        case FUNCBT_CONSECLEV:
+        case FBT_CONSECLEV:
             UnitTest_ConsecLevLUT(test, test.buildTestName());
             break;
-        case FUNCBT_MVB:
+        case FBT_MVB:
             UnitTest_MVB(test, test.buildTestName());
             break;
         default:
@@ -1132,5 +1128,5 @@ TEST_P(UTCKKSRNS_FUNCBT, CKKSRNS) {
     }
 }
 
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(UTCKKSRNS_FUNCBT);  // testCases.size() == 0 if NATIVEINT == 128
-INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_FUNCBT, ::testing::ValuesIn(testCases), testName);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(UTCKKSRNS_FBT);  // testCases.size() == 0 if NATIVEINT == 128
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_FBT, ::testing::ValuesIn(testCases), testName);

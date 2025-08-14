@@ -33,9 +33,10 @@
   Examples for functional bootstrapping for RLWE ciphertexts using CKKS.
  */
 
-#include "openfhe.h"
 #include "math/hermite.h"
+#include "openfhe.h"
 #include "schemelet/rlwe-mp.h"
+
 #include <functional>
 
 using namespace lbcrypto;
@@ -165,9 +166,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::AdjustDepthFBT(coeffint, PInput, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, PInput, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -188,11 +189,11 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     auto keyPair = cc->KeyGen();
 
     if (binaryLUT)
-        cc->EvalFuncBTSetup(coeffint, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                            levelsAvailableAfterBootstrap, 0, order);
+        cc->EvalFBTSetup(coeffint, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                         levelsAvailableAfterBootstrap, 0, order);
     else
-        cc->EvalFuncBTSetup(coeffcomp, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                            levelsAvailableAfterBootstrap, 0, order);
+        cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                         levelsAvailableAfterBootstrap, 0, order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -213,15 +214,15 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
     /* 8. Apply the LUT over the ciphertext.
     */
-    Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+    Ciphertext<DCRTPoly> ctxtAfterFBT;
     if (binaryLUT)
-        ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
+        ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
     else
-        ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
+        ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
 
     /* 9. Convert the result back to RLWE.
     */
-    auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q);
+    auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
 
     auto computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots);
 
@@ -323,9 +324,9 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2 + levelsComputation;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffint1, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::AdjustDepthFBT(coeffint1, PInput, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcomp1, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp1, PInput, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -346,11 +347,11 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     auto keyPair = cc->KeyGen();
 
     if (binaryLUT)
-        cc->EvalFuncBTSetup(coeffint1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                            levelsAvailableAfterBootstrap, levelsComputation, order);
+        cc->EvalFBTSetup(coeffint1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                         levelsAvailableAfterBootstrap, levelsComputation, order);
     else
-        cc->EvalFuncBTSetup(coeffcomp1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                            levelsAvailableAfterBootstrap, levelsComputation, order);
+        cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                         levelsAvailableAfterBootstrap, levelsComputation, order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -391,7 +392,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
      * Second, apply multiple LUTs over these powers.
     */
     std::vector<Ciphertext<DCRTPoly>> complexExp;
-    Ciphertext<DCRTPoly> ctxtAfterFuncBT1, ctxtAfterFuncBT2;
+    Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;
 
     auto exact(x);
     std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
@@ -406,48 +407,48 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     if (binaryLUT) {
         auto complexExpPowers = cc->EvalMVBPrecompute(ctxt, coeffint1, PInput.GetMSB() - 1, ep->GetModulus(), order);
 
-        ctxtAfterFuncBT1 =
+        ctxtAfterFBT1 =
             cc->EvalMVB(complexExpPowers, coeffint1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order);
 
-        ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, PInput.GetMSB() - 1, order);
+        ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, PInput.GetMSB() - 1, order);
 
         // Apply a rotation
-        ctxtAfterFuncBT2 = cc->EvalRotate(ctxtAfterFuncBT2, -2);
-        exact2           = flagSP ? Rotate(exact2, -2) : RotateTwoHalves(exact2, -2);
+        ctxtAfterFBT2 = cc->EvalRotate(ctxtAfterFBT2, -2);
+        exact2        = flagSP ? Rotate(exact2, -2) : RotateTwoHalves(exact2, -2);
 
         // Apply a multiplicative mask
-        ctxtAfterFuncBT2 = cc->EvalMult(ctxtAfterFuncBT2, ptxt_mask);
-        cc->ModReduceInPlace(ctxtAfterFuncBT2);
+        ctxtAfterFBT2 = cc->EvalMult(ctxtAfterFBT2, ptxt_mask);
+        cc->ModReduceInPlace(ctxtAfterFBT2);
 
         std::transform(exact2.begin(), exact2.end(), mask_real.begin(), exact2.begin(), std::multiplies<double>());
 
         // Back to coefficient encoding
-        ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, scaleTHI, levelsComputation - 1);
+        ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, scaleTHI, levelsComputation - 1);
     }
     else {
         auto complexExpPowers = cc->EvalMVBPrecompute(ctxt, coeffcomp1, PInput.GetMSB() - 1, ep->GetModulus(), order);
 
-        ctxtAfterFuncBT1 =
+        ctxtAfterFBT1 =
             cc->EvalMVB(complexExpPowers, coeffcomp1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order);
 
-        ctxtAfterFuncBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, PInput.GetMSB() - 1, order);
+        ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, PInput.GetMSB() - 1, order);
 
         // Apply a rotation
-        ctxtAfterFuncBT2 = cc->EvalRotate(ctxtAfterFuncBT2, -2);
-        exact2           = flagSP ? Rotate(exact2, -2) : RotateTwoHalves(exact2, -2);
+        ctxtAfterFBT2 = cc->EvalRotate(ctxtAfterFBT2, -2);
+        exact2        = flagSP ? Rotate(exact2, -2) : RotateTwoHalves(exact2, -2);
 
         // Apply a multiplicative mask
-        ctxtAfterFuncBT2 = cc->EvalMult(ctxtAfterFuncBT2, ptxt_mask);
-        cc->ModReduceInPlace(ctxtAfterFuncBT2);
+        ctxtAfterFBT2 = cc->EvalMult(ctxtAfterFBT2, ptxt_mask);
+        cc->ModReduceInPlace(ctxtAfterFBT2);
 
         std::transform(exact2.begin(), exact2.end(), mask_real.begin(), exact2.begin(), std::multiplies<double>());
 
         // Back to coefficient encoding
 
-        ctxtAfterFuncBT2 = cc->EvalHomDecoding(ctxtAfterFuncBT2, scaleTHI, levelsComputation - 1);
+        ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, scaleTHI, levelsComputation - 1);
     }
 
-    auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT1, Q);
+    auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT1, Q);
 
     /* 11. Convert the results back to RLWE.
     */
@@ -464,7 +465,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     auto max_error_it = std::max_element(exact.begin(), exact.end());
     std::cerr << "Max absolute error obtained in the first LUT: " << *max_error_it << std::endl << std::endl;
 
-    polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT2, Q);
+    polys = SchemeletRLWEMP::convert(ctxtAfterFBT2, Q);
 
     computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots, flagBR);
 
@@ -569,9 +570,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffintMod, PDigit, order, secretKeyDist);
+        depth += FHECKKSRNS::AdjustDepthFBT(coeffintMod, PDigit, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFuncBT(coeffcompMod, PDigit, order, secretKeyDist);
+        depth += FHECKKSRNS::AdjustDepthFBT(coeffcompMod, PDigit, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -594,11 +595,11 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     if (binaryLUT)
-        cc->EvalFuncBTSetup(coeffintMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                            levelsAvailableAfterBootstrap, 0, order);
+        cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                         levelsAvailableAfterBootstrap, 0, order);
     else
-        cc->EvalFuncBTSetup(coeffcompMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                            levelsAvailableAfterBootstrap, 0, order);
+        cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
+                         levelsAvailableAfterBootstrap, 0, order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
 
@@ -643,18 +644,18 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
                                              depth - (levelsAvailableBeforeBootstrap > 0));
 
         /* 9.2 Bootstrap the digit.*/
-        Ciphertext<DCRTPoly> ctxtAfterFuncBT;
+        Ciphertext<DCRTPoly> ctxtAfterFBT;
         if (binaryLUT)
-            ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffint, PDigit.GetMSB() - 1, ep->GetModulus(),
-                                             pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
+            ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, PDigit.GetMSB() - 1, ep->GetModulus(),
+                                       pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
         else
-            ctxtAfterFuncBT = cc->EvalFuncBT(ctxt, coeffcomp, PDigit.GetMSB() - 1, ep->GetModulus(),
-                                             pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
+            ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, PDigit.GetMSB() - 1, ep->GetModulus(),
+                                       pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, order);
 
         /* 9.3 Convert the result back to RLWE and update the
          * plaintext and ciphertext modulus of the ciphertext for the next iteration.
          */
-        auto polys = SchemeletRLWEMP::convert(ctxtAfterFuncBT, Q);
+        auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
 
         BigInteger QNew(BigInteger(1) << static_cast<uint32_t>(std::log2(QBFVDouble) - std::log2(pDigitDouble)));
         BigInteger PNew(BigInteger(1) << static_cast<uint32_t>(std::log2(pBFVDouble) - std::log2(pDigitDouble)));

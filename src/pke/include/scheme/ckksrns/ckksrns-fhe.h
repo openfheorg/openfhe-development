@@ -157,33 +157,32 @@ public:
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
 
-    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
-                         uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
-                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
-                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                         uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+    void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
+                      uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                      const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                      const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
+                      uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
-    void EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
-                         uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
-                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
-                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                         uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+    void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
+                      uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                      const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                      const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
+                      uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
-    Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
-                                    const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
-                                    const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
-                                    size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
-                                    uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
-                                    uint32_t levelToReduce = 0, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
+                                 const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
+                                 const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
+                                 size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
+                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
+                                 uint32_t levelToReduce = 0, size_t order = 1) override;
 
-    Ciphertext<DCRTPoly> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
-                                              const std::vector<std::complex<double>>& coefficients,
-                                              uint32_t digitBitSize, const BigInteger& initialScaling,
-                                              size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
-                                              const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                              const BigInteger& initialScaling, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                           const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
+                                           const BigInteger& initialScaling, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                           const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
+                                           const BigInteger& initialScaling, size_t order = 1) override;
 
     Ciphertext<DCRTPoly> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                          uint32_t levelToReduce = 0) override;
@@ -283,8 +282,8 @@ public:
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
     template <typename VectorDataType>
-    static uint32_t AdjustDepthFuncBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                      size_t order, SecretKeyDist skd = SPARSE_TERNARY);
+    static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
+                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY);
 
     // generates a key going from a denser secret to a sparser one
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
@@ -318,7 +317,7 @@ private:
     static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
-    void AdjustCiphertextFuncBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
+    void AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
                           const std::shared_ptr<DCRTPoly::Params> params) const;
@@ -363,11 +362,11 @@ private:
 #endif
 
     template <typename VectorDataType>
-    void EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<VectorDataType>& coefficients,
-                                 uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
-                                 const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
-                                 const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                                 uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1);
+    void EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<VectorDataType>& coefficients,
+                              uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                              const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                              const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
+                              uint32_t depthLeveledComputation = 0, size_t order = 1);
 
     template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,

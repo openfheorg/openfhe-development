@@ -2212,7 +2212,7 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
     }
 }
 
-void FHECKKSRNS::AdjustCiphertextFuncBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
+void FHECKKSRNS::AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -2780,12 +2780,11 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>
 #endif
 
 template <typename VectorDataType>
-void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc,
-                                         const std::vector<VectorDataType>& coeffs, uint32_t numSlots,
-                                         const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
-                                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
-                                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
-                                         uint32_t depthLeveledComputation, size_t order) {
+void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<VectorDataType>& coeffs,
+                                      uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
+                                      const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
+                                      const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
+                                      uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("CKKS Functional Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
@@ -2878,7 +2877,7 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc,
 
     // Increase interpolation degree for large precision
     uint32_t depthBT = approxModDepth + levelBudget[0] + levelBudget[1] + depthLeveledComputation +
-                       AdjustDepthFuncBT(coeffs, PIn, order, skd);
+                       AdjustDepthFBT(coeffs, PIn, order, skd);
 
     // compute # of levels to remain when encoding the coefficients
     uint32_t L0   = cryptoParams->GetElementParams()->GetParams().size();
@@ -2917,23 +2916,23 @@ void FHECKKSRNS::EvalFuncBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc,
     }
 }
 
-void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                                 const std::vector<std::complex<double>>& coefficients, uint32_t numSlots,
-                                 const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
-                                 const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
-                                 const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
-                                 uint32_t depthLeveledComputation, size_t order) {
-    EvalFuncBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                            depthLeveledComputation, order);
+void FHECKKSRNS::EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                              const std::vector<std::complex<double>>& coefficients, uint32_t numSlots,
+                              const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                              const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                              const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
+                              uint32_t depthLeveledComputation, size_t order) {
+    EvalFBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
+                         depthLeveledComputation, order);
 }
 
-void FHECKKSRNS::EvalFuncBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
-                                 uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
-                                 const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
-                                 const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                                 uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order) {
-    EvalFuncBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                            depthLeveledComputation, order);
+void FHECKKSRNS::EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
+                              uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                              const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                              const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
+                              uint32_t depthLeveledComputation, size_t order) {
+    EvalFBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
+                         depthLeveledComputation, order);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
@@ -3027,7 +3026,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
 
     // If correction ~ 1, we should not do this adjustment and save a level
     if (std::llround(correction) != 1.0)
-        AdjustCiphertextFuncBT(raised, correction);
+        AdjustCiphertextFBT(raised, correction);
 
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
     if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
@@ -3410,36 +3409,36 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
     return ctxtEnc;
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
-                                            const std::vector<std::complex<double>>& coefficients,
-                                            uint32_t digitBitSize, const BigInteger& initialScaling,
-                                            uint64_t postScaling, uint32_t levelToReduce, size_t order) {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
+                                         const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
+                                         const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce,
+                                         size_t order) {
     return EvalHomDecoding(EvalMVBNoDecodingInternal(
                                EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order),
                                coefficients, digitBitSize, order),
                            postScaling, levelToReduce);
 }
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFuncBT(ConstCiphertext<DCRTPoly>& ciphertext,
-                                            const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                            const BigInteger& initialScaling, uint64_t postScaling,
-                                            uint32_t levelToReduce, size_t order) {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
+                                         const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
+                                         const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce,
+                                         size_t order) {
     return EvalHomDecoding(EvalMVBNoDecodingInternal(
                                EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order),
                                coefficients, digitBitSize, order),
                            postScaling, levelToReduce);
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                      const std::vector<std::complex<double>>& coefficients,
-                                                      uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                      size_t order) {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                   const std::vector<std::complex<double>>& coefficients,
+                                                   uint32_t digitBitSize, const BigInteger& initialScaling,
+                                                   size_t order) {
     return EvalMVBNoDecodingInternal(
         EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order), coefficients,
         digitBitSize, order);
 }
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFuncBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                      const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                                      const BigInteger& initialScaling, size_t order) {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                   const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
+                                                   const BigInteger& initialScaling, size_t order) {
     return EvalMVBNoDecodingInternal(
         EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order), coefficients,
         digitBitSize, order);
@@ -3481,7 +3480,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeriesInternal(
     if (pair == m_bootPrecomMap.end()) {
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
-                             std::string(" Need to call EvalFuncBTSetup and then EvalBootstrapKeyGen to proceed"));
+                             std::string(" Need to call EvalFBTSetup and then EvalBootstrapKeyGen to proceed"));
         OPENFHE_THROW(errorMsg);
     }
     auto& p = pair->second;
@@ -3548,8 +3547,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>
 }
 
 template <typename VectorDataType>
-uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                       size_t order, SecretKeyDist skd) {
+uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
+                                    size_t order, SecretKeyDist skd) {
     auto& coeff_cos = (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double : coeff_cos_25_double;
     auto& coeff_exp = (skd == SPARSE_ENCAPSULATED)   ? coeff_exp_16_double_46 :
                       (PInput.ConvertToInt() > 1024) ? coeff_exp_25_double_66 :
@@ -3579,10 +3578,10 @@ uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<VectorDataType>& coeffi
     return depth;
 }
 
-template uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<int64_t>& coefficients, const BigInteger& PInput,
-                                                size_t order, SecretKeyDist skd);
-template uint32_t FHECKKSRNS::AdjustDepthFuncBT(const std::vector<std::complex<double>>& coefficients,
-                                                const BigInteger& PInput, size_t order, SecretKeyDist skd);
+template uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<int64_t>& coefficients, const BigInteger& PInput,
+                                             size_t order, SecretKeyDist skd);
+template uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<std::complex<double>>& coefficients,
+                                             const BigInteger& PInput, size_t order, SecretKeyDist skd);
 
 EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
                                                  const PrivateKey<DCRTPoly>& newPrivateKey) {

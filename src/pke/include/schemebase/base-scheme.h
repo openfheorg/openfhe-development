@@ -1163,30 +1163,30 @@ public:
     }
 
     template <typename VectorDataType>
-    void EvalFuncBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<VectorDataType>& coeffs,
-                         uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
-                         const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
-                         const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                         uint32_t depthLeveledComputation = 0, size_t order = 1) {
+    void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<VectorDataType>& coeffs,
+                      uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
+                      const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
+                      const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
+                      uint32_t depthLeveledComputation = 0, size_t order = 1) {
         VerifyFHEEnabled(__func__);
-        m_FHE->EvalFuncBTSetup(cc, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                               depthLeveledComputation, order);
+        m_FHE->EvalFBTSetup(cc, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
+                            depthLeveledComputation, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalFuncBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
-                                   uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
-                                   uint32_t levelToReduce = 0, size_t order = 1) {
+    Ciphertext<Element> EvalFBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
+                                uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
+                                uint32_t levelToReduce = 0, size_t order = 1) {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalFuncBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order);
+        return m_FHE->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalFuncBTNoDecoding(ConstCiphertext<Element>& ciphertext,
-                                             const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
-                                             const BigInteger& initialScaling, size_t order = 1) {
+    Ciphertext<Element> EvalFBTNoDecoding(ConstCiphertext<Element>& ciphertext,
+                                          const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
+                                          const BigInteger& initialScaling, size_t order = 1) {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalFuncBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order);
+        return m_FHE->EvalFBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
     Ciphertext<Element> EvalHomDecoding(ConstCiphertext<Element>& ciphertext, uint64_t postScaling,
