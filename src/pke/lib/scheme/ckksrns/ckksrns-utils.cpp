@@ -363,13 +363,10 @@ std::vector<VecDType> Rotate(const std::vector<VecDType>& a, int32_t index) {
         index = ReduceRotation(index, slots);
     if (index == 0)
         return a;
-
-    std::vector<VecDType> result(slots);
-    // two cases: i+index <= slots and i+index > slots
-    for (int32_t i = 0; i < slots - index; ++i)
-        result[i] = a[i + index];
-    for (int32_t i = slots - index; i < slots; ++i)
-        result[i] = a[i + index - slots];
+    std::vector<VecDType> result;
+    result.reserve(slots);
+    result.insert(result.end(), a.begin() + index, a.end());
+    result.insert(result.end(), a.begin(), a.begin() + index);
     return result;
 }
 template std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>& a, int32_t index);
