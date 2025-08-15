@@ -57,24 +57,24 @@ int main() {
     std::cerr << "\n*1.* Compute the function (x % PInput - POutput / 2) % POutput." << std::endl << std::endl;
     // Boolean LUT
     std::cerr << "=====Boolean LUT order 1 sparsely packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 1, 8, 4096,
+    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), (BigInteger(1) << 33), (BigInteger(1) << 33), 1, 1, 8, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
     std::cerr << "=====Boolean LUT order 2 sparsely packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 2, 8, 4096,
+    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), (BigInteger(1) << 33), (BigInteger(1) << 33), 1, 2, 8, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
     std::cerr << "=====Boolean LUT order 1 fully packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), BigInteger(1UL << 33), BigInteger(1UL << 33), 1, 1, 1024, 4096,
+    ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), (BigInteger(1) << 33), (BigInteger(1) << 33), 1, 1, 1024, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
     // LUT with 8-bit input and 4-bit output
     std::cerr << "=====8-to-4 bit LUT order 1 sparsely packed=====" << std::endl << std::endl;
-    ArbitraryLUT(QBFVINIT, BigInteger(256), BigInteger(16), BigInteger(1UL << 47), BigInteger(1UL << 47), 32, 1, 8,
+    ArbitraryLUT(QBFVINIT, BigInteger(256), BigInteger(16), (BigInteger(1) << 47), (BigInteger(1) << 47), 32, 1, 8,
                  4096, [](int64_t x) { return (x % 256 - 16 / 2) % 16; });
 
     std::cerr << "\n\n*2.* Compute multiple functions over the same ciphertext." << std::endl << std::endl;
     // Two LUTs with 8-bit input and 8-bit output and intermediate leveled computations
     std::cerr << "=====Multivalue bootstrapping for two 8-to-8 bit LUTs order 1 fully packed=====" << std::endl
               << std::endl;
-    MultiValueBootstrapping(QBFVINIT, BigInteger(256), BigInteger(256), BigInteger(1UL << 47), BigInteger(1UL << 47),
+    MultiValueBootstrapping(QBFVINIT, BigInteger(256), BigInteger(256), (BigInteger(1) << 47), (BigInteger(1) << 47),
                             32, 1, 256, 2048, 1);
 
     std::cerr << "\n\n*3.* Homomorphically evaluate the sign." << std::endl << std::endl;
@@ -82,11 +82,11 @@ int main() {
     // The following needs to hold true: log2(PInput) - log2(PDigit) = log2(Q) - log2(Bigq)
     std::cerr << "=====Sign evaluation of a 12-bit input using 1-bit digits order 1 sparsely packed=====" << std::endl
               << std::endl;
-    MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(2), BigInteger(1UL << 46), BigInteger(1UL << 35), 1, 1, 1,
+    MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(2), (BigInteger(1) << 46), (BigInteger(1) << 35), 1, 1, 1,
                        32, 2048);
     std::cerr << "=====Sign evaluation of a 12-bit input using 4-bit digits order 1 fully packed=====" << std::endl
               << std::endl;
-    MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(16), BigInteger(1UL << 48), BigInteger(1UL << 40), 32, 8,
+    MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(16), (BigInteger(1) << 48), (BigInteger(1) << 40), 32, 8,
                        1, 64, 2048);
     std::cerr << "=====Sign evaluation of a 32-bit input using 8-bit digits order 1 fully packed=====" << std::endl
               << std::endl;
