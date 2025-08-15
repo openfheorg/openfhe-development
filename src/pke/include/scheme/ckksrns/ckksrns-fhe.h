@@ -154,7 +154,7 @@ public:
 
     void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots) override;
 
-    Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
+    Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
 
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
@@ -249,13 +249,13 @@ public:
     //------------------------------------------------------------------------------
 
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A,
-                                             ConstCiphertext<DCRTPoly> ct) const;
+                                             ConstCiphertext<DCRTPoly>& ct) const;
 
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
-                                           ConstCiphertext<DCRTPoly> ctxt) const;
+                                           ConstCiphertext<DCRTPoly>& ctxt) const;
 
     Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
-                                           ConstCiphertext<DCRTPoly> ctxt) const;
+                                           ConstCiphertext<DCRTPoly>& ctxt) const;
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -297,6 +297,13 @@ public:
     }
 
 private:
+    CKKSBootstrapPrecom& GetBootPrecom(uint32_t slots) const {
+        auto pair = m_bootPrecomMap.find(slots);
+        if (pair != m_bootPrecomMap.end())
+            return *(pair->second);
+        OPENFHE_THROW("Precomputations for " + std::to_string(slots) + " slots not found.");
+    }
+
     //------------------------------------------------------------------------------
     // Find Rotation Indices
     //------------------------------------------------------------------------------

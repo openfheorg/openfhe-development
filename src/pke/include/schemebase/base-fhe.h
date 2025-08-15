@@ -125,7 +125,7 @@ public:
    * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and precision = 0 (unused).
    * @return the refreshed ciphertext.
    */
-    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations,
+    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations,
                                               uint32_t precision) const {
         OPENFHE_THROW("EvalBootstrap is not implemented for this scheme");
     }
