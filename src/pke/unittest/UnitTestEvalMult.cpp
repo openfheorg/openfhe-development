@@ -580,7 +580,7 @@ protected:
             // EvalMult Operation
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
-            auto ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
+            auto ciphertextMul12 = cryptoContext->EvalMultNoRelinNoCheck(ciphertext1, ciphertext2);
             auto ciphertextMult  = cryptoContext->Relinearize(ciphertextMul12);
 
             ////////////////////////////////////////////////////////////
