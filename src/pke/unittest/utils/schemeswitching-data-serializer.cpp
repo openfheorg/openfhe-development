@@ -34,8 +34,72 @@
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
+#include <filesystem>
+
+// includes for getProgramPath()
+#if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))
+    #include <windows.h>
+#elif defined(__APPLE__)
+    #include <mach-o/dyld.h>
+#endif
 
 namespace lbcrypto {
+
+// Helper function to get the absolute path to the running unittests executable
+std::filesystem::path getProgramPath() {
+
+#if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))
+    // MinGW: Unicode-safe wide API. Use a big static buffer (32K).
+    wchar_t buf[32768];
+    const DWORD cap = static_cast<DWORD>(sizeof(buf) / sizeof(buf[0]));
+    const DWORD len = GetModuleFileNameW(nullptr, buf, cap);
+    if (len == 0 || len >= cap)
+        OPENFHE_THROW("Cannot get the executable path for Windows/MinGW.");
+
+    return std::filesystem::path(buf, buf + len);
+#elif defined(__APPLE__)
+    uint32_t size = 0;
+    _NSGetExecutablePath(nullptr, &size);           // ask required size
+    std::string tmp(size, '\0');
+    if (_NSGetExecutablePath(tmp.data(), &size) != 0)
+        OPENFHE_THROW("Can not get the executable path for macOS.");
+
+    return std::filesystem::path(tmp.c_str());
+#elif defined(__linux__)
+    std::error_code ec;
+    auto p = std::filesystem::read_symlink("/proc/self/exe", ec);
+    if (ec)
+        OPENFHE_THROW("Cannot read /proc/self/exe.");
+
+    return p;
+#else
+    OPENFHE_THROW("This architecture is not supported.");
+#endif
+}
+
+std::string DataAndLocation::getDataDir() {
+    const std::filesystem::path exe = getProgramPath();
+    const std::filesystem::path exeDir = exe.empty() ? std::filesystem::current_path() : exe.parent_path();
+
+    // One level up (e.g., .../build/unittest -> .../build)
+    const std::filesystem::path baseDir = exeDir.parent_path();
+    const std::filesystem::path dataDir = baseDir / "demoData";
+
+    std::error_code ec;
+    std::filesystem::path abs = std::filesystem::weakly_canonical(dataDir, ec);
+    if (ec || abs.empty()) {
+        ec.clear();                                    // don't carry the old error forward
+        abs = std::filesystem::absolute(dataDir, ec);  // fallback
+    }
+    if (ec || abs.empty()) {
+        OPENFHE_THROW(std::string("Cannot resolve data directory: ") + dataDir.string());
+    }
+
+    // Uncomment, if you want to ensure that the dir exists
+    // std::filesystem::create_directories(abs); // throws on error
+
+    return abs.string();
+}
 
 // Macros to be used in this source file only
 #define THROW_SERIALIZATION_ERROR   OPENFHE_THROW(std::string("Error serializing to ") + outFile)

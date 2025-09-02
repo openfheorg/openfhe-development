@@ -33,12 +33,15 @@
 
 #include "cryptocontext.h"
 
-#include <string>
 #include <memory>
+#include <string>
+
 
 namespace lbcrypto {
 
 class DataAndLocation {
+    std::string getDataDir();
+
 protected:
     CryptoContext<DCRTPoly> cryptoContext{nullptr};
     PublicKey<DCRTPoly> publicKey{nullptr};
@@ -47,19 +50,19 @@ protected:
     Ciphertext<DCRTPoly> RAWCiphertext{nullptr};
 
     // Save-Load locations
-    std::string dataDirectory            = "demoData";
-    std::string cryptoContextFile        = "cryptocontext.txt";
-    std::string pubKeyFile               = "key_pub.txt";
-    std::string multKeyFile              = "key_mult.txt";
-    std::string rotKeyFile               = "key_rot.txt";
-    std::string FHEWtoCKKSSwitchKeyFile  = "key_switch_fhew_ckks.txt";
-    std::string ciphertextFile           = "ciphertext.txt";  // RAW ciphertext
-    std::string binFHECryptoContextFile  = "binfhe_cryptocontext.txt";
-    std::string binFHEBootRefreshKeyFile = "key_binfhe_boot_refresh.txt";
-    std::string binFHEBootRotKeyFile     = "key_binfhe_boot_rot.txt";
-    std::string baseRefreshKeyFile       = "key_refresh.txt";
-    std::string baseSwitchingKeyFile     = "key_switching.txt";
-    std::string keyIndexFile             = "key_indices.txt";
+    std::string dataDirectory                  = getDataDir();
+    const std::string cryptoContextFile        = "cryptocontext.txt";
+    const std::string pubKeyFile               = "key_pub.txt";
+    const std::string multKeyFile              = "key_mult.txt";
+    const std::string rotKeyFile               = "key_rot.txt";
+    const std::string FHEWtoCKKSSwitchKeyFile  = "key_switch_fhew_ckks.txt";
+    const std::string ciphertextFile           = "ciphertext.txt";  // RAW ciphertext
+    const std::string binFHECryptoContextFile  = "binfhe_cryptocontext.txt";
+    const std::string binFHEBootRefreshKeyFile = "key_binfhe_boot_refresh.txt";
+    const std::string binFHEBootRotKeyFile     = "key_binfhe_boot_rot.txt";
+    const std::string baseRefreshKeyFile       = "key_refresh.txt";
+    const std::string baseSwitchingKeyFile     = "key_switching.txt";
+    const std::string keyIndexFile             = "key_indices.txt";
 
     std::string createMapFileName(uint32_t index, const std::string& baseFileName) {
         return std::string(dataDirectory) + "/" + std::to_string(index) + "_" + baseFileName;
