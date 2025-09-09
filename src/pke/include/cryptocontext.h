@@ -2394,6 +2394,39 @@ public:
     }
 
     /**
+    * @brief Implements the automorphism and key switching step of hoisted automorphisms.
+    *
+    * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
+    * for more details, link: https://eprint.iacr.org/2018/244.
+    *
+    * Generally, automorphisms are performed with three steps:
+    * (1) the automorphism is applied on the ciphertext
+    * (2) the automorphed values are decomposed into digits
+    * (3) key switching is applied to make it possible to further compute on the ciphertext.
+    *
+    * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
+    * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
+    * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
+    * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
+    * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
+    *
+    * This method assumes that all required rotation keys exist. This may not be true if we are
+    * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
+    * EvalPermuteBGStepHoisted to see how to deal with this issue.
+    *
+    * The cyclotomic order is computed from the CryptoContext.
+    *
+    * @param ciphertext  Input ciphertext.
+    * @param index       Rotation index (positive for left, negative for right).
+    * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
+    * @return Rotated ciphertext.
+    */
+    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index,
+                                         const std::shared_ptr<std::vector<Element>> digits) const {
+        return EvalFastRotation(ciphertext, index, GetRingDimension() * 2, digits);
+    }
+
+    /**
     * @brief Performs fast (hoisted) rotation in the extended CRT basis P*Q. Only supported with hybrid key switching.
     *
     * @param ciphertext  Input ciphertext.
