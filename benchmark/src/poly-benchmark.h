@@ -45,10 +45,10 @@
 
 using namespace lbcrypto;
 
-constexpr size_t POLY_NUM    = 16;
+constexpr size_t POLY_NUM    = 8;
 constexpr size_t POLY_NUM_M1 = (POLY_NUM - 1);
 
-std::vector<uint32_t> tow_args({1, 2, 4, 8, 16});
+std::vector<uint32_t> tow_args({1, 2, 4, 8, 16, 32});
 std::shared_ptr<std::vector<NativePoly>> NativepolysEval;
 std::shared_ptr<std::vector<NativePoly>> NativepolysCoef;
 std::map<uint32_t, std::shared_ptr<std::vector<DCRTPoly>>> DCRTpolysEval;
@@ -219,7 +219,27 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 
 // ************************************************************************************
 
-[[maybe_unused]] static void Native_ntt(benchmark::State& state) {
+[[maybe_unused]] static void Native_Copy(benchmark::State& state) {
+    auto polys = NativepolysEval;
+    NativePoly p;
+    size_t i{0};
+    while (state.KeepRunning()) {
+        benchmark::DoNotOptimize(p = (*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+    }
+}
+
+[[maybe_unused]] static void DCRT_Copy(benchmark::State& state) {
+    auto polys = DCRTpolysEval[state.range(0)];
+    DCRTPoly p;
+    size_t i{0};
+    while (state.KeepRunning()) {
+        benchmark::DoNotOptimize(p = (*polys)[(i = (i + 1) & POLY_NUM_M1)]);
+    }
+}
+
+// ************************************************************************************
+
+[[maybe_unused]] static void Native_Copy_ntt(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     NativePoly p;
     size_t i{POLY_NUM_M1};
@@ -229,7 +249,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
     }
 }
 
-[[maybe_unused]] static void DCRT_ntt(benchmark::State& state) {
+[[maybe_unused]] static void DCRT_Copy_ntt(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     DCRTPoly p;
     size_t i{POLY_NUM_M1};
@@ -239,7 +259,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
     }
 }
 
-[[maybe_unused]] static void Native_intt(benchmark::State& state) {
+[[maybe_unused]] static void Native_Copy_intt(benchmark::State& state) {
     std::shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly p;
     size_t i{POLY_NUM_M1};
@@ -249,13 +269,33 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
     }
 }
 
-[[maybe_unused]] static void DCRT_intt(benchmark::State& state) {
+[[maybe_unused]] static void DCRT_Copy_intt(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     DCRTPoly p;
     size_t i{POLY_NUM_M1};
     while (state.KeepRunning()) {
         p = (*polys)[(i = (i + 1) & POLY_NUM_M1)];
         p.SwitchFormat();
+    }
+}
+
+[[maybe_unused]] static void Native_avg_ntt_intt(benchmark::State& state) {
+    auto polys = *NativepolysCoef;
+    NativePoly* p;
+    size_t i{POLY_NUM_M1};
+    while (state.KeepRunning()) {
+        p = &polys[(i = (i + 1) & POLY_NUM_M1)];
+        p->SwitchFormat();
+    }
+}
+
+[[maybe_unused]] static void DCRT_avg_ntt_intt(benchmark::State& state) {
+    auto polys = *DCRTpolysCoef[state.range(0)];
+    DCRTPoly* p;
+    size_t i{POLY_NUM_M1};
+    while (state.KeepRunning()) {
+        p = &polys[(i = (i + 1) & POLY_NUM_M1)];
+        p->SwitchFormat();
     }
 }
 
@@ -369,35 +409,47 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits,
 
 // BENCHMARK(Native_Add)->Unit(benchmark::kMicrosecond);
 // BENCHMARK(DCRT_Add)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
-BENCHMARK(Native_AddEq)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_AddEq)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+
+BENCHMARK(Native_AddEq)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_AddEq)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
 
 // BENCHMARK(Native_Sub)->Unit(benchmark::kMicrosecond);
 // BENCHMARK(DCRT_Sub)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
-BENCHMARK(Native_SubEq)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_SubEq)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+
+BENCHMARK(Native_SubEq)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_SubEq)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
 
 // BENCHMARK(Native_Mul)->Unit(benchmark::kMicrosecond);
 // BENCHMARK(DCRT_Mul)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
-BENCHMARK(Native_MulEq)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_MulEq)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
-BENCHMARK(Native_ntt)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_ntt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
-BENCHMARK(Native_intt)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_intt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+BENCHMARK(Native_MulEq)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_MulEq)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
+
+BENCHMARK(Native_Copy)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_Copy)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
+
+BENCHMARK(Native_Copy_ntt)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_Copy_ntt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
+
+BENCHMARK(Native_Copy_intt)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_Copy_intt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
+
+BENCHMARK(Native_avg_ntt_intt)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_avg_ntt_intt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
+
 // BENCHMARK(Native_ntt_intt)->Unit(benchmark::kMicrosecond);
 // BENCHMARK(DCRT_ntt_intt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+
 // BENCHMARK(Native_intt_ntt)->Unit(benchmark::kMicrosecond);
 // BENCHMARK(DCRT_intt_ntt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
-BENCHMARK(Native_CRTInterpolate)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_CRTInterpolate)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+BENCHMARK(Native_CRTInterpolate)->Unit(benchmark::kMicrosecond)->MinTime(5.0);
+BENCHMARK(DCRT_CRTInterpolate)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
 
-BENCHMARK(Native_DecryptionCRTInterpolate)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_DecryptionCRTInterpolate)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+// BENCHMARK(Native_DecryptionCRTInterpolate)->Unit(benchmark::kMicrosecond);
+// BENCHMARK(DCRT_DecryptionCRTInterpolate)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
-BENCHMARK(Native_BaseDecompose)->Unit(benchmark::kMicrosecond);
-BENCHMARK(DCRT_BaseDecompose)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
+// BENCHMARK(Native_BaseDecompose)->Unit(benchmark::kMicrosecond);
+// BENCHMARK(DCRT_BaseDecompose)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
 #endif
