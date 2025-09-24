@@ -42,6 +42,8 @@ include_directories(${OpenFHE_INCLUDE}/pke)
 include_directories(${OpenFHE_INCLUDE}/binfhe)
 ### add directories for other OpenFHE modules as needed for your project
 
+add_link_options(-Wl,--no-as-needed)
+
 link_directories(${OpenFHE_LIBDIR})
 link_directories(${OPENMP_LIBRARIES})
 if(BUILD_STATIC)
