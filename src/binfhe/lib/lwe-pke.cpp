@@ -301,9 +301,9 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
     std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
     std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
 
-    // TODO (cpascoe/dsuponit): this pragma needs to be revised as it may have to be removed completely
+    // TODO: parallelize loop using fix from KeySwitchHYBRID::KeySwitchGenInternal
+
     // #if !defined(__MINGW32__) && !defined(__MINGW64__)
-    // #pragma omp parallel for num_threads(N)
     // #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N))
     // #endif
     for (size_t i = 0; i < N; ++i) {
@@ -377,7 +377,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
 LWECiphertext LWEEncryptionScheme::NoiselessEmbedding(const std::shared_ptr<LWECryptoParams>& params,
                                                       LWEPlaintext m) const {
     NativeInteger q(params->Getq());
-    return std::make_shared<LWECiphertextImpl>(NativeVector(params->Getn(), q), (q >> 2)*m);
+    return std::make_shared<LWECiphertextImpl>(NativeVector(params->Getn(), q), (q >> 2) * m);
 }
 
 };  // namespace lbcrypto

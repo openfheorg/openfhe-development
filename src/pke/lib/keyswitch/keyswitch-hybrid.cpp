@@ -35,13 +35,12 @@
  */
 #define PROFILE
 
-#include "keyswitch/keyswitch-hybrid.h"
-
+#include "ciphertext.h"
+#include "key/evalkeyrelin.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "key/evalkeyrelin.h"
+#include "keyswitch/keyswitch-hybrid.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "ciphertext.h"
 
 namespace lbcrypto {
 
@@ -53,81 +52,78 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                         const PrivateKey<DCRTPoly> newKey,
                                                         const EvalKey<DCRTPoly> ekPrev) const {
-    EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
-
-    const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
-    const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
-
-    size_t sizeQ  = paramsQ->GetParams().size();
-    size_t sizeQP = paramsQP->GetParams().size();
-
-    DCRTPoly sOld = oldKey->GetPrivateElement();
-    DCRTPoly sNew = newKey->GetPrivateElement().Clone();
+    const auto& paramsQ     = cryptoParams->GetElementParams();
+    const auto& paramsQP    = cryptoParams->GetParamsQP();
+    const auto& pparamsQP   = paramsQP->GetParams();
 
     // skNew is currently in basis Q. This extends it to basis QP.
-    sNew.SetFormat(Format::COEFFICIENT);
 
-    DCRTPoly sNewExt(paramsQP, Format::COEFFICIENT, true);
+    DCRTPoly sNewExt(paramsQP, Format::EVALUATION, true);
+    const auto& sNew = newKey->GetPrivateElement();
 
-    // The part with basis Q
-    for (size_t i = 0; i < sizeQ; i++) {
-        sNewExt.SetElementAtIndex(i, sNew.GetElementAtIndex(i));
+    auto sNew0 = sNew.GetElementAtIndex(0);
+    sNew0.SetFormat(Format::COEFFICIENT);
+
+    const uint32_t sizeQ  = paramsQ->GetParams().size();
+    const uint32_t sizeQP = paramsQP->GetParams().size();
+
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQP))
+    for (uint32_t i = 0; i < sizeQP; ++i) {
+        if (i < sizeQ) {
+            auto tmp = sNew.GetElementAtIndex(i);
+            tmp.SetFormat(Format::EVALUATION);
+            sNewExt.SetElementAtIndex(i, std::move(tmp));
+        }
+        else {
+            auto tmp = sNew0;
+            tmp.SwitchModulus(pparamsQP[i]->GetModulus(), pparamsQP[i]->GetRootOfUnity(), 0, 0);
+            tmp.SetFormat(Format::EVALUATION);
+            sNewExt.SetElementAtIndex(i, std::move(tmp));
+        }
     }
 
-    // The part with basis P
-    for (size_t j = sizeQ; j < sizeQP; j++) {
-        const NativeInteger& pj    = paramsQP->GetParams()[j]->GetModulus();
-        const NativeInteger& rootj = paramsQP->GetParams()[j]->GetRootOfUnity();
-        auto sNew0                 = sNew.GetElementAtIndex(0);
-        sNew0.SwitchModulus(pj, rootj, 0, 0);
-        sNewExt.SetElementAtIndex(j, std::move(sNew0));
-    }
+    const auto ns = cryptoParams->GetNoiseScale();
 
-    sNewExt.SetFormat(Format::EVALUATION);
-
-    const auto ns      = cryptoParams->GetNoiseScale();
-    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-    DugType dug;
-
-    size_t numPartQ = cryptoParams->GetNumPartQ();
-
+    const uint32_t numPerPartQ = cryptoParams->GetNumPerPartQ();
+    const uint32_t numPartQ    = cryptoParams->GetNumPartQ();
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
-    std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
-    size_t numPerPartQ               = cryptoParams->GetNumPerPartQ();
+    DugType dug;
+    auto dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    for (size_t part = 0; part < numPartQ; ++part) {
-        DCRTPoly a = (ekPrev == nullptr) ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
-                                           ekPrev->GetAVector()[part];                                      // threshold HE
+    const auto& sOld  = oldKey->GetPrivateElement();
+    const auto& PModq = cryptoParams->GetPModq();
+
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(dug, dgg)
+    for (uint32_t part = 0; part < numPartQ; ++part) {
+        auto a = (ekPrev == nullptr) ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
+                                       ekPrev->GetAVector()[part];                                      // threshold HE
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
-        // starting and ending position of current part
-        size_t startPartIdx = numPerPartQ * part;
-        size_t endPartIdx   = (sizeQ > (startPartIdx + numPerPartQ)) ? (startPartIdx + numPerPartQ) : sizeQ;
+        const uint32_t startPartIdx = numPerPartQ * part;
+        const uint32_t endPartIdx   = (sizeQ > (startPartIdx + numPerPartQ)) ? (startPartIdx + numPerPartQ) : sizeQ;
 
-        for (size_t i = 0; i < sizeQP; ++i) {
-            auto ai    = a.GetElementAtIndex(i);
-            auto ei    = e.GetElementAtIndex(i);
-            auto sNewi = sNewExt.GetElementAtIndex(i);
+        for (uint32_t i = 0; i < sizeQP; ++i) {
+            const auto& ai  = a.GetElementAtIndex(i);
+            const auto& ei  = e.GetElementAtIndex(i);
+            const auto& sni = sNewExt.GetElementAtIndex(i);
 
             if (i < startPartIdx || i >= endPartIdx) {
-                b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
+                b.SetElementAtIndex(i, (-ai * sni) + (ns * ei));
             }
             else {
-                // P * sOld is only applied for the current part
-                auto sOldi = sOld.GetElementAtIndex(i);
-                b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
+                const auto& soi = sOld.GetElementAtIndex(i);
+                b.SetElementAtIndex(i, (-ai * sni) + (ns * ei) + (PModq[i] * soi));
             }
         }
-
-        av[part] = a;
-        bv[part] = b;
+        av[part] = std::move(a);
+        bv[part] = std::move(b);
     }
 
+    EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
@@ -136,72 +132,65 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                         const PublicKey<DCRTPoly> newKey) const {
-    EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext());
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
+    const auto& paramsQ     = cryptoParams->GetElementParams();
+    const auto& paramsQP    = cryptoParams->GetParamsQP();
 
-    const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
-    const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+    const uint32_t sizeQ  = paramsQ->GetParams().size();
+    const uint32_t sizeQP = paramsQP->GetParams().size();
 
-    usint sizeQ  = paramsQ->GetParams().size();
-    usint sizeQP = paramsQP->GetParams().size();
+    const auto ns = cryptoParams->GetNoiseScale();
 
-    DCRTPoly sOld = oldKey->GetPrivateElement();
-
-    DCRTPoly newp0 = newKey->GetPublicElements().at(0);
-    DCRTPoly newp1 = newKey->GetPublicElements().at(1);
-
-    const auto ns      = cryptoParams->GetNoiseScale();
-    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-    TugType tug;
-
-    auto numPartQ = cryptoParams->GetNumPartQ();
-
+    const uint32_t numPerPartQ = cryptoParams->GetNumPerPartQ();
+    const uint32_t numPartQ    = cryptoParams->GetNumPartQ();
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
-    std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
-    usint numPerPartQ                = cryptoParams->GetNumPerPartQ();
+    TugType tug;
+    auto dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    for (usint part = 0; part < numPartQ; part++) {
-        DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, paramsQP, Format::EVALUATION) :
-                                                                      DCRTPoly(tug, paramsQP, Format::EVALUATION);
+    const auto& sOld  = oldKey->GetPrivateElement();
+    const auto& newp0 = newKey->GetPublicElements().at(0);
+    const auto& newp1 = newKey->GetPublicElements().at(1);
+    const auto& PModq = cryptoParams->GetPModq();
 
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(dgg, tug)
+    for (uint32_t part = 0; part < numPartQ; ++part) {
+        auto u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, paramsQP, Format::EVALUATION) :
+                                                                  DCRTPoly(tug, paramsQP, Format::EVALUATION);
         DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
-
         DCRTPoly a(paramsQP, Format::EVALUATION, true);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
         // starting and ending position of current part
-        usint startPartIdx = numPerPartQ * part;
-        usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
+        const uint32_t startPartIdx = numPerPartQ * part;
+        const uint32_t endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
 
-        for (usint i = 0; i < sizeQP; i++) {
-            auto e0i = e0.GetElementAtIndex(i);
-            auto e1i = e1.GetElementAtIndex(i);
+        for (uint32_t i = 0; i < sizeQP; ++i) {
+            const auto& ui = u.GetElementAtIndex(i);
 
-            auto ui = u.GetElementAtIndex(i);
+            const auto& e0i = e0.GetElementAtIndex(i);
+            const auto& e1i = e1.GetElementAtIndex(i);
 
-            auto newp0i = newp0.GetElementAtIndex(i);
-            auto newp1i = newp1.GetElementAtIndex(i);
+            const auto& newp0i = newp0.GetElementAtIndex(i);
+            const auto& newp1i = newp1.GetElementAtIndex(i);
 
             a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
 
             if (i < startPartIdx || i >= endPartIdx) {
-                b.SetElementAtIndex(i, newp0i * ui + ns * e0i);
+                b.SetElementAtIndex(i, (newp0i * ui) + (ns * e0i));
             }
             else {
-                // P * sOld is only applied for the current part
-                auto sOldi = sOld.GetElementAtIndex(i);
-                b.SetElementAtIndex(i, newp0i * ui + ns * e0i + PModq[i] * sOldi);
+                const auto& soi = sOld.GetElementAtIndex(i);
+                b.SetElementAtIndex(i, (newp0i * ui) + (ns * e0i) + (PModq[i] * soi));
             }
         }
-
-        av[part] = a;
-        bv[part] = b;
+        av[part] = std::move(a);
+        bv[part] = std::move(b);
     }
 
+    EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext());
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
@@ -209,114 +198,110 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 }
 
 void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek) const {
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-
-    std::shared_ptr<std::vector<DCRTPoly>> ba = (cv.size() == 2) ? KeySwitchCore(cv[1], ek) : KeySwitchCore(cv[2], ek);
+    auto& cv = ciphertext->GetElements();
+    auto ba  = KeySwitchCore(cv.back(), ek);
 
     cv[0].SetFormat((*ba)[0].GetFormat());
     cv[0] += (*ba)[0];
 
     cv[1].SetFormat((*ba)[1].GetFormat());
-    if (cv.size() > 2) {
+    if (cv.size() > 2)
         cv[1] += (*ba)[1];
-    }
-    else {
+    else
         cv[1] = (*ba)[1];
-    }
+
     cv.resize(2);
 }
 
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
-    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    const auto& cv    = ciphertext->GetElements();
+    const auto& PModq = cryptoParams->GetPModq();
 
-    const auto paramsQl  = cv[0].GetParams();
     const auto paramsP   = cryptoParams->GetParamsP();
+    const auto paramsQl  = cv[0].GetParams();
     const auto paramsQlP = cv[0].GetExtendedCRTBasis(paramsP);
 
-    uint32_t sizeQl = paramsQl->GetParams().size();
-    uint32_t sizeCv = cv.size();
-    std::vector<DCRTPoly> resultElements(sizeCv);
+    const uint32_t sizeCv = cv.size();
+    const uint32_t sizeQl = paramsQl->GetParams().size();
+    std::vector<DCRTPoly> elements(sizeCv);
+
     for (uint32_t k = 0; k < sizeCv; ++k) {
-        resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+        elements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         if ((addFirst) || (k > 0)) {
-            auto cMult = cv[k].TimesNoCheck(cryptoParams->GetPModq());
+            auto cMult = cv[k].TimesNoCheck(PModq);
             for (uint32_t i = 0; i < sizeQl; ++i) {
-                resultElements[k].SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
+                elements[k].SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
             }
         }
     }
 
     auto result = ciphertext->CloneEmpty();
-    result->SetElements(std::move(resultElements));
+    result->SetElements(std::move(elements));
     return result;
 }
 
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto& cv       = ciphertext->GetElements();
+    const auto paramsQlP = cv[0].GetParams();
 
-    const auto paramsP   = cryptoParams->GetParamsP();
-    const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto paramsP      = cryptoParams->GetParamsP();
 
     // TODO : (Andrey) precompute paramsQl in cryptoparameters
-    usint sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
+    const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
     std::vector<NativeInteger> moduliQ(sizeQl);
     std::vector<NativeInteger> rootsQ(sizeQl);
-    for (size_t i = 0; i < sizeQl; i++) {
+    for (uint32_t i = 0; i < sizeQl; ++i) {
         moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
         rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
     }
-    auto paramsQl = std::make_shared<typename DCRTPoly::Params>(2 * paramsQlP->GetRingDimension(), moduliQ, rootsQ);
+    const auto paramsQl = std::make_shared<ParmType>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
 
-    auto cTilda = ciphertext->GetElements();
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
-
-    DCRTPoly ct0 = cTilda[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                           cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                           cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                           cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                           cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-
-    DCRTPoly ct1 = cTilda[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                           cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                           cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                           cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                           cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+    std::vector<DCRTPoly> elements(2);
+    elements[0] = cv[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                      cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                      cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                      cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                      cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+    elements[1] = cv[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                      cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                      cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                      cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                      cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 
     auto result = ciphertext->CloneEmpty();
-    result->SetElements({std::move(ct0), std::move(ct1)});
+    result->SetElements(std::move(elements));
     return result;
 }
 
 DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ciphertext) const {
+    const auto& cv       = ciphertext->GetElements()[0];
+    const auto paramsQlP = cv.GetParams();
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-
-    const std::vector<DCRTPoly>& cTilda = ciphertext->GetElements();
-
-    const auto paramsP   = cryptoParams->GetParamsP();
-    const auto paramsQlP = cTilda[0].GetParams();
+    const auto paramsP      = cryptoParams->GetParamsP();
 
     // TODO : (Andrey) precompute paramsQl in cryptoparameters
-    usint sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
+    const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
     std::vector<NativeInteger> moduliQ(sizeQl);
     std::vector<NativeInteger> rootsQ(sizeQl);
-    for (size_t i = 0; i < sizeQl; i++) {
+    for (uint32_t i = 0; i < sizeQl; ++i) {
         moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
         rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
     }
-    auto paramsQl = std::make_shared<typename DCRTPoly::Params>(2 * paramsQlP->GetRingDimension(), moduliQ, rootsQ);
+    const auto paramsQl = std::make_shared<ParmType>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
 
-    PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    DCRTPoly cv0 = cTilda[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                           cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                           cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                           cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                           cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-
-    return cv0;
+    return cv.ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                            cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                            cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                            cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                            cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(const DCRTPoly& a,
@@ -329,86 +314,67 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
-    const std::shared_ptr<ParmType> paramsQl  = c.GetParams();
-    const std::shared_ptr<ParmType> paramsP   = cryptoParams->GetParamsP();
-    const std::shared_ptr<ParmType> paramsQlP = c.GetExtendedCRTBasis(paramsP);
+    const auto paramsQl  = c.GetParams();
+    const auto paramsP   = cryptoParams->GetParamsP();
+    const auto paramsQlP = c.GetExtendedCRTBasis(paramsP);
 
-    size_t sizeQl  = paramsQl->GetParams().size();
-    size_t sizeP   = paramsP->GetParams().size();
-    size_t sizeQlP = sizeQl + sizeP;
-
-    uint32_t alpha = cryptoParams->GetNumPerPartQ();
+    const uint32_t sizeQl  = paramsQl->GetParams().size();
+    const uint32_t sizeP   = paramsP->GetParams().size();
+    const uint32_t sizeQlP = sizeQl + sizeP;
+    const uint32_t alpha   = cryptoParams->GetNumPerPartQ();
     // The number of digits of the current ciphertext
-    uint32_t numPartQl = ceil((static_cast<double>(sizeQl)) / alpha);
+    uint32_t numPartQl = std::ceil(static_cast<double>(sizeQl) / alpha);
     if (numPartQl > cryptoParams->GetNumberOfQPartitions())
         numPartQl = cryptoParams->GetNumberOfQPartitions();
 
-    std::vector<DCRTPoly> partsCt(numPartQl);
+    auto result = std::make_shared<std::vector<DCRTPoly>>(numPartQl);
 
     // Digit decomposition
     // Zero-padding and split
-    for (uint32_t part = 0; part < numPartQl; part++) {
+    for (uint32_t part = 0; part < numPartQl; ++part) {
+        DCRTPoly partsCt;
         if (part == numPartQl - 1) {
-            auto paramsPartQ = cryptoParams->GetParamsPartQ(part);
+            const auto& paramsPartQ = cryptoParams->GetParamsPartQ(part);
 
             uint32_t sizePartQl = sizeQl - alpha * part;
-
             std::vector<NativeInteger> moduli(sizePartQl);
             std::vector<NativeInteger> roots(sizePartQl);
-
-            for (uint32_t i = 0; i < sizePartQl; i++) {
+            for (uint32_t i = 0; i < sizePartQl; ++i) {
                 moduli[i] = paramsPartQ->GetParams()[i]->GetModulus();
                 roots[i]  = paramsPartQ->GetParams()[i]->GetRootOfUnity();
             }
-
-            auto params = DCRTPoly::Params(paramsPartQ->GetCyclotomicOrder(), moduli, roots);
-
-            partsCt[part] = DCRTPoly(std::make_shared<ParmType>(params), Format::EVALUATION, true);
+            auto&& params = std::make_shared<ParmType>(paramsPartQ->GetCyclotomicOrder(), moduli, roots);
+            partsCt       = DCRTPoly(params, Format::EVALUATION, true);
         }
         else {
-            partsCt[part] = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, true);
+            partsCt = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, true);
         }
 
-        usint sizePartQl   = partsCt[part].GetNumOfElements();
-        usint startPartIdx = alpha * part;
-        for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; i++, idx++) {
-            partsCt[part].SetElementAtIndex(i, c.GetElementAtIndex(idx));
-        }
+        const uint32_t sizePartQl   = partsCt.GetNumOfElements();
+        const uint32_t startPartIdx = alpha * part;
+        for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; ++i, ++idx)
+            partsCt.SetElementAtIndex(i, c.GetElementAtIndex(idx));
+
+        partsCt.SetFormat(Format::COEFFICIENT);
+        auto partsCtCompl = partsCt.ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(part),
+                                                         cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
+                                                         cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
+                                                         cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
+                                                         cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
+                                                         cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+        partsCtCompl.SetFormat(Format::EVALUATION);
+
+        (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+
+        const uint32_t endPartIdx = startPartIdx + sizePartQl;
+        for (uint32_t i = 0; i < startPartIdx; ++i)
+            (*result)[part].SetElementAtIndex(i, std::move(partsCtCompl.GetElementAtIndex(i)));
+        for (uint32_t i = startPartIdx; i < endPartIdx; ++i)
+            (*result)[part].SetElementAtIndex(i, c.GetElementAtIndex(i));
+        for (uint32_t i = endPartIdx; i < sizeQlP; ++i)
+            (*result)[part].SetElementAtIndex(i, std::move(partsCtCompl.GetElementAtIndex(i - sizePartQl)));
     }
-
-    std::vector<DCRTPoly> partsCtCompl(numPartQl);
-    std::vector<DCRTPoly> partsCtExt(numPartQl);
-
-    for (uint32_t part = 0; part < numPartQl; part++) {
-        auto partCtClone = partsCt[part].Clone();
-        partCtClone.SetFormat(Format::COEFFICIENT);
-
-        uint32_t sizePartQl = partsCt[part].GetNumOfElements();
-        partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
-            cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
-            cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
-            cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
-            cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
-            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
-
-        partsCtCompl[part].SetFormat(Format::EVALUATION);
-
-        partsCtExt[part] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
-
-        usint startPartIdx = alpha * part;
-        usint endPartIdx   = startPartIdx + sizePartQl;
-        for (usint i = 0; i < startPartIdx; i++) {
-            partsCtExt[part].SetElementAtIndex(i, partsCtCompl[part].GetElementAtIndex(i));
-        }
-        for (usint i = startPartIdx, idx = 0; i < endPartIdx; i++, idx++) {
-            partsCtExt[part].SetElementAtIndex(i, partsCt[part].GetElementAtIndex(idx));
-        }
-        for (usint i = endPartIdx; i < sizeQlP; ++i) {
-            partsCtExt[part].SetElementAtIndex(i, partsCtCompl[part].GetElementAtIndex(i - sizePartQl));
-        }
-    }
-
-    return std::make_shared<std::vector<DCRTPoly>>(std::move(partsCtExt));
+    return result;
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
@@ -416,67 +382,55 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
     const std::shared_ptr<ParmType> paramsQl) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
 
-    std::shared_ptr<std::vector<DCRTPoly>> cTilda = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
-
-    DCRTPoly ct0 = (*cTilda)[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+    auto result  = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
+    (*result)[0] = (*result)[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
                                               cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
                                               cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
                                               cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
                                               cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-
-    DCRTPoly ct1 = (*cTilda)[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+    (*result)[1] = (*result)[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
                                               cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
                                               cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
                                               cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
                                               cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-
-    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
+    return result;
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
-    const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
-    const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
-    const std::vector<DCRTPoly>& av = evalKey->GetAVector();
+    const auto paramsQlP   = (*digits)[0].GetParams();
+    const uint32_t sizeQlP = paramsQlP->GetParams().size();
 
-    const std::shared_ptr<ParmType> paramsP   = cryptoParams->GetParamsP();
-    const std::shared_ptr<ParmType> paramsQlP = (*digits)[0].GetParams();
+    const uint32_t limit  = digits->size();
+    const uint32_t sizeQl = paramsQl->GetParams().size();
+    auto&& cryptoParams   = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
+    const uint32_t delta  = cryptoParams->GetElementParams()->GetParams().size() - sizeQl;
 
-    size_t sizeQl  = paramsQl->GetParams().size();
-    size_t sizeQlP = paramsQlP->GetParams().size();
-    size_t sizeQ   = cryptoParams->GetElementParams()->GetParams().size();
+    const auto& av = evalKey->GetAVector();
+    const auto& bv = evalKey->GetBVector();
 
-    DCRTPoly cTilda0(paramsQlP, Format::EVALUATION, true);
-    DCRTPoly cTilda1(paramsQlP, Format::EVALUATION, true);
+    auto result = std::make_shared<std::vector<DCRTPoly>>();
+    result->reserve(2);
+    result->emplace_back(paramsQlP, Format::EVALUATION, true);
+    result->emplace_back(paramsQlP, Format::EVALUATION, true);
+    auto& elements = (*result);
 
-    for (uint32_t j = 0; j < digits->size(); j++) {
-        const DCRTPoly& cj = (*digits)[j];
-        const DCRTPoly& bj = bv[j];
-        const DCRTPoly& aj = av[j];
-
-        for (usint i = 0; i < sizeQl; i++) {
-            const auto& cji = cj.GetElementAtIndex(i);
-            const auto& aji = aj.GetElementAtIndex(i);
-            const auto& bji = bj.GetElementAtIndex(i);
-
-            cTilda0.SetElementAtIndex(i, cTilda0.GetElementAtIndex(i) + cji * bji);
-            cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
-        }
-        for (usint i = sizeQl, idx = sizeQ; i < sizeQlP; i++, idx++) {
-            const auto& cji = cj.GetElementAtIndex(i);
-            const auto& aji = aj.GetElementAtIndex(idx);
-            const auto& bji = bj.GetElementAtIndex(idx);
-
-            cTilda0.SetElementAtIndex(i, cTilda0.GetElementAtIndex(i) + cji * bji);
-            cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
+    for (uint32_t j = 0; j < limit; ++j) {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+        for (uint32_t i = 0; i < sizeQlP; ++i) {
+            const auto idx  = (i >= sizeQl) ? i + delta : i;
+            const auto& cji = (*digits)[j].GetElementAtIndex(i);
+            const auto& bji = bv[j].GetElementAtIndex(idx);
+            const auto& aji = av[j].GetElementAtIndex(idx);
+            elements[0].SetElementAtIndex(i, elements[0].GetElementAtIndex(i) + cji * bji);
+            elements[1].SetElementAtIndex(i, elements[1].GetElementAtIndex(i) + cji * aji);
         }
     }
 
-    return std::make_shared<std::vector<DCRTPoly>>(
-        std::initializer_list<DCRTPoly>{std::move(cTilda0), std::move(cTilda1)});
+    return result;
 }
 
 }  // namespace lbcrypto

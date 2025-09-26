@@ -50,8 +50,6 @@ namespace lbcrypto {
 
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                     const PrivateKey<DCRTPoly> newKey) const {
-    EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
 
     const DCRTPoly& sNew = newKey->GetPrivateElement();
@@ -86,6 +84,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     std::vector<DCRTPoly> av(nWindows);
     std::vector<DCRTPoly> bv(nWindows);
 
+    // TODO: parallelize loop using fix from KeySwitchHYBRID::KeySwitchGenInternal
+
     if (digitSize > 0) {
         for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
             std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
@@ -115,6 +115,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
         }
     }
 
+    EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
@@ -124,8 +125,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                     const PrivateKey<DCRTPoly> newKey,
                                                     const EvalKey<DCRTPoly> ek) const {
-    EvalKeyRelin<DCRTPoly> evalKey(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(oldKey->GetCryptoParameters());
 
     const DCRTPoly& sNew = newKey->GetPrivateElement();
@@ -160,6 +159,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
     std::vector<DCRTPoly> av(nWindows);
     std::vector<DCRTPoly> bv(nWindows);
+
+    // TODO: parallelize loop using fix from KeySwitchHYBRID::KeySwitchGenInternal
 
     if (digitSize > 0) {
         for (usint i = 0; i < sizeSOld; i++) {
@@ -200,6 +201,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
         }
     }
 
+    EvalKeyRelin<DCRTPoly> evalKey(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
     evalKey->SetAVector(std::move(av));
     evalKey->SetBVector(std::move(bv));
     evalKey->SetKeyTag(newKey->GetKeyTag());
