@@ -395,7 +395,7 @@ private:
                                                                       size_t order = 1);
 
     template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(std::shared_ptr<seriesPowers<DCRTPoly>> ciphertext,
+    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(const std::shared_ptr<seriesPowers<DCRTPoly>>& ciphertext,
                                                    const std::vector<VectorDataType>& coefficients,
                                                    uint32_t digitBitSize, size_t order = 1);
 

@@ -59,6 +59,9 @@ inline bool IsNotEqualOne(double v, double delta = 0x1p-44) {
 inline bool IsNotEqualZero(double v, double delta = 0x1p-44) {
     return std::abs(v) > delta;
 }
+inline bool IsNotEqualNegOne(double v, double delta = 0x1p-44) {
+    return std::abs(v + 1.0) > delta;
+}
 inline bool IsNotEqualOne(std::complex<double> val, double delta = 0x1p-44) {
     return IsNotEqualOne(val.real(), delta) || IsNotEqualZero(val.imag(), delta);
 }
