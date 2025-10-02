@@ -399,8 +399,8 @@ protected:
 
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
-            auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                 depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
@@ -410,7 +410,7 @@ protected:
                 ctxtAfterFBT =
                     cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
 
-            auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, t.Q);
+            auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -601,8 +601,9 @@ protected:
                 encryptedDigit[0].SwitchModulus(t.Bigq, 1, 0, 0);
                 encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
-                auto ctxt = SchemeletRLWEMP::convert(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                     depth - (t.levelsAvailableBeforeBootstrap > 0));
+                auto ctxt =
+                    SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                       depth - (t.levelsAvailableBeforeBootstrap > 0));
 
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -613,7 +614,7 @@ protected:
                     ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
                                                pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
 
-                auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
+                auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
                 BigInteger QNew(std::to_string(static_cast<uint64_t>(QBFVDouble / pDigitDouble)));
                 BigInteger PNew(std::to_string(static_cast<uint64_t>(pBFVDouble / pDigitDouble)));
@@ -806,8 +807,8 @@ protected:
 
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
-            auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                 depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             // Apply LUT and remain in slots encodings.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -826,11 +827,11 @@ protected:
             // Go back to coefficients, 0 because there are no extra levels to remove
             ctxtAfterFBT = cc->EvalHomDecoding(ctxtAfterFBT, t.scaleTHI, 0);
 
-            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFBT, t.Q);
+            auto polys1 = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
             // Apply a subsequent LUT
-            ctxt = SchemeletRLWEMP::convert(*cc, polys1, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                            depth - (t.levelsAvailableBeforeBootstrap > 0));
+            ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, polys1, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                      depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             if (binaryLUT)
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
@@ -839,7 +840,7 @@ protected:
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
                                            t.levelsComputation, t.order);
 
-            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFBT, t.Q);
+            auto polys2 = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1018,8 +1019,8 @@ protected:
 
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
-            auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                 depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             std::vector<Ciphertext<DCRTPoly>> complexExp;
             Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;
@@ -1045,9 +1046,9 @@ protected:
                 ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
             }
 
-            auto polys1 = SchemeletRLWEMP::convert(ctxtAfterFBT1, t.Q);
+            auto polys1 = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT1, t.Q);
 
-            auto polys2 = SchemeletRLWEMP::convert(ctxtAfterFBT2, t.Q);
+            auto polys2 = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT2, t.Q);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();

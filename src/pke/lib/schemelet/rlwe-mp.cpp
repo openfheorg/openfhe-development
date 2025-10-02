@@ -256,9 +256,10 @@ void SchemeletRLWEMP::ModSwitch(std::vector<Poly>& input, const BigInteger& Q1, 
     input[1].SwitchModulus(Q1, 1, 0, 0);
 }
 
-Ciphertext<DCRTPoly> SchemeletRLWEMP::convert(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<Poly>& coeffs,
-                                              const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq, uint32_t slots,
-                                              uint32_t level) {
+Ciphertext<DCRTPoly> SchemeletRLWEMP::ConvertRLWEToCKKS(const CryptoContextImpl<DCRTPoly>& cc,
+                                                        const std::vector<Poly>& coeffs,
+                                                        const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq,
+                                                        uint32_t slots, uint32_t level) {
     std::vector<std::complex<double>> y(1);
     auto ptxt = cc.MakeCKKSPackedPlaintext(y, 1, level);
     ptxt->SetLength(slots);
@@ -275,7 +276,7 @@ Ciphertext<DCRTPoly> SchemeletRLWEMP::convert(const CryptoContextImpl<DCRTPoly>&
     return ctxt;
 }
 
-std::vector<Poly> SchemeletRLWEMP::convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q) {
+std::vector<Poly> SchemeletRLWEMP::ConvertCKKSToRLWE(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q) {
     auto b = ctxt->GetElements()[0];
     b.SetFormat(Format::COEFFICIENT);
     auto bPoly = b.CRTInterpolate();

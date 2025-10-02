@@ -58,11 +58,11 @@ public:
 
     static void ModSwitch(std::vector<Poly>& input, const BigInteger& Q1, const BigInteger& Q2);
 
-    static Ciphertext<DCRTPoly> convert(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<Poly>& coeffs,
-                                        const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq, uint32_t slots,
-                                        uint32_t level = 0);
+    static Ciphertext<DCRTPoly> ConvertRLWEToCKKS(const CryptoContextImpl<DCRTPoly>& cc,
+                                                  const std::vector<Poly>& coeffs, const PublicKey<DCRTPoly>& pubKey,
+                                                  const BigInteger& Bigq, uint32_t slots, uint32_t level = 0);
 
-    static std::vector<Poly> convert(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q);
+    static std::vector<Poly> ConvertCKKSToRLWE(ConstCiphertext<DCRTPoly>& ctxt, const BigInteger& Q);
 
     static BigInteger GetQPrime(const PublicKey<DCRTPoly>& pubKey, uint32_t lvls);
 };

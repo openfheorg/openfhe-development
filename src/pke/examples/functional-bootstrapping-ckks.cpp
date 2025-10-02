@@ -209,8 +209,8 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
     /* 7. Convert from the RLWE ciphertext to a CKKS ciphertext (both use the same secret key).
     */
-    auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, Bigq, numSlotsCKKS,
-                                         depth - (levelsAvailableBeforeBootstrap > 0));
+    auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, Bigq, numSlotsCKKS,
+                                                   depth - (levelsAvailableBeforeBootstrap > 0));
 
     /* 8. Apply the LUT over the ciphertext.
     */
@@ -222,7 +222,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
     /* 9. Convert the result back to RLWE.
     */
-    auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
+    auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
     auto computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots);
 
@@ -384,8 +384,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     /* 9. Convert from the RLWE ciphertext to a CKKS ciphertext (both use the same secret key).
     */
-    auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, Bigq, numSlotsCKKS,
-                                         depth - (levelsAvailableBeforeBootstrap > 0));
+    auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, Bigq, numSlotsCKKS,
+                                                   depth - (levelsAvailableBeforeBootstrap > 0));
 
     /* 10. Apply the LUTs over the ciphertext.
      * First, compute the complex exponential and its powers to reuse.
@@ -448,7 +448,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
         ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, scaleTHI, levelsComputation - 1);
     }
 
-    auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT1, Q);
+    auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT1, Q);
 
     /* 11. Convert the results back to RLWE.
     */
@@ -465,7 +465,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     auto max_error_it = std::max_element(exact.begin(), exact.end());
     std::cerr << "Max absolute error obtained in the first LUT: " << *max_error_it << std::endl << std::endl;
 
-    polys = SchemeletRLWEMP::convert(ctxtAfterFBT2, Q);
+    polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT2, Q);
 
     computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots, flagBR);
 
@@ -640,8 +640,8 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         encryptedDigit[0].SwitchModulus(Bigq, 1, 0, 0);
         encryptedDigit[1].SwitchModulus(Bigq, 1, 0, 0);
 
-        auto ctxt = SchemeletRLWEMP::convert(*cc, encryptedDigit, keyPair.publicKey, Bigq, numSlotsCKKS,
-                                             depth - (levelsAvailableBeforeBootstrap > 0));
+        auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, Bigq, numSlotsCKKS,
+                                                       depth - (levelsAvailableBeforeBootstrap > 0));
 
         /* 9.2 Bootstrap the digit.*/
         Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -655,7 +655,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         /* 9.3 Convert the result back to RLWE and update the
          * plaintext and ciphertext modulus of the ciphertext for the next iteration.
          */
-        auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
+        auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
         BigInteger QNew(BigInteger(1) << static_cast<uint32_t>(std::log2(QBFVDouble) - std::log2(pDigitDouble)));
         BigInteger PNew(BigInteger(1) << static_cast<uint32_t>(std::log2(pBFVDouble) - std::log2(pDigitDouble)));
