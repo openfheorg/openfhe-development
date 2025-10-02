@@ -282,6 +282,11 @@ public:
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
     template <typename VectorDataType>
+    static uint32_t GetFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
+                                SecretKeyDist skd);
+
+    template <typename VectorDataType>
     static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                    size_t order, SecretKeyDist skd = SPARSE_TERNARY);
 

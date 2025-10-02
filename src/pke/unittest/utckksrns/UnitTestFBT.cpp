@@ -340,12 +340,12 @@ protected:
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
-            uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2;
+            uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -515,12 +515,12 @@ protected:
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
 
-            uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2;
+            uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffintMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffcompMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -739,12 +739,12 @@ protected:
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
-            uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2 + t.levelsComputation;
+            uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -960,12 +960,12 @@ protected:
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
-            uint32_t depth = t.levelsAvailableAfterBootstrap + t.lvlb[0] + t.lvlb[1] + 2 + t.levelsComputation;
+            uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffint1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd);
             else
-                depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd);
 
             parameters.SetMultiplicativeDepth(depth);
 

@@ -633,7 +633,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
         auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
         auto conj       = Conjugate(ctxtEnc, evalKeyMap);
-        auto ctxtEncI = cc->EvalSub(ctxtEnc, conj);
+        auto ctxtEncI   = cc->EvalSub(ctxtEnc, conj);
         algo->MultByMonomialInPlace(ctxtEncI, 3 * slots);
         cc->EvalAddInPlaceNoCheck(ctxtEnc, conj);
 
@@ -2620,12 +2620,7 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     double scaleMod = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * POut.ConvertToDouble());
     double scaleDec = scaleMod / pre;
 
-    // one level for division and double-angle formula
-    uint32_t approxModDepth = 1 + 1;
-
-    // Increase interpolation degree for large precision
-    uint32_t depthBT = approxModDepth + levelBudget[0] + levelBudget[1] + depthLeveledComputation +
-                       AdjustDepthFBT(coeffs, PIn, order, skd);
+    uint32_t depthBT = depthLeveledComputation + GetFBTDepth(levelBudget, coeffs, PIn, order, skd);
 
     // compute # of levels to remain when encoding the coefficients
     uint32_t L0   = cryptoParams->GetElementParams()->GetParams().size();
@@ -3073,10 +3068,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
 
             // Take the real part
             // Division by 2 was already performed
-            ctxtEnc  = cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
+            ctxtEnc = cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
             cc->EvalAddInPlaceNoCheck(ctxtEnc, Conjugate(ctxtEnc, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
             ctxtEncI = cc->EvalPolyWithPrecomp(ctxtPowersIm, coefficients);
-            cc->EvalAddInPlaceNoCheck(ctxtEncI, Conjugate(ctxtEncI, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
+            cc->EvalAddInPlaceNoCheck(ctxtEncI,
+                                      Conjugate(ctxtEncI, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
         }
 
         algo->MultByMonomialInPlace(ctxtEncI, M / 4);
@@ -3263,6 +3259,7 @@ uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficie
             depth += GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
             break;
     }
+    depth += 2;  // the number of double-angle iterations is fixed to 2
     return depth;
 }
 
@@ -3270,6 +3267,20 @@ template uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<int64_t>& coeffic
                                              size_t order, SecretKeyDist skd);
 template uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<std::complex<double>>& coefficients,
                                              const BigInteger& PInput, size_t order, SecretKeyDist skd);
+
+template <typename VectorDataType>
+uint32_t FHECKKSRNS::GetFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
+                                 size_t order, SecretKeyDist skd) {
+    return levelBudget[0] + levelBudget[1] + AdjustDepthFBT(coefficients, PInput, order, skd);
+}
+
+template uint32_t FHECKKSRNS::GetFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                          const std::vector<int64_t>& coefficients, const BigInteger& PInput,
+                                          size_t order, SecretKeyDist skd);
+template uint32_t FHECKKSRNS::GetFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                          const std::vector<std::complex<double>>& coefficients,
+                                          const BigInteger& PInput, size_t order, SecretKeyDist skd);
 
 EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
                                                  const PrivateKey<DCRTPoly>& newPrivateKey) {

@@ -163,12 +163,12 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(ringDim);
-    uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2;
+    uint32_t depth = levelsAvailableAfterBootstrap;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffint, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffint, PInput, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcomp, PInput, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -321,12 +321,12 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(ringDim);
-    uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2 + levelsComputation;
+    uint32_t depth = levelsAvailableAfterBootstrap + levelsComputation;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffint1, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffint1, PInput, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp1, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcomp1, PInput, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
@@ -567,12 +567,12 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(ringDim);
 
-    uint32_t depth = levelsAvailableAfterBootstrap + lvlb[0] + lvlb[1] + 2;
+    uint32_t depth = levelsAvailableAfterBootstrap;
 
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffintMod, PDigit, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffintMod, PDigit, order, secretKeyDist);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcompMod, PDigit, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcompMod, PDigit, order, secretKeyDist);
 
     parameters.SetMultiplicativeDepth(depth);
 
