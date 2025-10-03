@@ -288,7 +288,8 @@ public:
     // SHE LEVELED Compress
     /////////////////////////////////////////
 
-    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft) const override;
+    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft,
+                                  size_t noiseScaleDeg) const override;
 
     ////////////////////////////////////////
     // SHE LEVELED ComposedEvalMult

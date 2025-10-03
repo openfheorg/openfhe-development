@@ -350,7 +350,8 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
  * On COMPOSITESCALING technique, the number of towers to drop passed
  * must be a multiple of composite degree.
  */
-Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft,
+                                             size_t noiseScaleDeg) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     uint32_t levelsToDrop = BASE_NUM_LEVELS_TO_DROP;
@@ -363,7 +364,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly>& cipherte
     }
 
     auto result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
-    while (result->GetNoiseScaleDeg() > 1)
+    while (result->GetNoiseScaleDeg() > noiseScaleDeg)
         ModReduceInternalInPlace(result, levelsToDrop);
 
     size_t sizeQl = result->GetElements()[0].GetNumOfElements();

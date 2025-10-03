@@ -721,7 +721,8 @@ public:
         OPENFHE_THROW("LevelReduceInPlace is not supported for this scheme");
     }
 
-    virtual Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, size_t towersLeft) const {
+    virtual Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, size_t towersLeft,
+                                         size_t noiseScaleDeg) const {
         OPENFHE_THROW("Compress is not supported for this scheme");
     }
 

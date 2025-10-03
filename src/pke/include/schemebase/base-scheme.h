@@ -785,9 +785,10 @@ public:
         m_LeveledSHE->LevelReduceInternalInPlace(ciphertext, levels);
     }
 
-    virtual Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, size_t towersLeft) const {
+    virtual Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, size_t towersLeft,
+                                         size_t noiseScaleDeg) const {
         VerifyLeveledSHEEnabled(__func__);
-        return m_LeveledSHE->Compress(ciphertext, towersLeft);
+        return m_LeveledSHE->Compress(ciphertext, towersLeft, noiseScaleDeg);
     }
 
     virtual void AdjustLevelsInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {

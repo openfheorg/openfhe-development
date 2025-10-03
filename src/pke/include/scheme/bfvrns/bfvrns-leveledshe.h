@@ -142,7 +142,8 @@ public:
 
     uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
-    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft) const override;
+    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft,
+                                  size_t noiseScaleDeg) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

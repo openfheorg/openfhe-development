@@ -2628,10 +2628,11 @@ public:
     * @param towersLeft  Number of RNS limbs to retain.
     * @return Compressed ciphertext.
     */
-    Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, uint32_t towersLeft = 1) const {
+    Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, uint32_t towersLeft = 1,
+                                 size_t noiseScaleDeg = 1) const {
         if (ciphertext == nullptr)
             OPENFHE_THROW("input ciphertext is invalid (has no data)");
-        return GetScheme()->Compress(ciphertext, towersLeft);
+        return GetScheme()->Compress(ciphertext, towersLeft, noiseScaleDeg);
     }
 
     //------------------------------------------------------------------------------
