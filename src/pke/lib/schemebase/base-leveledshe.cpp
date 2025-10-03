@@ -355,8 +355,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
-    uint32_t N = s.GetRingDimension();
-    uint32_t M = 2 * N;
+    const uint32_t N = s.GetRingDimension();
+    const uint32_t M = s.GetCyclotomicOrder();
 
     // we already have checks on higher level?
     //  if (indexList.size() > N - 1)
@@ -366,18 +366,17 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
     // have already been created
     auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-    for (auto indx : indexList) {
+    for (auto indx : indexList)
         (*evalKeys)[indx];
-    }
-    const size_t sz = indexList.size();
-#pragma omp parallel for
-    for (size_t i = 0; i < sz; ++i) {
-        auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        uint32_t index = NativeInteger(indexList[i]).ModInverse(M).ConvertToInt();
+    const uint32_t sz = indexList.size();
+#pragma omp parallel for
+    for (uint32_t i = 0; i < sz; ++i) {
+        auto index = NativeInteger(indexList[i]).ModInverse(M).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
+        auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
         (*evalKeys)[indexList[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
     }
@@ -453,19 +452,19 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
     const auto cryptoParams = ciphertext->GetCryptoParameters();
 
-    uint32_t N = cryptoParams->GetElementParams()->GetRingDimension();
+    const uint32_t N = cryptoParams->GetElementParams()->GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, autoIndex, &vec);
 
     const auto& cv = ciphertext->GetElements();
 
-    auto ba = cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
-    (*ba)[0] += cv[0];
-    (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
-    (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
+    auto ba = *cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
+    ba[0] += cv[0];
+    ba[0] = ba[0].AutomorphismTransform(autoIndex, vec);
+    ba[1] = ba[1].AutomorphismTransform(autoIndex, vec);
 
-    auto result = ciphertext->Clone();
-    result->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements(std::move(ba));
     return result;
 }
 
