@@ -61,9 +61,9 @@ void LeveledSHECKKSRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, double 
     auto elmnts = GetElementForEvalAddOrSub(ciphertext, operand);
     auto& polys = ciphertext->GetElements()[0].GetAllElements();
 
-    const auto limit = polys.size();
+    const uint32_t limit = polys.size();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
-    for (auto i = 0; i < limit; ++i)
+    for (uint32_t i = 0; i < limit; ++i)
         polys[i] += elmnts[i];
 }
 
@@ -113,9 +113,9 @@ void LeveledSHECKKSRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, double 
     auto elmnts = GetElementForEvalAddOrSub(ciphertext, operand);
     auto& polys = ciphertext->GetElements()[0].GetAllElements();
 
-    const auto limit = polys.size();
+    const uint32_t limit = polys.size();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
-    for (auto i = 0; i < limit; ++i)
+    for (uint32_t i = 0; i < limit; ++i)
         polys[i] -= elmnts[i];
 }
 
