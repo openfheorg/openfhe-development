@@ -500,7 +500,7 @@ Ciphertext<DCRTPoly> internalEvalPolyPSWithPrecomp(const std::shared_ptr<seriesP
     f2.back() = 1;
 
     Ciphertext<DCRTPoly> result;
-#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(6 * m))
+#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(6 * m + 2))
     {
 #pragma omp single
         result =
@@ -674,7 +674,6 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
 
     Ciphertext<DCRTPoly> cu, qu, su;
 
-#pragma omp task shared(qu)
     {
         // Evaluate q and s2 at u.
         // If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
@@ -703,7 +702,6 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
         }
     }
 
-#pragma omp task shared(su)
     {
         // Add x^{k(2^{m-1} - 1)} to s
         auto& s2 = divcs->r;
@@ -755,8 +753,6 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
     }
 
     cu = cu ? cc->EvalAdd(T2[m - 1], cu) : cc->EvalAdd(T2[m - 1], divcs->q.front() / 2.0);
-
-#pragma omp taskwait
 
     auto result = cc->EvalMult(cu, qu);
     cc->ModReduceInPlace(result);
@@ -862,13 +858,7 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPSWithPrecomp(const std::shared_
     f2.resize(2 * k2m2k + k + 1);
     f2.back() = 1;
 
-    Ciphertext<DCRTPoly> result;
-#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(5 * m))
-    {
-#pragma omp single
-        result = T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
-    }
-    return result;
+    return T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
 }
 
 std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalChebyPolys(ConstCiphertext<DCRTPoly>& x,
