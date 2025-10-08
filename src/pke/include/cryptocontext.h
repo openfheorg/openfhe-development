@@ -2632,6 +2632,12 @@ public:
                                  size_t noiseScaleDeg = 1) const {
         if (ciphertext == nullptr)
             OPENFHE_THROW("input ciphertext is invalid (has no data)");
+        if (towersLeft < noiseScaleDeg) {
+            std::string errorMsg{"Input towersLeft["};
+            errorMsg += std::to_string(towersLeft) + "] may not be less than noiseScaleDeg[";
+            errorMsg += std::to_string(noiseScaleDeg) + "]";
+            OPENFHE_THROW(errorMsg);
+        }
         return GetScheme()->Compress(ciphertext, towersLeft, noiseScaleDeg);
     }
 
