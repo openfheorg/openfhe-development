@@ -288,7 +288,7 @@ static std::vector<TEST_CASE_FBT> testCases = {
 
 class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 protected:
-    void SetUp(){};
+    void SetUp() {};
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
@@ -329,14 +329,13 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t firstMod = t.Bigq.GetMSB() - 1;
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             CCParams<CryptoContextCKKSRNS> parameters;
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
             parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(firstMod);
+            parameters.SetFirstModSize(dcrtBits);
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -458,10 +457,7 @@ protected:
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
-            auto PInput  = t.PInput;  // Will get modified in the loop.
-            BigInteger Q = t.Q;       // Will get modified in the loop.
-
-            auto a = PInput.ConvertToInt<int64_t>();
+            auto a = t.PInput.ConvertToInt<int64_t>();
             auto b = t.POutput.ConvertToInt<int64_t>();
 
             auto funcMod = [b](int64_t x) -> int64_t {
@@ -472,14 +468,14 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                PInput.ConvertToInt<int64_t>() / 2, PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                PInput.ConvertToInt<int64_t>() - 1};
+                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (elem >= PInput.ConvertToDouble() / 2.); });
+                           [&](const int64_t& elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
 
             std::vector<int64_t> coeffintMod;
             std::vector<std::complex<double>> coeffcompMod;
@@ -502,15 +498,13 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t firstMod = t.Bigq.GetMSB() - 1;
-
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             CCParams<CryptoContextCKKSRNS> parameters;
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
             parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(firstMod);
+            parameters.SetFirstModSize(dcrtBits);
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -564,21 +558,13 @@ protected:
             auto ep =
                 SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
 
-            auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, PInput, keyPair.secretKey, ep);
+            auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
             std::cerr << "Coefficient Encryption: " << std::chrono::duration<double>(stop - start).count() << " s\n";
             start = std::chrono::high_resolution_clock::now();
 #endif
-
-            SchemeletRLWEMP::ModSwitch(ctxtBFV, Q, t.QBFVInit);
-
-            double QBFVDouble   = Q.ConvertToDouble();
-            double pBFVDouble   = PInput.ConvertToDouble();
-            double pDigitDouble = t.POutput.ConvertToDouble();
-            double qDigitDouble = t.Bigq.ConvertToDouble();
-            BigInteger pOrig    = PInput;
 
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
@@ -587,10 +573,24 @@ protected:
             else
                 coeffcomp = coeffcompMod;
 
-            double scaleTHI     = t.scaleTHI;
-            bool step           = false;
-            bool go             = QBFVDouble > qDigitDouble;
-            size_t levelsToDrop = 0;
+            SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
+
+            uint32_t QBFVBits = t.Q.GetMSB() - 1;
+
+            auto Q      = t.Q;       // Will get modified in the loop.
+            auto PInput = t.PInput;  // Will get modified in the loop.
+
+            BigInteger QNew;
+
+            const bool checkeq2       = t.POutput.ConvertToInt() == 2;
+            const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+            const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
+
+            uint64_t scaleTHI        = t.scaleTHI;
+            bool step                = false;
+            bool go                  = QBFVBits > dcrtBits;
+            size_t levelsToDrop      = 0;
+            uint32_t postScalingBits = 0;
 
             // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
             // Currently this only works when log(pNew) divides log(p).
@@ -608,39 +608,35 @@ protected:
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
                 if (binaryLUT)
-                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                               pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, pDigitBits, ep->GetModulus(),
+                                               scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
                 else
-                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                               pOrig.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, pDigitBits, ep->GetModulus(),
+                                               scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
 
                 auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
-                BigInteger QNew(std::to_string(static_cast<uint64_t>(QBFVDouble / pDigitDouble)));
-                BigInteger PNew(std::to_string(static_cast<uint64_t>(pBFVDouble / pDigitDouble)));
-
                 if (!step) {
-                    // Subtract digit
-                    ctxtBFV[0] = ctxtBFV[0] - polys[0];
-                    ctxtBFV[1] = ctxtBFV[1] - polys[1];
+                    QNew = Q >> pDigitBits;
 
-                    // Do modulus switching from Q to QNew for the BFV ciphertext
-                    ctxtBFV[0] = ctxtBFV[0].MultiplyAndRound(QNew, Q);
+                    // Subtract digit and switch mod from Q to QNew for BFV ciphertext
+                    ctxtBFV[0] = (ctxtBFV[0] - polys[0]).MultiplyAndRound(QNew, Q);
                     ctxtBFV[0].SwitchModulus(QNew, 1, 0, 0);
-                    ctxtBFV[1] = ctxtBFV[1].MultiplyAndRound(QNew, Q);
+                    ctxtBFV[1] = (ctxtBFV[1] - polys[1]).MultiplyAndRound(QNew, Q);
                     ctxtBFV[1].SwitchModulus(QNew, 1, 0, 0);
-
-                    QBFVDouble /= pDigitDouble;
-                    pBFVDouble /= pDigitDouble;
-                    Q      = QNew;
-                    PInput = PNew;
+                    Q >>= pDigitBits;
+                    PInput >>= pDigitBits;
+                    QBFVBits -= pDigitBits;
+                    postScalingBits += pDigitBits;
                 }
                 else {
-                    ctxtBFV[0] = polys[0];
-                    ctxtBFV[1] = polys[1];
+                    ctxtBFV[0] = std::move(polys[0]);
+                    ctxtBFV[1] = std::move(polys[1]);
                 }
 
-                if ((t.POutput.ConvertToInt() == 2 && QBFVDouble <= qDigitDouble) || step) {
+                go = QBFVBits > dcrtBits;
+
+                if (step || (checkeq2 && !go)) {
 #ifdef BENCH
                     stop = std::chrono::high_resolution_clock::now();
                     std::cerr << "FuncBootstrapping Eval: " << std::chrono::duration<double>(stop - start).count()
@@ -659,26 +655,24 @@ protected:
 
                     std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
                     std::transform(exact.begin(), exact.end(), exact.begin(),
-                                   [&](const int64_t& elem) { return (std::abs(elem)) % (pOrig.ConvertToInt()); });
+                                   [&](const int64_t& elem) { return (std::abs(elem)) % (t.PInput.ConvertToInt()); });
                     auto max_error_it = std::max_element(exact.begin(), exact.end());
                     // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
                     // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
                     checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " MP sign evaluation fails");
                 }
 
-                go = QBFVDouble > qDigitDouble;
-
-                if (t.POutput.ConvertToInt() > 2 && !go && !step) {
+                if (checkgt2 && !go && !step) {
                     if (!binaryLUT)
                         coeffcomp = coeffcompStep;
                     scaleTHI = t.scaleStepTHI;
                     step     = true;
                     go       = true;
-                    if (coeffcompMod.size() > 4 && GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) >
-                                                       GetMultiplicativeDepthByCoeffVector(coeffcompStep, true)) {
-                        levelsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
-                                       GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
-                    }
+
+                    int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
+                                         GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
+                    if (coeffcompMod.size() > 4 && lvlsToDrop > 0)
+                        levelsToDrop = lvlsToDrop;
                 }
             }
         }
@@ -728,14 +722,13 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t firstMod = t.Bigq.GetMSB() - 1;
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             CCParams<CryptoContextCKKSRNS> parameters;
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
             parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(firstMod);
+            parameters.SetFirstModSize(dcrtBits);
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -949,14 +942,13 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t firstMod = t.Bigq.GetMSB() - 1;
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
             CCParams<CryptoContextCKKSRNS> parameters;
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
             parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(firstMod);
+            parameters.SetFirstModSize(dcrtBits);
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
