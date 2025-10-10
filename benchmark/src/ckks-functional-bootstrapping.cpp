@@ -30,7 +30,6 @@
 //==================================================================================
 
 #include "benchmark/benchmark.h"
-
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -41,12 +40,8 @@
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "schemelet/rlwe-mp.h"
 
-#include <chrono>
 #include <complex>
-#include <iterator>
 #include <map>
-#include <numeric>
-#include <ostream>
 #include <vector>
 
 using namespace lbcrypto;
@@ -126,23 +121,21 @@ struct fbt_config {
         coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    uint32_t firstMod = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetFirstModSize(firstMod);
+    parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    uint32_t depth = t.lvlb[0] + t.lvlb[1] + 2;
 
+    uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
-
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -192,23 +185,21 @@ struct fbt_config {
         coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    uint32_t firstMod = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetFirstModSize(firstMod);
+    parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    uint32_t depth = t.lvlb[0] + t.lvlb[1] + 2;
 
+    uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
-
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -218,8 +209,16 @@ struct fbt_config {
     cc->Enable(ADVANCEDSHE);
     cc->Enable(FHE);
 
+    auto keyPair = cc->KeyGen();
+
+    if (binaryLUT)
+        cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
+                         t.order);
+    else
+        cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
+                         t.order);
+
     while (state.KeepRunning()) {
-        auto keyPair = cc->KeyGen();
         cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
@@ -253,23 +252,21 @@ struct fbt_config {
         coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    uint32_t firstMod = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetFirstModSize(firstMod);
+    parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    uint32_t depth = t.lvlb[0] + t.lvlb[1] + 2;
 
+    uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
-
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -297,7 +294,7 @@ struct fbt_config {
 
     SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
-    auto ctxt = SchemeletRLWEMP::convert(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+    auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
 
     while (state.KeepRunning()) {
         Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -352,25 +349,21 @@ struct fbt_config {
     }
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    uint32_t firstMod = t.Bigq.GetMSB() - 1;
-
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(FIXEDMANUAL);
-    parameters.SetFirstModSize(firstMod);
+    parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
 
-    uint32_t depth = t.lvlb[0] + t.lvlb[1] + 2;
-
+    uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffintMod, t.POutput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.PInput, t.order, SPARSE_ENCAPSULATED);
     else
-        depth += FHECKKSRNS::AdjustDepthFBT(coeffcompMod, t.POutput, t.order, SPARSE_ENCAPSULATED);
-
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.PInput, t.order, SPARSE_ENCAPSULATED);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -394,10 +387,6 @@ struct fbt_config {
 
     auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
 
-    const double pDigitDouble = t.POutput.ConvertToDouble();
-    const uint32_t pDigitlog2 = std::log2(pDigitDouble);
-    const double qDigitDouble = t.Bigq.ConvertToDouble();
-
     std::vector<int64_t> coeffint;
     std::vector<std::complex<double>> coeffcomp;
     if (binaryLUT)
@@ -406,20 +395,25 @@ struct fbt_config {
         coeffcomp = coeffcompMod;
 
     while (state.KeepRunning()) {
-        auto PInput  = t.PInput;  // Will get modified in the loop.
-        BigInteger Q = t.Q;       // Will get modified in the loop.
+        auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
-        auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, PInput, keyPair.secretKey, ep);
+        SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
-        SchemeletRLWEMP::ModSwitch(ctxtBFV, Q, t.QBFVInit);
+        uint32_t QBFVBits = t.Q.GetMSB() - 1;
 
-        double QBFVDouble = Q.ConvertToDouble();
-        double pBFVDouble = PInput.ConvertToDouble();
+        auto Q      = t.Q;
+        auto PInput = t.PInput;
 
-        double scaleTHI     = t.scaleTHI;
-        bool step           = false;
-        bool go             = QBFVDouble > qDigitDouble;
-        size_t levelsToDrop = 0;
+        BigInteger QNew;
+
+        const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+        const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
+
+        uint64_t scaleTHI        = t.scaleTHI;
+        bool step                = false;
+        bool go                  = QBFVBits > dcrtBits;
+        size_t levelsToDrop      = 0;
+        uint32_t postScalingBits = 0;
 
         // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
         // Currently this only works when log(pNew) divides log(p).
@@ -430,65 +424,58 @@ struct fbt_config {
             encryptedDigit[0].SwitchModulus(t.Bigq, 1, 0, 0);
             encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
-            auto ctxt = SchemeletRLWEMP::convert(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+            auto ctxt =
+                SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
 
             // Bootstrap the digit.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
-                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                           t.PInput.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
+                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, pDigitBits, ep->GetModulus(),
+                                           scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
             else
-                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.POutput.GetMSB() - 1, ep->GetModulus(),
-                                           t.PInput.ConvertToDouble() / pBFVDouble * scaleTHI, levelsToDrop, t.order);
+                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, pDigitBits, ep->GetModulus(),
+                                           scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
 
-            auto polys = SchemeletRLWEMP::convert(ctxtAfterFBT, Q);
+            auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
             if (!step) {
-                BigInteger QNew(BigInteger(1) << static_cast<uint32_t>(std::log2(QBFVDouble) - pDigitlog2));
-                BigInteger PNew(BigInteger(1) << static_cast<uint32_t>(std::log2(pBFVDouble) - pDigitlog2));
+                QNew = Q >> pDigitBits;
 
-                // Subtract digit
-                ctxtBFV[0] = ctxtBFV[0] - polys[0];
-                ctxtBFV[1] = ctxtBFV[1] - polys[1];
-
-                // Do modulus switching from Q to QNew for the BFV ciphertext
-                ctxtBFV[0] = ctxtBFV[0].MultiplyAndRound(QNew, Q);
+                // Subtract digit and switch mod from Q to QNew for BFV ciphertext
+                ctxtBFV[0] = (ctxtBFV[0] - polys[0]).MultiplyAndRound(QNew, Q);
                 ctxtBFV[0].SwitchModulus(QNew, 1, 0, 0);
-
-                ctxtBFV[1] = ctxtBFV[1].MultiplyAndRound(QNew, Q);
+                ctxtBFV[1] = (ctxtBFV[1] - polys[1]).MultiplyAndRound(QNew, Q);
                 ctxtBFV[1].SwitchModulus(QNew, 1, 0, 0);
-
-                QBFVDouble /= pDigitDouble;
-                pBFVDouble /= pDigitDouble;
-                Q      = QNew;
-                PInput = PNew;
+                Q >>= pDigitBits;
+                PInput >>= pDigitBits;
+                QBFVBits -= pDigitBits;
+                postScalingBits += pDigitBits;
             }
             else {
-                ctxtBFV[0] = polys[0];
-                ctxtBFV[1] = polys[1];
+                ctxtBFV[0] = std::move(polys[0]);
+                ctxtBFV[1] = std::move(polys[1]);
             }
 
-            go = QBFVDouble > qDigitDouble;
+            go = QBFVBits > dcrtBits;
 
-            if (t.POutput.ConvertToInt() > 2 && !go && !step) {
+            if (checkgt2 && !go && !step) {
                 if (!binaryLUT)
                     coeffcomp = coeffcompStep;
-                scaleTHI = t.scaleStepTHI;
-                step     = true;
-                go       = true;
-                if (coeffcompMod.size() > 4 && GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) >
-                                                   GetMultiplicativeDepthByCoeffVector(coeffcompStep, true)) {
-                    levelsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
-                                   GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
-                }
+                scaleTHI           = t.scaleStepTHI;
+                step               = true;
+                go                 = true;
+                int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
+                                     GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
+                if (coeffcompMod.size() > 4 && lvlsToDrop > 0)
+                    levelsToDrop = lvlsToDrop;
             }
         }
     }
 }
 
 BENCHMARK(FBTArbLUT)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBits);
-BENCHMARK(FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
-// BENCHMARK(FBTSetup)->Unit(benchmark::kSecond)->Iterations(4);
+// BENCHMARK(FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
+// BENCHMARK(FBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
 // BENCHMARK(FBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);
 
 BENCHMARK_MAIN();
