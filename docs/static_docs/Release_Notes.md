@@ -1,3 +1,12 @@
+10/14/2025: OpenFHE 1.4.1 (stable) is released
+
+* Changes `convert` to `ConvertRLWEToCKKS` and `ConvertCKKSToRLWE` + other small API updates for functional CKKS bootstrapping (#1047)
+* Removes the need for setting `LD_LIBRARY_PATH` when installing the library at a different location for user projects (#1050)
+* Adds a new API for `EvalFastRotation` that does not requre specifying the cyclotomic order (#1051)
+* Fixes several bugs
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.4.1%22
+
 08/18/2025: OpenFHE 1.4.0 (development) is released
 
 * Adds general functional bootstrapping using CKKS proposed in https://eprint.iacr.org/2024/1623 (#954)
@@ -10,6 +19,7 @@ The detailed list of changes is available at https://github.com/openfheorg/openf
 
 07/11/2025: OpenFHE 1.3.1 (stable) is released
 
+* API change: Previously, const plaintexts were silently modified; the `const` qualifier now has to be removed in these cases; see #1046 for more details (#970)
 * Updates the noise estimation models for BGV and BFV, making them slightly more conservative (roughly 1 extra bit is added for each multiplicative level) (#1004)
 * Removes extra rotation indices in CKKS bootstrapping (#998)
 * Fixes a bug with CKKS bootstrapping for N=2^17 (#996)
