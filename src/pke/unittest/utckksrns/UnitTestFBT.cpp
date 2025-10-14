@@ -438,6 +438,9 @@ protected:
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
             checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+
+            cc->ClearEvalMultKeys();
+            cc->ClearEvalAutomorphismKeys();
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -675,6 +678,9 @@ protected:
                         levelsToDrop = lvlsToDrop;
                 }
             }
+
+            cc->ClearEvalMultKeys();
+            cc->ClearEvalAutomorphismKeys();
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -888,6 +894,9 @@ protected:
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
             checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+
+            cc->ClearEvalMultKeys();
+            cc->ClearEvalAutomorphismKeys();
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -1087,6 +1096,9 @@ protected:
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
             checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+
+            cc->ClearEvalMultKeys();
+            cc->ClearEvalAutomorphismKeys();
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

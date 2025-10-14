@@ -155,6 +155,9 @@ struct fbt_config {
             cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
                              0, t.order);
     }
+
+    cc->ClearEvalMultKeys();
+    cc->ClearEvalAutomorphismKeys();
 }
 
 [[maybe_unused]] static void FBTKeyGen(benchmark::State& state) {
@@ -222,6 +225,9 @@ struct fbt_config {
         cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
+
+    cc->ClearEvalMultKeys();
+    cc->ClearEvalAutomorphismKeys();
 }
 
 [[maybe_unused]] static void FBTArbLUT(benchmark::State& state) {
@@ -305,6 +311,9 @@ struct fbt_config {
                 cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
         ctxtAfterFBT.reset();
     }
+
+    cc->ClearEvalMultKeys();
+    cc->ClearEvalAutomorphismKeys();
 }
 
 [[maybe_unused]] static void FBTSignDigit32(benchmark::State& state) {
@@ -471,11 +480,14 @@ struct fbt_config {
             }
         }
     }
+
+    cc->ClearEvalMultKeys();
+    cc->ClearEvalAutomorphismKeys();
 }
 
 BENCHMARK(FBTArbLUT)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBits);
-// BENCHMARK(FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
-// BENCHMARK(FBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
-// BENCHMARK(FBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);
+BENCHMARK(FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
+BENCHMARK(FBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
+BENCHMARK(FBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);
 
 BENCHMARK_MAIN();
