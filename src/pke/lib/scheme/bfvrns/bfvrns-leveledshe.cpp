@@ -184,7 +184,7 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
     // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
     // adjusted empirical parameter to 16 from 4 for threshold scenarios to work correctly, this might need to
     // be further refined
-    int32_t levels = std::floor((loge - 2 * multiplicativeDepth - 16 - logExtra) / dcrtBits);
+    int32_t levels = std::floor((loge - 4 * multiplicativeDepth - 16 - logExtra) / dcrtBits);
     size_t sizeQ   = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
 
     if (levels < 0)
