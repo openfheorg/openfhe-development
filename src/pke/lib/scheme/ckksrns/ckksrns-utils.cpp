@@ -697,7 +697,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     return coeff;
 }
 
-std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {
+struct ckks_boot_params GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1) {
     if (slots == 0)
         OPENFHE_THROW("slots can not be 0");
     if (levelBudget == 0)
@@ -706,15 +706,15 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     // even for the case of (slots = 1) we need one level for rescaling as (std::log2(1) = 0)
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
-    std::vector<uint32_t> dims = SelectLayers(logSlots, levelBudget);
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    const uint32_t layersCollapse = dims[0];
-    const uint32_t remCollapse    = dims[2];
+    auto dims               = SelectLayers(logSlots, levelBudget);
+    uint32_t layersCollapse = dims[0];
+    uint32_t remCollapse    = dims[2];
 
-    const uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
-    const uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
+    uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
+    uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the baby-step b and the giant-step g for the collapsed layers for decoding.
     uint32_t g = (dim1 == 0 || dim1 > numRotations) ? (1U << (layersCollapse / 2 + 1 + (numRotations > 7))) : dim1;
@@ -723,16 +723,7 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     uint32_t gRem = (remCollapse != 0) ? (1U << (remCollapse / 2 + 1 + (numRotationsRem > 7))) : 0;
     uint32_t bRem = (remCollapse != 0) ? (numRotationsRem + 1) / gRem : 0;
 
-    // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well
-    return {static_cast<int32_t>(levelBudget),
-            static_cast<int32_t>(layersCollapse),
-            static_cast<int32_t>(remCollapse),
-            static_cast<int32_t>(numRotations),
-            static_cast<int32_t>(b),
-            static_cast<int32_t>(g),
-            static_cast<int32_t>(numRotationsRem),
-            static_cast<int32_t>(bRem),
-            static_cast<int32_t>(gRem)};
+    return {levelBudget, layersCollapse, remCollapse, numRotations, b, g, numRotationsRem, bRem, gRem};
 }
 
 uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
