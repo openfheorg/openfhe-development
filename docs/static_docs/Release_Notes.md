@@ -1,3 +1,9 @@
+10/20/2025: OpenFHE 1.4.2 (stable) is released
+
+* Fixes a bug introduced by PR #1007 that affected large-depth scenarios for the `HPSPOVERLEVELED` mode of BFV (#1066)
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.4.2%22
+
 10/14/2025: OpenFHE 1.4.1 (stable) is released
 
 * Changes `convert` to `ConvertRLWEToCKKS` and `ConvertCKKSToRLWE` + other small API updates for functional CKKS bootstrapping (#1047)
