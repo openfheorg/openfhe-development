@@ -120,8 +120,7 @@ struct boot_config {
     while (state.KeepRunning())
         auto ctxtAfter = cc->EvalBootstrap(ctxt, t.iters);
 
-    cc->ClearEvalMultKeys();
-    cc->ClearEvalAutomorphismKeys();
+    cc->ClearStaticMapsAndVectors();
 }
 
 BENCHMARK(CKKSBoot)->Unit(benchmark::kSecond)->Iterations(4)->Apply(BootConfigs);

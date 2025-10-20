@@ -156,8 +156,7 @@ struct fbt_config {
                              0, t.order);
     }
 
-    cc->ClearEvalMultKeys();
-    cc->ClearEvalAutomorphismKeys();
+    cc->ClearStaticMapsAndVectors();
 }
 
 [[maybe_unused]] static void FBTKeyGen(benchmark::State& state) {
@@ -226,8 +225,7 @@ struct fbt_config {
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 
-    cc->ClearEvalMultKeys();
-    cc->ClearEvalAutomorphismKeys();
+    cc->ClearStaticMapsAndVectors();
 }
 
 [[maybe_unused]] static void FBTArbLUT(benchmark::State& state) {
@@ -312,8 +310,7 @@ struct fbt_config {
         ctxtAfterFBT.reset();
     }
 
-    cc->ClearEvalMultKeys();
-    cc->ClearEvalAutomorphismKeys();
+    cc->ClearStaticMapsAndVectors();
 }
 
 [[maybe_unused]] static void FBTSignDigit32(benchmark::State& state) {
@@ -481,8 +478,7 @@ struct fbt_config {
         }
     }
 
-    cc->ClearEvalMultKeys();
-    cc->ClearEvalAutomorphismKeys();
+    cc->ClearStaticMapsAndVectors();
 }
 
 BENCHMARK(FBTArbLUT)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBits);

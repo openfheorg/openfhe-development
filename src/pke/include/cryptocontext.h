@@ -632,6 +632,11 @@ public:
     }
 
     /**
+    * @brief Clears various caches within the library
+    */
+    static void ClearStaticMapsAndVectors();
+
+    /**
     * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
     *
     * @param ser stream to serialize to

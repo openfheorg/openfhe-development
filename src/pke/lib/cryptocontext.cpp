@@ -49,6 +49,23 @@ std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>
     CryptoContextImpl<Element>::s_evalAutomorphismKeyMap{};
 
 template <typename Element>
+void CryptoContextImpl<Element>::ClearStaticMapsAndVectors() {
+    CryptoContextImpl<Element>::ClearEvalAutomorphismKeys();
+    CryptoContextImpl<Element>::s_evalMultKeyMap.clear();
+    PackedEncoding::Destroy();
+    intnat::ChineseRemainderTransformFTTNat<NativeVector>().Reset();
+#ifdef WITH_BE2
+    bigintfxd::ChineseRemainderTransformFTTFxd<M2Vector>().Reset();
+#endif
+#ifdef WITH_BE4
+    bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector>().Reset();
+#endif
+#ifdef WITH_NTL
+    NTL::ChineseRemainderTransformFTTNtl<M6Vector>().Reset();
+#endif
+}
+
+template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = std::dynamic_pointer_cast<SchemeRNS>(m_scheme);
