@@ -50,7 +50,7 @@ std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>
 
 template <typename Element>
 void CryptoContextImpl<Element>::ClearStaticMapsAndVectors() {
-    CryptoContextImpl<Element>::ClearEvalAutomorphismKeys();
+    CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.clear();
     CryptoContextImpl<Element>::s_evalMultKeyMap.clear();
     PackedEncoding::Destroy();
     intnat::ChineseRemainderTransformFTTNat<NativeVector>().Reset();
