@@ -529,9 +529,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     uint32_t N = cc->GetRingDimension();
     if (compositeDegree > 1) {
         // RNS basis extension from level 0 RNS limbs to the raised RNS basis
-        auto& ctxtDCRT = raised->GetElements();
-        ExtendCiphertext(ctxtDCRT, *cc, elementParamsRaisedPtr);
-        raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
+        auto& ctxtDCRTs = raised->GetElements();
+        ExtendCiphertext(ctxtDCRTs, *cc, elementParamsRaisedPtr);
+        raised->SetLevel(L0 - ctxtDCRTs[0].GetNumOfElements());
     }
     else {
         if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
@@ -541,34 +541,28 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             raised = KeySwitchSparse(raised, evalKeyMap.at(2 * N - 4));
 
             // Only level 0 ciphertext used here. Other towers ignored to make CKKS bootstrapping faster.
-            auto& ctxtDCRT = raised->GetElements();
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(ctxtDCRT.size()))
-            for (auto& poly : ctxtDCRT) {
-                poly.SetFormat(COEFFICIENT);
-                DCRTPoly tmp(elementParamsRaisedPtr, COEFFICIENT);
-                tmp = poly.GetElementAtIndex(0);
+            auto& ctxtDCRTs = raised->GetElements();
+            for (auto& dcrt : ctxtDCRTs) {
+                dcrt.SetFormat(COEFFICIENT);
+                DCRTPoly tmp(dcrt.GetElementAtIndex(0), elementParamsRaisedPtr);
                 tmp.SetFormat(EVALUATION);
-                poly = std::move(tmp);
+                dcrt = std::move(tmp);
             }
-            raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
+            raised->SetLevel(L0 - ctxtDCRTs[0].GetNumOfElements());
 
             // go back to a denser secret
             algo->KeySwitchInPlace(raised, evalKeyMap.at(2 * N - 2));
         }
         else {
             // Only level 0 ciphertext used here. Other towers ignored to make CKKS bootstrapping faster.
-            auto& ctxtDCRT = raised->GetElements();
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(ctxtDCRT.size()))
-            for (auto& poly : ctxtDCRT) {
-                poly.SetFormat(COEFFICIENT);
-                DCRTPoly tmp(elementParamsRaisedPtr, COEFFICIENT);
-                tmp = poly.GetElementAtIndex(0);
+            auto& ctxtDCRTs = raised->GetElements();
+            for (auto& dcrt : ctxtDCRTs) {
+                dcrt.SetFormat(COEFFICIENT);
+                DCRTPoly tmp(dcrt.GetElementAtIndex(0), elementParamsRaisedPtr);
                 tmp.SetFormat(EVALUATION);
-                poly = std::move(tmp);
+                dcrt = std::move(tmp);
             }
-            raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
+            raised->SetLevel(L0 - ctxtDCRTs[0].GetNumOfElements());
         }
     }
 
@@ -1865,7 +1859,7 @@ void FHECKKSRNS::AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double co
 #endif
 }
 
-void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRT, const CryptoContextImpl<DCRTPoly>& cc,
+void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const CryptoContextImpl<DCRTPoly>& cc,
                                   const std::shared_ptr<DCRTPoly::Params> elementParamsRaisedPtr) const {
     // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
 
@@ -1900,26 +1894,26 @@ void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRT, const CryptoC
         std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
     uint32_t init_element_index = compositeDegree;
 
-    for (auto& dcrt : ctxtDCRT) {
+    for (auto& dcrt : ctxtDCRTs) {
         dcrt.SetFormat(COEFFICIENT);
 
         std::vector<DCRTPoly> tmp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-        std::vector<DCRTPoly> ctxtDCRT_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
+        std::vector<DCRTPoly> ctxtDCRTs_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(dcrt.GetNumOfElements()))
         for (size_t j = 0; j < dcrt.GetNumOfElements(); ++j) {
             for (uint32_t k = 0; k < compositeDegree; ++k)
-                ctxtDCRT_modq[k].SetElementAtIndex(j, dcrt.GetElementAtIndex(j) * qhat_inv_modqj[k]);
+                ctxtDCRTs_modq[k].SetElementAtIndex(j, dcrt.GetElementAtIndex(j) * qhat_inv_modqj[k]);
         }
 
-        tmp[0] = ctxtDCRT_modq[0].GetElementAtIndex(0);
+        tmp[0] = ctxtDCRTs_modq[0].GetElementAtIndex(0);
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(tmp[0].GetAllElements().size()))
         for (auto& el : tmp[0].GetAllElements())
             el *= qjProduct;
 
         for (uint32_t d = 1; d < compositeDegree; ++d) {
-            tmp[init_element_index] = ctxtDCRT_modq[d].GetElementAtIndex(d);
+            tmp[init_element_index] = ctxtDCRTs_modq[d].GetElementAtIndex(d);
 
             NativeInteger qjProductD{1};
             for (uint32_t k = 0; k < compositeDegree; ++k) {
@@ -2633,34 +2627,30 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         raised = KeySwitchSparse(raised, evalKeyMap.at(2 * N - 4));
 
         // Only level 0 ciphertext used here. Other towers ignored to make CKKS bootstrapping faster.
-        auto& ctxtDCRT = raised->GetElements();
+        auto& ctxtDCRTs = raised->GetElements();
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(ctxtDCRT.size()))
-        for (auto& poly : ctxtDCRT) {
-            poly.SetFormat(COEFFICIENT);
-            DCRTPoly tmp(elementParamsRaisedPtr, COEFFICIENT);
-            tmp = poly.GetElementAtIndex(0);
+        for (auto& dcrt : ctxtDCRTs) {
+            dcrt.SetFormat(COEFFICIENT);
+            DCRTPoly tmp(dcrt.GetElementAtIndex(0), elementParamsRaisedPtr);
             tmp.SetFormat(EVALUATION);
-            poly = std::move(tmp);
+            dcrt = std::move(tmp);
         }
-        raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
+        raised->SetLevel(L0 - ctxtDCRTs[0].GetNumOfElements());
 
         // go back to a denser secret
         algo->KeySwitchInPlace(raised, evalKeyMap.at(2 * N - 2));
     }
     else {
         // Only level 0 ciphertext used here. Other towers ignored to make CKKS bootstrapping faster.
-        auto& ctxtDCRT = raised->GetElements();
+        auto& ctxtDCRTs = raised->GetElements();
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(ctxtDCRT.size()))
-        for (auto& poly : ctxtDCRT) {
-            poly.SetFormat(COEFFICIENT);
-            DCRTPoly tmp(elementParamsRaisedPtr, COEFFICIENT);
-            tmp = poly.GetElementAtIndex(0);
+        for (auto& dcrt : ctxtDCRTs) {
+            dcrt.SetFormat(COEFFICIENT);
+            DCRTPoly tmp(dcrt.GetElementAtIndex(0), elementParamsRaisedPtr);
             tmp.SetFormat(EVALUATION);
-            poly = std::move(tmp);
+            dcrt = std::move(tmp);
         }
-        raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
+        raised->SetLevel(L0 - ctxtDCRTs[0].GetNumOfElements());
     }
 
 #ifdef BOOTSTRAPTIMING
