@@ -231,21 +231,6 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
-    *
-    * @param keyTag secret key tag
-    * @param indexList array of specific indices to check the key map against
-    * @return indices that do not have automorphism keys associated with
-    */
-    static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
-                                                              const std::set<uint32_t>& indices) {
-        std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyTag)};
-        // if no index found for the given keyTag, then the entire set "indices" is returned
-        return (existingIndices.empty()) ? indices :
-                                           CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
-    }
-
-    /**
     * @brief Gets automorphism keys for a specific secret key tag and an array of specific indices
     *
     * @param keyTag secret key tag
@@ -2250,13 +2235,7 @@ public:
         if (!indexList.size())
             OPENFHE_THROW("Input index vector is empty");
 
-        // Do not generate duplicate keys that have been already generated and added to the static storage (map)
-        std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
-        std::set<uint32_t> indicesToGenerate{
-            CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
-
-        std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
-        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, newIndices);
+        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 
         return evalKeys;
@@ -4013,6 +3992,21 @@ public:
     */
     void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
         GetScheme()->SetSwkFC(FHEWtoCKKSswk);
+    }
+
+    /**
+    * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
+    *
+    * @param keyTag secret key tag
+    * @param indexList array of specific indices to check the key map against
+    * @return indices that do not have automorphism keys associated with
+    */
+    static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
+                                                              const std::set<uint32_t>& indices) {
+        std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyTag)};
+        // if no index found for the given keyTag, then the entire set "indices" is returned
+        return (existingIndices.empty()) ? indices :
+                                           CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
     }
 
     /**

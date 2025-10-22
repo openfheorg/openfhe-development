@@ -347,9 +347,16 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
     const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+
+    // Do not generate duplicate keys that have been already generated and added to the static storage (map)
+    std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
+    std::set<uint32_t> indicesToGenerate{
+        CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
+    std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
+
     // we already have checks on higher level?
-    //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
-    //  if (it != indexList.end())
+    //  auto it = std::find(newIndices.begin(), newIndices.end(), 2 * n - 1);
+    //  if (it != newIndices.end())
     //    OPENFHE_THROW("conjugation is disabled");
 
     const auto cc = privateKey->GetCryptoContext();
@@ -359,26 +366,26 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     const uint32_t M = s.GetCyclotomicOrder();
 
     // we already have checks on higher level?
-    //  if (indexList.size() > N - 1)
+    //  if (newIndices.size() > N - 1)
     //    OPENFHE_THROW("size exceeds the ring dimension");
 
-    // create and initialize the key map (key is a value from indexList, EvalKey is nullptr). in this case
+    // create and initialize the key map (key is a value from newIndices, EvalKey is nullptr). in this case
     // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
     // have already been created
     auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-    for (auto indx : indexList)
+    for (auto indx : newIndices)
         (*evalKeys)[indx];
 
-    const uint32_t sz = indexList.size();
+    const uint32_t sz = newIndices.size();
 #pragma omp parallel for
     for (uint32_t i = 0; i < sz; ++i) {
-        auto index = NativeInteger(indexList[i]).ModInverse(M).ConvertToInt<uint32_t>();
+        auto index = NativeInteger(newIndices[i]).ModInverse(M).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-        (*evalKeys)[indexList[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
+        (*evalKeys)[newIndices[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
