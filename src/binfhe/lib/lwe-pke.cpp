@@ -181,6 +181,13 @@ LWECiphertext LWEEncryptionScheme::SwitchCTtoqn(const std::shared_ptr<LWECryptoP
 // m_result = Round(4/q * (b - a*s))
 void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk,
                                   ConstLWECiphertext& ct, LWEPlaintext* result, LWEPlaintextModulus p) const {
+    if (sk == nullptr)
+        OPENFHE_THROW("PrivateKey is empty");
+    else if (ct == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+    else if (result == nullptr)
+        OPENFHE_THROW("result is nullptr");
+
     // TODO in the future we should add a check to make sure sk parameters match
     // the ct parameters
 
