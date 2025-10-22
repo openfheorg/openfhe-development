@@ -86,6 +86,8 @@ class MultipartyBase {
     using DggType  = typename Element::DggType;
     using TugType  = typename Element::TugType;
 
+    constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
+
 public:
     virtual ~MultipartyBase() = default;
 
@@ -218,7 +220,7 @@ public:
    */
     virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                   Poly* plaintext) const {
-        OPENFHE_THROW("Decryption to Poly is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -297,7 +299,7 @@ public:
 	 * @return: Resulting Ciphertext
 	 */
     virtual Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -313,7 +315,7 @@ public:
        */
     virtual Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
                                                ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -328,7 +330,7 @@ public:
        */
     virtual Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
                                                ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -342,7 +344,7 @@ public:
        */
     virtual Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1,
                                            ConstCiphertext<Element> ciphertext2) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -352,7 +354,7 @@ public:
     * @return: Resulting Ciphertext
     */
     virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -363,7 +365,7 @@ public:
     */
     virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                           const PublicKey<Element> publicKey) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -378,7 +380,7 @@ public:
     virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                               ConstCiphertext<Element> ciphertext,
                                                               ConstCiphertext<Element> a) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -391,7 +393,7 @@ public:
     */
     virtual std::vector<Ciphertext<Element>> IntMPBootAdd(
         std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -411,7 +413,7 @@ public:
                                                  const std::vector<Ciphertext<Element>>& sharesPair,
                                                  ConstCiphertext<Element> a,
                                                  ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("The function is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     template <class Archive>

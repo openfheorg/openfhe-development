@@ -262,9 +262,7 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
         const auto& LWEParams = params->GetLWEParams();
         uint32_t N{LWEParams->GetN()};
         if (q.ConvertToInt() > N) {  // need q to be at most = N for arbitary function
-            std::string errMsg =
-                "ERROR: ciphertext modulus q needs to be <= ring dimension for arbitrary function evaluation";
-            OPENFHE_THROW(errMsg);
+            OPENFHE_THROW("Ciphertext modulus q needs to be <= ring dimension for arbitrary function evaluation");
         }
 
         // TODO: figure out a way to not do this :(
@@ -390,7 +388,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     auto q{LWEParams->Getq()};
     if (mod <= q) {
         std::string errMsg =
-            "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
+            "This function is only for large precision. For small precision, please use bootstrapping directly";
         OPENFHE_THROW(errMsg);
     }
 
@@ -398,8 +396,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     const auto curBase     = RGSWParams->GetBaseG();
     auto search            = EKs.find(curBase);
     if (search == EKs.end()) {
-        std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
     }
     RingGSWBTKey curEK(search->second);
 
@@ -426,8 +423,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
 
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
-                    std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    OPENFHE_THROW(errMsg);
+                    OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
                 }
                 curEK = search->second;
             }
@@ -470,15 +466,14 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     NativeInteger q = LWEParams->Getq();
     if (mod <= q) {
         std::string errMsg =
-            "ERROR: EvalDecomp is only for large precision. For small precision, please use bootstrapping directly";
+            "This function is only for large precision. For small precision, please use bootstrapping directly";
         OPENFHE_THROW(errMsg);
     }
 
     const auto curBase = RGSWParams->GetBaseG();
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
-        std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
     }
     RingGSWBTKey curEK(search->second);
 
@@ -508,8 +503,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
-                    std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    OPENFHE_THROW(errMsg);
+                    OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
                 }
                 curEK = search->second;
             }

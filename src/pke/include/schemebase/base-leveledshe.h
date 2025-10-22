@@ -64,6 +64,10 @@ class LeveledSHEBase {
     using DggType  = typename Element::DggType;
     using TugType  = typename Element::TugType;
 
+    // TODO: should we use just one error message instead of two (see below)
+    constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
+    constexpr static std::string_view NOT_SUPPORTED_ERROR = "Not supported for this scheme";
+
 public:
     virtual ~LeveledSHEBase() = default;
 
@@ -124,11 +128,11 @@ public:
    */
     virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext1,
                                                Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("EvalAddMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalAddMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("EvalAddMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -160,7 +164,7 @@ public:
    * @return the new ciphertext.
    */
     virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        OPENFHE_THROW("EvalAddMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -173,31 +177,31 @@ public:
    * @return the new ciphertext.
    */
     virtual void EvalAddMutableInPlace(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        OPENFHE_THROW("EvalAddMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext, NativeInteger scalar) const {
-        OPENFHE_THROW("integer scalar addition is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, NativeInteger scalar) const {
-        OPENFHE_THROW("integer scalar addition is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext, double scalar) const {
-        OPENFHE_THROW("double scalar addition is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
-        OPENFHE_THROW("double scalar addition is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
-        OPENFHE_THROW("complex scalar addition is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
-        OPENFHE_THROW("complex scalar addition is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /////////////////////////////////////////
@@ -235,7 +239,7 @@ public:
    */
     virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext1,
                                                Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("EvalSubMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -248,7 +252,7 @@ public:
    * @return the new ciphertext.
    */
     virtual void EvalSubMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("EvalSubMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -273,27 +277,27 @@ public:
    * @return the new ciphertext.
    */
     virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        OPENFHE_THROW("EvalSubMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalSubMutableInPlace(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        OPENFHE_THROW("EvalSubMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext, NativeInteger scalar) const {
-        OPENFHE_THROW("integer scalar subtraction is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalSubInPlace(Ciphertext<Element>& ciphertext, NativeInteger scalar) const {
-        OPENFHE_THROW("integer scalar subtraction is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext, double scalar) const {
-        OPENFHE_THROW("double scalar subtraction is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalSubInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
-        OPENFHE_THROW("double scalar subtraction is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     //------------------------------------------------------------------------------
@@ -335,7 +339,7 @@ public:
    */
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1,
                                          ConstCiphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("EvalMult is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -349,7 +353,7 @@ public:
    */
     virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1,
                                                 Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("EvalMultMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -361,7 +365,7 @@ public:
    * @return the new ciphertext.
    */
     virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element>& ciphertext1) const {
-        OPENFHE_THROW("EvalSquare is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -374,7 +378,7 @@ public:
    * @return the new ciphertext.
    */
     virtual Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext1) const {
-        OPENFHE_THROW("EvalSquareMutable is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     //------------------------------------------------------------------------------
@@ -403,7 +407,7 @@ public:
    * @return the new ciphertext.
    */
     virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        OPENFHE_THROW("EvalMultMutable C,P is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -416,47 +420,47 @@ public:
    * @return the new ciphertext.
    */
     virtual void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
-        OPENFHE_THROW("EvalMultMutableInPlace C P is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> MultByMonomial(ConstCiphertext<Element>& ciphertext, uint32_t power) const {
-        OPENFHE_THROW("MultByMonomial is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void MultByMonomialInPlace(Ciphertext<Element>& ciphertext, uint32_t power) const {
-        OPENFHE_THROW("MultByMonomialInPlace is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, NativeInteger scalar) const {
-        OPENFHE_THROW("integer scalar multiplication is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, NativeInteger scalar) const {
-        OPENFHE_THROW("integer scalar multiplication is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double scalar) const {
-        OPENFHE_THROW("double scalar multiplication is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
-        OPENFHE_THROW("double scalar multiplication is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
-        OPENFHE_THROW("complex scalar multiplication is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
-        OPENFHE_THROW("complex scalar multiplication is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element>& ciphertext, uint64_t integer) const {
-        OPENFHE_THROW("MultByInteger is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     virtual void MultByIntegerInPlace(Ciphertext<Element>& ciphertext, uint64_t integer) const {
-        OPENFHE_THROW("MultByIntegerInPlace is not implemented for this scheme");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -576,8 +580,7 @@ public:
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
         const std::vector<uint32_t>& indexList) const {
-        std::string errMsg = "EvalAutomorphismKeyGen is not implemented for this scheme.";
-        OPENFHE_THROW(errMsg);
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -621,7 +624,7 @@ public:
                                                     const std::shared_ptr<std::vector<Element>> expandedCiphertext,
                                                     bool addFirst,
                                                     const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
-        OPENFHE_THROW("EvalFastRotationExt is not implemented for this scheme.");
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
     /**
@@ -650,7 +653,7 @@ public:
                                             const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     virtual uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const {
-        OPENFHE_THROW("FindAutomorphismIndex is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /////////////////////////////////////////
@@ -664,7 +667,7 @@ public:
    * @param levels the number of towers to drop.
    */
     virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element>& ciphertext, size_t levels) const {
-        OPENFHE_THROW("ModReduce is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -674,7 +677,7 @@ public:
    * @param levels the number of towers to drop.
    */
     virtual void ModReduceInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
-        OPENFHE_THROW("ModReduce is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -718,12 +721,12 @@ public:
    */
     virtual void LevelReduceInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey,
                                     size_t levels) const {
-        OPENFHE_THROW("LevelReduceInPlace is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, size_t towersLeft,
                                          size_t noiseScaleDeg) const {
-        OPENFHE_THROW("Compress is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -734,7 +737,7 @@ public:
    * @return ciphertext after the modulus reduction performed.
    */
     virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element>& ciphertext, size_t levels) const {
-        OPENFHE_THROW("ModReduce is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -745,7 +748,7 @@ public:
    * @details \p cipherText will have modulus reduction performed in-place.
    */
     virtual void ModReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
-        OPENFHE_THROW("ModReduce is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -758,7 +761,7 @@ public:
    * @return resulting ciphertext.
    */
     virtual Ciphertext<Element> LevelReduceInternal(ConstCiphertext<Element>& ciphertext, size_t levels) const {
-        OPENFHE_THROW("LevelReduce is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -770,29 +773,29 @@ public:
    * @param levels the number of towers to drop.
    */
     virtual void LevelReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
-        OPENFHE_THROW("LevelReduce is not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual void AdjustLevelsInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("Leveled Operations are not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual void AdjustLevelsAndDepthInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("Mutable Operations are not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<Element>& ciphertext1,
                                                   Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("Mutable Operations are not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     // TODO (Andrey) : Move these functions to protected or to rns?
     virtual void AdjustForAddOrSubInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("Mutable Operations are not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual void AdjustForMultInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
-        OPENFHE_THROW("Mutable Operations are not supported for this scheme");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual Ciphertext<Element> MorphPlaintext(ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext) const;

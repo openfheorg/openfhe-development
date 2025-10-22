@@ -221,11 +221,11 @@ public:
 
     PolyImpl Plus(const PolyImpl& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW("RingDimension missmatch");
+            OPENFHE_THROW("RingDimension mismatch");
         if (m_params->GetModulus() != rhs.m_params->GetModulus())
-            OPENFHE_THROW("Modulus missmatch");
+            OPENFHE_THROW("Modulus mismatch");
         if (m_format != rhs.m_format)
-            OPENFHE_THROW("Format missmatch");
+            OPENFHE_THROW("Format mismatch");
         auto tmp(*this);
         tmp.m_values->ModAddNoCheckEq(*rhs.m_values);
         return tmp;
@@ -253,9 +253,9 @@ public:
 
     PolyImpl Times(const PolyImpl& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW("RingDimension missmatch");
+            OPENFHE_THROW("RingDimension mismatch");
         if (m_params->GetModulus() != rhs.m_params->GetModulus())
-            OPENFHE_THROW("Modulus missmatch");
+            OPENFHE_THROW("Modulus mismatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
             OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
         auto tmp(*this);
@@ -269,9 +269,9 @@ public:
     }
     PolyImpl& operator*=(const PolyImpl& rhs) override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
-            OPENFHE_THROW("RingDimension missmatch");
+            OPENFHE_THROW("RingDimension mismatch");
         if (m_params->GetModulus() != rhs.m_params->GetModulus())
-            OPENFHE_THROW("Modulus missmatch");
+            OPENFHE_THROW("Modulus mismatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
             OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
         if (m_values) {

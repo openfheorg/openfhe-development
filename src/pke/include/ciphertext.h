@@ -145,9 +145,7 @@ public:
     const Element& GetElement() const {
         if (m_elements.size() == 1)
             return m_elements[0];
-        OPENFHE_THROW(
-            "GetElement should only be used in cases with a "
-            "Ciphertext with a single element");
+        OPENFHE_THROW("Can be called on a Ciphertext with a single element ONLY");
     }
 
     /**
@@ -159,9 +157,7 @@ public:
     Element& GetElement() {
         if (m_elements.size() == 1)
             return m_elements[0];
-        OPENFHE_THROW(
-            "GetElement should only be used in cases with a "
-            "Ciphertext with a single element");
+        OPENFHE_THROW("Can be called on a Ciphertext with a single element ONLY");
     }
 
     /**
@@ -196,9 +192,7 @@ public:
         else if (m_elements.size() == 1)
             m_elements[0] = element;
         else
-            OPENFHE_THROW(
-                "SetElement should only be used in cases with a "
-                "Ciphertext with a single element");
+            OPENFHE_THROW("Can be called on a Ciphertext with a single element ONLY");
     }
 
     /**

@@ -652,9 +652,9 @@ template <typename VecType>
 void DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, const NativeInteger& modulus) {
     size_t N(m_params->GetRingDimension());
     if (N != element.GetRingDimension())
-        OPENFHE_THROW(std::string(__func__) + ": Ring dimension mismatch.");
+        OPENFHE_THROW("Ring dimension mismatch.");
     if (element.m_vectors.size() != 1 || m_vectors.size() != 1)
-        OPENFHE_THROW(std::string(__func__) + ": Only implemented for DCRTPoly with one tower.");
+        OPENFHE_THROW("Only implemented for DCRTPoly with one tower.");
 
     auto input{element.m_vectors[0]};
     input.SetFormat(Format::COEFFICIENT);
@@ -671,7 +671,7 @@ void DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, cons
 template <typename VecType>
 void DCRTPolyImpl<VecType>::AddILElementOne() {
     if (m_format != Format::EVALUATION)
-        OPENFHE_THROW(std::string(__func__) + ": only available in COEFFICIENT format.");
+        OPENFHE_THROW("Only available in COEFFICIENT format.");
     size_t size{m_vectors.size()};
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
     for (size_t i = 0; i < size; ++i)
@@ -690,9 +690,9 @@ bool DCRTPolyImpl<VecType>::IsEmpty() const {
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElement() {
     if (m_vectors.size() == 0)
-        OPENFHE_THROW(std::string(__func__) + ": Input has no elements to drop.");
+        OPENFHE_THROW("Input has no elements to drop.");
     if (m_vectors.size() == 1)
-        OPENFHE_THROW(std::string(__func__) + ": Removing last element of DCRTPoly renders it invalid.");
+        OPENFHE_THROW("Removing last element of DCRTPoly renders it invalid.");
     m_vectors.resize(m_vectors.size() - 1);
     DCRTPolyImpl::Params* newP = new DCRTPolyImpl::Params(*m_params);
     newP->PopLastParam();
@@ -702,7 +702,7 @@ void DCRTPolyImpl<VecType>::DropLastElement() {
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
     if (m_vectors.size() <= i)
-        OPENFHE_THROW(std::string(__func__) + ": Too few towers in input.");
+        OPENFHE_THROW("Too few towers in input.");
     m_vectors.resize(m_vectors.size() - i);
     DCRTPolyImpl::Params* newP = new DCRTPolyImpl::Params(*m_params);
     for (size_t j = 0; j < i; ++j)
@@ -788,7 +788,7 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
 template <typename VecType>
 typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpolate() const {
     if (m_format != Format::COEFFICIENT)
-        OPENFHE_THROW(std::string(__func__) + ": Only available in COEFFICIENT format.");
+        OPENFHE_THROW("Only available in COEFFICIENT format.");
 
     const uint32_t t(m_vectors.size());
     const uint32_t r{m_params->GetRingDimension()};
@@ -826,7 +826,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
 template <typename VecType>
 typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpolateIndex(uint32_t i) const {
     if (m_format != Format::COEFFICIENT)
-        OPENFHE_THROW(std::string(__func__) + ": Only available in COEFFICIENT format.");
+        OPENFHE_THROW("Only available in COEFFICIENT format.");
 
     uint32_t r{m_params->GetRingDimension()};
     const Integer qt{m_params->GetModulus()};

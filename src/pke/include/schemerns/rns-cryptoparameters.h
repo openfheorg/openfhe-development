@@ -448,9 +448,7 @@ public:
         if (part < m_PartQlHatInvModq.size() && sublvl < m_PartQlHatInvModq[part].size())
             return m_PartQlHatInvModq[part][sublvl];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
-            "index out of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -463,10 +461,7 @@ public:
         if (part < m_PartQlHatInvModqPrecon.size() && sublvl < m_PartQlHatInvModqPrecon[part].size())
             return m_PartQlHatInvModqPrecon[part][sublvl];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::"
-            "GetPartitionQHatInvModQPreconTable - index "
-            "out of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -479,9 +474,7 @@ public:
         if (lvl < m_PartQlHatModp.size() && part < m_PartQlHatModp[lvl].size())
             return m_PartQlHatModp[lvl][part];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionQHatModPTable - "
-            "index out of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -494,9 +487,7 @@ public:
         if (lvl < m_modComplPartqBarrettMu.size() && part < m_modComplPartqBarrettMu[lvl].size())
             return m_modComplPartqBarrettMu[lvl][part];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionPrecon - index out "
-            "of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**

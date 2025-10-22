@@ -245,7 +245,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
 
     if ((encodingParams->GetBatchSize() == 0))
         OPENFHE_THROW(
-            "EvalSum: Packed encoding parameters 'batch size' is not set; "
+            "Packed encoding parameters 'batch size' is not set; "
             "Please check the EncodingParams passed to the crypto context.");
 
     usint m = cryptoParams->GetElementParams()->GetCyclotomicOrder();
@@ -261,7 +261,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
     else {  // Arbitrary cyclotomics
         if (encodingParams->GetPlaintextGenerator() == 0) {
             OPENFHE_THROW(
-                "EvalSum: Packed encoding parameters 'plaintext "
+                "Packed encoding parameters 'plaintext "
                 "generator' is not set; Please check the "
                 "EncodingParams passed to the crypto context.");
         }

@@ -813,7 +813,7 @@ protected:
             result->SetLength(8);
 
             checkEquality(ptxt->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
-                          failmsg + " input/output missmatch");
+                          failmsg + " input/output mismatch");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

@@ -440,8 +440,7 @@ public:
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
             OPENFHE_THROW(
-                "PolyInterface element transposition is currently "
-                "implemented only in the Evaluation representation.");
+                "PolyInterface element transposition is currently implemented only in the Evaluation representation.");
         }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }

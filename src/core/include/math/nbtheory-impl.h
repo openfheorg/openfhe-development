@@ -329,7 +329,7 @@ template <typename IntType>
 IntType FirstPrime(uint32_t nBits, uint64_t m) {
     if constexpr (std::is_same_v<IntType, NativeInteger>) {
         if (nBits > MAX_MODULUS_SIZE)
-            OPENFHE_THROW(std::string(__func__) + ": Requested bit length " + std::to_string(nBits) +
+            OPENFHE_THROW("Requested bit length " + std::to_string(nBits) +
                           " exceeds maximum allowed length " + std::to_string(MAX_MODULUS_SIZE));
     }
 
@@ -341,7 +341,7 @@ IntType FirstPrime(uint32_t nBits, uint64_t m) {
         qNew += M;
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew += M) < q)
-            OPENFHE_THROW(std::string(__func__) + ": overflow growing candidate");
+            OPENFHE_THROW("Overflow growing candidate");
     }
     return qNew;
 }
@@ -350,7 +350,7 @@ template <typename IntType>
 IntType LastPrime(uint32_t nBits, uint64_t m) {
     if constexpr (std::is_same_v<IntType, NativeInteger>) {
         if (nBits > MAX_MODULUS_SIZE)
-            OPENFHE_THROW(std::string(__func__) + ": Requested bit length " + std::to_string(nBits) +
+            OPENFHE_THROW("Requested bit length " + std::to_string(nBits) +
                           " exceeds maximum allowed length " + std::to_string(MAX_MODULUS_SIZE));
     }
 
@@ -362,11 +362,11 @@ IntType LastPrime(uint32_t nBits, uint64_t m) {
         qNew -= M;
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew -= M) > q)
-            OPENFHE_THROW(std::string(__func__) + ": overflow shrinking candidate");
+            OPENFHE_THROW("overflow shrinking candidate");
     }
 
     if (qNew.GetMSB() != nBits)
-        OPENFHE_THROW(std::string(__func__) + ": Requested " + std::to_string(nBits) + " bits, but returned " +
+        OPENFHE_THROW("Requested " + std::to_string(nBits) + " bits, but returned " +
                       std::to_string(qNew.GetMSB()) + ". Please adjust parameters.");
 
     return qNew;
@@ -377,7 +377,7 @@ IntType NextPrime(const IntType& q, uint64_t m) {
     IntType M(m), qNew(q + M);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew += M) < q)
-            OPENFHE_THROW(std::string(__func__) + ": overflow growing candidate");
+            OPENFHE_THROW("Overflow growing candidate");
     }
     return qNew;
 }
@@ -387,7 +387,7 @@ IntType PreviousPrime(const IntType& q, uint64_t m) {
     IntType M(m), qNew(q - M);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew -= M) > q)
-            OPENFHE_THROW(std::string(__func__) + ": overflow shrinking candidate");
+            OPENFHE_THROW("Overflow shrinking candidate");
     }
     return qNew;
 }
