@@ -33,7 +33,6 @@
  * Hybrid key switching implementation. See
  * Appendix of https://eprint.iacr.org/2021/204 for details.
  */
-#define PROFILE
 
 #include "ciphertext.h"
 #include "key/evalkeyrelin.h"
@@ -201,14 +200,16 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
     auto& cv = ciphertext->GetElements();
     auto ba  = KeySwitchCore(cv.back(), ek);
 
-    cv[0].SetFormat((*ba)[0].GetFormat());
+    cv[0].SetFormat(Format::EVALUATION);
     cv[0] += (*ba)[0];
 
-    cv[1].SetFormat((*ba)[1].GetFormat());
-    if (cv.size() > 2)
+    if (cv.size() > 2) {
+        cv[1].SetFormat(Format::EVALUATION);
         cv[1] += (*ba)[1];
-    else
+    }
+    else {
         cv[1] = (*ba)[1];
+    }
 
     cv.resize(2);
 }

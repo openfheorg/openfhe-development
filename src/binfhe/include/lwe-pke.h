@@ -34,11 +34,11 @@
 
 #include "binfhe-constants.h"
 #include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
+#include "lwe-keypair.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-publickey.h"
-#include "lwe-keypair.h"
-#include "lwe-cryptoparameters.h"
 
 #include <memory>
 
@@ -48,8 +48,6 @@ namespace lbcrypto {
  * @brief Additive public-key LWE scheme
  */
 class LWEEncryptionScheme {
-    NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) const;
-
 public:
     LWEEncryptionScheme() = default;
 
@@ -60,7 +58,7 @@ public:
    * @param modulus the modulus for the secret key
    * @return a shared pointer to the secret key
    */
-    LWEPrivateKey KeyGen(usint size, const NativeInteger& modulus) const;
+    LWEPrivateKey KeyGen(uint32_t size, NativeInteger modulus) const;
 
     /**
    * Generates a secret key of dimension n using modulus q
@@ -69,7 +67,7 @@ public:
    * @param modulus the modulus for the secret key
    * @return a shared pointer to the secret key
    */
-    LWEPrivateKey KeyGenGaussian(usint size, const NativeInteger& modulus) const;
+    LWEPrivateKey KeyGenGaussian(uint32_t size, NativeInteger modulus) const;
 
     /**
    * Generates a public key of dimension N and modulus Q, secret key of dimension n using modulus q pair

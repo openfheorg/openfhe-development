@@ -36,15 +36,13 @@
     )
  *  see the Appendix of https://eprint.iacr.org/2021/204 for more details
  */
-#define PROFILE
 
-#include "keyswitch/keyswitch-bv.h"
-
+#include "cryptocontext.h"
+#include "key/evalkeyrelin.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "key/evalkeyrelin.h"
+#include "keyswitch/keyswitch-bv.h"
 #include "schemerns/rns-cryptoparameters.h"
-#include "cryptocontext.h"
 
 namespace lbcrypto {
 
@@ -52,70 +50,52 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
                                                     const PrivateKey<DCRTPoly> newKey) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
 
-    const DCRTPoly& sNew = newKey->GetPrivateElement();
-    auto elementParams   = sNew.GetParams();
-    const DCRTPoly& sOld = oldKey->GetPrivateElement();
-
-    const auto ns      = cryptoParams->GetNoiseScale();
-    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
     DugType dug;
+    auto dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    usint digitSize = cryptoParams->GetDigitSize();
+    const auto ns           = cryptoParams->GetNoiseScale();
+    const auto& sNew        = newKey->GetPrivateElement();
+    const auto& ep          = sNew.GetParams();
+    const auto& sOld        = oldKey->GetPrivateElement();
+    const uint32_t sizeSOld = sOld.GetNumOfElements();
 
-    usint sizeSOld = sOld.GetNumOfElements();
-    usint nWindows = 0;
-    std::vector<usint> arrWindows;
-    arrWindows.reserve(sizeSOld);
-    if (digitSize > 0) {
+    std::vector<DCRTPoly> av, bv;
+    if (auto digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {
         // creates an array of digits up to a certain tower
-        for (usint i = 0; i < sizeSOld; i++) {
-            usint sOldMSB    = sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
-            usint curWindows = sOldMSB / digitSize;
-            if (sOldMSB % digitSize > 0)
-                curWindows++;
-            arrWindows.push_back(nWindows);
-            nWindows += curWindows;
+        std::vector<uint32_t> arrWindows(sizeSOld);
+        uint32_t nWindows = 0;
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            arrWindows[i]  = nWindows;
+            double sOldMSB = sOld.GetElementAtIndex(i).GetModulus().GetMSB();
+            nWindows += std::ceil(sOldMSB / digitSize);
         }
-    }
-    else {
-        nWindows = sizeSOld;
-    }
 
-    std::vector<DCRTPoly> av(nWindows);
-    std::vector<DCRTPoly> bv(nWindows);
-
-    // TODO: parallelize loop using fix from KeySwitchHYBRID::KeySwitchGenInternal
-
-    if (digitSize > 0) {
-        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-            std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
-
-            for (usint k = 0; k < sOldDecomposed.size(); k++) {
-                DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-                filtered.SetElementAtIndex(i, sOldDecomposed[k]);
-
-                DCRTPoly a(dug, elementParams, Format::EVALUATION);
-                DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-
-                av[k + arrWindows[i]] = std::move(a);
-                bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
+        av.resize(nWindows);
+        bv.resize(nWindows);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(dug, dgg)
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            auto sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
+            for (uint32_t j = arrWindows[i], k = 0; k < sOldDecomposed.size(); ++j, ++k) {
+                av[j] = DCRTPoly(dug, ep, Format::EVALUATION);
+                bv[j] = DCRTPoly(ep, Format::EVALUATION, true);
+                bv[j].SetElementAtIndex(i, std::move(sOldDecomposed[k]));
+                bv[j] -= (av[j] * sNew + DCRTPoly(dgg, ep, Format::EVALUATION) * ns);
             }
         }
     }
     else {
-        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-            DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-            filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
-
-            DCRTPoly a(dug, elementParams, Format::EVALUATION);
-            DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-
-            av[i] = std::move(a);
-            bv[i] = filtered - (av[i] * sNew + ns * e);
+        av.resize(sizeSOld);
+        bv.resize(sizeSOld);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(dug, dgg)
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            av[i] = DCRTPoly(dug, ep, Format::EVALUATION);
+            bv[i] = DCRTPoly(ep, Format::EVALUATION, true);
+            bv[i].SetElementAtIndex(i, sOld.GetElementAtIndex(i));
+            bv[i] -= (av[i] * sNew + DCRTPoly(dgg, ep, Format::EVALUATION) * ns);
         }
     }
 
-    EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
+    auto ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext());
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
@@ -127,81 +107,52 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
                                                     const EvalKey<DCRTPoly> ek) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(oldKey->GetCryptoParameters());
 
-    const DCRTPoly& sNew = newKey->GetPrivateElement();
-    auto elementParams   = sNew.GetParams();
-    DCRTPoly sOld        = oldKey->GetPrivateElement();
-    sOld.DropLastElements(oldKey->GetCryptoContext()->GetKeyGenLevel());
-
-    const auto ns      = cryptoParams->GetNoiseScale();
-    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
     DugType dug;
+    auto dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    usint digitSize = cryptoParams->GetDigitSize();
+    const auto ns           = cryptoParams->GetNoiseScale();
+    const auto& sNew        = newKey->GetPrivateElement();
+    const auto& ep          = sNew.GetParams();
+    const auto& sOld        = oldKey->GetPrivateElement();
+    const uint32_t sizeSOld = sOld.GetNumOfElements();
 
-    usint sizeSOld = sOld.GetNumOfElements();
-    usint nWindows = 0;
-    std::vector<usint> arrWindows;
-    arrWindows.reserve(sizeSOld);
-    if (digitSize > 0) {
+    std::vector<DCRTPoly> av, bv;
+    if (auto digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {
         // creates an array of digits up to a certain tower
-        for (usint i = 0; i < sizeSOld; i++) {
-            usint sOldMSB    = sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
-            usint curWindows = sOldMSB / digitSize;
-            if (sOldMSB % digitSize > 0)
-                curWindows++;
-            arrWindows.push_back(nWindows);
-            nWindows += curWindows;
+        std::vector<uint32_t> arrWindows(sizeSOld);
+        uint32_t nWindows = 0;
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            arrWindows[i]  = nWindows;
+            double sOldMSB = sOld.GetElementAtIndex(i).GetModulus().GetMSB();
+            nWindows += std::ceil(sOldMSB / digitSize);
         }
-    }
-    else {
-        nWindows = sizeSOld;
-    }
 
-    std::vector<DCRTPoly> av(nWindows);
-    std::vector<DCRTPoly> bv(nWindows);
-
-    // TODO: parallelize loop using fix from KeySwitchHYBRID::KeySwitchGenInternal
-
-    if (digitSize > 0) {
-        for (usint i = 0; i < sizeSOld; i++) {
-            std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
-
-            for (usint k = 0; k < sOldDecomposed.size(); k++) {
-                DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-                filtered.SetElementAtIndex(i, sOldDecomposed[k]);
-
-                if (ek == nullptr) {  // single-key HE
-                    // Generate a_i vectors
-                    av[k + arrWindows[i]] = DCRTPoly(dug, elementParams, Format::EVALUATION);
-                }
-                else {  // threshold HE
-                    av[k + arrWindows[i]] = ek->GetAVector()[k + arrWindows[i]];
-                }
-
-                DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-                bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
+        av.resize(nWindows);
+        bv.resize(nWindows);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(dug, dgg)
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            auto sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
+            for (uint32_t j = arrWindows[i], k = 0; k < sOldDecomposed.size(); ++j, ++k) {
+                av[j] = ek ? ek->GetAVector()[j] : DCRTPoly(dug, ep, Format::EVALUATION);
+                bv[j] = DCRTPoly(ep, Format::EVALUATION, true);
+                bv[j].SetElementAtIndex(i, std::move(sOldDecomposed[k]));
+                bv[j] -= (av[j] * sNew + DCRTPoly(dgg, ep, Format::EVALUATION) * ns);
             }
         }
     }
     else {
-        for (usint i = 0; i < sizeSOld; i++) {
-            DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-            filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
-
-            if (ek == nullptr) {  // single-key HE
-                // Generate a_i vectors
-                av[i] = DCRTPoly(dug, elementParams, Format::EVALUATION);
-            }
-            else {  // threshold HE
-                av[i] = ek->GetAVector()[i];
-            }
-
-            DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-            bv[i] = filtered - (av[i] * sNew + ns * e);
+        av.resize(sizeSOld);
+        bv.resize(sizeSOld);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(dug, dgg)
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            av[i] = ek ? ek->GetAVector()[i] : DCRTPoly(dug, ep, Format::EVALUATION);
+            bv[i] = DCRTPoly(ep, Format::EVALUATION, true);
+            bv[i].SetElementAtIndex(i, sOld.GetElementAtIndex(i));
+            bv[i] -= (av[i] * sNew + DCRTPoly(dgg, ep, Format::EVALUATION) * ns);
         }
     }
 
-    EvalKeyRelin<DCRTPoly> evalKey(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
+    auto evalKey = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext());
     evalKey->SetAVector(std::move(av));
     evalKey->SetBVector(std::move(bv));
     evalKey->SetKeyTag(newKey->GetKeyTag());
@@ -210,68 +161,63 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldSk,
                                                     const PublicKey<DCRTPoly> newPk) const {
-    EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPk->GetCryptoContext());
-
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newPk->GetCryptoParameters());
 
-    const auto ns                = cryptoParams->GetNoiseScale();
-    const DCRTPoly::DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-    DCRTPoly::TugType tug;
+    TugType tug;
+    auto dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    const DCRTPoly& sOld = oldSk->GetPrivateElement();
+    const auto ns           = cryptoParams->GetNoiseScale();
+    const auto& newp0       = newPk->GetPublicElements().at(0);
+    const auto& newp1       = newPk->GetPublicElements().at(1);
+    const auto& ep          = newp0.GetParams();
+    const auto& sOld        = oldSk->GetPrivateElement();
+    const uint32_t sizeSOld = sOld.GetNumOfElements();
 
-    std::vector<DCRTPoly> av;
-    std::vector<DCRTPoly> bv;
+    std::vector<DCRTPoly> av, bv;
+    if (uint32_t digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {
+        // creates an array of digits up to a certain tower
+        std::vector<uint32_t> arrWindows(sizeSOld);
+        uint32_t nWindows = 0;
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            arrWindows[i]  = nWindows;
+            double sOldMSB = sOld.GetElementAtIndex(i).GetModulus().GetMSB();
+            nWindows += std::ceil(sOldMSB / digitSize);
+        }
 
-    uint32_t digitSize = cryptoParams->GetDigitSize();
-
-    const DCRTPoly& newp0 = newPk->GetPublicElements().at(0);
-    const DCRTPoly& newp1 = newPk->GetPublicElements().at(1);
-    auto elementParams    = newp0.GetParams();
-
-    if (digitSize > 0) {
-        av.reserve(sOld.GetNumOfElements() * digitSize);
-        bv.reserve(sOld.GetNumOfElements() * digitSize);
-        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-            for (auto&& sOldDecomposed : sOld.GetElementAtIndex(i).PowersOfBase(digitSize)) {
-                DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-                filtered.SetElementAtIndex(i, std::move(sOldDecomposed));
-
-                DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
-                                 DCRTPoly(dgg, elementParams, Format::EVALUATION) :
-                                 DCRTPoly(tug, elementParams, Format::EVALUATION);
-
-                DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-                DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
-                bv.push_back(std::move(c0));
-
-                DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-                DCRTPoly c1 = newp1 * u + ns * e1;
-                av.push_back(std::move(c1));
+        av.resize(nWindows);
+        bv.resize(nWindows);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(tug, dgg)
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            auto sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
+            for (uint32_t j = arrWindows[i], k = 0; k < sOldDecomposed.size(); ++j, ++k) {
+                bv[j] = DCRTPoly(ep, Format::EVALUATION, true);
+                bv[j].SetElementAtIndex(i, std::move(sOldDecomposed[k]));
+                bv[j] += DCRTPoly(dgg, ep, Format::EVALUATION) * ns;
+                DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, ep, Format::EVALUATION) :
+                                                                              DCRTPoly(tug, ep, Format::EVALUATION);
+                bv[j] += newp0 * u;
+                av[j] = newp1 * u;
+                av[j] += DCRTPoly(dgg, ep, Format::EVALUATION) * ns;
             }
         }
     }
     else {
-        av.reserve(sOld.GetNumOfElements());
-        bv.reserve(sOld.GetNumOfElements());
-        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-            DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-            filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
-
-            DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
-                             DCRTPoly(dgg, elementParams, Format::EVALUATION) :
-                             DCRTPoly(tug, elementParams, Format::EVALUATION);
-
-            DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-            DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
-            bv.push_back(std::move(c0));
-
-            DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-            DCRTPoly c1 = newp1 * u + ns * e1;
-            av.push_back(std::move(c1));
+        av.resize(sizeSOld);
+        bv.resize(sizeSOld);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(tug, dgg)
+        for (uint32_t i = 0; i < sizeSOld; ++i) {
+            bv[i] = DCRTPoly(ep, Format::EVALUATION, true);
+            bv[i].SetElementAtIndex(i, sOld.GetElementAtIndex(i));
+            bv[i] += DCRTPoly(dgg, ep, Format::EVALUATION) * ns;
+            DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, ep, Format::EVALUATION) :
+                                                                          DCRTPoly(tug, ep, Format::EVALUATION);
+            bv[i] += newp0 * u;
+            av[i] = newp1 * u;
+            av[i] += DCRTPoly(dgg, ep, Format::EVALUATION) * ns;
         }
     }
 
+    auto ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPk->GetCryptoContext());
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newPk->GetKeyTag());
@@ -279,9 +225,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 }
 
 void KeySwitchBV::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek) const {
-    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-
-    std::shared_ptr<std::vector<DCRTPoly>> ba = (cv.size() == 2) ? KeySwitchCore(cv[1], ek) : KeySwitchCore(cv[2], ek);
+    auto& cv = ciphertext->GetElements();
+    auto ba  = KeySwitchCore(cv.back(), ek);
 
     cv[0].SetFormat(Format::EVALUATION);
     cv[0] += (*ba)[0];
@@ -314,25 +259,22 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(
     const std::shared_ptr<ParmType> paramsQl) const {
     std::vector<DCRTPoly> bv(evalKey->GetBVector());
     std::vector<DCRTPoly> av(evalKey->GetAVector());
-
-    auto sizeQ    = bv[0].GetParams()->GetParams().size();
-    auto sizeQl   = paramsQl->GetParams().size();
-    size_t diffQl = sizeQ - sizeQl;
-
-    for (size_t k = 0; k < bv.size(); k++) {
-        av[k].DropLastElements(diffQl);
-        bv[k].DropLastElements(diffQl);
+    const auto diffQl    = bv[0].GetParams()->GetParams().size() - paramsQl->GetParams().size();
+    const uint32_t limit = (*digits).size();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
+    for (uint32_t i = 0; i < limit; ++i) {
+        bv[i].DropLastElements(diffQl);
+        bv[i] *= (*digits)[i];
+        av[i].DropLastElements(diffQl);
+        av[i] *= (*digits)[i];
     }
 
-    DCRTPoly ct1 = (av[0] *= (*digits)[0]);
-    DCRTPoly ct0 = (bv[0] *= (*digits)[0]);
-
-    for (usint i = 1; i < (*digits).size(); ++i) {
-        ct0 += (bv[i] *= (*digits)[i]);
-        ct1 += (av[i] *= (*digits)[i]);
+    std::vector<DCRTPoly> res{std::move(bv[0]), std::move(av[0])};
+    for (uint32_t i = 1; i < limit; ++i) {
+        res[0] += bv[i];
+        res[1] += av[i];
     }
-
-    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
+    return std::make_shared<std::vector<DCRTPoly>>(std::move(res));
 }
 
 }  // namespace lbcrypto
