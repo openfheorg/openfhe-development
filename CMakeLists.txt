@@ -403,6 +403,7 @@ endif()
 configure_file(./configure/config_core.in src/core/config_core.h)
 install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/openfhe/core)
 
+# TODO (dsuponit): do we need TAR?
 find_program(TAR "gtar")
 find_program(TAR "tar")
 
@@ -552,50 +553,37 @@ endif()
 # Coverage logic
 #--------------------------------------------------------------------
 if(WITH_COVTEST)
-    find_program(LCOV_BIN lcov)
-    find_program(GENHTML_BIN genhtml)   # needed for HTML
-    if(LCOV_BIN AND GENHTML_BIN)
-        # Pick a gcov that matches the compiler major version
+    find_program(LCOV lcov)
+    find_program(GENHTML genhtml)
+    if(LCOV AND GENHTML)
+        # gcov version should match the compiler major version
         string(REGEX MATCH "^[0-9]+" GCC_MAJOR "${CMAKE_CXX_COMPILER_VERSION}")
-        find_program(GCOV_BIN NAMES gcov-${GCC_MAJOR} gcov)
-        if(NOT GCOV_BIN)
+        find_program(GCOV NAMES gcov-${GCC_MAJOR} gcov)
+        if(NOT GCOV)
             message(FATAL_ERROR "Could not find gcov matching GCC-${GCC_MAJOR}.To install it: 'sudo apt-get install -y lcov gcc-${GCC_MAJOR} g++-${GCC_MAJOR}'")
         endif()
 
-        set(LCOV_EXCLUDES
-            --exclude '*/usr/include/*'
-            --exclude '*/usr/local/include/*'
-            --exclude '*/third-party/*'
-            --exclude '*/_deps/*'
-            --exclude '*/CMakeFiles/*'
-        )
+        set(LCOV_EXCLUDES --exclude '*/usr/include/*' --exclude '*/third-party/*')
 
-        # Forward options to geninfo via lcov:
-        # - ignore “mismatch” and "unused" errors, keep double “mismatch”
-        # - avoid excluding system paths explicitly
-        # - zero “unexecuted block” anomalies
-        # - force the matching gcov
-        set(LCOV_COMMON
-            --ignore-errors mismatch,mismatch,unused
-            --no-external
+        # keep double “mismatch” and "unused" for mismatch, multiple mismatch, unused, multiple unused and empty
+        set(LCOV_OPTIONS
+            --ignore-errors mismatch,mismatch,unused,unused,empty
             --rc geninfo_unexecuted_blocks=1
-            --gcov-tool ${GCOV_BIN}
+            --gcov-tool ${GCOV}
         )
 
         # Creates the command: make cov
         add_custom_target(cov
             DEPENDS core_tests pke_tests binfhe_tests
-            # Uncomment the line below if you want cov to run tests for you
-            # COMMAND ${CMAKE_MAKE_PROGRAM} -j testall || true
             COMMAND cd ${BUILDDIR} && mkdir -p coverage
-            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/core_tests.dir/unittest/ && ${LCOV_BIN} --capture --directory . --output-file ${COVDIR}/core.info ${LCOV_EXCLUDES} ${LCOV_COMMON}
-            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/coreobj.dir/ && ${LCOV_BIN} --capture --directory . --output-file ${COVDIR}/core_cpp.info ${LCOV_EXCLUDES} ${LCOV_COMMON}
-            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pke_tests.dir/unittest/ && ${LCOV_BIN} --capture --directory . --output-file ${COVDIR}/pke.info ${LCOV_EXCLUDES} ${LCOV_COMMON}
-            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pkeobj.dir/ && ${LCOV_BIN} --capture --directory . --output-file ${COVDIR}/pke_cpp.info ${LCOV_EXCLUDES} ${LCOV_COMMON}
-            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfhe_tests.dir/unittest/ && ${LCOV_BIN} --capture --directory . --output-file ${COVDIR}/binfhe.info ${LCOV_EXCLUDES} ${LCOV_COMMON}
-            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfheobj.dir/ && ${LCOV_BIN} --capture --directory . --output-file ${COVDIR}/binfhe_cpp.info ${LCOV_EXCLUDES} ${LCOV_COMMON}
-            COMMAND cd ${COVDIR} && mkdir -p assets && ${GENHTML_BIN} -t "Coverage Test" -o ${COVDIR}/assets/ *.info)
-        message(STATUS "lcov found in ${LCOV_BIN}")
+            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/core_tests.dir/unittest/ && ${LCOV} --capture --directory . --output-file ${COVDIR}/core.info ${LCOV_EXCLUDES} ${LCOV_OPTIONS}
+            COMMAND cd ${BUILDDIR}/src/core/CMakeFiles/coreobj.dir/ && ${LCOV} --capture --directory . --output-file ${COVDIR}/core_cpp.info ${LCOV_EXCLUDES} ${LCOV_OPTIONS}
+            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pke_tests.dir/unittest/ && ${LCOV} --capture --directory . --output-file ${COVDIR}/pke.info ${LCOV_EXCLUDES} ${LCOV_OPTIONS}
+            COMMAND cd ${BUILDDIR}/src/pke/CMakeFiles/pkeobj.dir/ && ${LCOV} --capture --directory . --output-file ${COVDIR}/pke_cpp.info ${LCOV_EXCLUDES} ${LCOV_OPTIONS}
+            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfhe_tests.dir/unittest/ && ${LCOV} --capture --directory . --output-file ${COVDIR}/binfhe.info ${LCOV_EXCLUDES} ${LCOV_OPTIONS}
+            COMMAND cd ${BUILDDIR}/src/binfhe/CMakeFiles/binfheobj.dir/ && ${LCOV} --capture --directory . --output-file ${COVDIR}/binfhe_cpp.info ${LCOV_EXCLUDES} ${LCOV_OPTIONS}
+            COMMAND cd ${COVDIR} && mkdir -p assets && ${GENHTML} -t "Coverage Test" -o ${COVDIR}/assets/ *.info)
+        message(STATUS "lcov found in ${LCOV}")
     else()
         message(STATUS "lcov needs to be installed to generate a coverage report")
     endif()
