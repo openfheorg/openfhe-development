@@ -29,6 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#ifndef LBCRYPTO_CRYPTO_RLWE_MP_H
+#define LBCRYPTO_CRYPTO_RLWE_MP_H
+
 #include "openfhe.h"
 
 #include <memory>
@@ -68,3 +71,5 @@ public:
 };
 
 }  // namespace lbcrypto
+
+#endif  // LBCRYPTO_CRYPTO_RLWE_MP_H
