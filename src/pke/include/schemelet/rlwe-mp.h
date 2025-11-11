@@ -32,7 +32,10 @@
 #ifndef LBCRYPTO_CRYPTO_RLWE_MP_H
 #define LBCRYPTO_CRYPTO_RLWE_MP_H
 
-#include "openfhe.h"
+#include "ciphertext.h"
+#include "cryptocontext.h"
+#include "key/keypair.h"
+#include "openfhecore.h"
 
 #include <memory>
 #include <vector>
