@@ -173,13 +173,9 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
 
 template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
+    const PrivateKey<Element> privateKey) const {
     if (!privateKey)
         OPENFHE_THROW("Input private key is nullptr");
-    /*
-   * we don't validate publicKey as it is needed by NTRU-based scheme only
-   * NTRU-based scheme only and it is checked for null later.
-   */
 
     // get automorphism indices and convert them to a vector
     std::set<uint32_t> indx_set{GenerateIndexListForEvalSum(privateKey)};

@@ -347,7 +347,6 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
     const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
-
     // Do not generate duplicate keys that have been already generated and added to the static storage (map)
     std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
     std::set<uint32_t> indicesToGenerate{
@@ -477,8 +476,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAtIndexKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<int32_t>& indexList) const {
+    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++)

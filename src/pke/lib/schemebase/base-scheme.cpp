@@ -73,10 +73,9 @@ std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const Private
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAtIndexKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<int32_t>& indexList) const {
+    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
-    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
+    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -102,9 +101,9 @@ Ciphertext<Element> SchemeBase<Element>::ModReduce(ConstCiphertext<Element>& cip
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
+    const PrivateKey<Element> privateKey) const {
     VerifyAdvancedSHEEnabled(__func__);
-    auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey, publicKey);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -318,17 +317,6 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalA
     const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
-    for (auto& key : *evalKeyMap)
-        key.second->SetKeyTag(privateKey->GetKeyTag());
-    return evalKeyMap;
-}
-
-template <typename Element>
-std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<uint32_t>& indexList) const {
-    VerifyLeveledSHEEnabled(__func__);
-    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(publicKey, privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;

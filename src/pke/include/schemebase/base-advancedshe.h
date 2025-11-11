@@ -66,6 +66,7 @@ class AdvancedSHEBase {
     using TugType  = typename Element::TugType;
 
     constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
+
 public:
     virtual ~AdvancedSHEBase() = default;
 
@@ -366,7 +367,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
+        const PrivateKey<Element> privateKey) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumRows; works

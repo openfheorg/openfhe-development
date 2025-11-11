@@ -66,7 +66,7 @@ class LeveledSHEBase {
 
     // TODO: should we use just one error message instead of two (see below)
     constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
-    constexpr static std::string_view NOT_SUPPORTED_ERROR = "Not supported for this scheme";
+    constexpr static std::string_view NOT_SUPPORTED_ERROR   = "Not supported for this scheme";
 
 public:
     virtual ~LeveledSHEBase() = default;
@@ -570,20 +570,6 @@ public:
         const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
     /**
-   * Virtual function to generate all isomorphism keys for a given private key
-   *
-   * @param publicKey encryption key for the new ciphertext.
-   * @param origPrivateKey original private key used for decryption.
-   * @param indexList list of automorphism indices to be computed
-   * @return returns the evaluation keys
-   */
-    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<uint32_t>& indexList) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-
-    /**
    * Virtual function for evaluating automorphism of ciphertext at index i
    *
    * @param ciphertext the input ciphertext.
@@ -637,8 +623,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<int32_t>& indexList) const;
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     /**
    * Moves i-th slot to slot 0

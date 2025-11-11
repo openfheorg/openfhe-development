@@ -1331,7 +1331,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     // Compute multiplication key
     algo->EvalMultKeyGen(privateKey);
 
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     // Compute conjugation key
     auto conjKey       = ConjugateKeyGen(privateKey);
@@ -1539,7 +1539,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
                               indexRotationHomDec.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationHomDec);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationHomDec);
 
     // Compute multiplication key
     ccCKKS->EvalMultKeyGen(privateKey);
@@ -1855,7 +1855,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     indexRotationS2C.erase(std::remove(indexRotationS2C.begin(), indexRotationS2C.end(), 0), indexRotationS2C.end());
 
     auto algo     = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     // Compute conjugation key
     auto conjKey       = ConjugateKeyGen(privateKey);
