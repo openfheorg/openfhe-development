@@ -160,6 +160,13 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>
     return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
 
+// TODO: this is here for backwards compatibility; should remove in v2.0
+template <typename Element>
+inline std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
+    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize, uint32_t subringDim) {
+    return CryptoContextImpl<Element>::EvalSumRowsKeyGen(privateKey, rowSize, subringDim);
+}
+
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
     const PrivateKey<Element> privateKey) {

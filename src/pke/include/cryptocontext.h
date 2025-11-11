@@ -2946,6 +2946,12 @@ public:
                                                                             uint32_t rowSize    = 0,
                                                                             uint32_t subringDim = 0);
 
+    // TODO: this is here for backwards compatibility; should remove in v2.0
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
+                                                                            const PublicKey<Element> publicKey,
+                                                                            uint32_t rowSize    = 0,
+                                                                            uint32_t subringDim = 0);
+
     /**
     * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
     *
