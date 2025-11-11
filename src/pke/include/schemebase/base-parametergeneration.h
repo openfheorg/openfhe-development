@@ -98,7 +98,7 @@ public:
     virtual bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                                           uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
                                           uint32_t firstModSize, uint32_t numPartQ,
-                                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
+                                          CompressionLevel mPIntBootCiphertextCompressionLevel) const {
         OPENFHE_THROW("Not supported for this scheme.");
     }
 

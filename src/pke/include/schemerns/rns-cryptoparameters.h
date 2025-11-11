@@ -103,10 +103,10 @@ protected:
                         uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode                           = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                        MultipartyMode multipartyMode                        = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode                          = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
+                        CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(
               std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
               distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,
@@ -127,8 +127,8 @@ protected:
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                        uint32_t thresholdNumOfParties                       = 1,
+                        CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK,
                         uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
                         CKKSDataType ckksDataType = REAL)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
@@ -1375,7 +1375,7 @@ public:
    * Gets the Multi-Party Interactive Bootstrapping Ciphertext Compression Level
    * @return m_MPIntBootCiphertextCompressionLevel
    */
-    COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {
+    CompressionLevel GetMPIntBootCiphertextCompressionLevel() const {
         return m_MPIntBootCiphertextCompressionLevel;
     }
 
@@ -1822,7 +1822,7 @@ protected:
     /////////////////////////////////////
     // CKKS RNS MultiParty Bootstrapping Parameter
     /////////////////////////////////////
-    COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
+    CompressionLevel m_MPIntBootCiphertextCompressionLevel;
 
     // CKKS Data Type
     CKKSDataType m_ckksDataType;
@@ -1869,7 +1869,7 @@ public:
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
         }
         catch (cereal::Exception&) {
-            m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+            m_MPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK;
         }
         ar(cereal::make_nvp("cd", m_compositeDegree));
         ar(cereal::make_nvp("rws", m_registerWordSize));

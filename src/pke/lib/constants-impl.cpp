@@ -453,17 +453,17 @@ std::ostream& operator<<(std::ostream& s, PlaintextEncodings p) {
     return s;
 }
 
-COMPRESSION_LEVEL convertToCompressionLevel(const std::string& str) {
+CompressionLevel convertToCompressionLevel(const std::string& str) {
     if (str == "COMPACT")
         return COMPACT;
     else if (str == "SLACK")
         return SLACK;
 
-    std::string errMsg(std::string("Unknown COMPRESSION_LEVEL ") + str);
+    std::string errMsg(std::string("Unknown CompressionLevel ") + str);
     OPENFHE_THROW(errMsg);
 }
-COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num) {
-    auto compressionLevel = static_cast<COMPRESSION_LEVEL>(num);
+CompressionLevel convertToCompressionLevel(uint32_t num) {
+    auto compressionLevel = static_cast<CompressionLevel>(num);
     switch (compressionLevel) {
         case COMPACT:
         case SLACK:
@@ -472,10 +472,10 @@ COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num) {
             break;
     }
 
-    std::string errMsg(std::string("Unknown value for COMPRESSION_LEVEL ") + std::to_string(num));
+    std::string errMsg(std::string("Unknown value for CompressionLevel ") + std::to_string(num));
     OPENFHE_THROW(errMsg);
 }
-std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL p) {
+std::ostream& operator<<(std::ostream& s, CompressionLevel p) {
     switch (p) {
         case COMPACT:
             s << "COMPACT";

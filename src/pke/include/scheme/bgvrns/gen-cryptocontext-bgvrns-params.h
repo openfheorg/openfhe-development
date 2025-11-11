@@ -81,7 +81,7 @@ public:
     void SetDesiredPrecision(double desiredPrecision0) override {
         DISABLED_FOR_BGVRNS;
     }
-    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
+    void SetInteractiveBootCompressionLevel(CompressionLevel interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BGVRNS;
     }
     void SetCompositeDegree(uint32_t compositeDegree0) override {

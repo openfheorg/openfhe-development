@@ -58,10 +58,10 @@ public:
                             uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                            MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
-                            ExecutionMode executionMode                           = EXEC_EVALUATION,
-                            DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
-                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                            MultipartyMode multipartyMode                        = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode                          = EXEC_EVALUATION,
+                            DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
+                            CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
                               multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {
@@ -78,7 +78,7 @@ public:
                             DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                             PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                             uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
-                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                            CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK,
                             uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
                             CKKSDataType ckksDataType = REAL)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
