@@ -1374,7 +1374,7 @@ public:
    *
    * @warning use @see SetFormat(format) instead
    */
-    void SwitchFormat() override = 0;
+    void SwitchFormat(uint32_t thread_limit = 0) override = 0;
 
     /**
    * @brief Sets format to value without performing NTT. Only use if you know what you're doing.

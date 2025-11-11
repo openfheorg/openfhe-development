@@ -329,7 +329,7 @@ public:
                         const std::vector<NativeInteger>& BModq,
                         const std::vector<NativeInteger>& BModqPrecon) override;
 
-    void SwitchFormat() override;
+    void SwitchFormat(uint32_t thread_limit = 0) override;
 
     void SwitchModulusAtIndex(size_t index, const Integer& modulus, const Integer& rootOfUnity) override;
 

@@ -325,7 +325,7 @@ public:
         return *this;
     }
 
-    void SwitchFormat() override;
+    void SwitchFormat(uint32_t thread_limit = 0) override;
     void MakeSparse(uint32_t wFactor) override;
     bool InverseExists() const override;
     double Norm() const override;

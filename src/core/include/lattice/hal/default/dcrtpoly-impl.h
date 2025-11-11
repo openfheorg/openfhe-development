@@ -1950,23 +1950,20 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
 }
 
 template <typename VecType>
-void DCRTPolyImpl<VecType>::SwitchFormat() {
+void DCRTPolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
     m_format = (m_format == Format::COEFFICIENT) ? Format::EVALUATION : Format::COEFFICIENT;
-    size_t size{m_vectors.size()};
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
-    for (size_t i = 0; i < size; ++i)
+
+    const uint32_t size  = m_vectors.size();
+    const uint32_t limit = thread_limit < size ? thread_limit : size;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
+    for (uint32_t i = 0; i < size; ++i)
         m_vectors[i].SwitchFormat();
 }
 
 template <typename VecType>
 void DCRTPolyImpl<VecType>::SwitchModulusAtIndex(size_t index, const Integer& modulus, const Integer& rootOfUnity) {
-    if (index >= m_vectors.size()) {
-        std::string errMsg;
-        errMsg = "DCRTPolyImpl is of size = " + std::to_string(m_vectors.size()) +
-                 " but SwitchModulus for tower at index " + std::to_string(index) + "is called.";
-        OPENFHE_THROW(errMsg);
-    }
-
+    if (index >= m_vectors.size())
+        OPENFHE_THROW("Index out of range");
     m_vectors[index].SwitchModulus(PolyType::Integer(modulus.ConvertToInt()),
                                    PolyType::Integer(rootOfUnity.ConvertToInt()), 0, 0);
     m_params->RecalculateModulus();
