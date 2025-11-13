@@ -222,7 +222,7 @@ public:
    *
    * @return the key switching technique.
    */
-    enum KeySwitchTechnique GetKeySwitchTechnique() const {
+    KeySwitchTechnique GetKeySwitchTechnique() const {
         return m_ksTechnique;
     }
 
@@ -231,7 +231,7 @@ public:
    *
    * @return the scaling technique.
    */
-    enum ScalingTechnique GetScalingTechnique() const {
+    ScalingTechnique GetScalingTechnique() const {
         return m_scalTechnique;
     }
 
@@ -240,7 +240,7 @@ public:
    *
    * @return the rescaling technique.
    */
-    enum EncryptionTechnique GetEncryptionTechnique() const {
+    EncryptionTechnique GetEncryptionTechnique() const {
         return m_encTechnique;
     }
 
@@ -249,7 +249,7 @@ public:
    *
    * @return the rescaling technique.
    */
-    enum MultiplicationTechnique GetMultiplicationTechnique() const {
+    MultiplicationTechnique GetMultiplicationTechnique() const {
         return m_multTechnique;
     }
 
@@ -1394,13 +1394,13 @@ protected:
     /////////////////////////////////////
 
     // Stores the technique to use for key switching
-    enum KeySwitchTechnique m_ksTechnique;
+    KeySwitchTechnique m_ksTechnique;
 
-    enum ScalingTechnique m_scalTechnique;
+    ScalingTechnique m_scalTechnique;
 
-    enum EncryptionTechnique m_encTechnique;
+    EncryptionTechnique m_encTechnique;
 
-    enum MultiplicationTechnique m_multTechnique;
+    MultiplicationTechnique m_multTechnique;
 
     uint32_t m_auxBits = 0;
 
