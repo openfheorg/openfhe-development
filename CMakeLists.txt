@@ -565,9 +565,32 @@ if(WITH_COVTEST)
 
         set(LCOV_EXCLUDES --exclude '*/usr/include/*' --exclude '*/third-party/*')
 
-        # keep double “mismatch” and "unused" for mismatch, multiple mismatch, unused, multiple unused and empty
+        # as some options are not available for older versions of lcov, i am adding a version-based guard for them
+        # get lcov version. ${LCOV_VERSION_OUT} should contain something like this "lcov: LCOV version 2.0-1"
+        execute_process(COMMAND ${LCOV} --version
+                        OUTPUT_VARIABLE LCOV_VERSION_OUT
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        string(REGEX MATCH "[0-9]+\\.[0-9]+" LCOV_VERSION "${LCOV_VERSION_OUT}")
+        message(STATUS "LCOV version: ${LCOV_VERSION}")
+
+        # set ${LCOV_VERSION_OUT} for LCOV versions starting with 2.0 only
+        if(LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
+            # keep double “mismatch” and "unused" for mismatch, multiple mismatch, unused, multiple unused and empty
+            list(APPEND LCOV_IGNORE_ERRORS
+                --ignore-errors mismatch
+                --ignore-errors mismatch
+                --ignore-errors unused
+                --ignore-errors unused
+                --ignore-errors empty
+            )
+        # else()
+        #     # older supported option values:
+        #     # set(LCOV_IGNORE_ERRORS "--ignore-errors gcov,source,graph")
+        endif()
+
         set(LCOV_OPTIONS
-            --ignore-errors mismatch,mismatch,unused,unused,empty
+            ${LCOV_IGNORE_ERRORS}
             --rc geninfo_unexecuted_blocks=1
             --gcov-tool ${GCOV}
         )
