@@ -29,24 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  Unit tests for the scheme switching
- */
-
-#include "UnitTestUtils.h"
+#include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "gtest/gtest.h"
+#include "key/key-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
+#include "schemeswitching-data-serializer.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
-#include "cryptocontext-ser.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
-#include "ciphertext-ser.h"
-#include "key/key-ser.h"
-#include "schemeswitching-data-serializer.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
-#include "gtest/gtest.h"
 #include <iterator>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -339,7 +335,7 @@ protected:
             auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalCKKStoFHEW(ciphertext1, testData.numValues);
 
-            std::string failed = "Scheme switching from CKKS to FHEW for sparsely packed ciphertexts fails.";
+            std::string failed = " Scheme switching from CKKS to FHEW for sparsely packed ciphertexts fails.";
 
             LWEPlaintext result;
             for (uint32_t i = 0; i < ciphertextAfter.size(); ++i) {
@@ -399,7 +395,7 @@ protected:
             plaintextDec->SetLength(testData.numValues);
 
             checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x1_values), eps1,
-                          failmsg + "FHEW to CKKS fails for binary messages.");
+                          failmsg + " FHEW to CKKS fails for binary messages.");
 
             cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, testData.numValues, testData.slots, pLWE, 0, pLWE);
 
@@ -407,7 +403,7 @@ protected:
             plaintextDec->SetLength(testData.numValues);
 
             checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x2_values), eps2,
-                          failmsg + "FHEW to CKKS fails for larger messages.");
+                          failmsg + " FHEW to CKKS fails for larger messages.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -475,7 +471,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, cResult, &plaintextDec);
             plaintextDec->SetLength(testData.numValues);
 
-            checkEquality(plaintextDec->GetCKKSPackedValue(), inputSign, eps1, failmsg + "EvalCompare fails.");
+            checkEquality(plaintextDec->GetCKKSPackedValue(), inputSign, eps1, failmsg + " EvalCompare fails.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -539,7 +535,7 @@ protected:
                 std::vector<std::complex<double>> xargminOH(testData.numValues);
                 xargminOH[xargmin] = 1;
                 checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
-                              failmsg + "EvalMinSchemeSwitching fails.");
+                              failmsg + " EvalMinSchemeSwitching fails.");
             }
             else {
                 ptxtMin->SetLength(1);
@@ -634,7 +630,7 @@ protected:
                 std::vector<std::complex<double>> xargminOH(testData.numValues);
                 xargminOH[xargmin] = 1;
                 checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
-                              failmsg + "EvalMinSchemeSwitching fails.");
+                              failmsg + " EvalMinSchemeSwitching fails.");
             }
             else {
                 ptxtMin->SetLength(1);
@@ -759,7 +755,7 @@ protected:
             std::vector<std::complex<double>> xargminOH(testData.numValues);
             xargminOH[xargmin] = 1;
             checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
-                          failmsg + "Serialization for scheme switching fails.");
+                          failmsg + " Serialization for scheme switching fails.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

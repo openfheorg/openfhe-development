@@ -288,10 +288,9 @@ public:
         }
         else {
             // Peikert's inversion sampling method
-            std::shared_ptr<int64_t> dggVector = dggLargeSigma.GenerateIntVector(n * k);
-            for (size_t i = 0; i < n * k; i++) {
-                p2ZVector(i, 0) = (dggVector.get())[i];
-            }
+            auto dggVector = dggLargeSigma.GenerateIntVector(n * k);
+            for (size_t i = 0; i < n * k; i++)
+                p2ZVector(i, 0) = dggVector[i];
         }
         OPENFHE_DEBUG("z1f1: " << TOC(t1));
         TIC(t1);
@@ -389,11 +388,10 @@ public:
         }
         else {
             // Peikert's inversion sampling method
-            std::shared_ptr<int64_t> dggVector = dggLargeSigma.GenerateIntVector(n * k * d);
-
+            auto dggVector = dggLargeSigma.GenerateIntVector(n * k * d);
             for (size_t i = 0; i < n * k; i++) {
                 for (size_t j = 0; j < d; j++) {
-                    p2ZVector(i, j) = (dggVector.get())[i * d + j];
+                    p2ZVector(i, j) = dggVector[i * d + j];
                 }
             }
         }

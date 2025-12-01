@@ -40,6 +40,7 @@
 #include "math/discretegaussiangenerator.h"
 #include "utils/exception.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -59,13 +60,9 @@ bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() const {
 
 template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
-    if (std::log2(m_std) > 59) {
-        //    if (lbcrypto::GetMSB(static_cast<uint64_t>(std)) > 59) {
-        std::string errorMsg(std::string("Standard deviation cannot exceed 59 bits"));
-        OPENFHE_THROW(errorMsg);
-    }
-
-    if ((peikert = ((m_std = std) < KARNEY_THRESHOLD)))
+    if (std::log2((m_std = std)) > 59)
+        OPENFHE_THROW("Standard deviation cannot exceed 59 bits");
+    if ((m_peikert = (m_std < KARNEY_THRESHOLD)))
         this->Initialize();
 }
 
@@ -80,91 +77,57 @@ void DiscreteGaussianGeneratorImpl<VecType>::Initialize() {
     // we use M = std::sqrt(-2. * std::log(5e-32)) = 12.0061 here,
     // which corresponds to the probability of roughly 2^(-100)
     double M{12.00610553538285};
-    int fin{static_cast<int>(std::ceil(m_std * M))};
-
-    m_vals.clear();
-    m_vals.reserve(fin);
+    int64_t fin{static_cast<int64_t>(std::ceil(m_std * M))};
+    m_vals.resize(fin);
     double variance{2 * m_std * m_std};
     double cusum{0.0};
-    for (int x = 1; x <= fin; ++x) {
-        cusum += std::exp(-(static_cast<double>(x * x) / variance));
-        m_vals.push_back(cusum);
-    }
+    for (int64_t x = 1; x <= fin; ++x)
+        m_vals[x - 1] = (cusum += std::exp(-(static_cast<double>(x * x) / variance)));
     m_a = 1.0 / (2 * cusum + 1.0);
-
-    for (int x = 0; x < fin; ++x)
+    for (int64_t x = 0; x < fin; ++x)
         m_vals[x] *= m_a;
 }
 
 template <typename VecType>
-int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
+int64_t DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<double>& S, double search) {
+    // STL binary search implementation
+    auto lower = std::lower_bound(S.begin(), S.end(), search);
+    if (lower != S.end())
+        return lower - S.begin() + 1;
+    OPENFHE_THROW("DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
+}
+
+template <typename VecType>
+int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
     // we need to use the binary uniform generator rather than regular continuous
     // distribution; see DG14 for details
     double seed = std::uniform_real_distribution<double>(0.0, 1.0)(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
     double tmp  = std::abs(seed) - m_a / 2;
-    if (tmp <= 0)
-        return 0;
-    return static_cast<int32_t>(FindInVector(m_vals, tmp)) * (seed > 0 ? 1 : -1);
+    return (tmp <= 0.0) ? 0 : FindInVector(m_vals, tmp) * (seed > 0.0 ? 1 : -1);
 }
 
 template <typename VecType>
-std::shared_ptr<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(uint32_t size) const {
-    std::shared_ptr<int64_t> ans(new int64_t[size], std::default_delete<int64_t[]>());
-
-    if (!peikert) {
-        for (uint32_t i = 0; i < size; ++i)
-            (ans.get())[i] = GenerateIntegerKarney(0, m_std);
-        return ans;
-    }
-
-    std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    for (uint32_t i = 0; i < size; ++i) {
-        // we need to use the binary uniform generator rather than regular
-        // continuous distribution; see DG14 for details
-        double seed = distribution(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
-        double tmp  = std::abs(seed) - m_a / 2;
-        int64_t val = 0;
-        if (tmp > 0)
-            val = static_cast<int64_t>(FindInVector(m_vals, tmp)) * (seed > 0 ? 1 : -1);
-        (ans.get())[i] = val;
-    }
+std::vector<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(uint32_t size) const {
+    std::vector<int64_t> ans(size);
+    for (uint32_t i = 0; i < size; ++i)
+        ans[i] = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
     return ans;
-}
-
-template <typename VecType>
-uint32_t DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<double>& S, double search) const {
-    // STL binary search implementation
-    auto lower = std::lower_bound(S.begin(), S.end(), search);
-    if (lower != S.end()) {
-        return lower - S.begin() + 1;
-    }
-    OPENFHE_THROW("DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
 template <typename VecType>
 typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
     const typename VecType::Integer& modulus) const {
-    double seed = std::uniform_real_distribution<double>(0.0, 1.0)(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
-    double tmp  = std::abs(seed) - m_a / 2;
-    if (tmp <= 0)
-        return typename VecType::Integer(0);
-    auto val = static_cast<int32_t>(FindInVector(m_vals, tmp)) * (seed > 0 ? 1 : -1);
-    if (val < 0)
-        return modulus - typename VecType::Integer(-val);
-    return typename VecType::Integer(val);
+    auto val = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
+    return (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
 }
 
 template <typename VecType>
-VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(const uint32_t size,
+VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(uint32_t size,
                                                                const typename VecType::Integer& modulus) const {
-    auto result = GenerateIntVector(size);
     VecType ans(size, modulus);
     for (uint32_t i = 0; i < size; ++i) {
-        int32_t v = (result.get())[i];
-        if (v < 0)
-            ans[i] = modulus - typename VecType::Integer(-v);
-        else
-            ans[i] = typename VecType::Integer(v);
+        auto val = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
+        ans[i]   = (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
     }
     return ans;
 }
@@ -174,7 +137,7 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
     double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const {
     double t = std::log2(n) * stddev;
 
-    std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), std::ceil(mean + t));
+    std::uniform_int_distribution<int32_t> uniform_int(std::floor(mean - t), std::ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
     int32_t x;
@@ -187,8 +150,6 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
     return typename VecType::Integer(x);
 }
 
-///////////
-
 template <typename VecType>
 int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, double stddev, size_t n) const {
     if (std::isinf(mean))
@@ -198,7 +159,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 
     // this representation of log_2 is used for Visual Studio
     double t = std::log2(n) * stddev;
-    std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), std::ceil(mean + t));
+    std::uniform_int_distribution<int32_t> uniform_int(std::floor(mean - t), std::ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
     double sigmaFactor   = 1 / (-2. * stddev * stddev);

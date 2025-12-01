@@ -120,20 +120,17 @@ public:
     void SetStd(double std);
 
     /**
-   * @brief      Returns a generated signed integer. Uses Peikert's Inversion
-   * Method
+   * @brief      Returns a generated signed integer. Uses Peikert's inversion method
    * @return     a value generated with the distribution.
    */
-    int32_t GenerateInt() const;
+    int64_t GenerateInt() const;
 
     /**
-   * @brief      Returns a generated integer vector. Uses Peikert's inversion
-   * method.
+   * @brief      Returns a generated integer vector. Uses Peikert's inversion method
    * @param size The number of values to return.
-   * @return     A pointer to an array of integer values generated with the
-   * distribution.
+   * @return     vector of integer values generated with the distribution
    */
-    std::shared_ptr<int64_t> GenerateIntVector(uint32_t size) const;
+    std::vector<int64_t> GenerateIntVector(uint32_t size) const;
 
     /**
    * @brief  Returns a generated integer. Uses Peikert's inversion method.
@@ -197,9 +194,9 @@ private:
     double m_std{1.0};
     double m_a{0.0};
     std::vector<double> m_vals;
-    bool peikert{false};
+    bool m_peikert{false};
 
-    uint32_t FindInVector(const std::vector<double>& S, double search) const;
+    static int64_t FindInVector(const std::vector<double>& S, double search);
 
     static double UnnormalizedGaussianPDF(const double& mean, const double& sigma, int32_t x) {
         return pow(M_E, -pow(x - mean, 2) / (2. * sigma * sigma));

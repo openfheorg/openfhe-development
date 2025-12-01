@@ -183,7 +183,7 @@ protected:
         auto& unpackedDecPT = plaintextDec->GetCoefPackedValue();
         EXPECT_EQ(unpackedPT.size(), unpackedDecPT.size());
         for (size_t j = 0; j < unpackedPT.size(); ++j) {
-            EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]);
+            EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]) << "index " << j;
         }
 
         return 0;

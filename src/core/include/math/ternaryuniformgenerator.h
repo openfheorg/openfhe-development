@@ -41,6 +41,7 @@
 
 #include <memory>
 #include <random>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -69,20 +70,19 @@ public:
    * h = 0, the distribution is NOT sparse)
    * @return A vector of random values within the Ternary Uniform Distribution.
    */
-    VecType GenerateVector(usint size, const typename VecType::Integer& modulus, usint h = 0) const;
+    VecType GenerateVector(uint32_t size, const typename VecType::Integer& modulus, uint32_t h = 0) const;
 
     /**
    * @brief      Returns a generated vector of integers.
    * @param size The number of values to return.
    * @param h - Hamming weight for sparse ternary distribution (by default, when
    * h = 0, the distribution is NOT sparse)
-   * @return     A pointer to an array of integer values generated with the
-   * distribution.
+   * @return     vector of integer values generated with the distribution
    */
-    std::shared_ptr<int32_t> GenerateIntVector(usint size, usint h = 0) const;
+    std::vector<int32_t> GenerateIntVector(uint32_t size, uint32_t h = 0) const;
 
 private:
-    static std::uniform_int_distribution<int> m_distribution;
+    static std::uniform_int_distribution<int32_t> m_distribution;
 };
 
 }  // namespace lbcrypto

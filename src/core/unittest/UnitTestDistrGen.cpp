@@ -432,12 +432,12 @@ void DiscreteGaussianGeneratorTest(const std::string& msg) {
         int stdev  = 5;
         usint size = 100000;
         typename V::Integer modulus("10403");
-        auto dgg                               = DiscreteGaussianGeneratorImpl<V>(stdev);
-        std::shared_ptr<int64_t> dggCharVector = dgg.GenerateIntVector(size);
+        auto dgg           = DiscreteGaussianGeneratorImpl<V>(stdev);
+        auto dggCharVector = dgg.GenerateIntVector(size);
 
         double mean = 0;
         for (usint i = 0; i < size; i++) {
-            mean += static_cast<double>((dggCharVector.get())[i]);
+            mean += static_cast<double>(dggCharVector[i]);
         }
         mean /= size;
 
@@ -508,9 +508,8 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
             for (int i = 0; i < omp_get_num_threads(); i++) {
     #pragma omp ordered
                 {
-                    OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " "
-                                             << "moving " << (int)dggCharVectorPvt.size() << " to starting point"
-                                             << (int)dggCharVector.size());
+                    OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " " << "moving " << (int)dggCharVectorPvt.size()
+                                             << " to starting point" << (int)dggCharVector.size());
                     dggCharVector.insert(dggCharVector.end(), dggCharVectorPvt.begin(), dggCharVectorPvt.end());
                 }
             }
@@ -552,9 +551,8 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
             for (int i = 0; i < omp_get_num_threads(); i++) {
     #pragma omp ordered
                 {
-                    OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " "
-                                             << "moving " << (int)dggBigVectorPvt.size() << " to starting point"
-                                             << (int)dggBigVector.size());
+                    OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " " << "moving " << (int)dggBigVectorPvt.size()
+                                             << " to starting point" << (int)dggBigVector.size());
                     dggBigVector.insert(dggBigVector.end(), dggBigVectorPvt.begin(), dggBigVectorPvt.end());
                 }
             }
