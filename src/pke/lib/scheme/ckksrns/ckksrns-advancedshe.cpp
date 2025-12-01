@@ -331,9 +331,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalPowers(
 template <typename VectorDataType>
 static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& powers,
                                                                      const std::vector<VectorDataType>& coefficients) {
+    if (coefficients.size() < 2)
+        OPENFHE_THROW("EvalPolyLinear: The coefficients vector should contain at least 2 elements");
+
     uint32_t k = coefficients.size() - 1;
-    if (k <= 1)
-        OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
 
     if (!IsNotEqualZero(coefficients[k]))
         OPENFHE_THROW("EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
