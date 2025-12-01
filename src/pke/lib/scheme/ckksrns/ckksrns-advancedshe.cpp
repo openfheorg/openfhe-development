@@ -361,14 +361,14 @@ std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalPowers(
 }
 
 template <typename VectorDataType>
-Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& powers,
-                                                       const std::vector<VectorDataType>& coefficients) {
-    const uint32_t k = coefficients.size() - 1;
-    if (k <= 1)
+static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& powers,
+                                                                     const std::vector<VectorDataType>& coefficients) {
+    if (coefficients.size() < 2)
         OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
 
+    const uint32_t k = coefficients.size() - 1;
     if (!IsNotEqualZero(coefficients[k]))
-        OPENFHE_THROW("EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
+        OPENFHE_THROW("The highest-order coefficient cannot be set to 0");
 
     auto cc = powers[0]->GetCryptoContext();
 
@@ -376,10 +376,10 @@ Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector<Ciphertext<DC
     auto result = cc->EvalMult(powers[k - 1], coefficients[k]);
 
     // perform scalar multiplication for all other terms and sum them up
-    for (uint32_t i = 0; i < k - 1; ++i) {
-        if (IsNotEqualZero(coefficients[i + 1])) {
-            cc->EvalMultInPlace(powers[i], coefficients[i + 1]);
-            cc->EvalAddInPlace(result, powers[i]);
+    for (uint32_t i = 1; i < k; ++i) {
+        if (IsNotEqualZero(coefficients[i])) {
+            cc->EvalMultInPlace(powers[i - 1], coefficients[i]);
+            cc->EvalAddInPlace(result, powers[i - 1]);
         }
     }
 

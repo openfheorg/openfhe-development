@@ -1801,6 +1801,9 @@ protected:
             // x + x^2 - x^3
             // low-degree function to check linear implementation
             std::vector<double> coefficients5{0, 1, 1, -1};
+            // 1 + 2x
+            // linear function to check linear implementation
+            std::vector<double> coefficients6{1.0, 2.0};
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
 
@@ -1818,6 +1821,9 @@ protected:
 
             std::vector<std::complex<double>> output5{0.625, 0.847, 0.9809999999, 0.995125, 0.990543};
             Plaintext plaintextResult5 = cc->MakeCKKSPackedPlaintext(output5);
+
+            std::vector<std::complex<double>> output6{2.0, 2.4, 2.8, 2.9, 2.86};
+            Plaintext plaintextResult6 = cc->MakeCKKSPackedPlaintext(output6);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -1878,6 +1884,16 @@ protected:
                     << " - we get: " << results5->GetCKKSPackedValue();
             checkEquality(plaintextResult5->GetCKKSPackedValue(), results5->GetCKKSPackedValue(), epsHigh,
                           failmsg + " EvalPoly for low-degree polynomial failed: " + buffer5.str());
+
+            Ciphertext<Element> cResult6 = cc->EvalPolyLinear(ciphertext1, coefficients6);
+            Plaintext results6;
+            cc->Decrypt(kp.secretKey, cResult6, &results6);
+            results6->SetLength(encodedLength);
+            std::stringstream buffer6;
+            buffer6 << "should be: " << plaintextResult6->GetCKKSPackedValue()
+                    << " - we get: " << results6->GetCKKSPackedValue();
+            checkEquality(plaintextResult6->GetCKKSPackedValue(), results6->GetCKKSPackedValue(), epsHigh,
+                          failmsg + " EvalPoly for linear polynomial failed: " + buffer6.str());
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
