@@ -2379,7 +2379,7 @@ void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, ui
 #if NATIVEINT == 128
 Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                        const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
-                                       uint32_t level, uint32_t slots) const {
+                                       uint32_t level, uint32_t slots) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     double scFact = cryptoParams->GetScalingFactorReal(level);
@@ -2526,7 +2526,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 #else
 Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                        const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
-                                       uint32_t level, uint32_t slots) const {
+                                       uint32_t level, uint32_t slots) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     const double scFact = cryptoParams->GetScalingFactorReal(level);
@@ -2720,7 +2720,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 }
 #endif
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) {
     auto pt = plaintext->GetElement<DCRTPoly>();
     pt.SetFormat(Format::EVALUATION);
     auto result = ciphertext->Clone();
@@ -2731,7 +2731,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
     return result;
 }
 
-void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const {
+void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
     auto& cv1  = ciphertext1->GetElements();
     auto& cv2  = ciphertext2->GetElements();
     uint32_t n = cv1.size();
@@ -2740,13 +2740,13 @@ void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphe
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,
-                                            ConstCiphertext<DCRTPoly> ciphertext2) const {
+                                            ConstCiphertext<DCRTPoly> ciphertext2) {
     auto result = ciphertext1->Clone();
     EvalAddExtInPlace(result, ciphertext2);
     return result;
 }
 
-EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const {
+EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) {
     uint32_t N = privateKey->GetPrivateElement().GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, 2 * N - 1, &vec);
@@ -2758,7 +2758,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> private
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
-                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap) const {
+                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap) {
     uint32_t N = ciphertext->GetElements()[0].GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, 2 * N - 1, &vec);
@@ -2775,7 +2775,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
 }
 
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
-                                   NativeVector* nativeVec) const {
+                                   NativeVector* nativeVec) {
     if (nativeVec == nullptr)
         OPENFHE_THROW("The passed native vector is empty.");
     NativeInteger bigValueHf(bigBound >> 1);
@@ -2796,7 +2796,7 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
 
 #if NATIVEINT == 128
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
-                                   NativeVector* nativeVec) const {
+                                   NativeVector* nativeVec) {
     if (nativeVec == nullptr)
         OPENFHE_THROW("The passed native vector is empty.");
     NativeInteger bigValueHf((uint128_t)bigBound >> 1);

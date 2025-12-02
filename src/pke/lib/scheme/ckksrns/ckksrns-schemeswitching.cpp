@@ -35,22 +35,21 @@
 
 #define PROFILE
 
-#include "scheme/ckksrns/ckksrns-schemeswitching.h"
-
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
+#include "math/dftransform.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
+#include "scheme/ckksrns/ckksrns-schemeswitching.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 
-#include "math/dftransform.h"
-
+#include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <limits>
+#include <map>
+#include <memory>
 #include <string>
 #include <utility>
-#include <map>
-#include <algorithm>
-#include <memory>
 #include <vector>
 
 // K = 16
@@ -161,439 +160,6 @@ static constexpr std::initializer_list<double> g_coefficientsFHEW128_8{
 namespace lbcrypto {
 
 //------------------------------------------------------------------------------
-// Complex Plaintext Functions, copied from ckksrns-fhe. TODO: fix this
-//------------------------------------------------------------------------------
-
-#if NATIVEINT == 128
-Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                                          const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
-                                          uint32_t level, usint slots) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
-
-    double scFact = cryptoParams->GetScalingFactorReal(level);
-
-    Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
-                                                                 level, scFact, slots, COMPLEX));
-
-    DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
-
-    usint N = cc.GetRingDimension();
-
-    std::vector<std::complex<double>> inverse = value;
-
-    inverse.resize(slots);
-
-    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
-    uint64_t pBits = cc.GetEncodingParams()->GetPlaintextModulus();
-
-    double powP      = std::pow(2.0, MAX_DOUBLE_PRECISION);
-    int32_t pCurrent = pBits - MAX_DOUBLE_PRECISION;
-
-    std::vector<int128_t> temp(2 * slots);
-    for (size_t i = 0; i < slots; ++i) {
-        // extract the mantissa of real part and multiply it by 2^52
-        int32_t n1 = 0;
-        double dre = std::frexp(inverse[i].real(), &n1) * powP;
-        // extract the mantissa of imaginary part and multiply it by 2^52
-        int32_t n2 = 0;
-        double dim = std::frexp(inverse[i].imag(), &n2) * powP;
-
-        // Check for possible overflow
-        if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
-
-            double invLen = static_cast<double>(inverse.size());
-            double factor = 2 * M_PI * i;
-
-            double realMax = -1, imagMax = -1;
-            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
-
-            for (uint32_t idx = 0; idx < inverse.size(); idx++) {
-                // exp( j*2*pi*n*k/N )
-                std::complex<double> expFactor = {cos((factor * idx) / invLen), sin((factor * idx) / invLen)};
-
-                // X[k] * exp( j*2*pi*n*k/N )
-                std::complex<double> prodFactor = inverse[idx] * expFactor;
-
-                double realVal = prodFactor.real();
-                double imagVal = prodFactor.imag();
-
-                if (realVal > realMax) {
-                    realMax    = realVal;
-                    realMaxIdx = idx;
-                }
-                if (imagVal > imagMax) {
-                    imagMax    = imagVal;
-                    imagMaxIdx = idx;
-                }
-            }
-
-            auto scaledInputSize = ceil(log2(dre));
-
-            std::stringstream buffer;
-            buffer << std::endl
-                   << "Overflow in data encoding - scaled input is too large to fit "
-                      "into a NativeInteger (60 bits). Try decreasing scaling factor."
-                   << std::endl;
-            buffer << "Overflow at slot number " << i << std::endl;
-            buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
-            buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
-            buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-            OPENFHE_THROW(buffer.str());
-        }
-
-        int64_t re64       = std::llround(dre);
-        int32_t pRemaining = pCurrent + n1;
-        __int128 re        = 0;
-        if (pRemaining < 0) {
-            re = re64 >> (-pRemaining);
-        }
-        else {
-            __int128 pPowRemaining = ((__int128)1) << pRemaining;
-            re                     = pPowRemaining * re64;
-        }
-
-        int64_t im64 = std::llround(dim);
-        pRemaining   = pCurrent + n2;
-        __int128 im  = 0;
-        if (pRemaining < 0) {
-            im = im64 >> (-pRemaining);
-        }
-        else {
-            __int128 pPowRemaining = (static_cast<int64_t>(1)) << pRemaining;
-            im                     = pPowRemaining * im64;
-        }
-
-        temp[i]         = (re < 0) ? Max128BitValue() + re : re;
-        temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
-
-        if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
-            OPENFHE_THROW("Overflow, try to decrease scaling factor");
-        }
-    }
-
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
-    const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
-
-    for (size_t i = 0; i < nativeParams.size(); i++) {
-        NativeVector nativeVec(N, nativeParams[i]->GetModulus());
-        FitToNativeVector(N, temp, Max128BitValue(), &nativeVec);
-        NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, std::move(element));
-    }
-
-    usint numTowers = nativeParams.size();
-    std::vector<DCRTPoly::Integer> moduli(numTowers);
-    for (usint i = 0; i < numTowers; i++) {
-        moduli[i] = nativeParams[i]->GetModulus();
-    }
-
-    DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
-    std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
-
-    auto currPowP = crtPowP;
-
-    // We want to scale temp by 2^(pd), and the loop starts from j=2
-    // because temp is already scaled by 2^p in the re/im loop above,
-    // and currPowP already is 2^p.
-    for (size_t i = 2; i < noiseScaleDeg; i++) {
-        currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
-    }
-
-    if (noiseScaleDeg > 1) {
-        plainElement = plainElement.Times(currPowP);
-    }
-
-    p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
-
-    return p;
-}
-#else
-Plaintext SWITCHCKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                                          const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
-                                          uint32_t level, usint slots) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
-
-    double scFact = cryptoParams->GetScalingFactorReal(level);
-
-    Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
-                                                                 level, scFact, slots, COMPLEX));
-
-    DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
-
-    usint N = cc.GetRingDimension();
-
-    std::vector<std::complex<double>> inverse = value;
-
-    inverse.resize(slots);
-
-    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
-    double powP = scFact;
-
-    // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    constexpr int32_t MAX_BITS_IN_WORD = 61;
-
-    int32_t logc = std::numeric_limits<int32_t>::min();
-    for (uint32_t i = 0; i < slots; ++i) {
-        inverse[i] *= powP;
-        if (inverse[i].real() != 0) {
-            int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
-            if (logc < logci)
-                logc = logci;
-        }
-        if (inverse[i].imag() != 0) {
-            int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
-            if (logc < logci)
-                logc = logci;
-        }
-    }
-    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
-    if (logc < 0)
-        OPENFHE_THROW("Scaling factor too small");
-
-    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox   = logc - logValid;
-    double approxFactor = pow(2, logApprox);
-
-    std::vector<int64_t> temp(2 * slots);
-    for (size_t i = 0; i < slots; ++i) {
-        // Scale down by approxFactor in case the value exceeds a 64-bit integer.
-        double dre = inverse[i].real() / approxFactor;
-        double dim = inverse[i].imag() / approxFactor;
-
-        // Check for possible overflow
-        if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
-
-            double invLen = static_cast<double>(inverse.size());
-            double factor = 2 * M_PI * i;
-
-            double realMax = -1;
-            double imagMax = -1;
-            // TODO (dsuponit): is this correct - "uint32_t realMaxIdx = -1" and "uint32_t imagMaxIdx = -1"? if yes,
-            // TODO (dsuponit): shouldn't it better be "uint32_t realMaxIdx = std::numeric_limits<uint32_t>::max()"?"
-            uint32_t realMaxIdx = -1;
-            uint32_t imagMaxIdx = -1;
-
-            for (uint32_t idx = 0; idx < inverse.size(); idx++) {
-                // exp( j*2*pi*n*k/N )
-                std::complex<double> expFactor = {cos((factor * idx) / invLen), sin((factor * idx) / invLen)};
-
-                // X[k] * exp( j*2*pi*n*k/N )
-                std::complex<double> prodFactor = inverse[idx] * expFactor;
-
-                double realVal = prodFactor.real();
-                double imagVal = prodFactor.imag();
-
-                if (realVal > realMax) {
-                    realMax    = realVal;
-                    realMaxIdx = idx;
-                }
-                if (imagVal > imagMax) {
-                    imagMax    = imagVal;
-                    imagMaxIdx = idx;
-                }
-            }
-
-            auto scaledInputSize = ceil(log2(dre));
-
-            std::stringstream buffer;
-            buffer << std::endl
-                   << "Overflow in data encoding - scaled input is too large to fit "
-                      "into a NativeInteger (60 bits). Try decreasing scaling factor."
-                   << std::endl;
-            buffer << "Overflow at slot number " << i << std::endl;
-            buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
-            buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
-            buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
-            OPENFHE_THROW(buffer.str());
-        }
-
-        int64_t re = std::llround(dre);
-        int64_t im = std::llround(dim);
-
-        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
-        temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
-    }
-
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
-    const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
-
-    for (size_t i = 0; i < nativeParams.size(); i++) {
-        NativeVector nativeVec(N, nativeParams[i]->GetModulus());
-        FitToNativeVector(N, temp, Max64BitValue(), &nativeVec);
-        NativePoly element = plainElement.GetElementAtIndex(i);
-        element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
-        plainElement.SetElementAtIndex(i, std::move(element));
-    }
-
-    usint numTowers = nativeParams.size();
-    std::vector<DCRTPoly::Integer> moduli(numTowers);
-    for (usint i = 0; i < numTowers; i++) {
-        moduli[i] = nativeParams[i]->GetModulus();
-    }
-
-    DCRTPoly::Integer intPowP = std::llround(powP);
-    std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
-
-    auto currPowP = crtPowP;
-
-    // We want to scale temp by 2^(pd), and the loop starts from j=2
-    // because temp is already scaled by 2^p in the re/im loop above,
-    // and currPowP already is 2^p.
-    for (size_t i = 2; i < noiseScaleDeg; i++) {
-        currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
-    }
-
-    if (noiseScaleDeg > 1) {
-        plainElement = plainElement.Times(currPowP);
-    }
-
-    // Scale back up by the approxFactor to get the correct encoding.
-    if (logApprox > 0) {
-        int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        auto intStep    = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
-        std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
-        logApprox -= logStep;
-
-        while (logApprox > 0) {
-            logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-            intStep = DCRTPoly::Integer(static_cast<uint64_t>(1) << logStep);
-            std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
-            crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
-            logApprox -= logStep;
-        }
-        plainElement = plainElement.Times(crtApprox);
-    }
-
-    p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
-
-    return p;
-}
-#endif
-
-Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
-    std::vector<DCRTPoly>& cv   = result->GetElements();
-
-    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-    pt.SetFormat(Format::EVALUATION);
-
-    for (auto& c : cv) {
-        c *= pt;
-    }
-    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
-    result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
-    return result;
-}
-
-void SWITCHCKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const {
-    std::vector<DCRTPoly>& cv1       = ciphertext1->GetElements();
-    const std::vector<DCRTPoly>& cv2 = ciphertext2->GetElements();
-
-    for (size_t i = 0; i < cv1.size(); ++i) {
-        cv1[i] += cv2[i];
-    }
-}
-
-Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,
-                                               ConstCiphertext<DCRTPoly> ciphertext2) const {
-    Ciphertext<DCRTPoly> result = ciphertext1->Clone();
-    EvalAddExtInPlace(result, ciphertext2);
-    return result;
-}
-
-EvalKey<DCRTPoly> SWITCHCKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const {
-    const auto cc = privateKey->GetCryptoContext();
-    auto algo     = cc->GetScheme();
-
-    const DCRTPoly& s = privateKey->GetPrivateElement();
-    usint N           = s.GetRingDimension();
-
-    PrivateKey<DCRTPoly> privateKeyPermuted = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
-
-    usint index = 2 * N - 1;
-    std::vector<usint> vec(N);
-    PrecomputeAutoMap(N, index, &vec);
-
-    DCRTPoly sPermuted = s.AutomorphismTransform(index, vec);
-
-    privateKeyPermuted->SetPrivateElement(std::move(sPermuted));
-    privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
-
-    return algo->KeySwitchGen(privateKey, privateKeyPermuted);
-}
-
-Ciphertext<DCRTPoly> SWITCHCKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
-                                              const std::map<usint, EvalKey<DCRTPoly>>& evalKeyMap) const {
-    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    usint N                         = cv[0].GetRingDimension();
-
-    std::vector<usint> vec(N);
-    PrecomputeAutoMap(N, 2 * N - 1, &vec);
-
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
-
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
-
-    algo->KeySwitchInPlace(result, evalKeyMap.at(2 * N - 1));
-
-    std::vector<DCRTPoly>& rcv = result->GetElements();
-
-    rcv[0] = rcv[0].AutomorphismTransform(2 * N - 1, vec);
-    rcv[1] = rcv[1].AutomorphismTransform(2 * N - 1, vec);
-
-    return result;
-}
-
-#if NATIVEINT == 128
-void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
-                                      NativeVector* nativeVec) const {
-    if (nativeVec == nullptr)
-        OPENFHE_THROW("The passed native vector is empty.");
-    NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);
-    NativeInteger modulus(nativeVec->GetModulus());
-    NativeInteger diff = NativeInteger((unsigned __int128)bigBound) - modulus;
-    uint32_t dslots    = vec.size();
-    uint32_t gap       = ringDim / dslots;
-    for (usint i = 0; i < vec.size(); i++) {
-        NativeInteger n((unsigned __int128)vec[i]);
-        if (n > bigValueHf) {
-            (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
-        }
-        else {
-            (*nativeVec)[gap * i] = n.Mod(modulus);
-        }
-    }
-}
-#else  // NATIVEINT == 64
-void SWITCHCKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
-                                      NativeVector* nativeVec) const {
-    if (nativeVec == nullptr)
-        OPENFHE_THROW("The passed native vector is empty.");
-    NativeInteger bigValueHf(bigBound >> 1);
-    NativeInteger modulus(nativeVec->GetModulus());
-    NativeInteger diff = bigBound - modulus;
-    uint32_t dslots    = vec.size();
-    uint32_t gap       = ringDim / dslots;
-    for (usint i = 0; i < vec.size(); i++) {
-        NativeInteger n(vec[i]);
-        if (n > bigValueHf) {
-            (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
-        }
-        else {
-            (*nativeVec)[gap * i] = n.Mod(modulus);
-        }
-    }
-}
-#endif
-
-//------------------------------------------------------------------------------
 // Key and modulus switch and extraction methods
 //------------------------------------------------------------------------------
 
@@ -603,15 +169,16 @@ static NativeInteger RoundqQAlter(NativeInteger v, NativeInteger q, NativeIntege
         .Mod(q);
 }
 
-EvalKey<DCRTPoly> switchingKeyGenRLWE(
-    const PrivateKey<DCRTPoly>& ckksSK,
-    ConstLWEPrivateKey& LWEsk) {  // This function is without the intermediate ModSwitch
+// TODO: used anywhere?
+EvalKey<DCRTPoly> switchingKeyGenRLWE(const PrivateKey<DCRTPoly>& ckksSK, ConstLWEPrivateKey& LWEsk) {
+    // This function is without the intermediate ModSwitch
     // Extract CKKS params: method which populates the first n elements of a new RLWE key with the n elements of the target LWE key
-    auto skelements = ckksSK->GetPrivateElement();
-    skelements.SetFormat(Format::COEFFICIENT);
+    auto skelements    = ckksSK->GetPrivateElement();
     auto lweskElements = LWEsk->GetElement();
+
     for (size_t i = 0; i < skelements.GetNumOfElements(); i++) {
         auto skelementsPlain = skelements.GetElementAtIndex(i);
+        skelementsPlain.SetFormat(Format::COEFFICIENT);
         for (size_t j = 0; j < skelementsPlain.GetLength(); j++) {
             if (j >= lweskElements.GetLength()) {
                 skelementsPlain[j] = 0;
@@ -627,10 +194,10 @@ EvalKey<DCRTPoly> switchingKeyGenRLWE(
                     skelementsPlain[j] = skelementsPlain.GetModulus() - 1;
             }
         }
+        skelementsPlain.SetFormat(Format::EVALUATION);
         skelements.SetElementAtIndex(i, std::move(skelementsPlain));
     }
-
-    skelements.SetFormat(Format::EVALUATION);
+    skelements.OverrideFormat(Format::EVALUATION);
 
     auto ccCKKS    = ckksSK->GetCryptoContext();
     auto RLWELWEsk = ccCKKS->KeyGen().secretKey;
@@ -640,29 +207,22 @@ EvalKey<DCRTPoly> switchingKeyGenRLWE(
 }
 
 void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, NativeInteger modulus_CKKS_to) {
-    if (ctxt->GetElements()[0].GetRingDimension() != ctxtKS->GetElements()[0].GetRingDimension()) {
+    if (ctxt->GetElements()[0].GetRingDimension() != ctxtKS->GetElements()[0].GetRingDimension())
         OPENFHE_THROW("ModSwitch is implemented only for the same ring dimension.");
-    }
-
-    const std::vector<DCRTPoly>& cv = ctxt->GetElements();
-
-    if (cv[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1) {
+    if (ctxt->GetElements()[0].GetNumOfElements() != 1 || ctxtKS->GetElements()[0].GetNumOfElements() != 1)
         OPENFHE_THROW("ModSwitch is implemented only for ciphertext with one tower.");
-    }
 
-    const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
     std::vector<DCRTPoly> resultElements;
-    resultElements.reserve(cv.size());
-
-    for (const auto& elem : cv) {
+    const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
+    for (const auto& elem : ctxt->GetElements()) {
         auto& ref = resultElements.emplace_back(paramsQlP, Format::COEFFICIENT, true);
         ref.SetValuesModSwitch(elem, modulus_CKKS_to);
         ref.SetFormat(Format::EVALUATION);
     }
-
     ctxtKS->SetElements(std::move(resultElements));
 }
 
+// TODO: used anywhere?
 EvalKey<DCRTPoly> switchingKeyGen(const PrivateKey<DCRTPoly>& ckksSKto, const PrivateKey<DCRTPoly>& ckksSKfrom) {
     auto skElements = ckksSKto->GetPrivateElement();
     skElements.SetFormat(Format::COEFFICIENT);
@@ -704,17 +264,15 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& ckksSKto, co
     skElements2.SetFormat(Format::COEFFICIENT);
     auto lweskElements = LWEsk->GetElement();
 
-    for (size_t i = 0; i < skElements.GetNumOfElements(); i++) {
+    for (uint32_t i = 0; i < skElements.GetNumOfElements(); ++i) {
         auto skElementsPlain     = skElements.GetElementAtIndex(i);
         auto skElementsFromPlain = skElementsFrom.GetElementAtIndex(i);
         auto skElementsPlainLWE  = skElements2.GetElementAtIndex(i);
-        for (size_t j = 0; j < skElementsPlain.GetLength(); j++) {
-            if (skElementsFromPlain[j] == 0) {
+        for (uint32_t j = 0; j < skElementsPlain.GetLength(); ++j) {
+            if (skElementsFromPlain[j] == 0)
                 skElementsPlain[j] = 0;
-            }
-            else if (skElementsFromPlain[j] == 1) {
+            else if (skElementsFromPlain[j] == 1)
                 skElementsPlain[j] = 1;
-            }
             else
                 skElementsPlain[j] = skElementsPlain.GetModulus() - 1;
 
@@ -722,12 +280,10 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& ckksSKto, co
                 skElementsPlainLWE[j] = 0;
             }
             else {
-                if (lweskElements[j] == 0) {
+                if (lweskElements[j] == 0)
                     skElementsPlainLWE[j] = 0;
-                }
-                else if (lweskElements[j].ConvertToInt() == 1) {
+                else if (lweskElements[j].ConvertToInt() == 1)
                     skElementsPlainLWE[j] = 1;
-                }
                 else
                     skElementsPlainLWE[j] = skElementsPlain.GetModulus() - 1;
             }
@@ -735,7 +291,6 @@ EvalKey<DCRTPoly> switchingKeyGenRLWEcc(const PrivateKey<DCRTPoly>& ckksSKto, co
         skElements.SetElementAtIndex(i, std::move(skElementsPlain));
         skElements2.SetElementAtIndex(i, std::move(skElementsPlainLWE));
     }
-
     skElements.SetFormat(Format::EVALUATION);
     skElements2.SetFormat(Format::EVALUATION);
 
@@ -756,55 +311,37 @@ std::vector<std::vector<NativeInteger>> ExtractLWEpacked(const Ciphertext<DCRTPo
     originalB.SetFormat(Format::COEFFICIENT);
     auto* ptrB = &originalB.GetValues()[0];
     size_t N   = originalB.GetLength();
-    std::vector<std::vector<NativeInteger>> extracted{std::vector<NativeInteger>(ptrB, ptrB + N),
-                                                      std::vector<NativeInteger>(ptrA, ptrA + N)};
-    return extracted;
+    return {std::vector<NativeInteger>(ptrB, ptrB + N), std::vector<NativeInteger>(ptrA, ptrA + N)};
 }
 
 std::shared_ptr<LWECiphertextImpl> ExtractLWECiphertext(const std::vector<std::vector<NativeInteger>>& aANDb,
                                                         NativeInteger modulus, uint32_t n, uint32_t index = 0) {
-    auto N = aANDb[0].size();
     NativeVector a(n, modulus);
-    NativeInteger b;
-
-    for (size_t i = 0; i < n && i <= index; ++i) {
+    for (uint32_t i = 0; i < n && i <= index; ++i)
         a[i] = modulus - aANDb[1][index - i];
-    }
     if (n > index) {
-        for (size_t i = index + 1; i < n; ++i) {
+        uint32_t N = aANDb[0].size();
+        for (uint32_t i = index + 1; i < n; ++i)
             a[i] = aANDb[1][N + index - i];
-        }
     }
-
-    b           = aANDb[0][index];
-    auto result = std::make_shared<LWECiphertextImpl>(std::move(a), std::move(b));
-    return result;
+    return std::make_shared<LWECiphertextImpl>(std::move(a), aANDb[0][index]);
 }
 
 //------------------------------------------------------------------------------
 // Linear transformation methods.
-// Currently mostly copied from ckksrns-fhe, because there an internal bootstrapping global structure is used.
-// TODO: fix this.
 //------------------------------------------------------------------------------
 
 std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
-    const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale = 1) const {
-    uint32_t slots = A.size();
-    uint32_t M     = cc.GetCyclotomicOrder();
-
-    // Computing the baby-step bStep and the giant-step gStep
-    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
-
+    const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale = 1.0) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+    auto elementParams = *(cryptoParamsCKKS->GetElementParams());
 
     uint32_t towersToDrop = 0;
     if (L != 0) {
         towersToDrop = elementParams.GetParams().size() - L - 1;
-        for (uint32_t i = 0; i < towersToDrop; i++)
+        for (uint32_t i = 0; i < towersToDrop; ++i)
             elementParams.PopLastParam();
     }
 
@@ -825,10 +362,12 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
         roots.emplace_back(elem->GetRootOfUnity());
     }
 
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+
+    int32_t slots = A.size();
+    int32_t step  = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
 
     std::vector<std::vector<std::complex<double>>> newA(slots);
-    std::vector<ReadOnlyPlaintext> result(slots);
 
     //  A and B are concatenated horizontally
     for (uint32_t i = 0; i < A.size(); i++) {
@@ -837,42 +376,31 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
         newA[i].insert(newA[i].end(), B[i].begin(), B[i].end());
     }
 
-#pragma omp parallel for
-    for (uint32_t j = 0; j < gStep; j++) {
-        int32_t offset = -static_cast<int32_t>(bStep * j);
-        for (uint32_t i = 0; i < bStep; i++) {
-            if (bStep * j + i < slots) {
-                // shifted diagonal is computed for rectangular map newA of dimension slots x 2*slots
-                auto vec = ExtractShiftedDiagonal(newA, bStep * j + i);
-                std::transform(vec.begin(), vec.end(), vec.begin(),
-                               [&](const std::complex<double>& elem) { return elem * scale; });
-
-                result[bStep * j + i] =
-                    MakeAuxPlaintext(cc, elementParamsPtr, Rotate(Fill(vec, M / 4), offset), 1, towersToDrop, M / 4);
-            }
-        }
+    uint32_t M4 = cc.GetCyclotomicOrder() / 4;
+    std::vector<ReadOnlyPlaintext> result(slots);
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(slots))
+#endif
+    for (int32_t ji = 0; ji < slots; ++ji) {
+        auto vec = ExtractShiftedDiagonal(newA, ji);
+        for (auto& v : vec)
+            v *= scale;
+        result[ji] = FHECKKSRNS::MakeAuxPlaintext(cc, elementParamsPtr, Rotate(Fill(vec, M4), -step * (ji / step)), 1,
+                                                  towersToDrop, M4);
     }
-
     return result;
 }
 
 std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1,
-    uint32_t L, double scale = 1) const {
-    if (A[0].size() != A.size()) {
+    uint32_t L, double scale = 1.0) const {
+    if (A[0].size() != A.size())
         OPENFHE_THROW("The matrix passed to EvalLTPrecomputeSwitch is not square");
-    }
-
-    uint32_t slots = A.size();
-
-    uint32_t M     = cc.GetCyclotomicOrder();
-    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
 
     // Make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    auto elementParams = *(cryptoParams->GetElementParams());
 
     uint32_t towersToDrop = 0;
     if (L != 0) {
@@ -898,38 +426,38 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
         roots.emplace_back(elem->GetRootOfUnity());
     }
 
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
 
+    int32_t slots = A.size();
+    int32_t step  = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
+
+    uint32_t M4 = cc.GetCyclotomicOrder() / 4;
     std::vector<ReadOnlyPlaintext> result(slots);
-#pragma omp parallel for
-    for (uint32_t j = 0; j < gStep; j++) {
-        int32_t offset = -static_cast<int32_t>(bStep * j);
-        for (uint32_t i = 0; i < bStep; i++) {
-            if (bStep * j + i < slots) {
-                auto diag = ExtractShiftedDiagonal(A, bStep * j + i);
-                std::transform(diag.begin(), diag.end(), diag.begin(),
-                               [&](const std::complex<double>& elem) { return elem * scale; });
-                result[bStep * j + i] =
-                    MakeAuxPlaintext(cc, elementParamsPtr, Rotate(Fill(diag, M / 4), offset), 1, towersToDrop, M / 4);
-            }
-        }
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(slots))
+#endif
+    for (int32_t ji = 0; ji < slots; ++ji) {
+        auto vec = ExtractShiftedDiagonal(A, ji);
+        for (auto& v : vec)
+            v *= scale;
+        result[ji] = FHECKKSRNS::MakeAuxPlaintext(cc, elementParamsPtr, Rotate(Fill(vec, M4), -step * (ji / step)), 1,
+                                                  towersToDrop, M4);
     }
-
     return result;
 }
 
 std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
     const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale) {
-    if (!IsPowerOfTwo(A.size()) || !IsPowerOfTwo(A[0].size())) {
+    if (!IsPowerOfTwo(A.size()) || !IsPowerOfTwo(A[0].size()))
         OPENFHE_THROW("The matrix passed to EvalLTPrecompute is not padded up to powers of two");
-    }
-    uint32_t n     = std::min(A.size(), A[0].size());
-    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(n) / bStep);
 
+    const uint32_t n = std::min(A.size(), A[0].size());
     std::vector<std::vector<std::complex<double>>> diags(n);
 
     if (A.size() >= A[0].size()) {
+        uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
+        uint32_t gStep = ceil(static_cast<double>(n) / bStep);
+
         auto num_slices = A.size() / A[0].size();
         std::vector<std::vector<std::vector<std::complex<double>>>> A_slices(num_slices);
         for (size_t i = 0; i < num_slices; i++) {
@@ -955,16 +483,12 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
         }
     }
     else {
-#pragma omp parallel for
-        for (uint32_t j = 0; j < gStep; j++) {
-            for (uint32_t i = 0; i < bStep; i++) {
-                if (bStep * j + i < n) {
-                    std::vector<std::complex<double>> diag = ExtractShiftedDiagonal(A, bStep * j + i);
-                    std::transform(diag.begin(), diag.end(), diag.begin(),
-                                   [&](const std::complex<double>& elem) { return elem * scale; });
-                    diags[bStep * j + i] = std::move(diag);
-                }
-            }
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+        for (uint32_t ji = 0; ji < n; ++ji) {
+            auto diag = ExtractShiftedDiagonal(A, ji);
+            for (auto& d : diag)
+                d *= scale;
+            diags[ji] = std::move(diag);
         }
     }
     return diags;
@@ -974,36 +498,31 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoConte
                                                                ConstCiphertext<DCRTPoly> ctxt,
                                                                const std::vector<ReadOnlyPlaintext>& A,
                                                                uint32_t dim1) const {
-    uint32_t slots = A.size();
-
     // Computing the baby-step bStep and the giant-step gStep
+    uint32_t slots = A.size();
     uint32_t bStep = dim1;
-    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
-
-    uint32_t M = cc.GetCyclotomicOrder();
-    uint32_t N = cc.GetRingDimension();
+    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
 
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
     auto digits = cc.EvalFastRotationPrecompute(ctxt);
 
-    std::vector<Ciphertext<DCRTPoly>> fastRotation(bStep - 1);
-
     // Hoisted automorphisms
-#pragma omp parallel for
-    for (uint32_t j = 1; j < bStep; j++) {
+    std::vector<Ciphertext<DCRTPoly>> fastRotation(bStep - 1);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(bStep - 1))
+    for (uint32_t j = 1; j < bStep; ++j)
         fastRotation[j - 1] = cc.EvalFastRotationExt(ctxt, j, digits, true);
-    }
 
+    uint32_t M = cc.GetCyclotomicOrder();
+    uint32_t N = cc.GetRingDimension();
+    std::vector<uint32_t> map(N);
     Ciphertext<DCRTPoly> result;
     DCRTPoly first;
 
-    for (uint32_t j = 0; j < gStep; j++) {
-        Ciphertext<DCRTPoly> inner = EvalMultExt(cc.KeySwitchExt(ctxt, true), A[bStep * j]);
-
-        for (uint32_t i = 1; i < bStep; i++) {
-            if (bStep * j + i < slots) {
-                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[i - 1], A[bStep * j + i]));
-            }
+    for (uint32_t j = 0; j < gStep; ++j) {
+        auto inner = FHECKKSRNS::EvalMultExt(cc.KeySwitchExt(ctxt, true), A[bStep * j]);
+        for (uint32_t i = 1; i < bStep; ++i) {
+            if (bStep * j + i < slots)
+                FHECKKSRNS::EvalAddExtInPlace(inner, FHECKKSRNS::EvalMultExt(fastRotation[i - 1], A[bStep * j + i]));
         }
 
         if (j == 0) {
@@ -1011,27 +530,22 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoConte
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
             inner->SetElements(std::move(elements));
-            result = inner;
+            result = std::move(inner);
         }
         else {
             inner = cc.KeySwitchDown(inner);
             // Find the automorphism index that corresponds to the rotation index.
-            usint autoIndex = FindAutomorphismIndex2nComplex(bStep * j, M);
-            std::vector<usint> map(N);
+            uint32_t autoIndex = FindAutomorphismIndex2nComplex(bStep * j, M);
             PrecomputeAutoMap(N, autoIndex, &map);
-            DCRTPoly firstCurrent = inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
-            first += firstCurrent;
+            first += inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
 
-            auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, bStep * j, innerDigits, false));
+            auto&& innerDigits = cc.EvalFastRotationPrecompute(inner);
+            FHECKKSRNS::EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, bStep * j, innerDigits, false));
         }
     }
 
-    result        = cc.KeySwitchDown(result);
-    auto elements = result->GetElements();
-    elements[0] += first;
-    result->SetElements(std::move(elements));
-
+    result = cc.KeySwitchDown(result);
+    result->GetElements()[0] += first;
     return result;
 }
 
@@ -1042,7 +556,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
 
     // Computing the baby-step bStep and the giant-step gStep
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
-    uint32_t gStep = ceil(static_cast<double>(n) / bStep);
+    uint32_t gStep = std::ceil(static_cast<double>(n) / bStep);
 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t N = cc.GetRingDimension();
@@ -1090,11 +604,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
 // Hoisted automorphisms
-#pragma omp parallel for
-    for (uint32_t j = 1; j < bStep; j++) {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(bStep - 1))
+    for (uint32_t j = 1; j < bStep; ++j)
         fastRotation[j - 1] = cc.EvalFastRotationExt(ct, j, digits, true);
-    }
 
+    std::vector<uint32_t> map(N);
     Ciphertext<DCRTPoly> result;
     DCRTPoly first;
 
@@ -1102,13 +616,13 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
         int32_t offset = (j == 0) ? 0 : -static_cast<int32_t>(bStep * j);
         auto temp      = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j], N / 2), offset), 1, towersToDrop,
                                                     elementParamsPtr2, N / 2);
-        Ciphertext<DCRTPoly> inner = EvalMultExt(cc.KeySwitchExt(ct, true), temp);
+        auto inner     = FHECKKSRNS::EvalMultExt(cc.KeySwitchExt(ct, true), temp);
 
         for (uint32_t i = 1; i < bStep; i++) {
             if (bStep * j + i < n) {
                 auto tempi = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j + i], N / 2), offset), 1, towersToDrop,
                                                         elementParamsPtr2, N / 2);
-                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[i - 1], tempi));
+                FHECKKSRNS::EvalAddExtInPlace(inner, FHECKKSRNS::EvalMultExt(fastRotation[i - 1], tempi));
             }
         }
 
@@ -1117,32 +631,27 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
             inner->SetElements(std::move(elements));
-            result = inner;
+            result = std::move(inner);
         }
         else {
             inner = cc.KeySwitchDown(inner);
             // Find the automorphism index that corresponds to rotation index index.
-            usint autoIndex = FindAutomorphismIndex2nComplex(bStep * j, M);
-            std::vector<usint> map(N);
+            uint32_t autoIndex = FindAutomorphismIndex2nComplex(bStep * j, M);
             PrecomputeAutoMap(N, autoIndex, &map);
-            DCRTPoly firstCurrent = inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
-            first += firstCurrent;
-
-            auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, bStep * j, innerDigits, false));
+            first += inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
+            auto&& innerDigits = cc.EvalFastRotationPrecompute(inner);
+            FHECKKSRNS::EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, bStep * j, innerDigits, false));
         }
     }
-    result        = cc.KeySwitchDown(result);
-    auto elements = result->GetElements();
-    elements[0] += first;
-    result->SetElements(std::move(elements));
+    result = cc.KeySwitchDown(result);
+    result->GetElements()[0] += first;
 
     // A represents the diagonals, which lose the information whether the initial matrix is tall or wide
     if (wide) {
         uint32_t logl = lbcrypto::GetMSB(A[0].size() / A.size()) - 1;  // These are powers of two, so log(l) is integer
         std::vector<Ciphertext<DCRTPoly>> ctxt(logl + 1);
         ctxt[0] = result;
-        for (size_t j = 1; j <= logl; ++j) {
+        for (uint32_t j = 1; j <= logl; ++j) {
             ctxt[j] = cc.EvalAdd(ctxt[j - 1], cc.EvalAtIndex(ctxt[j - 1], A.size() * (1 << (j - 1))));
         }
         result = ctxt[logl];
@@ -1153,10 +662,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                             ConstCiphertext<DCRTPoly> ctxt) const {
-    uint32_t slots = m_numSlotsCKKS;
-    uint32_t m     = 4 * slots;
-    uint32_t M     = cc.GetCyclotomicOrder();
-    bool isSparse  = (M != m) ? true : false;
+    if (m_U0Pre.size() == 0)
+        OPENFHE_THROW("Precomputations not generated. Call EvalCKKSToFHEWPrecompute to proceed.");
+
+    uint32_t m    = 4 * m_numSlotsCKKS;
+    uint32_t M    = cc.GetCyclotomicOrder();
+    bool isSparse = (M != m);
 
     auto ctxtToDecode = ctxt->Clone();
 
@@ -1182,23 +693,14 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
     }
 
     Ciphertext<DCRTPoly> ctxtDecoded;
-
-    if (slots != m_numSlotsCKKS || m_U0Pre.size() == 0) {
-        std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
-                             std::string(" slots were not generated") +
-                             std::string(" Need to call EvalCKKSToFHEWPrecompute to proceed"));
-        OPENFHE_THROW(errorMsg);
-    }
-
     if (!isSparse) {  // fully packed
         // ctxtToDecode = cc.EvalAdd(ctxtToDecode, cc.GetScheme()->MultByMonomial(ctxtToDecode, M / 4));
         ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF);
     }
     else {  // sparsely packed
         ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF);
-        cc.EvalAddInPlace(ctxtDecoded, cc.EvalAtIndex(ctxtDecoded, slots));
+        cc.EvalAddInPlace(ctxtDecoded, cc.EvalAtIndex(ctxtDecoded, m_numSlotsCKKS));
     }
-
     return ctxtDecoded;
 }
 
@@ -1208,20 +710,16 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalPartialHomDecryption(const CryptoContext
                                                              uint32_t L) const {
     // Currently, by design, the # rows (# LWE ciphertexts to switch) is a power of two.
     // Ensure that # cols (LWE lattice parameter n) is padded up to a power of two
-    std::vector<std::vector<std::complex<double>>> Acopy(A);
-    uint32_t cols_po2 = 1 << static_cast<uint32_t>(std::ceil(std::log2(A[0].size())));
-
+    auto Acopy      = A;
+    size_t cols_po2 = 1 << static_cast<uint32_t>(std::ceil(std::log2(A[0].size())));
     if (cols_po2 > A[0].size()) {
-        for (size_t i = 0; i < A.size(); ++i) {
+        for (size_t i = 0; i < A.size(); ++i)
             Acopy[i].resize(cols_po2);
-        }
     }
 
     auto Apre = EvalLTRectPrecomputeSwitch(Acopy, dim1, scale);
-    auto res  = EvalLTRectWithPrecomputeSwitch(cc, Apre, ct, (Acopy.size() < A[0].size()), dim1,
-                                               L);  // The result is repeated every Acopy.size() slots
-
-    return res;
+    // The result is repeated every Acopy.size() slots
+    return EvalLTRectWithPrecomputeSwitch(cc, Apre, ct, (Acopy.size() < A[0].size()), dim1, L);
 }
 
 //------------------------------------------------------------------------------
@@ -1232,21 +730,20 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
         OPENFHE_THROW("Only STD128 or TOY are currently supported.");
 
     uint32_t ringDim = params.GetRingDimension();
-    if (params.GetNumSlotsCKKS() == 0 || params.GetNumSlotsCKKS() == (ringDim / 2))  // fully-packed
-        m_numSlotsCKKS = ringDim / 2;
-    else  // sparsely-packed
-        m_numSlotsCKKS = params.GetNumSlotsCKKS();
+    m_numSlotsCKKS   = (params.GetNumSlotsCKKS() == 0) ? ringDim / 2 : params.GetNumSlotsCKKS();
 
     m_modulus_CKKS_initial = params.GetInitialCKKSModulus();
     // Modulus to switch to in order to have secure RLWE samples with ring dimension n.
     // We can select any Qswitch less than 27 bits corresponding to 128 bits of security for lattice parameter n=1024 < 1305
     // according to https://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
     // or any Qswitch for TOY security.
+
     // Ensure that Qswitch is larger than Q_FHEW and smaller than Q_CKKS.
     if (params.GetCtxtModSizeFHEWIntermedSwch() <= params.GetCtxtModSizeFHEWLargePrec() ||
-        params.GetCtxtModSizeFHEWIntermedSwch() > GetMSB(m_modulus_CKKS_initial.ConvertToInt()) - 1) {
+        params.GetCtxtModSizeFHEWIntermedSwch() > m_modulus_CKKS_initial.GetMSB() - 1) {
         OPENFHE_THROW("Qswitch should be larger than QFHEW and smaller than QCKKS.");
     }
+
     // Intermediate cryptocontext
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(0);
@@ -1280,21 +777,18 @@ LWEPrivateKey SWITCHCKKSRNS::EvalCKKStoFHEWSetup(const SchSwchParams& params) {
                         1 << params.GetCtxtModSizeFHEWLargePrec() :
                         m_ccLWE->GetParams()->GetLWEParams()->Getq().ConvertToInt();
 
-    // LWE private key
-    LWEPrivateKey lwesk = m_ccLWE->KeyGen();
-
     // The baby-step and number of levels for the linear transformation associated to the homomorphic decoding
     m_dim1CF = (params.GetBStepLTrCKKStoFHEW() == 0) ? getRatioBSGSLT(params.GetNumSlotsCKKS()) :
                                                        params.GetBStepLTrCKKStoFHEW();
     m_LCF    = params.GetLevelLTrCKKStoFHEW();
 
-    return lwesk;
+    // Return LWE private key
+    return m_ccLWE->KeyGen();
 }
 
-std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHEWKeyGen(
+std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHEWKeyGen(
     const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) {
-    auto privateKey = keyPair.secretKey;
-    auto publicKey  = keyPair.publicKey;
+    auto& privateKey = keyPair.secretKey;
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
@@ -1310,8 +804,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     // Intermediate cryptocontext for CKKS to FHEW
     auto keys2 = m_ccKS->KeyGen();
 
-    Plaintext ptxtZeroKS = m_ccKS->MakeCKKSPackedPlaintext(std::vector<double>{0.0});
-    m_ctxtKS             = m_ccKS->Encrypt(keys2.publicKey, ptxtZeroKS);
+    m_ctxtKS = m_ccKS->Encrypt(keys2.publicKey, m_ccKS->MakeCKKSPackedPlaintext(std::vector<double>{0.0}));
 
     // Compute switching key between RLWE and LWE via the intermediate cryptocontext, keep it in RLWE form
     m_CKKStoFHEWswk = switchingKeyGenRLWEcc(keys2.secretKey, privateKey, lwesk);
@@ -1337,8 +830,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
     auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     // Compute conjugation key
-    auto conjKey       = ConjugateKeyGen(privateKey);
-    (*evalKeys)[M - 1] = conjKey;
+    (*evalKeys)[M - 1] = FHECKKSRNS::ConjugateKeyGen(privateKey);
 
     return evalKeys;
 }
@@ -1346,9 +838,9 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKStoFHE
 void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) {
     uint32_t M     = cc.GetCyclotomicOrder();
     uint32_t slots = m_numSlotsCKKS;
-
-    uint32_t m    = 4 * m_numSlotsCKKS;
-    bool isSparse = (M != m) ? true : false;
+    uint32_t m     = 4 * m_numSlotsCKKS;
+    uint32_t mmask = m - 1;  // assumes m is power of 2
+    bool isSparse  = (M != m);
 
     // Computes indices for all primitive roots of unity
     std::vector<uint32_t> rotGroup(slots);
@@ -1356,14 +848,15 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
     for (uint32_t i = 0; i < slots; ++i) {
         rotGroup[i] = fivePows;
         fivePows *= 5;
-        fivePows %= m;
+        fivePows &= mmask;
     }
     // Computes all powers of a primitive root of unity exp(2*M_PI/m)
     std::vector<std::complex<double>> ksiPows(m + 1);
+    double ak = 2 * M_PI / m;
     for (uint32_t j = 0; j < m; ++j) {
-        double angle = 2.0 * M_PI * j / m;
-        ksiPows[j].real(cos(angle));
-        ksiPows[j].imag(sin(angle));
+        double angle = ak * j;
+        ksiPows[j].real(std::cos(angle));
+        ksiPows[j].imag(std::sin(angle));
     }
     ksiPows[m] = ksiPows[0];
 
@@ -1371,9 +864,9 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
     std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
     std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
 
-    for (size_t i = 0; i < slots; i++) {
-        for (size_t j = 0; j < slots; j++) {
-            U0[i][j] = ksiPows[(j * rotGroup[i]) % m];
+    for (uint32_t i = 0; i < slots; ++i) {
+        for (uint32_t j = 0; j < slots; ++j) {
+            U0[i][j] = ksiPows[(j * rotGroup[i]) & mmask];
             U1[i][j] = std::complex<double>(0, 1) * U0[i][j];
         }
     }
@@ -1393,14 +886,11 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
 
 std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
                                                                               uint32_t numCtxts) {
-    auto ccCKKS    = ciphertext->GetCryptoContext();
-    uint32_t slots = m_numSlotsCKKS;
-
-    if (numCtxts == 0 || numCtxts > slots) {
-        numCtxts = slots;
-    }
+    if (numCtxts == 0 || numCtxts > m_numSlotsCKKS)
+        numCtxts = m_numSlotsCKKS;
 
     // Step 1. Homomorphic decoding
+    auto ccCKKS      = ciphertext->GetCryptoContext();
     auto ctxtDecoded = EvalSlotsToCoeffsSwitch(*ccCKKS, ciphertext);
     ccCKKS->GetScheme()->ModReduceInternalInPlace(ctxtDecoded, 1);
 
@@ -1419,25 +909,22 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
     std::vector<std::shared_ptr<LWECiphertextImpl>> LWEciphertexts(numCtxts);
     auto AandB = ExtractLWEpacked(ctSwitched);
 
-    uint32_t gap = ccKS->GetRingDimension() / (2 * slots);
-
-    for (uint32_t i = 0, idx = 0; i < numCtxts; ++i, idx += gap) {
+    uint32_t gap = ccKS->GetRingDimension() / (2 * m_numSlotsCKKS);
+    for (uint32_t i = 0, idx = 0; i < numCtxts; ++i, idx += gap)
         LWEciphertexts[i] = ExtractLWECiphertext(AandB, m_modulus_CKKS_from, n, idx);
-    }
 
     // Step 5. Modulus switch to q in FHEW
 
     // Compute the necessary factor to obtaine the message Q'/pLWE
     if (m_modulus_LWE != m_modulus_CKKS_from) {
-#pragma omp parallel for
-        for (uint32_t i = 0; i < numCtxts; i++) {
-            auto original_a = LWEciphertexts[i]->GetA();
-            auto original_b = LWEciphertexts[i]->GetB();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numCtxts))
+        for (uint32_t i = 0; i < numCtxts; ++i) {
+            auto& original_a = LWEciphertexts[i]->GetA();
+            auto& original_b = LWEciphertexts[i]->GetB();
             // multiply by Q_LWE/Q' and round to Q_LWE
             NativeVector a_round(n, m_modulus_LWE);
-            for (uint32_t j = 0; j < n; ++j) {
+            for (uint32_t j = 0; j < n; ++j)
                 a_round[j] = RoundqQAlter(original_a[j], m_modulus_LWE, m_modulus_CKKS_from);
-            }
             NativeInteger b_round = RoundqQAlter(original_b, m_modulus_LWE, m_modulus_CKKS_from);
             LWEciphertexts[i]     = std::make_shared<LWECiphertextImpl>(std::move(a_round), std::move(b_round));
         }
@@ -1452,10 +939,9 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
 void SWITCHCKKSRNS::EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS,
                                         const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS,
                                         uint32_t logQ) {
-    m_ccLWE = ccLWE;
-
-    if (m_ccLWE->GetParams()->GetLWEParams()->Getn() * 2 > ccCKKS.GetRingDimension())
+    if (ccLWE->GetParams()->GetLWEParams()->Getn() * 2 > ccCKKS.GetRingDimension())
         OPENFHE_THROW("The lattice parameter in LWE cannot be larger than half the RLWE ring dimension.");
+    m_ccLWE = ccLWE;
 
     if (numSlotsCKKS == 0) {
         if (ccCKKS.GetEncodingParams()->GetBatchSize() != 0)
@@ -1470,11 +956,11 @@ void SWITCHCKKSRNS::EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKK
     m_modulus_LWE = (logQ != 0) ? 1 << logQ : m_ccLWE->GetParams()->GetLWEParams()->Getq().ConvertToInt();
 }
 
-std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKKSKeyGen(
+std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKKSKeyGen(
     const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots, uint32_t numCtxts, uint32_t dim1,
     uint32_t L) {
-    auto privateKey = keyPair.secretKey;
-    auto publicKey  = keyPair.publicKey;
+    auto& privateKey = keyPair.secretKey;
+    auto& publicKey  = keyPair.publicKey;
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
     auto ccCKKS             = privateKey->GetCryptoContext();
@@ -1483,14 +969,13 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
     uint32_t ringDim = ccCKKS->GetRingDimension();
 
     // Generate FHEW to CKKS switching key, i.e., CKKS encryption of FHEW secret key. Pad up to the closest power of two
-    uint32_t n_po2     = 1 << static_cast<uint32_t>(std::ceil(std::log2(n)));
-    auto skLWEElements = lwesk->GetElement();
+    uint32_t n_po2      = 1 << static_cast<uint32_t>(std::ceil(std::log2(n)));
+    auto& skLWEElements = lwesk->GetElement();
+    const auto neg      = lwesk->GetModulus().ConvertToDouble() - 1.0;
     std::vector<std::complex<double>> skLWEDouble(n_po2);
-    for (uint32_t i = 0; i < n; i++) {
-        auto tmp = skLWEElements[i].ConvertToDouble();
-        if (tmp == lwesk->GetModulus().ConvertToInt() - 1)
-            tmp = -1;
-        skLWEDouble[i] = std::complex<double>(tmp, 0);
+    for (uint32_t i = 0; i < n; ++i) {
+        auto tmp       = skLWEElements[i].ConvertToDouble();
+        skLWEDouble[i] = std::complex<double>(tmp == neg ? -1.0 : tmp, 0);
     }
 
     // Check encoding and specify the number of slots, otherwise, if batchsize is set and is smaller, it will throw an error.
@@ -1504,9 +989,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
     m_FHEWtoCKKSswk = ccCKKS->Encrypt(publicKey, skLWEPlainswk);
 
     // Compute automorphism keys for CKKS for baby-step giant-step
-    if (numCtxts == 0) {
+    if (numCtxts == 0)
         numCtxts = m_numSlotsCKKS;  // If no value is specified, default to the column size of the linear transformation
-    }
     uint32_t M = ccCKKS->GetCyclotomicOrder();
     if (dim1 == 0)
         dim1 = getRatioBSGSLT(numCtxts);
@@ -1520,18 +1004,16 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
     if (numCtxts < n_po2) {
         uint32_t logl = lbcrypto::GetMSB(n_po2 / numCtxts) - 1;  // These are powers of two, so log(l) is integer
         indexRotationHomDec.reserve(indexRotationHomDec.size() + logl);
-        for (size_t j = 1; j <= logl; ++j) {
+        for (uint32_t j = 1; j <= logl; ++j)
             indexRotationHomDec.emplace_back(numCtxts * (1 << (j - 1)));
-        }
     }
 
     uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
     // Compute indices for rotations to bring back the final CKKS ciphertext encoding to slots
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
         indexRotationHomDec.reserve(indexRotationHomDec.size() + GetMSB(ringDim) - 2);
-        for (uint32_t j = 1; j < ringDim / (2 * slots); j <<= 1) {
+        for (uint32_t j = 1; j < ringDim / (2 * slots); j <<= 1)
             indexRotationHomDec.emplace_back(j * slots);
-        }
     }
 
     // Remove possible duplicates and zero
@@ -1553,7 +1035,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKK
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                    uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                                    double pmax, uint32_t dim1) const {
-    if (!LWECiphertexts.size())
+    if (LWECiphertexts.empty())
         OPENFHE_THROW("Empty input FHEW ciphertext vector");
 
     // This is the number of CKKS slots to use in encoding
@@ -1571,7 +1053,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     uint32_t m    = 4 * slots;
     uint32_t M    = ccCKKS->GetCyclotomicOrder();
     uint32_t N    = ccCKKS->GetRingDimension();
-    bool isSparse = (M != m) ? true : false;
+    bool isSparse = (M != m);
 
     double K = 0.0;
     std::vector<double> coefficientsFHEW;  // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
@@ -1600,60 +1082,49 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
     const double prescale = (1.0 / LWECiphertexts[0]->GetModulus().ConvertToDouble()) / K;
 
-#pragma omp parallel for
-    for (uint32_t i = 0; i < numValues; i++) {
-        auto a = LWECiphertexts[i]->GetA();
-        A[i]   = std::vector<std::complex<double>>(a.GetLength());
-        for (uint32_t j = 0; j < a.GetLength(); j++) {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numValues))
+    for (uint32_t i = 0; i < numValues; ++i) {
+        auto& a = LWECiphertexts[i]->GetA();
+        A[i].resize(a.GetLength());
+        for (uint32_t j = 0; j < a.GetLength(); ++j)
             A[i][j] = std::complex<double>(a[j].ConvertToDouble(), 0);
-        }
         b[i] = std::complex<double>(prescale * LWECiphertexts[i]->GetB().ConvertToDouble(), 0);
     }
 
     // Step 2. Perform the homomorphic linear transformation of A*skLWE
-    if (dim1 == 0) {
+    if (dim1 == 0)
         dim1 = m_dim1FC;
-    }
-    Ciphertext<DCRTPoly> AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1, prescale, 0);
+    auto AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1, prescale, 0);
 
     // Step 3. Get the ciphertext of B - A*s
     Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, AdotS->GetNoiseScaleDeg(), AdotS->GetLevel(), nullptr, N / 2);
-
     auto BminusAdotS = ccCKKS->EvalAdd(ccCKKS->EvalNegate(AdotS), BPlain);
-
-    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL)
         ccCKKS->ModReduceInPlace(BminusAdotS);
-    }
-    else {
-        if (BminusAdotS->GetNoiseScaleDeg() == 2)
-            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
-    }
+    else if (BminusAdotS->GetNoiseScaleDeg() == 2)
+        ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
 
     // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
     // auto BminusAdotS2 = BminusAdotS;  // Instead of zeroing out slots which are not of interest as done above
 
-    double a_cheby = -1;
-    double b_cheby = 1;  // The division by K was performed before
+    double a_cheby = -1.0;
+    double b_cheby = 1.0;  // The division by K was performed before
 
     // double a_cheby = -K; double b_cheby = K; // Alternatively, do this separately to not lose precision when scaling with everything at once
     auto BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
-
-    if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
+    if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL)
         ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
-    }
 
-    enum { BT_ITER = 3 };
-    for (int32_t j = 1; j < BT_ITER + 1; j++) {
+    const int32_t BT_ITER = 3;
+    for (int32_t j = 1; j <= BT_ITER; ++j) {
         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
         ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);
         double scalar = 1.0 / std::pow((2.0 * M_PI), std::pow(2.0, j - BT_ITER));
         ccCKKS->EvalSubInPlace(BminusAdotS3, scalar);
-        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+        if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL)
             ccCKKS->ModReduceInPlace(BminusAdotS3);
-        }
-        else {
+        else
             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
-        }
     }
 
     /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
@@ -1707,9 +1178,6 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 }
 
 LWEPrivateKey SWITCHCKKSRNS::EvalSchemeSwitchingSetup(const SchSwchParams& params) {
-    // CKKS to FHEW
-    auto lwesk = EvalCKKStoFHEWSetup(params);
-
     // FHEW to CKKS
     // Save the parameters to be used in EvalSchemeSwitchingKeyGen
     m_argmin = params.GetComputeArgmin();
@@ -1728,13 +1196,14 @@ LWEPrivateKey SWITCHCKKSRNS::EvalSchemeSwitchingSetup(const SchSwchParams& param
     m_dim1FC = (params.GetBStepLTrFHEWtoCKKS() == 0) ? getRatioBSGSLT(m_numCtxts) : params.GetBStepLTrFHEWtoCKKS();
     m_LFC    = params.GetLevelLTrFHEWtoCKKS();
 
-    return lwesk;
+    // CKKS to FHEW
+    return EvalCKKStoFHEWSetup(params);
 }
 
-std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwitchingKeyGen(
+std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwitchingKeyGen(
     const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) {
-    auto privateKey = keyPair.secretKey;
-    auto publicKey  = keyPair.publicKey;
+    auto& privateKey = keyPair.secretKey;
+    auto& publicKey  = keyPair.publicKey;
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
@@ -1764,12 +1233,11 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     // Generate FHEW to CKKS switching key, i.e., CKKS encryption of FHEW secret key. Pad up to the closest power of two
     uint32_t n_po2     = 1 << static_cast<uint32_t>(std::ceil(std::log2(n)));
     auto skLWEElements = lwesk->GetElement();
+    const auto neg     = lwesk->GetModulus().ConvertToDouble() - 1.0;
     std::vector<std::complex<double>> skLWEDouble(n_po2);
     for (uint32_t i = 0; i < n; i++) {
-        auto tmp = skLWEElements[i].ConvertToDouble();
-        if (tmp == lwesk->GetModulus().ConvertToInt() - 1)
-            tmp = -1;
-        skLWEDouble[i] = std::complex<double>(tmp, 0);
+        auto tmp       = skLWEElements[i].ConvertToDouble();
+        skLWEDouble[i] = std::complex<double>(tmp == neg ? -1.0 : tmp, 0);
     }
 
     // Check encoding and specify the number of slots, otherwise, if batchsize is set and is smaller, it will throw an error.
@@ -1861,7 +1329,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalSchemeSwi
     auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     // Compute conjugation key
-    auto conjKey       = ConjugateKeyGen(privateKey);
+    auto conjKey       = FHECKKSRNS::ConjugateKeyGen(privateKey);
     (*evalKeys)[M - 1] = conjKey;
 
     // Compute multiplication key
@@ -1895,7 +1363,8 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
                                                                ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
                                                                uint32_t numSlots, uint32_t pLWE, double scaleSign,
                                                                bool unit) {
-    auto ccCKKS             = ciphertext1->GetCryptoContext();
+    auto ccCKKS = ciphertext1->GetCryptoContext();
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS->GetCryptoParameters());
 
     auto cDiff = ccCKKS->EvalSub(ciphertext1, ciphertext2);
@@ -1903,10 +1372,8 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
     if (unit) {
         if (pLWE == 0)
             OPENFHE_THROW("To scale to the unit circle, pLWE must be non-zero.");
-        else {
-            cDiff = ccCKKS->EvalMult(cDiff, 1.0 / static_cast<double>(pLWE));
-            cDiff = ccCKKS->Rescale(cDiff);
-        }
+        cDiff = ccCKKS->EvalMult(cDiff, 1.0 / static_cast<double>(pLWE));
+        cDiff = ccCKKS->Rescale(cDiff);
     }
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
@@ -1921,12 +1388,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalCompareSchemeSwitching(ConstCiphertext<D
     }
 
     auto LWECiphertexts = EvalCKKStoFHEW(cDiff, numCtxts);
-
-    std::vector<LWECiphertext> cSigns(LWECiphertexts.size());
-#pragma omp parallel for
-    for (uint32_t i = 0; i < LWECiphertexts.size(); i++) {
+    const uint32_t n    = LWECiphertexts.size();
+    std::vector<LWECiphertext> cSigns(n);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+    for (uint32_t i = 0; i < n; ++i)
         cSigns[i] = m_ccLWE->EvalSign(LWECiphertexts[i], true);
-    }
 
     return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0, 0);
 }
@@ -1935,18 +1401,17 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
                                                                         PublicKey<DCRTPoly> publicKey,
                                                                         uint32_t numValues, uint32_t numSlots,
                                                                         uint32_t pLWE, double scaleSign) {
-    auto cc                 = ciphertext->GetCryptoContext();
+    auto cc = ciphertext->GetCryptoContext();
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
-    if (pLWE != 0) {
-        double scaleCF = 1.0 / pLWE;
-        scaleCF *= scaleSign;
-        EvalCKKStoFHEWPrecompute(*cc, scaleCF);
-    }
+    if (pLWE != 0)
+        EvalCKKStoFHEWPrecompute(*cc, scaleSign / pLWE);
 
     uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -1958,77 +1423,71 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitching(ConstCip
         std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr, slots);
     }
-    Ciphertext<DCRTPoly> cInd          = cc->Encrypt(publicKey, pInd);
-    Ciphertext<DCRTPoly> newCiphertext = ciphertext->Clone();
+    auto cInd          = cc->Encrypt(publicKey, pInd);
+    auto newCiphertext = ciphertext->Clone();
 
     for (uint32_t M = 1; M < numValues; M <<= 1) {
+        const auto n = numValues / (2 * M);
+
         // Compute CKKS ciphertext encoding difference of the first numValues
-        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
         // Transform the ciphertext from CKKS to FHEW
-        auto cTemp = EvalCKKStoFHEW(cDiff, numValues / (2 * M));
+        auto cTemp = EvalCKKStoFHEW(cDiff, n);
 
         // Evaluate the sign
         // We always assume for the moment that numValues is a power of 2
-        std::vector<LWECiphertext> LWESign(numValues / (2 * M));
-#pragma omp parallel for
-        for (uint32_t j = 0; j < numValues / (2 * M); j++) {
+        std::vector<LWECiphertext> LWESign(n);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+        for (uint32_t j = 0; j < n; ++j)
             LWESign[j] = m_ccLWE->EvalSign(cTemp[j], true);
-        }
 
         // Scheme switching from FHEW to CKKS
-        auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
+        auto dim1    = getRatioBSGSLT(n);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, n, numSlots, 4, -1.0, 1.0, dim1);
 
-        std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
+        std::vector<std::complex<double>> ones(n, 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
-        cc->EvalAddInPlace(cSelect,
-                           cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(numValues / (2 * M))));
+        cc->EvalAddInPlace(cSelect, cc->EvalAtIndex(cc->EvalSub(ptxtOnes, cSelect), -static_cast<int32_t>(n)));
 
-        auto cExpandSelect = cSelect;
         if (M > 1) {
             for (uint32_t j = numValues / M; j < numValues; j <<= 1)
-                cc->EvalAddInPlace(cExpandSelect, cc->EvalAtIndex(cExpandSelect, -static_cast<int32_t>(j)));
+                cc->EvalAddInPlace(cSelect, cc->EvalAtIndex(cSelect, -static_cast<int32_t>(j)));
         }
 
         // Update the ciphertext of values and the indicator
-        newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        newCiphertext = cc->EvalMult(newCiphertext, cSelect);
+        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(newCiphertext);
-        }
 
-        cInd = cc->EvalMult(cInd, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        cInd = cc->EvalMult(cInd, cSelect);
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(cInd);
-        }
     }
+
     // After computing the minimum and argument
-    if (!m_oneHot) {
+    if (!m_oneHot)
         cInd = cc->EvalSum(cInd, numValues);
-    }
 
-    std::vector<Ciphertext<DCRTPoly>> cRes{newCiphertext, cInd};
-
-    return cRes;
+    return std::vector<Ciphertext<DCRTPoly>>{newCiphertext, cInd};
 }
 
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                            PublicKey<DCRTPoly> publicKey,
                                                                            uint32_t numValues, uint32_t numSlots,
                                                                            uint32_t pLWE, double scaleSign) {
-    auto cc                 = ciphertext->GetCryptoContext();
+    auto cc = ciphertext->GetCryptoContext();
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
-    if (pLWE != 0) {
-        double scaleCF = 1.0 / pLWE;
-        scaleCF *= scaleSign;
-        EvalCKKStoFHEWPrecompute(*cc, scaleCF);
-    }
+    if (pLWE != 0)
+        EvalCKKStoFHEWPrecompute(*cc, scaleSign / pLWE);
 
     uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output.
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -2040,27 +1499,29 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
         std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr, slots);
     }
-    Ciphertext<DCRTPoly> cInd          = cc->Encrypt(publicKey, pInd);
-    Ciphertext<DCRTPoly> newCiphertext = ciphertext->Clone();
+    auto cInd          = cc->Encrypt(publicKey, pInd);
+    auto newCiphertext = ciphertext->Clone();
 
     for (uint32_t M = 1; M < numValues; M <<= 1) {
+        const auto n = numValues / (2 * M);
+
         // Compute CKKS ciphertext encoding difference of the first numValues
-        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
         // Transform the ciphertext from CKKS to FHEW
-        auto cTemp = EvalCKKStoFHEW(cDiff, numValues / (2 * M));
+        auto cTemp = EvalCKKStoFHEW(cDiff, n);
 
         // Evaluate the sign
         // We always assume for the moment that numValues is a power of 2
         std::vector<LWECiphertext> LWESign(numValues);
-#pragma omp parallel for
-        for (uint32_t j = 0; j < numValues / (2 * M); j++) {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+        for (uint32_t j = 0; j < n; ++j) {
             LWECiphertext tempSign    = m_ccLWE->EvalSign(cTemp[j], true);
             LWECiphertext negTempSign = std::make_shared<LWECiphertextImpl>(*tempSign);
             m_ccLWE->GetLWEScheme()->EvalAddConstEq(negTempSign, negTempSign->GetModulus() >> 1);  // "negated" tempSign
             for (uint32_t i = 0; i < 2 * M; i += 2) {
-                LWESign[i * numValues / (2 * M) + j]       = tempSign;
-                LWESign[(i + 1) * numValues / (2 * M) + j] = negTempSign;
+                LWESign[i * n + j]       = tempSign;
+                LWESign[(i + 1) * n + j] = negTempSign;
             }
         }
 
@@ -2070,43 +1531,39 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMinSchemeSwitchingAlt(Const
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(newCiphertext);
-        }
 
         cInd = cc->EvalMult(cInd, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(cInd);
-        }
     }
+
     // After computing the minimum and argument
-    if (!m_oneHot) {
+    if (!m_oneHot)
         cInd = cc->EvalSum(cInd, numValues);
-    }
 
-    std::vector<Ciphertext<DCRTPoly>> cRes{newCiphertext, cInd};
-
-    return cRes;
+    return std::vector<Ciphertext<DCRTPoly>>{newCiphertext, cInd};
 }
 
+// TODO: used anywhere?
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                                         PublicKey<DCRTPoly> publicKey,
                                                                         uint32_t numValues, uint32_t numSlots,
                                                                         uint32_t pLWE, double scaleSign) {
-    auto cc                 = ciphertext->GetCryptoContext();
+    auto cc = ciphertext->GetCryptoContext();
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
-    if (pLWE != 0) {
-        double scaleCF = 1.0 / pLWE;
-        scaleCF *= scaleSign;
-        EvalCKKStoFHEWPrecompute(*cc, scaleCF);
-    }
+    if (pLWE != 0)
+        EvalCKKStoFHEWPrecompute(*cc, scaleSign / pLWE);
 
     uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output.
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -2118,78 +1575,73 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitching(ConstCip
         std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr, slots);
     }
-    Ciphertext<DCRTPoly> cInd          = cc->Encrypt(publicKey, pInd);
-    Ciphertext<DCRTPoly> newCiphertext = ciphertext->Clone();
+    auto cInd          = cc->Encrypt(publicKey, pInd);
+    auto newCiphertext = ciphertext->Clone();
 
     for (uint32_t M = 1; M < numValues; M <<= 1) {
+        const auto n = numValues / (2 * M);
+
         // Compute CKKS ciphertext encoding difference of the first numValues
-        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
         // Transform the ciphertext from CKKS to FHEW
-        auto cTemp = EvalCKKStoFHEW(cDiff, numValues / (2 * M));
+        auto cTemp = EvalCKKStoFHEW(cDiff, n);
 
         // Evaluate the sign
         // We always assume for the moment that numValues is a power of 2
-        std::vector<LWECiphertext> LWESign(numValues / (2 * M));
-#pragma omp parallel for
-        for (uint32_t j = 0; j < numValues / (2 * M); j++) {
+        std::vector<LWECiphertext> LWESign(n);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+        for (uint32_t j = 0; j < n; ++j)
             LWESign[j] = m_ccLWE->EvalSign(cTemp[j], true);
-        }
 
         // Scheme switching from FHEW to CKKS
-        auto dim1    = getRatioBSGSLT(numValues / (2 * M));
-        auto cSelect = EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0, dim1);
+        auto dim1    = getRatioBSGSLT(n);
+        auto cSelect = EvalFHEWtoCKKS(LWESign, n, numSlots, 4, -1.0, 1.0, dim1);
 
-        std::vector<std::complex<double>> ones(numValues / (2 * M), 1.0);
+        std::vector<std::complex<double>> ones(n, 1.0);
         Plaintext ptxtOnes = cc->MakeCKKSPackedPlaintext(ones, 1, 0, nullptr, slots);
-        cSelect            = cc->EvalAdd(cc->EvalSub(ptxtOnes, cSelect),
-                                         cc->EvalAtIndex(cSelect, -static_cast<int32_t>(numValues / (2 * M))));
+        cSelect = cc->EvalAdd(cc->EvalSub(ptxtOnes, cSelect), cc->EvalAtIndex(cSelect, -static_cast<int32_t>(n)));
 
-        auto cExpandSelect = cSelect;
         if (M > 1) {
             for (uint32_t j = numValues / M; j < numValues; j <<= 1)
-                cc->EvalAddInPlace(cExpandSelect, cc->EvalAtIndex(cExpandSelect, -static_cast<int32_t>(j)));
+                cc->EvalAddInPlace(cSelect, cc->EvalAtIndex(cSelect, -static_cast<int32_t>(j)));
         }
 
         // Update the ciphertext of values and the indicator
-        newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        newCiphertext = cc->EvalMult(newCiphertext, cSelect);
+        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(newCiphertext);
-        }
 
-        cInd = cc->EvalMult(cInd, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        cInd = cc->EvalMult(cInd, cSelect);
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(cInd);
-        }
     }
+
     // After computing the minimum and argument
-    if (!m_oneHot) {
+    if (!m_oneHot)
         cInd = cc->EvalSum(cInd, numValues);
-    }
 
-    std::vector<Ciphertext<DCRTPoly>> cRes{newCiphertext, cInd};
-
-    return cRes;
+    return std::vector<Ciphertext<DCRTPoly>>{newCiphertext, cInd};
 }
 
+// TODO: used anywhere?
 std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
                                                                            PublicKey<DCRTPoly> publicKey,
                                                                            uint32_t numValues, uint32_t numSlots,
                                                                            uint32_t pLWE, double scaleSign) {
-    auto cc                 = ciphertext->GetCryptoContext();
+    auto cc = ciphertext->GetCryptoContext();
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
-    if (pLWE != 0) {
-        double scaleCF = 1.0 / pLWE;
-        scaleCF *= scaleSign;
-        EvalCKKStoFHEWPrecompute(*cc, scaleCF);
-    }
+    if (pLWE != 0)
+        EvalCKKStoFHEWPrecompute(*cc, scaleSign / pLWE);
 
     uint32_t towersToDrop = 12;  // How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output
-    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+
+    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (m_oneHot) {
@@ -2201,27 +1653,29 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
         std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr, slots);
     }
-    Ciphertext<DCRTPoly> cInd          = cc->Encrypt(publicKey, pInd);
-    Ciphertext<DCRTPoly> newCiphertext = ciphertext->Clone();
+    auto cInd          = cc->Encrypt(publicKey, pInd);
+    auto newCiphertext = ciphertext->Clone();
 
     for (uint32_t M = 1; M < numValues; M <<= 1) {
+        const auto n = numValues / (2 * M);
+
         // Compute CKKS ciphertext encoding difference of the first numValues
-        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        auto cDiff = cc->EvalSub(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
         // Transform the ciphertext from CKKS to FHEW
-        auto cTemp = EvalCKKStoFHEW(cDiff, numValues / (2 * M));
+        auto cTemp = EvalCKKStoFHEW(cDiff, n);
 
         // Evaluate the sign
         // We always assume for the moment that numValues is a power of 2
         std::vector<LWECiphertext> LWESign(numValues);
-#pragma omp parallel for
-        for (uint32_t j = 0; j < numValues / (2 * M); j++) {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+        for (uint32_t j = 0; j < n; ++j) {
             LWECiphertext tempSign    = m_ccLWE->EvalSign(cTemp[j], true);
             LWECiphertext negTempSign = std::make_shared<LWECiphertextImpl>(*tempSign);
             m_ccLWE->GetLWEScheme()->EvalAddConstEq(negTempSign, negTempSign->GetModulus() >> 1);  // "negated" tempSign
             for (uint32_t i = 0; i < 2 * M; i += 2) {
-                LWESign[i * numValues / (2 * M) + j]       = negTempSign;
-                LWESign[(i + 1) * numValues / (2 * M) + j] = tempSign;
+                LWESign[i * n + j]       = negTempSign;
+                LWESign[(i + 1) * n + j] = tempSign;
             }
         }
 
@@ -2231,25 +1685,21 @@ std::vector<Ciphertext<DCRTPoly>> SWITCHCKKSRNS::EvalMaxSchemeSwitchingAlt(Const
 
         // Update the ciphertext of values and the indicator
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        cc->EvalAddInPlace(newCiphertext, cc->EvalAtIndex(newCiphertext, n));
 
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(newCiphertext);
-        }
 
         cInd = cc->EvalMult(cInd, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL)
             cc->ModReduceInPlace(cInd);
-        }
     }
+
     // After computing the minimum and argument
-    if (!m_oneHot) {
+    if (!m_oneHot)
         cInd = cc->EvalSum(cInd, numValues);
-    }
 
-    std::vector<Ciphertext<DCRTPoly>> cRes{newCiphertext, cInd};
-
-    return cRes;
+    return std::vector<Ciphertext<DCRTPoly>>{newCiphertext, cInd};
 }
 
 }  // namespace lbcrypto

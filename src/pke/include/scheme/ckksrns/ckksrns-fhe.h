@@ -312,6 +312,22 @@ public:
         m_correctionFactor = cf;
     }
 
+    static Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
+                                      const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
+                                      uint32_t level, uint32_t slots);
+
+    static Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext);
+
+    static void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2);
+
+    static Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,
+                                           ConstCiphertext<DCRTPoly> ciphertext2);
+
+    static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey);
+
+    static Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
+                                          const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys);
+
 private:
     CKKSBootstrapPrecom& GetBootPrecom(uint32_t slots) const {
         auto pair = m_bootPrecomMap.find(slots);
@@ -347,21 +363,6 @@ private:
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
-    Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                               const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level,
-                               uint32_t slots) const;
-
-    Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const;
-
-    void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const;
-
-    Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const;
-
-    EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const;
-
-    Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
-                                   const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const;
-
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
@@ -369,8 +370,8 @@ private:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
-                           NativeVector* nativeVec) const;
+    static void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
+                                  NativeVector* nativeVec);
 
 #if NATIVEINT == 128
     /**
@@ -380,8 +381,8 @@ private:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
-                           NativeVector* nativeVec) const;
+    static void FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
+                                  NativeVector* nativeVec);
 #endif
 
     template <typename VectorDataType>
