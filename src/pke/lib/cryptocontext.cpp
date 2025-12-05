@@ -49,6 +49,23 @@ std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>
     CryptoContextImpl<Element>::s_evalAutomorphismKeyMap{};
 
 template <typename Element>
+void CryptoContextImpl<Element>::ClearStaticMapsAndVectors() {
+    CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.clear();
+    CryptoContextImpl<Element>::s_evalMultKeyMap.clear();
+    PackedEncoding::Destroy();
+    intnat::ChineseRemainderTransformFTTNat<NativeVector>().Reset();
+#ifdef WITH_BE2
+    bigintfxd::ChineseRemainderTransformFTTFxd<M2Vector>().Reset();
+#endif
+#ifdef WITH_BE4
+    bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector>().Reset();
+#endif
+#ifdef WITH_NTL
+    NTL::ChineseRemainderTransformFTTNtl<M6Vector>().Reset();
+#endif
+}
+
+template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = std::dynamic_pointer_cast<SchemeRNS>(m_scheme);
@@ -127,38 +144,33 @@ void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Ele
 /////////////////////////////////////////
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                               const PublicKey<Element> publicKey) {
+void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey) {
     ValidateKey(privateKey);
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
-    }
-
-    auto&& evalKeys = GetScheme()->EvalSumKeyGen(privateKey, publicKey);
+    auto&& evalKeys = GetScheme()->EvalSumKeyGen(privateKey);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize, uint32_t subringDim) {
+    const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim) {
     ValidateKey(privateKey);
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag())
-        OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
-
     std::vector<uint32_t> indices;
     auto&& evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
-
     return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
+}
+
+// TODO: this is here for backwards compatibility; should remove in v2.0
+template <typename Element>
+inline std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
+    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize, uint32_t subringDim) {
+    return CryptoContextImpl<Element>::EvalSumRowsKeyGen(privateKey, rowSize, subringDim);
 }
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
+    const PrivateKey<Element> privateKey) {
     ValidateKey(privateKey);
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag())
-        OPENFHE_THROW("Public key passed to EvalSumKeyGen does not match private key");
-
     std::vector<uint32_t> indices;
     auto&& evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
@@ -257,14 +269,9 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys(const CryptoContext<Element> c
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> privateKey,
-                                                   const std::vector<int32_t>& indexList,
-                                                   const PublicKey<Element> publicKey) {
+                                                   const std::vector<int32_t>& indexList) {
     ValidateKey(privateKey);
-    if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-        OPENFHE_THROW("Public key passed to EvalAtIndexKeyGen does not match private key");
-    }
-
-    auto&& evalKeys = GetScheme()->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
+    auto&& evalKeys = GetScheme()->EvalAtIndexKeyGen(privateKey, indexList);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 

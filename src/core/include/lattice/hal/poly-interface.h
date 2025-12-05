@@ -440,8 +440,7 @@ public:
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
             OPENFHE_THROW(
-                "PolyInterface element transposition is currently "
-                "implemented only in the Evaluation representation.");
+                "PolyInterface element transposition is currently implemented only in the Evaluation representation.");
         }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
@@ -492,7 +491,7 @@ public:
    *
    * @warning use @see SetFormat(format) instead
    */
-    void SwitchFormat() override = 0;
+    void SwitchFormat(uint32_t thread_limit = 0) override = 0;
 
     /**
    * @brief Sets format to value without calling FFT. Only use if you know what you're doing.

@@ -150,7 +150,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     * Efficiency	    Less efficient	                                More efficient
     * Recommended use	For applications where security is paramount	For applications where efficiency is paramount
     */
-    auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
+    auto compressionLevel = CompressionLevel::COMPACT;
     parameters.SetInteractiveBootCompressionLevel(compressionLevel);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

@@ -41,6 +41,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace lbcrypto {
@@ -100,96 +101,41 @@ public:
 // }
 // e.Rethrow();
 
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
-openfhe_error : public std::runtime_error {
-    std::string filename;
-    int linenum;
-    std::string message;
-
-public:
-    openfhe_error(const std::string& file, int line, const std::string& what)
-        : std::runtime_error(what), filename(file), linenum(line) {
-        message = filename + ":" + std::to_string(linenum) + " " + what;
-    }
-
-    const char* what() const throw() {
-        return message.c_str();
-    }
-
-    const std::string& GetFilename() const {
-        return filename;
-    }
-    int GetLinenum() const {
-        return linenum;
-    }
-};
-
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
-config_error : public openfhe_error {
-public:
-    config_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
-};
-
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now."))) math_error
-    : public openfhe_error {
-public:
-    math_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
-};
-
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
-not_implemented_error : public openfhe_error {
-public:
-    not_implemented_error(const std::string& file, int line, const std::string& what)
-        : openfhe_error(file, line, what) {}
-};
-
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
-not_available_error : public openfhe_error {
-public:
-    not_available_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
-};
-
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now."))) type_error
-    : public openfhe_error {
-public:
-    type_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
-};
-
-// use this error when serializing openfhe objects
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
-serialize_error : public openfhe_error {
-public:
-    serialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
-};
-
-// use this error when deserializing openfhe objects
-class __attribute__((deprecated("OpenFHEException is the only exception class to be used in OpenFHE now.")))
-deserialize_error : public openfhe_error {
-public:
-    deserialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
-};
-
 class OpenFHEException : public std::exception {
+// clang-format off
     std::string m_errorDescription;
     std::string m_fileName;
     std::string m_funcName;
-    size_t m_lineNumber;
+    size_t m_lineNumber{0};
 
     std::string m_errorMessage;
     std::vector<std::string> m_callStack;
 
-public:
-    OpenFHEException(const std::string errorDescription, const std::string fileName = __builtin_FILE(),
-                     const std::string funcName = __builtin_FUNCTION(), size_t lineNumber = __builtin_LINE())
-        : m_errorDescription(errorDescription), m_fileName(fileName), m_funcName(funcName), m_lineNumber(lineNumber) {
-        m_errorMessage =
-            m_fileName + ":l." + std::to_string(m_lineNumber) + ":" + m_funcName + "(): " + m_errorDescription;
-        m_callStack = get_call_stack();
+    static std::string buildErrorMessage(const std::string& file,
+                                         const std::string& func,
+                                         std::size_t line,
+                                         const std::string& desc) {
+        return file + ":l." + std::to_string(line) + ":" + func + "(): " + desc;
     }
 
-    OpenFHEException(const OpenFHEException& ex) = default;
+public:
+    explicit OpenFHEException(const std::string_view errorDescription,
+                              const std::string fileName,
+                              const std::string funcName,
+                              size_t lineNumber)
+        : m_errorDescription(errorDescription),
+          m_fileName(fileName),
+          m_funcName(funcName),
+          m_lineNumber(lineNumber),
+          m_errorMessage(buildErrorMessage(m_fileName, m_funcName, m_lineNumber, m_errorDescription)),
+          m_callStack(get_call_stack()) {}
+// clang-format on
 
-    const char* what() const noexcept {
+    ~OpenFHEException() override = default;
+    OpenFHEException(const OpenFHEException&) = default;
+    OpenFHEException& operator=(const OpenFHEException&) = default;
+
+    const char* what() const noexcept override {
         return m_errorMessage.c_str();
     }
 
@@ -200,20 +146,21 @@ public:
     // getCallStackAsString() was added to be used by JSON logger. the implementtion will follow
     std::string getCallStackAsString() const {
         return std::string();
+
+        // if (m_callStack.empty())
+        //     return {};
+
+        // std::string ret = m_callStack.front();
+        // for (std::size_t i = 1; i < m_callStack.size(); ++i) {
+        //     ret += '\n';
+        //     ret += m_callStack[i];
+        // }
+        // return ret;
     }
 };
 
-// ATTN:
-// 1. OPENFHE_THROW is to be overloaded for the period of transition to OpenFHEException only.
-// 2. After that openfhe_error, all classes derived from it and OPENFHE_THROW_OLD must be removed
-// 3. All the macros below should be removed except OPENFHE_THROW_NEW. OPENFHE_THROW_NEW should
-//    be renamed to OPENFHE_THROW
-// #define OPENFHE_THROW(expr) throw lbcrypto::OpenFHEException(expr)
-#define OPENFHE_THROW_OLD(exc, expr) throw exc(__FILE__, __LINE__, (expr))
-#define OPENFHE_THROW_NEW(expr)      throw lbcrypto::OpenFHEException(expr)
 
-#define GET_CORRECT_MACRO(_1, _2, NAME, ...) NAME
-#define OPENFHE_THROW(...)                   GET_CORRECT_MACRO(__VA_ARGS__, OPENFHE_THROW_OLD, OPENFHE_THROW_NEW)(__VA_ARGS__)
+#define OPENFHE_THROW(desc) throw lbcrypto::OpenFHEException((desc), __FILE__, __func__, __LINE__)
 
 }  // namespace lbcrypto
 

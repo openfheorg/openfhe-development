@@ -347,39 +347,44 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
     const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+    // Do not generate duplicate keys that have been already generated and added to the static storage (map)
+    std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
+    std::set<uint32_t> indicesToGenerate{
+        CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
+    std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
+
     // we already have checks on higher level?
-    //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
-    //  if (it != indexList.end())
+    //  auto it = std::find(newIndices.begin(), newIndices.end(), 2 * n - 1);
+    //  if (it != newIndices.end())
     //    OPENFHE_THROW("conjugation is disabled");
 
     const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
-    uint32_t N = s.GetRingDimension();
-    uint32_t M = 2 * N;
+    const uint32_t N = s.GetRingDimension();
+    const uint32_t M = s.GetCyclotomicOrder();
 
     // we already have checks on higher level?
-    //  if (indexList.size() > N - 1)
+    //  if (newIndices.size() > N - 1)
     //    OPENFHE_THROW("size exceeds the ring dimension");
 
-    // create and initialize the key map (key is a value from indexList, EvalKey is nullptr). in this case
+    // create and initialize the key map (key is a value from newIndices, EvalKey is nullptr). in this case
     // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
     // have already been created
     auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-    for (auto indx : indexList) {
+    for (auto indx : newIndices)
         (*evalKeys)[indx];
-    }
-    const size_t sz = indexList.size();
-#pragma omp parallel for
-    for (size_t i = 0; i < sz; ++i) {
-        auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
-        uint32_t index = NativeInteger(indexList[i]).ModInverse(M).ConvertToInt();
+    const uint32_t sz = newIndices.size();
+#pragma omp parallel for
+    for (uint32_t i = 0; i < sz; ++i) {
+        auto index = NativeInteger(newIndices[i]).ModInverse(M).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
+        auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-        (*evalKeys)[indexList[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
+        (*evalKeys)[newIndices[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
@@ -453,26 +458,25 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
     const auto cryptoParams = ciphertext->GetCryptoParameters();
 
-    uint32_t N = cryptoParams->GetElementParams()->GetRingDimension();
+    const uint32_t N = cryptoParams->GetElementParams()->GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, autoIndex, &vec);
 
     const auto& cv = ciphertext->GetElements();
 
-    auto ba = cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
-    (*ba)[0] += cv[0];
-    (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
-    (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
+    auto ba = *cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
+    ba[0] += cv[0];
+    ba[0] = ba[0].AutomorphismTransform(autoIndex, vec);
+    ba[1] = ba[1].AutomorphismTransform(autoIndex, vec);
 
-    auto result = ciphertext->Clone();
-    result->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements(std::move(ba));
     return result;
 }
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAtIndexKeyGen(
-    const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-    const std::vector<int32_t>& indexList) const {
+    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++)

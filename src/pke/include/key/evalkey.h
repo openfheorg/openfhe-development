@@ -51,6 +51,8 @@ namespace lbcrypto {
  */
 template <class Element>
 class EvalKeyImpl : public Key<Element> {
+    constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
+
 public:
     /**
    * Basic constructor for setting crypto params
@@ -71,7 +73,7 @@ public:
    */
 
     virtual void SetAVector(const std::vector<Element>& a) {
-        OPENFHE_THROW("SetAVector copy operation not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -82,7 +84,7 @@ public:
    */
 
     virtual void SetAVector(std::vector<Element>&& a) {
-        OPENFHE_THROW("SetAVector move operation not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -93,7 +95,7 @@ public:
    */
 
     virtual const std::vector<Element>& GetAVector() const {
-        OPENFHE_THROW("GetAVector operation not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -104,7 +106,7 @@ public:
    */
 
     virtual void SetBVector(const std::vector<Element>& b) {
-        OPENFHE_THROW("SetBVector copy operation not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -115,7 +117,7 @@ public:
    */
 
     virtual void SetBVector(std::vector<Element>&& b) {
-        OPENFHE_THROW("SetBVector move operation not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
@@ -126,11 +128,11 @@ public:
    */
 
     virtual const std::vector<Element>& GetBVector() const {
-        OPENFHE_THROW("GetBVector operation not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual void ClearKeys() {
-        OPENFHE_THROW("ClearKeys operation is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     friend bool operator==(const EvalKeyImpl& a, const EvalKeyImpl& b) {

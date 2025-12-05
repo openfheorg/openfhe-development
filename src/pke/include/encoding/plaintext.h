@@ -258,12 +258,12 @@ public:
    */
     template <typename Element>
     Element& GetElement() {
-        OPENFHE_THROW("Generic GetElement() is not implemented");
+        OPENFHE_THROW("Not implemented");
     }
 
     template <typename Element>
     const Element& GetElement() const {
-        OPENFHE_THROW("Generic GetElement() is not implemented");
+        OPENFHE_THROW("Not implemented");
     }
 
     /**

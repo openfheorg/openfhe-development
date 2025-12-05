@@ -417,7 +417,7 @@ void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer&
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::SwitchFormat() {
+void PolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
     const auto& co{m_params->GetCyclotomicOrder()};
     const auto& rd{m_params->GetRingDimension()};
     const auto& ru{m_params->GetRootOfUnity()};

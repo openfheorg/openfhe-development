@@ -231,21 +231,6 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
-    *
-    * @param keyTag secret key tag
-    * @param indexList array of specific indices to check the key map against
-    * @return indices that do not have automorphism keys associated with
-    */
-    static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
-                                                              const std::set<uint32_t>& indices) {
-        std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyTag)};
-        // if no index found for the given keyTag, then the entire set "indices" is returned
-        return (existingIndices.empty()) ? indices :
-                                           CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
-    }
-
-    /**
     * @brief Gets automorphism keys for a specific secret key tag and an array of specific indices
     *
     * @param keyTag secret key tag
@@ -632,6 +617,11 @@ public:
     }
 
     /**
+    * @brief Clears various caches within the library
+    */
+    static void ClearStaticMapsAndVectors();
+
+    /**
     * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
     *
     * @param ser stream to serialize to
@@ -674,7 +664,7 @@ public:
             }
         }
 
-        if (omap.size() == 0)
+        if (omap.empty())
             return false;
 
         Serial::Serialize(omap, ser, sertype);
@@ -839,7 +829,7 @@ public:
             }
         }
 
-        if (omap.size() == 0)
+        if (omap.empty())
             return false;
 
         Serial::Serialize(omap, ser, sertype);
@@ -877,7 +867,7 @@ public:
     template <typename ST>
     static bool DeserializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyTag,
                                                const std::vector<uint32_t>& indexList) {
-        if (!indexList.size())
+        if (indexList.empty())
             OPENFHE_THROW("indexList may not be empty");
         if (keyTag.empty())
             OPENFHE_THROW("keyTag may not be empty");
@@ -1151,7 +1141,7 @@ public:
     */
     Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1,
                                       uint32_t level = 0) const {
-        if (!value.size())
+        if (value.empty())
             OPENFHE_THROW("Cannot encode an empty value vector");
 
         return MakePlaintext(COEF_PACKED_ENCODING, value, noiseScaleDeg, level);
@@ -1167,7 +1157,7 @@ public:
     */
     Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1,
                                   uint32_t level = 0) const {
-        if (!value.size())
+        if (value.empty())
             OPENFHE_THROW("Cannot encode an empty value vector");
 
         return MakePlaintext(PACKED_ENCODING, value, noiseScaleDeg, level);
@@ -1187,7 +1177,7 @@ public:
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
                                       uint32_t slots = 0) const {
         VerifyCKKSScheme(__func__);
-        if (!value.size())
+        if (value.empty())
             OPENFHE_THROW("Cannot encode an empty value vector");
 
         return MakeCKKSPackedPlaintextInternal(value, noiseScaleDeg, level, params, slots);
@@ -1206,7 +1196,7 @@ public:
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t noiseScaleDeg = 1, uint32_t level = 0,
                                       const std::shared_ptr<ParmType> params = nullptr, uint32_t slots = 0) const {
         VerifyCKKSScheme(__func__);
-        if (!value.size())
+        if (value.empty())
             OPENFHE_THROW("Cannot encode an empty value vector");
 
         std::vector<std::complex<double>> complexValue(value.size());
@@ -1883,7 +1873,7 @@ public:
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
 
         return GetScheme()->EvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
@@ -1900,7 +1890,7 @@ public:
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
 
         return GetScheme()->EvalMultMutable(ciphertext1, ciphertext2, evalKeyVec[0]);
@@ -1916,7 +1906,7 @@ public:
         TypeCheck(ciphertext1, ciphertext2);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (!evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutableInPlace");
 
         GetScheme()->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKeyVec[0]);
@@ -1932,7 +1922,7 @@ public:
         ValidateCiphertext(ciphertext);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (!evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquare");
 
         return GetScheme()->EvalSquare(ciphertext, evalKeyVec[0]);
@@ -1948,7 +1938,7 @@ public:
         ValidateCiphertext(ciphertext);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (!evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquareMutable");
 
         return GetScheme()->EvalSquareMutable(ciphertext, evalKeyVec[0]);
@@ -1963,7 +1953,7 @@ public:
         ValidateCiphertext(ciphertext);
 
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
-        if (!evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquareInPlace");
 
         GetScheme()->EvalSquareInPlace(ciphertext, evalKeyVec[0]);
@@ -2242,29 +2232,11 @@ public:
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
         ValidateKey(privateKey);
-        if (!indexList.size())
+        if (indexList.empty())
             OPENFHE_THROW("Input index vector is empty");
-
-        // Do not generate duplicate keys that have been already generated and added to the static storage (map)
-        std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
-        std::set<uint32_t> indicesToGenerate{
-            CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
-
-        std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
-        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, newIndices);
+        auto evalKeys = GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
-
         return evalKeys;
-    }
-
-    [[deprecated(
-        "Use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] std::
-        shared_ptr<std::map<uint32_t, EvalKey<Element>>>
-        EvalAutomorphismKeyGen(const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-                               const std::vector<uint32_t>& indexList) const {
-        std::string errMsg(
-            "This API is deprecated. use EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList)");
-        OPENFHE_THROW(errMsg);
     }
 
     /**
@@ -2480,39 +2452,18 @@ public:
     *
     * @param privateKey  Private key used for key generation.
     * @param indexList   List of rotation indices.
-    * @param publicKey   Public key (previously used in NTRU schemes; unused now).
     */
-    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                           const PublicKey<Element> publicKey = nullptr);
-    // [[deprecated(
-    //     "Use EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] void
-    // EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-    //                   const PublicKey<Element> publicKey) {
-    //     std::string errMsg(
-    //         "This API is deprecated. use EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList)");
-    //     OPENFHE_THROW( errMsg);
-    // }
+    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList);
 
     /**
     * @brief Generates rotation evaluation keys for a list of indices. Internally calls EvalAtIndexKeyGen.
     *
     * @param privateKey  Private key used for key generation.
     * @param indexList   List of rotation indices.
-    * @param publicKey   Public key (previously used in NTRU schemes; unused now).
     */
-    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                          const PublicKey<Element> publicKey = nullptr) {
-        EvalAtIndexKeyGen(privateKey, indexList, publicKey);
+    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) {
+        EvalAtIndexKeyGen(privateKey, indexList);
     };
-
-    // [[deprecated(
-    //     "Use EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) instead.")]] void
-    // EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-    //                  const PublicKey<Element> publicKey) {
-    //     std::string errMsg(
-    //         "This API is deprecated. use EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList)");
-    //     OPENFHE_THROW( errMsg);
-    // }
 
     /**
     * @brief Rotates a ciphertext by the given index using stored rotation keys.
@@ -2542,7 +2493,7 @@ public:
         ValidateCiphertext(ciphertext2);
 
         auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-        if (0 == evalKeyVec.size())
+        if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
 
         return GetScheme()->ComposedEvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
@@ -2652,7 +2603,7 @@ public:
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
-        if (!ciphertextVec.size())
+        if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
         if (ciphertextVec.size() == 1)
             return ciphertextVec[0];
@@ -2666,7 +2617,7 @@ public:
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalAddManyInPlace(std::vector<Ciphertext<Element>>& ciphertextVec) const {
-        if (!ciphertextVec.size())
+        if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
         return GetScheme()->EvalAddManyInPlace(ciphertextVec);
     }
@@ -2683,7 +2634,7 @@ public:
     *       Otherwise, it throws an error
     */
     Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
-        if (!ciphertextVec.size())
+        if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
         if (ciphertextVec.size() == 1)
             return ciphertextVec[0];
@@ -2979,15 +2930,8 @@ public:
     * @brief Generates evaluation keys required for homomorphic summation (EvalSum).
     *
     * @param privateKey  Private key used for key generation.
-    * @param publicKey   Public key (used in NTRU schemes; unused now).
     */
-    void EvalSumKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr);
-
-    // [[deprecated("Use EvalSumKeyGen(const PrivateKey<Element> privateKey) instead.")]] void EvalSumKeyGen(
-    //     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
-    //     std::string errMsg("This API is deprecated. use EvalSumKeyGen(const PrivateKey<Element> privateKey)");
-    //     OPENFHE_THROW( errMsg);
-    // }
+    void EvalSumKeyGen(const PrivateKey<Element> privateKey);
 
     /**
     * @brief Generates automorphism keys for EvalSumRows (only for packed encoding).
@@ -2998,19 +2942,15 @@ public:
     * @param subringDim    Subring dimension (use cyclotomic order if 0).
     * @return Map of generated evaluation keys.
     */
-    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr, uint32_t rowSize = 0,
-        uint32_t subringDim = 0);
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
+                                                                            uint32_t rowSize    = 0,
+                                                                            uint32_t subringDim = 0);
 
-    // [[deprecated(
-    //     "Use EvalSumRowKeyGen(const PrivateKey<Element> privateKey, uint32_t rowSize = 0, uint32_t subringDim = 0) instead.")]] std::
-    //     shared_ptr<std::map<uint32_t, EvalKey<Element>>>
-    //     EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize = 0,
-    //                       uint32_t subringDim = 0) {
-    //     std::string errMsg(
-    //         "This API is deprecated. use EvalSumRowsKeyGen(const PrivateKey<Element> privateKey, uint32_t rowSize = 0, uint32_t subringDim = 0)");
-    //     OPENFHE_THROW( errMsg);
-    // }
+    // TODO: this is here for backwards compatibility; should remove in v2.0
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
+                                                                            const PublicKey<Element> publicKey,
+                                                                            uint32_t rowSize    = 0,
+                                                                            uint32_t subringDim = 0);
 
     /**
     * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
@@ -3019,17 +2959,7 @@ public:
     * @param publicKey   Public key (used in NTRU schemes; unused now).
     * @return Map of generated evaluation keys.
     */
-    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey = nullptr);
-
-    // [[deprecated("Use EvalSumColsKeyGen(const PrivateKey<Element> privateKey) instead.")]] std::shared_ptr<
-    //     std::map<uint32_t, EvalKey<Element>>>
-    // EvalSumColsKeyGen(const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
-    //     std::string errMsg("This API is deprecated. use EvalSumColsKeyGen(const PrivateKey<Element> privateKey)");
-    //     OPENFHE_THROW( errMsg);
-    // }
-
-    // std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
 
     /**
     * @brief Computes the sum of all components in a packed ciphertext vector.
@@ -3157,7 +3087,7 @@ public:
     * @attention Only for debugging purposes. Not for production use.
     */
     KeyPair<Element> MultipartyKeyGen(const std::vector<PrivateKey<Element>>& privateKeyVec) {
-        if (!privateKeyVec.size())
+        if (privateKeyVec.empty())
             OPENFHE_THROW("Input private key vector is empty");
         return GetScheme()->MultipartyKeyGen(GetContextForPointer(this), privateKeyVec, false);
     }
@@ -3260,7 +3190,7 @@ public:
             OPENFHE_THROW("Input private key is nullptr");
         if (!evalKeyMap)
             OPENFHE_THROW("Input evaluation key map is nullptr");
-        if (!indexList.size())
+        if (indexList.empty())
             OPENFHE_THROW("Input index vector is empty");
         return GetScheme()->MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap, indexList, keyTag);
     }
@@ -3281,7 +3211,7 @@ public:
             OPENFHE_THROW("Input private key is nullptr");
         if (!evalKeyMap)
             OPENFHE_THROW("Input evaluation key map is nullptr");
-        if (!indexList.size())
+        if (indexList.empty())
             OPENFHE_THROW("Input index vector is empty");
         return GetScheme()->MultiEvalAtIndexKeyGen(privateKey, evalKeyMap, indexList, keyTag);
     }
@@ -4008,6 +3938,21 @@ public:
     */
     void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
         GetScheme()->SetSwkFC(FHEWtoCKKSswk);
+    }
+
+    /**
+    * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
+    *
+    * @param keyTag secret key tag
+    * @param indexList array of specific indices to check the key map against
+    * @return indices that do not have automorphism keys associated with
+    */
+    static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
+                                                              const std::set<uint32_t>& indices) {
+        std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyTag)};
+        // if no index found for the given keyTag, then the entire set "indices" is returned
+        return (existingIndices.empty()) ? indices :
+                                           CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
     }
 
     /**

@@ -145,7 +145,7 @@ enum NoiseFlooding {
 
 // Defining the level to which the input ciphertext is brought to before
 // interactive multi-party bootstrapping
-enum COMPRESSION_LEVEL {  // TODO (dsuponit): change it to camel case
+enum CompressionLevel {
     // we don't support 0 or 1 compression levels
     // do not change values here
 

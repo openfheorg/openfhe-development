@@ -61,6 +61,8 @@ template <class Element>
 class KeySwitchBase {
     using ParmType = typename Element::Params;
 
+    constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
+
 public:
     KeySwitchBase() = default;
 
@@ -76,36 +78,36 @@ public:
    */
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
                                                   const PrivateKey<Element> newPrivateKey) const {
-        OPENFHE_THROW(std::string(__func__) + " is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
                                                   const PrivateKey<Element> newPrivateKey,
                                                   const EvalKey<Element> evalKey) const {
-        OPENFHE_THROW(std::string(__func__) + " is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
                                                   const PublicKey<Element> newPublicKey) const {
-        OPENFHE_THROW(std::string(__func__) + " is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const;
 
     virtual void KeySwitchInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
-        OPENFHE_THROW("KeySwitch is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const {
-        OPENFHE_THROW("KeySwitchExt is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("KeySwitchDown is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const {
-        OPENFHE_THROW("KeySwitchDownFirstElement is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
     /////////////////////////////////////////
     // CORE OPERATIONS
@@ -113,24 +115,24 @@ public:
 
     virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(const Element& a,
                                                                 const EvalKey<Element> evalKey) const {
-        OPENFHE_THROW("KeySwitchCore is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
         const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
-        OPENFHE_THROW("EvalKeySwitchPrecomputeCore is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
         const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
         const std::shared_ptr<ParmType> paramsQl) const {
-        OPENFHE_THROW("EvalFastKeySwitchCore is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
         const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
         const std::shared_ptr<ParmType> paramsQl) const {
-        OPENFHE_THROW("EvalFastKeySwitchCoreExt is not supported");
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 };
 

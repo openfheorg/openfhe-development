@@ -12,6 +12,8 @@ OpenFHE also supports hybrid vectorized schemes, with the goal of enabling the F
   * Switching between CKKS and FHEW/TFHE to evaluate non-smooth functions, e.g., comparison, using (scalar) FHEW/TFHE functional bootstrapping
   * Switching between RLWE (a scheme equivalent to the coefficient-encoded additive BFV scheme) and CKKS to evaluate arbitrary lookup tables over vectors of integers, e.g., modular reduction, comparison or S-box, using vectorized functional bootstrapping implemented in CKKS
 
+OpenFHE also supports partial schemes, called schemelets, such as RLWE which is equivalent to the coefficient-encoded additive BFV scheme. In OpenFHE, the RLWE schemelet is the starting point for the vectorized functional bootstrapping capability, which allows the evaluation of arbitrary lookup tables over vectors of integers, e.g., modular reduction, comparison or Sbox, using CKKS in an intermediate step.
+
 OpenFHE also includes the following multiparty extensions of FHE:
   * Threshold FHE for BGV, BFV, and CKKS schemes
   * Interactive bootstrapping for Threshold CKKS

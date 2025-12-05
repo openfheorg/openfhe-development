@@ -177,7 +177,7 @@ public:
 
     bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t cyclOrder,
                           uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t numPartQ,
-                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
+                          CompressionLevel mPIntBootCiphertextCompressionLevel) const {
         if (!m_ParamsGen)
             OPENFHE_THROW("m_ParamsGen is nullptr");
         return m_ParamsGen->ParamsGenCKKSRNSInternal(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
@@ -643,10 +643,6 @@ public:
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
-    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<uint32_t>& indexList) const;
-
     virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                                  const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
                                                  CALLER_INFO_ARGS_HDR) const {
@@ -717,8 +713,7 @@ public:
     }
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-        const std::vector<int32_t>& indexList) const;
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                             const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
@@ -947,7 +942,7 @@ public:
     /////////////////////////////////////
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
-        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const;
+        const PrivateKey<Element> privateKey) const;
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
         const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,

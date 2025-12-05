@@ -323,7 +323,7 @@ protected:
    * @details \p cipherText will have modulus reduction performed in-place.
    */
     void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override {
-        OPENFHE_THROW("ModReduceInternalInPlace is not supported for this scheme");
+        OPENFHE_THROW("Not supported for this scheme");
     }
 
     /**
@@ -347,7 +347,7 @@ protected:
    * @param levels the number of towers to drop.
    */
     void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override {
-        OPENFHE_THROW("LevelReduceInternalInPlace is not supported for this scheme");
+        OPENFHE_THROW("Not supported for this scheme");
     }
 
     void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;

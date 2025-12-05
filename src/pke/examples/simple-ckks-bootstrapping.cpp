@@ -35,8 +35,6 @@ Example for CKKS bootstrapping with full packing
 
 */
 
-#define PROFILE
-
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -78,12 +76,12 @@ void SimpleBootstrapExample() {
     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    usint dcrtBits               = 78;
-    usint firstMod               = 89;
+    uint32_t dcrtBits            = 78;
+    uint32_t firstMod            = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    usint dcrtBits               = 59;
-    usint firstMod               = 60;
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -99,11 +97,11 @@ void SimpleBootstrapExample() {
     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping 
+    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
     // will be levelsAvailableAfterBootstrap - 1 because an additional level
     // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
     uint32_t levelsAvailableAfterBootstrap = 10;
-    usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
+    uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -114,10 +112,10 @@ void SimpleBootstrapExample() {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(FHE);
 
-    usint ringDim = cryptoContext->GetRingDimension();
+    uint32_t ringDim = cryptoContext->GetRingDimension();
     // This is the maximum number of slots that can be used for full packing.
-    usint numSlots = ringDim / 2;
-    std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
+    uint32_t numSlots = ringDim / 2;
+    std::cout << "CKKS scheme ring dimension: " << ringDim << "\n\n";
 
     cryptoContext->EvalBootstrapSetup(levelBudget);
 
@@ -132,22 +130,26 @@ void SimpleBootstrapExample() {
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
 
     ptxt->SetLength(encodedLength);
-    std::cout << "Input: " << ptxt << std::endl;
+    std::cout << "Input: " << ptxt << "\n";
 
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
-    std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
+    std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << "\n\n";
+
+    // auto start = std::chrono::high_resolution_clock::now();
 
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
+    // auto stop = std::chrono::high_resolution_clock::now();
+    // std::cout << "Bootstrapping time: " << std::chrono::duration<double>(stop - start).count() << " s\n\n";
+
     std::cout << "Number of levels remaining after bootstrapping: "
-              << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << std::endl
-              << std::endl;
+              << depth - ciphertextAfter->GetLevel() - (ciphertextAfter->GetNoiseScaleDeg() - 1) << "\n\n";
 
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(encodedLength);
-    std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+    std::cout << "Output after bootstrapping: " << result << "\n";
 }

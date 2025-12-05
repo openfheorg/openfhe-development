@@ -202,7 +202,7 @@ The set method is `SetFirstModSize`.
 
 The set method is `SetPRENumHops`.
 
-**COMPRESSION_LEVEL interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient).  The set method is `SetInteractiveBootCompressionLevel`.
+**CompressionLevel interactiveBootCompressionLevel (CKKS only)** - interactive multi-party bootstrapping parameter which sets the compression level in ciphertext to SLACK (has weaker security assumption, thus less efficient) or COMPACT (has stronger security assumption, thus more efficient).  The set method is `SetInteractiveBootCompressionLevel`.
 
 **uint32_t registerWordSize (CKKS only)** - register word size for the CKKS composite scaling mode (should match the hardware architecture on which the FHE computation will be run). The word size should be between 20 and 64. The actual moduli are determined by evenly splitting the scaling factor into approximately equal moduli, which cannot be not higher than the register word size. The set method is `SetRegisterWordSize`.
 

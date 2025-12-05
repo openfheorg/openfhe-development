@@ -91,7 +91,7 @@ public:
     void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) override {
         DISABLED_FOR_BFVRNS;
     }
-    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) override {
+    void SetInteractiveBootCompressionLevel(CompressionLevel interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BFVRNS;
     }
     void SetCompositeDegree(uint32_t compositeDegree0) override {

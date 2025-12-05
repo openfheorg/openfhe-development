@@ -376,7 +376,7 @@ protected:
             // Encrypt the encoded vectors
             auto ctMat = cc->Encrypt(kp.publicKey, ptxtMat);
 
-            auto evalSumRowKeys = cc->EvalSumRowsKeyGen(kp.secretKey, nullptr, rowSize);
+            auto evalSumRowKeys = cc->EvalSumRowsKeyGen(kp.secretKey, rowSize);
 
             // Evaluation
             auto ctRowsSum = cc->EvalSumRows(ctMat, rowSize, *evalSumRowKeys);

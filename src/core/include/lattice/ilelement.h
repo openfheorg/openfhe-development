@@ -438,15 +438,15 @@ public:
     /**
    * @brief onvert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
    */
-    virtual void SwitchFormat() = 0;
+    virtual void SwitchFormat(uint32_t thread_limit = 0) = 0;
 
     /**
    * @brief Sets the format/representation of the element.
    * @param format the format/representation to set.
    */
-    inline void SetFormat(const Format format) {
+    inline void SetFormat(const Format format, uint32_t thread_limit = 0) {
         if (this->GetFormat() != format) {
-            this->SwitchFormat();
+            this->SwitchFormat(thread_limit);
         }
     }
 };

@@ -166,7 +166,7 @@ class Params {
     // Set the compression level in ciphertext (SLACK or COMPACT)
     // SLACK has weaker security assumption, thus less efficient
     // COMPACT has stronger security assumption, thus more efficient
-    COMPRESSION_LEVEL interactiveBootCompressionLevel;
+    CompressionLevel interactiveBootCompressionLevel;
 
     // CKKS composite scaling parameters to support high-precision CKKS RNS with small word sizes
     // Please refer to https://eprint.iacr.org/2023/1462.pdf for details
@@ -350,7 +350,7 @@ public:
     uint32_t GetPRENumHops() const {
         return PRENumHops;
     }
-    COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
+    CompressionLevel GetInteractiveBootCompressionLevel() const {
         return interactiveBootCompressionLevel;
     }
     uint32_t GetCompositeDegree() const {
@@ -449,7 +449,7 @@ public:
     virtual void SetPRENumHops(uint32_t PRENumHops0) {
         PRENumHops = PRENumHops0;
     }
-    virtual void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+    virtual void SetInteractiveBootCompressionLevel(CompressionLevel interactiveBootCompressionLevel0) {
         interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
     }
     virtual void SetCompositeDegree(uint32_t compositeDegree0) {

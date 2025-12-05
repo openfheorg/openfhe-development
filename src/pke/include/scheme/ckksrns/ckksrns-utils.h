@@ -59,6 +59,9 @@ inline bool IsNotEqualOne(double v, double delta = 0x1p-44) {
 inline bool IsNotEqualZero(double v, double delta = 0x1p-44) {
     return std::abs(v) > delta;
 }
+inline bool IsNotEqualNegOne(double v, double delta = 0x1p-44) {
+    return std::abs(v + 1.0) > delta;
+}
 inline bool IsNotEqualOne(std::complex<double> val, double delta = 0x1p-44) {
     return IsNotEqualOne(val.real(), delta) || IsNotEqualZero(val.imag(), delta);
 }
@@ -253,15 +256,25 @@ uint32_t ReduceRotation(int32_t index, uint32_t slots);
 
 /**
  * Computes all parameters needed for the homomorphic encoding and decoding in the bootstrapping
- * operation and returns them as a vector. The returned vector's data can be accessed using
- * enum'ed indices from CKKS_BOOT_PARAMS that are defined below.
+ * operation and returns them as a struct.
  *
  * @param slots number of slots
  * @param levelBudget the allocated level budget for the computation.
  * @param dim1 the value for the inner dimension in the baby-step giant-step strategy
- * @return vector with parameters for the homomorphic encoding and decoding in bootstrapping
+ * @return struct with parameters for the homomorphic encoding and decoding in bootstrapping
  */
-std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget = 4, uint32_t dim1 = 0);
+struct ckks_boot_params {
+    uint32_t lvlb;             // level budget
+    uint32_t layersCollapse;   // layers to collapse in one level
+    uint32_t remCollapse;      // remaining layers to collapse
+    uint32_t numRotations;     // umber of rotations in one level
+    uint32_t b;                // baby step in the baby-step giant-step strategy
+    uint32_t g;                // giant step in the baby-step giant-step strategy
+    uint32_t numRotationsRem;  // number of rotations in the remaining level
+    uint32_t bRem;             // baby step in the baby-step giant-step strategy for the remaining level
+    uint32_t gRem;             // giant step in the baby-step giant-step strategy for the remaining level
+};
+struct ckks_boot_params GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget = 4, uint32_t dim1 = 0);
 
 /**
  *  Gets inner loop dimension for baby step giant step algorithm for linear transform,
@@ -290,23 +303,6 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
  * @return vector of rotation indices necessary
 */
 std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols);
-
-namespace CKKS_BOOT_PARAMS {
-
-// Enums representing indices for the vector returned by GetCollapsedFFTParams()
-enum {
-    LEVEL_BUDGET,  // the level budget
-    LAYERS_COLL,   // the number of layers to collapse in one level
-    LAYERS_REM,  // the number of layers remaining to be collapsed in one level to have exactly the number of levels specified in the level budget
-    NUM_ROTATIONS,      // the number of rotations in one level
-    BABY_STEP,          // the baby step in the baby-step giant-step strategy
-    GIANT_STEP,         // the giant step in the baby-step giant-step strategy
-    NUM_ROTATIONS_REM,  // the number of rotations in the remaining level
-    BABY_STEP_REM,      // the baby step in the baby-step giant-step strategy for the remaining level
-    GIANT_STEP_REM,     // the giant step in the baby-step giant-step strategy for the remaining level
-    TOTAL_ELEMENTS      // total number of elements in the vector
-};
-}  // namespace CKKS_BOOT_PARAMS
 
 }  // namespace lbcrypto
 

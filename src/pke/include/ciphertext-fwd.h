@@ -57,12 +57,12 @@ template <typename Element>
 struct seriesPowers {
     std::vector<Ciphertext<Element>> powersRe;
     std::vector<Ciphertext<Element>> powers2Re;
-    ConstCiphertext<Element> power2km1Re;
+    Ciphertext<Element> power2km1Re;
     uint32_t k;
     uint32_t m;
     std::vector<Ciphertext<Element>> powersIm;
     std::vector<Ciphertext<Element>> powers2Im;
-    ConstCiphertext<Element> power2km1Im;
+    Ciphertext<Element> power2km1Im;
 
     seriesPowers() = default;
 
@@ -74,13 +74,13 @@ struct seriesPowers {
         : powersRe(powers0), powersIm(powers1) {}
 
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
-                 ConstCiphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
+                 const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
         : powersRe(powers0), powers2Re(powers20), power2km1Re(power2km10), k(k0), m(m0) {}
 
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
-                 ConstCiphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
+                 const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
                  const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,
-                 ConstCiphertext<Element>& power2km11)
+                 const Ciphertext<Element>& power2km11)
         : powersRe(powers0),
           powers2Re(powers20),
           power2km1Re(power2km10),

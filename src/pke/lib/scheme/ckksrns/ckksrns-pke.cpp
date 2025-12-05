@@ -83,7 +83,7 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
     const size_t sizeQl = b.GetParams()->GetParams().size();
 
     if (sizeQl == 0)
-        OPENFHE_THROW("Decryption failure: No towers left; consider increasing the depth.");
+        OPENFHE_THROW("No towers left; consider increasing the depth.");
 
     if (sizeQl == 1) {
         *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);

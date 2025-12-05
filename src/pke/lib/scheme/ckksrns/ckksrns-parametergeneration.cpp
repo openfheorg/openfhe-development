@@ -59,7 +59,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
                                                           uint32_t cyclOrder, uint32_t numPrimes,
                                                           uint32_t scalingModSize, uint32_t firstModSize,
                                                           uint32_t numPartQ,
-                                                          COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel) const {
+                                                          CompressionLevel mPIntBootCiphertextCompressionLevel) const {
     // the "const" modifier for cryptoParamsCKKSRNS and encodingParams below doesn't mean that the objects those 2 pointers
     // point to are const (not changeable). it means that the pointers themselves are const only.
     const auto cryptoParamsCKKSRNS      = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
@@ -384,7 +384,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                 flag = false;
             }
         }  // for loop
-    }      // if numPrimes > 1
+    }  // if numPrimes > 1
 
     for (uint32_t d = 1, remBits = firstModSize; d <= compositeDegree; ++d) {
         uint32_t qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));

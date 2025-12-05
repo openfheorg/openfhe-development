@@ -145,9 +145,7 @@ Field2n Field2n::Plus(const Field2n& rhs) const {
 // Scalar addition operation for field elements
 Field2n Field2n::Plus(double scalar) const {
     if (format != Format::COEFFICIENT)
-        OPENFHE_THROW(
-            "Field2n scalar addition is currently supported only for "
-            "Format::COEFFICIENT representation");
+        OPENFHE_THROW("Field2n scalar addition is currently supported only for Format::COEFFICIENT representation");
     Field2n sum(*this);
     sum.at(0) += scalar;
     return sum;
@@ -166,9 +164,7 @@ Field2n Field2n::Minus(const Field2n& rhs) const {
 // Multiplication operation for field elements
 Field2n Field2n::Times(const Field2n& rhs) const {
     if (format != Format::EVALUATION && rhs.GetFormat() != Format::EVALUATION)
-        OPENFHE_THROW(
-            "At least one of the polynomials is not in "
-            "Format::EVALUATION representation");
+        OPENFHE_THROW("At least one of the polynomials is not in Format::EVALUATION representation");
     Field2n result(*this);
     for (size_t i = 0; i < rhs.size(); ++i)
         result[i] *= rhs[i];
@@ -191,9 +187,7 @@ Field2n Field2n::ShiftRight() {
 // Performs an automorphism transform operation and returns the result.
 Field2n Field2n::AutomorphismTransform(size_t i) const {
     if (format != Format::EVALUATION)
-        OPENFHE_THROW(
-            "Field2n Automorphism is only implemented for "
-            "Format::EVALUATION format");
+        OPENFHE_THROW("Field2n Automorphism is only implemented for Format::EVALUATION format");
     if (i % 2 == 0)
         OPENFHE_THROW("automorphism index should be odd\n");
     Field2n result(*this);

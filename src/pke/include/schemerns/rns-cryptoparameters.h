@@ -103,10 +103,10 @@ protected:
                         uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode                         = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode                           = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode               = FIXED_NOISE_DECRYPT,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
+                        MultipartyMode multipartyMode                        = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode                          = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
+                        CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(
               std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
               distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,
@@ -127,8 +127,8 @@ protected:
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties                        = 1,
-                        COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK,
+                        uint32_t thresholdNumOfParties                       = 1,
+                        CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK,
                         uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
                         CKKSDataType ckksDataType = REAL)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
@@ -222,7 +222,7 @@ public:
    *
    * @return the key switching technique.
    */
-    enum KeySwitchTechnique GetKeySwitchTechnique() const {
+    KeySwitchTechnique GetKeySwitchTechnique() const {
         return m_ksTechnique;
     }
 
@@ -231,7 +231,7 @@ public:
    *
    * @return the scaling technique.
    */
-    enum ScalingTechnique GetScalingTechnique() const {
+    ScalingTechnique GetScalingTechnique() const {
         return m_scalTechnique;
     }
 
@@ -240,7 +240,7 @@ public:
    *
    * @return the rescaling technique.
    */
-    enum EncryptionTechnique GetEncryptionTechnique() const {
+    EncryptionTechnique GetEncryptionTechnique() const {
         return m_encTechnique;
     }
 
@@ -249,7 +249,7 @@ public:
    *
    * @return the rescaling technique.
    */
-    enum MultiplicationTechnique GetMultiplicationTechnique() const {
+    MultiplicationTechnique GetMultiplicationTechnique() const {
         return m_multTechnique;
     }
 
@@ -448,9 +448,7 @@ public:
         if (part < m_PartQlHatInvModq.size() && sublvl < m_PartQlHatInvModq[part].size())
             return m_PartQlHatInvModq[part][sublvl];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
-            "index out of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -463,10 +461,7 @@ public:
         if (part < m_PartQlHatInvModqPrecon.size() && sublvl < m_PartQlHatInvModqPrecon[part].size())
             return m_PartQlHatInvModqPrecon[part][sublvl];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::"
-            "GetPartitionQHatInvModQPreconTable - index "
-            "out of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -479,9 +474,7 @@ public:
         if (lvl < m_PartQlHatModp.size() && part < m_PartQlHatModp[lvl].size())
             return m_PartQlHatModp[lvl][part];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionQHatModPTable - "
-            "index out of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -494,9 +487,7 @@ public:
         if (lvl < m_modComplPartqBarrettMu.size() && part < m_modComplPartqBarrettMu[lvl].size())
             return m_modComplPartqBarrettMu[lvl][part];
 
-        OPENFHE_THROW(
-            "CryptoParametersCKKS::GetPartitionPrecon - index out "
-            "of bounds.");
+        OPENFHE_THROW("Index out of bounds.");
     }
 
     /**
@@ -1384,7 +1375,7 @@ public:
    * Gets the Multi-Party Interactive Bootstrapping Ciphertext Compression Level
    * @return m_MPIntBootCiphertextCompressionLevel
    */
-    COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {
+    CompressionLevel GetMPIntBootCiphertextCompressionLevel() const {
         return m_MPIntBootCiphertextCompressionLevel;
     }
 
@@ -1403,13 +1394,13 @@ protected:
     /////////////////////////////////////
 
     // Stores the technique to use for key switching
-    enum KeySwitchTechnique m_ksTechnique;
+    KeySwitchTechnique m_ksTechnique;
 
-    enum ScalingTechnique m_scalTechnique;
+    ScalingTechnique m_scalTechnique;
 
-    enum EncryptionTechnique m_encTechnique;
+    EncryptionTechnique m_encTechnique;
 
-    enum MultiplicationTechnique m_multTechnique;
+    MultiplicationTechnique m_multTechnique;
 
     uint32_t m_auxBits = 0;
 
@@ -1831,7 +1822,7 @@ protected:
     /////////////////////////////////////
     // CKKS RNS MultiParty Bootstrapping Parameter
     /////////////////////////////////////
-    COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel;
+    CompressionLevel m_MPIntBootCiphertextCompressionLevel;
 
     // CKKS Data Type
     CKKSDataType m_ckksDataType;
@@ -1878,7 +1869,7 @@ public:
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
         }
         catch (cereal::Exception&) {
-            m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+            m_MPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK;
         }
         ar(cereal::make_nvp("cd", m_compositeDegree));
         ar(cereal::make_nvp("rws", m_registerWordSize));
