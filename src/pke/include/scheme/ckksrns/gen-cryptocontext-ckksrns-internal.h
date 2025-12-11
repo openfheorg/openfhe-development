@@ -33,11 +33,11 @@
   API to generate CKKS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
-#define _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#define __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
 
 #include "constants.h"
-#include "cryptocontext.h"
+#include "cryptocontext-fwd.h"
 #include "encoding/encodingparams.h"
 #include "scheme/scheme-id.h"
 #include "scheme/scheme-utils.h"
@@ -148,4 +148,4 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 }
 }  // namespace lbcrypto
 
-#endif  // _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__

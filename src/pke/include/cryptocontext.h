@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2025, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,8 +33,8 @@
   Control for encryption operations
  */
 
-#ifndef SRC_PKE_CRYPTOCONTEXT_H_
-#define SRC_PKE_CRYPTOCONTEXT_H_
+#ifndef __CRYPTOCONTEXT_H__
+#define __CRYPTOCONTEXT_H__
 
 #include "binfhecontext.h"
 #include "ciphertext.h"
@@ -48,7 +48,6 @@
 #include "schemebase/base-scheme.h"
 #include "schemerns/rns-cryptoparameters.h"
 #include "utils/caller_info.h"
-#include "utils/serial.h"
 #include "utils/type_name.h"
 
 #include <algorithm>
@@ -4032,4 +4031,4 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                                                                               const std::string& shareType) const;
 }  // namespace lbcrypto
 
-#endif /* SRC_PKE_CRYPTOCONTEXT_H_ */
+#endif  // __CRYPTOCONTEXT_H__

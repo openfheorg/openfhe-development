@@ -30,9 +30,10 @@
 //==================================================================================
 #include "schemerns/rns-pke.h"
 
+#include "ciphertext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "cryptocontext.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 namespace lbcrypto {
 

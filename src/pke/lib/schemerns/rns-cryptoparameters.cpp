@@ -32,7 +32,6 @@
 #define PROFILE
 
 #include "math/dftransform.h"
-#include "cryptocontext.h"
 #include "schemerns/rns-cryptoparameters.h"
 
 #include <vector>

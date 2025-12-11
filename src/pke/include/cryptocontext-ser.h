@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2025, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,10 +33,11 @@
   serialize cryptocontext; include this in any app that needs to serialize them
  */
 
-#ifndef LBCRYPTO_CRYPTO_CRYPTOCONTEXTSER_H
-#define LBCRYPTO_CRYPTO_CRYPTOCONTEXTSER_H
+#ifndef __CRYPTOCONTEXT_SER_H__
+#define __CRYPTOCONTEXT_SER_H__
 
 #include "cryptocontext.h"
+#include "utils/serial.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
@@ -53,6 +54,19 @@ CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
 // serialize-*.h file
 
 namespace lbcrypto {
+
+namespace internal_cc_traits {
+
+// enable CryptoContextImpl<Element>
+template <typename Element>
+struct cc_ser_enabled<CryptoContextImpl<Element>> : std::true_type {};
+
+// enable shared_ptr<CryptoContextImpl<Element>>
+template <typename Element>
+struct cc_ser_enabled<std::shared_ptr<CryptoContextImpl<Element>>> : std::true_type {};
+
+}  // namespace internal_cc_traits
+
 // ================================= JSON serialization/deserialization
 namespace Serial {
 /**
@@ -208,4 +222,4 @@ template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<SerTyp
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // __CRYPTOCONTEXT_SER_H__

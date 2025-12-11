@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
 #include "schemebase/rlwe-cryptoparameters.h"
 
 namespace lbcrypto {

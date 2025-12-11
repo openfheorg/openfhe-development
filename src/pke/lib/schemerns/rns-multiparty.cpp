@@ -39,6 +39,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <cstring>
 
 namespace lbcrypto {
 

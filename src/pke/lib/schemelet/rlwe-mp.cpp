@@ -31,6 +31,7 @@
 
 #include "schemebase/rlwe-cryptoparameters.h"
 #include "schemelet/rlwe-mp.h"
+#include "cryptocontext.h"
 
 #include <stdint.h>
 #include <vector>

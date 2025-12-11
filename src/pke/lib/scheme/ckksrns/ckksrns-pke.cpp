@@ -35,7 +35,7 @@ CKKS implementation. If NOISE_FLOODING_DECRYPT is set, we flood the decryption b
 
 #define PROFILE
 
-#include "cryptocontext.h"
+#include "ciphertext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-pke.h"
 

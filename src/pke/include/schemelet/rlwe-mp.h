@@ -29,11 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RLWE_MP_H
-#define LBCRYPTO_CRYPTO_RLWE_MP_H
+#ifndef __RLWE_MP_H_
+#define __RLWE_MP_H_
 
-#include "ciphertext.h"
-#include "cryptocontext.h"
+#include "ciphertext-fwd.h"
+#include "cryptocontext-fwd.h"
 #include "key/keypair.h"
 #include "openfhecore.h"
 
@@ -75,4 +75,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_CRYPTO_RLWE_MP_H
+#endif  // __RLWE_MP_H_

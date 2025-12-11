@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef LBCRYPTO_SERIALIZABLE_H
-#define LBCRYPTO_SERIALIZABLE_H
+#ifndef __SERIALIZABLE_H__
+#define __SERIALIZABLE_H__
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -58,7 +58,6 @@
 #endif
 
 #include "cereal/cereal.hpp"
-#include "cereal/types/polymorphic.hpp"
 
 #if defined(__GNUC__) && !defined(__clang__)
     #if __GNUC__ >= 8
@@ -102,4 +101,4 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // __SERIALIZABLE_H__

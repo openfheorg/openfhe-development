@@ -33,8 +33,8 @@
   serialize BFVrns; include this in any app that needs to serialize this scheme
  */
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNSSER_H
-#define LBCRYPTO_CRYPTO_BFVRNSSER_H
+#ifndef __BFVRNS_SER_H__
+#define __BFVRNS_SER_H__
 
 #include "scheme/bfvrns/bfvrns-scheme.h"
 #include "utils/serial.h"
@@ -46,4 +46,4 @@ CEREAL_REGISTER_TYPE(lbcrypto::FHEBFVRNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRNS, lbcrypto::CryptoParametersBFVRNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHERNS, lbcrypto::FHEBFVRNS);
 
-#endif
+#endif  // __BFVRNS_SER_H__

@@ -33,8 +33,8 @@
   serialize ciphertexts; include this in any app that needs to serialize them
  */
 
-#ifndef LBCRYPTO_CRYPTO_CIPHERTEXTSER_H
-#define LBCRYPTO_CRYPTO_CIPHERTEXTSER_H
+#ifndef __CIPHERTEXT_SER_H__
+#define __CIPHERTEXT_SER_H__
 
 #include "ciphertext.h"
 #include "utils/serial.h"
@@ -50,4 +50,4 @@ CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::NativePoly>,
 CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>,
                      lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
 
-#endif
+#endif  // __CIPHERTEXT_SER_H__

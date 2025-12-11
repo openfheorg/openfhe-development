@@ -37,7 +37,7 @@
  *  see the Appendix of https://eprint.iacr.org/2021/204 for more details
  */
 
-#include "cryptocontext.h"
+#include "ciphertext.h"
 #include "key/evalkeyrelin.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"

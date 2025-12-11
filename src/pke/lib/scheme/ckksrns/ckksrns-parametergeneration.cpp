@@ -35,7 +35,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #define PROFILE
 
-#include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
 
