@@ -1591,7 +1591,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     std::vector<std::vector<std::complex<double>>> A(numValues);
 
     // To have the same encoding as A*s, create b with the appropriate number of elements
-    const uint32_t b_size = ((numValues % n) != 0) ? (numValues + n - (numValues % n)) : numValues;
+    const uint32_t b_size = std::min(((numValues % n) != 0) ? (numValues + n - (numValues % n)) : numValues, N / 2);
     std::vector<std::complex<double>> b(b_size);
 
     // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
