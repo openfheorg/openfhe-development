@@ -71,6 +71,7 @@ bool run_demo_pre(void) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(plaintextModulus);
     parameters.SetScalingModSize(60);
+    parameters.SetPREMode(INDCPA);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     std::cout << "\nParam generation time: "
