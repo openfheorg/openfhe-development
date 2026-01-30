@@ -170,6 +170,19 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
     return outCtxt;
 }
 
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                                  ConstCiphertext<DCRTPoly>& ciphertext) const {
+    auto ildcrtparams = params->GetElementParams();
+    typename DCRTPoly::DugType dug;
+    DCRTPoly crp(dug, ildcrtparams);
+    crp.SetFormat(Format::EVALUATION);
+
+    Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext));
+
+    outCtxt->SetElements({std::move(crp)});
+    return outCtxt;
+}
+
 // Subroutines for Interactive Multi-Party Bootstrapping
 // Calculating RNS parameters
 void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint to, RNSExtensionTables& rnsExtTables) {

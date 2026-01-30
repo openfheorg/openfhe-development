@@ -367,6 +367,10 @@ public:
                                                           const PublicKey<Element> publicKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
+    virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                          ConstCiphertext<Element>& ciphertext) const {
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
+    }
 
     /**
     * Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.

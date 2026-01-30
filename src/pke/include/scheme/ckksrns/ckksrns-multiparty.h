@@ -61,6 +61,9 @@ public:
     Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                    const PublicKey<DCRTPoly> publicKey) const override;
 
+    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                   ConstCiphertext<DCRTPoly>& ciphertext) const override;
+
     std::vector<Ciphertext<DCRTPoly>> IntMPBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
                                                        ConstCiphertext<DCRTPoly> ciphertext,
                                                        ConstCiphertext<DCRTPoly> a) const override;

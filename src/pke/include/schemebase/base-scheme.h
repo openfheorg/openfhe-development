@@ -1110,6 +1110,12 @@ public:
         return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
     }
 
+    Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
+                                                  ConstCiphertext<Element>& ciphertext) const {
+        VerifyMultipartyEnabled(__func__);
+        return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, ciphertext);
+    }
+
     std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                       ConstCiphertext<Element> ciphertext,
                                                       ConstCiphertext<Element> a) const {

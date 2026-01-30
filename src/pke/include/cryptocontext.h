@@ -3412,6 +3412,14 @@ public:
     * @return Random ring element as ciphertext.
     */
     Ciphertext<Element> IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const;
+    /**
+    * @brief Generates a common random polynomial for Multi-Party Interactive Bootstrapping (Threshold FHE)
+    *        using an existing ciphertext, eliminating the need to supply a public key explicitly
+    *
+    * @param ciphertext Reference ciphertext used to derive the cryptocontext and parameters.
+    * @return Random ring element as ciphertext.
+    */
+    Ciphertext<Element> IntMPBootRandomElementGen(ConstCiphertext<Element>& ciphertext) const;
 
     /**
     * @brief Performs masked decryption as part of Multi-Party Interactive Bootstrapping (Threshold FHE).

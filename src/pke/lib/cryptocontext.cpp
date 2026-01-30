@@ -658,7 +658,19 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCipher
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+    if (cryptoParamsCKKS == nullptr)
+        OPENFHE_THROW("The parameter object is not of the CryptoParametersCKKSRNS type");
+
     return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(ConstCiphertext<Element>& ciphertext) const {
+    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    if (cryptoParamsCKKS == nullptr)
+        OPENFHE_THROW("The parameter object is not of the CryptoParametersCKKSRNS type");
+
+    return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, ciphertext);
 }
 
 template <typename Element>
