@@ -1756,7 +1756,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
                     for (auto& c : coeff[smax][ij])
                         c *= scale;
 
-                    auto rot = Rotate(coeff[smax][ij], ReduceRotation(-rotScale * (ij / p.g), slots));
+                    auto rot = Rotate(coeff[smax][ij], ReduceRotation(-rotScale * (ij / p.gRem), slots));
 
                     result[smax][ij] = MakeAuxPlaintext(cc, paramsVector[smax], rot, 1,
                                                         towersToDrop + compositeDegree * smax, rot.size());
@@ -1814,7 +1814,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
                     for (auto& c : clearTmp)
                         c *= scale;
 
-                    auto rot = Rotate(clearTmp, ReduceRotation(-rotScale * (ij / p.g), M4));
+                    auto rot = Rotate(clearTmp, ReduceRotation(-rotScale * (ij / p.gRem), M4));
 
                     result[smax][ij] = MakeAuxPlaintext(cc, paramsVector[smax], rot, 1,
                                                         towersToDrop + compositeDegree * smax, rot.size());
