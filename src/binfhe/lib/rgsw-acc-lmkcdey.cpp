@@ -31,8 +31,6 @@
 
 #include "rgsw-acc-lmkcdey.h"
 
-#include <string>
-
 namespace lbcrypto {
 
 // Key generation as described in https://eprint.iacr.org/2022/198
@@ -180,24 +178,22 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<Ri
 
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
-    std::vector<NativePoly> tempA(digitsG2, NativePoly(dug, polyParams, Format::COEFFICIENT));
     RingGSWEvalKeyImpl result(digitsG2, 2);
-
+    NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
-        result[i][0] = tempA[i];
-        tempA[i].SetFormat(Format::EVALUATION);
+        result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
+        tmp = result[i][0];
+        tmp.SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
-        if (!isReducedMM)
-            result[i][i & 0x1][mm].ModAddFastEq(Gpow[(i >> 1) + 1],
-                                                Q);  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
-        else
-            result[i][i & 0x1][mm].ModSubFastEq(Gpow[(i >> 1) + 1],
-                                                Q);  // (i even) Sub G Multiple, (i odd) [a,as+e] - X^m*G
+        if (!isReducedMM)  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
+            result[i][i & 0x1][mm].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
+        else  // (i even) Sub G Multiple, (i odd) [a,as+e] - X^m*G
+            result[i][i & 0x1][mm].ModSubFastEq(Gpow[(i >> 1) + 1], Q);
         result[i][0].SetFormat(Format::EVALUATION);
         result[i][1].SetFormat(Format::EVALUATION);
-        result[i][1] += (tempA[i] *= skNTT);
+        result[i][1] += (tmp *= skNTT);
     }
-    return std::make_shared<RingGSWEvalKeyImpl>(result);
+    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
 }
 
 // Generation of an autormorphism key
@@ -205,22 +201,18 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingG
                                                      const NativePoly& skNTT, LWEPlaintext k) const {
     auto polyParams{params->GetPolyParams()};
     auto Gpow{params->GetGPower()};
-
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeInteger Q{params->GetQ()};
-
     auto skAuto{skNTT.AutomorphismTransform(k)};
 
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG{params->GetDigitsG() - 1};
     RingGSWEvalKeyImpl result(digitsG, 2);
-
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
     for (uint32_t i = 0; i < digitsG; ++i) {
         result[i][0] = NativePoly(dug, polyParams, EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, EVALUATION) - skAuto * Gpow[i + 1];
         result[i][1] += result[i][0] * skNTT;
     }
-    return std::make_shared<RingGSWEvalKeyImpl>(result);
+    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
 }
 
 // LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198
@@ -244,8 +236,8 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
         dct[d].SetFormat(Format::EVALUATION);
 
     // acc = dct * ek (matrix product);
-    const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
-    acc->GetElements()[0]                          = (dct[0] * ev[0][0]);
+    const auto& ev        = ek->GetElements();
+    acc->GetElements()[0] = (dct[0] * ev[0][0]);
     for (uint32_t d = 1; d < digitsG2; ++d)
         acc->GetElements()[0] += (dct[d] * ev[d][0]);
     acc->GetElements()[1] = (dct[0] *= ev[0][1]);
@@ -254,7 +246,7 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
 }
 
 // Automorphism
-void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, const NativeInteger& a,
+void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a,
                                              ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const {
     // precompute bit reversal for the automorphism into vec
     uint32_t N{params->GetN()};
@@ -279,7 +271,7 @@ void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCrypto
         dcta[d].SetFormat(Format::EVALUATION);
 
     // acc = dct * input (matrix product);
-    const std::vector<std::vector<NativePoly>>& ev = ak->GetElements();
+    const auto& ev = ak->GetElements();
     for (uint32_t d = 0; d < digitsG; ++d)
         acc->GetElements()[0] += (dcta[d] * ev[d][0]);
     for (uint32_t d = 0; d < digitsG; ++d)

@@ -920,7 +920,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> SWITCHCKKSRNS::EvalCKKStoFHEW(Co
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numCtxts))
         for (uint32_t i = 0; i < numCtxts; ++i) {
             auto& original_a = LWEciphertexts[i]->GetA();
-            auto& original_b = LWEciphertexts[i]->GetB();
+            auto original_b = LWEciphertexts[i]->GetB();
             // multiply by Q_LWE/Q' and round to Q_LWE
             NativeVector a_round(n, m_modulus_LWE);
             for (uint32_t j = 0; j < n; ++j)

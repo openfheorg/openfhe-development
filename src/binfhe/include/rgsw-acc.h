@@ -32,12 +32,12 @@
 #ifndef _RGSW_FHE_H_
 #define _RGSW_FHE_H_
 
-#include "rlwe-ciphertext.h"
 #include "rgsw-acckey.h"
 #include "rgsw-cryptoparameters.h"
+#include "rlwe-ciphertext.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -98,6 +98,7 @@ public:
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& input,
                               std::vector<NativePoly>& output) const;
 };
+
 }  // namespace lbcrypto
 
 #endif

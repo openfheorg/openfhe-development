@@ -42,6 +42,7 @@
 #include <vector>
 
 namespace lbcrypto {
+
 /**
  * @brief Class that stores the LWE scheme public key; contains a vector
  */
@@ -53,19 +54,19 @@ public:
 
     LWEPublicKeyImpl(std::vector<NativeVector>&& A, NativeVector&& v) noexcept : m_A(std::move(A)), m_v(std::move(v)) {}
 
-    LWEPublicKeyImpl(LWEPublicKeyImpl&& rhs) noexcept : m_A(std::move(rhs.m_A)), m_v(std::move(rhs.m_v)) {}
-
     LWEPublicKeyImpl(const LWEPublicKeyImpl& rhs) : m_A(rhs.m_A), m_v(rhs.m_v) {}
 
+    LWEPublicKeyImpl(LWEPublicKeyImpl&& rhs) noexcept : m_A(std::move(rhs.m_A)), m_v(std::move(rhs.m_v)) {}
+
     LWEPublicKeyImpl& operator=(const LWEPublicKeyImpl& rhs) {
-        this->m_A = rhs.m_A;
-        this->m_v = rhs.m_v;
+        m_A = rhs.m_A;
+        m_v = rhs.m_v;
         return *this;
     }
 
     LWEPublicKeyImpl& operator=(LWEPublicKeyImpl&& rhs) noexcept {
-        this->m_A = std::move(rhs.m_A);
-        this->m_v = std::move(rhs.m_v);
+        m_A = std::move(rhs.m_A);
+        m_v = std::move(rhs.m_v);
         return *this;
     }
 
@@ -81,15 +82,23 @@ public:
         m_A = A;
     }
 
+    void SetA(std::vector<NativeVector>&& A) noexcept {
+        m_A = std::move(A);
+    }
+
     void Setv(const NativeVector& v) {
         m_v = v;
+    }
+
+    void Setv(NativeVector&& v) noexcept {
+        m_v = std::move(v);
     }
 
     uint32_t GetLength() const {
         return m_v.GetLength();
     }
 
-    const NativeInteger& GetModulus() const {
+    NativeInteger GetModulus() const {
         return m_v.GetModulus();
     }
 
@@ -113,7 +122,6 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-
         ar(::cereal::make_nvp("A", m_A));
         ar(::cereal::make_nvp("v", m_v));
     }
@@ -121,6 +129,7 @@ public:
     std::string SerializedObjectName() const override {
         return "LWEPublicKey";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

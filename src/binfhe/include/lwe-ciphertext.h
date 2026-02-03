@@ -41,6 +41,7 @@
 #include <vector>
 
 namespace lbcrypto {
+
 /**
  * @brief Class that stores a LWE scheme ciphertext; composed of a vector "a"
  * and integer "b"
@@ -49,13 +50,13 @@ class LWECiphertextImpl : public Serializable {
 public:
     LWECiphertextImpl() = default;
 
-    LWECiphertextImpl(const NativeVector& a, NativeInteger b) : m_a(a), m_b(b) {}
+    LWECiphertextImpl(const NativeVector& a, NativeInteger b, NativeInteger p = 4) : m_a(a), m_b(b), m_p(p) {}
 
-    LWECiphertextImpl(NativeVector&& a, NativeInteger b) noexcept : m_a(std::move(a)), m_b(b) {}
+    LWECiphertextImpl(NativeVector&& a, NativeInteger b, NativeInteger p = 4) noexcept : m_a(std::move(a)), m_b(b), m_p(p) {}
 
     LWECiphertextImpl(const LWECiphertextImpl& rhs) : m_a(rhs.m_a), m_b(rhs.m_b) {}
 
-    LWECiphertextImpl(LWECiphertextImpl&& rhs) noexcept : m_a(std::move(rhs.m_a)), m_b(std::move(rhs.m_b)) {}
+    LWECiphertextImpl(LWECiphertextImpl&& rhs) noexcept : m_a(std::move(rhs.m_a)), m_b(rhs.m_b) {}
 
     LWECiphertextImpl& operator=(const LWECiphertextImpl& rhs) {
         m_a = rhs.m_a;
@@ -65,7 +66,7 @@ public:
 
     LWECiphertextImpl& operator=(LWECiphertextImpl&& rhs) noexcept {
         m_a = std::move(rhs.m_a);
-        m_b = std::move(rhs.m_b);
+        m_b = rhs.m_b;
         return *this;
     }
 
@@ -77,23 +78,11 @@ public:
         return m_a;
     }
 
-    const NativeInteger& GetA(std::size_t i) const {
-        return m_a[i];
-    }
-
-    NativeInteger& GetA(std::size_t i) {
-        return m_a[i];
-    }
-
-    const NativeInteger& GetB() const {
+    NativeInteger GetB() const {
         return m_b;
     }
 
-    NativeInteger& GetB() {
-        return m_b;
-    }
-
-    const NativeInteger& GetModulus() const {
+    NativeInteger GetModulus() const {
         return m_a.GetModulus();
     }
 
@@ -101,7 +90,7 @@ public:
         return m_a.GetLength();
     }
 
-    const NativeInteger& GetptModulus() const {
+    NativeInteger GetptModulus() const {
         return m_p;
     }
 
@@ -109,14 +98,18 @@ public:
         m_a = a;
     }
 
+    void SetA(NativeVector&& a) noexcept {
+        m_a = std::move(a);
+    }
+
     void SetB(NativeInteger b) {
         m_b = b;
     }
 
-    void SetModulus(NativeInteger mod) {
-        m_a.ModEq(mod);
-        m_a.SetModulus(mod);
-        m_b.ModEq(mod);
+    void SetModulus(NativeInteger q) {
+        m_a.ModEq(q);
+        m_a.SetModulus(q);
+        m_b.ModEq(q);
     }
 
     void SetptModulus(NativeInteger pmod) {
@@ -143,7 +136,6 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
     }
@@ -151,14 +143,15 @@ public:
     std::string SerializedObjectName() const override {
         return "LWECiphertext";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    NativeVector m_a{};
-    NativeInteger m_b{};
-    NativeInteger m_p = 4;  // pt modulus
+    NativeVector m_a;
+    NativeInteger m_b;
+    NativeInteger m_p{4};  // pt modulus
 };
 
 }  // namespace lbcrypto

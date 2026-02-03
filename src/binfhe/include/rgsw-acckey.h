@@ -32,23 +32,22 @@
 #ifndef _RGSW_BTKEY_H_
 #define _RGSW_BTKEY_H_
 
+#include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
-#include "lwe-cryptoparameters.h"
 #include "rgsw-evalkey.h"
-
-#include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 namespace lbcrypto {
 
@@ -66,19 +65,21 @@ public:
 
     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
 
-    explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
+    RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
+
+    RingGSWACCKeyImpl(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept : m_key(std::move(key)) {}
 
     RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) : m_key(rhs.m_key) {}
 
     RingGSWACCKeyImpl(RingGSWACCKeyImpl&& rhs) noexcept : m_key(std::move(rhs.m_key)) {}
 
     RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl& rhs) {
-        this->m_key = rhs.m_key;
+        m_key = rhs.m_key;
         return *this;
     }
 
     RingGSWACCKeyImpl& operator=(RingGSWACCKeyImpl&& rhs) noexcept {
-        this->m_key = std::move(rhs.m_key);
+        m_key = std::move(rhs.m_key);
         return *this;
     }
 
@@ -88,6 +89,10 @@ public:
 
     void SetElements(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) {
         m_key = key;
+    }
+
+    void SetElements(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept {
+        m_key = std::move(key);
     }
 
     std::vector<std::vector<RingGSWEvalKey>>& operator[](uint32_t i) {
@@ -150,6 +155,7 @@ public:
     std::string SerializedObjectName() const override {
         return "RingGSWACCKey";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

@@ -47,8 +47,8 @@ TEST(UnitTestFHEWGINX, EvalArbFunc) {
     cc.GenerateBinFHEContext(TOY, true, 12);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
-    int p   = cc.GetMaxPlaintextSpace().ConvertToInt();
-    auto fp = [](NativeInteger m, NativeInteger p1) -> NativeInteger {
+    uint32_t p = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto fp    = [](NativeInteger m, NativeInteger p1) -> NativeInteger {
         if (m < p1)
             return (m * m * m) % p1;
         else
@@ -56,17 +56,17 @@ TEST(UnitTestFHEWGINX, EvalArbFunc) {
     };
     auto lut = cc.GenerateLUTviaFunction(fp, p);
 
-    for (int i = 0; i < p; i++) {
-        auto ct1 = cc.Encrypt(sk, i % p, LARGE_DIM, p);
+    for (uint32_t i = 0; i < p; ++i) {
+        auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p);
 
         auto ct_cube = cc.EvalFunc(ct1, lut);
 
         LWEPlaintext result;
 
         cc.Decrypt(sk, ct_cube, &result, p);
-        //        std::cerr << "i: " << i << ", f=" << fp(i, p).ConvertToInt() << ", r=" << result << std::endl;
+        // std::cerr << ", i: " << i << ", f=" << fp(i, p).ConvertToInt() << ", r=" << result << std::endl;
         std::string failed = "Arbitrary Function Evaluation failed";
-        EXPECT_EQ(usint(fp(i, p).ConvertToInt()), result) << failed;
+        EXPECT_EQ(LWEPlaintext(fp(i, p).ConvertToInt()), result) << failed;
     }
 }
 
@@ -81,8 +81,8 @@ TEST(UnitTestFHEWGINX, EvalFloorFunc) {
 
     int p = cc.GetMaxPlaintextSpace().ConvertToInt();  // Obtain the maximum plaintext space
 
-    for (int i = p / 2 - 3; i < p / 2 + 5; i++) {
-        auto ct1 = cc.Encrypt(sk, i % p, LARGE_DIM, p);
+    for (int i = p / 2 - 3; i < p / 2 + 5; ++i) {
+        auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p);
 
         // round by one bit.
         auto ctRounded = cc.EvalFloor(ct1, 1);
@@ -90,9 +90,9 @@ TEST(UnitTestFHEWGINX, EvalFloorFunc) {
         LWEPlaintext result;
 
         cc.Decrypt(sk, ctRounded, &result, p / 2);
-        //        std::cerr << "i: " << i << ", f=" << (i / 2) << ", r=" << result << std::endl;
+        //  std::cerr << "i: " << i << ", f=" << (i / 2) << ", r=" << result << std::endl;
         std::string failed = "Floor Function Evalution failed";
-        EXPECT_EQ(usint(i / 2), result) << failed;
+        EXPECT_EQ(LWEPlaintext(i / 2), result) << failed;
     }
 }
 
@@ -110,13 +110,13 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
 
     std::string failed = "Large Precision Sign Evalution failed";
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; ++i) {
         auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, LARGE_DIM, p * factor, Q);
         ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
         // std::cerr << "i: " << i << ", f=" << (i >= 3) << ", r=" << result << std::endl;
-        EXPECT_EQ(usint(i >= 3), result) << failed;
+        EXPECT_EQ(LWEPlaintext(i >= 3), result) << failed;
     }
 }
 
@@ -134,12 +134,12 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
 
     std::string failed = "Large Precision Sign Evalution failed";
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; ++i) {
         auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, LARGE_DIM, p * factor, Q);
         ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
-        EXPECT_EQ(usint(i >= 3), result) << failed;
+        EXPECT_EQ(LWEPlaintext(i >= 3), result) << failed;
     }
 }
 
@@ -160,15 +160,15 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
     std::string failed = "Large Precision Ciphertext Decomposition failed";
 
     // digit decomposes values starting with st upto st + 7 and checks every digit of each decomposition
-    for (uint64_t i = st; i < st + 8; i++) {
+    for (uint64_t i = st; i < st + 8; ++i) {
         auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p_basic * factor, Q);
 
         auto decomp = cc.EvalDecomp(ct1);
-        EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+        EXPECT_EQ(size_t(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
 
         auto p_basicdecrypt = p_basic;
         LWEPlaintext result;
-        for (size_t j = 0; j < decomp.size(); j++) {
+        for (size_t j = 0; j < decomp.size(); ++j) {
             ct1 = decomp[j];
 
             if (j == decomp.size() - 1) {
@@ -180,24 +180,24 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
 
             if (i < st + 3) {
                 if (j == 0) {
-                    EXPECT_EQ(usint(13 + i - st), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(13 + i - st), result) << failed;
                 }
                 else if (j == decomp.size() - 1) {
-                    EXPECT_EQ(usint(0), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(0), result) << failed;
                 }
                 else {
-                    EXPECT_EQ(usint(15), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(15), result) << failed;
                 }
             }
             else {
                 if (j == 0) {
-                    EXPECT_EQ(usint(0 + i - (st + 3)), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(0 + i - (st + 3)), result) << failed;
                 }
                 else if (j == decomp.size() - 1) {
-                    EXPECT_EQ(usint(1), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(1), result) << failed;
                 }
                 else {
-                    EXPECT_EQ(usint(0), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(0), result) << failed;
                 }
             }
         }
@@ -220,15 +220,15 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
     cc.BTKeyGen(sk);
     std::string failed = "Large Precision Ciphertext Decomposition failed";
 
-    for (uint64_t i = st; i < st + 8; i++) {
+    for (uint64_t i = st; i < st + 8; ++i) {
         auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p_basic * factor, Q);
 
         auto decomp = cc.EvalDecomp(ct1);
-        EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+        EXPECT_EQ(size_t(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
 
         auto p_basicdecrypt = p_basic;
         LWEPlaintext result;
-        for (size_t j = 0; j < decomp.size(); j++) {
+        for (size_t j = 0; j < decomp.size(); ++j) {
             ct1 = decomp[j];
 
             if (j == decomp.size() - 1) {
@@ -240,24 +240,24 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
 
             if (i < st + 3) {
                 if (j == 0) {
-                    EXPECT_EQ(usint(13 + i - st), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(13 + i - st), result) << failed;
                 }
                 else if (j == decomp.size() - 1) {
-                    EXPECT_EQ(usint(0), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(0), result) << failed;
                 }
                 else {
-                    EXPECT_EQ(usint(15), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(15), result) << failed;
                 }
             }
             else {
                 if (j == 0) {
-                    EXPECT_EQ(usint(0 + i - (st + 3)), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(0 + i - (st + 3)), result) << failed;
                 }
                 else if (j == decomp.size() - 1) {
-                    EXPECT_EQ(usint(1), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(1), result) << failed;
                 }
                 else {
-                    EXPECT_EQ(usint(0), result) << failed;
+                    EXPECT_EQ(LWEPlaintext(0), result) << failed;
                 }
             }
         }

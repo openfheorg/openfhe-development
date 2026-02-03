@@ -90,7 +90,7 @@ private:
    * @param acc previous value of the accumulator
    */
     void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                      ConstRingGSWEvalKey& ek2, const NativeInteger& a, RLWECiphertext& acc) const;
+                      ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

@@ -37,7 +37,6 @@
 #define BINFHE_BINFHECONTEXT_H
 
 #include "binfhe-base-scheme.h"
-
 #include "lattice/stdlatticeparms.h"
 #include "utils/serializable.h"
 
@@ -48,22 +47,27 @@
 
 namespace lbcrypto {
 
-// TODO: reorder to optimize struct size/alignment
 struct BinFHEContextParams {
     // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
     uint32_t numberBits;
+
     uint32_t cyclOrder;
 
     // for LWE crypto parameters
     uint32_t latticeParam;
-    uint32_t mod;  // modulus for additive LWE
+
+    // modulus for additive LWE
+    uint32_t mod;
+
     // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
     uint32_t modKS;
-    double stdDev;
-    uint32_t baseKS;  // base for key switching
+
+    // base for key switching
+    uint32_t baseKS;
 
     // for Ring GSW + LWE parameters
     uint32_t gadgetBase;  // gadget base used in the bootstrapping
+
     uint32_t baseRK;      // base for the refreshing key
 
     // number of Automorphism keys for LMKCDEY (> 0)
@@ -71,7 +75,10 @@ struct BinFHEContextParams {
 
     // for key distribution
     SecretKeyDist keyDist;
+
+    double stdDev;
 };
+
 /**
  * @brief BinFHEContext
  *
@@ -99,7 +106,7 @@ public:
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
    * @return creates the cryptocontext
    */
-    void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
+    void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std,
                                uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
                                BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
 
@@ -213,7 +220,7 @@ public:
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
-                          LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
+                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
    * Encrypts a bit or integer using a public key (public key encryption)
@@ -226,7 +233,7 @@ public:
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
-                          LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
+                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
    * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
@@ -425,6 +432,7 @@ public:
     std::string SerializedObjectName() const override {
         return "BinFHEContext";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

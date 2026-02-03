@@ -32,24 +32,22 @@
 #ifndef _BINFHE_BASE_PARAMS_H_
 #define _BINFHE_BASE_PARAMS_H_
 
+#include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
+#include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
+#include "lwe-keyswitchkey.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
+#include "rgsw-cryptoparameters.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include "binfhe-constants.h"
-
-#include "lwe-ciphertext.h"
-#include "lwe-keyswitchkey.h"
-#include "lwe-cryptoparameters.h"
-#include "rgsw-cryptoparameters.h"
-
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 namespace lbcrypto {
 

@@ -32,23 +32,21 @@
 #ifndef _RGSW_CRYPTOPARAMETERS_H_
 #define _RGSW_CRYPTOPARAMETERS_H_
 
+#include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
+#include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
+#include "lwe-keyswitchkey.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include "binfhe-constants.h"
-
-#include "lwe-ciphertext.h"
-#include "lwe-keyswitchkey.h"
-#include "lwe-cryptoparameters.h"
-
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 namespace lbcrypto {
 
@@ -105,11 +103,11 @@ public:
         return m_N;
     }
 
-    const NativeInteger& GetQ() const {
+    NativeInteger GetQ() const {
         return m_Q;
     }
 
-    const NativeInteger& Getq() const {
+    NativeInteger Getq() const {
         return m_q;
     }
 
@@ -216,6 +214,7 @@ public:
     std::string SerializedObjectName() const override {
         return "RingGSWCryptoParams";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -231,22 +230,22 @@ public:
 
 private:
     // modulus for the RingGSW/RingLWE scheme
-    NativeInteger m_Q{};
+    NativeInteger m_Q;
 
     // modulus for the RingLWE scheme
-    NativeInteger m_q{};
+    NativeInteger m_q;
 
     // ring dimension for RingGSW/RingLWE scheme
-    uint32_t m_N{};
+    uint32_t m_N;
 
     // gadget base used in bootstrapping
-    uint32_t m_baseG{};
+    uint32_t m_baseG;
 
     // base used for the refreshing key (used only for DM bootstrapping)
-    uint32_t m_baseR{};
+    uint32_t m_baseR;
 
     // number of digits in decomposing integers mod Q
-    uint32_t m_digitsG{};
+    uint32_t m_digitsG;
 
     // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
@@ -285,7 +284,7 @@ private:
     SecretKeyDist m_keyDist{SecretKeyDist::UNIFORM_TERNARY};
 
     // number of automorphism keys (used only for LMKCDEY bootstrapping)
-    uint32_t m_numAutoKeys{};
+    uint32_t m_numAutoKeys;
 };
 
 }  // namespace lbcrypto

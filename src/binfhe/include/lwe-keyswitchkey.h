@@ -33,7 +33,6 @@
 #define _LWE_KEYSWITCHKEY_H_
 
 #include "lwe-keyswitchkey-fwd.h"
-
 #include "math/math-hal.h"
 #include "utils/serializable.h"
 
@@ -43,6 +42,7 @@
 #include <vector>
 
 namespace lbcrypto {
+
 /**
  * @brief Class that stores the LWE scheme switching key
  */
@@ -55,7 +55,7 @@ public:
         : m_keyA(keyA), m_keyB(keyB) {}
 
     LWESwitchingKeyImpl(std::vector<std::vector<std::vector<NativeVector>>>&& keyA,
-                        std::vector<std::vector<std::vector<NativeInteger>>>&& keyB)
+                        std::vector<std::vector<std::vector<NativeInteger>>>&& keyB) noexcept
         : m_keyA(std::move(keyA)), m_keyB(std::move(keyB)) {}
 
     LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) : m_keyA(rhs.m_keyA), m_keyB(rhs.m_keyB) {}
@@ -91,6 +91,14 @@ public:
         m_keyB = keyB;
     }
 
+    void SetElementsA(std::vector<std::vector<std::vector<NativeVector>>>&& keyA) noexcept {
+        m_keyA = std::move(keyA);
+    }
+
+    void SetElementsB(std::vector<std::vector<std::vector<NativeInteger>>>&& keyB) noexcept {
+        m_keyB = std::move(keyB);
+    }
+
     bool operator==(const LWESwitchingKeyImpl& other) const {
         return (m_keyA == other.m_keyA && m_keyB == other.m_keyB);
     }
@@ -111,7 +119,6 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-
         ar(::cereal::make_nvp("a", m_keyA));
         ar(::cereal::make_nvp("b", m_keyB));
     }
@@ -119,6 +126,7 @@ public:
     std::string SerializedObjectName() const override {
         return "LWEPrivateKey";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

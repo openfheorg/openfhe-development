@@ -31,7 +31,9 @@
 
 #include "rgsw-acc-cggi.h"
 
-#include <string>
+#include <memory>
+#include <vector>
+
 
 namespace lbcrypto {
 
@@ -58,10 +60,10 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
 
 void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
                                      RLWECiphertext& acc, const NativeVector& a) const {
-    size_t n{a.GetLength()};
+    uint32_t n(a.GetLength());
     auto mod{a.GetModulus()};
     auto MbyMod{NativeInteger(2 * params->GetN()) / mod};
-    for (size_t i = 0; i < n; ++i) {
+    for (uint32_t i = 0; i < n; ++i) {
         // handles -a*E(1) and handles -a*E(-1) = a*E(1)
         AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc);
     }
@@ -79,20 +81,20 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
 
-    std::vector<NativePoly> tempA(digitsG2, NativePoly(dug, polyParams, Format::COEFFICIENT));
     RingGSWEvalKeyImpl result(digitsG2, 2);
-
+    NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
-        result[i][0] = tempA[i];
-        tempA[i].SetFormat(Format::EVALUATION);
+        result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
+        tmp = result[i][0];
+        tmp.SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (m)
             result[i][i & 0x1][0].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
         result[i][0].SetFormat(Format::EVALUATION);
         result[i][1].SetFormat(Format::EVALUATION);
-        result[i][1] += (tempA[i] *= skNTT);
+        result[i][1] += (tmp *= skNTT);
     }
-    return std::make_shared<RingGSWEvalKeyImpl>(result);
+    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
 }
 
 // CGGI Accumulation as described in https://eprint.iacr.org/2020/086
@@ -100,7 +102,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
 void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                                          ConstRingGSWEvalKey& ek2, const NativeInteger& a, RLWECiphertext& acc) const {
+                                          ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc) const {
     std::vector<NativePoly> ct(acc->GetElements());
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);

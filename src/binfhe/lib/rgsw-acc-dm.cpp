@@ -96,12 +96,12 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
-    std::vector<NativePoly> tempA(digitsG2, NativePoly(dug, polyParams, Format::COEFFICIENT));
     RingGSWEvalKeyImpl result(digitsG2, 2);
-
+    NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
-        result[i][0] = tempA[i];
-        tempA[i].SetFormat(Format::EVALUATION);
+        result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
+        tmp = result[i][0];
+        tmp.SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (!isReducedMM)
             result[i][i & 0x1][mm].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
@@ -109,9 +109,9 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
             result[i][i & 0x1][mm].ModSubFastEq(Gpow[(i >> 1) + 1], Q);
         result[i][0].SetFormat(Format::EVALUATION);
         result[i][1].SetFormat(Format::EVALUATION);
-        result[i][1] += (tempA[i] *= skNTT);
+        result[i][1] += (tmp *= skNTT);
     }
-    return std::make_shared<RingGSWEvalKeyImpl>(result);
+    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
 }
 
 // AP Accumulation as described in https://eprint.iacr.org/2020/086

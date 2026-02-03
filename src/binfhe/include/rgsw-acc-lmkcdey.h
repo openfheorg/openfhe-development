@@ -111,7 +111,7 @@ private:
    * @param acc previous value of the accumulator
    * @return
    */
-    void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, const NativeInteger& a,
+    void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a,
                       ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const;
 };
 

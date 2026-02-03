@@ -75,12 +75,12 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
                                             ConstLWEPrivateKey& skN) const {
     const uint32_t dim = params->GetN();
     const auto modulus = params->GetQ();
-    const auto& ske    = skN->GetElement();
     const auto mu      = modulus.ComputeMu();
+    const auto& ske    = skN->GetElement();
 
+    std::vector<NativeVector> A(dim);
     auto v = params->GetDgg().GenerateVector(dim, modulus);
     DiscreteUniformGeneratorImpl<NativeVector> dug(modulus);
-    std::vector<NativeVector> A(dim);
 
     // compute v = As + e
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(dim)) firstprivate(dug)
@@ -111,9 +111,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     for (uint32_t i = 0; i < n; ++i)
         b += a[i].ModMulFast(s[i], q, mu);
 
-    auto ct = std::make_shared<LWECiphertextImpl>(std::move(a), b.Mod(q));
-    ct->SetptModulus(p);
-    return ct;
+    return std::make_shared<LWECiphertextImpl>(std::move(a), b.Mod(q), p);
 }
 
 // classical public key LWE encryption
@@ -125,8 +123,8 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
         OPENFHE_THROW("plaintext modulus p must divide ciphertext modulus q");
 
     auto bp    = pk->Getv();
-    uint32_t N = bp.GetLength();
     bp.SwitchModulus(q);  // todo : this is probably not required
+    uint32_t N = bp.GetLength();
 
     TernaryUniformGeneratorImpl<NativeVector> tug;
     NativeVector sp = tug.GenerateVector(N, q);
@@ -148,9 +146,7 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
     for (uint32_t i = 0; i < N; ++i)
         b.ModAddFastEq(bp[i].ModMulFast(sp[i], q, mu), q);
 
-    auto ct = std::make_shared<LWECiphertextImpl>(std::move(a), b);
-    ct->SetptModulus(p);
-    return ct;
+    return std::make_shared<LWECiphertextImpl>(std::move(a), b, p);
 }
 
 // convert ciphertext with modulus Q and dimension N to ciphertext with modulus q and dimension n
@@ -216,30 +212,30 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
 
 void LWEEncryptionScheme::EvalAddEq(LWECiphertext& ct1, ConstLWECiphertext& ct2) const {
     ct1->GetA().ModAddEq(ct2->GetA());
-    ct1->GetB().ModAddFastEq(ct2->GetB(), ct1->GetModulus());
+    ct1->SetB(ct1->GetB().ModAddFast(ct2->GetB(), ct1->GetModulus()));
 }
 
 void LWEEncryptionScheme::EvalAddConstEq(LWECiphertext& ct, NativeInteger cnst) const {
-    ct->GetB().ModAddFastEq(cnst, ct->GetModulus());
+    ct->SetB(ct->GetB().ModAddFast(cnst, ct->GetModulus()));
 }
 
 void LWEEncryptionScheme::EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext& ct2) const {
     ct1->GetA().ModSubEq(ct2->GetA());
-    ct1->GetB().ModSubFastEq(ct2->GetB(), ct1->GetModulus());
+    ct1->SetB(ct1->GetB().ModSubFast(ct2->GetB(), ct1->GetModulus()));
 }
 
 void LWEEncryptionScheme::EvalSubEq2(ConstLWECiphertext& ct1, LWECiphertext& ct2) const {
     ct2->GetA() = ct1->GetA().ModSub(ct2->GetA());
-    ct2->GetB() = ct1->GetB().ModSubFast(ct2->GetB(), ct1->GetModulus());
+    ct2->SetB(ct1->GetB().ModSubFast(ct2->GetB(), ct1->GetModulus()));
 }
 
 void LWEEncryptionScheme::EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const {
-    ct->GetB().ModSubFastEq(cnst, ct->GetModulus());
+    ct->SetB(ct->GetB().ModSubFast(cnst, ct->GetModulus()));
 }
 
 void LWEEncryptionScheme::EvalMultConstEq(LWECiphertext& ct1, NativeInteger cnst) const {
     ct1->GetA().ModMulEq(cnst);
-    ct1->GetB().ModMulFastEq(cnst, ct1->GetModulus());
+    ct1->SetB(ct1->GetB().ModMulFast(cnst, ct1->GetModulus()));
 }
 
 // Modulus switching - directly applies the scale-and-round operation RoundQ
@@ -337,7 +333,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
     for (uint32_t i = 0; i < N; ++i) {
         auto& refA = K->GetElementsA()[i];
         auto& refB = K->GetElementsB()[i];
-        NativeInteger::Integer atmp(ctQN->GetA(i).ConvertToInt());
+        NativeInteger::Integer atmp(ctQN->GetA()[i].ConvertToInt());
         for (uint32_t j = 0; j < digitCount; ++j) {
             const auto a0 = (atmp % baseKS);
             atmp /= baseKS;

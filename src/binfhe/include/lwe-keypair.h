@@ -32,11 +32,10 @@
 #ifndef _LWE_KEYTRIPLE_H_
 #define _LWE_KEYTRIPLE_H_
 
+#include "lwe-keypair-fwd.h"
+#include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-publickey.h"
-#include "lwe-keyswitchkey.h"
-#include "lwe-keypair-fwd.h"
-
 #include "math/math-hal.h"
 #include "utils/serializable.h"
 
@@ -46,6 +45,7 @@
 #include <vector>
 
 namespace lbcrypto {
+
 /**
  * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
  */

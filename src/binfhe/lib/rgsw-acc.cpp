@@ -46,6 +46,7 @@
 
 #include "lattice/lat-hal.h"
 #include "rgsw-acc.h"
+
 #include <memory>
 #include <vector>
 

@@ -32,22 +32,21 @@
 #ifndef _RGSW_CIPHERTEXT_H_
 #define _RGSW_CIPHERTEXT_H_
 
+#include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
-#include "lwe-cryptoparameters.h"
-
-#include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 namespace lbcrypto {
 
@@ -63,21 +62,21 @@ class RLWECiphertextImpl : public Serializable {
 public:
     RLWECiphertextImpl() = default;
 
-    explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
+    RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
-    explicit RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
+    RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
 
     RLWECiphertextImpl(const RLWECiphertextImpl& rhs) : m_elements(rhs.m_elements) {}
 
     RLWECiphertextImpl(RLWECiphertextImpl&& rhs) noexcept : m_elements(std::move(rhs.m_elements)) {}
 
     RLWECiphertextImpl& operator=(const RLWECiphertextImpl& rhs) {
-        this->m_elements = rhs.m_elements;
+        m_elements = rhs.m_elements;
         return *this;
     }
 
     RLWECiphertextImpl& operator=(RLWECiphertextImpl&& rhs) noexcept {
-        this->m_elements = std::move(rhs.m_elements);
+        m_elements = std::move(rhs.m_elements);
         return *this;
     }
 
@@ -119,6 +118,7 @@ public:
     std::string SerializedObjectName() const override {
         return "RLWECiphertext";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

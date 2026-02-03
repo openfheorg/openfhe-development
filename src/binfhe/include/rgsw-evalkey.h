@@ -32,22 +32,21 @@
 #ifndef _RGSW_EVAL_KEY_H_
 #define _RGSW_EVAL_KEY_H_
 
+#include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
-#include "lwe-cryptoparameters.h"
-
-#include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 namespace lbcrypto {
 
@@ -88,6 +87,10 @@ public:
 
     void SetElements(const std::vector<std::vector<NativePoly>>& elements) {
         m_elements = elements;
+    }
+
+    void SetElements(std::vector<std::vector<NativePoly>>&& elements) noexcept {
+        m_elements = std::move(elements);
     }
 
     /**
@@ -147,6 +150,7 @@ public:
     std::string SerializedObjectName() const override {
         return "RingGSWEvalKey";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

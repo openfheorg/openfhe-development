@@ -42,6 +42,7 @@
 #include <vector>
 
 namespace lbcrypto {
+
 /**
  * @brief Class that stores the LWE scheme secret key; contains a vector
  */
@@ -49,19 +50,21 @@ class LWEPrivateKeyImpl : public Serializable {
 public:
     LWEPrivateKeyImpl() = default;
 
-    explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
+    LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
+
+    LWEPrivateKeyImpl(NativeVector&& s) noexcept : m_s(std::move(s)) {}
 
     LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) : m_s(rhs.m_s) {}
 
     LWEPrivateKeyImpl(LWEPrivateKeyImpl&& rhs) noexcept : m_s(std::move(rhs.m_s)) {}
 
     LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
+        m_s = rhs.m_s;
         return *this;
     }
 
     LWEPrivateKeyImpl& operator=(LWEPrivateKeyImpl&& rhs) noexcept {
-        this->m_s = std::move(rhs.m_s);
+        m_s = std::move(rhs.m_s);
         return *this;
     }
 
@@ -73,11 +76,15 @@ public:
         m_s = s;
     }
 
+    void SetElement(NativeVector&& s) noexcept {
+        m_s = std::move(s);
+    }
+
     uint32_t GetLength() const {
         return m_s.GetLength();
     }
 
-    const NativeInteger& GetModulus() const {
+    NativeInteger GetModulus() const {
         return m_s.GetModulus();
     }
 
@@ -100,19 +107,19 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-
         ar(::cereal::make_nvp("s", m_s));
     }
 
     std::string SerializedObjectName() const override {
         return "LWEPrivateKey";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    NativeVector m_s{};
+    NativeVector m_s;
 };
 
 }  // namespace lbcrypto

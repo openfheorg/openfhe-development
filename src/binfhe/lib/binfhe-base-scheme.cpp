@@ -31,7 +31,10 @@
 
 #include "binfhe-base-scheme.h"
 
+#include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -226,13 +229,13 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams>& p
     if (ct == nullptr)
         OPENFHE_THROW("Ciphertext is empty");
 
+    NativeVector a(ct->GetA());
     NativeInteger q{ct->GetModulus()};
     uint32_t n{ct->GetLength()};
-
-    NativeVector a(n, q);
-    for (uint32_t i = 0; i < n; ++i)
-        a[i] = ct->GetA(i) == 0 ? 0 : q - ct->GetA(i);
-
+    for (uint32_t i = 0; i < n; ++i) {
+        if (a[i] != 0)
+            a[i] = q - a[i];
+    }
     return std::make_shared<LWECiphertextImpl>(std::move(a), (q >> 2).ModSubFast(ct->GetB(), q));
 }
 
@@ -240,7 +243,7 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams>& p
 // Modulus of ct is q | 2N
 LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                      ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT,
-                                     const NativeInteger& beta) const {
+                                     NativeInteger beta) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -261,9 +264,8 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
     if (functionProperty == 2) {  // arbitary funciton
         const auto& LWEParams = params->GetLWEParams();
         uint32_t N{LWEParams->GetN()};
-        if (q.ConvertToInt() > N) {  // need q to be at most = N for arbitary function
-            OPENFHE_THROW("Ciphertext modulus q needs to be <= ring dimension for arbitrary function evaluation");
-        }
+        if (q.ConvertToInt() > N)
+            OPENFHE_THROW("Ciphertext modulus q must be <= ring dimension for arbitrary function evaluation");
 
         // TODO: figure out a way to not do this :(
 
@@ -331,7 +333,7 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
 
 // Evaluate Homomorphic Flooring
 LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext& ct, const NativeInteger& beta, uint32_t roundbits) const {
+                                      ConstLWECiphertext& ct, NativeInteger beta, uint32_t roundbits) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -377,7 +379,7 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams>&
 // Evaluate large-precision sign
 LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
                                      const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                                     const NativeInteger& beta, bool schemeSwitch) const {
+                                     NativeInteger beta, bool schemeSwitch) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -386,18 +388,14 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     auto mod{ct->GetModulus()};
     const auto& LWEParams = params->GetLWEParams();
     auto q{LWEParams->Getq()};
-    if (mod <= q) {
-        std::string errMsg =
-            "This function is only for large precision. For small precision, please use bootstrapping directly";
-        OPENFHE_THROW(errMsg);
-    }
+    if (mod <= q)
+        OPENFHE_THROW("This function only for large precision. For small precision, use bootstrapping directly");
 
     const auto& RGSWParams = params->GetRingGSWParams();
     const auto curBase     = RGSWParams->GetBaseG();
     auto search            = EKs.find(curBase);
-    if (search == EKs.end()) {
+    if (search == EKs.end())
         OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
-    }
     RingGSWBTKey curEK(search->second);
 
     auto cttmp = std::make_shared<LWECiphertextImpl>(*ct);
@@ -422,9 +420,8 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
                 RGSWParams->Change_BaseG(base);
 
                 auto search = EKs.find(base);
-                if (search == EKs.end()) {
+                if (search == EKs.end())
                     OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
-                }
                 curEK = search->second;
             }
         }
@@ -453,7 +450,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
 // Evaluate Ciphertext Decomposition
 std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHECryptoParams>& params,
                                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                                                    const NativeInteger& beta) const {
+                                                    NativeInteger beta) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -464,17 +461,13 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     auto& RGSWParams = params->GetRingGSWParams();
 
     NativeInteger q = LWEParams->Getq();
-    if (mod <= q) {
-        std::string errMsg =
-            "This function is only for large precision. For small precision, please use bootstrapping directly";
-        OPENFHE_THROW(errMsg);
-    }
+    if (mod <= q)
+        OPENFHE_THROW("Function only for large precision. For small precision, use bootstrapping directly");
 
     const auto curBase = RGSWParams->GetBaseG();
     auto search        = EKs.find(curBase);
-    if (search == EKs.end()) {
+    if (search == EKs.end())
         OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
-    }
     RingGSWBTKey curEK(search->second);
 
     auto cttmp = std::make_shared<LWECiphertextImpl>(*ct);
@@ -502,9 +495,8 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
                 RGSWParams->Change_BaseG(base);
 
                 auto search = EKs.find(base);
-                if (search == EKs.end()) {
+                if (search == EKs.end())
                     OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
-                }
                 curEK = search->second;
             }
         }
@@ -582,12 +574,9 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
 template <typename Func>
 RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params,
                                                ConstRingGSWACCKey& ek, ConstLWECiphertext& ct, const Func f,
-                                               const NativeInteger& fmod) const {
-    if (ek == nullptr) {
-        std::string errMsg =
-            "Bootstrapping keys have not been generated. Please call BTKeyGen before calling bootstrapping.";
-        OPENFHE_THROW(errMsg);
-    }
+                                               NativeInteger fmod) const {
+    if (ek == nullptr)
+        OPENFHE_THROW("Bootstrapping keys not generated. Please call BTKeyGen before bootstrapping.");
 
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
@@ -597,9 +586,9 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
     uint32_t N      = LWEParams->GetN();
     NativeVector m(N, Q);
     // For specific function evaluation instead of general bootstrapping
-    NativeInteger ctMod    = ct->GetModulus();
-    uint32_t factor        = (2 * N / ctMod.ConvertToInt());
-    const NativeInteger& b = ct->GetB();
+    NativeInteger ctMod = ct->GetModulus();
+    uint32_t factor     = (2 * N / ctMod.ConvertToInt());
+    NativeInteger b     = ct->GetB();
     for (size_t j = 0; j < (ctMod >> 1); ++j) {
         NativeInteger temp = b.ModSub(j, ctMod);
         m[j * factor]      = Q.ConvertToInt() / fmod.ConvertToInt() * f(temp, ctMod, fmod);
@@ -622,7 +611,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 template <typename Func>
 LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                          ConstLWECiphertext& ct, const Func f, const NativeInteger& fmod) const {
+                                          ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const {
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
     auto accVec{BootstrapFuncCore(params, EK.BSkey, ct, f, fmod)->GetElements()};
