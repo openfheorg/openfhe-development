@@ -115,7 +115,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
         { TOY,                 {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19 } },
         { MEDIUM,              {   28,     2048,      422, 1024,   16384, 128,      1024,  32,       10, UNIFORM_TERNARY,   3.19 } },
         { STD128_AP,           {   27,     2048,      559, 2048,   32768,  32,       512,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128,              {   27,     2048,      574, 2048,   32768,  32,       512,  64,       10, UNIFORM_TERNARY,   3.19 } },
+        { STD128,              {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
         { STD128_3,            {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
         { STD128_4,            {   27,     2048,      635, 2048,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19 } },
         { STD128Q,             {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },

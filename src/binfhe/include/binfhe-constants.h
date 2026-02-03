@@ -51,7 +51,7 @@ enum BINFHE_PARAMSET {
     TOY,                  // no security                                                     : 2^(-270)
     MEDIUM,               // 108 bits of security for classical and 100 bits for quantum     : 2^(-40)
     STD128_AP,            // more than 128 bits of security for classical computer attacks   : 2^(-65)
-    STD128,               // more than 128 bits of security for classical computer attacks   : 2^(-40)
+    STD128,               // more than 128 bits of security for classical computer attacks   : 2^(-135)
     STD128_3,             // STD128 for 3 binary inputs                                      : 2^(-70)
     STD128_4,             // STD128 for 4 binary inputs                                      : 2^(-65)
     STD128Q,              // more than 128 bits of security for quantum attacks              : 2^(-145)
