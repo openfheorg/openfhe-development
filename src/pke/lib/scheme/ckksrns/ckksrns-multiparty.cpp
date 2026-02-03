@@ -159,9 +159,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                                   const PublicKey<DCRTPoly> publicKey) const {
-    auto ildcrtparams = params->GetElementParams();
     typename DCRTPoly::DugType dug;
-    DCRTPoly crp(dug, ildcrtparams);
+    DCRTPoly crp(dug, params->GetElementParams());
     crp.SetFormat(Format::EVALUATION);
 
     Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
@@ -172,9 +171,10 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                                   ConstCiphertext<DCRTPoly>& ciphertext) const {
-    auto ildcrtparams = params->GetElementParams();
+    const auto& ctxtElems = ciphertext->GetElements();
+    
     typename DCRTPoly::DugType dug;
-    DCRTPoly crp(dug, ildcrtparams);
+    DCRTPoly crp(dug, ctxtElems[0].GetParams());
     crp.SetFormat(Format::EVALUATION);
 
     Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext));
