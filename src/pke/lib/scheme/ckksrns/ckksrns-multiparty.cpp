@@ -167,6 +167,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
     Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
     outCtxt->SetElements({std::move(crp)});
+    outCtxt->SetEncodingType(CKKS_PACKED_ENCODING);
+
     return outCtxt;
 }
 
