@@ -181,7 +181,6 @@ Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptMain(ConstCiphertext<E
     CheckMultipartyDecryptCompatibility(ciphertext);
 
     auto result = m_Multiparty->MultipartyDecryptMain(ciphertext, privateKey);
-    result->SetKeyTag(privateKey->GetKeyTag());
     return result;
 }
 
@@ -192,7 +191,6 @@ Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptLead(ConstCiphertext<E
     CheckMultipartyDecryptCompatibility(ciphertext);
 
     auto result = m_Multiparty->MultipartyDecryptLead(ciphertext, privateKey);
-    result->SetKeyTag(privateKey->GetKeyTag());
     return result;
 }
 
