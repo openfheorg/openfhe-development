@@ -33,8 +33,10 @@
   Examples for scheme switching between CKKS and FHEW and back, with intermediate computations
  */
 
-#include "openfhe.h"
 #include "binfhecontext.h"
+#include "openfhe.h"
+
+#include <algorithm>
 
 using namespace lbcrypto;
 
@@ -226,6 +228,8 @@ void SwitchCKKSToFHEW() {
         }
         std::cout << std::endl;
     }
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void SwitchFHEWtoCKKS() {
@@ -275,7 +279,7 @@ void SwitchFHEWtoCKKS() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     auto ccLWE = std::make_shared<BinFHEContext>();
-    ccLWE->BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
+    ccLWE->BinFHEContext::GenerateBinFHEContext(STD128, false, logQ_ccLWE, 0, GINX, false);
 
     // LWE private key
     LWEPrivateKey lwesk;
@@ -292,14 +296,7 @@ void SwitchFHEWtoCKKS() {
     cc->EvalFHEWtoCKKSKeyGen(keys, lwesk);
 
     // Step 4: Encoding and encryption of inputs
-    // For correct CKKS decryption, the messages have to be much smaller than the FHEW plaintext modulus!
 
-    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
-    uint32_t pLWE2   = 256;                                           // Medium precision
-    auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE3       = modulus_LWE / (2 * beta);  // Large precision
-    // Inputs
     std::vector<int> x1 = {1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
     std::vector<int> x2 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     if (x1.size() < slots) {
@@ -307,6 +304,19 @@ void SwitchFHEWtoCKKS() {
         x1.insert(x1.end(), zeros.begin(), zeros.end());
         x2.insert(x2.end(), zeros.begin(), zeros.end());
     }
+
+    uint32_t modulus_LWE = 1 << logQ_ccLWE;
+
+    uint32_t pLWE1 = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    uint32_t pLWE2 = 256;                                           // Medium precision
+
+    // Messages encoded as [0000000MMMMM0000000EEEEE]
+    // Number of leading zeros determined by the ratio of ciphertext modulus to plaintext modulus
+    // Number of zeros between message and error determined by the ratio of plaintext modulus to magnitude of max value in message
+    // For correct CKKS decryption, the message magnitude should be much smaller than the plaintext modulus and the plaintext modulus should be much smaller than the ciphertext modulus
+
+    uint32_t gap_bits = (logQ_ccLWE - std::log2(2 * (*std::max_element(x2.begin(), x2.end())))) / 2;
+    uint32_t pLWE3    = 1 << (logQ_ccLWE - gap_bits);  // Large precision
 
     // Encrypt
     std::vector<LWECiphertext> ctxtsLWE1(slots);
@@ -321,6 +331,7 @@ void SwitchFHEWtoCKKS() {
         ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, pLWE1);
     }
 
+    // Here, ratio between plaintext modulus and message magnitude is small
     std::vector<LWECiphertext> ctxtsLWE3(slots);
     for (uint32_t i = 0; i < slots; i++) {
         // encrypted under larger plaintext modulus and large ciphertext modulus
@@ -379,6 +390,8 @@ void SwitchFHEWtoCKKS() {
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
     plaintextDec2->SetLength(slots);
     std::cout << "Switched CKKS decryption 4: " << plaintextDec2 << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void FloorViaSchemeSwitching() {
@@ -495,6 +508,8 @@ void FloorViaSchemeSwitching() {
     plaintextDec2->SetLength(slots);
     std::cout << "Switched floor decryption modulus_LWE mod " << NativeInteger(pLWE) / (1 << bits) << ": "
               << plaintextDec2 << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void FuncViaSchemeSwitching() {
@@ -635,6 +650,8 @@ void FuncViaSchemeSwitching() {
         std::cout << std::asin(x) * pLWE / (2 * M_PI) << " ";
     }
     std::cout << "\n";
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ComparisonViaSchemeSwitching() {
@@ -847,6 +864,8 @@ void ComparisonViaSchemeSwitching() {
     cc->Decrypt(keys.secretKey, cResult, &plaintextDec3);
     plaintextDec3->SetLength(slots);
     std::cout << "Decrypted switched result: " << plaintextDec3 << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminViaSchemeSwitching() {
@@ -977,6 +996,8 @@ void ArgminViaSchemeSwitching() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminViaSchemeSwitchingAlt() {
@@ -1109,6 +1130,8 @@ void ArgminViaSchemeSwitchingAlt() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminViaSchemeSwitchingUnit() {
@@ -1243,6 +1266,8 @@ void ArgminViaSchemeSwitchingUnit() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminViaSchemeSwitchingAltUnit() {
@@ -1378,6 +1403,8 @@ void ArgminViaSchemeSwitchingAltUnit() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void PolyViaSchemeSwitching() {

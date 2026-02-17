@@ -36,7 +36,6 @@
 #include <memory>
 #include <string>
 
-
 namespace lbcrypto {
 
 class DataAndLocation {
@@ -50,7 +49,7 @@ protected:
     Ciphertext<DCRTPoly> RAWCiphertext{nullptr};
 
     // Save-Load locations
-    std::string dataDirectory                  = getDataDir();
+    std::string dataDirectory                  = "demoData";
     const std::string cryptoContextFile        = "cryptocontext.txt";
     const std::string pubKeyFile               = "key_pub.txt";
     const std::string multKeyFile              = "key_mult.txt";
