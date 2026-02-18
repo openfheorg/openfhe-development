@@ -200,6 +200,8 @@ void SwitchCKKSToFHEW(uint32_t depth, uint32_t slots, uint32_t numValues) {
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void SwitchFHEWtoCKKS(uint32_t depth, uint32_t slots, uint32_t numValues) {
@@ -312,6 +314,8 @@ void SwitchFHEWtoCKKS(uint32_t depth, uint32_t slots, uint32_t numValues) {
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues) {
@@ -454,6 +458,8 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues) {
@@ -602,6 +608,8 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numValues) {
@@ -752,6 +760,8 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim) {
@@ -902,6 +912,8 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim) {
@@ -1058,6 +1070,8 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
 
     double totalTime = TOC(tTotal);
     std::cout << "\nTotal time: " << totalTime / 60000 << " min" << std::endl;
+
+    cc->ClearStaticMapsAndVectors();
 }
 
 void Comparison(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim) {

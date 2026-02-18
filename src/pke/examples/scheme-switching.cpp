@@ -311,9 +311,10 @@ void SwitchFHEWtoCKKS() {
     uint32_t pLWE2 = 256;                                           // Medium precision
 
     // Messages encoded as [0000000MMMMM0000000EEEEE]
-    // Number of leading zeros determined by the ratio of ciphertext modulus to plaintext modulus
-    // Number of zeros between message and error determined by the ratio of plaintext modulus to magnitude of max value in message
-    // For correct CKKS decryption, the message magnitude should be much smaller than the plaintext modulus and the plaintext modulus should be much smaller than the ciphertext modulus
+    // High level idea is to have enough 0's both before and after message for CKKS-bootstrapped result to achieve reasonable accuracy.
+    // Number of leading zeros determined by ratio of ciphertext modulus to plaintext modulus; Need 10 - 12 bits for better accuracy with sin(x) ~ x approximation of mod x.
+    // Number of zeros between message and error determined by the ratio of plaintext modulus to magnitude of max value in message; Need gap between message and error
+    //   large enough for correctly rounded message even after leveled computations in the linear transformation before evaluating sin(x).
 
     uint32_t gap_bits = (logQ_ccLWE - std::log2(2 * (*std::max_element(x2.begin(), x2.end())))) / 2;
     uint32_t pLWE3    = 1 << (logQ_ccLWE - gap_bits);  // Large precision
@@ -331,16 +332,15 @@ void SwitchFHEWtoCKKS() {
         ctxtsLWE2[i] = ccLWE->Encrypt(lwesk, x1[i], LARGE_DIM, pLWE1);
     }
 
-    // Here, ratio between plaintext modulus and message magnitude is small
     std::vector<LWECiphertext> ctxtsLWE3(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        // encrypted under larger plaintext modulus and large ciphertext modulus
+        // here, ratio between plaintext modulus and message magnitude is small, resulting in higher error
         ctxtsLWE3[i] = ccLWE->Encrypt(lwesk, x2[i], LARGE_DIM, pLWE2, modulus_LWE);
     }
 
     std::vector<LWECiphertext> ctxtsLWE4(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        // encrypted under large plaintext modulus and large ciphertext modulus
+        // here, ratio between plaintext modulus and message magnitude is high, resulting in better accuracy
         ctxtsLWE4[i] = ccLWE->Encrypt(lwesk, x2[i], LARGE_DIM, pLWE3, modulus_LWE);
     }
 

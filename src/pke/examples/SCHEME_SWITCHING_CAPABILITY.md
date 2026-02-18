@@ -38,7 +38,8 @@ in most cases should be chosen by the user to be 1 / p, where p is the desired F
 transformed to Q / (scFactor * p), where Q is the CKKS ciphertext modulus on level 0, scFactor is the CKKS scaling factor for that level.
 If the scale is left to be the default value of 1, the implicit FHEW plaintext modulus will be Q / scFactor, and the user should take this
 into account. Finally, the user can also divide separately the messages by p, and input plaintexts in the unit circle (which translates
-to an internal scaling only by Q / scFactor) and recover the initial message in FHEW.
+to an internal scaling only by Q / scFactor) and recover the initial message in FHEW. The value of p should be approximately 10 - 12 bits
+smaller than Q to allow for better accuracy with the sin(x) ~ x approximation of mod x.
 
 After the setup and precomputation, the user should call `EvalCKKStoFHEW`. The number of slots to be converted is specified by the user,
 otherwise it defaults to the number of slots specified in the CKKS scheme. Note that FHEW plaintexts are integers, so the messages from
@@ -143,4 +144,3 @@ Additional example demonstrating serialization
 
 The code for this example is located in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). The file provides a simple setup for real number serialization before progressing into the next logical step - serialization and communication between 2 separate entities.
 All generated files containing serialized data are stored in the DATAFOLDER directory, which is defined in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). If you want to rename any of those files, you can do so in [src/pke/unittest/utils/schemeswitching-data-serializer.h](src/pke/unittest/utils/schemeswitching-data-serializer.h).
-
