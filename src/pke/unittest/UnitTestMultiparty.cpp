@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "include/gtest/gtest.h"
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
 
-#include "include/gtest/gtest.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -111,7 +111,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_MULT
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint BATCH = 16;
+constexpr uint32_t BATCH = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_MULTIPARTY> testCases = {
     // TestType,   Descr, Scheme,          RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode,  Star, Slots, sharingScheme
@@ -189,6 +189,17 @@ static std::vector<TEST_CASE_UTGENERAL_MULTIPARTY> testCases = {
     { CKKSRNS_TEST, "74", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   0,         0,    DFLT,     DFLT,    DFLT},    true,  1024, "NA"},
     { CKKSRNS_TEST, "75", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,    DFLT,     DFLT,    DFLT},    true,  1024, "NA"},
     { CKKSRNS_TEST, "76", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,    DFLT,     DFLT,    DFLT},    true,  1024, "NA"},
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,               LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode,  Star, Slots, sharingScheme
+    { CKKSRNS_TEST, "77", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,            60,     HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,      DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT},    false, 1024, "NA"},
+    { CKKSRNS_TEST, "78", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,            60,     HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,      DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT},     true, 1024, "NA"},
+    { CKKSRNS_TEST, "79", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,            60,     HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL,    DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT},    false, 1024, "NA"},
+    { CKKSRNS_TEST, "80", {CKKSRNS_SCHEME, 2048, 2,         50,       3,    BATCH,   DFLT,       DFLT,            60,     HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL,    DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT},     true, 1024, "NA"},
+    { CKKSRNS_TEST, "81", {CKKSRNS_SCHEME, 2048, 2,        118,       3,    BATCH,   DFLT,       DFLT,           120,     HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,      DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT},    false, 1024, "NA"},
+    { CKKSRNS_TEST, "82", {CKKSRNS_SCHEME, 2048, 2,        118,       3,    BATCH,   DFLT,       DFLT,           120,     HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,      DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT},     true, 1024, "NA"},
+    { CKKSRNS_TEST, "83", {CKKSRNS_SCHEME, 2048, 2,        118,       3,    BATCH,   DFLT,       DFLT,           120,     HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL,    DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 64, 2},    false, 512, "NA"},
+    { CKKSRNS_TEST, "84", {CKKSRNS_SCHEME, 2048, 2,        118,       3,    BATCH,   DFLT,       DFLT,           120,     HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL,    DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 64, 2},     true, 512, "NA"},
+    { CKKSRNS_TEST, "85", {CKKSRNS_SCHEME, 2048, 2,        118,       3,    BATCH,   DFLT,       DFLT,           120,     HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL,    DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32, 4},    false, 512, "NA"},
+    { CKKSRNS_TEST, "86", {CKKSRNS_SCHEME, 2048, 2,        118,       3,    BATCH,   DFLT,       DFLT,           120,     HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL,    DFLT,  DFLT,   DFLT,   0,         0,    DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32, 4},     true, 512, "NA"},
 #endif
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode, MultipartyMode,             Star, Slots, sharingScheme
@@ -388,12 +399,13 @@ protected:
 
             auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
             cc->EvalSumKeyGen(kp1.secretKey);
-            auto evalSumKeys =
-                std::make_shared<std::map<usint, EvalKey<Element>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>(
+                cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
             cc->EvalAtIndexKeyGen(kp1.secretKey, indices);
-            auto evalAtIndexKeys = std::make_shared<std::map<usint, EvalKey<Element>>>(
+            auto evalAtIndexKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>(
                 cc->GetEvalAutomorphismKeyMap(kp1.secretKey->GetKeyTag()));
             //====================================================================
+
             KeyPair<Element> kp2 =
                 testData.star ? cc->MultipartyKeyGen(kp1.publicKey) : cc->MultipartyKeyGen(kp1.publicKey, false, true);
 
@@ -431,7 +443,7 @@ protected:
             size_t encodedLength = vectorOfInts1.size();
             std::vector<int64_t> sumInput(encodedLength, 0);
             std::vector<int64_t> multInput(encodedLength, 0);
-            for (usint i = 0; i < encodedLength; ++i) {
+            for (uint32_t i = 0; i < encodedLength; ++i) {
                 sumInput[i]  = vectorOfInts1[i] + vectorOfInts2[i] + vectorOfInts3[i];
                 multInput[i] = vectorOfInts1[i] * vectorOfInts3[i];
             }
@@ -443,17 +455,17 @@ protected:
                 uint32_t slots = (testData.slots != 0) ? testData.slots :
                                  (BATCH != 0)          ? BATCH :
                                                          cc->GetRingDimension() / 2;
-                for (usint i = 0; i < encodedLength; ++i) {
+                for (uint32_t i = 0; i < encodedLength; ++i) {
                     evalSumInput[i] = 0;
                     // we add to evalSumInput[i] value vectorOfInts3[(i + j) % BATCH];
-                    for (usint j = 0; j < BATCH; ++j) {
+                    for (uint32_t j = 0; j < BATCH; ++j) {
                         if ((i + j) % slots < encodedLength) {
                             evalSumInput[i] += vectorOfInts3[(i + j) % slots];
                         }
                     }
                 }
 
-                for (usint i = 0; i < encodedLength; ++i) {
+                for (uint32_t i = 0; i < encodedLength; ++i) {
                     if ((slots + i + indices[0]) % slots < encodedLength) {
                         rotateInput[i] = vectorOfInts1[(slots + i + indices[0]) % slots];
                     }
@@ -461,7 +473,7 @@ protected:
             }
             else {
                 // For BGV and BFV no slots is given
-                for (usint i = 0, rev = (encodedLength - 1); i < encodedLength; ++i, --rev) {
+                for (uint32_t i = 0, rev = (encodedLength - 1); i < encodedLength; ++i, --rev) {
                     if (i == 0)
                         evalSumInput[rev] = vectorOfInts3[rev];
                     else
@@ -794,9 +806,10 @@ protected:
         ////////////////////////////////////////////////////////////
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-        const usint N = 3;  // number of parties
+        const uint32_t N = 3;  // number of parties
         // threshold number of parties
-        const usint THRESH = (testData.sharingScheme == "shamir") ? static_cast<usint>(std::floor(N / 2)) + 1 : N - 1;
+        const uint32_t THRESH =
+            (testData.sharingScheme == "shamir") ? static_cast<uint32_t>(std::floor(N / 2)) + 1 : N - 1;
 
         ////////////////////////////////////////////////////////////
         // Perform Key Generation Operation
@@ -811,7 +824,7 @@ protected:
         // Generate evalsum key part for A
         cc->EvalSumKeyGen(kp1.secretKey);
         auto evalSumKeys =
-            std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
         // Round 2 (party B)
         KeyPair<DCRTPoly> kp2 = cc->MultipartyKeyGen(kp1.publicKey);

@@ -34,7 +34,7 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 ## Current Constraints
 
-- This current CKKS composite scaling implementation only supports single-key CKKS. In other words, multiparty (threshold) CKKS and scheme switching are not supported yet.
+- This current CKKS composite scaling implementation does not yet support scheme switching.
 
 - By design, when operating on composite scaling mode (i.e., COMPOSITESCALINGAUTO), the target hardware platform is assumed to have a fixed word size smaller than 64 bits. However, it still works when CKKS scaling factors are greater than 64 bits, even on hardware architectures with 64-bit register word sizes. The latter is a more efficient alternative to using NATIVE_SIZE=128 in scenarios when $IND-CPA^D$ security or high precision needs to be achieved.
 
