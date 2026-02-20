@@ -33,13 +33,12 @@
 #define LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H
 
 #include "lattice/lat-hal.h"
-
 #include "schemebase/rlwe-cryptoparameters.h"
 
-#include <string>
-#include <vector>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -660,7 +659,7 @@ public:
      *
      * @return the composite degree value for COMPOSITESCALING scaling technique
      **/
-    uint32_t const& GetCompositeDegree() const {
+    uint32_t GetCompositeDegree() const {
         // If not CKKS scheme, same value as BASE_NUM_LEVELS_TO_DROP
         return m_compositeDegree;
     }
@@ -671,7 +670,7 @@ public:
      *
      * @return the register word size for COMPOSITESCALING scaling technique
      **/
-    uint32_t const& GetRegisterWordSize() const {
+    uint32_t GetRegisterWordSize() const {
         return m_registerWordSize;
     }
 
@@ -679,19 +678,19 @@ public:
     // BFVrns : Encrypt : POverQ
     /////////////////////////////////////
 
-    const NativeInteger GetNegQModt(uint32_t i = 0) const {
+    NativeInteger GetNegQModt(uint32_t i = 0) const {
         return m_negQModt[i];
     }
 
-    const NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {
+    NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {
         return m_negQModtPrecon[i];
     }
 
-    const NativeInteger GetNegQrModt() const {
+    NativeInteger GetNegQrModt() const {
         return m_negQrModt;
     }
 
-    const NativeInteger GetNegQrModtPrecon() const {
+    NativeInteger GetNegQrModtPrecon() const {
         return m_negQrModtPrecon;
     }
 
@@ -802,7 +801,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<DoubleNativeInt> const& GetModrBarrettMu() const {
+    const std::vector<DoubleNativeInt>& GetModrBarrettMu() const {
         return m_modrBarrettMu;
     }
 
@@ -811,7 +810,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<double> const& GetqInv() const {
+    const std::vector<double>& GetqInv() const {
         return m_qInv;
     }
 
@@ -900,7 +899,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<double> const& GetrInv() const {
+    const std::vector<double>& GetrInv() const {
         return m_rInv;
     }
 
@@ -1006,7 +1005,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetrInvModq() const {
+    const std::vector<NativeInteger>& GetrInvModq() const {
         return m_rInvModq;
     }
 
@@ -1039,7 +1038,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetModuliQ() const {
+    const std::vector<NativeInteger>& GetModuliQ() const {
         return m_moduliQ;
     }
 
@@ -1048,7 +1047,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetModuliBsk() const {
+    const std::vector<NativeInteger>& GetModuliBsk() const {
         return m_moduliBsk;
     }
 
@@ -1057,7 +1056,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<DoubleNativeInt> const& GetModbskBarrettMu() const {
+    const std::vector<DoubleNativeInt>& GetModbskBarrettMu() const {
         return m_modbskBarrettMu;
     }
 
@@ -1066,7 +1065,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetmtildeQHatInvModq() const {
+    const std::vector<NativeInteger> GetmtildeQHatInvModq() const {
         return m_mtildeQHatInvModq;
     }
 
@@ -1075,7 +1074,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetmtildeQHatInvModqPrecon() const {
+    const std::vector<NativeInteger>& GetmtildeQHatInvModqPrecon() const {
         return m_mtildeQHatInvModqPrecon;
     }
 
@@ -1084,7 +1083,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetQHatModbsk() const {
+    const std::vector<std::vector<NativeInteger>>& GetQHatModbsk() const {
         return m_QHatModbsk;
     }
 
@@ -1093,7 +1092,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetqInvModbsk() const {
+    const std::vector<std::vector<NativeInteger>>& GetqInvModbsk() const {
         return m_qInvModbsk;
     }
 
@@ -1102,7 +1101,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<uint64_t> const& GetQHatModmtilde() const {
+    const std::vector<uint64_t>& GetQHatModmtilde() const {
         return m_QHatModmtilde;
     }
 
@@ -1111,7 +1110,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetQModbsk() const {
+    const std::vector<NativeInteger>& GetQModbsk() const {
         return m_QModbsk;
     }
 
@@ -1120,7 +1119,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetQModbskPrecon() const {
+    const std::vector<NativeInteger>& GetQModbskPrecon() const {
         return m_QModbskPrecon;
     }
 
@@ -1129,7 +1128,7 @@ public:
    *
    * @return the precomputed value
    */
-    uint64_t const& GetNegQInvModmtilde() const {
+    uint64_t GetNegQInvModmtilde() const {
         return m_negQInvModmtilde;
     }
 
@@ -1138,7 +1137,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetmtildeInvModbsk() const {
+    const std::vector<NativeInteger>& GetmtildeInvModbsk() const {
         return m_mtildeInvModbsk;
     }
 
@@ -1147,7 +1146,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetmtildeInvModbskPrecon() const {
+    const std::vector<NativeInteger>& GetmtildeInvModbskPrecon() const {
         return m_mtildeInvModbskPrecon;
     }
 
@@ -1156,7 +1155,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GettQHatInvModq() const {
+    const std::vector<NativeInteger>& GettQHatInvModq() const {
         return m_tQHatInvModq;
     }
 
@@ -1165,7 +1164,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GettQHatInvModqPrecon() const {
+    const std::vector<NativeInteger>& GettQHatInvModqPrecon() const {
         return m_tQHatInvModqPrecon;
     }
 
@@ -1174,7 +1173,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GettgammaQHatInvModq() const {
+    const std::vector<NativeInteger>& GettgammaQHatInvModq() const {
         return m_tgammaQHatInvModq;
     }
 
@@ -1183,7 +1182,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GettgammaQHatInvModqPrecon() const {
+    const std::vector<NativeInteger>& GettgammaQHatInvModqPrecon() const {
         return m_tgammaQHatInvModqPrecon;
     }
 
@@ -1192,7 +1191,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GettQInvModbsk() const {
+    const std::vector<NativeInteger>& GettQInvModbsk() const {
         return m_tQInvModbsk;
     }
 
@@ -1201,7 +1200,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GettQInvModbskPrecon() const {
+    const std::vector<NativeInteger>& GettQInvModbskPrecon() const {
         return m_tQInvModbskPrecon;
     }
 
@@ -1210,7 +1209,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetBHatInvModb() const {
+    const std::vector<NativeInteger>& GetBHatInvModb() const {
         return m_BHatInvModb;
     }
 
@@ -1219,7 +1218,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetBHatInvModbPrecon() const {
+    const std::vector<NativeInteger>& GetBHatInvModbPrecon() const {
         return m_BHatInvModbPrecon;
     }
 
@@ -1228,7 +1227,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetBHatModmsk() const {
+    const std::vector<NativeInteger>& GetBHatModmsk() const {
         return m_BHatModmsk;
     }
 
@@ -1237,7 +1236,7 @@ public:
    *
    * @return the precomputed value
    */
-    NativeInteger const& GetBInvModmsk() const {
+    NativeInteger GetBInvModmsk() const {
         return m_BInvModmsk;
     }
 
@@ -1246,7 +1245,7 @@ public:
    *
    * @return the precomputed value
    */
-    NativeInteger const& GetBInvModmskPrecon() const {
+    NativeInteger GetBInvModmskPrecon() const {
         return m_BInvModmskPrecon;
     }
 
@@ -1255,7 +1254,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetBHatModq() const {
+    const std::vector<std::vector<NativeInteger>>& GetBHatModq() const {
         return m_BHatModq;
     }
 
@@ -1264,7 +1263,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetBModq() const {
+    const std::vector<NativeInteger>& GetBModq() const {
         return m_BModq;
     }
 
@@ -1273,7 +1272,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetBModqPrecon() const {
+    const std::vector<NativeInteger>& GetBModqPrecon() const {
         return m_BModqPrecon;
     }
 
@@ -1282,7 +1281,7 @@ public:
    *
    * @return gamma
    */
-    uint32_t const& Getgamma() const {
+    uint32_t Getgamma() const {
         return m_gamma;
     }
 
@@ -1292,7 +1291,7 @@ public:
    *
    * @return t*gamma
    */
-    NativeInteger const& Gettgamma() const {
+    NativeInteger Gettgamma() const {
         return m_tgamma;
     }
 
@@ -1301,7 +1300,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetNegInvqModtgamma() const {
+    const std::vector<NativeInteger>& GetNegInvqModtgamma() const {
         return m_negInvqModtgamma;
     }
 
@@ -1310,7 +1309,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetNegInvqModtgammaPrecon() const {
+    const std::vector<NativeInteger>& GetNegInvqModtgammaPrecon() const {
         return m_negInvqModtgammaPrecon;
     }
 
@@ -1319,7 +1318,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqAtIndex(uint32_t l) const {
+    const std::vector<NativeInteger>& GetMultipartyQHatInvModqAtIndex(uint32_t l) const {
         return m_multipartyQHatInvModq[l];
     }
 
@@ -1328,7 +1327,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPreconAtIndex(uint32_t l) const {
+    const std::vector<NativeInteger>& GetMultipartyQHatInvModqPreconAtIndex(uint32_t l) const {
         return m_multipartyQHatInvModqPrecon[l];
     }
 
@@ -1337,7 +1336,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0AtIndex(uint32_t l) const {
+    const std::vector<std::vector<NativeInteger>>& GetMultipartyQHatModq0AtIndex(uint32_t l) const {
         return m_multipartyQHatModq0[l];
     }
 
@@ -1346,7 +1345,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0AtIndex(uint32_t l) const {
+    const std::vector<std::vector<NativeInteger>>& GetMultipartyAlphaQModq0AtIndex(uint32_t l) const {
         return m_multipartyAlphaQModq0[l];
     }
 
@@ -1355,7 +1354,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<DoubleNativeInt> const& GetMultipartyModq0BarrettMu() const {
+    const std::vector<DoubleNativeInt>& GetMultipartyModq0BarrettMu() const {
         return m_multipartyModq0BarrettMu;
     }
 
@@ -1364,7 +1363,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<double> const& GetMultipartyQInv() const {
+    const std::vector<double>& GetMultipartyQInv() const {
         return m_multipartyQInv;
     }
 
@@ -1879,6 +1878,7 @@ public:
     std::string SerializedObjectName() const override {
         return "SchemeParametersRNS";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }

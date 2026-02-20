@@ -33,18 +33,15 @@
 CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
-#define PROFILE
-
-#include "scheme/ckksrns/ckksrns-multiparty.h"
-
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "ciphertext.h"
 #include "cryptocontext.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-multiparty.h"
 
 #include <memory>
-#include <vector>
-#include <utility>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -174,7 +171,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                                   ConstCiphertext<DCRTPoly>& ciphertext) const {
     const auto& ctxtElems = ciphertext->GetElements();
-    
+
     typename DCRTPoly::DugType dug;
     DCRTPoly crp(dug, ctxtElems[0].GetParams());
     crp.SetFormat(Format::EVALUATION);
@@ -187,7 +184,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 
 // Subroutines for Interactive Multi-Party Bootstrapping
 // Calculating RNS parameters
-void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint to, RNSExtensionTables& rnsExtTables) {
+void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, uint32_t from, uint32_t to,
+                                  RNSExtensionTables& rnsExtTables) {
     std::vector<NativeInteger> moduliQ;
     moduliQ.reserve(from);
     std::vector<NativeInteger> rootsQ;
@@ -228,13 +226,13 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
         rootsQP[sizeQ + j]  = rootsP[j];
     }
 
-    usint ringDim         = cc->GetCryptoParameters()->GetElementParams()->GetRingDimension();
+    uint32_t ringDim      = cc->GetCryptoParameters()->GetElementParams()->GetRingDimension();
     rnsExtTables.paramsP  = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliP, rootsP);
     rnsExtTables.paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliQP, rootsQP);
 
     rnsExtTables.QHatInvModq.resize(sizeQ);
     rnsExtTables.QHatInvModqPrecon.resize(sizeQ);
-    for (usint i = 0; i < sizeQ; i++) {
+    for (uint32_t i = 0; i < sizeQ; i++) {
         BigInteger qi(moduliQ[i].ConvertToInt());
         BigInteger QHati                  = modulusQ / qi;
         rnsExtTables.QHatInvModq[i]       = QHati.ModInverse(qi).Mod(qi).ConvertToInt();
@@ -244,9 +242,9 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
     // compute the [Q/q_i]_{p_j}
     // used for homomorphic multiplication
     rnsExtTables.QHatModp.resize(sizeP, std::vector<NativeInteger>(sizeQ));
-    for (usint j = 0; j < sizeP; j++) {
+    for (uint32_t j = 0; j < sizeP; j++) {
         BigInteger pj(moduliP[j].ConvertToInt());
-        for (usint i = 0; i < sizeQ; i++) {
+        for (uint32_t i = 0; i < sizeQ; i++) {
             BigInteger qi(moduliQ[i].ConvertToInt());
             BigInteger QHati            = modulusQ / qi;
             rnsExtTables.QHatModp[j][i] = QHati.Mod(pj).ConvertToInt();
@@ -256,10 +254,10 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, usint from, usint
     // compute the [\alpha*Q]p_j for 0 <= alpha <= sizeQ
     // used for homomorphic multiplication
     rnsExtTables.alphaQModp.resize(sizeQ + 1, std::vector<NativeInteger>(sizeP));
-    for (usint j = 0; j < sizeP; j++) {
+    for (uint32_t j = 0; j < sizeP; j++) {
         BigInteger pj(moduliP[j].ConvertToInt());
         NativeInteger QModpj = modulusQ.Mod(pj).ConvertToInt();
-        for (usint i = 0; i < sizeQ + 1; i++) {
+        for (uint32_t i = 0; i < sizeQ + 1; i++) {
             rnsExtTables.alphaQModp[i][j] = QModpj.ModMul(NativeInteger(i), moduliP[j]);
         }
     }
@@ -491,7 +489,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTP
 
         ciphertextAdjusted = cc->GetScheme()->ModReduceInternal(ciphertextAdjusted, BASE_NUM_LEVELS_TO_DROP);
         ciphertextAdjusted->SetScalingFactor(targetSF);
-        
+
         return ciphertextAdjusted;
     }
     else {
