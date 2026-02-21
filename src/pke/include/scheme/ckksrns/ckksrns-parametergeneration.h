@@ -34,9 +34,9 @@
 
 #include "schemerns/rns-parametergeneration.h"
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 /**
  * @namespace lbcrypto

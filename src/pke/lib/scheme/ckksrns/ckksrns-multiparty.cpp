@@ -114,12 +114,15 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->NumberCiphertextElements() == 0) {
+    if (ciphertext->NumberCiphertextElements() == 0)
         OPENFHE_THROW("No polynomials in the input ciphertext.");
-    }
 
     auto cc                 = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
+    auto st = cryptoParams->GetScalingTechnique();
+    if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL)
+        OPENFHE_THROW("Current composite scaling implementation does not yet support interactive bootstrapping");
 
     auto compressionLevel = cryptoParams->GetMPIntBootCiphertextCompressionLevel();
 
@@ -130,14 +133,13 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
         std::ceil(std::log2(ciphertext->GetElements()[0].GetAllElements()[0].GetParams()->GetModulus().ConvertToInt()));
     size_t numTowersToKeep = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
-    if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
+    if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep)
         OPENFHE_THROW("Not enough towers in the input polynomial.");
-    }
-    if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
-        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+
+    if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT) {
         auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep + 1);
 
-        uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
+        uint32_t lvl       = st == FLEXIBLEAUTO ? 0 : 1;
         double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
         double sourceSF    = ciphertextAdjusted->GetScalingFactor();
         uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
@@ -149,9 +151,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
         ciphertextAdjusted->SetScalingFactor(targetSF);
         return ciphertextAdjusted;
     }
-    else {
-        return cc->Compress(ciphertext, numTowersToKeep);
-    }
+
+    return cc->Compress(ciphertext, numTowersToKeep);
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
@@ -277,35 +278,25 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, uint32_t from, ui
 // Utility function to compute noisy multiplication ( sk * poly + noise )
 // noise will not be added if IsZeroNoise is set to true (as in computing h_0,i)
 DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const DCRTPoly& poly, bool IsZeroNoise) {
-    if (sk.GetNumOfElements() != poly.GetNumOfElements()) {
+    if (sk.GetNumOfElements() != poly.GetNumOfElements())
         OPENFHE_THROW("Number of towers in input polys does not match!");
-    }
-
     DCRTPoly res = sk * poly;
     if (false == IsZeroNoise) {
         const auto cryptoParams      = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
         const DCRTPoly::DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
-        auto paramsq                 = poly.GetParams();
-
-        DCRTPoly e(dgg, paramsq, Format::EVALUATION);
-        res = res + e;
+        res += DCRTPoly(dgg, poly.GetParams(), Format::EVALUATION);
     }
-
     return res;
 }
 
 // Generate random mask
 DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
-    auto c1Copy = c1;
-
     // drop twoers until we reach maskBoundNumTowers
+    auto c1Copy = c1;
     c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);
 
-    auto& ildcrtparams = c1Copy.GetParams();
     typename DCRTPoly::DugType dug;
-    DCRTPoly Mi(dug, ildcrtparams, Format::EVALUATION);
-
-    return Mi;
+    return DCRTPoly(dug, c1Copy.GetParams(), Format::EVALUATION);
 }
 
 // Compute h_{0,i}
@@ -458,24 +449,25 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const {
-    if (ciphertext->GetElements().empty()) {
+    if (ciphertext->GetElements().empty())
         OPENFHE_THROW("No polynomials in the input ciphertext");
-    }
 
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
+    auto st = cryptoParams->GetScalingTechnique();
+    if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL)
+        OPENFHE_THROW("Current composite scaling implementation does not yet support interactive bootstrapping");
+
     auto cc = ciphertext->GetCryptoContext();
 
-    if ((cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO) ||
-        (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
-        if (ciphertext->GetElements()[0].GetNumOfElements() < 3) {
+    if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT) {
+        if (ciphertext->GetElements()[0].GetNumOfElements() < 3)
             OPENFHE_THROW("Not enough towers in the input polynomial");
-        }
 
         auto ciphertextAdjusted = cc->Compress(ciphertext, 3);
 
-        uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
+        uint32_t lvl       = st == FLEXIBLEAUTO ? 0 : 1;
         double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
         double sourceSF    = ciphertextAdjusted->GetScalingFactor();
         uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
@@ -492,13 +484,10 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTP
 
         return ciphertextAdjusted;
     }
-    else {
-        if (ciphertext->GetElements()[0].GetNumOfElements() < 2) {
-            OPENFHE_THROW("Not enough towers in the input polynomial");
-        }
 
-        return cc->Compress(ciphertext, 2);
-    }
+    if (ciphertext->GetElements()[0].GetNumOfElements() < 2)
+        OPENFHE_THROW("Not enough towers in the input polynomial");
+    return cc->Compress(ciphertext, 2);
 }
 
 }  // namespace lbcrypto
