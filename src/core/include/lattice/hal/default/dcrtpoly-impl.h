@@ -1931,8 +1931,8 @@ template <typename VecType>
 void DCRTPolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
     m_format = (m_format == Format::COEFFICIENT) ? Format::EVALUATION : Format::COEFFICIENT;
 
-    const uint32_t size  = m_vectors.size();
-    const uint32_t limit = thread_limit < size ? thread_limit : size;
+    const uint32_t size                   = m_vectors.size();
+    [[maybe_unused]] const uint32_t limit = thread_limit < size ? thread_limit : size;
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
     for (uint32_t i = 0; i < size; ++i)
         m_vectors[i].SwitchFormat();
