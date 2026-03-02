@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -28,47 +28,22 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __RNS_MODULUS_LIMITS_H__
+#define __RNS_MODULUS_LIMITS_H__
 
-#ifndef LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
+#include <cstdint>
+#include <string_view>
 
-#include "lattice/lat-hal.h"
-
-#include "schemebase/base-parametergeneration.h"
-#include "schemerns/rns-modulus-limits.h"
-
-#include <string>
-#include <memory>
-
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
 namespace lbcrypto {
+namespace DCRT_MODULUS {
 
-/**
- * @brief Abstract interface for parameter generation algorithm
- * @tparam Element a ring element.
- */
-class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
-public:
-    virtual ~ParameterGenerationRNS() = default;
+inline constexpr std::uint32_t DEFAULT_EXTRA_MOD_SIZE = 20;
+inline constexpr std::uint32_t MIN_SIZE               = 14;
+inline constexpr std::uint32_t MAX_SIZE               = 60;
 
-    /////////////////////////////////////
-    // SERIALIZATION
-    /////////////////////////////////////
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {}
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {}
-
-    std::string SerializedObjectName() const {
-        return "ParameterGenerationRNS";
-    }
-};
-
+}  // namespace DCRT_MODULUS
 }  // namespace lbcrypto
 
-#endif
+
+#endif // __RNS_MODULUS_LIMITS_H__
+

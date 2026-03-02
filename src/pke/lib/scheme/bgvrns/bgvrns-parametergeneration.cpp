@@ -195,9 +195,8 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         firstModLowerBound = 2.0 * plainModulus * noiseEstimates.noisePerLevel - plainModulus;
     uint32_t firstModSize = std::ceil(std::log2(firstModLowerBound));
     if (firstModSize >= DCRT_MODULUS::MAX_SIZE) {
-        OPENFHE_THROW(
-            "Change parameters! Try reducing the number of additions per level, "
-            "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
+        OPENFHE_THROW(std::string("Reduce the number of additions or key switches per level or the digit size. ") +
+            "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE-1) + " bits.");
     }
 
     moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
@@ -210,9 +209,8 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         uint32_t extraModSize = std::ceil(std::log2(extraModLowerBound));
 
         if (extraModSize >= DCRT_MODULUS::MAX_SIZE) {
-            OPENFHE_THROW(
-                "Change parameters! Try reducing the number of additions per level, "
-                "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
+            OPENFHE_THROW(std::string("Reduce the number of additions or key switches per level or the digit size. ") +
+                "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE-1) + " bits.");
         }
 
         moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
@@ -242,9 +240,8 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
         uint32_t modSize = std::ceil(std::log2(modLowerBound));
         if (modSize >= DCRT_MODULUS::MAX_SIZE) {
-            OPENFHE_THROW(
-                "Change parameters! Try reducing the number of additions per level, "
-                "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
+            OPENFHE_THROW(std::string("Reduce the number of additions or key switches per level or the digit size. ") +
+                "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE-1) + " bits.");
         }
 
         // Compute moduli.

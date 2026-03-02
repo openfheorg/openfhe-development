@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "scheme/gen-cryptocontext-params-validation.h"
+#include "schemerns/rns-modulus-limits.h"
 #include "utils/exception.h"
 #include "utils/utilities.h"
 
@@ -60,18 +61,18 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
             COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
             if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
-                15 > parameters.GetScalingModSize()) {
-                OPENFHE_THROW("scalingModSize should be greater than 15 and less than " +
-                              std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
+                DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+                OPENFHE_THROW("scalingModSize should be greater than " + std::to_string(DCRT_MODULUS::MIN_SIZE-1) +
+                              " and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
             }
             if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
                 OPENFHE_THROW("SPARSE_ENCAPSULATED not yet supported with COMPOSITESCALING");
             }
         }
         else {
-            if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() || 15 > parameters.GetScalingModSize()) {
-                OPENFHE_THROW("scalingModSize should be greater than 15 and less than " +
-                              std::to_string(MAX_MODULUS_SIZE));
+            if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() || DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+                OPENFHE_THROW("scalingModSize should be greater than " + std::to_string(DCRT_MODULUS::MIN_SIZE-1) +
+                              " and less than " + std::to_string(MAX_MODULUS_SIZE));
             }
         }
         if (30 != parameters.GetStatisticalSecurity()) {
