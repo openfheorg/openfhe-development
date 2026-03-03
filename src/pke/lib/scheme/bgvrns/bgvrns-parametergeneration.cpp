@@ -196,7 +196,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     uint32_t firstModSize = std::ceil(std::log2(firstModLowerBound));
     if (firstModSize >= DCRT_MODULUS::MAX_SIZE) {
         OPENFHE_THROW(std::string("Reduce the number of additions or key switches per level or the digit size. ") +
-            "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE-1) + " bits.");
+                      "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE) + " bits.");
     }
 
     moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
@@ -210,7 +210,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
         if (extraModSize >= DCRT_MODULUS::MAX_SIZE) {
             OPENFHE_THROW(std::string("Reduce the number of additions or key switches per level or the digit size. ") +
-                "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE-1) + " bits.");
+                          "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE) + " bits.");
         }
 
         moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
@@ -241,7 +241,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         uint32_t modSize = std::ceil(std::log2(modLowerBound));
         if (modSize >= DCRT_MODULUS::MAX_SIZE) {
             OPENFHE_THROW(std::string("Reduce the number of additions or key switches per level or the digit size. ") +
-                "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE-1) + " bits.");
+                          "We do not support moduli greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE) + " bits.");
         }
 
         // Compute moduli.

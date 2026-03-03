@@ -62,7 +62,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
             COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
             if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
                 DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
-                OPENFHE_THROW("scalingModSize should be greater than " + std::to_string(DCRT_MODULUS::MIN_SIZE-1) +
+                OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
             }
             if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
@@ -71,7 +71,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
         else {
             if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() || DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
-                OPENFHE_THROW("scalingModSize should be greater than " + std::to_string(DCRT_MODULUS::MIN_SIZE-1) +
+                OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(MAX_MODULUS_SIZE));
             }
         }

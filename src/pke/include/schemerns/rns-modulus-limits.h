@@ -31,6 +31,8 @@
 #ifndef __RNS_MODULUS_LIMITS_H__
 #define __RNS_MODULUS_LIMITS_H__
 
+#include "math/hal/basicint.h"
+
 #include <cstdint>
 #include <string_view>
 
@@ -39,11 +41,9 @@ namespace DCRT_MODULUS {
 
 inline constexpr std::uint32_t DEFAULT_EXTRA_MOD_SIZE = 20;
 inline constexpr std::uint32_t MIN_SIZE               = 14;
-inline constexpr std::uint32_t MAX_SIZE               = 60;
+inline constexpr std::uint32_t MAX_SIZE               = MAX_MODULUS_SIZE;
 
 }  // namespace DCRT_MODULUS
 }  // namespace lbcrypto
 
-
-#endif // __RNS_MODULUS_LIMITS_H__
-
+#endif  // __RNS_MODULUS_LIMITS_H__
