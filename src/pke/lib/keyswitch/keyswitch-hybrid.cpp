@@ -43,6 +43,22 @@
 
 namespace lbcrypto {
 
+namespace {
+
+// Builds params for the first sizeQl towers of Q from extended params QlP (fallback when cache absent).
+std::shared_ptr<KeySwitchHYBRID::ParmType> MakeParamsQlFromQlP(
+    const std::shared_ptr<KeySwitchHYBRID::ParmType>& paramsQlP, uint32_t sizeQl) {
+    std::vector<NativeInteger> moduliQ(sizeQl);
+    std::vector<NativeInteger> rootsQ(sizeQl);
+    for (uint32_t i = 0; i < sizeQl; ++i) {
+        moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
+        rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
+    }
+    return std::make_shared<KeySwitchHYBRID::ParmType>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
+}
+
+}  // namespace
+
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                         const PrivateKey<DCRTPoly> newKey) const {
     return KeySwitchHYBRID::KeySwitchGenInternal(oldKey, newKey, nullptr);
@@ -248,17 +264,12 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
     const auto paramsQlP = cv[0].GetParams();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-    const auto paramsP      = cryptoParams->GetParamsP();
+    const auto paramsP     = cryptoParams->GetParamsP();
 
-    // TODO : (Andrey) precompute paramsQl in cryptoparameters
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::vector<NativeInteger> moduliQ(sizeQl);
-    std::vector<NativeInteger> rootsQ(sizeQl);
-    for (uint32_t i = 0; i < sizeQl; ++i) {
-        moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-        rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
-    }
-    const auto paramsQl = std::make_shared<ParmType>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
+    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
+    if (!paramsQl)
+        paramsQl = MakeParamsQlFromQlP(paramsQlP, sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
@@ -286,15 +297,10 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     const auto paramsP      = cryptoParams->GetParamsP();
 
-    // TODO : (Andrey) precompute paramsQl in cryptoparameters
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::vector<NativeInteger> moduliQ(sizeQl);
-    std::vector<NativeInteger> rootsQ(sizeQl);
-    for (uint32_t i = 0; i < sizeQl; ++i) {
-        moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-        rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
-    }
-    const auto paramsQl = std::make_shared<ParmType>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
+    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
+    if (!paramsQl)
+        paramsQl = MakeParamsQlFromQlP(paramsQlP, sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
