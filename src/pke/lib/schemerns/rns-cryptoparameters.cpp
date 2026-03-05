@@ -193,6 +193,19 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         m_paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQP, rootsQP);
 
+        // Precompute params for first 1..sizeQ towers of Q for KeySwitchDown (avoids per-call allocation).
+        m_paramsQlHybrid.resize(sizeQ);
+        for (size_t l = 0; l < sizeQ; ++l) {
+            std::vector<NativeInteger> moduliQl(l + 1);
+            std::vector<NativeInteger> rootsQl(l + 1);
+            for (size_t i = 0; i <= l; ++i) {
+                moduliQl[i] = moduliQ[i];
+                rootsQl[i]  = rootsQ[i];
+            }
+            m_paramsQlHybrid[l] =
+                std::make_shared<ILDCRTParams<BigInteger>>(2 * n, std::move(moduliQl), std::move(rootsQl));
+        }
+
         // Pre-compute CRT::FFT values for P
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n, moduliP);
 
