@@ -1196,11 +1196,16 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
     uint32_t ringDim = m_params->GetRingDimension();
     uint32_t sizeQ   = m_vectors.size();
     // MSB of q_i
-    uint32_t qMSB = m_vectors[0].GetModulus().GetMSB();
+    auto qtmp = m_vectors[0].GetModulus();
+    for (uint32_t i = 1; i < sizeQ; ++i) {
+        if (m_vectors[i].GetModulus() > qtmp)
+            qtmp = m_vectors[i].GetModulus();
+    }
+    uint32_t qMSB = qtmp.GetMSB();
     // MSB of t
     uint32_t tMSB = t.GetMSB();
     // MSB of sizeQ
-    uint32_t sizeQMSB = GetMSB64(sizeQ);
+    uint32_t sizeQMSB = GetMSB(sizeQ);
 
     DCRTPolyImpl::PolyType::Vector coefficients(ringDim, t.ConvertToInt());
     // For power of two t we can do modulo reduction easily
@@ -1213,16 +1218,16 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
             // error is bounded by 2^{-53}. Thus the floating point error is bounded
             // by sizeQ * q_i/2 * 2^{-53}. In case of qMSB + sizeQMSB < 52 the error
             // is bounded by 1/4, and the rounding will be correct.
-            if ((qMSB + tMSB + sizeQMSB) < 63) {
+            if ((qMSB + sizeQMSB + tMSB) < 63) {
                 // No intermediate modulo reductions are needed in this case
                 // we fit in 63 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
                 // only once
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0, tmp;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
@@ -1247,10 +1252,10 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
                 // error is bounded by 1/4, and the rounding will be correct.
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0, tmp;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
@@ -1272,11 +1277,11 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // additions without modulo reduction, and do modulo reduction
                 // only once
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0;
                     NativeInteger tmpHi, tmpLo;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
                         tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
@@ -1297,11 +1302,11 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
             }
             else {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0;
                     NativeInteger tmpHi, tmpLo;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
                         tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
@@ -1338,10 +1343,10 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // additions without modulo reduction, and do modulo reduction
                 // only once using floating point techniques
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.0;
                     NativeInteger intSum = 0, tmp;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
@@ -1353,8 +1358,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                     // compute modulo reduction by finding the quotient using doubles
                     // and then substracting quotient * t
                     floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
+                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
                     // rounding
                     coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
                 }
@@ -1370,10 +1374,10 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
                 // error is bounded by 1/4, and the rounding will be correct.
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum{0.0};
                     NativeInteger intSum{0};
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         const auto& tmp = m_vectors[i][ri];
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
                         intSum.AddEqFast(
@@ -1382,8 +1386,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                     // compute modulo reduction by finding the quotient using doubles
                     // and then substracting quotient * t
                     floatSum += intSum.ConvertToDouble();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
+                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
                     // rounding
                     coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
                 }
@@ -1397,11 +1400,11 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // additions without modulo reduction, and do modulo reduction
                 // only once using floating point techniques
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.0;
                     NativeInteger intSum = 0;
                     NativeInteger tmpHi, tmpLo;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
                         tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
@@ -1418,19 +1421,18 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                     // compute modulo reduction by finding the quotient using doubles
                     // and then substracting quotient * t
                     floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
+                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
                     // rounding
                     coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
                 }
             }
             else {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(4))
-                for (uint32_t ri = 0; ri < ringDim; ri++) {
+                for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.0;
                     NativeInteger intSum = 0;
                     NativeInteger tmpHi, tmpLo;
-                    for (uint32_t i = 0; i < sizeQ; i++) {
+                    for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
                         tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
@@ -1446,8 +1448,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                     // compute modulo reduction by finding the quotient using doubles
                     // and then substracting quotient * t
                     floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
+                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
                     // rounding
                     coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
                 }
@@ -1517,11 +1518,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 
     DCRTPolyImpl<VecType> ans(paramsOutput, m_format, true);
     uint32_t ringDim   = m_params->GetRingDimension();
-    size_t sizeQP      = m_vectors.size();
-    size_t sizeO       = ans.m_vectors.size();
-    size_t sizeI       = sizeQP - sizeO;
-    size_t inputIndex  = 0;
-    size_t outputIndex = 0;
+    uint32_t sizeQP      = m_vectors.size();
+    uint32_t sizeO       = ans.m_vectors.size();
+    uint32_t sizeI       = sizeQP - sizeO;
+    uint32_t inputIndex  = 0;
+    uint32_t outputIndex = 0;
 
     if (paramsOutput->GetParams()[0]->GetModulus() == m_params->GetParams()[0]->GetModulus()) {
         // If the output modulus is Q, then the input index refers to the values (mod p_j), shifted by sizeQ.
@@ -1540,7 +1541,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         double nu = 0.5;
-        for (size_t i = 0; i < sizeI; ++i) {
+        for (uint32_t i = 0; i < sizeI; ++i) {
             // possible loss of precision if modulus greater than 2^53 + 1
             const NativeInteger& xi = m_vectors[i + inputIndex][ri];
             nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToDouble();
@@ -1548,10 +1549,10 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 #if defined(HAVE_INT128) && NATIVEINT == 64
         if (isConvertableToNativeInt(nu)) {
             NativeInteger alpha = static_cast<BasicInteger>(nu);
-            for (size_t j = 0; j < sizeO; ++j) {
+            for (uint32_t j = 0; j < sizeO; ++j) {
                 const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
                 DoubleNativeInt curValue{0};
-                for (size_t i = 0; i < sizeI; ++i) {
+                for (uint32_t i = 0; i < sizeI; ++i) {
                     const NativeInteger& xi = m_vectors[i + inputIndex][ri];
                     curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[i].ConvertToInt());
                 }
@@ -1569,10 +1570,10 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
         }
         else {
             auto alpha = static_cast<DoubleNativeInt>(nu);
-            for (size_t j = 0; j < sizeO; ++j) {
+            for (uint32_t j = 0; j < sizeO; ++j) {
                 const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
                 DoubleNativeInt curValue{0};
-                for (size_t i = 0; i < sizeI; ++i) {
+                for (uint32_t i = 0; i < sizeI; ++i) {
                     const NativeInteger& xi = m_vectors[i + inputIndex][ri];
                     curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[i].ConvertToInt());
                 }
@@ -1590,11 +1591,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 #else
         if (isConvertableToNativeInt(nu)) {
             NativeInteger alpha = static_cast<BasicInteger>(nu);
-            for (size_t j = 0; j < sizeO; ++j) {
+            for (uint32_t j = 0; j < sizeO; ++j) {
                 const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
                 const auto& oj                     = ans.m_vectors[j].GetModulus();
                 auto& curValue                     = ans.m_vectors[j][ri];
-                for (size_t i = 0; i < sizeI; i++) {
+                for (uint32_t i = 0; i < sizeI; i++) {
                     const auto& xi = m_vectors[i + inputIndex][ri];
                     curValue.ModAddFastEq(xi.ModMul(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
                 }
@@ -1608,11 +1609,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
             double mant            = std::frexp(nu, &exp);
             NativeInteger mantissa = static_cast<BasicInteger>(mant * (1ULL << 53));
             NativeInteger exponent = static_cast<BasicInteger>(1ULL << (exp - 53));
-            for (size_t j = 0; j < sizeO; j++) {
+            for (uint32_t j = 0; j < sizeO; j++) {
                 const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
                 const auto& oj                     = ans.m_vectors[j].GetModulus();
                 auto& curValue                     = ans.m_vectors[j][ri];
-                for (size_t i = 0; i < sizeI; i++) {
+                for (uint32_t i = 0; i < sizeI; i++) {
                     const auto& xi = m_vectors[i + inputIndex][ri];
                     curValue.ModAddFastEq(xi.ModMul(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
                 }
