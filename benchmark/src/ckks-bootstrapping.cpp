@@ -73,6 +73,8 @@ struct boot_config {
     { 1 << 17,  1 << 5,       59,       60,         0,        10,     1, {1, 1},  SPARSE_ENCAPSULATED,         FLEXIBLEAUTO},
     { 1 << 17, 1 << 16,       59,       60,         0,        10,     2, {4, 4},  SPARSE_ENCAPSULATED,         FLEXIBLEAUTO},
     { 1 << 17,  1 << 5,       59,       60,         0,        10,     2, {1, 1},  SPARSE_ENCAPSULATED,         FLEXIBLEAUTO},
+    { 1 << 16, 1 << 15,       55,       60,         3,          1,    1, {3, 3},      UNIFORM_TERNARY,         FLEXIBLEAUTO},  // GPU0
+    { 1 << 16, 1 << 14,       50,       53,         7,         10,    1, {3, 3},       SPARSE_TERNARY,         FLEXIBLEAUTO},  // GPU1
     // TODO: enable following once STC Composite Scaling operational
     // { 1 << 17, 1 << 16,       78,       96,         0,        10,     2, {4, 4},       SPARSE_TERNARY, COMPOSITESCALINGAUTO},
 };
