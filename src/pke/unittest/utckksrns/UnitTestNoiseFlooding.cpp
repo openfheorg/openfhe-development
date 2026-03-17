@@ -224,7 +224,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, noiseCiphertext, &noisePlaintext);
             double noise = noisePlaintext->GetLogError();
             double expectedNoise =
-                testData.params.scalTech == FLEXIBLEAUTOEXT ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
+                testData.params.scalTech == static_cast<double>(FLEXIBLEAUTOEXT) ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
             EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
         }
         catch (std::exception& e) {

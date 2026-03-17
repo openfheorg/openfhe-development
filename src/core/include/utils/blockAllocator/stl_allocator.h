@@ -98,7 +98,7 @@ public:
 
     /// Get the maximum size of memory.
     /// @return  Max memory size in bytes.
-    size_type max_size() const throw() {
+    size_type max_size() const noexcept {
         return size_t(-1) / sizeof(value_type);
     }
 

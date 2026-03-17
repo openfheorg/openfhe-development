@@ -32,8 +32,8 @@ set(OPENFHE_VERSION_MINOR 5)
 set(OPENFHE_VERSION_PATCH 1)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
-set(CMAKE_CXX_STANDARD 17)
-set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #--------------------------------------------------------------------
 # Build options
@@ -128,12 +128,12 @@ message(STATUS "USE_MACPORTS:       ${USE_MACPORTS}")
 # Compiler logic
 #--------------------------------------------------------------------
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-        message(WARNING "GCC version should be at least 9.0.")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+        message(WARNING "GCC version should be at least 10.0 for C++20 support.")
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10)
-        message(WARNING "Clang version should be at least 10.0.")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12)
+        message(WARNING "Clang version should be at least 12.0 for C++20 support.")
     endif()
 else()
     message(WARNING "You are using ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}, which is unsupported.")
@@ -169,13 +169,16 @@ endif()
 set(IGNORE_WARNINGS "") # initialize IGNORE_WARNINGS
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # Add -Wno-parentheses for compatibility with g++
-    set (IGNORE_WARNINGS "-Wno-parentheses")
+    # Add -Wno-volatile to suppress C++20 deprecated-volatile warnings for intentional
+    # security-related volatile uses (e.g., secure_memset, blake2 memset_v)
+    set (IGNORE_WARNINGS "-Wno-parentheses -Wno-volatile")
     # We can use GNU built-in functions provided by GCC for debugging. ex: __builtin_LINE (), __builtin_FUNCTION (), __builtin_FILE ()
     add_definitions(-DBUILTIN_INFO_AVAILABLE)
     message(STATUS "BUILTIN_INFO_AVAILABLE is defined")
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(IGNORE_WARNINGS "-Wno-volatile")
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(IGNORE_WARNINGS "-Wno-unused-private-field -Wno-shift-op-parentheses")
+        string(APPEND IGNORE_WARNINGS " -Wno-unused-private-field -Wno-shift-op-parentheses")
     endif()
 endif()
 if(IGNORE_WARNINGS)
