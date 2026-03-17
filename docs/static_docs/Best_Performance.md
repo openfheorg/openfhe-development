@@ -1,13 +1,13 @@
 # Building OpenFHE for Best Performance
 
 The default build configuration of OpenFHE focuses on portability and ease of installation.
-As a result, the runtime performace for the default configuration is often significantly worse than for the optimal configuration.
+As a result, runtime performace for the default configuration is often significantly worse than for the optimal configuration.
 
-There are three important CMake flags that affect the runtime performance:
+There are three important CMake flags that affect runtime performance:
 * `WITH_NATIVEOPT` allows the user to turn on/off machine-specific optimizations. By default, it is set to OFF for maximum portability of generated binaries.
 * `NATIVE_SIZE` specifies the word size used internally for "small" integers. By default, it is set to 64. However, when used moduli are 28 bits or below,
 it is more efficient to set it to 32.
-* `WITH_OPENMP` allows the user to turn on multithreading using OpenMP. By default, it is set to ON, and all threads are available for OpenMP multithreading. The OMP_NUM_THREADS environment variable can be used to set the number of threads available in parallel regions.
+* `WITH_OPENMP` allows the user to turn on/off multithreading using OpenMP. By default, it is set to ON, and all threads are available for OpenMP multithreading. The OMP_NUM_THREADS environment variable can be used to limit the number of threads available in parallel regions.
 
 The compiler used is also important. We recommend using more recent compiler versions to achieve the best runtime performance.
 
@@ -33,16 +33,15 @@ Typically, the default configuration for schemes in the `pke` module is only to 
 
 # Multithreading Configuration using OpenMP
 
-OpenFHE uses loop parallelization via OpenMP to speed up some lower-level (mostly polynomial) operations. This loop parallelization gives the biggest improvement in the `pke` module and only provides modest speed-up in the `binfhe` module.
-
-From a bird's eye view, the built-in OpenFHE loop parallelization is applied at the following levels:
+OpenFHE uses loop parallelization via OpenMP to speed up some lower-level (mostly polynomial) operations. From a bird's eye view,built-in OpenFHE loop parallelization is applied at the following levels:
 * For many Double-CRT operations (used for BGV, BFV, and CKKS implemented using RNS in OpenFHE), loop parallelization over the number of RNS limbs is automatically applied. The biggest benefit is seen when the multiplicative depth is not small (in deeper computations). For BGV and CKKS, the number of RNS limbs is roughly the same as the multiplicative depth set by the user (it is 1 or 2 larger). In BFV, it gets more complicated, but the number of RNS limbs is still proportional to the multiplicative depth.
 * A higher-level loop parallelization is employed for CKKS bootstrapping and scheme switching between CKKS and FHEW/TFHE.
-* Loop parallelization is also used for all schemes during key generation (but this does not have effect on the online operations).
+* Loop parallelization is also used for all schemes during key generation (but this does not have effect on online operations).
 
-When developing C++ applications based on OpenFHE, it is advised to use OpenMP parallelization at the application level, e.g., when independent operations on multiple ciphertexts are performed, application-level OpenMP loop parallelization can be turned on. The scaling of performance with the number of cores in this setup can approach the "ideal" linear scaling if the dimension of the loop is comparable to the number of cores. Note that turning on OpenMP parallelization at the application level typically turns off the lower-level OpenMP loop parallelization (i.e., we do not use nested loop parallelization in OpenMP), so application-level loop parallelization should be used only when you know that the application loop dimension is higher than what is expected for built-in OpenFHE OpenMP loop parallization.
+When developing C++ applications based on OpenFHE, it is advised to use OpenMP parallelization at the application level, e.g., when independent operations on multiple ciphertexts are performed, application-level OpenMP loop parallelization can be turned on.
+The scaling of performance with the number of cores in this setup can approach the "ideal" linear scaling if the dimension of the loop is comparable to the number of cores. Note that turning on OpenMP parallelization at the application level typically turns off the lower-level OpenMP loop parallelization (i.e., we do not use nested loop parallelization in OpenMP), so application-level loop parallelization should be used only when you know that the application loop dimension is higher than what is expected for built-in OpenFHE OpenMP loop parallization.
 
-Within OpenFHE, the use of hyperthreading can lead to decreased performance so the `OMP_NUM_THREADS` environment variable should not be set higher than the number of physical cores.
+Within OpenFHE, the use of hyperthreading can lead to decreased performance so the `OMP_NUM_THREADS` environment variable should not be set higher than the number of physical cores. Performance gains also depend heavily on the execution environment. While a dedicated server allows OpenFHE to utilize all physical cores in isolation, running on a personal laptop often introduces contention with background processes and OS tasks. In such contentious environments, using every available thread can lead to frequent context switching and cache thrashing, ultimately degrading performance. To mitigate this on a general-purpose machine, it is often beneficial to set OMP_NUM_THREADS to roughly half the number of available cores, leaving sufficient headroom for the rest of the system.
 
 If an alternative parallelization mechanism is used, e.g., pthreads, C++11 threads, or multiprocessing, OpenMP should be turned off by setting the `WITH_OPENMP` CMake flag to OFF.
 
