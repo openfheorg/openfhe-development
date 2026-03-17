@@ -33,9 +33,9 @@
 #define __UNITTESTCRYPTOCONTEXT_H__
 
 #include "BaseTestCase.h"
-#include "UnitTestCCParams.h"
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
+#include "UnitTestCCParams.h"
 
 using Element = lbcrypto::DCRTPoly;
 

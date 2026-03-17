@@ -294,10 +294,13 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     }
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<Element>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_SchemeSwitch_CKKS_FHEW(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,

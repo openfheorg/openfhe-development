@@ -29,16 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  UnitTestAutomorphism for all transform testing
- */
-#include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 
 #include <iostream>
 #include <vector>
-#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -212,11 +209,13 @@ class UTCKKSRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));      // 36
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
-        PackedEncoding::Destroy();
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,

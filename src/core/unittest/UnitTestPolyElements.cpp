@@ -29,10 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code tests the transform feature of the OpenFHE lattice encryption library
- */
-
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"

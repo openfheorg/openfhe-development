@@ -34,24 +34,23 @@
   unit tests for the utility to to find security parameters using the HomomorphicEncryption.org HE standard
  */
 
-#include <iostream>
-#include <thread>
-
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
-#include "utils/inttypes.h"
 #include "lattice/stdlatticeparms.h"
+#include "utils/inttypes.h"
+
+#include <iostream>
 
 using namespace lbcrypto;
 
 class UTLatticeParams : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     virtual void TearDown() {
-        // Code here will be called immediately after each test
-        // (right before the destructor).
+        OpenFHEParallelControls.UnitTestStop();
     }
 };
 

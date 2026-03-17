@@ -29,22 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  Unit tests for the CKKS scheme
- */
-
-#include "UnitTestUtils.h"
+#include "cryptocontext-ser.h"
+#include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
-#include "cryptocontext-ser.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
-#include "gtest/gtest.h"
 #include <iterator>
 #include <string>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -232,10 +228,13 @@ class UTCKKSRNSCS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNSCS_B
     }
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_Bootstrap(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,

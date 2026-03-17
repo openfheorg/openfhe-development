@@ -31,12 +31,12 @@
 #ifndef __UNITTESTMETADATATEST_H__
 #define __UNITTESTMETADATATEST_H__
 
-#include "metadata.h"
 #include "ciphertext.h"
+#include "metadata.h"
 
 #include <memory>
-#include <string>
 #include <ostream>
+#include <string>
 
 namespace lbcrypto {
 

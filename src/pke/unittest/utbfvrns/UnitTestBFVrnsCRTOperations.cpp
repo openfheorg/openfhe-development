@@ -31,8 +31,8 @@
 
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
-#include "gtest/gtest.h"
 #include "gen-cryptocontext.h"
+#include "gtest/gtest.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
@@ -46,10 +46,13 @@ using namespace lbcrypto;
 
 class UTBFVRNS_CRT : public ::testing::Test {
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
 public:

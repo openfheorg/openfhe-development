@@ -31,13 +31,13 @@
 
 #if !defined(_MSC_VER)
 
-    #include "UnitTestUtils.h"
+    #include "gtest/gtest.h"
     #include "UnitTestCCParams.h"
     #include "UnitTestCryptoContext.h"
+    #include "UnitTestUtils.h"
 
     #include <iostream>
     #include <vector>
-    #include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -120,10 +120,13 @@ class UTBGVRNS_SHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_
     using Element = DCRTPoly;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,

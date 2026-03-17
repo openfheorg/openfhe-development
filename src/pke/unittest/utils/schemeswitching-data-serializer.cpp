@@ -28,13 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "schemeswitching-data-serializer.h"
 
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
+#include "schemeswitching-data-serializer.h"
+
 #include <filesystem>
+#include <vector>
 
 // includes for getProgramPath()
 #if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))
@@ -47,7 +49,6 @@ namespace lbcrypto {
 
 // Helper function to get the absolute path to the running unittests executable
 std::filesystem::path getProgramPath() {
-
 #if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))
     // MinGW: Unicode-safe wide API. Use a big static buffer (32K).
     wchar_t buf[32768];
@@ -59,7 +60,7 @@ std::filesystem::path getProgramPath() {
     return std::filesystem::path(buf, buf + len);
 #elif defined(__APPLE__)
     uint32_t size = 0;
-    _NSGetExecutablePath(nullptr, &size);           // ask required size
+    _NSGetExecutablePath(nullptr, &size);  // ask required size
     std::string tmp(size, '\0');
     if (_NSGetExecutablePath(tmp.data(), &size) != 0)
         OPENFHE_THROW("Can not get the executable path for macOS.");
@@ -78,7 +79,7 @@ std::filesystem::path getProgramPath() {
 }
 
 std::string DataAndLocation::getDataDir() {
-    const std::filesystem::path exe = getProgramPath();
+    const std::filesystem::path exe    = getProgramPath();
     const std::filesystem::path exeDir = exe.empty() ? std::filesystem::current_path() : exe.parent_path();
 
     // One level up (e.g., .../build/unittest -> .../build)

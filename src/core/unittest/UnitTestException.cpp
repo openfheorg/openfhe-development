@@ -29,16 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code tests the transform feature of the OpenFHE lattice encryption library.
- */
-
 #include "gtest/gtest.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
 #include <iostream>
 #include <vector>
-
-#include "utils/inttypes.h"
-#include "utils/exception.h"
 
 using namespace lbcrypto;
 

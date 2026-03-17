@@ -29,34 +29,29 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code exercises the block allocator utility of the OpenFHE lattice encryption library.
- */
 #if 0
-// #define PROFILE    //define this is we want profiling output and statistics
-    #include <assert.h>
-    #include <stdio.h>
-
-    #include <iostream>
-    #include <new>
-
     #include "gtest/gtest.h"
-
     #include "math/math-hal.h"
     #include "utils/blockAllocator/blockAllocator.h"
     #include "utils/debug.h"
     #include "utils/inttypes.h"
     #include "utils/utilities.h"
 
+    #include <assert.h>
+    #include <iostream>
+    #include <new>
+    #include <stdio.h>
+
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+}
 
     virtual void TearDown() {
-        // Code here will be called immediately after each test
-        // (right before the destructor).
+        OpenFHEParallelControls.UnitTestStop();
     }
 };
 

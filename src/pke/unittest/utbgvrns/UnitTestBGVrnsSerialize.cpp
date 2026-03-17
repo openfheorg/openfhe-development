@@ -31,17 +31,16 @@
 
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
+#include "globals.h"
+#include "include/gtest/gtest.h"
 #include "key/key-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
-
-#include "UnitTestUtils.h"
-#include "UnitTestSer.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestSer.h"
+#include "UnitTestUtils.h"
 #include "utils/exception.h"
-#include "globals.h"  // for SERIALIZE_PRECOMPUTE
 
-#include "include/gtest/gtest.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -159,10 +158,13 @@ class UTBGVRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SER> {
     const double eps = EPSILON;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTestContext(const TEST_CASE_UTBGVRNS_SER& testData, const std::string& failmsg = std::string()) {

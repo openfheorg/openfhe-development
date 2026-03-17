@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
 #include <memory>
 #include <string>
-#include "gtest/gtest.h"
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -268,10 +268,13 @@ class UTBGVRNS : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS> {
     const std::vector<int64_t> vectorOfInts1s{1, 1, 1, 1, 1, 1, 1, 1};  // all 1's
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_Add_Packed(const TEST_CASE_UTBGVRNS& testData, const std::string& failmsg = std::string()) {

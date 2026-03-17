@@ -29,15 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  unit tests for the PRE capabilities
- */
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
+#include "utils/exception.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
-#include "utils/exception.h"
+#include "UnitTestUtils.h"
 
-#include "gtest/gtest.h"
 #include <iostream>
 #include <vector>
 
@@ -124,10 +121,13 @@ class UTGENERAL_REENCRYPT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_
     using Element = DCRTPoly;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void ReEncryption(const TEST_CASE_UTGENERAL_REENCRYPT& testData, const std::string& failmsg = std::string()) {

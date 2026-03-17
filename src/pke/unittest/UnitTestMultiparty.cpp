@@ -30,10 +30,10 @@
 //==================================================================================
 
 #include "include/gtest/gtest.h"
-#include "UnitTestUtils.h"
+#include "utils/exception.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
-#include "utils/exception.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
 #include <sstream>
@@ -373,14 +373,12 @@ class UTGENERAL_MULTIPARTY : public ::testing::TestWithParam<TEST_CASE_UTGENERAL
     using Element = DCRTPoly;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
     void TearDown() {
-        // destroy all staic key maps
-        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-        CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
-        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
-
         CryptoContextFactory<Element>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     // in order to avoid redundancy, UnitTest_MultiParty() uses 2 conditions:

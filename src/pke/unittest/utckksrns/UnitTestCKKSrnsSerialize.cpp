@@ -31,7 +31,7 @@
 
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
-#include "globals.h"  // for SERIALIZE_PRECOMPUTE
+#include "globals.h"
 #include "gtest/gtest.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "UnitTestCCParams.h"
@@ -40,8 +40,8 @@
 #include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -176,10 +176,13 @@ class UTCKKSRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_SER> {
     const double eps = EPSILON;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTestContext(const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {

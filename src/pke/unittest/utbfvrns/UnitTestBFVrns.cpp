@@ -28,14 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "UnitTestUtils.h"
+
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
-#include "gtest/gtest.h"
 #include <iterator>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -122,10 +123,13 @@ class UTBFVRNS : public ::testing::TestWithParam<TEST_CASE_UTBFVRNS> {
     const double eps = EPSILON;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_EvalFastRotation(const TEST_CASE_UTBFVRNS& testData, const std::string& failmsg = std::string()) {

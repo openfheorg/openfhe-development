@@ -29,24 +29,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 #include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "gtest/gtest.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "utils/debug.h"
 
 #include <vector>
-#include "gtest/gtest.h"
-
-#include "utils/debug.h"
 
 using namespace lbcrypto;
 
 namespace {
 class UTCKKSRNS_INNERPRODUCT : public ::testing::Test {
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
 public:

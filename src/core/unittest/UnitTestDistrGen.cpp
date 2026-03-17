@@ -29,23 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code exercises the random number distribution generator libraries of the OpenFHE lattice encryption library.
- */
-
-#include <iostream>
-#include <thread>
-
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
+#include "testdefs.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-#include "testdefs.h"
+#include <iostream>
+#include <thread>
 
 using namespace lbcrypto;
 

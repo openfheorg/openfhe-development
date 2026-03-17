@@ -29,25 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code exercises the block allocator utility of the OpenFHE lattice encryption library
- */
-
-// #define PROFILE  //uncomment to print out elapsed time
-
-#include <assert.h>
-#include <stdio.h>
-
-#include <iostream>
-#include <new>
-
 #include "gtest/gtest.h"
-
 #include "math/math-hal.h"
-#include "utils/debug.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
-
 #include "utils/blockAllocator/xlist.h"
 #include "utils/blockAllocator/xmap.h"
 #include "utils/blockAllocator/xqueue.h"
@@ -55,6 +38,14 @@
 #include "utils/blockAllocator/xsstream.h"
 #include "utils/blockAllocator/xstring.h"
 #include "utils/blockAllocator/xvector.h"
+#include "utils/debug.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
+
+#include <assert.h>
+#include <iostream>
+#include <new>
+#include <stdio.h>
 
 using namespace lbcrypto;
 

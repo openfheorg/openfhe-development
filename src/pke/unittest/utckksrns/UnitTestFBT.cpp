@@ -288,10 +288,13 @@ static std::vector<TEST_CASE_FBT> testCases = {
 
 class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 protected:
-    void SetUp() {};
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    };
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_ArbLUT(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {

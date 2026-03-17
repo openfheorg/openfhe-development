@@ -32,10 +32,11 @@
 #ifndef __UNITTESTCCPARAMS_H__
 #define __UNITTESTCCPARAMS_H__
 
+#include "scheme/scheme-id.h"
+
+#include <cmath>
 #include <iosfwd>
 #include <string>
-#include <cmath>
-#include "scheme/scheme-id.h"  // SCHEME
 
 enum { DFLT = -999 };  // enum for test cases if you want to use the default value for the parameter
 

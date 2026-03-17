@@ -28,16 +28,17 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+
 #include "BaseTestCase.h"
-#include "UnitTestReadCSVData.h"
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestReadCSVData.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
-#include <vector>
 #include <unordered_map>
-#include "gtest/gtest.h"
+#include <vector>
 
 #if !defined(__EMSCRIPTEN__)
 using namespace lbcrypto;
@@ -188,11 +189,13 @@ class UTBGVRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS
     const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
-        PackedEncoding::Destroy();
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_AutomorphismPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData,
@@ -414,4 +417,4 @@ TEST_P(UTBGVRNS_AUTOMORPHISM, Automorphism) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTBGVRNS_AUTOMORPHISM),
                          testName);
-#endif // __EMSCRIPTEN__
+#endif  // __EMSCRIPTEN__

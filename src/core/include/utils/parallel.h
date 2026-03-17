@@ -125,6 +125,19 @@ public:
 #endif
     }
 
+    void UnitTestStart() {
+#ifdef PARALLEL
+        int nthreads = omp_get_max_threads() >> 1;
+        omp_set_num_threads(nthreads > machineThreads ? machineThreads : nthreads);
+#endif
+    }
+
+    void UnitTestStop() {
+#ifdef PARALLEL
+        omp_set_num_threads(machineThreads);
+#endif
+    }
+
 private:
     int machineThreads{1};
 };

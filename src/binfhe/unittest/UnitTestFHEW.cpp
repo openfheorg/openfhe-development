@@ -29,14 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code runs unit tests for the FHEW methods of the OpenFHE lattice encryption library
- */
-
 #include "binfhecontext.h"
+#include "gtest/gtest.h"
 #include "utils/demangle.h"
 
-#include "gtest/gtest.h"
 #include <sstream>
 
 using namespace lbcrypto;
@@ -48,10 +44,9 @@ using namespace lbcrypto;
 #endif
 // UNIT_TEST_HANDLE_ALL_EXCEPTIONS must always fail
 #define UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE                                                                 \
-    std::string name(UNIT_TEST_EXCEPTION_TYPE_NAME_BINFHE);                                                           \
+    std::string name(UNIT_TEST_EXCEPTION_TYPE_NAME_BINFHE);                                                    \
     std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl; \
     EXPECT_TRUE(0 == 1) << failmsg;
-
 
 //===========================================================================================================
 enum TEST_CASE_TYPE {
@@ -241,8 +236,12 @@ static std::vector<TEST_CASE_UTGENERAL_FHEW> testCasesUTGENERAL_FHEW = {
 //===========================================================================================================
 class UTGENERAL_FHEW : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_FHEW> {
 protected:
-    void SetUp() {}
-    void TearDown() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
+    void TearDown() {
+        OpenFHEParallelControls.UnitTestStop();
+    }
 
     // ---------------  TESTING METHODS OF FANDHEW ---------------
     void UnitTest_FHEW_KeySwitch(const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {

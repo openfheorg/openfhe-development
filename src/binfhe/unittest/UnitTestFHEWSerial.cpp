@@ -29,20 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code runs unit tests for the FHEW methods of the OpenFHE lattice encryption library
- */
-
-#include "gtest/gtest.h"
-
-// these header files are needed for serialization
 #include "binfhecontext-ser.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
 template <typename ST>
-void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METHOD variant,
-                        BINFHE_OUTPUT ctType, const std::string& errMsg) {
+void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType,
+                        const std::string& errMsg) {
     const LWEPlaintext val(1);
     auto cc1 = BinFHEContext();
     cc1.GenerateBinFHEContext(secLevel, variant);
@@ -81,11 +75,11 @@ void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METH
     }
 
     // Loading deserialized bootstrapping keys
-    cc2.BTKeyLoad({refreshKey,switchKey});
+    cc2.BTKeyLoad({refreshKey, switchKey});
 
     // Check the keys after adding them to cc2
-    EXPECT_EQ( *(cc2.GetRefreshKey()), *(cc1.GetRefreshKey())) << errMsg << "Bootstrapping key mismatch: refresh key";
-    EXPECT_EQ( *(cc2.GetSwitchKey()), *(cc1.GetSwitchKey())) << errMsg << "Bootstrapping key mismatch: switching key";
+    EXPECT_EQ(*(cc2.GetRefreshKey()), *(cc1.GetRefreshKey())) << errMsg << "Bootstrapping key mismatch: refresh key";
+    EXPECT_EQ(*(cc2.GetSwitchKey()), *(cc1.GetSwitchKey())) << errMsg << "Bootstrapping key mismatch: switching key";
 
     LWEPrivateKey sk2;
     {
@@ -105,14 +99,13 @@ void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METH
         EXPECT_EQ(*ct1, *ct2) << errMsg << " Ciphertext mismatch";
     }
 
-    auto ctNew = cc2.Encrypt(sk2, val, ctType);
+    auto ctNew    = cc2.Encrypt(sk2, val, ctType);
     auto ctResult = cc2.EvalBinGate(AND, ct2, ctNew);
     LWEPlaintext result;
     cc2.Decrypt(sk2, ctResult, &result);
 
     EXPECT_EQ(val, result) << errMsg << "result = " << result << ", it is expected to be equal 1";
 }
-
 
 // ---------------  TESTING SERIALIZATION METHODS OF FHEW ---------------
 // JSON tests were turned off as they take a very long time and require a lot of memory.

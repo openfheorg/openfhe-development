@@ -29,10 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code runs unit tests for the FHEW methods of the OpenFHE lattice encryption library
- */
-
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 

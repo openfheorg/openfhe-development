@@ -33,37 +33,31 @@
 // ATTENTION: THIS TEST IS TEMPORARILY DISABLED!
 //==================================================================================
 #if (0)
-/*
-  This code exercises the block allocator utility of the OpenFHE lattice encryption library.
- */
+    #include "gtest/gtest.h"
+    #include "math/math-hal.h"
+    #include "utils/blockAllocator/xallocator.h"
+    #include "utils/debug.h"
+    #include "utils/inttypes.h"
+    #include "utils/utilities.h"
 
-// #define PROFILE  // define if we want elapsed time output and pool statistics
-#include <assert.h>
-#include <stdio.h>
+    #include <assert.h>
+    #include <iostream>
+    #include <new>
+    #include <stdio.h>
 
-#include <iostream>
-#include <new>
-
-#include "gtest/gtest.h"
-
-#include "math/math-hal.h"
-#include "utils/blockAllocator/xallocator.h"
-#include "utils/debug.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
-
-// this test does not work correctly in the web assembly configuration
-#if !defined(__EMSCRIPTEN__)
+    // this test does not work correctly in the web assembly configuration
+    #if !defined(__EMSCRIPTEN__)
 
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     virtual void TearDown() {
-        // Code here will be called immediately after each test
-        // (right before the destructor).
+        OpenFHEParallelControls.UnitTestStop();
     }
 };
 
@@ -93,21 +87,21 @@ static MyClassStatic myClassStatic;
 static void out_of_memory() {
     // new-handler function called by Allocator when pool is out of memory
     xalloc_stats();
-    #if 0
+        #if 0
   std::bad_alloc exception;
   throw(exception);
-    #else
+        #else
     assert(0);
-    #endif
+        #endif
 }
 
 static const int MAX_BLOCK_SIZE = 4000;
-    // static const int MAX_ALLOCATIONS = 10000;
-    #ifdef __ANDROID__
+        // static const int MAX_ALLOCATIONS = 10000;
+        #ifdef __ANDROID__
 static const int MAX_ALLOCATIONS = 512;  // reduce size of pool for limited memory
-    #else
+        #else
 static const int MAX_ALLOCATIONS = 2048;
-    #endif
+        #endif
 static void* memoryPtrs[MAX_ALLOCATIONS];
 static void* memoryPtrs2[MAX_ALLOCATIONS];
 
@@ -122,11 +116,11 @@ void Benchmark(const char* name, AllocFunc allocFunc, DeallocFunc deallocFunc) {
     TimeVar t1, t_total;
 
     float ElapsedMicroseconds = 0;
-    #if defined(__clang__)
+        #if defined(__clang__)
     [[maybe_unused]] float TotalElapsedMicroseconds = 0;
-    #else
+        #else
     float TotalElapsedMicroseconds = 0;
-    #endif
+        #endif
     // Allocate MAX_ALLOCATIONS blocks MAX_BLOCK_SIZE / 2 sized blocks
     TIC(t_total);
     TIC(t1);
@@ -199,14 +193,14 @@ TEST(UTBlockAllocate, xalloc_test) {
     Benchmark("xmalloc/xfree (Run 2)", xmalloc, xfree);
     Benchmark("xmalloc/xfree (Run 3)", xmalloc, xfree);
 
-    #ifdef PROFILE
+        #ifdef PROFILE
     xalloc_stats();
-    #endif
+        #endif
 
     // If AUTOMATIC_XALLOCATOR_INIT_DESTROY is defined, ~XallocDestroy() will call
     // xalloc_destroy() automatically. Never call xalloc_destroy() manually except
     // if using xallocator in a C-only application.
     // xalloc_destroy();
 }
-#endif
+    #endif
 #endif

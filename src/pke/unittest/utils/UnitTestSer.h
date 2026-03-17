@@ -36,12 +36,13 @@
 #ifndef __UNITTEST_SER_H__
 #define __UNITTEST_SER_H__
 
-#include "UnitTestException.h"
 #include "cryptocontext-ser.h"
+#include "globals.h"
 #include "gtest/gtest.h"
-#include <string>
+#include "UnitTestException.h"
+
 #include <iostream>
-#include "globals.h"  // for SERIALIZE_PRECOMPUTE
+#include <string>
 
 using namespace lbcrypto;
 

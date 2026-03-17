@@ -29,26 +29,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "cryptocontext.h"
+#include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
+#include "gtest/gtest.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "utils/debug.h"
 
 #include <fstream>
 #include <iostream>
-#include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-
-#include "utils/debug.h"
 
 using namespace lbcrypto;
 
 class UTGENERAL_EVAL_MULT_MANY : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
-    virtual void TearDown() {}
+    virtual void TearDown() {
+        OpenFHEParallelControls.UnitTestStop();
+    }
 
 public:
 };

@@ -29,25 +29,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include <iostream>
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
+#include "lattice/trapdoor.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-#include "lattice/trapdoor.h"
+
+#include <iostream>
 
 using namespace lbcrypto;
 
 class UnitTestTrapdoor : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     virtual void TearDown() {
-        // Code here will be called immediately after each test
-        // (right before the destructor).
+        OpenFHEParallelControls.UnitTestStop();
     }
 };
 

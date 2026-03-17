@@ -29,30 +29,30 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "cryptocontext.h"
+#include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
+#include "gtest/gtest.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "UnitTestUtils.h"
+#include "utils/debug.h"
 
 #include <algorithm>
 #include <iostream>
 #include <vector>
-#include "UnitTestUtils.h"
-#include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-
-#include "utils/debug.h"
 
 using namespace lbcrypto;
 
 namespace {
 class UTBFVRNS_AUTOMORPHISM : public ::testing::Test {
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
 public:

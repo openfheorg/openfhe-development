@@ -38,15 +38,15 @@
   3. Math layer operations such as functions in nbtheory
   */
 
-#include <iostream>
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
+
+#include <iostream>
 
 using namespace lbcrypto;
 

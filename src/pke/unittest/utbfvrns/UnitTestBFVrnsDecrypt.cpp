@@ -43,10 +43,13 @@ using namespace lbcrypto;
 
 class UTBFVRNS_DECRYPT : public ::testing::TestWithParam<std::tuple<usint, usint>> {
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
 public:

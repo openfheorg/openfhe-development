@@ -33,8 +33,6 @@
   This code exercises the encoding libraries of the OpenFHE lattice encryption library.
 */
 
-#define PROFILE
-
 #include "encoding/encodings.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
@@ -47,11 +45,12 @@ using namespace lbcrypto;
 
 class UTGENERAL_ENCODING : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     virtual void TearDown() {
-        // Code here will be called immediately after each test
-        // (right before the destructor).
+        OpenFHEParallelControls.UnitTestStop();
     }
 };
 

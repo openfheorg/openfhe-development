@@ -29,14 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code runs unit tests for the FHEW methods of the OpenFHE lattice encryption library
- */
-
-#include "gtest/gtest.h"
-
-// these header files are needed for serialization
 #include "binfhecontext-ser.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 

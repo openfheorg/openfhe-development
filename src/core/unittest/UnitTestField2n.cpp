@@ -29,10 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code exercises the Field2n methods of the OpenFHE lattice encryption library.
- */
-
 #include "gtest/gtest.h"
 #include "lattice/field2n.h"
 #include "math/dftransform.h"

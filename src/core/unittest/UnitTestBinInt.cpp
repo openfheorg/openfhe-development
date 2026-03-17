@@ -29,24 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This code tests the binary integers in the math libraries of the OpenFHE lattice encryption library.
- */
-
 #include "config_core.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
-#include "lattice/ilelement.h"
-#include "math/math-hal.h"
 #include "math/distrgen.h"
+#include "math/math-hal.h"
 #include "math/nbtheory.h"
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
 #include <iostream>
-
-#define PROFILE
 
 using namespace lbcrypto;
 

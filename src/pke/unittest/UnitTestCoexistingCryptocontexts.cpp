@@ -33,25 +33,22 @@
  * creation of another cryptocontext. This test's code should be as close to a regular user project
  * as possible
  */
+
+#include "include/gtest/gtest.h"
 #include "openfhe.h"
 #include "UnitTestUtils.h"
-#include "include/gtest/gtest.h"
 
 using namespace lbcrypto;
 
 class UTGENERAL_CRYPTOCONTEXTS : public ::testing::Test {
 protected:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     virtual void TearDown() {
-        // Code here will be called immediately after each test
-        // (right before the destructor).
-        // TODO (dsuponit): do we need to remove keys before releasing all context?
-        // CryptoContextImpl<Poly>::ClearEvalMultKeys();
-        // CryptoContextImpl<Poly>::ClearEvalSumKeys();
-        // CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-        // CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 };
 

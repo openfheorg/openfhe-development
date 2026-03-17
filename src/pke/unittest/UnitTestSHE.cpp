@@ -33,14 +33,14 @@
   unit tests for the SHE capabilities
  */
 
-#include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
+#include "UnitTestUtils.h"
 
 #include <iostream>
 #include <vector>
-#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -495,10 +495,13 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
     const double eps = EPSILON;
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_Add_Packed(const TEST_CASE_UTGENERAL_SHE& testData, const std::string& failmsg = std::string()) {

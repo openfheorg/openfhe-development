@@ -29,11 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "UnitTestCryptoContext.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "UnitTestCryptoContext.h"
 
 using namespace lbcrypto;
 
@@ -142,7 +142,6 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
         if (!isDefaultValue(params.compositeDegree)) {
             parameters.SetCompositeDegree(params.compositeDegree);
         }
-
     }
     if constexpr (std::is_same_v<U, CCParams<CryptoContextCKKSRNS>> == true) {
         if (!isDefaultValue(params.ckksDataType)) {

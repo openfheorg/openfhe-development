@@ -167,11 +167,13 @@ class UTCKKSRNS_INTERACTIVE_BOOT : public ::testing::TestWithParam<TEST_CASE_UTC
     };
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
-        PackedEncoding::Destroy();
         CryptoContextFactory<Element>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_MultiPartyBoot(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,

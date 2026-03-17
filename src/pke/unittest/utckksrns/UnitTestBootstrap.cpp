@@ -402,10 +402,13 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
     }
 
 protected:
-    void SetUp() {}
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
 
     void TearDown() {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
     }
 
     void UnitTest_Bootstrap(const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag,

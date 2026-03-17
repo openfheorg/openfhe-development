@@ -29,24 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  This file contains google test code that exercises the big int vector library of the OpenFHE lattice encryption library.
- */
-
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include <fstream>
-    #include <iostream>
     #include "gtest/gtest.h"
-
     #include "lattice/lat-hal.h"
+    #include "math/distrgen.h"
     #include "math/math-hal.h"
     #include "math/nbtheory.h"
     #include "utils/inttypes.h"
-
-    #include "math/distrgen.h"
     #include "utils/utilities.h"
+
+    #include <fstream>
+    #include <iostream>
 
 using namespace lbcrypto;
 
