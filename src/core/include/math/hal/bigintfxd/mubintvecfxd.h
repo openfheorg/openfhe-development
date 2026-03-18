@@ -589,7 +589,7 @@ public:
         return "FXDInteger";
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 

@@ -626,7 +626,7 @@ public:
         return "ExpVector";
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 
