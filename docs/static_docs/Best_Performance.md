@@ -33,7 +33,7 @@ Typically, the default configuration for schemes in the `pke` module is only to 
 
 # Multithreading Configuration using OpenMP
 
-OpenFHE uses loop parallelization via OpenMP to speed up some lower-level (mostly polynomial) operations. From a bird's eye view,built-in OpenFHE loop parallelization is applied at the following levels:
+OpenFHE uses loop parallelization via OpenMP to speed up some lower-level (mostly polynomial) operations. From a bird's eye view, built-in OpenFHE loop parallelization is applied at the following levels:
 * For many Double-CRT operations (used for BGV, BFV, and CKKS implemented using RNS in OpenFHE), loop parallelization over the number of RNS limbs is automatically applied. The biggest benefit is seen when the multiplicative depth is not small (in deeper computations). For BGV and CKKS, the number of RNS limbs is roughly the same as the multiplicative depth set by the user (it is 1 or 2 larger). In BFV, it gets more complicated, but the number of RNS limbs is still proportional to the multiplicative depth.
 * A higher-level loop parallelization is employed for CKKS bootstrapping and scheme switching between CKKS and FHEW/TFHE.
 * Loop parallelization is also used for all schemes during key generation (but this does not have effect on online operations).
