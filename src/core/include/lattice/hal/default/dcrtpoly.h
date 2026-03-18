@@ -359,11 +359,11 @@ public:
         return "DCRTPoly";
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 
-    inline Format GetFormat() const final {
+    constexpr Format GetFormat() const final {
         return m_format;
     }
 

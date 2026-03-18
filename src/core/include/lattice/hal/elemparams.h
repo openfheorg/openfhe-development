@@ -147,7 +147,7 @@ public:
    * @brief Simple getter method for cyclotomic order.
    * @return The cyclotomic order.
    */
-    uint32_t GetCyclotomicOrder() const {
+    constexpr uint32_t GetCyclotomicOrder() const {
         return m_cyclotomicOrder;
     }
 
@@ -156,7 +156,7 @@ public:
    * evaluation of the totient function of the cyclotomic order.
    * @return the ring dimension.
    */
-    uint32_t GetRingDimension() const {
+    constexpr uint32_t GetRingDimension() const {
         return m_ringDimension;
     }
 
@@ -165,7 +165,7 @@ public:
    * ciphertext modulus.
    * @return The ciphertext modulus, not the big ciphertext modulus.
    */
-    const IntegerType& GetModulus() const {
+    constexpr const IntegerType& GetModulus() const {
         return m_ciphertextModulus;
     }
 
@@ -174,7 +174,7 @@ public:
    * This is not relevant for all applications.
    * @return The big ciphertext modulus.
    */
-    const IntegerType& GetBigModulus() const {
+    constexpr const IntegerType& GetBigModulus() const {
         return m_bigCiphertextModulus;
     }
 
@@ -183,7 +183,7 @@ public:
    * unity.
    * @return The root of unity, not the big root of unity.
    */
-    const IntegerType& GetRootOfUnity() const {
+    constexpr const IntegerType& GetRootOfUnity() const {
         return m_rootOfUnity;
     }
 
@@ -191,7 +191,7 @@ public:
    * @brief Simple getter method for the big root of unity.
    * @return The the big root of unity.
    */
-    const IntegerType& GetBigRootOfUnity() const {
+    constexpr const IntegerType& GetBigRootOfUnity() const {
         return m_bigRootOfUnity;
     }
 
