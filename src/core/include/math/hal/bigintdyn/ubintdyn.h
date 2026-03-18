@@ -59,7 +59,7 @@
         #include <utility>
         #include <vector>
 
-        // clang-format off
+    // clang-format off
         // TODO: fix shifting issue when limb_t == Dlimb_t
         #if (NATIVEINT >= 64 && defined(HAVE_INT128))
             using expdtype = uint64_t;
@@ -167,9 +167,9 @@ public:
    * Copy constructor.
    * @param &val is the ubint to be copied.
    */
-    ubint(const ubint& val) noexcept : m_MSB{val.m_MSB}, m_value{val.m_value} {}
+    constexpr ubint(const ubint& val) noexcept : m_MSB{val.m_MSB}, m_value{val.m_value} {}
 
-    ubint(const std::vector<limb_t>& v) noexcept : m_value{v} {
+    constexpr ubint(const std::vector<limb_t>& v) noexcept : m_value{v} {
         this->ubint::NormalizeLimbs();
     }
 
@@ -177,9 +177,9 @@ public:
    * Move constructor.
    * @param &&val is the ubint to be copied.
    */
-    ubint(ubint&& val) noexcept : m_MSB{std::move(val.m_MSB)}, m_value{std::move(val.m_value)} {}
+    constexpr ubint(ubint&& val) noexcept : m_MSB{std::move(val.m_MSB)}, m_value{std::move(val.m_value)} {}
 
-    ubint(std::vector<limb_t>&& v) noexcept : m_value{std::move(v)} {
+    constexpr ubint(std::vector<limb_t>&& v) noexcept : m_value{std::move(v)} {
         this->ubint::NormalizeLimbs();
     }
 
@@ -193,14 +193,14 @@ public:
     explicit ubint(const char* strval) {
         this->ubint::SetValue(std::string(strval));
     }
-    explicit ubint(const char strval) : ubint(limb_t(strval - '0')) {}
+    constexpr explicit ubint(const char strval) : ubint(limb_t(strval - '0')) {}
 
     /**
    * Constructor from an unsigned integer.
    * @param val is the initial integer represented as a uint64_t.
    */
     template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
-    ubint(T val) : m_MSB{lbcrypto::GetMSB(val)}, m_value{limb_t(val)} {
+    constexpr ubint(T val) : m_MSB{lbcrypto::GetMSB(val)}, m_value{limb_t(val)} {
         if constexpr (sizeof(T) > sizeof(limb_t)) {
             if ((val >>= m_limbBitLength) > 0) {
                 m_value.resize(ubint::MSBToLimbs(m_MSB));
@@ -921,7 +921,7 @@ private:
    *
    * @return resulting bit.
    */
-    void NormalizeLimbs() {
+    constexpr void NormalizeLimbs() {
         auto size = m_value.size() - 1;
         while (size > 0 && m_value[size--] == 0)
             m_value.pop_back();
