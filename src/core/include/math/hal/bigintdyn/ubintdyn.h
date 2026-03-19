@@ -159,7 +159,7 @@ public:
 
     ubint() = default;
 
-    explicit operator bool() noexcept {
+    constexpr explicit operator bool() const noexcept {
         return m_MSB != 0;
     }
 
@@ -748,7 +748,7 @@ public:
    * Returns the MSB location of the value.
    * @return the index of the most significant bit.
    */
-    uint32_t GetMSB() const {
+    constexpr uint32_t GetMSB() const {
         return m_MSB;
     }
 
@@ -756,7 +756,7 @@ public:
    * Returns the size of the underlying vector of Limbs
    * @return the size
    */
-    size_t GetNumberOfLimbs() const {
+    constexpr size_t GetNumberOfLimbs() const {
         return m_value.size();
     }
 
@@ -790,7 +790,7 @@ public:
    */
 
     // TODO hardcoded for base 2?
-    uint32_t GetLengthForBase(uint32_t base) const {
+    constexpr uint32_t GetLengthForBase(uint32_t base) const {
         return GetMSB();
     }
 
