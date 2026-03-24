@@ -399,7 +399,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         uint32_t nActual = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
         if (n < nActual) {
             std::string errMsg("The ring dimension found using estimated logQ(P) [");
-            errMsg += std::to_string(n) + "] does does not meet security requirements. ";
+            errMsg += std::to_string(n) + "] does not meet security requirements. ";
             errMsg += "Report this problem to OpenFHE developers and set the ring dimension manually to ";
             errMsg += std::to_string(nActual) + ".";
 
