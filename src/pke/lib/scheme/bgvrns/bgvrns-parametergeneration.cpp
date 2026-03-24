@@ -42,6 +42,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include <memory>
 #include <string>
 #include <utility>
+#include <iostream>
 
 namespace lbcrypto {
 
@@ -634,6 +635,28 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
 
         DistributionType distType = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
         uint32_t nActual          = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
+
+        /*
+        std::cerr << "nActual: " << nActual
+                  << "; n: " << n
+                  << "; distType: " << distType
+                  << "; stdLevel: " << stdLevel
+                  << "; logActualQ: " << logActualQ
+                  << std::endl;
+                  */
+
+        std::string errMsg("nActual: ");
+        errMsg += std::to_string(nActual);
+        errMsg += "; n: ";
+        errMsg += std::to_string(n);
+        errMsg += "; distType: ";
+        errMsg += std::to_string(distType);
+        errMsg += "; stdLevel: ";
+        errMsg += std::to_string(stdLevel);
+        errMsg += "; logActualQ: ";
+        errMsg += std::to_string(logActualQ);
+        errMsg += ".";
+        OPENFHE_THROW(errMsg);
 
         if (n < nActual) {
             std::string errMsg("The ring dimension found using estimated logQ(P) [");
