@@ -51,7 +51,7 @@ static void checkApproximateEquality(const std::vector<std::complex<double>>& a,
     std::vector<std::complex<double>> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {
         allTrue[i] = 1;
-        tmp[i]     = abs(a[i] - b[i]) <= epsilon;
+        tmp[i]     = std::abs(a[i] - b[i]) <= epsilon;
     }
     if (tmp != allTrue) {
         cerr << __func__ << " - " << __FILE__ << ":" << __LINE__ << " IntMPBoot - Ctxt Chebyshev Failed: " << endl;

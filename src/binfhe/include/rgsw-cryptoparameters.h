@@ -88,8 +88,8 @@ public:
             OPENFHE_THROW("Gadget base should be a power of two.");
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
-        auto logQ{log(m_Q.ConvertToDouble())};
-        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / log(static_cast<double>(m_baseG))));
+        auto logQ{std::log(m_Q.ConvertToDouble())};
+        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_baseG))));
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
@@ -224,7 +224,7 @@ public:
             m_baseG  = BaseG;
             m_Gpower = m_Gpower_map[m_baseG];
             m_digitsG =
-                static_cast<uint32_t>(std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(m_baseG))));
+                static_cast<uint32_t>(std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(m_baseG))));
         }
     }
 

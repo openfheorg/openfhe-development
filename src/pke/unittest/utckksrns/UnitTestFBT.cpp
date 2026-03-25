@@ -321,7 +321,7 @@ protected:
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
             bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
-            if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
+            if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, std::cos(2pi x)]
                 coeffint = {f(1), f(0) - f(1)};
             else  // divided by 2
                 coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
@@ -488,7 +488,7 @@ protected:
             bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
             if (binaryLUT) {
                 coeffintMod = {funcMod(1),
-                               funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
+                               funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, std::cos(2pi x)]
             }
             else {
                 coeffcompMod =
@@ -598,7 +598,7 @@ protected:
             uint32_t postScalingBits = 0;
 
             // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
-            // Currently this only works when log(pNew) divides log(p).
+            // Currently this only works when std::log(pNew) divides std::log(p).
             while (go) {
                 auto encryptedDigit = ctxtBFV;
 
@@ -718,7 +718,7 @@ protected:
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
             bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
-            if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
+            if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, std::cos(2pi x)]
                 coeffint = {f(1), f(0) - f(1)};
             else  // divided by 2
                 coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);

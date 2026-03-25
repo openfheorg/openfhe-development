@@ -346,7 +346,7 @@ void myVecP<myT>::clear(myVecP<myT>& x) {
 
 // Switches the integers in the vector to values corresponding to the new
 // modulus
-//*  Algorithm: Integer i, Old Modulus om, New Modulus nm, delta = abs(om-nm):
+//*  Algorithm: Integer i, Old Modulus om, New Modulus nm, delta = std::abs(om-nm):
 // *  Case 1: om < nm
 // *  if i > i > om/2
 // *  i' = i + delta

@@ -117,7 +117,7 @@ public:
    *
    * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
    * @param arbFunc whether need to evaluate an arbitrary function using functional bootstrapping
-   * @param logQ log(input ciphertext modulus)
+   * @param logQ std::log(input ciphertext modulus)
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
    * @param timeOptimization whether to use dynamic bootstrapping technique

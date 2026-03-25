@@ -254,7 +254,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     // // i.e., only when we want to multiply ciphertexts of depth > 1.
     // // Level is still 0 because no rescale operation has been run.
     // std::cout << "Ciphertext c2:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(c2->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(c2->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << c2->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << c2->GetLevel() << std::endl;
@@ -263,19 +263,19 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     // // before computing c4. Hence, the level has become 1. Again,
     // // rescaling happens lazily, so depth of the result is 2.
     // std::cout << "Ciphertext c4:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(c4->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(c4->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << c4->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << c4->GetLevel() << std::endl;
 
     // std::cout << "Ciphertext c8:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(c8->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(c8->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << c8->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << c8->GetLevel() << std::endl;
 
     // std::cout << "Ciphertext c16:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(c16->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(c16->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << c16->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << c16->GetLevel() << std::endl;
@@ -285,13 +285,13 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     // // correct depth and level before the operation and the user does
     // // not need to care about these low level details.
     // std::cout << "Ciphertext c9:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(c9->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(c9->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << c9->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << c9->GetLevel() << std::endl;
 
     // std::cout << "Ciphertext c18:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(c18->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(c18->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << c18->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << c18->GetLevel() << std::endl;
@@ -299,7 +299,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     // // The result has the same depth and level as c18 because
     // // additions do not require any rescaling.
     // std::cout << "Ciphertext cRes:" << std::endl;
-    // std::cout << "\t scaling factor: (" << sqrt(cRes->GetScalingFactor()) << ")^2"
+    // std::cout << "\t scaling factor: (" << std::sqrt(cRes->GetScalingFactor()) << ")^2"
     //           << std::endl;
     // std::cout << "\t scaling factor degree: " << cRes->GetNoiseScaleDeg() << std::endl;
     // std::cout << "\t level: " << cRes->GetLevel() << std::endl;
@@ -437,7 +437,7 @@ void HybridKeySwitchingDemo1() {
    * and performs 4 steps:
    * 1 - Digit decomposition:
    *     Split d into dnum digits - the size of each digit is roughly
-   *     ceil(sizeof(Q)/dnum)
+   *     std::ceil(sizeof(Q)/dnum)
    * 2 - Extend ciphertext modulus from Q to Q*P
    *     Here P is a product of special primes
    * 3 - Multiply extended component with key switching key
@@ -448,7 +448,7 @@ void HybridKeySwitchingDemo1() {
    * increased from sizeof(Q) to sizeof(Q)+sizeof(P) in stage 2. P
    * is always set to be as small as possible, as long as sizeof(P)
    * is larger than the size of the largest digit, i.e., than
-   * ceil(sizeof(Q)/dnum). Therefore, the size of P is inversely
+   * std::ceil(sizeof(Q)/dnum). Therefore, the size of P is inversely
    * related to the number of digits, so the more digits we have, the
    * smaller P has to be.
    *

@@ -285,8 +285,8 @@ template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionChebyshev(
     const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
 
 /**
- * Compute positive integers k,m such that n < k(2^m-1), k is close to sqrt(n/2)
- * and the depth = ceil(log2(k))+m is minimized. Moreover, for that depth the
+ * Compute positive integers k,m such that n < k(2^m-1), k is close to std::sqrt(n/2)
+ * and the depth = std::ceil(std::log2(k))+m is minimized. Moreover, for that depth the
  * number of homomorphic multiplications = k+2m+2^(m-1)-4 is minimized.
  * Since finding these parameters involve testing many possible values, we
  * hardcode them for commonly used degrees, and provide a heuristic which
@@ -332,9 +332,9 @@ std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
     std::vector<uint32_t> mlist;
     std::vector<uint32_t> multlist;
     for (uint32_t k = 1; k <= n; ++k) {
-        for (uint32_t m = 1; m <= static_cast<uint32_t>(std::ceil(log2(n / k) + 1) + 1); ++m) {
+        for (uint32_t m = 1; m <= static_cast<uint32_t>(std::ceil(std::log2(n / k) + 1) + 1); ++m) {
             if (n < (k * ((1U << m) - 1))) {
-                if (std::abs(std::floor(log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1.0) {
+                if (std::abs(std::floor(std::log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1.0) {
                     klist.push_back(k);
                     mlist.push_back(m);
                     multlist.push_back(k + 2 * m + (1U << (m - 1)) - 4);
@@ -443,7 +443,7 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
     // Each outer iteration from the FFT algorithm can be written a weighted sum of
     // three terms: the input shifted right by a power of two, the unshifted input,
     // and the input shifted left by a power of two. For each outer iteration
-    // (log2(size) in total), the matrix coeff stores the coefficients in the
+    // (std::log2(size) in total), the matrix coeff stores the coefficients in the
     // following order: the coefficients associated to the input shifted right,
     // the coefficients for the non-shifted input and the coefficients associated
     // to the input shifted left.
@@ -485,7 +485,7 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
     // Each outer iteration from the FFT algorithm can be written a weighted sum of
     // three terms: the input shifted right by a power of two, the unshifted input,
     // and the input shifted left by a power of two. For each outer iteration
-    // (log2(size) in total), the matrix coeff stores the coefficients in the
+    // (std::log2(size) in total), the matrix coeff stores the coefficients in the
     // following order: the coefficients associated to the input shifted right,
     // the coefficients for the non-shifted input and the coefficients associated
     // to the input shifted left.
@@ -526,7 +526,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 
     const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
     // Need to compute how many layers are collapsed in each of the level from the budget.
-    // If there is no exact division between the maximum number of possible levels (log(slots)) and the
+    // If there is no exact division between the maximum number of possible levels (std::log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
     const std::vector<uint32_t> dims = SelectLayers(log2slots, levelBudget);
     const uint32_t layersCollapse    = dims[0];
@@ -622,7 +622,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     const uint32_t log2slots = static_cast<uint32_t>(std::log2(slots));
 
     // Need to compute how many layers are collapsed in each of the level from the budget.
-    // If there is no exact division between the maximum number of possible levels (log(slots)) and the
+    // If there is no exact division between the maximum number of possible levels (std::log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
     std::vector<uint32_t> dims    = SelectLayers(log2slots, levelBudget);
     const uint32_t layersCollapse = dims[0];
@@ -707,7 +707,7 @@ struct ckks_boot_params GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudg
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
     // Need to compute how many layers are collapsed in each of the level from the budget.
-    // If there is no exact division between the maximum number of possible levels (log(slots)) and the
+    // If there is no exact division between the maximum number of possible levels (std::log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
     auto dims               = SelectLayers(logSlots, levelBudget);
     uint32_t layersCollapse = dims[0];
@@ -772,7 +772,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
     // Computing the baby-step g and the giant-step h
     uint32_t bStep = getRatioBSGSLT(slots);
     uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
-    uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+    uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so std::log(l) is integer
 
     // There will be a lot of intersection between the rotations, provide an upper bound
     std::vector<int32_t> indexList;
@@ -787,7 +787,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
         // If the linear transform is wide instead of tall, we need extra rotations
         if (slots < cols) {
-            logl = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+            logl = std::log2(cols / slots);  // These are powers of two, so std::log(l) is integer
             for (uint32_t j = 1; j <= logl; ++j) {
                 indexList.emplace_back(slots * (1U << (j - 1)));
             }

@@ -1131,7 +1131,7 @@ private:
     // variable to store the maximum value of the integral data type.
     static const uint_type m_uintMax;
 
-    // variable to store the log(base 2) of the number of bits in the integral
+    // variable to store the std::log(base 2) of the number of bits in the integral
     // data type.
     static const uschar m_logUintBitLength;
 

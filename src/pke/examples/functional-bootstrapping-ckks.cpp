@@ -79,7 +79,7 @@ int main() {
 
     std::cerr << "\n\n*3.* Homomorphically evaluate the sign." << std::endl << std::endl;
     // Compute the sign of a 12-bit input using 1-bit and 4-bit digits
-    // The following needs to hold true: log2(PInput) - log2(PDigit) = log2(Q) - log2(Bigq)
+    // The following needs to hold true: std::log2(PInput) - std::log2(PDigit) = std::log2(Q) - std::log2(Bigq)
     std::cerr << "=====Sign evaluation of a 12-bit input using 1-bit digits order 1 sparsely packed=====" << std::endl
               << std::endl;
     MultiPrecisionSign(QBFVINIT, BigInteger(4096), BigInteger(2), (BigInteger(1) << 46), (BigInteger(1) << 35), 1, 1, 1,
@@ -132,7 +132,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
         coeffint = {
             func(1),
             func(0) -
-                func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)] as in the general case.
+                func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, std::cos(2pi x)] as in the general case.
     }
     else {
         coeffcomp = GetHermiteTrigCoefficients(func, PInput.ConvertToInt(), order, scaleTHI);  // divided by 2
@@ -631,7 +631,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
     /* 9. Start the sign loop. For arbitrary digit size, pNew > 2, the last iteration needs
      * to evaluate step pNew not mod pNew.
-     * Currently this only works when log(pNew) divides log(p).
+     * Currently this only works when std::log(pNew) divides std::log(p).
     */
     while (go) {
         auto encryptedDigit = ctxtBFV;

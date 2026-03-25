@@ -456,7 +456,7 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
 
     if (A.size() >= A[0].size()) {
         uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
-        uint32_t gStep = ceil(static_cast<double>(n) / bStep);
+        uint32_t gStep = std::ceil(static_cast<double>(n) / bStep);
 
         auto num_slices = A.size() / A[0].size();
         std::vector<std::vector<std::vector<std::complex<double>>>> A_slices(num_slices);
@@ -648,7 +648,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
 
     // A represents the diagonals, which lose the information whether the initial matrix is tall or wide
     if (wide) {
-        uint32_t logl = lbcrypto::GetMSB(A[0].size() / A.size()) - 1;  // These are powers of two, so log(l) is integer
+        uint32_t logl = lbcrypto::GetMSB(A[0].size() / A.size()) - 1;  // These are powers of two, so std::log(l) is integer
         std::vector<Ciphertext<DCRTPoly>> ctxt(logl + 1);
         ctxt[0] = result;
         for (uint32_t j = 1; j <= logl; ++j) {
@@ -850,7 +850,7 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
         fivePows *= 5;
         fivePows &= mmask;
     }
-    // Computes all powers of a primitive root of unity exp(2*M_PI/m)
+    // Computes all powers of a primitive root of unity std::exp(2*M_PI/m)
     std::vector<std::complex<double>> ksiPows(m + 1);
     double ak = 2 * M_PI / m;
     for (uint32_t j = 0; j < m; ++j) {
@@ -1002,7 +1002,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWto
 
     // If the linear transform is wide instead of tall, we need extra rotations
     if (numCtxts < n_po2) {
-        uint32_t logl = lbcrypto::GetMSB(n_po2 / numCtxts) - 1;  // These are powers of two, so log(l) is integer
+        uint32_t logl = lbcrypto::GetMSB(n_po2 / numCtxts) - 1;  // These are powers of two, so std::log(l) is integer
         indexRotationHomDec.reserve(indexRotationHomDec.size() + logl);
         for (uint32_t j = 1; j <= logl; ++j)
             indexRotationHomDec.emplace_back(numCtxts * (1 << (j - 1)));
@@ -1127,8 +1127,8 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
             ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
     }
 
-    /* For p <= 4 and when we only encrypt bits, we don't need sin(2pi*x)/2pi to approximate x,
-     * we can directly use sin(0) for 0 and sin(pi/2) for 1.
+    /* For p <= 4 and when we only encrypt bits, we don't need std::sin(2pi*x)/2pi to approximate x,
+     * we can directly use std::sin(0) for 0 and std::sin(pi/2) for 1.
      * Here pmax is actually the plaintext modulus, not the maximum value of the messages that we
      * consider. For plaintext modulus > 4, even if we only care about encrypting bits, 2pi is not
      * the correct post-scaling factor.
@@ -1277,7 +1277,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
 
         // If the linear transform is wide instead of tall, we need extra rotations
         if (m_numCtxts < n_po2) {
-            uint32_t logl = lbcrypto::GetMSB(n_po2 / m_numCtxts) - 1;  // These are powers of two, so log(l) is integer
+            uint32_t logl = lbcrypto::GetMSB(n_po2 / m_numCtxts) - 1;  // These are powers of two, so std::log(l) is integer
             indexRotationHomDec.reserve(indexRotationHomDec.size() + logl);
             for (size_t j = 1; j <= logl; ++j) {
                 indexRotationHomDec.emplace_back(m_numCtxts * (1 << (j - 1)));

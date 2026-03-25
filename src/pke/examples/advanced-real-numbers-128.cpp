@@ -346,7 +346,7 @@ void HybridKeySwitchingDemo1() {
    * and performs 4 steps:
    * 1 - Digit decomposition:
    *     Split d into dnum digits - the size of each digit is roughly
-   *     ceil(sizeof(Q)/dnum)
+   *     std::ceil(sizeof(Q)/dnum)
    * 2 - Extend ciphertext modulus from Q to Q*P
    *     Here P is a product of special primes
    * 3 - Multiply extended component with key switching key
@@ -357,7 +357,7 @@ void HybridKeySwitchingDemo1() {
    * increased from sizeof(Q) to sizeof(Q)+sizeof(P) in stage 2. P
    * is always set to be as small as possible, as long as sizeof(P)
    * is larger than the size of the largest digit, i.e., than
-   * ceil(sizeof(Q)/dnum). Therefore, the size of P is inversely
+   * std::ceil(sizeof(Q)/dnum). Therefore, the size of P is inversely
    * related to the number of digits, so the more digits we have, the
    * smaller P has to be.
    *

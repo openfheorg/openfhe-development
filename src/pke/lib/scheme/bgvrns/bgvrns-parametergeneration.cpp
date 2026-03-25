@@ -295,7 +295,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
     double B_e                = std::sqrt(alpha) * sigma;
     uint32_t auxBits          = DCRT_MODULUS::MAX_SIZE;
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
-    // bound on the secret key is sigma*sqrt(alpha)*sqrt(thresholdParties) if the secret is sampled from discrete gaussian distribution
+    // bound on the secret key is sigma*std::sqrt(alpha)*std::sqrt(thresholdParties) if the secret is sampled from discrete gaussian distribution
     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
     // parties is 1 by default but can be set to the number of parties in a threshold application.
     // Bkey set to thresholdParties * 1 for ternary distribution
@@ -321,7 +321,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
 
         if (ksTech == BV) {
             if (r > 0) {
-                // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
+                // std::sqrt(12*num_queries) * std::pow(2, stat_sec_half) factor required for security analysis
                 // 2*freshEncryptionNoise is done because after modulus switching the noise will be
                 // bounded by freshEncryptionNoise
                 // Note: std::pow(2, stat_sec_half - 1) == std::pow(2, stat_sec_half) / 2.0
@@ -342,7 +342,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
                 noise_param += numPrimes * expansionFactor * B_e / 2.0;
                 // we use numPrimes (larger bound) instead of auxPrimes because we do not know auxPrimes yet
                 noise_param += numPrimes * (1 + expansionFactorMS * Bkey) / 2.0;
-                // sqrt(12*num_queries) * pow(2, stat_sec_half) factor required for security analysis
+                // std::sqrt(12*num_queries) * std::pow(2, stat_sec_half) factor required for security analysis
                 noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half) * noise_param;
             }
             else {

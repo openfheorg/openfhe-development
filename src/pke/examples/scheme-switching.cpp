@@ -216,7 +216,7 @@ void SwitchCKKSToFHEW() {
         for (size_t i = 0; i < decomp.size(); i++) {
             ct = decomp[i];
             LWEPlaintext resultDecomp;
-            // The last digit should be up to P / p^floor(log_p(P))
+            // The last digit should be up to P / p^std::floor(log_p(P))
             if (i == decomp.size() - 1) {
                 p = pLWE2 / std::pow(static_cast<double>(pLWE1), std::floor(std::log(pLWE2) / std::log(pLWE1)));
             }
@@ -312,9 +312,9 @@ void SwitchFHEWtoCKKS() {
 
     // Messages encoded as [0000000MMMMM0000000EEEEE]
     // High level idea is to have enough 0's both before and after message for CKKS-bootstrapped result to achieve reasonable accuracy.
-    // Number of leading zeros determined by ratio of ciphertext modulus to plaintext modulus; Need 10 - 12 bits for better accuracy with sin(x) ~ x approximation of mod x.
+    // Number of leading zeros determined by ratio of ciphertext modulus to plaintext modulus; Need 10 - 12 bits for better accuracy with std::sin(x) ~ x approximation of mod x.
     // Number of zeros between message and error determined by the ratio of plaintext modulus to magnitude of max value in message; Need gap between message and error
-    //   large enough for correctly rounded message even after leveled computations in the linear transformation before evaluating sin(x).
+    //   large enough for correctly rounded message even after leveled computations in the linear transformation before evaluating std::sin(x).
 
     uint32_t gap_bits = (logQ_ccLWE - std::log2(2 * (*std::max_element(x2.begin(), x2.end())))) / 2;
     uint32_t pLWE3    = 1 << (logQ_ccLWE - gap_bits);  // Large precision
@@ -885,7 +885,7 @@ void ArgminViaSchemeSwitching() {
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
     ScalingTechnique scTech = FLEXIBLEAUTOEXT;
-    // 13 for FHEW to CKKS, log2(numValues) for argmin
+    // 13 for FHEW to CKKS, std::log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
@@ -1017,7 +1017,7 @@ void ArgminViaSchemeSwitchingAlt() {
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
     ScalingTechnique scTech = FLEXIBLEAUTOEXT;
-    // 13 for FHEW to CKKS, log2(numValues) for argmin
+    // 13 for FHEW to CKKS, std::log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
@@ -1151,7 +1151,7 @@ void ArgminViaSchemeSwitchingUnit() {
     uint32_t batchSize      = slots;
     uint32_t numValues      = 32;
     ScalingTechnique scTech = FLEXIBLEAUTO;
-    // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    // 1 for CKKS to FHEW, 13 for FHEW to CKKS, std::log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
@@ -1287,7 +1287,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     uint32_t batchSize      = slots;
     uint32_t numValues      = 32;
     ScalingTechnique scTech = FLEXIBLEAUTO;
-    // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    // 1 for CKKS to FHEW, 13 for FHEW to CKKS, std::log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
@@ -1518,7 +1518,7 @@ void PolyViaSchemeSwitching() {
 
     std::cout << "\nInput x1: " << x1 << " encrypted under p = " << 4 << " and Q = " << ctxtsLWE1[0]->GetModulus()
               << std::endl;
-    std::cout << "round( 0.5 * (x1 + rot(x1,1) )^2 ): " << x1Int << std::endl;
+    std::cout << "std::round( 0.5 * (x1 + rot(x1,1) )^2 ): " << x1Int << std::endl;
 
     // Step 6. Perform the desired computation in CKKS
     auto cPoly = cc->EvalAdd(cTemp, cc->EvalRotate(cTemp, 1));
@@ -1543,7 +1543,7 @@ void PolyViaSchemeSwitching() {
 
     std::cout << "\nInput x2: " << x2 << " encrypted under p = " << NativeInteger(pLWE2)
               << " and Q = " << ctxtsLWE2[0]->GetModulus() << std::endl;
-    std::cout << "round( 0.5 * (x1 + rot(x2,2) )^2 ): " << x2Int << std::endl;
+    std::cout << "std::round( 0.5 * (x1 + rot(x2,2) )^2 ): " << x2Int << std::endl;
 
     // Step 6'. Perform the desired computation in CKKS
     cPoly = cc->EvalAdd(cTemp, cc->EvalRotate(cTemp, 2));

@@ -204,7 +204,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
     std::vector<uint32_t> indices;
 
     if (batchSize > 1) {
-        int isize = ceil(log2(batchSize)) - 1;
+        int isize = std::ceil(std::log2(batchSize)) - 1;
         indices.reserve(isize + 1);
         uint32_t g = 5;
         for (int i = 0; i < isize; i++) {

@@ -192,12 +192,12 @@ bool CKKSPackedEncoding::Encode() {
     for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= scalingFactor;
         if (inverse[i].real() != 0.) {
-            auto logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
+            auto logci = static_cast<int32_t>(std::ceil(std::log2(std::abs(inverse[i].real()))));
             if (logc < logci)
                 logc = logci;
         }
         if (inverse[i].imag() != 0.) {
-            auto logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
+            auto logci = static_cast<int32_t>(std::ceil(std::log2(std::abs(inverse[i].imag()))));
             if (logc < logci)
                 logc = logci;
         }
@@ -211,7 +211,7 @@ bool CKKSPackedEncoding::Encode() {
 
     int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
     int32_t logApprox   = logc - logValid;
-    double approxFactor = pow(2, logApprox);
+    double approxFactor = std::pow(2, logApprox);
     double invLen       = static_cast<double>(slots);
 
     std::vector<int64_t> temp(2 * slots);
@@ -224,7 +224,7 @@ bool CKKSPackedEncoding::Encode() {
         // Check for possible overflow
         if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
             // IFFT formula:
-            // x[n] = (1/N) * \Sum^(N-1)_(k=0) X[k] * exp( j*2*pi*n*k/N )
+            // x[n] = (1/N) * \Sum^(N-1)_(k=0) X[k] * std::exp( j*2*pi*n*k/N )
             // n is i
             // k is idx below
             // N is inverse.size()
@@ -242,10 +242,10 @@ bool CKKSPackedEncoding::Encode() {
             uint32_t realMaxIdx = -1, imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < slots; ++idx) {
-                // exp( j*2*pi*n*k/N )
-                std::complex<double> expFactor = {cos((factor * idx) / invLen), sin((factor * idx) / invLen)};
+                // std::exp( j*2*pi*n*k/N )
+                std::complex<double> expFactor = {std::cos((factor * idx) / invLen), std::sin((factor * idx) / invLen)};
 
-                // X[k] * exp( j*2*pi*n*k/N )
+                // X[k] * std::exp( j*2*pi*n*k/N )
                 std::complex<double> prodFactor = inverse[idx] * expFactor;
 
                 double realVal = prodFactor.real();
@@ -261,7 +261,7 @@ bool CKKSPackedEncoding::Encode() {
                 }
             }
 
-            auto scaledInputSize = ceil(log2(dre));
+            auto scaledInputSize = std::ceil(std::log2(dre));
 
             std::stringstream buffer;
             buffer << std::endl
@@ -271,7 +271,7 @@ bool CKKSPackedEncoding::Encode() {
             buffer << "Overflow at slot number " << i << std::endl;
             buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(scalingFactor)) << " bits " << std::endl;
+            buffer << "Scaling factor is " << std::ceil(std::log2(scalingFactor)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
             OPENFHE_THROW(buffer.str());
         }
@@ -329,7 +329,7 @@ bool CKKSPackedEncoding::Encode() {
 #endif
 
     GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
-    scalingFactor    = pow(scalingFactor, noiseScaleDeg);
+    scalingFactor    = std::pow(scalingFactor, noiseScaleDeg);
     return isEncoded = true;
 }
 
@@ -345,9 +345,9 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
     if (typeFlag == IsNativePoly) {
         if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
             scalTech == COMPOSITESCALINGMANUAL)
-            powP = pow(scalingFactor, -1);
+            powP = std::pow(scalingFactor, -1);
         else
-            powP = pow(2, -p);
+            powP = std::pow(2, -p);
 
         NativeInteger q     = GetElementModulus().ConvertToInt();
         NativeInteger qHalf = q >> 1;
@@ -372,15 +372,15 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         GetElement<NativePoly>().SetValuesToZero();
     }
     else {
-        powP = pow(2, -p);
+        powP = std::pow(2, -p);
 
         // we will bring down the scaling factor to 2^p
         double scalingFactorPre = 0.0;
         if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
             scalTech == COMPOSITESCALINGMANUAL)
-            scalingFactorPre = pow(scalingFactor, -1) * pow(2, p);
+            scalingFactorPre = std::pow(scalingFactor, -1) * std::pow(2, p);
         else
-            scalingFactorPre = pow(2, -p * (noiseScaleDeg - 1));
+            scalingFactorPre = std::pow(2, -p * (noiseScaleDeg - 1));
 
         const BigInteger& q = GetElementModulus();
         BigInteger qHalf    = q >> 1;
@@ -407,7 +407,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
     // the code below adds a Gaussian noise to the decrypted result
     // to prevent key recovery attacks.
-    // The standard deviation of the Gaussian noise is sqrt(M+1)*stddev,
+    // The standard deviation of the Gaussian noise is std::sqrt(M+1)*stddev,
     // where stddev is the standard deviation estimated using the imaginary
     // component and M is the extra factor that increases the number of decryption
     // attacks that is needed to average out the added Gaussian noise (after the
@@ -460,7 +460,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
         // CKKS_M_FACTOR is a compile-level parameter
         // set to 1 by default
-        stddev = sqrt(CKKS_M_FACTOR + 1) * stddev;
+        stddev = std::sqrt(CKKS_M_FACTOR + 1) * stddev;
 
         double scale = (ckksDataType == REAL) ? 0.5 * powP : powP;
 
@@ -488,7 +488,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
         // TODO we can half the dimension for the FFT by decoding in
         // Z[X + 1/X]/(X^n + 1). This would change the complexity from n*logn to
-        // roughly (n/2)*log(n/2). This change should be done together with the one
+        // roughly (n/2)*std::log(n/2). This change should be done together with the one
         // above.
         DiscreteFourierTransform::FFTSpecial(realValues, GetElementRingDimension() * 2);
 

@@ -96,7 +96,7 @@ bool run_demo_pre(void) {
 
     std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() << std::endl;
     std::cout << "n = " << cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 << std::endl;
-    std::cout << "log2 q = " << log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+    std::cout << "log2 q = " << std::log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
               << std::endl;
     // std::cout << "crypto parameters = " << *cc->GetCryptoParameters() << std::endl;
     const auto cryptoParamsBGV = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cc->GetCryptoParameters());

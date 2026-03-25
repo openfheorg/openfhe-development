@@ -134,7 +134,7 @@ public:
    * https://eprint.iacr.org/2017/844.pdf
    *
    * @param n ring dimension
-   * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
+   * @param k matrix sample dimension; k = std::log2(q)/std::log2(base) + 2
    * @param &A public key of the trapdoor pair
    * @param &T trapdoor itself
    * @param &u syndrome vector where gaussian that Gaussian sampling is centered
@@ -153,7 +153,7 @@ public:
    * (Ring) LWE")
    *
    * @param n ring dimension
-   * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
+   * @param k matrix sample dimension; k = std::log2(q)/std::log2(base) + 2
    * @param &A public key of the trapdoor pair
    * @param &T trapdoor itself
    * @param &U syndrome matrix that Gaussian sampling is centered around
@@ -171,7 +171,7 @@ public:
    * On-line stage of pre-image sampling (includes only G-sampling)
    *
    * @param n ring dimension
-   * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
+   * @param k matrix sample dimension; k = std::log2(q)/std::log2(base) + 2
    * @param &A public key of the trapdoor pair
    * @param &T trapdoor itself
    * @param &u syndrome vector where gaussian that Gaussian sampling is centered
@@ -275,7 +275,7 @@ public:
 
         Matrix<int64_t> p2ZVector([]() { return 0; }, n * k, 1);
 
-        double sigmaLarge = sqrt(s * s - sigma * sigma);
+        double sigmaLarge = std::sqrt(s * s - sigma * sigma);
 
         // for distribution parameters up to 3e5 (experimentally found threshold)
         // use the Peikert's inversion method otherwise, use Karney's method
@@ -374,7 +374,7 @@ public:
 
         Matrix<int64_t> p2ZVector([]() { return 0; }, n * k, d);
 
-        double sigmaLarge = sqrt(s * s - sigma * sigma);
+        double sigmaLarge = std::sqrt(s * s - sigma * sigma);
 
         // for distribution parameters up to the experimentally found threshold, use
         // the Peikert's inversion method otherwise, use Karney's method

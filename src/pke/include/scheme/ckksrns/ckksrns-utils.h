@@ -120,7 +120,7 @@ std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(const std::vector<VecDT
 
 /**
  * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
- * such that k(2^m - 1} > n and k close to sqrt(n/2).
+ * such that k(2^m - 1} > n and k close to std::sqrt(n/2).
  *
  * @param n the degree of a polynomial.
  * @return a vector containing k and m.

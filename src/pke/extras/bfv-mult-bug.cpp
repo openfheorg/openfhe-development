@@ -153,11 +153,11 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
     // Converts back to coefficient representation
     res.SetFormat(Format::COEFFICIENT);
     size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-    noise        = (log2(res.Norm()));
+    noise        = (std::log2(res.Norm()));
 
     logQ = 0;
     for (usint i = 0; i < sizeQ; i++) {
-        double logqi = log2(cryptoParams->GetElementParams()->GetParams()[i]->GetModulus().ConvertToInt());
+        double logqi = std::log2(cryptoParams->GetElementParams()->GetParams()[i]->GetModulus().ConvertToInt());
         logQ += logqi;
     }
 

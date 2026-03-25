@@ -108,7 +108,7 @@ void BootstrapExample(uint32_t numSlots) {
     * We set a budget for the number of levels we can consume in bootstrapping for encoding and decoding, respectively.
     * Using larger numbers of levels reduces the complexity and number of rotation keys,
     * but increases the depth required for bootstrapping.
-	* We must choose values smaller than ceil(log2(slots)). A level budget of {4, 4} is good for higher ring
+	* We must choose values smaller than std::ceil(std::log2(slots)). A level budget of {4, 4} is good for higher ring
     * dimensions (65536 and higher).
     */
     std::vector<uint32_t> levelBudget = {3, 3};

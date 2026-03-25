@@ -937,12 +937,12 @@ public:
    * The return number is 1.
    *
    * @param index is the bit location (lsb)
-   * @param base such that log2(base)+1 is the bitwidth of the subfield
+   * @param base such that std::log2(base)+1 is the bitwidth of the subfield
    * @return the unsigned integer value of the subfield
    */
     usint GetDigitAtIndexForBase(usint index, usint base) const;
 
-    // variable to store the log(base 2) of the number of bits in the
+    // variable to store the std::log(base 2) of the number of bits in the
     // limb data type.
     static const usint m_log2LimbBitLength;
 

@@ -714,7 +714,7 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
 /**
 * Used for BGVrns modulus switching
 * This function performs ModReduce on ciphertext element and private key
-element. The algorithm computes ct' <- round( ct/qt ).
+element. The algorithm computes ct' <- std::round( ct/qt ).
 
 * Modulus reduction reduces a ciphertext from modulus q to a smaller modulus
 q/qt where qt is generally the last moduli of the tower.
@@ -1656,7 +1656,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
         // Compute s + s & (gamma-1)
         s += NativeInteger(s.ConvertToInt() & gammaMinus1);
 
-        // shift by log(gamma) to get the result
+        // shift by std::log(gamma) to get the result
         coefficients[k] = s >> 26;
     }
 

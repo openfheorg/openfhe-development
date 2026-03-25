@@ -455,7 +455,7 @@ void ParameterGenerationCKKSRNS::SinglePrimeModuliGen(std::vector<NativeInteger>
             */
             double sf = moduliQ[numPrimes - 1].ConvertToDouble();
             for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
-                sf                  = pow(sf, 2) / moduliQ[i + 1].ConvertToDouble();
+                sf                  = std::pow(sf, 2) / moduliQ[i + 1].ConvertToDouble();
                 NativeInteger sfInt = std::llround(sf);
                 NativeInteger sfRem = sfInt.Mod(cyclOrder);
                 bool hasSameMod     = true;

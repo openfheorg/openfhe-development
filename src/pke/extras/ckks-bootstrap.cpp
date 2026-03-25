@@ -76,7 +76,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
     std::vector<uint32_t> dim1 = {0, 0};
 
     // budget in levels for FFT for encoding and decoding, respectively
-    // Choose a number smaller than ceil(log2(slots))
+    // Choose a number smaller than std::ceil(std::log2(slots))
 
     std::vector<uint32_t> levelBudget1 = {4, 4};
     std::vector<uint32_t> levelBudget2 = {2, 4};
@@ -250,7 +250,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
     std::vector<uint32_t> dim1 = {0, 0};
 
     // budget in levels for FFT for encoding and decoding, respectively
-    // Choose a number smaller than ceil(log2(slots))
+    // Choose a number smaller than std::ceil(std::log2(slots))
     std::vector<uint32_t> levelBudget = {4, 4};
 
 #if NATIVEINT == 128

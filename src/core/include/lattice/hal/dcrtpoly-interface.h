@@ -1132,7 +1132,7 @@ public:
 
     /**
    * @brief Performs scale and round:
-   * {X}_{Q} -> {\round(t/Q*X)}_t
+   * {X}_{Q} -> {\std::round(t/Q*X)}_t
    * {Q} = {q_1,...,q_l}
    * {P} = {p_1,...,p_k}
    *
@@ -1223,7 +1223,7 @@ public:
 
     /**
    * @brief Computes scale and round for fast rounding:
-   * {X}_{Q} -> {\round(t/Q * X)}_t
+   * {X}_{Q} -> {\std::round(t/Q * X)}_t
    * {Q} = {q_1,...,q_l}
    *
    * Brief algorithm:
@@ -1250,7 +1250,7 @@ public:
 
     /**
    * @brief Computes scale and round for BFV encryption mode EXTENDED:
-   * {X}_{Qp} -> {\round(1/p * X)}_Q
+   * {X}_{Qp} -> {\std::round(1/p * X)}_Q
    * {Q} = {q_1,...,q_l}
    *
    * Source: Andrey Kim and Yuriy Polyakov and Vincent Zucca. Revisiting Homomorphic Encryption

@@ -611,7 +611,7 @@ double ubint<limb_t>::ConvertToDouble() const {
     try {
         // ans = std::stod(this->ToString());
         usint ceilInt = MSBToLimbs(m_MSB);
-        double factor = pow(2, m_limbBitLength);
+        double factor = std::pow(2, m_limbBitLength);
         double power  = 1.0;
 
         ans = 0.0;
@@ -674,7 +674,7 @@ ubint<limb_t> ubint<limb_t>::FromBinaryString(const std::string& vin) {
 // TODO: * i to << i
 template <typename limb_t>
 usint ubint<limb_t>::GetDigitAtIndexForBase(usint index, usint base) const {
-    usint DigitLen = ceil(log2(base));
+    usint DigitLen = std::ceil(std::log2(base));
     usint digit    = 0;
     usint newIndex = 1 + (index - 1) * DigitLen;
     for (usint i = 1; i < base; i <<= 1) {

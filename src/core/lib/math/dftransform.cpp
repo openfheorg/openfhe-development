@@ -62,8 +62,8 @@ DiscreteFourierTransform::PrecomputedValues::PrecomputedValues(uint32_t m, uint3
     m_ksiPows.resize(m_M + 1);
     for (size_t j = 0; j < m_M; ++j) {
         double angle = 2.0 * M_PI * j / m_M;
-        m_ksiPows[j].real(cos(angle));
-        m_ksiPows[j].imag(sin(angle));
+        m_ksiPows[j].real(std::cos(angle));
+        m_ksiPows[j].imag(std::sin(angle));
     }
 
     m_ksiPows[m_M] = m_ksiPows[0];
@@ -96,7 +96,7 @@ void DiscreteFourierTransform::PreComputeTable(uint32_t s) {
 std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(std::vector<std::complex<double>>& A) {
     usint m = A.size();
     std::vector<std::complex<double>> B(A);
-    usint l = floor(log2(m));
+    usint l = std::floor(std::log2(m));
 
     // static usint maxMCached(262144);
     static usint LOGM_MAX(18);  // maximum supported is 2^18 = 262144
@@ -120,8 +120,8 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
             sinTable[l].resize(m / 2);
             cosTable[l].resize(m / 2);
             for (usint i = 0; i < m / 2; i++) {
-                cosTable[l][i] = cos(2 * M_PI * i / m);
-                sinTable[l][i] = sin(2 * M_PI * i / m);
+                cosTable[l][i] = std::cos(2 * M_PI * i / m);
+                sinTable[l][i] = std::sin(2 * M_PI * i / m);
             }
         }
     }

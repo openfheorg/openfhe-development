@@ -64,7 +64,7 @@ int main() {
 
     /* A2) Bit-length of scaling factor.
    * CKKS works for real numbers, but these numbers are encoded as integers.
-   * For instance, real number m=0.01 is encoded as m'=round(m*D), where D is
+   * For instance, real number m=0.01 is encoded as m'=std::round(m*D), where D is
    * a scheme parameter called scaling factor. Suppose D=1000, then m' is 10 (an
    * integer). Say the result of a computation based on m' is 130, then at
    * decryption, the scaling factor is removed so the user is presented with

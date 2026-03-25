@@ -2898,7 +2898,7 @@ public:
     Ciphertext<Element> EvalCos(ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
-    * @brief Evaluates an approximate logistic function 1 / (1 + exp(-x)) on a ciphertext using Chebyshev approximation.
+    * @brief Evaluates an approximate logistic function 1 / (1 + std::exp(-x)) on a ciphertext using Chebyshev approximation.
     *        Supported only in CKKS.
     *
     * @param ciphertext  Input ciphertext.

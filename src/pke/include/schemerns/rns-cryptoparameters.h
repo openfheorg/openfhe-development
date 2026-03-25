@@ -917,7 +917,7 @@ public:
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+   * When std::log2(q_i) >= 45 bits, B = \floor[2^{\ceil{std::log2(q_i)/2}}
    * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}*B/q_i}
    *
    * @return the precomputed table
@@ -945,7 +945,7 @@ public:
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+   * When std::log2(q_i) >= 45 bits, B = \floor[2^{\ceil{std::log2(q_i)/2}}
    * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
    *
    * @return the precomputed table
@@ -955,7 +955,7 @@ public:
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+   * When std::log2(q_i) >= 45 bits, B = \floor[2^{\ceil{std::log2(q_i)/2}}
    * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
    *
    * @return the precomputed table
@@ -1568,7 +1568,7 @@ protected:
     // Stores \frac{t*{Q/q_i}^{-1}/q_i}
     std::vector<double> m_tQHatInvModqDivqFrac;
 
-    // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+    // when std::log2(q_i) >= 45 bits, B = \floor[2^{\ceil{std::log2(q_i)/2}}
     // Stores \frac{t*{Q/q_i}^{-1}*B/q_i}
     std::vector<double> m_tQHatInvModqBDivqFrac;
 
@@ -1578,11 +1578,11 @@ protected:
     // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
     std::vector<NativeInteger> m_tQHatInvModqDivqModtPrecon;
 
-    // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+    // when std::log2(q_i) >= 45 bits, B = \floor[2^{\ceil{std::log2(q_i)/2}}
     // Stores [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
     std::vector<NativeInteger> m_tQHatInvModqBDivqModt;
 
-    // when log2 q_i >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+    // when log2 q_i >= 45 bits, B = \floor[2^{\ceil{std::log2(q_i)/2}}
     // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
     std::vector<NativeInteger> m_tQHatInvModqBDivqModtPrecon;
 

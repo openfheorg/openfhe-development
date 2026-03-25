@@ -94,7 +94,7 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
 
 // classical LWE encryption
 // a is a randomly uniform vector of dimension n; with integers mod q
-// b = a*s + e + m floor(q/4) is an integer mod q
+// b = a*s + e + m std::floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk,
                                            LWEPlaintext m, LWEPlaintextModulus p, NativeInteger q) const {
     if (q % p != 0 && q.ConvertToInt() & (1 == 0))
@@ -116,7 +116,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 
 // classical public key LWE encryption
 // a = As' + e' of dimension n; with integers mod q
-// b = vs' + e" + m floor(q/4) is an integer mod q
+// b = vs' + e" + m std::floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPublicKey& pk,
                                             LWEPlaintext m, LWEPlaintextModulus p, NativeInteger q) const {
     if (q % p != 0 && q.ConvertToInt() & (1 == 0))
@@ -326,7 +326,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
     const uint32_t N(params->GetN());
     NativeInteger Q(params->GetqKS());
     NativeInteger::Integer baseKS(params->GetBaseKS());
-    const uint32_t digitCount = std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseKS)));
+    const uint32_t digitCount = std::ceil(std::log(Q.ConvertToDouble()) / std::log(static_cast<double>(baseKS)));
 
     NativeVector a(n, Q);
     NativeInteger b(ctQN->GetB());
@@ -348,7 +348,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
 
 // noiseless LWE embedding
 // a is a zero vector of dimension n; with integers mod q
-// b = m floor(q/4) is an integer mod q
+// b = m std::floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::NoiselessEmbedding(const std::shared_ptr<LWECryptoParams>& params,
                                                       LWEPlaintext m) const {
     NativeInteger q(params->Getq());

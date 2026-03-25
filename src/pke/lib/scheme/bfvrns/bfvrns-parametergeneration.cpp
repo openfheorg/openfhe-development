@@ -156,7 +156,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         }
         else {
             double numDigitsPerTower = (digitSize == 0) ? 1 : ((dcrtBits / digitSize) + 1);
-            return delta(n) * numDigitsPerTower * (floor(logqPrev / (dcrtBits)) + 1) * w * Berr / 2.0;
+            return delta(n) * numDigitsPerTower * (std::floor(logqPrev / (dcrtBits)) + 1) * w * Berr / 2.0;
         }
     };
 
@@ -263,8 +263,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
 
         // main correctness constraint
         auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
-            return log2(4 * p) + (multiplicativeDepth - 1) * log2(C1(n)) +
-                   log2(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
+            return std::log2(4 * p) + (multiplicativeDepth - 1) * std::log2(C1(n)) +
+                   std::log2(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
         };
 
         // initial values

@@ -50,7 +50,7 @@ int main() {
     uint32_t Q = 1 << logQ;
 
     int q      = 4096;                                                // q
-    int factor = 1 << int(logQ - log2(q));                            // Q/q
+    int factor = 1 << int(logQ - std::log2(q));                       // Q/q
     int p      = cc1.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     std::cout << "Generating keys." << std::endl;

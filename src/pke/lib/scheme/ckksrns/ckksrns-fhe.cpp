@@ -164,7 +164,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             fivePows &= mmask;
         }
 
-        // computes all powers of a primitive root of unity exp(2 * M_PI/m)
+        // computes all powers of a primitive root of unity std::exp(2 * M_PI/m)
         std::vector<std::complex<double>> ksiPows(m + 1);
         double ak = 2 * M_PI / m;
         for (uint32_t j = 0; j < m; ++j) {
@@ -330,7 +330,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
         fivePows &= mmask;
     }
 
-    // computes all powers of a primitive root of unity exp(2 * M_PI/m)
+    // computes all powers of a primitive root of unity std::exp(2 * M_PI/m)
     std::vector<std::complex<double>> ksiPows(m + 1);
     double ak = 2 * M_PI / m;
     for (uint32_t j = 0; j < m; ++j) {
@@ -2421,10 +2421,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             uint32_t realMaxIdx = -1, imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < inverse.size(); idx++) {
-                // exp( j*2*pi*n*k/N )
-                std::complex<double> expFactor = {cos((factor * idx) / invLen), sin((factor * idx) / invLen)};
+                // std::exp( j*2*pi*n*k/N )
+                std::complex<double> expFactor = {std::cos((factor * idx) / invLen), std::sin((factor * idx) / invLen)};
 
-                // X[k] * exp( j*2*pi*n*k/N )
+                // X[k] * std::exp( j*2*pi*n*k/N )
                 std::complex<double> prodFactor = inverse[idx] * expFactor;
 
                 double realVal = prodFactor.real();
@@ -2440,7 +2440,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 }
             }
 
-            auto scaledInputSize = ceil(log2(dre));
+            auto scaledInputSize = std::ceil(std::log2(dre));
 
             std::stringstream buffer;
             buffer << std::endl
@@ -2450,7 +2450,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             buffer << "Overflow at slot number " << i << std::endl;
             buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
+            buffer << "Scaling factor is " << std::ceil(std::log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
             OPENFHE_THROW(buffer.str());
         }
@@ -2519,7 +2519,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
+    p->SetScalingFactor(std::pow(p->GetScalingFactor(), noiseScaleDeg));
 
     return p;
 }
@@ -2587,7 +2587,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             uint32_t realMaxIdx = -1, imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < inverse.size(); ++idx) {
-                // X[k] * exp( j*2*pi*n*k/N )
+                // X[k] * std::exp( j*2*pi*n*k/N )
                 auto prodFactor = inverse[idx] * std::complex<double>{std::cos((factor * idx) / invLen),
                                                                       std::sin((factor * idx) / invLen)};
 
@@ -2611,7 +2611,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             buffer << "Overflow at slot number " << i << std::endl;
             buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
+            buffer << "Scaling factor is " << std::ceil(std::log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
             OPENFHE_THROW(buffer.str());
         }
@@ -2715,7 +2715,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
+    p->SetScalingFactor(std::pow(p->GetScalingFactor(), noiseScaleDeg));
     return p;
 }
 #endif
@@ -2843,9 +2843,9 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     // changing it here leads to exceptions later. Alternatively, move this check outside or update all
     // the uses of levelBudget.
     if (levelBudget[0] > logSlots || levelBudget[1] > logSlots)
-        OPENFHE_THROW("The level budget is too large. Please set it to be at least one and at most log(slots).");
+        OPENFHE_THROW("The level budget is too large. Please set it to be at least one and at most std::log(slots).");
     if (levelBudget[0] < 1 || levelBudget[1] < 1)
-        OPENFHE_THROW("The level budget cannot be zero. Please set it to be at least one and at most log(slots).");
+        OPENFHE_THROW("The level budget cannot be zero. Please set it to be at least one and at most std::log(slots).");
 
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
     precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
@@ -2862,7 +2862,7 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
         fivePows &= mmask;
     }
 
-    // computes all powers of a primitive root of unity exp(2 * M_PI/m)
+    // computes all powers of a primitive root of unity std::exp(2 * M_PI/m)
     std::vector<std::complex<double>> ksiPows(m + 1);
     double ak = 2 * M_PI / m;
     for (uint32_t j = 0; j < m; ++j) {
@@ -3152,18 +3152,18 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_cos, coeffLowerBound, coeffUpperBound);
 
-            // Double angle-iterations to get cos(pi*x)
+            // Double angle-iterations to get std::cos(pi*x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->EvalAddInPlaceNoCheck(ctxtEnc[0], ctxtEnc[0]);
             cc->EvalSubInPlace(ctxtEnc[0], 1.0);
-            cc->ModReduceInPlace(ctxtEnc[0]);  // cos(pi x)
+            cc->ModReduceInPlace(ctxtEnc[0]);  // std::cos(pi x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
 
             cc->EvalSquareInPlace(ctxtEnc[1]);
             cc->EvalAddInPlaceNoCheck(ctxtEnc[1], ctxtEnc[1]);
             cc->EvalSubInPlace(ctxtEnc[1], 1.0);
-            cc->ModReduceInPlace(ctxtEnc[1]);  // cos(pi x)
+            cc->ModReduceInPlace(ctxtEnc[1]);  // std::cos(pi x)
             cc->EvalSquareInPlace(ctxtEnc[1]);
             cc->ModReduceInPlace(ctxtEnc[1]);  // cos^2(pi x)
         }
@@ -3172,11 +3172,11 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
                               (digitBitSize > 10)          ? coeff_exp_25_double_66 :
                                                              coeff_exp_25_double_58;
 
-            // Obtain exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
+            // Obtain std::exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_exp, coeffLowerBound, coeffUpperBound);
 
-            // Double angle-iterations to get exp(2*Pi*i*x)
+            // Double angle-iterations to get std::exp(2*Pi*i*x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);
             cc->EvalSquareInPlace(ctxtEnc[0]);
@@ -3243,11 +3243,11 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
 
-            // Double angle-iterations to get cos(pi*x)
+            // Double angle-iterations to get std::cos(pi*x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->EvalAddInPlaceNoCheck(ctxtEnc[0], ctxtEnc[0]);
             cc->EvalSubInPlace(ctxtEnc[0], 1.0);
-            cc->ModReduceInPlace(ctxtEnc[0]);  // cos(pi x)
+            cc->ModReduceInPlace(ctxtEnc[0]);  // std::cos(pi x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
         }
@@ -3256,10 +3256,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
                               (digitBitSize > 10)          ? coeff_exp_25_double_66 :
                                                              coeff_exp_25_double_58;
 
-            // Obtain exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
+            // Obtain std::exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
 
-            // Double angle-iterations to get exp(2*Pi*i*x)
+            // Double angle-iterations to get std::exp(2*Pi*i*x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);
             cc->EvalSquareInPlace(ctxtEnc[0]);
@@ -3477,10 +3477,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeriesInternal(
 
     auto& ctxt_exp = (precomp == 0 || precomp == 2) ? p.m_precompExp : p.m_precompExpI;
     if (precomp == 0 || precomp == 1) {
-        // Obtain exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
+        // Obtain std::exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
         ctxt_exp = cc->EvalChebyshevSeries(ciphertext, coefficientsCheb, a, b);
 
-        // Double angle-iterations to get exp(2*Pi*i*x)
+        // Double angle-iterations to get std::exp(2*Pi*i*x)
         cc->EvalSquareInPlace(ctxt_exp);
         cc->ModReduceInPlace(ctxt_exp);
         cc->EvalSquareInPlace(ctxt_exp);
@@ -3639,7 +3639,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
 
     NativeInteger pModInvq = modulusp.ModInverse(modulusq);
 
-    // modswitch cvRes from p*q to q, i.e., compute round(cvRes/p) mod q
+    // modswitch cvRes from p*q to q, i.e., compute std::round(cvRes/p) mod q
     // In RNS, we use the technique described in Appendix B.2.2 of https://eprint.iacr.org/2021/204 for the BFV case, i.e., for t=1.
 
     for (uint32_t i = 0; i < 2; ++i) {

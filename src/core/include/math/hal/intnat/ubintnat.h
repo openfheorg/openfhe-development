@@ -1719,7 +1719,7 @@ public:
 
     // TODO: * i to << i
     usint GetDigitAtIndexForBase(usint index, usint base) const {
-        usint DigitLen = ceil(log2(base));
+        usint DigitLen = std::ceil(std::log2(base));
         usint digit    = 0;
         usint newIndex = 1 + (index - 1) * DigitLen;
         for (usint i = 1; i < base; i <<= 1) {

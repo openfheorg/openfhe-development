@@ -265,7 +265,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
             auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
             usint g = encodingParams->GetPlaintextGenerator();
-            for (int i = 0; i < floor(log2(batchSize)); i++) {
+            for (int i = 0; i < std::floor(std::log2(batchSize)); i++) {
                 auto ea       = algo->EvalAutomorphism(newCiphertext, g, evalKeyMap);
                 newCiphertext = algo->EvalAdd(newCiphertext, ea);
                 g             = (g * g) % m;

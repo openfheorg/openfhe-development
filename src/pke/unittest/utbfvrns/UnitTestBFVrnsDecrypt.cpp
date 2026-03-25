@@ -141,9 +141,9 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
  *     - (qMSBHf + tMSB + sizeQMSB) <  52 (G)
  *     - (qMSBHf + tMSB + sizeQMSB) >= 52 (H)
  *
- * log2(65537) = 16.00002
- * log2(5308417) = 22.34
- * log2(3221225473) = 31.58
+ * std::log2(65537) = 16.00002
+ * std::log2(5308417) = 22.34
+ * std::log2(3221225473) = 31.58
  */
 // clang-format off
 INSTANTIATE_TEST_SUITE_P(

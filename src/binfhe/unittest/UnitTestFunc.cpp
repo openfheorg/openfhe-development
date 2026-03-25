@@ -99,7 +99,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
 
     uint32_t Q = 1 << 29;
     int q      = 4096;
-    int factor = 1 << int(29 - log2(q));
+    int factor = 1 << int(29 - std::log2(q));
     int p      = cc.GetMaxPlaintextSpace().ConvertToInt();
     auto sk    = cc.KeyGen();
     cc.BTKeyGen(sk);
@@ -123,7 +123,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
 
     uint32_t Q = 1 << 29;
     int q      = 4096;
-    int factor = 1 << int(29 - log2(q));
+    int factor = 1 << int(29 - std::log2(q));
     int p      = cc.GetMaxPlaintextSpace().ConvertToInt();
     auto sk    = cc.KeyGen();
     cc.BTKeyGen(sk);
@@ -146,7 +146,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
     uint32_t Q = 1 << 29;
 
     int basic        = 4096;                             // q
-    int factor       = 1 << int(log2(Q) - log2(basic));  // Q/q
+    int factor       = 1 << int(std::log2(Q) - std::log2(basic));  // Q/q
     uint64_t p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
     uint64_t P       = p_basic * factor;
     auto st          = P / 2 - 3;
@@ -160,7 +160,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
         auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p_basic * factor, Q);
 
         auto decomp = cc.EvalDecomp(ct1);
-        EXPECT_EQ(size_t(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+        EXPECT_EQ(size_t(std::ceil(std::log(factor) / std::log(p_basic)) + 1), decomp.size()) << failed;
 
         auto p_basicdecrypt = p_basic;
         LWEPlaintext result;
@@ -207,7 +207,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
     uint32_t Q = 1 << 29;
 
     int basic        = 4096;                             // q
-    int factor       = 1 << int(log2(Q) - log2(basic));  // Q/q
+    int factor       = 1 << int(std::log2(Q) - std::log2(basic));  // Q/q
     uint64_t p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
     uint64_t P       = p_basic * factor;
     auto st          = P / 2 - 3;
@@ -220,7 +220,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
         auto ct1 = cc.Encrypt(sk, i, LARGE_DIM, p_basic * factor, Q);
 
         auto decomp = cc.EvalDecomp(ct1);
-        EXPECT_EQ(size_t(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+        EXPECT_EQ(size_t(std::ceil(std::log(factor) / std::log(p_basic)) + 1), decomp.size()) << failed;
 
         auto p_basicdecrypt = p_basic;
         LWEPlaintext result;

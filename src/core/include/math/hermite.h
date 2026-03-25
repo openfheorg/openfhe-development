@@ -43,7 +43,7 @@ namespace lbcrypto {
 /**
  * Method for calculating the intermediate Hermite trigonometric interpolation (of order 1)
  * coefficients for an input function. These coefficents can be input into
- * EvalPoly over ciphertexts encrypting exp(2*Pi*x) to evaluate the function.
+ * EvalPoly over ciphertexts encrypting std::exp(2*Pi*x) to evaluate the function.
  * The coefficients are divided by 2 to account for the fact that the real part
  * of the output of EvalPoly needs to be taken in order to get the Hermite
  * Trigonometric Interpolation result.

@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// In this example, we evaluate the logistic function 1 / (1 + exp(-x)) on an input of doubles
+// In this example, we evaluate the logistic function 1 / (1 + std::exp(-x)) on an input of doubles
 void EvalLogisticExample() {
     std::cout << "--------------------------------- EVAL LOGISTIC FUNCTION ---------------------------------"
               << std::endl;

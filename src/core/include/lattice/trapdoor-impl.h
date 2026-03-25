@@ -178,7 +178,7 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
 
     Matrix<int64_t> p2ZVector([]() { return 0; }, n * k, 1);
 
-    double sigmaLarge = sqrt(s * s - sigma * sigma);
+    double sigmaLarge = std::sqrt(s * s - sigma * sigma);
 
     // for distribution parameters up to KARNEY_THRESHOLD (experimentally found
     // threshold) use the Peikert's inversion method otherwise, use Karney's

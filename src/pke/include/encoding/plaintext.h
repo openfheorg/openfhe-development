@@ -222,7 +222,7 @@ public:
     /**
    * Calculate and return lower bound that can be encoded with the plaintext
    * modulus the number to encode MUST be greater than this value
-   * @return floor(-p/2)
+   * @return std::floor(-p/2)
    */
     int64_t LowBound() const {
         uint64_t ptm = GetEncodingParams()->GetPlaintextModulus();
@@ -232,7 +232,7 @@ public:
     /**
    * Calculate and return upper bound that can be encoded with the plaintext
    * modulus the number to encode MUST be less than or equal to this value
-   * @return floor(p/2)
+   * @return std::floor(p/2)
    */
     int64_t HighBound() const {
         return GetEncodingParams()->GetPlaintextModulus() >> 1;

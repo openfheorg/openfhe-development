@@ -97,9 +97,9 @@ int main() {
 
     int base = std::log(CENTER_COUNT) / std::log(2);
     // Initialization for the generic sampler, takes the parameters array of base
-    // samplers, standard deviation of the base sampler base=(which is log2(number
+    // samplers, standard deviation of the base sampler base=(which is std::log2(number
     // of cosets or centers)) and smoothing parameter Make sure that stdBase>= 4 *
-    // sqrt(2) * smoothing parameter
+    // std::sqrt(2) * smoothing parameter
     DiscreteGaussianGeneratorGeneric dgg2(peikert_samplers, stdBase, base, SMOOTHING_PARAMETER);
     start = currentDateTime();
     for (int k = 0; k < CENTER_COUNT; k++) {

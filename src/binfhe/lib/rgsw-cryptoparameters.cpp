@@ -48,7 +48,7 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseG^i
     if (signEval) {
         constexpr uint32_t baseGlist[]  = {1 << 14, 1 << 18, 1 << 27};
-        // {log(1 << 14), log(1 << 18), log(1 << 27)}
+        // {std::log(1 << 14), std::log(1 << 18), std::log(1 << 27)}
         constexpr double logbaseGlist[] = {0x1.3687a9f1af2b1p+3, 0x1.8f40b5ed9812dp+3, 0x1.2b708872320e2p+4};
         constexpr NativeInteger nativebaseGlist[] = {1 << 14, 1 << 18, 1 << 27};
         auto logQ{std::log(m_Q.ConvertToDouble())};

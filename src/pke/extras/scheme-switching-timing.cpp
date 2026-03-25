@@ -56,7 +56,7 @@ int main() {
     SwitchFHEWtoCKKS(24, 1024, 1024);
     ComparisonViaSchemeSwitching(24, 1024, 1024);
 
-    // // depth >= 13 + log2(numValues);
+    // // depth >= 13 + std::log2(numValues);
     ArgminViaSchemeSwitching(24, 1024, 1024);
     ArgminViaSchemeSwitchingAlt(24, 1024, 1024);
 
