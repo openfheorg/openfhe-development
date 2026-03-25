@@ -77,11 +77,11 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
                 "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
         }
         double logstd =
-            parameters.GetStatisticalSecurity() / 2 + log2(sqrt(12 * parameters.GetNumAdversarialQueries()));
-        floodingNoiseStd = pow(2, logstd + parameters.GetNoiseEstimate());
+            parameters.GetStatisticalSecurity() / 2 + std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
+        floodingNoiseStd = std::pow(2, logstd + parameters.GetNoiseEstimate());
 #if NATIVEINT == 128
         scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +
-                         0.5 * log2(parameters.GetRingDim());
+                         0.5 * std::log2(parameters.GetRingDim());
         firstModSize = scalingModSize + 11;
 #else
         scalingModSize = MAX_MODULUS_SIZE - 1;

@@ -2440,7 +2440,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 }
             }
 
-            auto scaledInputSize = ceil(log2(dre));
+            auto scaledInputSize = std::ceil(std::log2(dre));
 
             std::stringstream buffer;
             buffer << std::endl
@@ -2450,7 +2450,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             buffer << "Overflow at slot number " << i << std::endl;
             buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
+            buffer << "Scaling factor is " << std::ceil(std::log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
             OPENFHE_THROW(buffer.str());
         }
@@ -2519,7 +2519,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
+    p->SetScalingFactor(std::pow(p->GetScalingFactor(), noiseScaleDeg));
 
     return p;
 }
@@ -2611,7 +2611,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             buffer << "Overflow at slot number " << i << std::endl;
             buffer << "- Max real part contribution from input[" << realMaxIdx << "]: " << realMax << std::endl;
             buffer << "- Max imaginary part contribution from input[" << imagMaxIdx << "]: " << imagMax << std::endl;
-            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits " << std::endl;
+            buffer << "Scaling factor is " << std::ceil(std::log2(powP)) << " bits " << std::endl;
             buffer << "Scaled input is " << scaledInputSize << " bits " << std::endl;
             OPENFHE_THROW(buffer.str());
         }
@@ -2715,7 +2715,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
+    p->SetScalingFactor(std::pow(p->GetScalingFactor(), noiseScaleDeg));
     return p;
 }
 #endif

@@ -47,9 +47,9 @@ void printPrimeModuliChain(const DCRTPoly& poly) {
     double total_bit_len = 0.0;
     for (int i = 0; i < num_primes; i++) {
         auto qi = poly.GetParams()->GetParams()[i]->GetModulus();
-        std::cout << "q_" << i << ": " << qi << ",  log q_" << i << ": " << log(qi.ConvertToDouble()) / log(2)
+        std::cout << "q_" << i << ": " << qi << ",  log q_" << i << ": " << std::log(qi.ConvertToDouble()) / std::log(2)
                   << std::endl;
-        total_bit_len += log(qi.ConvertToDouble()) / log(2);
+        total_bit_len += std::log(qi.ConvertToDouble()) / std::log(2);
     }
     std::cout << "Total bit length: " << total_bit_len << std::endl;
 }

@@ -409,7 +409,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
         // if dynamic
         if (EKs.size() == 3) {
             // TODO: use GetMSB()?
-            uint32_t binLog = static_cast<uint32_t>(ceil(GetMSB(mod.ConvertToInt()) - 1));
+            uint32_t binLog = static_cast<uint32_t>(std::ceil(GetMSB(mod.ConvertToInt()) - 1));
             uint32_t base{0};
             if (binLog <= static_cast<uint32_t>(17))
                 base = static_cast<uint32_t>(1) << 27;
@@ -484,7 +484,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
-            uint32_t binLog = static_cast<uint32_t>(ceil(log2(mod.ConvertToInt())));
+            uint32_t binLog = static_cast<uint32_t>(std::ceil(std::log2(mod.ConvertToInt())));
             uint32_t base   = 0;
             if (binLog <= static_cast<uint32_t>(17))
                 base = static_cast<uint32_t>(1) << 27;

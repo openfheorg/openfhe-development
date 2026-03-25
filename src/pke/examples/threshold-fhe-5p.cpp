@@ -86,7 +86,7 @@ void RunBFVrns() {
     // Output the generated parameters
     std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() << std::endl;
     std::cout << "n = " << cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 << std::endl;
-    std::cout << "log2 q = " << log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+    std::cout << "log2 q = " << std::log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
               << std::endl;
 
     // Initialize Public Key Containers for two parties A and B

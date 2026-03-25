@@ -1552,7 +1552,7 @@ template <typename uint_type, usint BITLENGTH>
 inline double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToDouble() const {
     double result = 0.0;
     usint ceilInt = m_nSize - ceilIntByUInt(m_MSB);
-    double factor = pow(2.0, m_uintBitLength);
+    double factor = std::pow(2.0, m_uintBitLength);
     double power  = 1.0;
     // copy the values by shift and add
     for (usint i = 0; (m_nSize - i - 1) >= ceilInt; i++) {
@@ -1566,7 +1566,7 @@ template <typename uint_type, usint BITLENGTH>
 inline long double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToLongDouble() const {
     long double result = 0.0;
     usint ceilInt      = m_nSize - ceilIntByUInt(m_MSB);
-    long double factor = pow(2.0, m_uintBitLength);
+    long double factor = std::pow(2.0, m_uintBitLength);
     long double power  = 1.0;
     // copy the values by shift and add
     for (usint i = 0; (m_nSize - i - 1) >= ceilInt; i++) {
@@ -1636,7 +1636,7 @@ bool BigIntegerFixedT<uint_type, BITLENGTH>::CheckIfPowerOfTwo(const BigIntegerF
 
 template <typename uint_type, usint BITLENGTH>
 usint BigIntegerFixedT<uint_type, BITLENGTH>::GetDigitAtIndexForBase(usint index, usint base) const {
-    usint DigitLen = ceil(log2(base));
+    usint DigitLen = std::ceil(std::log2(base));
     usint digit    = 0;
     usint newIndex = 1 + (index - 1) * DigitLen;
     for (usint i = 1; i < base; i = i * 2) {

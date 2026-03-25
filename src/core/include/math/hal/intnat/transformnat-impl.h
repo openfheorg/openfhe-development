@@ -778,8 +778,8 @@ void ChineseRemainderTransformFTTNat<VecType>::Reset() {
 
 template <typename VecType>
 void BluesteinFFTNat<VecType>::PreComputeDefaultNTTModulusRoot(uint32_t cycloOrder, const IntType& modulus) {
-    uint32_t nttDim                           = pow(2, ceil(log2(2 * cycloOrder - 1)));
-    const auto nttModulus                     = LastPrime<IntType>(log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
+    uint32_t nttDim                           = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
+    const auto nttModulus                     = LastPrime<IntType>(std::log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
     const auto nttRoot                        = RootOfUnity<IntType>(nttDim, nttModulus);
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
     m_defaultNTTModulusRoot[modulus]          = nttModulusRoot;
@@ -790,7 +790,7 @@ void BluesteinFFTNat<VecType>::PreComputeDefaultNTTModulusRoot(uint32_t cycloOrd
 template <typename VecType>
 void BluesteinFFTNat<VecType>::PreComputeRootTableForNTT(uint32_t cyclotoOrder,
                                                          const ModulusRoot<IntType>& nttModulusRoot) {
-    uint32_t nttDim        = pow(2, ceil(log2(2 * cyclotoOrder - 1)));
+    uint32_t nttDim        = std::pow(2, std::ceil(std::log2(2 * cyclotoOrder - 1)));
     const auto& nttModulus = nttModulusRoot.first;
     const auto& nttRoot    = nttModulusRoot.second;
 
@@ -840,7 +840,7 @@ void BluesteinFFTNat<VecType>::PreComputeRBTable(uint32_t cycloOrder, const Modu
     // const auto &nttRoot = nttModulusRoot.second;
     // assumes rootTable is precomputed
     const auto& rootTable = m_rootOfUnityTableByModulusRoot[nttModulusRoot];
-    uint32_t nttDim       = pow(2, ceil(log2(2 * cycloOrder - 1)));
+    uint32_t nttDim       = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
 
     VecType b(2 * cycloOrder - 1, modulus);
     b[cycloOrder - 1] = 1;
@@ -887,7 +887,7 @@ VecType BluesteinFFTNat<VecType>::ForwardTransform(const VecType& element, const
         m_rootOfUnityInverseTableByModulusRoot[nttModulusRoot];  // assumes rootTableInverse is precomputed
     VecType x = element.ModMul(powers);
 
-    uint32_t nttDim = pow(2, ceil(log2(2 * cycloOrder - 1)));
+    uint32_t nttDim = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
     auto Ra         = PadZeros(x, nttDim);
     Ra.SetModulus(nttModulus);
     VecType RA(nttDim);
@@ -972,9 +972,9 @@ void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTDivisionModulus(
     OPENFHE_DEBUG("GetTotient(" << cyclotoOrder << ")= " << n);
 
     uint32_t power                 = cyclotoOrder - n;
-    m_nttDivisionDim[cyclotoOrder] = 2 * std::pow(2, ceil(log2(power)));
+    m_nttDivisionDim[cyclotoOrder] = 2 * std::pow(2, std::ceil(std::log2(power)));
 
-    uint32_t nttDimBig = std::pow(2, ceil(log2(2 * cyclotoOrder - 1)));
+    uint32_t nttDimBig = std::pow(2, std::ceil(std::log2(2 * cyclotoOrder - 1)));
 
     // Computes the root of unity for the division NTT based on the root of unity
     // for regular NTT
@@ -1034,7 +1034,7 @@ template <typename VecType>
 VecType ChineseRemainderTransformArbNat<VecType>::InversePolyMod(const VecType& cycloPoly, const IntType& modulus,
                                                                  uint32_t power) {
     VecType result(power, modulus);
-    uint32_t r = ceil(log2(power));
+    uint32_t r = std::ceil(std::log2(power));
     VecType h(1, modulus);  // h is a unit polynomial
     h[0] = 1;
 

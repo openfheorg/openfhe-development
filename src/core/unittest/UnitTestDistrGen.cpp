@@ -186,14 +186,14 @@ void testDiscreteUniformGenerator(typename V::Integer& modulus, std::string test
     }
 
     double computedMeanInDouble = sum / size;
-    double diffInMeans          = abs(computedMeanInDouble - expectedMeanInDouble);
+    double diffInMeans          = std::abs(computedMeanInDouble - expectedMeanInDouble);
 
     // within 1% of expected mean
     EXPECT_LT(diffInMeans, 0.01 * modulusInDouble) << "Failure testing first_moment_test_convertToDouble " << test_name;
 
     // TEST CASE ON SECOND CENTRAL MOMENT
     double expectedVarianceInDouble = ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;
-    double expectedStdDevInDouble   = sqrt(expectedVarianceInDouble);
+    double expectedStdDevInDouble   = std::sqrt(expectedVarianceInDouble);
 
     sum = 0;
     double temp;
@@ -204,8 +204,8 @@ void testDiscreteUniformGenerator(typename V::Integer& modulus, std::string test
     }
 
     double computedVariance = (sum / size);
-    double computedStdDev   = sqrt(computedVariance);
-    double diffInStdDev     = abs(computedStdDev - expectedStdDevInDouble);
+    double computedStdDev   = std::sqrt(computedVariance);
+    double diffInStdDev     = std::abs(computedStdDev - expectedStdDevInDouble);
 
     EXPECT_LT(diffInStdDev, 0.01 * expectedStdDevInDouble)
         << "Failure testing second_moment_test_convertToDouble " << test_name;
@@ -281,7 +281,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     // divide by the size (i.e. take mean)
     double computedMeanInDouble = sum / size;
     // compute the difference between the expected and actual
-    double diffInMeans = abs(computedMeanInDouble - expectedMeanInDouble);
+    double diffInMeans = std::abs(computedMeanInDouble - expectedMeanInDouble);
 
     // within 1% of expected mean
     EXPECT_LT(diffInMeans, 0.01 * modulusInDouble)
@@ -290,7 +290,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     // TEST CASE ON SECOND CENTRAL MOMENT SMALL MODULUS
     double expectedVarianceInDouble =
         ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
-    double expectedStdDevInDouble = sqrt(expectedVarianceInDouble);
+    double expectedStdDevInDouble = std::sqrt(expectedVarianceInDouble);
 
     sum = 0;
     double temp;
@@ -301,9 +301,9 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     }
 
     double computedVariance = (sum / size);
-    double computedStdDev   = sqrt(computedVariance);
+    double computedStdDev   = std::sqrt(computedVariance);
 
-    double diffInStdDev = abs(computedStdDev - expectedStdDevInDouble);
+    double diffInStdDev = std::abs(computedStdDev - expectedStdDevInDouble);
 
     // within 1% of expected std dev
     EXPECT_LT(diffInStdDev, 0.1 * expectedStdDevInDouble) << "Failure testing second_central_moment_test " << test_name;
@@ -372,7 +372,7 @@ void BinaryUniformGeneratorTest(const std::string& msg) {
 
         float computedMean = static_cast<float>(sum) / static_cast<float>(length);
         float expectedMean = 0.5;
-        float dif          = abs(computedMean - expectedMean);
+        float dif          = std::abs(computedMean - expectedMean);
 
         EXPECT_LT(dif, 0.01) << msg << " Failure Mean is incorrect";
         // a large sample. Max of them should be less than q
@@ -404,7 +404,7 @@ void TernaryUniformGeneratorTest(const std::string& msg) {
     float computedMean = static_cast<double>(sum) / static_cast<double>(length);
 
     float expectedMean = 0;
-    float dif          = abs(computedMean - expectedMean);
+    float dif          = std::abs(computedMean - expectedMean);
 
     EXPECT_LT(dif, 0.01) << msg << " Ternary Uniform Distribution Failure Mean is incorrect";
     // a large sample. Max of them should be less than q
@@ -462,7 +462,7 @@ void DiscreteGaussianGeneratorTest(const std::string& msg) {
 
         double modulusByTwoInDouble = std::stod(modulusByTwo.ToString());
 
-        double diff = abs(modulusByTwoInDouble - mean);
+        double diff = std::abs(modulusByTwoInDouble - mean);
         EXPECT_LT(diff, 104) << msg << " Failure generate_vector_mean_test";
     }
 }
@@ -566,7 +566,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
 
         double modulusByTwoInDouble = std::stod(modulusByTwo.ToString());
 
-        double diff = abs(modulusByTwoInDouble - mean);
+        double diff = std::abs(modulusByTwoInDouble - mean);
         EXPECT_LT(diff, 104) << msg << " Failure generate_vector_mean_test";
     }
 }

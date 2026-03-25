@@ -199,11 +199,11 @@ private:
     static int64_t FindInVector(const std::vector<double>& S, double search);
 
     static double UnnormalizedGaussianPDF(const double& mean, const double& sigma, int32_t x) {
-        return pow(M_E, -pow(x - mean, 2) / (2. * sigma * sigma));
+        return std::pow(M_E, -std::pow(x - mean, 2) / (2. * sigma * sigma));
     }
 
     static double UnnormalizedGaussianPDFOptimized(const double& mean, const double& sigmaFactor, int32_t x) {
-        return pow(M_E, sigmaFactor * (x - mean) * (x - mean));
+        return std::pow(M_E, sigmaFactor * (x - mean) * (x - mean));
     }
 
     /**

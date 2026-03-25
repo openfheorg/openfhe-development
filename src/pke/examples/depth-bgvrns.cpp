@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     std::cout << "n = " << cryptoContext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2
               << std::endl;
     std::cout << "log2 q = "
-              << log2(cryptoContext->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << std::log2(cryptoContext->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
               << std::endl;
 
     // Initialize Public Key Containers

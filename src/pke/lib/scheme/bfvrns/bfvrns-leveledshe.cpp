@@ -144,7 +144,7 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
 #endif
         else {
             double numDigitsPerTower = (relinWindow == 0) ? 1 : ((dcrtBits / relinWindow) + 1);
-            return delta(n) * numDigitsPerTower * (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr / 2.0;
+            return delta(n) * numDigitsPerTower * (std::floor(logqPrev / (std::log(2) * dcrtBits)) + 1) * w * Berr / 2.0;
         }
     };
 
@@ -161,25 +161,25 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
     // main correctness constraint
     auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
         if (multiplicativeDepth > 0) {
-            return log(4 * p) + (multiplicativeDepth - 1) * log(C1(n)) +
-                   log(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
+            return std::log(4 * p) + (multiplicativeDepth - 1) * std::log(C1(n)) +
+                   std::log(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
         }
-        return log(p * (4 * (Vnorm(n))));
+        return std::log(p * (4 * (Vnorm(n))));
     };
 
     // initial values
-    double logqPrev = 6. * log(10);
+    double logqPrev = 6. * std::log(10);
     double logq     = logqBFV(n, logqPrev);
 
-    while (std::fabs(logq - logqPrev) > log(1.001)) {
+    while (std::fabs(logq - logqPrev) > std::log(1.001)) {
         logqPrev = logq;
         logq     = logqBFV(n, logqPrev);
     }
 
     // get an estimate of the error q / (4t)
-    double loge = logq / log(2) - 2 - log2(p);
+    double loge = logq / std::log(2) - 2 - std::log2(p);
 
-    double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(deltaMS(n));
+    double logExtra = keySwitch ? std::log2(noiseKS(n, logq, w)) : std::log2(deltaMS(n));
 
     // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
     // adjusted empirical parameter to 16 from 4 for threshold scenarios to work correctly, this might need to

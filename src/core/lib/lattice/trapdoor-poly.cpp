@@ -53,9 +53,9 @@ std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::Trapd
     auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
     double val   = params->GetModulus().ConvertToDouble();
-    double nBits = floor(log2(val - 1.0) + 1.0);
+    double nBits = std::floor(std::log2(val - 1.0) + 1.0);
 
-    size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */
+    size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
         k++;  // for a balanced digit representation, there is an extra digit
@@ -92,9 +92,9 @@ std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<
     auto uniform_alloc  = NativePoly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
     double val   = params->GetModulus().ConvertToDouble();
-    double nBits = floor(log2(val - 1.0) + 1.0);
+    double nBits = std::floor(std::log2(val - 1.0) + 1.0);
 
-    size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */
+    size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
         k++;  // for a balanced digit representation, there is an extra digit
@@ -131,9 +131,9 @@ std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::Trapd
     auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
     double val   = params->GetModulus().ConvertToDouble();
-    double nBits = ceil(log2(val));
+    double nBits = std::ceil(std::log2(val));
 
-    size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */
+    size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
         k++;  // for a balanced digit representation, there is an extra digit
@@ -178,9 +178,9 @@ std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<
     auto uniform_alloc  = NativePoly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
     double val   = params->GetModulus().ConvertToDouble();
-    double nBits = ceil(log2(val));
+    double nBits = std::ceil(std::log2(val));
 
-    size_t k = std::ceil(nBits / log2(base)); /* (+1) is for balanced representation */
+    size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
         k++;  // for a balanced digit representation, there is an extra digit

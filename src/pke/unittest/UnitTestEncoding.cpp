@@ -125,7 +125,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     BigInteger modulusP(p);
 
     uint32_t mArb = 2 * m;
-    uint32_t mNTT = pow(2, ceil(log2(2 * m - 1)));
+    uint32_t mNTT = std::pow(2, std::ceil(std::log2(2 * m - 1)));
 
     // populate the towers for the small modulus
 
@@ -187,7 +187,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     BigInteger modulusP(p);
 
     uint32_t mArb = 2 * m;
-    uint32_t mNTT = pow(2, ceil(log2(2 * m - 1)));
+    uint32_t mNTT = std::pow(2, std::ceil(std::log2(2 * m - 1)));
 
     // populate the towers for the small modulus
     std::vector<NativeInteger> init_moduli(init_size);

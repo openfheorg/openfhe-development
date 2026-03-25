@@ -275,7 +275,7 @@ public:
 
         Matrix<int64_t> p2ZVector([]() { return 0; }, n * k, 1);
 
-        double sigmaLarge = sqrt(s * s - sigma * sigma);
+        double sigmaLarge = std::sqrt(s * s - sigma * sigma);
 
         // for distribution parameters up to 3e5 (experimentally found threshold)
         // use the Peikert's inversion method otherwise, use Karney's method
@@ -374,7 +374,7 @@ public:
 
         Matrix<int64_t> p2ZVector([]() { return 0; }, n * k, d);
 
-        double sigmaLarge = sqrt(s * s - sigma * sigma);
+        double sigmaLarge = std::sqrt(s * s - sigma * sigma);
 
         // for distribution parameters up to the experimentally found threshold, use
         // the Peikert's inversion method otherwise, use Karney's method

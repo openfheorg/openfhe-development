@@ -456,7 +456,7 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
 
     if (A.size() >= A[0].size()) {
         uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
-        uint32_t gStep = ceil(static_cast<double>(n) / bStep);
+        uint32_t gStep = std::ceil(static_cast<double>(n) / bStep);
 
         auto num_slices = A.size() / A[0].size();
         std::vector<std::vector<std::vector<std::complex<double>>>> A_slices(num_slices);

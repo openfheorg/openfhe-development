@@ -73,8 +73,8 @@ TEST(UTTrapdoor, sizes) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto fastParams = std::make_shared<ILParams>(m, modulus, rootOfUnity);
     std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> trapPair =
@@ -98,8 +98,8 @@ TEST(UTTrapdoor, TrapDoorPairTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
@@ -136,8 +136,8 @@ TEST(UTTrapdoor, TrapDoorPairTestSquareMat) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = ceil(log2(val));
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::ceil(std::log2(val));
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
@@ -172,8 +172,8 @@ TEST(UTTrapdoor, GadgetTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
@@ -192,8 +192,8 @@ TEST(UTTrapdoor, TrapDoorMultTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
@@ -227,8 +227,8 @@ TEST(UTTrapdoor, TrapDoorMultTestSquareMat) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = ceil(log2(val));
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::ceil(std::log2(val));
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     size_t d = 5;
 
@@ -282,8 +282,8 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
     // YSP check logTwo computation
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);
 
     Matrix<int64_t> zHatBBI([]() { return 0; }, k, m / 2);
 
@@ -320,7 +320,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
     double sigma = SIGMA;
 
     auto params        = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, size, kRes);
-    int64_t digitCount = static_cast<int64_t>(ceil(log2((*params)[0]->GetModulus().ConvertToDouble()) / log2(base)));
+    int64_t digitCount = static_cast<int64_t>(std::ceil(std::log2((*params)[0]->GetModulus().ConvertToDouble()) / std::log2(base)));
 
     std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> trapPair =
         RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(params, sigma, base);
@@ -336,7 +336,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
 
     double c = (base + 1) * SIGMA;
     double s = SPECTRAL_BOUND(n, k, base);
-    DCRTPoly::DggType dggLargeSigma(sqrt(s * s - c * c));
+    DCRTPoly::DggType dggLargeSigma(std::sqrt(s * s - c * c));
 
     u.SwitchFormat();
 
@@ -384,8 +384,8 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     // double val = modulus.ConvertToDouble(); //TODO get the next few lines
     // working in a single instance. YSP check logTwo computation
 
-    usint nBits = floor(log2(modulus.ConvertToDouble() - 1.0) + 1.0);
-    usint k     = ceil(nBits / log2(base));
+    usint nBits = std::floor(std::log2(modulus.ConvertToDouble() - 1.0) + 1.0);
+    usint k     = std::ceil(nBits / std::log2(base));
 
     // double logTwo = log(val - 1.0) / log(2) + 1.0;
     // usint k = (usint)floor(logTwo);
@@ -451,8 +451,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     OPENFHE_DEBUG("k = " << k);
     OPENFHE_DEBUG("sigma = " << sigma);
@@ -475,7 +475,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
     uint32_t base = 2;
     double c      = (base + 1) * SIGMA;
     double s      = SPECTRAL_BOUND(n, k, base);
-    Poly::DggType dggLargeSigma(sqrt(s * s - c * c));
+    Poly::DggType dggLargeSigma(std::sqrt(s * s - c * c));
 
     Poly u(dug, params, Format::COEFFICIENT);
 
@@ -520,7 +520,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatrices) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::ceil(log2(val));
+    double logTwo = std::ceil(std::log2(val));
     usint k       = (usint)(logTwo);
 
     auto params = std::make_shared<ILParams>(m, modulus, rootOfUnity);
@@ -540,7 +540,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatrices) {
         uint32_t base = 2;
         double c      = (base + 1) * SIGMA;
         double s      = SPECTRAL_BOUND_D(n, k, base, d);
-        Poly::DggType dggLargeSigma(sqrt(s * s - c * c));
+        Poly::DggType dggLargeSigma(std::sqrt(s * s - c * c));
 
         Matrix<Poly> U(zero_alloc, d, d, uniform_alloc);
 
@@ -573,7 +573,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
     auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, size, dcrtBits);
 
     double val    = params->GetModulus().ConvertToDouble();
-    double logTwo = std::ceil(log2(val));
+    double logTwo = std::ceil(std::log2(val));
     usint k       = (usint)(logTwo);
 
     auto zero_alloc    = DCRTPoly::Allocator(params, Format::EVALUATION);
@@ -591,7 +591,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
         uint32_t base = 2;
         double c      = (base + 1) * SIGMA;
         double s      = SPECTRAL_BOUND_D(n, k, base, d);
-        DCRTPoly::DggType dggLargeSigma(sqrt(s * s - c * c));
+        DCRTPoly::DggType dggLargeSigma(std::sqrt(s * s - c * c));
 
         Matrix<DCRTPoly> U(zero_alloc, d, d, uniform_alloc);
 
@@ -638,8 +638,8 @@ TEST(UTTrapdoor, TrapDoorPerturbationSamplingTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = log(val - 1.0) / log(2) + 1.0;
-    usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
+    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     // smoothing parameter
     // double c(2 * sqrt(log(2 * n*(1 + 1 / DG_ERROR)) / M_PI));
@@ -665,7 +665,7 @@ TEST(UTTrapdoor, TrapDoorPerturbationSamplingTest) {
     Matrix<Poly> rHat = trapPair.second.m_r;
 
     Poly::DggType dgg(sigma);
-    Poly::DggType dggLargeSigma(sqrt(s * s - c * c));
+    Poly::DggType dggLargeSigma(std::sqrt(s * s - c * c));
 
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
 

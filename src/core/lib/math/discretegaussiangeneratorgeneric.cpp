@@ -69,7 +69,7 @@ const int32_t BERNOULLI_FLIPS = 23;
 BaseSampler::BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType type = PEIKERT)
     : b_mean(mean), b_std(std), bg(generator), b_type(type) {
     double acc = 1e-17;
-    fin        = static_cast<int>(ceil(b_std * sqrt(-2 * log(acc))));
+    fin        = static_cast<int>(std::ceil(b_std * std::sqrt(-2 * std::log(acc))));
     if (mean >= 0)
         b_mean = std::floor(mean);
     else
@@ -104,14 +104,14 @@ void BaseSampler::GenerateProbMatrix(double stddev, double mean) {
     b_std        = stddev;
     double error = 1.0;
     for (int i = -1 * fin; i <= fin; i++) {
-        double prob = pow(M_E, -pow((i - mean), 2) / (2. * stddev * stddev));
+        double prob = std::pow(M_E, -std::pow((i - mean), 2) / (2. * stddev * stddev));
         S += prob;
         probs[i + fin] = prob;
     }
-    probMatrix[b_matrixSize - 1] = error * pow(2, 64);
+    probMatrix[b_matrixSize - 1] = error * std::pow(2, 64);
     for (int i = 0; i < b_matrixSize; i++) {
         error -= probs[i] * (1.0 / S);
-        probMatrix[i] = probs[i] * (1.0 / S) * /*(1<<64)*/ pow(2, 64);
+        probMatrix[i] = probs[i] * (1.0 / S) * /*(1<<64)*/ std::pow(2, 64);
         for (int j = 0; j < 64; j++) {
             hammingWeights[j] += ((probMatrix[i] >> (63 - j)) & 1);
         }
@@ -222,7 +222,7 @@ void BaseSampler::Initialize(double mean) {
     // int fin = (int)ceil(m_std * mr);
     double cusum = 0.0;
     for (int x = -1 * fin; x <= fin; x++) {
-        cusum = cusum + exp(-(x - mean) * (x - mean) / (variance * 2));
+        cusum = cusum + std::exp(-(x - mean) * (x - mean) / (variance * 2));
     }
 
     b_a = 1 / cusum;
@@ -231,7 +231,7 @@ void BaseSampler::Initialize(double mean) {
 
     m_vals.reserve(2 * fin + 2);
     for (int i = -1 * fin; i <= fin; i++) {
-        temp = b_a * exp(-(static_cast<double>((i - mean) * (i - mean) / (2 * variance))));
+        temp = b_a * std::exp(-(static_cast<double>((i - mean) * (i - mean) / (2 * variance))));
         m_vals.push_back(temp);
     }
 
@@ -280,14 +280,14 @@ DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler**
     wide_sampler  = samplers[0];
     wide_variance = base_variance;
     for (int i = 1; i < MAX_LEVELS; ++i) {
-        x1               = static_cast<int>(floor(sqrt(wide_variance / (2 * N * N))));
+        x1               = static_cast<int>(std::floor(std::sqrt(wide_variance / (2 * N * N))));
         x2               = std::max(x1 - 1, 1);
         wide_sampler     = new SamplerCombiner(wide_sampler, wide_sampler, x1, x2);
         combiners[i - 1] = wide_sampler;
         wide_variance    = (x1 * x1 + x2 * x2) * wide_variance;
     }
 
-    k    = static_cast<int>(ceil(static_cast<double>(PRECISION - BERNOULLI_FLIPS) / log_base));
+    k    = static_cast<int>(std::ceil(static_cast<double>(PRECISION - BERNOULLI_FLIPS) / log_base));
     mask = (1UL << log_base) - 1;
 
     // compute rr_sigma2
@@ -314,9 +314,9 @@ int64_t DiscreteGaussianGeneratorGeneric::GenerateInteger(double center, double 
     x = wide_sampler->GenerateInteger();
 
     // Center perturbation
-    c = center + x * (sqrt((variance - sampler_variance) / wide_variance));
+    c = center + x * (std::sqrt((variance - sampler_variance) / wide_variance));
 
-    ci = floor(c);
+    ci = std::floor(c);
     c -= ci;
 
     return (int64_t)ci + flipAndRound(c);

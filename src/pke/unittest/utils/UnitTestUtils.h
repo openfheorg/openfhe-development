@@ -72,7 +72,7 @@ constexpr double EPSILON_HIGH = 0.0001;
  */
 template <typename T>
 bool checkEquality(const T& a, const T& b, const double eps = EPSILON) {
-    return (abs(a - b) <= eps);
+    return (std::abs(a - b) <= eps);
 }
 
 /**

@@ -496,7 +496,7 @@ MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input) {
     }
 
     for (size_t k = 0; k < rows; ++k) {
-        result(k, k) = sqrt(input(k, k));
+        result(k, k) = std::sqrt(input(k, k));
 
         for (size_t i = k + 1; i < rows; ++i) {
             // result(i, k) = input(i, k) / result(k, k);
@@ -643,9 +643,9 @@ MatrixStrassen<Element> MatrixStrassen<Element>::Mult(MatrixStrassen<Element> co
      * 93x93 matrix needs to be padded to 96x96 to support 2 levels of
      * recursion, as 96/(2^2) is an integer.
      */
-        double powtemp = pow(2, nrec);
-        rowpad         = ceil(rows / powtemp) * static_cast<int>(powtemp) - rows;
-        colpad         = ceil(cols / powtemp) * static_cast<int>(powtemp) - cols;
+        double powtemp = std::pow(2, nrec);
+        rowpad         = std::ceil(rows / powtemp) * static_cast<int>(powtemp) - rows;
+        colpad         = std::ceil(cols / powtemp) * static_cast<int>(powtemp) - cols;
         allrows        = rows + rowpad;
         // allcols = cols + colpad;
     }
@@ -666,10 +666,10 @@ MatrixStrassen<Element> MatrixStrassen<Element>::Mult(MatrixStrassen<Element> co
         // allrows/(2^nrec) and allcols/(2^nrec) must be integers
 #if !defined(NDEBUG)
         int allcols = cols + pad;
-        double temp = allrows / pow(2, nrec);
-        assert(static_cast<int>(temp) == ceil(temp));
-        temp = allcols / pow(2, nrec);
-        assert(static_cast<int>(temp) == ceil(temp));
+        double temp = allrows / std::pow(2, nrec);
+        assert(static_cast<int>(temp) == std::ceil(temp));
+        temp = allcols / std::pow(2, nrec);
+        assert(static_cast<int>(temp) == std::ceil(temp));
 #endif
     }
 

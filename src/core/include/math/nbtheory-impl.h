@@ -394,7 +394,7 @@ IntType PreviousPrime(const IntType& q, uint64_t m) {
 
 template <typename IntType>
 IntType NextPowerOfTwo(IntType n) {
-    usint result = ceil(log2(n));
+    usint result = std::ceil(std::log2(n));
     return result;
 }
 

@@ -96,7 +96,7 @@ void DiscreteFourierTransform::PreComputeTable(uint32_t s) {
 std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(std::vector<std::complex<double>>& A) {
     usint m = A.size();
     std::vector<std::complex<double>> B(A);
-    usint l = floor(log2(m));
+    usint l = std::floor(std::log2(m));
 
     // static usint maxMCached(262144);
     static usint LOGM_MAX(18);  // maximum supported is 2^18 = 262144

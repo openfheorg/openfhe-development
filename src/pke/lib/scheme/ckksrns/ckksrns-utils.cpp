@@ -332,9 +332,9 @@ std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
     std::vector<uint32_t> mlist;
     std::vector<uint32_t> multlist;
     for (uint32_t k = 1; k <= n; ++k) {
-        for (uint32_t m = 1; m <= static_cast<uint32_t>(std::ceil(log2(n / k) + 1) + 1); ++m) {
+        for (uint32_t m = 1; m <= static_cast<uint32_t>(std::ceil(std::log2(n / k) + 1) + 1); ++m) {
             if (n < (k * ((1U << m) - 1))) {
-                if (std::abs(std::floor(log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1.0) {
+                if (std::abs(std::floor(std::log2(k)) - std::floor(std::log2(std::sqrt(n / 2)))) <= 1.0) {
                     klist.push_back(k);
                     mlist.push_back(m);
                     multlist.push_back(k + 2 * m + (1U << (m - 1)) - 4);

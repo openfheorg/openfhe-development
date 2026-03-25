@@ -260,12 +260,12 @@ void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
 
                 // Find a compatible big-modulus and root of unity for CRTArb
                 if (params->GetPlaintextBigModulus() == 0) {
-                    uint32_t nttDim = pow(2, ceil(log2(2 * m - 1)));
+                    uint32_t nttDim = std::pow(2, std::ceil(std::log2(2 * m - 1)));
                     if ((modulusNI.ConvertToInt() - 1) % nttDim == 0) {
                         m_bigModulus[modulusM] = modulusNI;
                     }
                     else {
-                        uint32_t bigModulusSize = ceil(log2(2 * m - 1)) + 2 * modulusNI.GetMSB() + 1;
+                        uint32_t bigModulusSize = std::ceil(std::log2(2 * m - 1)) + 2 * modulusNI.GetMSB() + 1;
                         m_bigModulus[modulusM]  = LastPrime<NativeInteger>(bigModulusSize, nttDim);
                     }
                     m_bigRoot[modulusM] = RootOfUnity<NativeInteger>(nttDim, m_bigModulus[modulusM]);
@@ -511,7 +511,7 @@ void PackedEncoding::SetParams_2n(uint32_t m, NativeInteger modulusNI) {
     m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
     uint32_t curr_index = 1;
-    uint32_t logn       = std::round(log2(m / 2));
+    uint32_t logn       = std::round(std::log2(m / 2));
     for (uint32_t i = 0; i < phim_by_2; i++) {
         m_toCRTPerm[m][ReverseBits((curr_index - 1) / 2, logn)] = i;
         m_fromCRTPerm[m][i]                                     = ReverseBits((curr_index - 1) / 2, logn);
@@ -553,7 +553,7 @@ void PackedEncoding::SetParams_2n(uint32_t m, EncodingParams params) {
     m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
     uint32_t curr_index = 1;
-    uint32_t logn       = std::round(log2(m >> 1));
+    uint32_t logn       = std::round(std::log2(m >> 1));
     for (uint32_t i = 0; i < phim_by_2; i++) {
         m_toCRTPerm[m][ReverseBits((curr_index - 1) / 2, logn)] = i;
         m_fromCRTPerm[m][i]                                     = ReverseBits((curr_index - 1) / 2, logn);

@@ -154,12 +154,12 @@ public:
           m_n(elemparams->GetCyclotomicOrder() >> 1),
           m_dggLargeSigma(0) {
         auto val    = elemparams->GetModulus().ConvertToDouble();
-        auto logTwo = log(val - 1.0) / log(base) + 1.0;
-        m_k         = static_cast<size_t>(floor(logTwo));
+        auto logTwo = std::log(val - 1.0) / std::log(base) + 1.0;
+        m_k         = static_cast<size_t>(std::floor(logTwo));
 
         auto c          = static_cast<double>(SIGMA * (m_base + 1));
         auto s          = static_cast<double>(SPECTRAL_BOUND(m_n, m_k, base));
-        auto t          = sqrt(s * s - c * c);
+        auto t          = std::sqrt(s * s - c * c);
         m_dggLargeSigma = (t <= KARNEY_THRESHOLD) ? DggType(t) : dgg;
     }
     /*
