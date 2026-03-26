@@ -109,7 +109,7 @@ for(int i=0;i<CENTER_COUNT;i++){
 }
 
 /*Create the sampler object*/
-int base = std::log(CENTER_COUNT)/std::log(2);
+int base = std::log2(CENTER_COUNT);
 DiscreteGaussianGeneratorGeneric dggGeneric(peikert_samplers,stdBase,base,SMOOTHING_PARAMETER);
 
 /*Generate Integer */

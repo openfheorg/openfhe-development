@@ -95,7 +95,7 @@ int main() {
     std::cout << "Sampling " << std::to_string(count) << " integers (Karney): " << (finish - start) / CENTER_COUNT
               << " ms\n";
 
-    int base = std::log(CENTER_COUNT) / std::log(2);
+    int base = std::log2(CENTER_COUNT);
     // Initialization for the generic sampler, takes the parameters array of base
     // samplers, standard deviation of the base sampler base=(which is log2(number
     // of cosets or centers)) and smoothing parameter Make sure that stdBase>= 4 *

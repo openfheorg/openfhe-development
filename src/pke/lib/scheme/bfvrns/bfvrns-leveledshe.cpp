@@ -144,7 +144,7 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
 #endif
         else {
             double numDigitsPerTower = (relinWindow == 0) ? 1 : ((dcrtBits / relinWindow) + 1);
-            return delta(n) * numDigitsPerTower * (std::floor(logqPrev / (std::log(2) * dcrtBits)) + 1) * w * Berr / 2.0;
+            return delta(n) * numDigitsPerTower * (std::floor(logqPrev / dcrtBits) + 1) * w * Berr / 2.0;
         }
     };
 
@@ -161,23 +161,23 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
     // main correctness constraint
     auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
         if (multiplicativeDepth > 0) {
-            return std::log(4 * p) + (multiplicativeDepth - 1) * std::log(C1(n)) +
-                   std::log(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
+            return std::log2(4 * p) + (multiplicativeDepth - 1) * std::log2(C1(n)) +
+                   std::log2(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
         }
-        return std::log(p * (4 * (Vnorm(n))));
+        return std::log2(p * (4 * (Vnorm(n))));
     };
 
     // initial values
-    double logqPrev = 6. * std::log(10);
+    double logqPrev = 6. * std::log2(10);
     double logq     = logqBFV(n, logqPrev);
 
-    while (std::fabs(logq - logqPrev) > std::log(1.001)) {
+    while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
         logqPrev = logq;
         logq     = logqBFV(n, logqPrev);
     }
 
     // get an estimate of the error q / (4t)
-    double loge = logq / std::log(2) - 2 - std::log2(p);
+    double loge = logq - 2 - std::log2(p);
 
     double logExtra = keySwitch ? std::log2(noiseKS(n, logq, w)) : std::log2(deltaMS(n));
 

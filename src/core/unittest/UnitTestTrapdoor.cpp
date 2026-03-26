@@ -73,7 +73,7 @@ TEST(UTTrapdoor, sizes) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto fastParams = std::make_shared<ILParams>(m, modulus, rootOfUnity);
@@ -98,7 +98,7 @@ TEST(UTTrapdoor, TrapDoorPairTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
@@ -172,7 +172,7 @@ TEST(UTTrapdoor, GadgetTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
@@ -192,7 +192,7 @@ TEST(UTTrapdoor, TrapDoorMultTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     auto params     = std::make_shared<ILParams>(m, modulus, rootOfUnity);
@@ -282,7 +282,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
     // YSP check logTwo computation
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);
 
     Matrix<int64_t> zHatBBI([]() { return 0; }, k, m / 2);
@@ -387,7 +387,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     usint nBits = std::floor(std::log2(modulus.ConvertToDouble() - 1.0) + 1.0);
     usint k     = std::ceil(nBits / std::log2(base));
 
-    // double logTwo = log(val - 1.0) / log(2) + 1.0;
+    // double logTwo = log2(val - 1.0) + 1.0;
     // usint k = (usint)floor(logTwo);
 
     Matrix<int64_t> zHatBBI([]() { return 0; }, k, m / 2);
@@ -451,7 +451,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     OPENFHE_DEBUG("k = " << k);
@@ -638,7 +638,7 @@ TEST(UTTrapdoor, TrapDoorPerturbationSamplingTest) {
 
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
-    double logTwo = std::log(val - 1.0) / std::log(2) + 1.0;
+    double logTwo = std::log2(val - 1.0) + 1.0;
     usint k       = (usint)std::floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
     // smoothing parameter
