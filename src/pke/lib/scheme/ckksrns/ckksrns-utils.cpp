@@ -81,10 +81,13 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4) {
 
 uint32_t GetDepthByDegree(size_t d) {
     // clang-format off
-    constexpr uint32_t LOWER_BOUND_DEGREE = 5;
+    constexpr uint32_t LOWER_BOUND_DEGREE = 0;
     constexpr uint32_t UPPER_BOUND_DEGREE = 261631;
     static const std::vector<std::pair<uint32_t, uint32_t>> rangemap = {
-        {     4,  3},  // degree in [     0,      4], depth = 3 - NOTE: Paterson-Stockmeyer not used when degree < 5
+        {     0,  0},  // degree = 0, depth = 0 - NOTE: Paterson-Stockmeyer not used when degree < 5
+        {     1,  1},  // degree = 1, depth = 1 - NOTE: Paterson-Stockmeyer not used when degree < 5
+        {     2,  2},  // degree = 2, depth = 2 - NOTE: Paterson-Stockmeyer not used when degree < 5
+        {     4,  3},  // degree in [     3,      4], depth = 3 - NOTE: Paterson-Stockmeyer not used when degree < 5
         {     5,  4},  // degree in [     5,      5], depth = 4
         {    13,  5},  // degree in [     6,     13], depth = 5
         {    27,  6},  // degree in [    14,     27], depth = 6
