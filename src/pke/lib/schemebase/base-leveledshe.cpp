@@ -89,9 +89,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAdd(ConstCiphertext<Element>& c
 template <class Element>
 void LeveledSHEBase<Element>::EvalAddInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
     auto& cv = ciphertext->GetElements();
-    auto pt  = plaintext->GetElement<Element>();
-    pt.SetFormat(cv[0].GetFormat());
-    cv[0] += pt;
+    if (cv[0].GetFormat() == plaintext->GetElement<Element>().GetFormat()) {
+        cv[0] += plaintext->GetElement<Element>();
+    }
+    else {
+        auto pt = plaintext->GetElement<Element>();
+        pt.SetFormat(cv[0].GetFormat());
+        cv[0] += pt;
+    }
 }
 
 /////////////////////////////////////////
@@ -123,9 +128,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSub(ConstCiphertext<Element>& c
 template <class Element>
 void LeveledSHEBase<Element>::EvalSubInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
     auto& cv = ciphertext->GetElements();
-    auto pt  = plaintext->GetElement<Element>();
-    pt.SetFormat(cv[0].GetFormat());
-    cv[0] -= pt;
+    if (cv[0].GetFormat() == plaintext->GetElement<Element>().GetFormat()) {
+        cv[0] -= plaintext->GetElement<Element>();
+    }
+    else {
+        auto pt = plaintext->GetElement<Element>();
+        pt.SetFormat(cv[0].GetFormat());
+        cv[0] -= pt;
+    }
 }
 
 /////////////////////////////////////////
@@ -151,10 +161,10 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const Pri
     auto privateKeyPower = std::make_shared<PrivateKeyImpl<Element>>(cc);
     privateKeyPower->SetPrivateElement(s);
 
-    size_t maxRelinSkDeg = privateKey->GetCryptoParameters()->GetMaxRelinSkDeg() - 1;
+    uint32_t maxRelinSkDeg = privateKey->GetCryptoParameters()->GetMaxRelinSkDeg() - 1;
     std::vector<EvalKey<Element>> evalKeyVec;
     evalKeyVec.reserve(maxRelinSkDeg);
-    for (size_t i = 0; i < maxRelinSkDeg; ++i) {
+    for (uint32_t i = 0; i < maxRelinSkDeg; ++i) {
         privateKeyPower->SetPrivateElement(s * privateKeyPower->GetPrivateElement());
         evalKeyVec.emplace_back(cc->GetScheme()->KeySwitchGen(privateKeyPower, privateKey));
     }
@@ -172,10 +182,16 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(ConstCiphertext<Element>& 
 
 template <class Element>
 void LeveledSHEBase<Element>::EvalMultInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
-    auto pt = plaintext->GetElement<Element>();
-    pt.SetFormat(Format::EVALUATION);
-    for (auto& c : ciphertext->GetElements())
-        c *= pt;
+    if (plaintext->GetElement<Element>().GetFormat() == Format::EVALUATION) {
+        for (auto& c : ciphertext->GetElements())
+            c *= plaintext->GetElement<Element>();
+    }
+    else {
+        auto pt = plaintext->GetElement<Element>();
+        pt.SetFormat(Format::EVALUATION);
+        for (auto& c : ciphertext->GetElements())
+            c *= pt;
+    }
 }
 
 template <class Element>
@@ -185,16 +201,11 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(ConstCiphertext<Element>& 
     auto ciphertext = EvalMult(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = ciphertext->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
-
     return ciphertext;
 }
 
@@ -204,14 +215,10 @@ void LeveledSHEBase<Element>::EvalMultInPlace(Ciphertext<Element>& ciphertext1, 
     ciphertext1 = EvalMult(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext1->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = ciphertext1->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
 }
 
@@ -222,16 +229,11 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(Ciphertext<Element>
     auto ciphertext = EvalMultMutable(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = ciphertext->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
-
     return ciphertext;
 }
 
@@ -241,16 +243,11 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquare(ConstCiphertext<Element>
     auto csquare = EvalSquare(ciphertext);
 
     auto& cv = csquare->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = csquare->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
-
     return csquare;
 }
 
@@ -259,14 +256,10 @@ void LeveledSHEBase<Element>::EvalSquareInPlace(Ciphertext<Element>& ciphertext,
     ciphertext = EvalSquare(ciphertext);
 
     auto& cv = ciphertext->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = ciphertext->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
 }
 
@@ -276,16 +269,11 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareMutable(Ciphertext<Elemen
     auto csquare = EvalSquareMutable(ciphertext);
 
     auto& cv = csquare->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = csquare->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
-
     return csquare;
 }
 
@@ -295,14 +283,10 @@ void LeveledSHEBase<Element>::EvalMultMutableInPlace(Ciphertext<Element>& cipher
     ciphertext1 = EvalMultMutable(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext1->GetElements();
-    for (auto& c : cv)
-        c.SetFormat(Format::EVALUATION);
 
     auto ab = ciphertext1->GetCryptoContext()->GetScheme()->KeySwitchCore(cv[2], evalKey);
-
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
-
     cv.resize(2);
 }
 
