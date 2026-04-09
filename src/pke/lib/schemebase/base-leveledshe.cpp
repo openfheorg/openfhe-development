@@ -183,14 +183,18 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(ConstCiphertext<Element>& 
 template <class Element>
 void LeveledSHEBase<Element>::EvalMultInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
     if (plaintext->GetElement<Element>().GetFormat() == Format::EVALUATION) {
-        for (auto& c : ciphertext->GetElements())
+        for (auto& c : ciphertext->GetElements()) {
+            c.SetFormat(Format::EVALUATION);
             c *= plaintext->GetElement<Element>();
+        }
     }
     else {
         auto pt = plaintext->GetElement<Element>();
         pt.SetFormat(Format::EVALUATION);
-        for (auto& c : ciphertext->GetElements())
+        for (auto& c : ciphertext->GetElements()) {
+            c.SetFormat(Format::EVALUATION);
             c *= pt;
+        }
     }
 }
 
