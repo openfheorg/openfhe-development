@@ -1,3 +1,14 @@
+04/10/2026: OpenFHE 1.5.1 (stable) is released
+
+* Fixes the compilation error when OpenMP is disabled using the CMake flag (#1131)
+* Fixes BGV/BFV ring dimension underestimation for certain multiparty scenarios (#1157)
+* Fixes a BFV decryption error for HPS* variants in the multiparty setting (#1139)
+* Improves (slightly, i.e., by ~1 bit) the precision of Chebyshev series coefficients for CKKS functional bootstrapping (#1156)
+* Makes the unit test battery run faster on desktop machines (#1138)
+* Code cleanup and minor bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.5.1%22
+
 02/26/2026: OpenFHE 1.5.0 (development) is released
 
 * Optimizes CKKS bootstrapping and polynomial evaluation for multithreaded scenarios (#908)
