@@ -17,6 +17,7 @@ import os
 import shlex
 import textwrap
 import re
+from pathlib import Path
 from exhale import utils
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -56,7 +57,7 @@ breathe_default_project = "OpenFHE"
 import textwrap
 
 __exhale_base = "../src"
-__exhale_path = {
+__exhale_inputs = [
     # Binfhe
     f"{__exhale_base}/binfhe/include",
     f"{__exhale_base}/binfhe/lib",
@@ -64,14 +65,14 @@ __exhale_path = {
     f"{__exhale_base}/core/extras",
     f"{__exhale_base}/core/include",
     f"{__exhale_base}/core/lib",
-    # # PKE
+    # PKE
     f"{__exhale_base}/pke/extras",
     f"{__exhale_base}/pke/include",
     f"{__exhale_base}/pke/lib",
-}
+]
 
 container = "INPUT = "
-for path in __exhale_path:
+for path in __exhale_inputs:
     container += f"{path} "
 
 
@@ -116,13 +117,19 @@ exhale_args = {
         # not for yours.
         PREDEFINED += NAMESPACE_BEGIN(arbitrary)="namespace arbitrary {"
         PREDEFINED += NAMESPACE_END(arbitrary)="}"
+        EXTRACT_ANON_NSPACES = NO
+        HIDE_UNDOC_NAMESPACES = YES
         EXCLUDE_PATTERNS += *.md
+        EXCLUDE_SYMBOLS += @*
+        EXCLUDE_SYMBOLS += *::@*
+        EXCLUDE_SYMBOLS += std
+        EXCLUDE_SYMBOLS += std::*
         
-        WARN_IF_UNDOCUMENTED = NO,
-        WARNINGS" = NO,
-        WARN_IF_DOC_ERROR: NO,
-        WARN_IF_INCOMPLETE_DOC: NO,
-        WARN_NO_PARAMDOC: NO
+        WARN_IF_UNDOCUMENTED = NO
+        WARNINGS = NO
+        WARN_IF_DOC_ERROR = NO
+        WARN_IF_INCOMPLETE_DOC = NO
+        WARN_NO_PARAMDOC = NO
     '''),
     ############################################################################
     # HTML Theme specific configurations.                                      #
@@ -195,7 +202,7 @@ def read_version_number(pth="../CMakeLists.txt"):
     with open(pth, "r") as f:
         data = f.readlines()
 
-    matcher = re.compile("set\(OPENFHE_VERSION_([a-zA-Z]+) (\d+)\)")
+    matcher = re.compile(r"set\(OPENFHE_VERSION_([a-zA-Z]+) (\d+)\)")
     for ln in data:
         result = matcher.match(ln)
 
@@ -450,8 +457,36 @@ latex_documents = [
 
 rst_epilog = ".. |theme| replace:: ``{0}``".format(html_theme)
 
+_ANON_NAMESPACE_HEADING_RE = re.compile(r"^Namespace (?:(?P<scope>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)::)?@\d+$", re.MULTILINE)
+_ANON_NAMESPACE_REF_RE = re.compile(r":ref:`Namespace (?:(?P<scope>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)::)?@\d+ <", re.MULTILINE)
+_ANON_NAMESPACE_INLINE_RE = re.compile(r"\bNamespace (?:(?P<scope>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)::)?@\d+\b")
+
+
+def _anon_namespace_label(match):
+    scope = match.group("scope")
+    if scope:
+        return f"Anonymous Namespace in {scope}"
+    return "Anonymous Namespace"
+
+
+def _sanitize_exhale_generated_docs(app, env, docnames):
+    api_dir = Path(app.confdir) / exhale_args["containmentFolder"]
+    if not api_dir.exists():
+        return
+
+    for rst_path in api_dir.rglob("*.rst"):
+        original = rst_path.read_text(encoding="utf-8")
+        updated = _ANON_NAMESPACE_HEADING_RE.sub(_anon_namespace_label, original)
+        updated = _ANON_NAMESPACE_REF_RE.sub(lambda m: f":ref:`{_anon_namespace_label(m)} <", updated)
+        updated = _ANON_NAMESPACE_INLINE_RE.sub(_anon_namespace_label, updated)
+
+        if updated != original:
+            rst_path.write_text(updated, encoding="utf-8")
+
 # Called auto-magicallly by sphinx
 def setup(app):
+    app.connect("env-before-read-docs", _sanitize_exhale_generated_docs)
+
     # This is pretty meta.  To help demonstrate what is going on, I'm
     # generating an rst file to `.. include::` in `index.rst` to show
     # the relevant sections of `conf.py` on the page.
@@ -510,4 +545,3 @@ def setup(app):
         the_req.write(".. code-block:: nginx\n\n")
         the_req.write(prefix("   ", "".join(l for l in requirements)))
         the_req.write("\n")
-
