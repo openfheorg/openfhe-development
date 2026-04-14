@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 1165-migrate-to-nodejs-24
 
 jobs:
   call_with_gcc:
