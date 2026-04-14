@@ -21,8 +21,6 @@
    breathe_default_project = "OpenFHE"
    
    # Setup the `exhale` extension
-   import textwrap
-   
    __exhale_base = "../src"
    __exhale_path = {
        # Binfhe
@@ -38,11 +36,7 @@
        f"{__exhale_base}/pke/lib",
    }
    
-   container = "INPUT = "
-   for path in __exhale_path:
-       container += f"{path} "
-   
-   
+    
    def specificationsForKind(kind):
        '''
        For a given input ``kind``, return the list of reStructuredText specifications
@@ -78,20 +72,7 @@
        ############################################################################
        "createTreeView":        True,
        "exhaleExecutesDoxygen": True,
-       "exhaleDoxygenStdin": textwrap.dedent(container + '''
-           # For this code-base, the following helps Doxygen get past a macro
-           # that it has trouble with.  It is only meaningful for this code,
-           # not for yours.
-           PREDEFINED += NAMESPACE_BEGIN(arbitrary)="namespace arbitrary {"
-           PREDEFINED += NAMESPACE_END(arbitrary)="}"
-           EXCLUDE_PATTERNS += *.md
-           
-           WARN_IF_UNDOCUMENTED = NO,
-           WARNINGS" = NO,
-           WARN_IF_DOC_ERROR: NO,
-           WARN_IF_INCOMPLETE_DOC: NO,
-           WARN_NO_PARAMDOC: NO
-       '''),
+       "exhaleUseDoxyfile":     True,
        ############################################################################
        # HTML Theme specific configurations.                                      #
        ############################################################################
@@ -131,4 +112,3 @@
    
    # Tell sphinx what the pygments highlight language should be.
    highlight_language = 'cpp'
-
