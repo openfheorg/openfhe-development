@@ -64,11 +64,21 @@ jobs:
   pages:
     needs: call_with_clang
     runs-on: ${{ vars.RUNNER }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     env:
       GIT_SUBMODULE_STRATEGY: recursive
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
 
     - name: build_docs
       run: |
@@ -76,8 +86,11 @@ jobs:
         cd docs
         make
 
-    - name: deploy_docs
-      uses: peaceiris/actions-gh-pages@v4
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs
+        path: ./docs
+
+    - name: Deploy Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
