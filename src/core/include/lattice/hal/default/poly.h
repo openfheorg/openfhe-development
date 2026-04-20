@@ -153,12 +153,12 @@ public:
 
     PolyNative DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
     PolyNative ToNativePoly() const final {
-        usint vlen{m_params->GetRingDimension()};
+        uint32_t vlen{m_params->GetRingDimension()};
         auto c{m_params->GetCyclotomicOrder()};
         NativeInteger m{std::numeric_limits<BasicInteger>::max()};
         auto params{std::make_shared<ILParamsImpl<NativeInteger>>(c, m, 1)};
         typename PolyImpl<VecType>::PolyNative tmp(params, m_format, true);
-        for (usint i = 0; i < vlen; ++i)
+        for (uint32_t i = 0; i < vlen; ++i)
             tmp[i] = NativeInteger((*m_values)[i]);
         return tmp;
     }
@@ -167,12 +167,12 @@ public:
     void SetValues(VecType&& values, Format format) override;
 
     void SetValuesToZero() override {
-        usint r{m_params->GetRingDimension()};
+        uint32_t r{m_params->GetRingDimension()};
         m_values = std::make_unique<VecType>(r, m_params->GetModulus());
     }
 
     void SetValuesToMax() override {
-        usint r{m_params->GetRingDimension()};
+        uint32_t r{m_params->GetRingDimension()};
         auto max{m_params->GetModulus() - Integer(1)};
         m_values = std::make_unique<VecType>(r, m_params->GetModulus(), max);
     }
@@ -199,23 +199,23 @@ public:
         return m_values == nullptr;
     }
 
-    inline Integer& at(usint i) final {
+    inline Integer& at(uint32_t i) final {
         if (m_values == nullptr)
             OPENFHE_THROW("No values in PolyImpl");
         return m_values->at(i);
     }
 
-    inline const Integer& at(usint i) const final {
+    inline const Integer& at(uint32_t i) const final {
         if (m_values == nullptr)
             OPENFHE_THROW("No values in PolyImpl");
         return m_values->at(i);
     }
 
-    inline Integer& operator[](usint i) final {
+    inline Integer& operator[](uint32_t i) final {
         return (*m_values)[i];
     }
 
-    inline const Integer& operator[](usint i) const final {
+    inline const Integer& operator[](uint32_t i) const final {
         return (*m_values)[i];
     }
 
@@ -329,8 +329,8 @@ public:
     void MakeSparse(uint32_t wFactor) override;
     bool InverseExists() const override;
     double Norm() const override;
-    std::vector<PolyImpl> BaseDecompose(usint baseBits, bool evalModeAnswer) const override;
-    std::vector<PolyImpl> PowersOfBase(usint baseBits) const override;
+    std::vector<PolyImpl> BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const override;
+    std::vector<PolyImpl> PowersOfBase(uint32_t baseBits) const override;
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

@@ -38,7 +38,7 @@
 using namespace lbcrypto;
 
 void RunBFVrns();
-void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm,
+void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, uint32_t ptm,
                   double& noise, double& logQ, EncryptionTechnique encMethod);
 
 int main(int argc, char* argv[]) {
@@ -54,10 +54,10 @@ void RunBFVrns() {
     double sigma                          = 3.2;
     lbcrypto::SecurityLevel securityLevel = lbcrypto::SecurityLevel::HEStd_128_classic;
 
-    usint batchSize = 16;
-    usint multDepth = 4;
-    usint digitSize = 30;
-    usint dcrtBits  = 60;
+    uint32_t batchSize = 16;
+    uint32_t multDepth = 4;
+    uint32_t digitSize = 30;
+    uint32_t dcrtBits  = 60;
 
     lbcrypto::CCParams<lbcrypto::CryptoContextBFVRNS> parameters;
 
@@ -154,7 +154,7 @@ void RunBFVrns() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     auto evalSumKeysB = cc->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
 

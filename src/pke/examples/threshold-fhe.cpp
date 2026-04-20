@@ -201,7 +201,7 @@ void RunBGVrnsAdditive() {
 }
 
 void RunBFVrns() {
-    usint batchSize = 16;
+    uint32_t batchSize = 16;
 
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
@@ -253,7 +253,7 @@ void RunBFVrns() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     std::cout << "Round 1 of key generation completed." << std::endl;
 
@@ -417,7 +417,7 @@ void RunBFVrns() {
 }
 
 void RunCKKS() {
-    usint batchSize = 16;
+    uint32_t batchSize = 16;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(3);
@@ -466,7 +466,7 @@ void RunCKKS() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     std::cout << "Round 1 of key generation completed." << std::endl;
 

@@ -95,9 +95,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEAD
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint RING_DIM = 8192;
-constexpr usint PTM      = 20;
-constexpr usint DSIZE    = 4;
+constexpr uint32_t RING_DIM = 8192;
+constexpr uint32_t PTM      = 20;
+constexpr uint32_t DSIZE    = 4;
 constexpr double STD_DEV = 3.19;
 
 // clang-format off

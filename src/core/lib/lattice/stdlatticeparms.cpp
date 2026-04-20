@@ -113,8 +113,8 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     return s;
 }
 
-std::map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][6];
-std::map<usint, StdLatticeParm*> StdLatticeParm::byLogQ[3][6];
+std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byRing[3][6];
+std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byLogQ[3][6];
 
 bool StdLatticeParm::initialized = false;
 

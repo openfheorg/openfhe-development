@@ -191,8 +191,8 @@ BENCHMARK(BM_FACT1);  // register benchmark
 // Prime Modulus tests
 //
 static BigInteger PM_foundPrimeModulus(void) {
-    const usint m     = 2048;
-    const usint nBits = 30;
+    const uint32_t m     = 2048;
+    const uint32_t nBits = 30;
 
     return lbcrypto::FirstPrime<BigInteger>(nBits, m);
 }
@@ -215,8 +215,8 @@ BENCHMARK(BM_PM1);  // register benchmark
 
 // note this returns a refrence to BBI
 static BigInteger& PM_returns_higher_bit_length(void) {
-  usint m = 4096;
-  usint nBits = 49;
+  uint32_t m = 4096;
+  uint32_t nBits = 49;
 
   BigInteger primeModulus = lbcrypto::FirstPrime<BigInteger>(nBits, m);
   return primeModulus;
@@ -240,8 +240,8 @@ BENCHMARK(BM_PM2);  // register benchmark
 // Note this benchmark returns two BBIs so we return a string and suffer
 // some overhead
 static std::string PROU_equals_m_not_equals_mbytwo(void) {
-    usint m     = 4096;
-    usint nBits = 33;
+    uint32_t m     = 4096;
+    uint32_t nBits = 33;
 
     BigInteger primeModulus         = lbcrypto::FirstPrime<BigInteger>(nBits, m);
     BigInteger primitiveRootOfUnity = lbcrypto::RootOfUnity<BigInteger>(m, primeModulus);
@@ -268,9 +268,9 @@ BENCHMARK(BM_PROU1);  // register benchmark
 #if 0  // this takes a long time to run so comment out for quick check
 // similarly this outputs 3 values with a string
 static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_single_input(void) {
-  const usint n = 2048;
-  const usint m = 2*n;
-  const usint nBits = 43;
+  const uint32_t n = 2048;
+  const uint32_t m = 2*n;
+  const uint32_t nBits = 43;
   const int ITERATIONS = m*2;
 
   BigInteger M(std::to_string(m)),
@@ -312,7 +312,7 @@ BENCHMARK(BM_PROU2);
 
 // similarly this outputs 3 values with a string
 static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void) {
-    usint nqBitsArray[] = {
+    uint32_t nqBitsArray[] = {
         1,
         1,
         2,
@@ -329,7 +329,7 @@ static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void)
         40,
         2048,
         41
-        // const usint BIT_LENGTH = 200 and const usint FRAGMENTATION_FACTOR = 27
+        // const uint32_t BIT_LENGTH = 200 and const uint32_t FRAGMENTATION_FACTOR = 27
         // ,2048, 51
         ,
         4096,
@@ -358,7 +358,7 @@ static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void)
     };
     int length = sizeof(nqBitsArray) / sizeof(nqBitsArray[0]);
 
-    usint n, qBits, m;
+    uint32_t n, qBits, m;
     BigInteger wpowerm("0");
     BigInteger wpowermbytwo("0");
     BigInteger wpowermbyfour("0");

@@ -111,8 +111,8 @@ TEST(UT128, modular_operations) {
 }
 
 TEST(UT128, NTT_operations) {
-    usint m1   = 16;
-    usint bits = 100;
+    uint32_t m1   = 16;
+    uint32_t bits = 100;
 
     auto x1p = std::make_shared<ILNativeParams>(m1, bits);
     auto x2p = std::make_shared<ILNativeParams>(m1 / 2, bits);

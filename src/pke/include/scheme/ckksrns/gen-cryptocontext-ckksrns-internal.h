@@ -67,8 +67,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 
     auto ep = std::make_shared<ParmType>();
 
-    usint scalingModSize    = parameters.GetScalingModSize();
-    usint firstModSize      = parameters.GetFirstModSize();
+    uint32_t scalingModSize    = parameters.GetScalingModSize();
+    uint32_t firstModSize      = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {

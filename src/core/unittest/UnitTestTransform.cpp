@@ -51,8 +51,8 @@ using namespace lbcrypto;
 template <typename V>
 void CRT_polynomial_mult(const std::string& msg) {
     typename V::Integer primeModulus("113");  // 65537
-    usint cycloOrder = 8;
-    usint n          = cycloOrder / 2;
+    uint32_t cycloOrder = 8;
+    uint32_t n          = cycloOrder / 2;
 
     typename V::Integer primitiveRootOfUnity = lbcrypto::RootOfUnity(cycloOrder, primeModulus);
 
@@ -96,12 +96,12 @@ template <typename V>
 void CRT_polynomial_mult_small(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
 
-    usint m = 22;
+    uint32_t m = 22;
     typename V::Integer squareRootOfRoot(3750);
     typename V::Integer modulus(4621);
     typename V::Integer bigModulus("32043581647489");
     typename V::Integer bigRoot("31971887649898");
-    usint n = GetTotient(m);
+    uint32_t n = GetTotient(m);
 
     OPENFHE_DEBUG("m is " << m << " and n is " << n);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
@@ -131,7 +131,7 @@ void CRT_polynomial_mult_small(const std::string& msg) {
     OPENFHE_DEBUG("8");
     cCheck = PolyMod(cCheck, cycloPoly, modulus);
 
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(cCheck.at(i), c.at(i)) << msg;
     }
 }
@@ -145,13 +145,13 @@ TEST(UTTransform, CRT_polynomial_mult_small) {
 
 template <typename V>
 void CRT_polynomial_mult_big_ring(const std::string& msg) {
-    usint m = 1800;
+    uint32_t m = 1800;
 
     typename V::Integer modulus(14401);
     typename V::Integer bigModulus("1045889179649");
     typename V::Integer bigRoot("864331722621");
     typename V::Integer squareRootOfRoot("972");
-    usint n        = GetTotient(m);
+    uint32_t n        = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
@@ -172,7 +172,7 @@ void CRT_polynomial_mult_big_ring(const std::string& msg) {
     auto cCheck = PolynomialMultiplication(a, b);
 
     cCheck = PolyMod(cCheck, cycloPoly, modulus);
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(cCheck.at(i), c.at(i)) << msg;
     }
 }
@@ -185,13 +185,13 @@ template <typename V>
 void CRT_polynomial_mult_big_ring_prime_cyclotomics(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
 
-    usint m = 1733;
+    uint32_t m = 1733;
 
     typename V::Integer modulus("1152921504606909071");
     typename V::Integer bigModulus("10889035741470030830827987437816582848513");
     typename V::Integer bigRoot("5879632101734955395039618227388702592012");
     typename V::Integer squareRootOfRoot("44343872016735288");
-    usint n        = GetTotient(m);
+    uint32_t n        = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
@@ -228,12 +228,12 @@ TEST(UTTransform, CRT_polynomial_mult_big_ring_prime_cyclotomics) {
 
 template <typename V>
 void CRT_CHECK_small_ring(const std::string& msg) {
-    usint m = 22;
+    uint32_t m = 22;
     typename V::Integer squareRootOfRoot(3750);
     typename V::Integer modulus(4621);
     typename V::Integer bigModulus("32043581647489");
     typename V::Integer bigRoot("31971887649898");
-    usint n = GetTotient(m);
+    uint32_t n = GetTotient(m);
 
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
@@ -247,7 +247,7 @@ void CRT_CHECK_small_ring(const std::string& msg) {
     auto inputCheck =
         ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, bigModulus, bigRoot, m);
 
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), inputCheck.at(i)) << msg;
     }
 }
@@ -262,13 +262,13 @@ TEST(UTTransform, CRT_CHECK_small_ring) {
 
 template <typename V>
 void CRT_CHECK_big_ring(const std::string& msg) {
-    usint m = 1800;
+    uint32_t m = 1800;
 
     typename V::Integer modulus(14401);
     typename V::Integer squareRootOfRoot("972");
     typename V::Integer bigModulus("1045889179649");
     typename V::Integer bigRoot("864331722621");
-    usint n        = GetTotient(m);
+    uint32_t n        = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
@@ -276,7 +276,7 @@ void CRT_CHECK_big_ring(const std::string& msg) {
 
     V input(n, modulus);
     std::uniform_int_distribution<> dis(0, 100);  // generates a number in [0,100]
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         input.at(i) = typename V::Integer(dis(PseudoRandomNumberGenerator::GetPRNG()));
     }
 
@@ -284,7 +284,7 @@ void CRT_CHECK_big_ring(const std::string& msg) {
 
     auto recOut = ChineseRemainderTransformArb<V>().InverseTransform(output, squareRootOfRoot, bigModulus, bigRoot, m);
 
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), recOut.at(i)) << msg;
     }
 }
@@ -295,10 +295,10 @@ TEST(UTTransform, CRT_CHECK_big_ring) {
 
 template <typename V>
 void CRT_CHECK_small_ring_precomputed(const std::string& msg) {
-    usint m = 22;
+    uint32_t m = 22;
     typename V::Integer squareRootOfRoot(3750);
     typename V::Integer modulus(4621);
-    usint n = GetTotient(m);
+    uint32_t n = GetTotient(m);
 
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
     typename V::Integer nttmodulus("32043581647489");
@@ -317,7 +317,7 @@ void CRT_CHECK_small_ring_precomputed(const std::string& msg) {
     auto inputCheck =
         ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
 
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), inputCheck.at(i)) << msg;
     }
 }
@@ -329,12 +329,12 @@ TEST(UTTransform, CRT_CHECK_small_ring_precomputed) {
 template <typename V>
 void CRT_CHECK_very_big_ring_precomputed(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    usint m = 8422;
+    uint32_t m = 8422;
     OPENFHE_DEBUG("1");
     // find a modulus that has 2*8422 root of unity and is 120 bit long
     typename V::Integer modulus("619578785044668429129510602549015713");
     typename V::Integer squareRootOfRoot("204851043665385327685783246012876507");
-    usint n = GetTotient(m);
+    uint32_t n = GetTotient(m);
     OPENFHE_DEBUG("UT GetTotient(" << m << ")= " << n);
 
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
@@ -360,7 +360,7 @@ void CRT_CHECK_very_big_ring_precomputed(const std::string& msg) {
     auto inputCheck =
         ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
     OPENFHE_DEBUG("6");
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), inputCheck.at(i)) << msg;
     }
 }

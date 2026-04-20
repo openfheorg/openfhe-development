@@ -108,7 +108,7 @@ public:
         if ((a.GetLength() != b.GetLength()) || (a.GetModulus() != b.GetModulus())) {
             return false;
         }
-        for (usint i = 0; i < a.GetLength(); ++i) {
+        for (uint32_t i = 0; i < a.GetLength(); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -223,7 +223,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    T ModAddAtIndex(usint i, const I& b) const;
+    T ModAddAtIndex(uint32_t i, const I& b) const;
 
     /**
    * Scalar modulus addition at a particular index. In-place variant.
@@ -232,7 +232,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    T& ModAddAtIndexEq(usint i, const I& b);
+    T& ModAddAtIndexEq(uint32_t i, const I& b);
 
     /**
    * Vector component wise modulus addition.
@@ -470,7 +470,7 @@ public:
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-    T GetDigitAtIndexForBase(usint index, usint base) const;
+    T GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
 protected:
     ~BigVectorInterface() = default;

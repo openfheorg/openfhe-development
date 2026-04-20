@@ -54,8 +54,8 @@ template <typename Element>
 void switch_format_simple_single_crt(const std::string& msg) {
     using ParmType = typename Element::Params;
 
-    usint m1   = 16;
-    usint bits = 16;
+    uint32_t m1   = 16;
+    uint32_t bits = 16;
 
     auto x1p = std::make_shared<ParmType>(m1, bits);
     auto x2p = std::make_shared<ParmType>(m1 / 2, bits);
@@ -92,9 +92,9 @@ TEST(UTNTT, switch_format_simple_single_crt) {
 
 template <typename Element>
 void switch_format_simple_double_crt(const std::string& msg) {
-    usint init_m    = 16;
-    usint init_size = 2;
-    usint init_bits = 28;
+    uint32_t init_m    = 16;
+    uint32_t init_size = 2;
+    uint32_t init_bits = 28;
 
     auto params = std::make_shared<ILDCRTParams<typename Element::Integer>>(init_m, init_size, init_bits);
 

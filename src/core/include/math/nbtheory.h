@@ -82,7 +82,7 @@ namespace lbcrypto {
  * @return a root of unity.
  */
 template <typename IntType>
-IntType RootOfUnity(usint m, const IntType& modulo);
+IntType RootOfUnity(uint32_t m, const IntType& modulo);
 
 /**
  * Finds roots of unity for given input.  Assumes the the input cyclotomicorder
@@ -94,7 +94,7 @@ IntType RootOfUnity(usint m, const IntType& modulo);
  * @returns a vector of roots of unity corresponding to each modulus.
  */
 template <typename IntType>
-std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType>& moduli);
+std::vector<IntType> RootsOfUnity(uint32_t m, const std::vector<IntType>& moduli);
 
 /**
  * Method to reverse bits of num and return an unsigned int, for all bits up to
@@ -132,8 +132,8 @@ inline static unsigned char reverse_byte(unsigned char x) {
 static int shift_trick[] = {0, 7, 6, 5, 4, 3, 2, 1};
 
 /* Function to reverse bits of num */
-inline usint ReverseBits(usint num, usint msb) {
-    usint msbb = (msb >> 3) + (msb & 0x7 ? 1 : 0);
+inline uint32_t ReverseBits(uint32_t num, uint32_t msb) {
+    uint32_t msbb = (msb >> 3) + (msb & 0x7 ? 1 : 0);
     switch (msbb) {
         case 1:
             return (reverse_byte((num)&0xff) >> shift_trick[msb & 0x7]);
@@ -166,7 +166,7 @@ inline usint ReverseBits(usint num, usint msb) {
 template <
     typename T,
     std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>, bool> = true>
-inline constexpr usint GetMSB(T x) {
+inline constexpr uint32_t GetMSB(T x) {
     if constexpr (sizeof(T) <= 8) {
         if (x == 0)
             return 0;
@@ -201,7 +201,7 @@ inline constexpr usint GetMSB(T x) {
  *
  * @return the index of the MSB bit location.
  */
-inline constexpr usint GetMSB64(uint64_t x) {
+inline constexpr uint32_t GetMSB64(uint64_t x) {
     return GetMSB(x);
 }
 
@@ -249,7 +249,7 @@ IntType GreatestCommonDivisor(const IntType& a, const IntType& b);
  * non-primality is found.
  */
 template <typename IntType>
-bool MillerRabinPrimalityTest(const IntType& p, const usint niter = 100);
+bool MillerRabinPrimalityTest(const IntType& p, const uint32_t niter = 100);
 
 /**
  * Perform the PollardRho factorization of a IntType.
@@ -323,7 +323,7 @@ IntType PreviousPrime(const IntType& q, uint64_t m);
  *
  * @return the multiplicative inverse
  */
-usint ModInverse(usint a, usint b);
+uint32_t ModInverse(uint32_t a, uint32_t b);
 
 /**
  * Returns the next power of 2 that is greater than the input number.
@@ -386,7 +386,7 @@ IntVector PolynomialMultiplication(const IntVector& a, const IntVector& b);
  * @return resultant m-th cyclotomic polynomial with coefficients in modulus.
  */
 template <typename IntVector>
-IntVector GetCyclotomicPolynomial(usint m, const typename IntVector::Integer& modulus);
+IntVector GetCyclotomicPolynomial(uint32_t m, const typename IntVector::Integer& modulus);
 
 /**
  * Returns the m-th cyclotomic polynomial.
@@ -394,7 +394,7 @@ IntVector GetCyclotomicPolynomial(usint m, const typename IntVector::Integer& mo
  * @param &m the input cyclotomic order.
  * @return resultant m-th cyclotomic polynomial.
  */
-std::vector<int> GetCyclotomicPolynomialRecursive(usint m);
+std::vector<int> GetCyclotomicPolynomialRecursive(uint32_t m);
 
 /**
  * Returns the remainder after polynomial division of dividend with divisor =
@@ -428,7 +428,7 @@ IntVector SyntheticPolyRemainder(const IntVector& dividend, const IntVector& aLi
  * @return exponentiated polynomial.
  */
 template <typename IntVector>
-IntVector PolynomialPower(const IntVector& input, usint power);
+IntVector PolynomialPower(const IntVector& input, uint32_t power);
 
 /**
  * Returns the quotient after polynomial division of dividend with divisor =

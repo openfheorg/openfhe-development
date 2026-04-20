@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Completed." << std::endl;
 
     std::vector<ReadOnlyCiphertext<DCRTPoly>> ciphertextVec;
-    for (usint i = 0; i < encodedLength; ++i) {
+    for (uint32_t i = 0; i < encodedLength; ++i) {
         Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input[i]);
         ciphertextVec.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
     }
@@ -94,9 +94,9 @@ int main(int argc, char* argv[]) {
     timeEvalLinearWSum = TOC(t);
 
     std::vector<std::complex<double>> unencIP;
-    for (usint i = 0; i < input[0].size(); ++i) {
+    for (uint32_t i = 0; i < input[0].size(); ++i) {
         std::complex<double> x = 0;
-        for (usint j = 0; j < encodedLength; ++j) {
+        for (uint32_t j = 0; j < encodedLength; ++j) {
             x += input[j][i] * coefficients[j];
         }
         unencIP.push_back(x);

@@ -45,7 +45,7 @@ using namespace lbcrypto;
 
 template <typename Element>
 static std::function<Element()> secureIL2nAlloc() {
-    usint m = 2048;
+    uint32_t m = 2048;
     typename Element::Integer secureModulus("8590983169");
     typename Element::Integer secureRootOfUnity("4810681236");
     return Element::Allocator(std::make_shared<typename Element::Params>(m, secureModulus, secureRootOfUnity),
@@ -54,7 +54,7 @@ static std::function<Element()> secureIL2nAlloc() {
 
 template <typename Element>
 static std::function<Element()> fastIL2nAlloc() {
-    usint m = 16;
+    uint32_t m = 16;
     typename Element::Integer modulus("67108913");
     typename Element::Integer rootOfUnity("61564");
     return Element::Allocator(std::make_shared<typename Element::Params>(m, modulus, rootOfUnity), Format::EVALUATION);
@@ -62,7 +62,7 @@ static std::function<Element()> fastIL2nAlloc() {
 
 template <typename Element>
 static std::function<Element()> fastUniformIL2nAlloc() {
-    usint m = 16;
+    uint32_t m = 16;
     typename Element::Integer modulus("67108913");
     typename Element::Integer rootOfUnity("61564");
     return Element::MakeDiscreteUniformAllocator(std::make_shared<typename Element::Params>(m, modulus, rootOfUnity),

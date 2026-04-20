@@ -52,7 +52,7 @@
 namespace NTL {
 
 // constant log2 of limb bitlength
-const usint myZZ::m_log2LimbBitLength = Log2<NTL_ZZ_NBITS>::value;
+const uint32_t myZZ::m_log2LimbBitLength = Log2<NTL_ZZ_NBITS>::value;
 
 // CONSTRUCTORS
 
@@ -200,14 +200,14 @@ myZZ myZZ::FromBinaryString(const std::string& vin) {
     // value.clear(); //clear out all limbs
     clear(value);  // clear out all limbs
 
-    usint len = v.length();
+    uint32_t len = v.length();
     /// new code here
 
     const unsigned int bitsPerByte = 8;
     // parse out string 8 bits at a time into array of bytes
     std::vector<unsigned char> bytes;
     std::reverse(v.begin(), v.end());
-    for (usint i = 0; i < len; i += bitsPerByte) {
+    for (uint32_t i = 0; i < len; i += bitsPerByte) {
         std::string bits = v.substr(0, bitsPerByte);
         // reverse the bits
         std::reverse(bits.begin(), bits.end());
@@ -226,7 +226,7 @@ myZZ myZZ::FromBinaryString(const std::string& vin) {
 
 // OTHER FUNCTIONS
 
-usint myZZ::GetMSB() const {
+uint32_t myZZ::GetMSB() const {
     // note: originally I did not worry about this, and just set the
     // MSB whenever this was called, but then that violated constness in the
     // various libraries that used this heavily
@@ -235,7 +235,7 @@ usint myZZ::GetMSB() const {
 
     // SO INSTEAD I am just regenerating the MSB each time
     size_t sz = this->size();
-    usint MSB;
+    uint32_t MSB;
     if (sz == 0) {  // special case for empty data
         MSB = 0;
         return (MSB);
@@ -244,7 +244,7 @@ usint myZZ::GetMSB() const {
     MSB = (sz - 1) * NTL_ZZ_NBITS;  // figure out bit location of all but last
                                     // limb
     const ZZ_limb_t* zlp = ZZ_limbs_get(*this);
-    usint tmp            = GetMSBLimb_t(zlp[sz - 1]);  // add the value of that last limb.
+    uint32_t tmp            = GetMSBLimb_t(zlp[sz - 1]);  // add the value of that last limb.
 
     MSB += tmp;
     m_MSB = MSB;
@@ -262,15 +262,15 @@ void myZZ::SetMSB() {
         // m_MSB = NumBytes(*this)*8;
         const ZZ_limb_t* zlp = ZZ_limbs_get(*this);
 
-        usint tmp = GetMSBLimb_t(zlp[sz - 1]);  // add the value of that last limb.
+        uint32_t tmp = GetMSBLimb_t(zlp[sz - 1]);  // add the value of that last limb.
         m_MSB += tmp;
     }
     return;
 }
 
-// inline static usint GetMSBLimb_t(ZZ_limb_t x){
-usint myZZ::GetMSBLimb_t(ZZ_limb_t x) const {
-    const usint bval[] = {0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
+// inline static uint32_t GetMSBLimb_t(ZZ_limb_t x){
+uint32_t myZZ::GetMSBLimb_t(ZZ_limb_t x) const {
+    const uint32_t bval[] = {0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
 
     uint64_t r = 0;
     if (x & 0xFFFFFFFF00000000) {
@@ -294,18 +294,18 @@ usint myZZ::GetMSBLimb_t(ZZ_limb_t x) const {
 
 // utility function introduced in Backend 6 to get a subset of bits from a
 // Bigint
-usint myZZ::GetBitRangeAtIndex(usint ppo, usint length) const {
+uint32_t myZZ::GetBitRangeAtIndex(uint32_t ppo, uint32_t length) const {
     if (ppo == 0 || !this->rep)
         return 0;
 
-    usint pin = ppo - 1;
+    uint32_t pin = ppo - 1;
     int64_t bl;
     int64_t sa;
     _ntl_limb_t wh;
 
-    usint out(0);
+    uint32_t out(0);
 
-    for (usint p = pin, i = 0; i < length; i++, p++) {
+    for (uint32_t p = pin, i = 0; i < length; i++, p++) {
         bl = p / NTL_ZZ_NBITS;
         wh = ((_ntl_limb_t)1) << (p - NTL_ZZ_NBITS * bl);
 
@@ -323,10 +323,10 @@ usint myZZ::GetBitRangeAtIndex(usint ppo, usint length) const {
     return out;
 }
 
-usint myZZ::GetDigitAtIndexForBase(usint index, usint base) const {
-    usint DigitLen = std::ceil(std::log2(base));
-    usint digit    = 0;
-    usint newIndex = 1 + (index - 1) * DigitLen;
+uint32_t myZZ::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
+    uint32_t DigitLen = std::ceil(std::log2(base));
+    uint32_t digit    = 0;
+    uint32_t newIndex = 1 + (index - 1) * DigitLen;
     digit          = GetBitRangeAtIndex(newIndex, DigitLen);
     return digit;
 }
@@ -334,13 +334,13 @@ usint myZZ::GetDigitAtIndexForBase(usint index, usint base) const {
 // returns the bit at the index into the binary format of the big integer,
 // note that msb is 1 like all other bit indicies in OpenFHE.
 
-uschar myZZ::GetBitAtIndex(usint index) const {
-    return (uschar)GetBitRangeAtIndex(index, 1);
+uint8_t myZZ::GetBitAtIndex(uint32_t index) const {
+    return (uint8_t)GetBitRangeAtIndex(index, 1);
 }
 
 // optimized ceiling function after division by number of bits in the limb data
 // type.
-usint myZZ::ceilIntByUInt(const ZZ_limb_t Number) {
+uint32_t myZZ::ceilIntByUInt(const ZZ_limb_t Number) {
     // mask to perform bitwise AND
     static ZZ_limb_t mask = NTL_ZZ_NBITS - 1;
 

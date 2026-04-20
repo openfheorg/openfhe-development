@@ -250,14 +250,14 @@ void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCrypto
                                              ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const {
     // precompute bit reversal for the automorphism into vec
     uint32_t N{params->GetN()};
-    std::vector<usint> vec(N);
-    PrecomputeAutoMap(N, a.ConvertToInt<usint>(), &vec);
+    std::vector<uint32_t> vec(N);
+    PrecomputeAutoMap(N, a.ConvertToInt<uint32_t>(), &vec);
 
-    acc->GetElements()[1] = acc->GetElements()[1].AutomorphismTransform(a.ConvertToInt<usint>(), vec);
+    acc->GetElements()[1] = acc->GetElements()[1].AutomorphismTransform(a.ConvertToInt<uint32_t>(), vec);
 
     NativePoly cta(acc->GetElements()[0]);
     acc->GetElements()[0].SetValuesToZero();
-    cta = cta.AutomorphismTransform(a.ConvertToInt<usint>(), vec);
+    cta = cta.AutomorphismTransform(a.ConvertToInt<uint32_t>(), vec);
     cta.SetFormat(COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored

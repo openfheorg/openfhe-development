@@ -455,7 +455,7 @@ std::shared_ptr<Matrix<int64_t>> LatticeGaussSampUtility<Element>::ZSampleF(cons
     f0.SetFormat(Format::EVALUATION);
     f1.SetFormat(Format::EVALUATION);
 
-    usint f0_size = f0.Size();
+    uint32_t f0_size = f0.Size();
 
     auto qZVector = std::make_shared<Matrix<int64_t>>([]() { return 0; }, f0_size * 2, 1);
 
@@ -477,7 +477,7 @@ Matrix<int32_t> LatticeGaussSampUtility<Element>::Permute(Matrix<int32_t>* p) {
     int evenPtr = 0;
     int oddPtr  = p->GetRows() / 2;
     Matrix<int32_t> permuted([]() { return 0; }, p->GetRows(), 1);
-    for (usint i = 0; i < p->GetRows(); i++) {
+    for (uint32_t i = 0; i < p->GetRows(); i++) {
         if (i % 2 == 0) {
             permuted(evenPtr, 0) = (*p)(i, 0);
             evenPtr++;

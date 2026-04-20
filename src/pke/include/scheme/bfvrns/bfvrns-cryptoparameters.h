@@ -55,7 +55,7 @@ public:
 
     CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                            float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
-                           usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                           uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                            KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
@@ -64,7 +64,7 @@ public:
                               multipartyMode) {}
 
     CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
-                           float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                           float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
                            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                            MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET,

@@ -135,14 +135,14 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS& test
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM        = 512;
-constexpr usint MULT_DEPTH      = 7;
-constexpr usint MAX_RELIN_DEG   = 2;
-constexpr usint DSIZE           = 0;
-constexpr usint BV_DSIZE        = 4;
-constexpr usint PTM             = 65537;
-constexpr usint BATCH           = 16;
-constexpr usint FIRST_MOD_SIZE  = 0;
+constexpr uint32_t RING_DIM        = 512;
+constexpr uint32_t MULT_DEPTH      = 7;
+constexpr uint32_t MAX_RELIN_DEG   = 2;
+constexpr uint32_t DSIZE           = 0;
+constexpr uint32_t BV_DSIZE        = 4;
+constexpr uint32_t PTM             = 65537;
+constexpr uint32_t BATCH           = 16;
+constexpr uint32_t FIRST_MOD_SIZE  = 0;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 
 // clang-format off
@@ -252,7 +252,7 @@ class UTBGVRNS : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS> {
     using Element = DCRTPoly;
 
     // the size for all vectors remains const - 8 elements
-    const usint VECTOR_SIZE = 8;
+    const uint32_t VECTOR_SIZE = 8;
 
     // The precision after which we consider two values equal. Necessary for the checkEquality() calls
     const double eps = EPSILON;
@@ -295,7 +295,7 @@ protected:
 
             // std::vector<int64_t> vectorOfIntsSub = { -7,-5,-3,-1,1,3,5,7 };
             std::vector<int64_t> vectorOfIntsSub(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vectorOfIntsSub[i] = static_cast<int64_t>(2 * i) - VECTOR_SIZE + 1;
             }
             Plaintext plaintextSub = cc->MakePackedPlaintext(vectorOfIntsSub);
@@ -399,7 +399,7 @@ protected:
 
             // vectorOfIntsMult = { 0,6,10,12,12,10,6,0 };
             std::vector<int64_t> vectorOfIntsMult(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vectorOfIntsMult[i] = i * VECTOR_SIZE - i * i - i;
             }
             Plaintext plaintextMult = cc->MakePackedPlaintext(vectorOfIntsMult);
@@ -474,14 +474,14 @@ protected:
 
             // vIntsRightShift2 = { 0,0,1,2,3,4,5,6 };
             std::vector<int64_t> vIntsRightShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vIntsRightShift2[i] = (i >= 2) ? vectorOfInts1[i - 2] : 0;
             }
             Plaintext plaintextRight2 = cc->MakePackedPlaintext(vIntsRightShift2);
 
             // vIntsLeftShift2 = { 3,4,5,6,7,8,0,0 };
             std::vector<int64_t> vIntsLeftShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vIntsLeftShift2[i] = (i < VECTOR_SIZE - 2) ? vectorOfInts1[i + 2] : 0;
             }
             Plaintext plaintextLeft2 = cc->MakePackedPlaintext(vIntsLeftShift2);
@@ -679,7 +679,7 @@ protected:
             std::vector<int64_t> pCt12(VECTOR_SIZE);
             std::vector<int64_t> pCt13(VECTOR_SIZE);
             std::vector<int64_t> pCt14(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 pCtMult[i] = vectorOfInts1[i] * vectorOfInts2[i];
                 pCt3[i]    = pCtMult[i] + vectorOfInts1[i];
                 pCt4[i]    = pCtMult[i] - vectorOfInts1[i];
@@ -926,14 +926,14 @@ protected:
 
             // vIntsRightShift2 = { 0,0,1,2,3,4,5,6 };
             std::vector<int64_t> vIntsRightShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vIntsRightShift2[i] = (i >= 2) ? vectorOfInts1[i - 2] : 0;
             }
             Plaintext plaintextRight2 = cc->MakePackedPlaintext(vIntsRightShift2);
 
             // vIntsLeftShift2 = { 3,4,5,6,7,8,0,0 };
             std::vector<int64_t> vIntsLeftShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vIntsLeftShift2[i] = (i < VECTOR_SIZE - 2) ? vectorOfInts1[i + 2] : 0;
             }
             Plaintext plaintextLeft2 = cc->MakePackedPlaintext(vIntsLeftShift2);
@@ -959,7 +959,7 @@ protected:
 
             auto decompose = cc->EvalFastRotationPrecompute(ciphertext1);
 
-            usint m = cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
+            uint32_t m = cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
             // Testing EvalAtIndex +2
             cResult = cc->EvalFastRotation(ciphertext1, 2, m, decompose);
             cc->Decrypt(kp.secretKey, cResult, &results);

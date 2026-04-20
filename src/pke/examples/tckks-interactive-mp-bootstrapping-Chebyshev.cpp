@@ -116,8 +116,8 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	* to obtain a good precision and performance tradeoff. We recommend keeping the parameters
 	* below unless you are an FHE expert.
 	*/
-    usint dcrtBits = 50;
-    usint firstMod = 60;
+    uint32_t dcrtBits = 50;
+    uint32_t firstMod = 60;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(scaleTech);
@@ -161,15 +161,15 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(MULTIPARTY);
 
-    usint ringDim = cryptoContext->GetRingDimension();
+    uint32_t ringDim = cryptoContext->GetRingDimension();
     // This is the maximum number of slots that can be used for full packing.
-    usint maxNumSlots = ringDim / 2;
+    uint32_t maxNumSlots = ringDim / 2;
     std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
     std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
     std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
     std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
 
-    const usint numParties = 3;
+    const uint32_t numParties = 3;
 
     std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
     std::cout << "num of parties: " << numParties << "\n";
@@ -196,7 +196,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Generate evalsum key part for A
     cryptoContext->EvalSumKeyGen(kp1.secretKey);
-    auto evalSumKeys = std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(
+    auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(
         cryptoContext->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     // Round 2 (party B)
@@ -253,7 +253,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     double b = 4;
 
     Plaintext pt1       = cryptoContext->MakeCKKSPackedPlaintext(input);
-    usint encodedLength = input.size();
+    uint32_t encodedLength = input.size();
 
     auto ct1 = cryptoContext->Encrypt(kp3.publicKey, pt1);
 

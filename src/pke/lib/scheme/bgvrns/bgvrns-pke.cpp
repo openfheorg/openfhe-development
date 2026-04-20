@@ -73,7 +73,7 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
         std::vector<DCRTPoly> ct(cv);
         if (sizeQl > 0) {
             for (size_t j = sizeQl - 1; j > 0; j--) {
-                for (usint i = 0; i < ct.size(); i++) {
+                for (uint32_t i = 0; i < ct.size(); i++) {
                     ct[i].ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
                                     cryptoParams->GetNegtInvModq(j), cryptoParams->GetNegtInvModqPrecon(j),
                                     cryptoParams->GetqlInvModq(j), cryptoParams->GetqlInvModqPrecon(j));

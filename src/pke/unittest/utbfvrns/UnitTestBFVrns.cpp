@@ -94,8 +94,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBFVRNS& test
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint MULDEPTH = 7;
-constexpr usint PTM      = 65537;
+constexpr uint32_t MULDEPTH = 7;
+constexpr uint32_t PTM      = 65537;
 // clang-format off
 static std::vector<TEST_CASE_UTBFVRNS> testCases = {
     // TestType,         Descr,  Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech, PREMode

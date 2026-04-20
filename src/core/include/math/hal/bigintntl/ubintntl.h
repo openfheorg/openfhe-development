@@ -88,9 +88,9 @@ using BigInteger = myZZ;
  *
  * @tparam N bitwidth.
  */
-template <usint N>
+template <uint32_t N>
 struct Log2 {
-    static const usint value = 1 + Log2<N / 2>::value;
+    static const uint32_t value = 1 + Log2<N / 2>::value;
 };
 
 /**
@@ -100,7 +100,7 @@ struct Log2 {
  */
 template <>
 struct Log2<2> {
-    static const usint value = 1;
+    static const uint32_t value = 1;
 };
 
 class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
@@ -332,7 +332,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    myZZ Exp(const usint p) const {
+    myZZ Exp(const uint32_t p) const {
         return power(*this, p);
     }
 
@@ -342,7 +342,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    myZZ& ExpEq(const usint p) {
+    myZZ& ExpEq(const uint32_t p) {
         *this = power(*this, p);
         return *this;
     }
@@ -824,7 +824,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    myZZ LShift(usshort shift) const {
+    myZZ LShift(uint16_t shift) const {
         return *static_cast<const ZZ*>(this) << shift;
     }
 
@@ -834,7 +834,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    myZZ& LShiftEq(usshort shift) {
+    myZZ& LShiftEq(uint16_t shift) {
         *static_cast<ZZ*>(this) <<= shift;
         return *this;
     }
@@ -845,7 +845,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    myZZ RShift(usshort shift) const {
+    myZZ RShift(uint16_t shift) const {
         return *static_cast<const ZZ*>(this) >> shift;
     }
 
@@ -855,7 +855,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    myZZ& RShiftEq(usshort shift) {
+    myZZ& RShiftEq(uint16_t shift) {
         *static_cast<ZZ*>(this) >>= shift;
         return *this;
     }
@@ -912,7 +912,7 @@ public:
 
     static const myZZ& zero();
 
-    usint GetMSB() const;
+    uint32_t GetMSB() const;
 
     /**
    * Get the number of digits using a specific base - support for
@@ -921,7 +921,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-    usint GetLengthForBase(usint base) const {
+    uint32_t GetLengthForBase(uint32_t base) const {
         return GetMSB();
     }
 
@@ -940,11 +940,11 @@ public:
    * @param base such that log2(base)+1 is the bitwidth of the subfield
    * @return the unsigned integer value of the subfield
    */
-    usint GetDigitAtIndexForBase(usint index, usint base) const;
+    uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // variable to store the log(base 2) of the number of bits in the
     // limb data type.
-    static const usint m_log2LimbBitLength;
+    static const uint32_t m_log2LimbBitLength;
 
     /**
    * Gets a subset of bits of a given length with LSB at specified index.
@@ -953,7 +953,7 @@ public:
    * @param length of the set of bits to get. LSB=1
    * @return resulting unsigned in formed by set of bits.
    */
-    usint GetBitRangeAtIndex(usint index, usint length) const;
+    uint32_t GetBitRangeAtIndex(uint32_t index, uint32_t length) const;
 
     /**
    * Gets the bit at the specified index.
@@ -961,7 +961,7 @@ public:
    * @param index of the bit to get. LSB=1
    * @return resulting bit.
    */
-    uschar GetBitAtIndex(usint index) const;
+    uint8_t GetBitAtIndex(uint32_t index) const;
 
     /**
    * A zero allocator that is called by the Matrix class. It is used to
@@ -1081,10 +1081,10 @@ private:
    * @return the ceiling of Number/(bits in the limb data type)
    */
     // todo: rename to MSB2NLimbs()
-    static usint ceilIntByUInt(const ZZ_limb_t Number);
+    static uint32_t ceilIntByUInt(const ZZ_limb_t Number);
 
     mutable ::cereal::size_type m_MSB;
-    usint GetMSBLimb_t(ZZ_limb_t x) const;
+    uint32_t GetMSBLimb_t(ZZ_limb_t x) const;
 };
 // class ends
 

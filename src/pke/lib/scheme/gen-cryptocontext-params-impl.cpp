@@ -111,41 +111,41 @@ Params::Params(const std::vector<std::string>& vals) {
     if (!(++it)->empty())
         ptModulus = static_cast<PlaintextModulus>(std::stoul(*it));
     if (!(++it)->empty())
-        digitSize = static_cast<usint>(std::stoul(*it));
+        digitSize = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         standardDeviation = static_cast<float>(std::stof(*it));
     if (!(++it)->empty())
         secretKeyDist = convertToSecretKeyDist(*it);
     if (!(++it)->empty())
-        maxRelinSkDeg = static_cast<usint>(std::stoul(*it));
+        maxRelinSkDeg = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         ksTech = convertToKeySwitchTechnique(*it);
     if (!(++it)->empty())
         scalTech = convertToScalingTechnique(*it);
     if (!(++it)->empty())
-        firstModSize = static_cast<usint>(std::stoul(*it));
+        firstModSize = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        batchSize = static_cast<usint>(std::stoul(*it));
+        batchSize = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        numLargeDigits = static_cast<usint>(std::stoul(*it));
+        numLargeDigits = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        multiplicativeDepth = static_cast<usint>(std::stoul(*it));
+        multiplicativeDepth = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        scalingModSize = static_cast<usint>(std::stoul(*it));
+        scalingModSize = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         securityLevel = convertToSecurityLevel(*it);
     if (!(++it)->empty())
-        ringDim = static_cast<usint>(std::stoul(*it));
+        ringDim = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        evalAddCount = static_cast<usint>(std::stoul(*it));
+        evalAddCount = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        keySwitchCount = static_cast<usint>(std::stoul(*it));
+        keySwitchCount = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         encryptionTechnique = convertToEncryptionTechnique(*it);
     if (!(++it)->empty())
         multiplicationTechnique = convertToMultiplicationTechnique(*it);
     if (!(++it)->empty())
-        PRENumHops = static_cast<usint>(std::stoul(*it));
+        PRENumHops = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         PREMode = convertToProxyReEncryptionMode(*it);
     if (!(++it)->empty())
@@ -159,17 +159,17 @@ Params::Params(const std::vector<std::string>& vals) {
     if (!(++it)->empty())
         desiredPrecision = std::stod(*it);
     if (!(++it)->empty())
-        statisticalSecurity = static_cast<usint>(std::stoul(*it));
+        statisticalSecurity = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        numAdversarialQueries = static_cast<usint>(std::stoul(*it));
+        numAdversarialQueries = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        thresholdNumOfParties = static_cast<usint>(std::stoul(*it));
+        thresholdNumOfParties = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         interactiveBootCompressionLevel = convertToCompressionLevel(*it);
     if (!(++it)->empty())
-        compositeDegree = static_cast<usint>(std::stoul(*it));
+        compositeDegree = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
-        registerWordSize = static_cast<usint>(std::stoul(*it));
+        registerWordSize = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         ckksDataType = convertToCKKSDataType(*it);
 }

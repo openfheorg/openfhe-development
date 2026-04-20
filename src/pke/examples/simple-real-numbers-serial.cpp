@@ -355,7 +355,7 @@ int main() {
     // Set main params
     const int multDepth    = 5;
     const int scaleModSize = 40;
-    const usint batchSize  = 32;
+    const uint32_t batchSize  = 32;
 
     const int cryptoContextIdx = 0;
     const int keyPairIdx       = 1;

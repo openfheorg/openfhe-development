@@ -90,10 +90,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_REEN
     return os << test.toString();
 }
 //===========================================================================================================
-const usint PTMOD = 256;
-const usint BATCH = 16;
-const usint SCALE = 60;
-const usint DSIZ  = 20;
+const uint32_t PTMOD = 256;
+const uint32_t BATCH = 16;
+const uint32_t SCALE = 60;
+const uint32_t DSIZ  = 20;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_REENCRYPT> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech,         EncTech,  PREMode

@@ -115,12 +115,12 @@ std::map<typename VecType::Integer, typename VecType::Integer>
     ChineseRemainderTransformArbFxd<VecType>::m_DivisionNTTRootOfUnity;
 
 template <typename VecType>
-std::map<usint, usint> ChineseRemainderTransformArbFxd<VecType>::m_nttDivisionDim;
+std::map<uint32_t, uint32_t> ChineseRemainderTransformArbFxd<VecType>::m_nttDivisionDim;
 
 template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::ForwardTransformIterative(const VecType& element,
                                                                      const VecType& rootOfUnityTable, VecType* result) {
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
     if (result->GetLength() != n) {
         OPENFHE_THROW("size of input element and size of output element not of same size");
     }
@@ -129,24 +129,24 @@ void NumberTheoreticTransformFxd<VecType>::ForwardTransformIterative(const VecTy
     IntType mu   = modulus.ComputeMu();
     result->SetModulus(modulus);
 
-    usint msb = GetMSB64(n - 1);
+    uint32_t msb = GetMSB64(n - 1);
     for (size_t i = 0; i < n; i++) {
         (*result)[i] = element[ReverseBits(i, msb)];
     }
 
     IntType omega, omegaFactor, oddVal, evenVal;
-    usint logm, i, j, indexEven, indexOdd;
+    uint32_t logm, i, j, indexEven, indexOdd;
 
-    usint logn = GetMSB64(n - 1);
+    uint32_t logn = GetMSB64(n - 1);
     for (logm = 1; logm <= logn; logm++) {
         // calculate the i indexes into the root table one time per loop
-        std::vector<usint> indexes(1 << (logm - 1));
-        for (i = 0; i < (usint)(1 << (logm - 1)); i++) {
+        std::vector<uint32_t> indexes(1 << (logm - 1));
+        for (i = 0; i < (uint32_t)(1 << (logm - 1)); i++) {
             indexes[i] = (i << (logn - logm));
         }
 
         for (j = 0; j < n; j = j + (1 << logm)) {
-            for (i = 0; i < (usint)(1 << (logm - 1)); i++) {
+            for (i = 0; i < (uint32_t)(1 << (logm - 1)); i++) {
                 omega     = rootOfUnityTable[indexes[i]];
                 indexEven = j + i;
                 indexOdd  = indexEven + (1 << (logm - 1));
@@ -177,14 +177,14 @@ template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::InverseTransformIterative(const VecType& element,
                                                                      const VecType& rootOfUnityInverseTable,
                                                                      VecType* result) {
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
 
     IntType modulus = element.GetModulus();
     IntType mu      = modulus.ComputeMu();
 
     NumberTheoreticTransformFxd<VecType>().ForwardTransformIterative(element, rootOfUnityInverseTable, result);
     IntType cycloOrderInv(IntType(n).ModInverse(modulus));
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         (*result)[i].ModMulEq(cycloOrderInv, modulus, mu);
     }
     return;
@@ -193,15 +193,15 @@ void NumberTheoreticTransformFxd<VecType>::InverseTransformIterative(const VecTy
 template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                VecType* element) {
-    usint n         = element->GetLength();
+    uint32_t n         = element->GetLength();
     IntType modulus = element->GetModulus();
     IntType mu      = modulus.ComputeMu();
 
-    usint i, m, j1, j2, indexOmega, indexLo, indexHi;
+    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
-    usint t     = (n >> 1);
-    usint logt1 = GetMSB64(t);
+    uint32_t t     = (n >> 1);
+    uint32_t logt1 = GetMSB64(t);
     for (m = 1; m < n; m <<= 1) {
         for (i = 0; i < m; ++i) {
             j1         = i << logt1;
@@ -238,7 +238,7 @@ template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::ForwardTransformToBitReverse(const VecType& element,
                                                                         const VecType& rootOfUnityTable,
                                                                         VecType* result) {
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
     if (result->GetLength() != n) {
         OPENFHE_THROW("size of input element and size of output element not of same size");
     }
@@ -247,15 +247,15 @@ void NumberTheoreticTransformFxd<VecType>::ForwardTransformToBitReverse(const Ve
     IntType mu      = modulus.ComputeMu();
     result->SetModulus(modulus);
 
-    usint i, m, j1, j2, indexOmega, indexLo, indexHi;
+    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
     for (i = 0; i < n; ++i) {
         (*result)[i] = element[i];
     }
 
-    usint t     = (n >> 1);
-    usint logt1 = GetMSB64(t);
+    uint32_t t     = (n >> 1);
+    uint32_t logt1 = GetMSB64(t);
     for (m = 1; m < n; m <<= 1) {
         for (i = 0; i < m; ++i) {
             j1         = i << logt1;
@@ -297,15 +297,15 @@ template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
-    usint n         = element->GetLength();
+    uint32_t n         = element->GetLength();
     IntType modulus = element->GetModulus();
 
     uint32_t indexOmega, indexHi;
     IntType preconOmega;
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
-    usint t     = (n >> 1);
-    usint logt1 = GetMSB64(t);
+    uint32_t t     = (n >> 1);
+    uint32_t logt1 = GetMSB64(t);
     for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
         uint32_t j1, j2;
         for (uint32_t i = 0; i < m; ++i) {
@@ -343,7 +343,7 @@ void NumberTheoreticTransformFxd<VecType>::ForwardTransformToBitReverse(const Ve
                                                                         const VecType& rootOfUnityTable,
                                                                         const VecType& preconRootOfUnityTable,
                                                                         VecType* result) {
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
 
     if (result->GetLength() != n) {
         OPENFHE_THROW("size of input element and size of output element not of same size");
@@ -361,8 +361,8 @@ void NumberTheoreticTransformFxd<VecType>::ForwardTransformToBitReverse(const Ve
     IntType preconOmega;
     IntType omega, omegaFactor, loVal, hiVal, zero(0);
 
-    usint t     = (n >> 1);
-    usint logt1 = GetMSB64(t);
+    uint32_t t     = (n >> 1);
+    uint32_t logt1 = GetMSB64(t);
     for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
         uint32_t j1, j2;
         for (uint32_t i = 0; i < m; ++i) {
@@ -404,15 +404,15 @@ template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::InverseTransformFromBitReverseInPlace(const VecType& rootOfUnityInverseTable,
                                                                                  const IntType& cycloOrderInv,
                                                                                  VecType* element) {
-    usint n         = element->GetLength();
+    uint32_t n         = element->GetLength();
     IntType modulus = element->GetModulus();
     IntType mu      = modulus.ComputeMu();
 
     IntType loVal, hiVal, omega, omegaFactor;
-    usint i, m, j1, j2, indexOmega, indexLo, indexHi;
+    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
 
-    usint t     = 1;
-    usint logt1 = 1;
+    uint32_t t     = 1;
+    uint32_t logt1 = 1;
     for (m = (n >> 1); m >= 1; m >>= 1) {
         for (i = 0; i < m; ++i) {
             j1         = i << logt1;
@@ -459,7 +459,7 @@ void NumberTheoreticTransformFxd<VecType>::InverseTransformFromBitReverse(const 
                                                                           const VecType& rootOfUnityInverseTable,
                                                                           const IntType& cycloOrderInv,
                                                                           VecType* result) {
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
 
     if (result->GetLength() != n) {
         OPENFHE_THROW("size of input element and size of output element not of same size");
@@ -467,7 +467,7 @@ void NumberTheoreticTransformFxd<VecType>::InverseTransformFromBitReverse(const 
 
     result->SetModulus(element.GetModulus());
 
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         (*result)[i] = element[i];
     }
     InverseTransformFromBitReverseInPlace(rootOfUnityInverseTable, cycloOrderInv, result);
@@ -477,16 +477,16 @@ template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::InverseTransformFromBitReverseInPlace(
     const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv,
     const IntType& preconCycloOrderInv, VecType* element) {
-    usint n = element->GetLength();
+    uint32_t n = element->GetLength();
 
     IntType modulus = element->GetModulus();
 
     IntType loVal, hiVal, omega, omegaFactor;
     IntType preconOmega;
-    usint i, m, j1, j2, indexOmega, indexLo, indexHi;
+    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
 
-    usint t     = 1;
-    usint logt1 = 1;
+    uint32_t t     = 1;
+    uint32_t logt1 = 1;
     for (m = (n >> 1); m >= 1; m >>= 1) {
         for (i = 0; i < m; ++i) {
             j1          = i << logt1;
@@ -532,14 +532,14 @@ template <typename VecType>
 void NumberTheoreticTransformFxd<VecType>::InverseTransformFromBitReverse(
     const VecType& element, const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable,
     const IntType& cycloOrderInv, const IntType& preconCycloOrderInv, VecType* result) {
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
     if (result->GetLength() != n) {
         OPENFHE_THROW("size of input element and size of output element not of same size");
     }
 
     result->SetModulus(element.GetModulus());
 
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         (*result)[i] = element[i];
     }
     InverseTransformFromBitReverseInPlace(rootOfUnityInverseTable, preconRootOfUnityInverseTable, cycloOrderInv,
@@ -550,7 +550,7 @@ void NumberTheoreticTransformFxd<VecType>::InverseTransformFromBitReverse(
 
 template <typename VecType>
 void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverseInPlace(const IntType& rootOfUnity,
-                                                                                   const usint CycloOrder,
+                                                                                   const uint32_t CycloOrder,
                                                                                    VecType* element) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {
         return;
@@ -560,7 +560,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverseInPla
         OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
-    usint CycloOrderHf = (CycloOrder >> 1);
+    uint32_t CycloOrderHf = (CycloOrder >> 1);
     if (element->GetLength() != CycloOrderHf) {
         OPENFHE_THROW("element size must be equal to CyclotomicOrder / 2");
     }
@@ -585,7 +585,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverseInPla
 template <typename VecType>
 void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverse(const VecType& element,
                                                                             const IntType& rootOfUnity,
-                                                                            const usint CycloOrder, VecType* result) {
+                                                                            const uint32_t CycloOrder, VecType* result) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {
         *result = element;
         return;
@@ -595,7 +595,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverse(cons
         OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
-    usint CycloOrderHf = (CycloOrder >> 1);
+    uint32_t CycloOrderHf = (CycloOrder >> 1);
     if (result->GetLength() != CycloOrderHf) {
         OPENFHE_THROW("result size must be equal to CyclotomicOrder / 2");
     }
@@ -621,7 +621,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverse(cons
 
 template <typename VecType>
 void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverseInPlace(const IntType& rootOfUnity,
-                                                                                     const usint CycloOrder,
+                                                                                     const uint32_t CycloOrder,
                                                                                      VecType* element) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {
         return;
@@ -631,7 +631,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverseInP
         OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
-    usint CycloOrderHf = (CycloOrder >> 1);
+    uint32_t CycloOrderHf = (CycloOrder >> 1);
     if (element->GetLength() != CycloOrderHf) {
         OPENFHE_THROW("element size must be equal to CyclotomicOrder / 2");
     }
@@ -643,7 +643,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverseInP
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
 
-    usint msb = GetMSB64(CycloOrderHf - 1);
+    uint32_t msb = GetMSB64(CycloOrderHf - 1);
     // if (typeid(IntType) == typeid(NativeInteger)) {
     //   NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
     //           m_rootOfUnityInverseReverseTableByModulus[modulus],
@@ -659,7 +659,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverseInP
 template <typename VecType>
 void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverse(const VecType& element,
                                                                               const IntType& rootOfUnity,
-                                                                              const usint CycloOrder, VecType* result) {
+                                                                              const uint32_t CycloOrder, VecType* result) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {
         *result = element;
         return;
@@ -669,7 +669,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverse(co
         OPENFHE_THROW("CyclotomicOrder is not a power of two");
     }
 
-    usint CycloOrderHf = (CycloOrder >> 1);
+    uint32_t CycloOrderHf = (CycloOrder >> 1);
     if (result->GetLength() != CycloOrderHf) {
         OPENFHE_THROW("result size must be equal to CyclotomicOrder / 2");
     }
@@ -681,13 +681,13 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverse(co
         PreCompute(rootOfUnity, CycloOrder, modulus);
     }
 
-    usint n = element.GetLength();
+    uint32_t n = element.GetLength();
     result->SetModulus(element.GetModulus());
-    for (usint i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         (*result)[i] = element[i];
     }
 
-    usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
+    uint32_t msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
     // if (typeid(IntType) == typeid(NativeInteger)) {
     //   NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
     //           m_rootOfUnityInverseReverseTableByModulus[modulus],
@@ -703,23 +703,23 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverse(co
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(const IntType& rootOfUnity, const usint CycloOrder,
+void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(const IntType& rootOfUnity, const uint32_t CycloOrder,
                                                           const IntType& modulus) {
     // Half of cyclo order
-    usint CycloOrderHf = (CycloOrder >> 1);
+    uint32_t CycloOrderHf = (CycloOrder >> 1);
 
     auto mapSearch = m_rootOfUnityReverseTableByModulus.find(modulus);
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
 #pragma omp critical
         {
             IntType x(1), xinv(1);
-            usint msb  = lbcrypto::GetMSB64(CycloOrderHf - 1);
+            uint32_t msb  = lbcrypto::GetMSB64(CycloOrderHf - 1);
             IntType mu = modulus.ComputeMu();
             VecType Table(CycloOrderHf, modulus);
             VecType TableI(CycloOrderHf, modulus);
             IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);
-            usint iinv;
-            for (usint i = 0; i < CycloOrderHf; i++) {
+            uint32_t iinv;
+            for (uint32_t i = 0; i < CycloOrderHf; i++) {
                 iinv         = lbcrypto::ReverseBits(i, msb);
                 Table[iinv]  = x;
                 TableI[iinv] = xinv;
@@ -730,7 +730,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(const IntType& rootOfU
             m_rootOfUnityInverseReverseTableByModulus[modulus] = TableI;
 
             VecType TableCOI(msb + 1, modulus);
-            for (usint i = 0; i < msb + 1; i++) {
+            for (uint32_t i = 0; i < msb + 1; i++) {
                 IntType coInv(IntType(1 << i).ModInverse(modulus));
                 TableCOI[i] = coInv;
             }
@@ -741,7 +741,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(const IntType& rootOfU
             //   VecType preconTable(CycloOrderHf, nativeModulus);
             //   VecType preconTableI(CycloOrderHf, nativeModulus);
 
-            //   for (usint i = 0; i < CycloOrderHf; i++) {
+            //   for (uint32_t i = 0; i < CycloOrderHf; i++) {
             //     preconTable[i] =
             //         NativeInteger(
             //             m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
@@ -754,7 +754,7 @@ void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(const IntType& rootOfU
             //   }
 
             //   VecType preconTableCOI(msb + 1, nativeModulus);
-            //   for (usint i = 0; i < msb + 1; i++) {
+            //   for (uint32_t i = 0; i < msb + 1; i++) {
             //     preconTableCOI[i] =
             //         NativeInteger(
             //             m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
@@ -770,16 +770,16 @@ void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(const IntType& rootOfU
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(std::vector<IntType>& rootOfUnity, const usint CycloOrder,
+void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(std::vector<IntType>& rootOfUnity, const uint32_t CycloOrder,
                                                           std::vector<IntType>& moduliiChain) {
-    usint numOfRootU = rootOfUnity.size();
-    usint numModulii = moduliiChain.size();
+    uint32_t numOfRootU = rootOfUnity.size();
+    uint32_t numModulii = moduliiChain.size();
 
     if (numOfRootU != numModulii) {
         OPENFHE_THROW("size of root of unity and size of moduli chain not of same size");
     }
 
-    for (usint i = 0; i < numOfRootU; ++i) {
+    for (uint32_t i = 0; i < numOfRootU; ++i) {
         IntType currentRoot(rootOfUnity[i]);
         IntType currentMod(moduliiChain[i]);
         PreCompute(currentRoot, CycloOrder, currentMod);
@@ -797,8 +797,8 @@ void ChineseRemainderTransformFTTFxd<VecType>::Reset() {
 }
 
 template <typename VecType>
-void BluesteinFFTFxd<VecType>::PreComputeDefaultNTTModulusRoot(usint cycloOrder, const IntType& modulus) {
-    usint nttDim                              = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
+void BluesteinFFTFxd<VecType>::PreComputeDefaultNTTModulusRoot(uint32_t cycloOrder, const IntType& modulus) {
+    uint32_t nttDim                              = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
     const auto nttModulus                     = LastPrime<IntType>(std::log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
     const auto nttRoot                        = RootOfUnity(nttDim, nttModulus);
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
@@ -808,9 +808,9 @@ void BluesteinFFTFxd<VecType>::PreComputeDefaultNTTModulusRoot(usint cycloOrder,
 }
 
 template <typename VecType>
-void BluesteinFFTFxd<VecType>::PreComputeRootTableForNTT(usint cyclotoOrder,
+void BluesteinFFTFxd<VecType>::PreComputeRootTableForNTT(uint32_t cyclotoOrder,
                                                          const ModulusRoot<IntType>& nttModulusRoot) {
-    usint nttDim           = std::pow(2, std::ceil(std::log2(2 * cyclotoOrder - 1)));
+    uint32_t nttDim           = std::pow(2, std::ceil(std::log2(2 * cyclotoOrder - 1)));
     const auto& nttModulus = nttModulusRoot.first;
     const auto& nttRoot    = nttModulusRoot.second;
 
@@ -818,18 +818,18 @@ void BluesteinFFTFxd<VecType>::PreComputeRootTableForNTT(usint cyclotoOrder,
 
     auto rootInv = root.ModInverse(nttModulus);
 
-    usint nttDimHf = (nttDim >> 1);
+    uint32_t nttDimHf = (nttDim >> 1);
     VecType rootTable(nttDimHf, nttModulus);
     VecType rootTableInverse(nttDimHf, nttModulus);
 
     IntType x(1);
-    for (usint i = 0; i < nttDimHf; i++) {
+    for (uint32_t i = 0; i < nttDimHf; i++) {
         rootTable[i] = x;
         x            = x.ModMul(root, nttModulus);
     }
 
     x = 1;
-    for (usint i = 0; i < nttDimHf; i++) {
+    for (uint32_t i = 0; i < nttDimHf; i++) {
         rootTableInverse[i] = x;
         x                   = x.ModMul(rootInv, nttModulus);
     }
@@ -839,13 +839,13 @@ void BluesteinFFTFxd<VecType>::PreComputeRootTableForNTT(usint cyclotoOrder,
 }
 
 template <typename VecType>
-void BluesteinFFTFxd<VecType>::PreComputePowers(usint cycloOrder, const ModulusRoot<IntType>& modulusRoot) {
+void BluesteinFFTFxd<VecType>::PreComputePowers(uint32_t cycloOrder, const ModulusRoot<IntType>& modulusRoot) {
     const auto& modulus = modulusRoot.first;
     const auto& root    = modulusRoot.second;
 
     VecType powers(cycloOrder, modulus);
     powers[0] = 1;
-    for (usint i = 1; i < cycloOrder; i++) {
+    for (uint32_t i = 1; i < cycloOrder; i++) {
         auto iSqr = (i * i) % (2 * cycloOrder);
         auto val  = root.ModExp(IntType(iSqr), modulus);
         powers[i] = val;
@@ -854,7 +854,7 @@ void BluesteinFFTFxd<VecType>::PreComputePowers(usint cycloOrder, const ModulusR
 }
 
 template <typename VecType>
-void BluesteinFFTFxd<VecType>::PreComputeRBTable(usint cycloOrder, const ModulusRootPair<IntType>& modulusRootPair) {
+void BluesteinFFTFxd<VecType>::PreComputeRBTable(uint32_t cycloOrder, const ModulusRootPair<IntType>& modulusRootPair) {
     const auto& modulusRoot = modulusRootPair.first;
     const auto& modulus     = modulusRoot.first;
     const auto& root        = modulusRoot.second;
@@ -865,11 +865,11 @@ void BluesteinFFTFxd<VecType>::PreComputeRBTable(usint cycloOrder, const Modulus
     // const auto &nttRoot = nttModulusRoot.second;
     // assumes rootTable is precomputed
     const auto& rootTable = m_rootOfUnityTableByModulusRoot[nttModulusRoot];
-    usint nttDim          = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
+    uint32_t nttDim          = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
 
     VecType b(2 * cycloOrder - 1, modulus);
     b[cycloOrder - 1] = 1;
-    for (usint i = 1; i < cycloOrder; i++) {
+    for (uint32_t i = 1; i < cycloOrder; i++) {
         auto iSqr             = (i * i) % (2 * cycloOrder);
         auto val              = rootInv.ModExp(IntType(iSqr), modulus);
         b[cycloOrder - 1 + i] = val;
@@ -886,7 +886,7 @@ void BluesteinFFTFxd<VecType>::PreComputeRBTable(usint cycloOrder, const Modulus
 
 template <typename VecType>
 VecType BluesteinFFTFxd<VecType>::ForwardTransform(const VecType& element, const IntType& root,
-                                                   const usint cycloOrder) {
+                                                   const uint32_t cycloOrder) {
     const auto& modulus        = element.GetModulus();
     const auto& nttModulusRoot = m_defaultNTTModulusRoot[modulus];
 
@@ -894,7 +894,7 @@ VecType BluesteinFFTFxd<VecType>::ForwardTransform(const VecType& element, const
 }
 
 template <typename VecType>
-VecType BluesteinFFTFxd<VecType>::ForwardTransform(const VecType& element, const IntType& root, const usint cycloOrder,
+VecType BluesteinFFTFxd<VecType>::ForwardTransform(const VecType& element, const IntType& root, const uint32_t cycloOrder,
                                                    const ModulusRoot<IntType>& nttModulusRoot) {
     if (element.GetLength() != cycloOrder) {
         OPENFHE_THROW("expected size of element vector should be equal to cyclotomic order");
@@ -911,7 +911,7 @@ VecType BluesteinFFTFxd<VecType>::ForwardTransform(const VecType& element, const
         m_rootOfUnityInverseTableByModulusRoot[nttModulusRoot];  // assumes rootTableInverse is precomputed
     VecType x = element.ModMul(powers);
 
-    usint nttDim = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
+    uint32_t nttDim = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
     auto Ra      = PadZeros(x, nttDim);
     Ra.SetModulus(nttModulus);
     VecType RA(nttDim);
@@ -932,15 +932,15 @@ VecType BluesteinFFTFxd<VecType>::ForwardTransform(const VecType& element, const
 }
 
 template <typename VecType>
-VecType BluesteinFFTFxd<VecType>::PadZeros(const VecType& a, const usint finalSize) {
-    usint s = a.GetLength();
+VecType BluesteinFFTFxd<VecType>::PadZeros(const VecType& a, const uint32_t finalSize) {
+    uint32_t s = a.GetLength();
     VecType result(finalSize, a.GetModulus());
 
-    for (usint i = 0; i < s; i++) {
+    for (uint32_t i = 0; i < s; i++) {
         result[i] = a[i];
     }
 
-    for (usint i = a.GetLength(); i < finalSize; i++) {
+    for (uint32_t i = a.GetLength(); i < finalSize; i++) {
         result[i] = IntType(0);
     }
 
@@ -948,10 +948,10 @@ VecType BluesteinFFTFxd<VecType>::PadZeros(const VecType& a, const usint finalSi
 }
 
 template <typename VecType>
-VecType BluesteinFFTFxd<VecType>::Resize(const VecType& a, usint lo, usint hi) {
+VecType BluesteinFFTFxd<VecType>::Resize(const VecType& a, uint32_t lo, uint32_t hi) {
     VecType result(hi - lo + 1, a.GetModulus());
 
-    for (usint i = lo, j = 0; i <= hi; i++, j++) {
+    for (uint32_t i = lo, j = 0; i <= hi; i++, j++) {
         result[j] = a[i];
     }
 
@@ -973,12 +973,12 @@ void ChineseRemainderTransformArbFxd<VecType>::SetCylotomicPolynomial(const VecT
 }
 
 template <typename VecType>
-void ChineseRemainderTransformArbFxd<VecType>::PreCompute(const usint cyclotoOrder, const IntType& modulus) {
+void ChineseRemainderTransformArbFxd<VecType>::PreCompute(const uint32_t cyclotoOrder, const IntType& modulus) {
     BluesteinFFTFxd<VecType>().PreComputeDefaultNTTModulusRoot(cyclotoOrder, modulus);
 }
 
 template <typename VecType>
-void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTModulus(usint cyclotoOrder, const IntType& modulus,
+void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTModulus(uint32_t cyclotoOrder, const IntType& modulus,
                                                                         const IntType& nttModulus,
                                                                         const IntType& nttRoot) {
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
@@ -986,15 +986,15 @@ void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTModulus(usint cy
 }
 
 template <typename VecType>
-void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTDivisionModulus(usint cyclotoOrder,
+void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTDivisionModulus(uint32_t cyclotoOrder,
                                                                                 const IntType& modulus,
                                                                                 const IntType& nttMod,
                                                                                 const IntType& nttRootBig) {
-    usint n                        = GetTotient(cyclotoOrder);
-    usint power                    = cyclotoOrder - n;
+    uint32_t n                        = GetTotient(cyclotoOrder);
+    uint32_t power                    = cyclotoOrder - n;
     m_nttDivisionDim[cyclotoOrder] = 2 * std::pow(2, std::ceil(std::log2(power)));
 
-    usint nttDimBig = std::pow(2, std::ceil(std::log2(2 * cyclotoOrder - 1)));
+    uint32_t nttDimBig = std::pow(2, std::ceil(std::log2(2 * cyclotoOrder - 1)));
 
     // Computes the root of unity for the division NTT based on the root of unity
     // for regular NTT
@@ -1003,22 +1003,22 @@ void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTDivisionModulus(
     m_DivisionNTTModulus[modulus]     = nttMod;
     m_DivisionNTTRootOfUnity[modulus] = nttRoot;
     // part0 setting of rootTable and inverse rootTable
-    usint nttDim = m_nttDivisionDim[cyclotoOrder];
+    uint32_t nttDim = m_nttDivisionDim[cyclotoOrder];
     IntType root(nttRoot);
     auto rootInv = root.ModInverse(nttMod);
 
-    usint nttDimHf = (nttDim >> 1);
+    uint32_t nttDimHf = (nttDim >> 1);
     VecType rootTable(nttDimHf, nttMod);
     VecType rootTableInverse(nttDimHf, nttMod);
 
     IntType x(1);
-    for (usint i = 0; i < nttDimHf; i++) {
+    for (uint32_t i = 0; i < nttDimHf; i++) {
         rootTable[i] = x;
         x            = x.ModMul(root, nttMod);
     }
 
     x = 1;
-    for (usint i = 0; i < nttDimHf; i++) {
+    for (uint32_t i = 0; i < nttDimHf; i++) {
         rootTableInverse[i] = x;
         x                   = x.ModMul(rootInv, nttMod);
     }
@@ -1040,7 +1040,7 @@ void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTDivisionModulus(
     const auto& cycloPoly = m_cyclotomicPolyMap[modulus];
 
     VecType QForwardTransform(nttDim, nttMod);
-    for (usint i = 0; i < cycloPoly.GetLength(); i++) {
+    for (uint32_t i = 0; i < cycloPoly.GetLength(); i++) {
         QForwardTransform[i] = cycloPoly[i];
     }
 
@@ -1052,17 +1052,17 @@ void ChineseRemainderTransformArbFxd<VecType>::SetPreComputedNTTDivisionModulus(
 
 template <typename VecType>
 VecType ChineseRemainderTransformArbFxd<VecType>::InversePolyMod(const VecType& cycloPoly, const IntType& modulus,
-                                                                 usint power) {
+                                                                 uint32_t power) {
     VecType result(power, modulus);
-    usint r = std::ceil(std::log2(power));
+    uint32_t r = std::ceil(std::log2(power));
     VecType h(1, modulus);  // h is a unit polynomial
     h[0] = 1;
 
     // Precompute the Barrett mu parameter
     IntType mu = modulus.ComputeMu();
 
-    for (usint i = 0; i < r; i++) {
-        usint qDegree = std::pow(2, i + 1);
+    for (uint32_t i = 0; i < r; i++) {
+        uint32_t qDegree = std::pow(2, i + 1);
         VecType q(qDegree + 1, modulus);  // q = x^(2^i+1)
         q[qDegree]   = 1;
         auto hSquare = PolynomialMultiplication(h, h);
@@ -1070,7 +1070,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::InversePolyMod(const VecType& 
         auto a = h * IntType(2);
         auto b = PolynomialMultiplication(hSquare, cycloPoly);
         // b = 2h - gh^2
-        for (usint j = 0; j < b.GetLength(); j++) {
+        for (uint32_t j = 0; j < b.GetLength(); j++) {
             if (j < a.GetLength()) {
                 b[j] = a[j].ModSub(b[j], modulus, mu);
             }
@@ -1081,7 +1081,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::InversePolyMod(const VecType& 
         h = PolyMod(b, q, modulus);
     }
     // take modulo x^power
-    for (usint i = 0; i < power; i++) {
+    for (uint32_t i = 0; i < power; i++) {
         result[i] = h[i];
     }
 
@@ -1091,8 +1091,8 @@ VecType ChineseRemainderTransformArbFxd<VecType>::InversePolyMod(const VecType& 
 template <typename VecType>
 VecType ChineseRemainderTransformArbFxd<VecType>::ForwardTransform(const VecType& element, const IntType& root,
                                                                    const IntType& nttModulus, const IntType& nttRoot,
-                                                                   const usint cycloOrder) {
-    usint phim = GetTotient(cycloOrder);
+                                                                   const uint32_t cycloOrder) {
+    uint32_t phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim) {
         OPENFHE_THROW("element size should be equal to phim");
     }
@@ -1130,8 +1130,8 @@ VecType ChineseRemainderTransformArbFxd<VecType>::ForwardTransform(const VecType
 template <typename VecType>
 VecType ChineseRemainderTransformArbFxd<VecType>::InverseTransform(const VecType& element, const IntType& root,
                                                                    const IntType& nttModulus, const IntType& nttRoot,
-                                                                   const usint cycloOrder) {
-    usint phim = GetTotient(cycloOrder);
+                                                                   const uint32_t cycloOrder) {
+    uint32_t phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim) {
         OPENFHE_THROW("element size should be equal to phim");
     }
@@ -1168,20 +1168,20 @@ VecType ChineseRemainderTransformArbFxd<VecType>::InverseTransform(const VecType
 }
 
 template <typename VecType>
-VecType ChineseRemainderTransformArbFxd<VecType>::Pad(const VecType& element, const usint cycloOrder, bool forward) {
-    usint n = GetTotient(cycloOrder);
+VecType ChineseRemainderTransformArbFxd<VecType>::Pad(const VecType& element, const uint32_t cycloOrder, bool forward) {
+    uint32_t n = GetTotient(cycloOrder);
 
     const auto& modulus = element.GetModulus();
     VecType inputToBluestein(cycloOrder, modulus);
 
     if (forward) {  // Forward transform padding
-        for (usint i = 0; i < n; i++) {
+        for (uint32_t i = 0; i < n; i++) {
             inputToBluestein[i] = element[i];
         }
     }
     else {  // Inverse transform padding
         auto tList = GetTotientList(cycloOrder);
-        usint i    = 0;
+        uint32_t i    = 0;
         for (auto& coprime : tList) {
             inputToBluestein[coprime] = element[i++];
         }
@@ -1191,16 +1191,16 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Pad(const VecType& element, co
 }
 
 template <typename VecType>
-VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, const usint cycloOrder, bool forward,
+VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, const uint32_t cycloOrder, bool forward,
                                                        const IntType& bigMod, const IntType& bigRoot) {
-    usint n = GetTotient(cycloOrder);
+    uint32_t n = GetTotient(cycloOrder);
 
     const auto& modulus = element.GetModulus();
     VecType output(n, modulus);
 
     if (forward) {  // Forward transform drop
         auto tList = GetTotientList(cycloOrder);
-        for (usint i = 0; i < n; i++) {
+        for (uint32_t i = 0; i < n; i++) {
             output[i] = element[tList[i]];
         }
     }
@@ -1210,7 +1210,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, c
             // cycloOrder is prime: Reduce mod Phi_{n+1}(x)
             // Reduction involves subtracting the coeff of x^n from all terms
             auto coeff_n = element[n];
-            for (usint i = 0; i < n; i++) {
+            for (uint32_t i = 0; i < n; i++) {
                 output[i] = element[i].ModSub(coeff_n, modulus, mu);
             }
         }
@@ -1219,7 +1219,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, c
             // cycloOrder is 2*prime: 2 Step reduction
             // First reduce mod x^(n+1)+1 (=(x+1)*Phi_{2*(n+1)}(x))
             // Subtract co-efficient of x^(i+n+1) from x^(i)
-            for (usint i = 0; i < n; i++) {
+            for (uint32_t i = 0; i < n; i++) {
                 auto coeff_i  = element[i];
                 auto coeff_ip = element[i + n + 1];
                 output[i]     = coeff_i.ModSub(coeff_ip, modulus, mu);
@@ -1227,7 +1227,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, c
             auto coeff_n = element[n].ModSub(element[2 * n + 1], modulus, mu);
             // Now reduce mod Phi_{2*(n+1)}(x)
             // Similar to the prime case but with alternating signs
-            for (usint i = 0; i < n; i++) {
+            for (uint32_t i = 0; i < n; i++) {
                 if (i % 2 == 0) {
                     output[i].ModSubEq(coeff_n, modulus, mu);
                 }
@@ -1251,8 +1251,8 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, c
             const auto& rootTable = m_rootOfUnityDivisionTableByModulus[nttMod];
             VecType aPadded2(m_nttDivisionDim[cycloOrder], nttMod);
             // perform mod operation
-            usint power = cycloOrder - n;
-            for (usint i = n; i < element.GetLength(); i++) {
+            uint32_t power = cycloOrder - n;
+            for (uint32_t i = n; i < element.GetLength(); i++) {
                 aPadded2[power - (i - n) - 1] = element[i];
             }
             VecType A(m_nttDivisionDim[cycloOrder]);
@@ -1263,7 +1263,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, c
             NumberTheoreticTransformFxd<VecType>().InverseTransformIterative(AB, rootTableInverse, &a);
 
             VecType quotient(m_nttDivisionDim[cycloOrder], modulus);
-            for (usint i = 0; i < power; i++) {
+            for (uint32_t i = 0; i < power; i++) {
                 quotient[i] = a[i];
             }
             quotient.ModEq(modulus);
@@ -1281,7 +1281,7 @@ VecType ChineseRemainderTransformArbFxd<VecType>::Drop(const VecType& element, c
 
             IntType mu = modulus.ComputeMu();  // Precompute the Barrett mu parameter
 
-            for (usint i = 0; i < n; i++) {
+            for (uint32_t i = 0; i < n; i++) {
                 output[i] = element[i].ModSub(newQuotient2[cycloOrder - 1 - i], modulus, mu);
             }
         }

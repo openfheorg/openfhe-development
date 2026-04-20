@@ -93,7 +93,7 @@ void CKKSNoiseFloodingDemo() {
 
     auto cryptoContextNoiseEstimation = GetCryptoContext(parametersNoiseEstimation);
 
-    usint ringDim = cryptoContextNoiseEstimation->GetRingDimension();
+    uint32_t ringDim = cryptoContextNoiseEstimation->GetRingDimension();
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
     // Key Generation
@@ -169,8 +169,8 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     parameters.SetRingDim(1 << 16);
 
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    usint dcrtBits               = 59;
-    usint firstMod               = 60;
+    uint32_t dcrtBits               = 59;
+    uint32_t firstMod               = 60;
 
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetScalingModSize(dcrtBits);

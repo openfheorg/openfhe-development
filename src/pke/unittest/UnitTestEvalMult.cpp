@@ -114,15 +114,15 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_EVAL
 }
 //===========================================================================================================
 #if NATIVEINT == 128
-constexpr usint SCALE = 78;
+constexpr uint32_t SCALE = 78;
 #else
-constexpr usint SCALE = 50;
+constexpr uint32_t SCALE = 50;
 #endif
-constexpr usint RING_DIM        = 16;
-constexpr usint BATCH           = 8;
-constexpr usint MULT_DEPTH      = 4;
+constexpr uint32_t RING_DIM        = 16;
+constexpr uint32_t BATCH           = 8;
+constexpr uint32_t MULT_DEPTH      = 4;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
-constexpr usint PTM             = 65537;
+constexpr uint32_t PTM             = 65537;
 
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_EVALMULT> testCasesUTGENERAL_EVALMULT = {

@@ -121,7 +121,7 @@ public:
    *
    * @return length
    */
-    virtual usint GetLength() const = 0;
+    virtual uint32_t GetLength() const = 0;
 
     /**
    * @brief Get modulus of the element
@@ -142,7 +142,7 @@ public:
    *
    * @return order
    */
-    virtual usint GetCyclotomicOrder() const = 0;
+    virtual uint32_t GetCyclotomicOrder() const = 0;
 
     /**
    * @brief Gets the Value in the Element that is At Index and returns it.
@@ -152,16 +152,16 @@ public:
    * @param i is the index.
    * @return will throw an error.
    */
-    virtual IntType& at(usint i) {
+    virtual IntType& at(uint32_t i) {
         OPENFHE_THROW("at() not implemented");
     }
-    virtual const IntType& at(usint i) const {
+    virtual const IntType& at(uint32_t i) const {
         OPENFHE_THROW("const at() not implemented");
     }
-    virtual IntType& operator[](usint i) {
+    virtual IntType& operator[](uint32_t i) {
         OPENFHE_THROW("[] not implemented");
     }
-    virtual const IntType& operator[](usint i) const {
+    virtual const IntType& operator[](uint32_t i) const {
         OPENFHE_THROW("const [] not implemented");
     }
 
@@ -337,7 +337,7 @@ public:
    * evaluation mode
    * @result is the pointer where the base decomposition vector is stored
    */
-    virtual std::vector<Element> BaseDecompose(usint baseBits, bool evalModeAnswer) const = 0;
+    virtual std::vector<Element> BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const = 0;
 
     /**
    * @brief Scalar division followed by rounding operation - operation on all
@@ -411,7 +411,7 @@ public:
    * @param baseBits
    * @return
    */
-    virtual std::vector<Element> PowersOfBase(usint baseBits) const = 0;
+    virtual std::vector<Element> PowersOfBase(uint32_t baseBits) const = 0;
 
     /**
    * @brief Mod - perform a modulus operation.

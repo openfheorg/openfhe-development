@@ -236,7 +236,7 @@ void BaseSampler::Initialize(double mean) {
     }
 
     // take cumulative summation
-    for (usint i = 1; i < m_vals.size(); i++) {
+    for (uint32_t i = 1; i < m_vals.size(); i++) {
         m_vals[i] += m_vals[i - 1];
     }
 }
@@ -260,7 +260,7 @@ int64_t BaseSampler::GenerateIntegerPeikert() const {
     return ans - fin + b_mean;
 }
 
-usint BaseSampler::FindInVector(const std::vector<double>& S, double search) const {
+uint32_t BaseSampler::FindInVector(const std::vector<double>& S, double search) const {
     // STL binary search implementation
     auto lower = std::lower_bound(S.begin(), S.end(), search);
     if (lower != S.end())

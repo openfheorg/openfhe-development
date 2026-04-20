@@ -141,8 +141,8 @@ public:
     DCRTPolyType Negate() const override;
     DCRTPolyType operator-() const override;
 
-    std::vector<DCRTPolyType> BaseDecompose(usint baseBits, bool evalModeAnswer) const override;
-    std::vector<DCRTPolyType> PowersOfBase(usint baseBits) const override;
+    std::vector<DCRTPolyType> BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const override;
+    std::vector<DCRTPolyType> PowersOfBase(uint32_t baseBits) const override;
     std::vector<DCRTPolyType> CRTDecompose(uint32_t baseBits) const;
 
     DCRTPolyType AutomorphismTransform(uint32_t i) const override;
@@ -217,7 +217,7 @@ public:
     PolyLargeType CRTInterpolate() const override;
     PolyType DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
     PolyType ToNativePoly() const override;
-    PolyLargeType CRTInterpolateIndex(usint i) const override;
+    PolyLargeType CRTInterpolateIndex(uint32_t i) const override;
     Integer GetWorkingModulus() const override;
 
     void SetValuesModSwitch(const DCRTPolyType& element, const NativeInteger& modulus) override;
@@ -274,7 +274,7 @@ public:
     void FastExpandCRTBasisPloverQ(const Precomputations& precomputed) override;
 
     void ExpandCRTBasisQlHat(const std::shared_ptr<Params>& paramsQ, const std::vector<NativeInteger>& QlHatModq,
-                             const std::vector<NativeInteger>& QlHatModqPrecon, const usint sizeQ) override;
+                             const std::vector<NativeInteger>& QlHatModqPrecon, const uint32_t sizeQ) override;
 
     PolyType ScaleAndRound(const NativeInteger& t, const std::vector<NativeInteger>& tQHatInvModqDivqModt,
                            const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
@@ -307,7 +307,7 @@ public:
         const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
         const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
         const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-        const uint64_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+        uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
         const std::vector<NativeInteger>& mtildeInvModbskPrecon) override;
 
     void FastRNSFloorq(const NativeInteger& t, const std::vector<NativeInteger>& moduliQ,
@@ -383,11 +383,11 @@ public:
         return m_vectors;
     }
 
-    void SetElementAtIndex(usint index, const PolyType& element) {
+    void SetElementAtIndex(uint32_t index, const PolyType& element) {
         m_vectors[index] = element;
     }
 
-    void SetElementAtIndex(usint index, PolyType&& element) {
+    void SetElementAtIndex(uint32_t index, PolyType&& element) {
         m_vectors[index] = std::move(element);
     }
 

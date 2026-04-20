@@ -37,7 +37,7 @@
 
 using namespace lbcrypto;
 
-void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm,
+void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, uint32_t ptm,
                   double& noise, double& logQ);
 
 int main() {
@@ -108,7 +108,7 @@ int main() {
     return 0;
 }
 
-void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm,
+void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, uint32_t ptm,
                   double& noise, double& logQ) {
     const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
@@ -156,7 +156,7 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
     noise        = (std::log2(res.Norm()));
 
     logQ = 0;
-    for (usint i = 0; i < sizeQ; i++) {
+    for (uint32_t i = 0; i < sizeQ; i++) {
         double logqi = std::log2(cryptoParams->GetElementParams()->GetParams()[i]->GetModulus().ConvertToInt());
         logQ += logqi;
     }

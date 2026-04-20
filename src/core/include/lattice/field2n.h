@@ -75,7 +75,7 @@ public:
    * @param initializeElementToZero flag for initializing values to zero.  It is
    * set to false by default.
    */
-    Field2n(usint size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
+    Field2n(uint32_t size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
         : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()),
           format(f) {}
 

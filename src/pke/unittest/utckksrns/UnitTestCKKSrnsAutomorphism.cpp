@@ -114,10 +114,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_AUTO
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint SMODSIZE        = 50;
-constexpr usint RING_DIM        = 16;
-constexpr usint BATCH           = 8;
-constexpr usint MULT_DEPTH      = 1;
+constexpr uint32_t SMODSIZE        = 50;
+constexpr uint32_t RING_DIM        = 16;
+constexpr uint32_t BATCH           = 8;
+constexpr uint32_t MULT_DEPTH      = 1;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 static const std::vector<int32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
 static const std::vector<int32_t> cornerCaseIndexList{0};
@@ -201,7 +201,7 @@ class UTCKKSRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
     const std::vector<int64_t> vector10{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
-    const usint invalidIndexAutomorphism = 4;
+    const uint32_t invalidIndexAutomorphism = 4;
     const std::vector<std::complex<double>> vectorComplexFailure{1.0, 2.0, 3.0, 4.0};
     const std::vector<std::complex<double>> vector8Complex{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
     const std::complex<double> vector8ComplexSum =

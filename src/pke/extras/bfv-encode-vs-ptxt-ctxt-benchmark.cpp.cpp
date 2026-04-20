@@ -58,7 +58,7 @@ int main() {
 
     std::cout << "Element parameters: \n" << *cryptoContext->GetElementParams() << "\n";
 
-    usint ringDim = cryptoContext->GetRingDimension();
+    uint32_t ringDim = cryptoContext->GetRingDimension();
     std::cout << "BFVrns scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
     // Enable features that you wish to use

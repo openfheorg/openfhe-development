@@ -81,9 +81,9 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl);
 
 class StdLatticeParm {
     DistributionType distType;
-    usint ringDim;
+    uint32_t ringDim;
     SecurityLevel minSecLev;
-    usint maxLogQ;
+    uint32_t maxLogQ;
 
     // NOTE!!! the declaration below relies upon there being three possible values
     // for the first index (the distribution type), and six possible values for
@@ -96,14 +96,14 @@ class StdLatticeParm {
     // will suffer MAKE SURE that the number of entries in the DistributionType
     // enum is == the first index, and MAKE SURE that the number of entries in the
     // SecurityLevel enum is == the second index
-    static std::map<usint, StdLatticeParm*> byRing[3][6];
-    static std::map<usint, StdLatticeParm*> byLogQ[3][6];
+    static std::map<uint32_t, StdLatticeParm*> byRing[3][6];
+    static std::map<uint32_t, StdLatticeParm*> byLogQ[3][6];
 
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
     static bool initialized;
 
 public:
-    StdLatticeParm(DistributionType distType, usint ringDim, SecurityLevel minSecLev, usint maxLogQ)
+    StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
         : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}
 
     static void initializeLookups() {
@@ -115,7 +115,7 @@ public:
         initialized = true;
     }
 
-    static usint FindMaxQ(DistributionType distType, SecurityLevel minSecLev, usint ringDim) {
+    static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
         int distTypeIdx  = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
         if (!initialized)
@@ -126,14 +126,14 @@ public:
         return it->second->getMaxLogQ();
     }
 
-    static usint FindRingDim(DistributionType distType, SecurityLevel minSecLev, usint curLogQ) {
+    static uint32_t FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
         if (!initialized)
             initializeLookups();
-        usint prev = 0;
+        uint32_t prev = 0;
 
         int distTypeIdx  = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
-        usint n          = 0;
+        uint32_t n          = 0;
         for (std::pair<const unsigned int, StdLatticeParm*>& it : byLogQ[distTypeIdx][minSecLevIdx]) {
             if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
                 return it.second->getRingDim();
@@ -146,13 +146,13 @@ public:
     DistributionType getDistType() const {
         return distType;
     }
-    usint getRingDim() const {
+    uint32_t getRingDim() const {
         return ringDim;
     }
     SecurityLevel getMinSecLev() const {
         return minSecLev;
     }
-    usint getMaxLogQ() const {
+    uint32_t getMaxLogQ() const {
         return maxLogQ;
     }
 };

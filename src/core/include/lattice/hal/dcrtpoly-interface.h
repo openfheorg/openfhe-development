@@ -215,7 +215,7 @@ public:
    * @brief returns the element's cyclotomic order
    * @return returns the cyclotomic order of the element.
    */
-    usint GetCyclotomicOrder() const final {
+    uint32_t GetCyclotomicOrder() const final {
         return this->GetDerived().GetParams()->GetCyclotomicOrder();
     }
 
@@ -223,7 +223,7 @@ public:
    * @brief returns the element's ring dimension
    * @return returns the ring dimension of the element.
    */
-    usint GetRingDimension() const {
+    uint32_t GetRingDimension() const {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
@@ -251,7 +251,7 @@ public:
    *
    * @return length of the component element
    */
-    usint GetLength() const final {
+    uint32_t GetLength() const final {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
@@ -260,10 +260,10 @@ public:
    * Note this operation is computationally intense. Does bound checking
    * @return interpolated value at index i.
    */
-    BigIntType& at(usint i) final {
+    BigIntType& at(uint32_t i) final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    const BigIntType& at(usint i) const final {
+    const BigIntType& at(uint32_t i) const final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -272,10 +272,10 @@ public:
    * Note this operation is computationally intense. No bound checking
    * @return interpolated value at index i.
    */
-    BigIntType& operator[](usint i) final {
+    BigIntType& operator[](uint32_t i) final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    const BigIntType& operator[](usint i) const final {
+    const BigIntType& operator[](uint32_t i) const final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -297,7 +297,7 @@ public:
    *
    * @return the number of component elements.
    */
-    usint GetNumOfElements() const {
+    uint32_t GetNumOfElements() const {
         return this->GetDerived().GetAllElements().size();
     }
 
@@ -307,7 +307,7 @@ public:
    * @param i index of tower to be returned.
    * @returns a reference to the returned tower
    */
-    const TowerType& GetElementAtIndex(usint i) const {
+    const TowerType& GetElementAtIndex(uint32_t i) const {
         return this->GetDerived().GetAllElements()[i];
     }
 
@@ -317,7 +317,7 @@ public:
    * @param index where the element should be set
    * @param element The element to store
    */
-    void SetElementAtIndex(usint index, const TowerType& element) {
+    void SetElementAtIndex(uint32_t index, const TowerType& element) {
         return this->GetDerived().SetElementAtIndex(index, element);
     }
 
@@ -327,7 +327,7 @@ public:
    * @param index where the element should be set
    * @param element The element to store
    */
-    void SetElementAtIndex(usint index, TowerType&& element) {
+    void SetElementAtIndex(uint32_t index, TowerType&& element) {
         return this->GetDerived().SetElementAtIndex(index, std::move(element));
     }
 
@@ -349,7 +349,7 @@ public:
    * @warning not efficient and  not fast, uses multiprecision arithmetic and
    *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.
    */
-    std::vector<DerivedType> BaseDecompose(usint baseBits, bool evalModeAnswer) const override = 0;
+    std::vector<DerivedType> BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const override = 0;
 
     /**
    * @brief Generate a vector of PolyImpl's as \f$ \left\{x, {base}*x,
@@ -365,7 +365,7 @@ public:
    * @warning not efficient and  not fast, uses multiprecision arithmetic and
    *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.
    */
-    std::vector<DerivedType> PowersOfBase(usint baseBits) const override = 0;
+    std::vector<DerivedType> PowersOfBase(uint32_t baseBits) const override = 0;
 
     /**
    * CRT basis decomposition of c as [c qi/q]_qi
@@ -407,10 +407,10 @@ public:
     DerivedType& operator=(std::initializer_list<uint64_t> rhs) override = 0;
 
     /**
-   * @brief Assignment Operator. The usint val will be set at index zero and all
+   * @brief Assignment Operator. The uint32_t val will be set at index zero and all
    * other indices will be set to zero.
    *
-   * @param val is the usint to assign to index zero.
+   * @param val is the uint32_t to assign to index zero.
    * @return the resulting vector.
    */
     DerivedType& operator=(uint64_t val) {
@@ -876,7 +876,7 @@ public:
    *
    * @return the interpolated ring element as a Poly object.
    */
-    virtual PolyLargeType CRTInterpolateIndex(usint i) const = 0;
+    virtual PolyLargeType CRTInterpolateIndex(uint32_t i) const = 0;
 
     /**
    * @brief Computes and returns the product of primes in the current moduli
@@ -1128,7 +1128,7 @@ public:
 
     virtual void ExpandCRTBasisQlHat(const std::shared_ptr<Params>& paramsQ,
                                      const std::vector<NativeInteger>& QlHatModq,
-                                     const std::vector<NativeInteger>& QlHatModqPrecon, const usint sizeQ) = 0;
+                                     const std::vector<NativeInteger>& QlHatModqPrecon, const uint32_t sizeQ) = 0;
 
     /**
    * @brief Performs scale and round:
@@ -1299,7 +1299,7 @@ public:
         const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
         const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
         const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-        const uint64_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+        uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
         const std::vector<NativeInteger>& mtildeInvModbskPrecon) = 0;
 
     /**
@@ -1440,7 +1440,7 @@ protected:
    */
     friend inline std::ostream& operator<<(std::ostream& os, const DerivedType& vec) {
         // os << (vec.m_format == EVALUATION ? "EVAL: " : "COEF: ");
-        for (usint i = 0; i < vec.GetAllElements().size(); i++) {
+        for (uint32_t i = 0; i < vec.GetAllElements().size(); i++) {
             if (i != 0)
                 os << std::endl;
             os << i << ": ";

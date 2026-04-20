@@ -69,7 +69,7 @@ public:
    * Distribution.
    * @return A vector of random values within this Binary Uniform Distribution.
    */
-    VecType GenerateVector(const usint size, const typename VecType::Integer& modulus) const;
+    VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus) const;
 
 private:
     static std::bernoulli_distribution m_distribution;

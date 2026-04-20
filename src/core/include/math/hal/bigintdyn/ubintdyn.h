@@ -87,13 +87,13 @@ class mubintvec;
  * @brief Struct to find log 2 value of N.
  * Used in preprocessing of ubint to determine bitwidth.
  */
-template <usint N>
+template <uint32_t N>
 struct Log2 {
-    static constexpr usint value = 1 + Log2<N / 2>::value;
+    static constexpr uint32_t value = 1 + Log2<N / 2>::value;
 };
 template <>
 struct Log2<2> {
-    static constexpr usint value = 1;
+    static constexpr uint32_t value = 1;
 };
 
 // @brief A pre-computed constant of Log base 2 of 10.
@@ -139,15 +139,15 @@ template <typename limb_t>
 class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 private:
     // variable that stores the MOST SIGNIFICANT BIT position in the
-    usint m_MSB{0};
+    uint32_t m_MSB{0};
     // vector storing the native integers. stored little endian
     std::vector<limb_t> m_value{0};
     // variable to store the maximum value of the limb data type
     static constexpr limb_t m_MaxLimb{std::numeric_limits<limb_t>::max()};
     // variable to store the bitlength of the limb data type
-    static constexpr usint m_limbBitLength{sizeof(limb_t) * 8};
+    static constexpr uint32_t m_limbBitLength{sizeof(limb_t) * 8};
     // variable to store the log2 of the number of bits in the limb data type
-    static constexpr usint m_log2LimbBitLength{Log2<sizeof(limb_t) * 8>::value};
+    static constexpr uint32_t m_log2LimbBitLength{Log2<sizeof(limb_t) * 8>::value};
 
     friend class mubintvec<ubint<limb_t>>;
 
@@ -326,8 +326,8 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    ubint Exp(usint p) const;
-    ubint& ExpEq(usint p) {
+    ubint Exp(uint32_t p) const;
+    ubint& ExpEq(uint32_t p) {
         return *this = this->ubint::Exp(p);
     }
 
@@ -679,8 +679,8 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    ubint LShift(usshort shift) const;
-    ubint& LShiftEq(usshort shift);
+    ubint LShift(uint16_t shift) const;
+    ubint& LShiftEq(uint16_t shift);
 
     /**
    * Right shift operation.
@@ -688,8 +688,8 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    ubint RShift(usshort shift) const;
-    ubint& RShiftEq(usshort shift);
+    ubint RShift(uint16_t shift) const;
+    ubint& RShiftEq(uint16_t shift);
 
     /**
    * Compares the current ubint to ubint a.
@@ -714,14 +714,14 @@ public:
 
     template <typename T = BasicInteger>
     T ConvertToInt() const noexcept {
-        constexpr usint limblen{sizeof(T) * 8};
+        constexpr uint32_t limblen{sizeof(T) * 8};
         if constexpr (m_limbBitLength >= limblen) {
             return static_cast<T>(m_value[0]);
         }
         if constexpr (m_limbBitLength < limblen) {
             auto ceilInt = MSBToLimbs(limblen > m_MSB ? m_MSB : limblen);
             auto result  = static_cast<T>(m_value[0]);
-            for (usint i{1}; i < ceilInt; ++i)
+            for (uint32_t i{1}; i < ceilInt; ++i)
                 result |= static_cast<T>(m_value[i]) << (i * m_limbBitLength);
             return result;
         }
@@ -748,7 +748,7 @@ public:
    * Returns the MSB location of the value.
    * @return the index of the most significant bit.
    */
-    usint GetMSB() const {
+    uint32_t GetMSB() const {
         return m_MSB;
     }
 
@@ -790,7 +790,7 @@ public:
    */
 
     // TODO hardcoded for base 2?
-    usint GetLengthForBase(usint base) const {
+    uint32_t GetLengthForBase(uint32_t base) const {
         return GetMSB();
     }
 
@@ -808,7 +808,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-    usint GetDigitAtIndexForBase(usint index, usint base) const;
+    uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     /**
    * Gets the bit at the specified index.
@@ -816,7 +816,7 @@ public:
    * @param index is the index of the bit to get.
    * @return resulting bit.
    */
-    uschar GetBitAtIndex(usint index) const;
+    uint8_t GetBitAtIndex(uint32_t index) const;
 
     /**
    * A zero allocator that is called by the Matrix class. It is used to
@@ -910,7 +910,7 @@ private:
    * Sets the MSB to the correct value as computed from the internal value.
    */
     void SetMSB() {
-        m_MSB = m_limbBitLength * static_cast<usint>(m_value.size() - 1);
+        m_MSB = m_limbBitLength * static_cast<uint32_t>(m_value.size() - 1);
         m_MSB += lbcrypto::GetMSB(m_value.back());
     }
 
@@ -925,7 +925,7 @@ private:
         auto size = m_value.size() - 1;
         while (size > 0 && m_value[size--] == 0)
             m_value.pop_back();
-        m_MSB = m_limbBitLength * static_cast<usint>(m_value.size() - 1);
+        m_MSB = m_limbBitLength * static_cast<uint32_t>(m_value.size() - 1);
         m_MSB += lbcrypto::GetMSB(m_value.back());
     }
 
@@ -944,8 +944,8 @@ private:
    * @param Number is the number to be divided.
    * @return the ceiling of Number/(bits in the limb data type)
    */
-    static constexpr usint MSBToLimbs(usint msb) noexcept {
-        constexpr usint mask{m_limbBitLength - 1};
+    static constexpr uint32_t MSBToLimbs(uint32_t msb) noexcept {
+        constexpr uint32_t mask{m_limbBitLength - 1};
         if (msb == 0)
             return 1;
         return (msb >> m_log2LimbBitLength) + ((msb & mask) != 0);

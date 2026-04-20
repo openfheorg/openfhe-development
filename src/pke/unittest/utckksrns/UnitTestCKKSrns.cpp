@@ -166,12 +166,12 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& tes
  * DSIZE: The bit decomposition count used in BV relinearization.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM      = 512;
-constexpr usint RING_DIM_HALF = 256;
-constexpr usint DSIZE         = 10;
-constexpr usint BATCH         = 8;
+constexpr uint32_t RING_DIM      = 512;
+constexpr uint32_t RING_DIM_HALF = 256;
+constexpr uint32_t DSIZE         = 10;
+constexpr uint32_t BATCH         = 8;
 #if NATIVEINT != 128
-constexpr usint RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
+constexpr uint32_t RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 #endif
 // MIN_PRECISION_DIFF is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
 constexpr double MIN_PRECISION_DIFF = 1.5;
@@ -602,7 +602,7 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     using Element = DCRTPoly;
 
     // the size for all vectors remains const - 8 elements
-    const usint VECTOR_SIZE = 8;
+    const uint32_t VECTOR_SIZE = 8;
 
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
@@ -1027,7 +1027,7 @@ protected:
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsAddAfterMult2(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vectorOfIntsMult[i]          = i * VECTOR_SIZE - i * i - i;
                 vectorOfIntsAddAfterMult[i]  = vectorOfIntsMult[i] + std::complex<double>(10, 0);
                 vectorOfIntsSubAfterMult[i]  = vectorOfIntsMult[i] - std::complex<double>(10, 0);
@@ -1191,7 +1191,7 @@ protected:
             std::vector<std::complex<double>> pCt12(VECTOR_SIZE);
             std::vector<std::complex<double>> pCt13(VECTOR_SIZE);
             std::vector<std::complex<double>> pCt14(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 pCtMult[i] = vectorOfInts1[i] * vectorOfInts2[i];
                 pCt3[i]    = pCtMult[i] + vectorOfInts1[i];
                 pCt4[i]    = pCtMult[i] - vectorOfInts1[i];
@@ -1524,7 +1524,7 @@ protected:
             // vIntsRightShift2 = { 7,8,1,2,3,4,5,6 } if slots = 8;
             std::vector<std::complex<double>> vIntsRightShift2(VECTOR_SIZE);
             uint32_t slots = (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 if ((slots + i - 2) % slots < VECTOR_SIZE) {
                     vIntsRightShift2[i] = vectorOfInts1_8[(slots + i - 2) % slots];
                 }
@@ -1537,7 +1537,7 @@ protected:
             // vIntsRightShift2 = { 3,4,5,6,7,8,0,0 } if slots > 8;
             // vIntsRightShift2 = { 3,4,5,6,7,8,1,2 } if slots = 8;
             std::vector<std::complex<double>> vIntsLeftShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 if ((i + 2) % slots < VECTOR_SIZE) {
                     vIntsLeftShift2[i] = vectorOfInts1_8[(i + 2) % slots];
                 }
@@ -1677,7 +1677,7 @@ protected:
             std::vector<std::complex<double>> in2(VECTOR_SIZE, 2);  // all 2's
             std::vector<std::complex<double>> in3(VECTOR_SIZE, 1);  // all 1's
             std::vector<std::complex<double>> out(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 // TODO (dsuponit): what is the purpose of this calculation? to have a noise?
                 // otherwise it is better to create "out" without calculating values in the loop
                 out[i] = weights[0] * in1[i] + weights[1] * in2[i] + weights[2] * in3[i];

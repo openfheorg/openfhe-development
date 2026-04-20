@@ -124,7 +124,7 @@ void CKKSEvalRotate2n() {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
 
-    usint cyclOrder = cc->GetCyclotomicOrder();
+    uint32_t cyclOrder = cc->GetCyclotomicOrder();
 
     // Initialize the public key containers.
     KeyPair<DCRTPoly> kp = cc->KeyGen();

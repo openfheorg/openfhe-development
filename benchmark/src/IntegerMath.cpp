@@ -187,7 +187,7 @@ static void BM_BigInt_DividedByEq(benchmark::State& state) {
 }
 
 template <typename I>
-static void exp_BigInt(const I& a, const usint& b) {
+static void exp_BigInt(const I& a, uint32_t b) {
     __attribute__((unused)) I c1 = a.Exp(b);
 }
 
@@ -199,7 +199,7 @@ static void BM_BigInt_Exp(benchmark::State& state) {
 }
 
 template <typename I>
-static void expeq_BigInt(I a, const usint& b) {
+static void expeq_BigInt(I a, uint32_t b) {
     a.ExpEq(b);
 }
 
@@ -239,7 +239,7 @@ static void BM_BigInt_MultiplyAndRoundEq(benchmark::State& state) {
 }
 
 template <typename I>
-static void lshift_BigInt(const I& a, const usshort& b) {
+static void lshift_BigInt(const I& a, uint16_t b) {
     __attribute__((unused)) I c1 = a.LShift(b);
 }
 
@@ -251,7 +251,7 @@ static void BM_BigInt_LShift(benchmark::State& state) {
 }
 
 template <typename I>
-static void lshifteq_BigInt(I a, const usshort& b) {
+static void lshifteq_BigInt(I a, uint16_t b) {
     a.LShiftEq(b);
 }
 
@@ -263,7 +263,7 @@ static void BM_BigInt_LShiftEq(benchmark::State& state) {
 }
 
 template <typename I>
-static void rshift_BigInt(const I& a, const usshort& b) {
+static void rshift_BigInt(const I& a, uint16_t b) {
     __attribute__((unused)) I c1 = a.RShift(b);
 }
 
@@ -275,7 +275,7 @@ static void BM_BigInt_RShift(benchmark::State& state) {
 }
 
 template <typename I>
-static void rshifteq_BigInt(I a, const usshort& b) {
+static void rshifteq_BigInt(I a, uint16_t b) {
     a.RShiftEq(b);
 }
 

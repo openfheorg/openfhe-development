@@ -51,12 +51,12 @@
 
 using namespace lbcrypto;
 
-usint mult_depth = 3;
+uint32_t mult_depth = 3;
 
 /*
  * Context setup utility methods
  */
-CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
+CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t ptm) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(mult_depth);
@@ -73,7 +73,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
+CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t ptm) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetPlaintextModulus(ptm);
@@ -93,7 +93,7 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
  * BFVrns benchmarks
  */
 void BFVrns_EvalMultManyP2(benchmark::State& state) {
-    usint ptm = 2;
+    uint32_t ptm = 2;
 
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm);
 
@@ -126,7 +126,7 @@ void BFVrns_EvalMultManyP2(benchmark::State& state) {
 BENCHMARK(BFVrns_EvalMultManyP2)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 
 void BGVrns_EvalMultManyP2(benchmark::State& state) {
-    usint ptm = 2;
+    uint32_t ptm = 2;
 
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm);
 
@@ -163,7 +163,7 @@ BENCHMARK(BGVrns_EvalMultManyP2)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
  */
 
 void BFVrns_EvalMultManyP65537(benchmark::State& state) {
-    usint ptm = 65537;
+    uint32_t ptm = 65537;
 
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm);
 
@@ -196,7 +196,7 @@ void BFVrns_EvalMultManyP65537(benchmark::State& state) {
 BENCHMARK(BFVrns_EvalMultManyP65537)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 
 void BGVrns_EvalMultManyP65537(benchmark::State& state) {
-    usint ptm = 65537;
+    uint32_t ptm = 65537;
 
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm);
 

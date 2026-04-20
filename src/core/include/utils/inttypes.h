@@ -41,21 +41,6 @@
 #include <cstdint>
 #include <iosfwd>
 
-/**
- * @brief Type used for representing unsigned 8-bit integers.
- */
-typedef uint8_t uschar;
-
-/**
- * @brief Type used for representing unsigned 16-bit short integers.
- */
-typedef uint16_t usshort;
-
-/**
- * @brief Type used for representing unsigned 32-bit integers.
- */
-typedef uint32_t usint;
-
 typedef uint64_t PlaintextModulus;
 
 /**

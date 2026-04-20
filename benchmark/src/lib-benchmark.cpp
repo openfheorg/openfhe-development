@@ -229,7 +229,7 @@ void BFVrns_EvalAtIndexKeyGen(benchmark::State& state) {
     keyPair = cc->KeyGen();
 
     std::vector<int32_t> indexList(1);
-    for (usint i = 0; i < 1; i++) {
+    for (uint32_t i = 0; i < 1; i++) {
         indexList[i] = 1;
     }
 
@@ -369,7 +369,7 @@ void BFVrns_EvalAtIndex(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int32_t> indexList(1);
-    for (usint i = 0; i < 1; i++) {
+    for (uint32_t i = 0; i < 1; i++) {
         indexList[i] = 1;
     }
 
@@ -429,7 +429,7 @@ void CKKSrns_EvalAtIndexKeyGen(benchmark::State& state) {
     keyPair = cc->KeyGen();
 
     std::vector<int32_t> indexList(1);
-    for (usint i = 0; i < 1; i++) {
+    for (uint32_t i = 0; i < 1; i++) {
         indexList[i] = 1;
     }
 
@@ -445,9 +445,9 @@ void CKKSrns_Encryption(benchmark::State& state) {
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts[i] = 1.001 * i;
     }
 
@@ -465,9 +465,9 @@ void CKKSrns_Decryption(benchmark::State& state) {
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
 
@@ -489,9 +489,9 @@ void CKKSrns_Add(benchmark::State& state) {
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -514,9 +514,9 @@ void CKKSrns_AddInPlace(benchmark::State& state) {
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -539,9 +539,9 @@ void CKKSrns_MultNoRelin(benchmark::State& state) {
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -567,9 +567,9 @@ void CKKSrns_MultRelin(benchmark::State& state) {
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -595,9 +595,9 @@ void CKKSrns_Relin(benchmark::State& state) {
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -623,9 +623,9 @@ void CKKSrns_RelinInPlace(benchmark::State& state) {
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -655,9 +655,9 @@ void CKKSrns_Rescale(benchmark::State& state) {
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -683,9 +683,9 @@ void CKKSrns_RescaleInPlace(benchmark::State& state) {
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
     cc->EvalMultKeyGen(keyPair.secretKey);
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts[i] = 1.001 * i;
     }
 
@@ -711,15 +711,15 @@ void CKKSrns_EvalAtIndex(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int32_t> indexList(1);
-    for (usint i = 0; i < 1; i++) {
+    for (uint32_t i = 0; i < 1; i++) {
         indexList[i] = 1;
     }
 
     cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
 
-    usint slots = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
-    for (usint i = 0; i < slots; i++) {
+    for (uint32_t i = 0; i < slots; i++) {
         vectorOfInts1[i] = 1.001 * i;
     }
     std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
@@ -775,7 +775,7 @@ void BGVrns_EvalAtIndexKeyGen(benchmark::State& state) {
     keyPair = cc->KeyGen();
 
     std::vector<int32_t> indexList(1);
-    for (usint i = 0; i < 1; i++) {
+    for (uint32_t i = 0; i < 1; i++) {
         indexList[i] = 1;
     }
 
@@ -1016,7 +1016,7 @@ void BGVrns_EvalAtIndex(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int32_t> indexList(1);
-    for (usint i = 0; i < 1; i++) {
+    for (uint32_t i = 0; i < 1; i++) {
         indexList[i] = 1;
     }
 

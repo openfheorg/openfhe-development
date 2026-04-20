@@ -88,10 +88,10 @@ static IntType RNG(const IntType& modulus) {
  false if p is likely prime
  */
 template <typename IntType>
-static bool WitnessFunction(const IntType& a, const IntType& d, usint s, const IntType& p) {
+static bool WitnessFunction(const IntType& a, const IntType& d, uint32_t s, const IntType& p) {
     IntType mod  = a.ModExp(d, p);
     bool prevMod = false;
-    for (usint i = 0; i < s; ++i) {
+    for (uint32_t i = 0; i < s; ++i) {
         prevMod = (mod != IntType(1) && mod != p - IntType(1));
         mod.ModMulFastEq(mod, p);
         if (mod == IntType(1) && prevMod)
@@ -110,7 +110,7 @@ static IntType FindGenerator(const IntType& q) {
     IntType qm2(q - IntType(2));
     std::set<IntType> primeFactors;
     PrimeFactorize<IntType>(qm1, primeFactors);
-    usint cnt;
+    uint32_t cnt;
     IntType gen;
     do {
         cnt = 0;
@@ -134,7 +134,7 @@ IntType FindGeneratorCyclic(const IntType& q) {
     IntType phi_q_m1(GetTotient(q.ConvertToInt()));
     std::set<IntType> primeFactors;
     PrimeFactorize<IntType>(phi_q, primeFactors);
-    usint cnt;
+    uint32_t cnt;
     IntType gen;
     do {
         cnt = 0;
@@ -163,7 +163,7 @@ bool IsGenerator(const IntType& g, const IntType& q) {
     IntType qm1(GetTotient(q.ConvertToInt()));
     std::set<IntType> primeFactors;
     PrimeFactorize<IntType>(qm1, primeFactors);
-    usint cnt = 0;
+    uint32_t cnt = 0;
     for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it, ++cnt) {
         if (g.ModExp(qm1 / (*it), q) == IntType(1))
             break;
@@ -180,7 +180,7 @@ bool IsGenerator(const IntType& g, const IntType& q) {
  output:  root of unity (in format of BigInteger)
  */
 template <typename IntType>
-IntType RootOfUnity(usint m, const IntType& modulo) {
+IntType RootOfUnity(uint32_t m, const IntType& modulo) {
     IntType M(m);
     if ((modulo - IntType(1)).Mod(M) != IntType(0)) {
         std::string errMsg =
@@ -231,7 +231,7 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
 }
 
 template <typename IntType>
-std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType>& moduli) {
+std::vector<IntType> RootsOfUnity(uint32_t m, const std::vector<IntType>& moduli) {
     std::vector<IntType> rootsOfUnity(moduli.size());
     for (size_t i = 0; i < moduli.size(); ++i)
         rootsOfUnity[i] = RootOfUnity(m, moduli[i]);
@@ -258,7 +258,7 @@ IntType GreatestCommonDivisor(const IntType& a, const IntType& b) {
  false if p is not prime
  */
 template <typename IntType>
-bool MillerRabinPrimalityTest(const IntType& p, const usint niter) {
+bool MillerRabinPrimalityTest(const IntType& p, const uint32_t niter) {
     static const IntType ZERO(0);
     static const IntType TWO(2);
     static const IntType THREE(3);
@@ -270,13 +270,13 @@ bool MillerRabinPrimalityTest(const IntType& p, const usint niter) {
         return false;
 
     IntType d(p - IntType(1));
-    usint s(0);
+    uint32_t s(0);
     while (d.Mod(TWO) == ZERO) {
         // d.DividedByEq(TWO);
         d.RShiftEq(1);
         ++s;
     }
-    for (usint i = 0; i < niter; ++i) {
+    for (uint32_t i = 0; i < niter; ++i) {
         if (WitnessFunction(RNG(p - THREE).ModAdd(TWO, p), d, s, p))
             return false;
     }
@@ -394,7 +394,7 @@ IntType PreviousPrime(const IntType& q, uint64_t m) {
 
 template <typename IntType>
 IntType NextPowerOfTwo(IntType n) {
-    usint result = std::ceil(std::log2(n));
+    uint32_t result = std::ceil(std::log2(n));
     return result;
 }
 
@@ -414,15 +414,15 @@ std::vector<IntType> GetTotientList(const IntType& n) {
 template <typename IntVector>
 IntVector PolyMod(const IntVector& dividend, const IntVector& divisor, const typename IntVector::Integer& modulus) {
     auto mu(modulus.ComputeMu());
-    usint divisorLength(divisor.GetLength());
-    usint dividendLength(dividend.GetLength());
-    usint runs(dividendLength - divisorLength + 1);
+    uint32_t divisorLength(divisor.GetLength());
+    uint32_t dividendLength(dividend.GetLength());
+    uint32_t runs(dividendLength - divisorLength + 1);
     IntVector runningDividend(dividend);
-    for (usint i = 0; i < runs; ++i) {
+    for (uint32_t i = 0; i < runs; ++i) {
         // get the highest degree coeff
         auto divConst(runningDividend[dividendLength - 1]);
-        usint divisorPtr(divisorLength - 1);
-        for (usint j = 0; j < dividendLength - i - 1; j++) {
+        uint32_t divisorPtr(divisorLength - 1);
+        for (uint32_t j = 0; j < dividendLength - i - 1; j++) {
             auto& rdtmp1 = runningDividend[dividendLength - 1 - j];
             rdtmp1       = runningDividend[dividendLength - 2 - j];
             if (divisorPtr > j)
@@ -431,20 +431,20 @@ IntVector PolyMod(const IntVector& dividend, const IntVector& divisor, const typ
     }
 
     IntVector result(divisorLength - 1, modulus);
-    for (usint i = 0, j = runs; i < divisorLength - 1; ++i, ++j)
+    for (uint32_t i = 0, j = runs; i < divisorLength - 1; ++i, ++j)
         result[i] = runningDividend[j];
     return result;
 }
 
 template <typename IntVector>
 IntVector PolynomialMultiplication(const IntVector& a, const IntVector& b) {
-    usint degreeA(a.GetLength());
-    usint degreeB(b.GetLength());
-    usint degreeResultant(degreeA + degreeB - 1);
+    uint32_t degreeA(a.GetLength());
+    uint32_t degreeB(b.GetLength());
+    uint32_t degreeResultant(degreeA + degreeB - 1);
     const auto& modulus = a.GetModulus();
     IntVector result(degreeResultant, modulus);
-    for (usint i = 0; i < degreeA; i++) {
-        for (usint j = 0; j < degreeB; j++) {
+    for (uint32_t i = 0; i < degreeA; i++) {
+        for (uint32_t j = 0; j < degreeB; j++) {
             result[i + j].ModAddEq(a[i] * b[j], modulus);
         }
     }
@@ -452,10 +452,10 @@ IntVector PolynomialMultiplication(const IntVector& a, const IntVector& b) {
 }
 
 template <typename IntVector>
-IntVector GetCyclotomicPolynomial(usint m, const typename IntVector::Integer& modulus) {
+IntVector GetCyclotomicPolynomial(uint32_t m, const typename IntVector::Integer& modulus) {
     auto intCP = GetCyclotomicPolynomialRecursive(m);
     IntVector result(intCP.size(), modulus);
-    for (usint i = 0; i < intCP.size(); i++) {
+    for (uint32_t i = 0; i < intCP.size(); i++) {
         auto val = intCP[i];
         if (val > -1) {
             result[i] = typename IntVector::Integer(val);
@@ -481,16 +481,16 @@ template <typename IntVector>
 IntVector SyntheticPolyRemainder(const IntVector& dividend, const IntVector& aList,
                                  const typename IntVector::Integer& modulus) {
     IntVector result(aList.GetLength(), modulus);
-    for (usint i = 0; i < aList.GetLength(); ++i)
+    for (uint32_t i = 0; i < aList.GetLength(); ++i)
         result[i] = SyntheticRemainder(dividend, aList[i], modulus);
     return result;
 }
 
 template <typename IntVector>
-IntVector PolynomialPower(const IntVector& input, usint power) {
-    usint finalDegree = (input.GetLength() - 1) * power;
+IntVector PolynomialPower(const IntVector& input, uint32_t power) {
+    uint32_t finalDegree = (input.GetLength() - 1) * power;
     IntVector finalPoly(finalDegree + 1, input.GetModulus());
-    for (usint i = 0; i < input.GetLength(); ++i)
+    for (uint32_t i = 0; i < input.GetLength(); ++i)
         finalPoly[i * power] = input[i];
     return finalPoly;
 }
@@ -499,7 +499,7 @@ template <typename IntVector>
 IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename IntVector::Integer& a,
                                       const typename IntVector::Integer& modulus) {
     auto mu(modulus.ComputeMu());
-    usint n(dividend.GetLength() - 1);
+    uint32_t n(dividend.GetLength() - 1);
     IntVector result(n, modulus);
     result[n - 1] = dividend[n];
     auto val(dividend[n]);

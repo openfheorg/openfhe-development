@@ -48,15 +48,15 @@
 using namespace lbcrypto;
 
 // define the main sections of the test
-void test_NTT(const usint level, const usint nloop);  // test code
+void test_NTT(const uint32_t level, const uint32_t nloop);  // test code
 
 // main()   need this for Kurts' makefile to ignore this.
 int main(int argc, char* argv[]) {
     if (argc < 2)  // argc should be 2 for correct execution
         // We print argv[0] assuming it is the program name
         std::cout << "usage: " << argv[0] << " 1|2|3(default 1) nloop (default 10)" << std::endl;
-    usint level = 1;
-    usint nloop = 10;
+    uint32_t level = 1;
+    uint32_t nloop = 10;
     if (argc > 1)
         level = atoi(argv[1]);
     if (argc > 2)
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 
 // function to compare two BigVectors and print differing indicies
 void vec_diff(BigVector& a, BigVector& b) {
-    for (usint i = 0; i < a.GetLength(); ++i) {
+    for (uint32_t i = 0; i < a.GetLength(); ++i) {
         if (a.at(i) != b.at(i)) {
             std::cout << "i: " << i << std::endl;
             std::cout << "first vector " << std::endl;
@@ -102,7 +102,7 @@ bool clonetest(Poly& a, Poly& b, std::string name) {
 }
 
 // main NTT test suite.
-void test_NTT(const usint level, const usint nloop) {
+void test_NTT(const uint32_t level, const uint32_t nloop) {
     // Code to test NTT at three different numbers of limbs.
 
     TimeVar t1, t_setup, t_total;  // timers for TIC() TOC()
@@ -123,7 +123,7 @@ void test_NTT(const usint level, const usint nloop) {
 
     BigInteger q1("270337");  // test case 1 smaller than 32 bits
 
-    usint m = 2048;
+    uint32_t m = 2048;
     std::cout << "m=" << m << std::endl;
 
     BigInteger rootOfUnity1(RootOfUnity<BigInteger>(m, q1));
@@ -230,7 +230,7 @@ void test_NTT(const usint level, const usint nloop) {
     time3br = 0.0;
 
     bool failed = false;
-    usint ix;
+    uint32_t ix;
     std::cout << "Starting timing" << std::endl;
 
     for (ix = 0; ix < nloop; ix++) {

@@ -179,7 +179,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
     }
     //====================================================================================================================
-    constexpr usint maxMultiplicativeDepthValue = 1000;
+    constexpr uint32_t maxMultiplicativeDepthValue = 1000;
     if (parameters.GetMultiplicativeDepth() > maxMultiplicativeDepthValue) {
         std::string errorMsg(std::string("The provided multiplicative depth [") +
                              std::to_string(parameters.GetMultiplicativeDepth()) +

@@ -94,8 +94,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_ENCR
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint BATCH    = 16;
-constexpr usint BV_DSIZE = 4;
+constexpr uint32_t BATCH    = 16;
+constexpr uint32_t BV_DSIZE = 4;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode

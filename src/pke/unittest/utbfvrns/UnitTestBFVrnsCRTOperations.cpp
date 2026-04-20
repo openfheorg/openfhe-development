@@ -59,7 +59,7 @@ public:
 };
 
 void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplicationTechnique,
-                                              usint multiplicativeDepth) {
+                                              uint32_t multiplicativeDepth) {
     CCParams<CryptoContextBFVRNS> parameters;
     const uint64_t ptm = 786433;
 
@@ -220,7 +220,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::EVALUATION);
 
-    usint m1               = 16;
+    uint32_t m1               = 16;
     NativeInteger modulus0 = 1152921504606846577;
     NativeInteger modulus1 = 1152921504606846097;
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -306,7 +306,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::COEFFICIENT);
 
-    usint m1               = 16;
+    uint32_t m1               = 16;
     NativeInteger modulus0 = NativeInteger("1152921504606846577");
     NativeInteger modulus1 = NativeInteger("1152921504606846097");
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -387,7 +387,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
 TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     CCParams<CryptoContextBFVRNS> parameters;
-    usint ptm = 1 << 31;
+    uint32_t ptm = 1 << 31;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(7);
     parameters.SetMaxRelinSkDeg(8);
@@ -433,7 +433,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 // TESTING POLYNOMIAL MULTIPLICATION - ONE TERM IS CONSTANT POLYNOMIAL
 TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     CCParams<CryptoContextBFVRNS> parameters;
-    usint ptm = 1 << 15;
+    uint32_t ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
@@ -502,7 +502,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
     BigInteger modulus("1606938044258990275541962092341162602522202993782792836833281");
     BigInteger root("859703842628303907691187858658134128225754111718143879712783");
-    usint m = 8192;
+    uint32_t m = 8192;
 
     auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
 
@@ -563,7 +563,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 // TESTING POLYNOMIAL MULTIPLICATION - UNIFORM AND GAUSSIAN RANDOM POLYNOMIALS
 TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     CCParams<CryptoContextBFVRNS> parameters;
-    usint ptm = 1 << 15;
+    uint32_t ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
@@ -633,7 +633,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
 
     BigInteger modulus("1606938044258990275541962092341162602522202993782792836833281");
     BigInteger root("859703842628303907691187858658134128225754111718143879712783");
-    usint m = 8192;
+    uint32_t m = 8192;
 
     auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
 

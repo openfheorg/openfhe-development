@@ -38,8 +38,8 @@
 using namespace lbcrypto;
 
 TEST(Utilities, IsPowerOfTwo) {
-    std::vector<usint> powers_of_two{1, 2, 4, 8, 16, 32, 512, 1024, 2048, 4096, 16384, 32768};
-    std::vector<usint> not_powers_of_two{0, 3, 5, 7, 9, 31, 33, 1025, 4095};
+    std::vector<uint32_t> powers_of_two{1, 2, 4, 8, 16, 32, 512, 1024, 2048, 4096, 16384, 32768};
+    std::vector<uint32_t> not_powers_of_two{0, 3, 5, 7, 9, 31, 33, 1025, 4095};
 
     for (auto power_of_two : powers_of_two) {
         EXPECT_TRUE(IsPowerOfTwo(power_of_two));

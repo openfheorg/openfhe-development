@@ -61,8 +61,8 @@ public:
 const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
 const std::vector<int64_t> vector10{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
-const std::vector<usint> initIndexList{3, 5, 7, 9, 11, 13, 15};
-const usint invalidIndexAutomorphism = 4;
+const std::vector<uint32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
+const uint32_t invalidIndexAutomorphism = 4;
 const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 enum TEST_ESTIMATED_RESULT {
@@ -82,7 +82,7 @@ enum TEST_ESTIMATED_RESULT {
 
 // declaration for Automorphism Test on BFVrns scheme with polynomial operation
 // in power of 2 cyclotomics.
-std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i, TEST_ESTIMATED_RESULT testResult = SUCCESS) {
+std::vector<int64_t> BFVrnsAutomorphismPackedArray(uint32_t i, TEST_ESTIMATED_RESULT testResult = SUCCESS) {
     using Element = DCRTPoly;
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
@@ -105,13 +105,13 @@ std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i, TEST_ESTIMATED_RESUL
                                          cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
                                          cc->Encrypt(kp.publicKey, intArray);
 
-    std::vector<usint> indexList(initIndexList);
+    std::vector<uint32_t> indexList(initIndexList);
 
     auto evalKeys = (INVALID_PRIVATE_KEY == testResult) ?
                         cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) :
                         cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
 
-    std::map<usint, EvalKey<Element>> emptyEvalKeys;
+    std::map<uint32_t, EvalKey<Element>> emptyEvalKeys;
     Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testResult) ? cc->EvalAutomorphism(ciphertext, i, emptyEvalKeys) :
                                                                 cc->EvalAutomorphism(ciphertext, i, *evalKeys);
 

@@ -140,8 +140,8 @@ TEST(UTNbTheory, method_factorize_returns_factors){
 
 TEST(UTNbTheory, first_prime_overflow) {
     // Failure case check
-    usint m     = 512;
-    usint nBits = NATIVEINT;
+    uint32_t m     = 512;
+    uint32_t nBits = NATIVEINT;
 
     EXPECT_THROW(FirstPrime<NativeInteger>(nBits, m), OpenFHEException)
         << "did not detect overflow and throw exception for Native";
@@ -158,7 +158,7 @@ TEST(UTNbTheory, first_prime_overflow) {
 
 template <typename T>
 void method_prime_modulus(const std::string& msg) {
-    usint m, nBits;
+    uint32_t m, nBits;
     {
         // TEST CASE TO FIND PRIME MODULUS
         m     = 2048;
@@ -187,8 +187,8 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
     {
         // TEST CASE TO ENSURE THE ROOT OF UNITY THAT IS FOUND IS A PRIMITIVE ROOT
         // OF UNTIY
-        usint m     = 4096;
-        usint nBits = 33;
+        uint32_t m     = 4096;
+        uint32_t nBits = 33;
 
         T primeModulus         = LastPrime<T>(nBits, m);
         T primitiveRootOfUnity = RootOfUnity<T>(m, primeModulus);
@@ -204,9 +204,9 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
     {
         // TEST CASE TO ENSURE THE ROOTS OF UNITY THAT ARE FOUND ARE
         // CONSISTENTLY THE PRIMITIVE ROOTS OF UNTIY
-        const usint n        = 256;
-        const usint m        = 2 * n;
-        const usint nBits    = 43;
+        const uint32_t n        = 256;
+        const uint32_t m        = 2 * n;
+        const uint32_t nBits    = 43;
         const int ITERATIONS = m * 2;
 
         T M(std::to_string(m)), MbyTwo(M.DividedBy(2)), MbyFour(MbyTwo.DividedBy(2));
@@ -229,7 +229,7 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
 
         // ofstream fout;
         // fout.open ("primitiveRootsBug.log");
-        usint nqBitsArray[] = {
+        uint32_t nqBitsArray[] = {
             1,
             1,
             2,
@@ -246,7 +246,7 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
             40,
             2048,
             41
-            // const usint BIT_LENGTH = 200 and const usint FRAGMENTATION_FACTOR =
+            // const uint32_t BIT_LENGTH = 200 and const uint32_t FRAGMENTATION_FACTOR =
             // 27 ,2048, 51
             ,
             4096,
@@ -275,7 +275,7 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
         };
         int length = sizeof(nqBitsArray) / sizeof(nqBitsArray[0]);
         // double diff, start, finish;
-        usint n, qBits, m;
+        uint32_t n, qBits, m;
         // T M(std::to_string(m)), MbyTwo(M.DividedBy(2)),
         // MbyFour(MbyTwo.DividedBy(2));
 
@@ -373,14 +373,14 @@ TEST(UTNbTheory, method_primitive_root_of_unity_VERY_LONG) {
 
 template <typename T>
 void test_nextQ(const std::string& msg) {
-    usint m    = 2048;
-    usint bits = 22;
+    uint32_t m    = 2048;
+    uint32_t bits = 22;
 
     std::vector<T> moduliBBV = {T("4208641"), T("4263937"), T("4270081"), T("4274177"), T("4294657"),
                                 T("4300801"), T("4304897"), T("4319233"), T("4323329"), T("4360193")};
 
     auto q = FirstPrime<T>(bits, m);
-    for (usint i = 0; i < 10; i++) {
+    for (uint32_t i = 0; i < 10; i++) {
         q = NextPrime(q, m);
         EXPECT_EQ(q, moduliBBV[i]) << msg;
     }

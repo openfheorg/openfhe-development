@@ -124,8 +124,8 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     // When PRE is not used, a joint key is computed
     DCRTPoly b = fresh ? (ns * e - a * s) : (ns * e - a * s + pk[0]);
 
-    usint sizeQ  = elementParams->GetParams().size();
-    usint sizePK = paramsPK->GetParams().size();
+    uint32_t sizeQ  = elementParams->GetParams().size();
+    uint32_t sizePK = paramsPK->GetParams().size();
     if (sizePK > sizeQ) {
         s.DropLastElements(sizePK - sizeQ);
     }

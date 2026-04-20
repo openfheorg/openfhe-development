@@ -146,9 +146,9 @@ public:
    * @param &indexVec a vector of automorphism indices.
    * @return a dictionary with new joined automorphism keys.
    */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
-        const std::vector<usint>& indexVec) const;
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+        const std::vector<uint32_t>& indexVec) const;
 
     /**
    * Threshold FHE: Generates evaluation keys for a list of indices for a
@@ -160,8 +160,8 @@ public:
    * @param indexVec list of indices to be computed
    * @return returns the joined evaluation keys
    */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::vector<int32_t>& indexVec) const;
 
     /**
@@ -173,9 +173,9 @@ public:
    * @param evalKeyMap a dictionary with prior joined summation keys.
    * @return new joined summation keys.
    */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
         const PrivateKey<Element> privateKey,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const;
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap) const;
 
     // MULTIPARTY PKE
 
@@ -268,9 +268,9 @@ public:
     * @param evalKeyMap2 second automorphism key set.
     * @return the new joined key set for summation.
     */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
     * Threshold FHE: Adds two prior evaluation key sets for summation
@@ -279,9 +279,9 @@ public:
     * @param evalKeyMap2 second summation key set.
     * @return the new joined key set for summation.
     */
-    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
 	 * Prepare a ciphertext for interactive bootstraping.

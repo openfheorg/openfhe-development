@@ -111,11 +111,11 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SER&
  *        Use small values (3-4?) if you need rotations before any multiplications.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM   = 32;
-constexpr usint SMODSIZE   = 50;
-constexpr usint MULT_DEPTH = 3;
-constexpr usint DSIZE      = 20;
-constexpr usint BATCH      = 16;
+constexpr uint32_t RING_DIM   = 32;
+constexpr uint32_t SMODSIZE   = 50;
+constexpr uint32_t MULT_DEPTH = 3;
+constexpr uint32_t DSIZE      = 20;
+constexpr uint32_t BATCH      = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,  EncTech, PREMode

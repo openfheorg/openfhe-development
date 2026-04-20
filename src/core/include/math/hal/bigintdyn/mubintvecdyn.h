@@ -87,16 +87,16 @@ public:
    *
    * @param length initial size in terms of the number of entries.
    */
-    explicit mubintvec(usint length) noexcept : m_data(length) {}
+    explicit mubintvec(uint32_t length) noexcept : m_data(length) {}
 
     /**
    * Basic constructor for specifying the length and modulus of the vector.
    *
    * @param length initial size in terms of the number of entries.
-   * @param modulus usint associated with entries in the vector.
+   * @param modulus uint32_t associated with entries in the vector.
    */
-    // TODO: what practical purpose with usint modulus??
-    //    explicit mubintvec(usint length, const usint& modulus) noexcept
+    // TODO: what practical purpose with uint32_t modulus??
+    //    explicit mubintvec(uint32_t length, uint32_t modulus) noexcept
     //        : m_modulus(modulus), m_modulus_state(State::INITIALIZED), m_data(length) {}
 
     /**
@@ -105,10 +105,10 @@ public:
    * @param length initial size in terms of the number of entries.
    * @param modulus ubint associated with entries in the vector.
    */
-    mubintvec(usint length, const ubint_el_t& modulus) noexcept
+    mubintvec(uint32_t length, const ubint_el_t& modulus) noexcept
         : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {}
 
-    mubintvec(usint length, const ubint_el_t& modulus, const ubint_el_t& val) noexcept
+    mubintvec(uint32_t length, const ubint_el_t& modulus, const ubint_el_t& val) noexcept
         : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length, val) {}
 
     /**
@@ -117,7 +117,7 @@ public:
    * @param length initial size in terms of the number of entries.
    * @param modulus string associated with entries in the vector.
    */
-    explicit mubintvec(usint length, const std::string& modulus)
+    explicit mubintvec(uint32_t length, const std::string& modulus)
         : m_modulus(modulus), m_modulus_state{State::INITIALIZED}, m_data(length) {}
 
     /**
@@ -144,7 +144,7 @@ public:
    * @param modulus ubint associated with entries in the vector.
    * @param rhs initialier list of strings
    */
-    explicit mubintvec(usint length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept;
+    explicit mubintvec(uint32_t length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept;
 
     /**
    * Basic constructor for specifying the length of the vector with
@@ -154,7 +154,7 @@ public:
    * @param modulus ubint associated with entries in the vector.
    * @param rhs initialier list of usints
    */
-    explicit mubintvec(usint length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept;
+    explicit mubintvec(uint32_t length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept;
 
     // constructor specifying the mubintvec as a vector of strings and modulus
     explicit mubintvec(const std::vector<std::string>& s, const ubint_el_t& modulus) noexcept;
@@ -204,7 +204,7 @@ public:
     mubintvec& operator=(std::initializer_list<uint64_t> rhs) noexcept;
 
     /**
-   * @param &&rhs is the usint value to assign to the zeroth entry
+   * @param &&rhs is the uint32_t value to assign to the zeroth entry
    * @return resulting mubintvec
    * note that modulus remains untouched.
    */
@@ -269,7 +269,7 @@ public:
    *
    * @param value is the value to set.
    */
-    //    void SetModulus(const usint& value) noexcept {
+    //    void SetModulus(uint32_t value) noexcept {
     //        m_modulus       = ubint_el_t(value);
     //        m_modulus_state = State::INITIALIZED;
     //    }
@@ -571,7 +571,7 @@ public:
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-    mubintvec GetDigitAtIndexForBase(usint index, usint base) const;
+    mubintvec GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // STRINGS & STREAMS
 
@@ -585,7 +585,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const mubintvec& ptr_obj) {
         #if 0  // old way
     os << std::endl;
-    for (usint i = 0; i < ptr_obj.m_data.size(); i++) {
+    for (uint32_t i = 0; i < ptr_obj.m_data.size(); i++) {
       os << ptr_obj.m_data[i] << std::endl;
     }
     os << "modulus: " << ptr_obj.m_modulus;
@@ -593,7 +593,7 @@ public:
         #else
         auto len = ptr_obj.m_data.size();
         os << "[";
-        for (usint i = 0; i < len; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             os << ptr_obj.m_data[i];
             os << ((i == (len - 1)) ? "]" : " ");
         }

@@ -201,19 +201,19 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         const auto& paramsQ  = cryptoParams->GetElementParams();
         const auto& paramsQP = cryptoParams->GetParamsQP();
 
-        usint sizeQ  = paramsQ->GetParams().size();
-        usint sizeQP = paramsQP->GetParams().size();
+        uint32_t sizeQ  = paramsQ->GetParams().size();
+        uint32_t sizeQP = paramsQP->GetParams().size();
 
         DCRTPoly s = privateKey->GetPrivateElement().Clone();
 
         s.SetFormat(Format::COEFFICIENT);
         DCRTPoly sExt(paramsQP, Format::COEFFICIENT, true);
 
-        for (usint i = 0; i < sizeQ; i++) {
+        for (uint32_t i = 0; i < sizeQ; i++) {
             sExt.SetElementAtIndex(i, s.GetElementAtIndex(i));
         }
 
-        for (usint j = sizeQ; j < sizeQP; j++) {
+        for (uint32_t j = sizeQ; j < sizeQP; j++) {
             NativeInteger pj    = paramsQP->GetParams()[j]->GetModulus();
             NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
             auto sNew0          = s.GetElementAtIndex(0);
@@ -222,7 +222,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         }
         sExt.SetFormat(Format::EVALUATION);
 
-        for (usint i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             a.push_back(a0[i] * sExt + ns * DCRTPoly(dgg, paramsQP, Format::EVALUATION));
             b.push_back(b0[i] * sExt + ns * DCRTPoly(dgg, paramsQP, Format::EVALUATION));
         }
@@ -300,9 +300,9 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     }
 
     const auto paramsQ = dcrtpoly.GetParams();
-    usint sizeQP       = paramsQP->GetParams().size();
-    usint sizeQ        = paramsQ->GetParams().size();
-    usint sizeP        = sizeQP - sizeQ;
+    uint32_t sizeQP       = paramsQP->GetParams().size();
+    uint32_t sizeQ        = paramsQ->GetParams().size();
+    uint32_t sizeP        = sizeQP - sizeQ;
 
     // Loads all moduli and roots of unity
     std::vector<NativeInteger> moduliQ(sizeQ);
@@ -327,22 +327,22 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
 
     NativeInteger::DNativeInt modulusQ = dcrtpoly.GetModulus().ConvertToInt<NativeInteger::DNativeInt>();
 
-    for (usint i = 0; i < sizeQ; i++) {
+    for (uint32_t i = 0; i < sizeQ; i++) {
         NativeInteger::DNativeInt qi(moduliQ[i].ConvertToInt());
         NativeInteger QHati  = modulusQ / qi;
         QHatInvModq[i]       = QHati.ModInverse(moduliQ[i]).Mod(moduliQ[i]);
         QHatInvModqPrecon[i] = QHatInvModq[i].PrepModMulConst(moduliQ[i]);
-        for (usint j = 0; j < sizeP; j++) {
+        for (uint32_t j = 0; j < sizeP; j++) {
             const NativeInteger& pj = moduliP[j];
             QHatModp[j].push_back(QHati.Mod(pj));
         }
     }
 
     std::vector<std::vector<NativeInteger>> alphaQModp(sizeQ + 1);
-    for (usint j = 0; j < sizeP; j++) {
+    for (uint32_t j = 0; j < sizeP; j++) {
         NativeInteger::DNativeInt pj(moduliP[j].ConvertToInt());
         NativeInteger QModpj = modulusQ % pj;
-        for (usint i = 0; i < sizeQ + 1; i++) {
+        for (uint32_t i = 0; i < sizeQ + 1; i++) {
             alphaQModp[i].push_back(QModpj.ModMul(NativeInteger(i), moduliP[j]));
         }
     }

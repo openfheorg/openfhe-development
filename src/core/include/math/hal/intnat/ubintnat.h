@@ -79,7 +79,7 @@ template <typename IntType>
 class NativeVectorT;
 
 // constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed  constant of Log base 2 of 10.
-// constexpr usint BARRETT_LEVELS = 8;  //!< @brief The number of levels (precomputed
+// constexpr uint32_t BARRETT_LEVELS = 8;  //!< @brief The number of levels (precomputed
 //!< values) used in the Barrett reductions.
 
 /**
@@ -131,8 +131,8 @@ private:
     // variable to store the maximum value of the integral data type.
     static constexpr NativeInt m_uintMax{std::numeric_limits<NativeInt>::max()};
     // variable to store the bit width of the integral data type.
-    //    static constexpr usint m_uintBitLength{sizeof(NativeInt) * 8};
-    static constexpr usint m_uintBitLength{std::numeric_limits<NativeInt>::digits};
+    //    static constexpr uint32_t m_uintBitLength{sizeof(NativeInt) * 8};
+    static constexpr uint32_t m_uintBitLength{std::numeric_limits<NativeInt>::digits};
 
     friend class NativeVectorT<NativeIntegerT<NativeInt>>;
 
@@ -495,7 +495,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    NativeIntegerT Exp(usint p) const {
+    NativeIntegerT Exp(uint32_t p) const {
         NativeInt r{1};
         for (auto x = m_value; p > 0; p >>= 1, x *= x)
             r *= (p & 0x1) ? x : 1;
@@ -508,7 +508,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    NativeIntegerT& ExpEq(usint p) {
+    NativeIntegerT& ExpEq(uint32_t p) {
         auto x{m_value};
         m_value = 1;
         for (; p > 0; p >>= 1, x *= x)
@@ -1594,7 +1594,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    NativeIntegerT LShift(usshort shift) const {
+    NativeIntegerT LShift(uint16_t shift) const {
         return {m_value << shift};
     }
 
@@ -1604,7 +1604,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    NativeIntegerT& LShiftEq(usshort shift) {
+    NativeIntegerT& LShiftEq(uint16_t shift) {
         return *this = m_value << shift;
     }
 
@@ -1614,7 +1614,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    NativeIntegerT RShift(usshort shift) const {
+    NativeIntegerT RShift(uint16_t shift) const {
         return {m_value >> shift};
     }
 
@@ -1624,7 +1624,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    NativeIntegerT& RShiftEq(usshort shift) {
+    NativeIntegerT& RShiftEq(uint16_t shift) {
         return *this = m_value >> shift;
     }
 
@@ -1642,7 +1642,7 @@ public:
     /**
    * Converts the value to an int.
    *
-   * @return the int representation of the value as usint.
+   * @return the int representation of the value as uint32_t.
    */
     template <typename T             = NativeInt,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
@@ -1685,7 +1685,7 @@ public:
    *
    * @return the index of the most significant bit.
    */
-    usint GetMSB() const {
+    uint32_t GetMSB() const {
         return lbcrypto::GetMSB(m_value);
     }
 
@@ -1698,7 +1698,7 @@ public:
    */
 
     // TODO: only base 2?
-    usint GetLengthForBase(usint base) const {
+    uint32_t GetLengthForBase(uint32_t base) const {
         return NativeIntegerT::GetMSB();
     }
 
@@ -1718,11 +1718,11 @@ public:
    */
 
     // TODO: * i to << i
-    usint GetDigitAtIndexForBase(usint index, usint base) const {
-        usint DigitLen = std::ceil(std::log2(base));
-        usint digit    = 0;
-        usint newIndex = 1 + (index - 1) * DigitLen;
-        for (usint i = 1; i < base; i <<= 1) {
+    uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
+        uint32_t DigitLen = std::ceil(std::log2(base));
+        uint32_t digit    = 0;
+        uint32_t newIndex = 1 + (index - 1) * DigitLen;
+        for (uint32_t i = 1; i < base; i <<= 1) {
             digit += GetBitAtIndex(newIndex++) * i;
         }
         return digit;
@@ -1734,10 +1734,10 @@ public:
    * @param index is the index of the bit to get.
    * @return resulting bit.
    */
-    uschar GetBitAtIndex(usint index) const {
+    uint8_t GetBitAtIndex(uint32_t index) const {
         if (index == 0)
             OPENFHE_THROW("Zero index in GetBitAtIndex");
-        return static_cast<uschar>((m_value >> (index - 1)) & 0x1);
+        return static_cast<uint8_t>((m_value >> (index - 1)) & 0x1);
     }
 
     /**
@@ -1860,7 +1860,7 @@ public:
         return 1;
     }
 
-    static constexpr usint MaxBits() noexcept {
+    static constexpr uint32_t MaxBits() noexcept {
         return m_uintBitLength;
     }
 

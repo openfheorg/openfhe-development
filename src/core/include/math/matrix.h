@@ -620,7 +620,7 @@ public:
     inline Matrix<Element> ExtractRows(size_t row_start, size_t row_end) const {
         Matrix<Element> result(this->allocZero, row_end - row_start + 1, this->cols);
 
-        for (usint row = row_start; row < row_end + 1; row++) {
+        for (uint32_t row = row_start; row < row_end + 1; row++) {
             int i = 0;
 
             for (auto elem = this->GetData()[row].begin(); elem != this->GetData()[row].end(); ++elem) {

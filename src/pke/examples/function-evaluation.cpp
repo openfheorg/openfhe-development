@@ -61,11 +61,11 @@ void EvalLogisticExample() {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 10);
 #if NATIVEINT == 128
-    usint scalingModSize = 78;
-    usint firstModSize   = 89;
+    uint32_t scalingModSize = 78;
+    uint32_t firstModSize   = 89;
 #else
-    usint scalingModSize = 50;
-    usint firstModSize   = 60;
+    uint32_t scalingModSize = 50;
+    uint32_t firstModSize   = 60;
 #endif
     parameters.SetScalingModSize(scalingModSize);
     parameters.SetFirstModSize(firstModSize);
@@ -122,11 +122,11 @@ void EvalFunctionExample() {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 10);
 #if NATIVEINT == 128
-    usint scalingModSize = 78;
-    usint firstModSize   = 89;
+    uint32_t scalingModSize = 78;
+    uint32_t firstModSize   = 89;
 #else
-    usint scalingModSize = 50;
-    usint firstModSize   = 60;
+    uint32_t scalingModSize = 50;
+    uint32_t firstModSize   = 60;
 #endif
     parameters.SetScalingModSize(scalingModSize);
     parameters.SetFirstModSize(firstModSize);

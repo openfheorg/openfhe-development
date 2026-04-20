@@ -88,9 +88,9 @@ public:
    * number of entries.
    * @param modulus is the modulus of the ring.
    */
-    explicit BigVectorFixedT(usint length, const IntegerType& modulus = 0);
+    explicit BigVectorFixedT(uint32_t length, const IntegerType& modulus = 0);
 
-    BigVectorFixedT(usint length, const IntegerType& modulus, const IntegerType& value)
+    BigVectorFixedT(uint32_t length, const IntegerType& modulus, const IntegerType& value)
         : m_data(new IntegerType[length]()), m_length{length}, m_modulus{modulus} {
         std::fill(m_data, m_data + m_length, value);
     }
@@ -119,7 +119,7 @@ public:
    * @param rhs is an initializer list of strings
    */
 
-    BigVectorFixedT(usint length, const IntegerType& modulus, std::initializer_list<std::string> rhs);
+    BigVectorFixedT(uint32_t length, const IntegerType& modulus, std::initializer_list<std::string> rhs);
 
     /**
    * Basic constructor for specifying the length of the vector
@@ -128,9 +128,9 @@ public:
    * @param length is the length of the big binary vector, in terms of the
    * number of entries.
    * @param modulus is the modulus of the ring.
-   * @param rhs is an initializer list of usint
+   * @param rhs is an initializer list of uint32_t
    */
-    BigVectorFixedT(usint length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs);
+    BigVectorFixedT(uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs);
 
     /**
    * Assignment operator to assign value from rhs
@@ -297,7 +297,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    BigVectorFixedT ModAddAtIndex(usint i, const IntegerType& b) const;
+    BigVectorFixedT ModAddAtIndex(uint32_t i, const IntegerType& b) const;
 
     /**
    * Scalar modulus addition at a particular index. In-place variant.
@@ -306,7 +306,7 @@ public:
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-    BigVectorFixedT& ModAddAtIndexEq(usint i, const IntegerType& b);
+    BigVectorFixedT& ModAddAtIndexEq(uint32_t i, const IntegerType& b);
 
     /**
    * Vector component wise modulus addition.
@@ -514,7 +514,7 @@ public:
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-    BigVectorFixedT GetDigitAtIndexForBase(usint index, usint base) const;
+    BigVectorFixedT GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // STRINGS & STREAMS
 
@@ -529,7 +529,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const BigVectorFixedT<IntegerType_c>& ptr_obj) {
         auto len = ptr_obj.m_length;
         os << "[";
-        for (usint i = 0; i < len; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             os << ptr_obj.m_data[i];
             os << ((i == (len - 1)) ? "]" : " ");
         }
@@ -597,12 +597,12 @@ private:
     // m_data is a pointer to the vector
     IntegerType* m_data;
     // m_length stores the length of the vector
-    usint m_length;
+    uint32_t m_length;
     // m_modulus stores the internal modulus of the vector.
     IntegerType m_modulus = 0;
 
     // function to check if the index is a valid index.
-    bool IndexCheck(usint length) const {
+    bool IndexCheck(uint32_t length) const {
         return length < m_length;
     }
 };

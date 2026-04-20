@@ -95,8 +95,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Compute the composite digits PartQ = Q_j
         std::vector<BigInteger> moduliPartQ(m_numPartQ, 1);
-        for (usint j = 0; j < m_numPartQ; j++) {
-            for (usint i = a * j; i < (j + 1) * a; i++) {
+        for (uint32_t j = 0; j < m_numPartQ; j++) {
+            for (uint32_t i = a * j; i < (j + 1) * a; i++) {
                 if (i < moduliQ.size())
                     moduliPartQ[j] *= moduliQ[i];
             }
@@ -166,7 +166,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             do {
                 moduliP[i] = PreviousPrime<NativeInteger>(pPrev, primeStep);
                 foundInQ   = false;
-                for (usint j = 0; j < sizeQ; j++)
+                for (uint32_t j = 0; j < sizeQ; j++)
                     if (moduliP[i] == moduliQ[j])
                         foundInQ = true;
                 pPrev = moduliP[i];
@@ -198,7 +198,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Pre-compute values [P]_{q_i}
         m_PModq.resize(sizeQ);
-        for (usint i = 0; i < sizeQ; i++) {
+        for (uint32_t i = 0; i < sizeQ; i++) {
             m_PModq[i] = modulusP.Mod(moduliQ[i]).ConvertToInt();
         }
 
@@ -378,12 +378,12 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         modulusQ = BigInteger(GetElementParams()->GetModulus()) / BigInteger(moduliQ[0]);
         m_multipartyAlphaQModq0.resize(sizeQ - 1);
-        for (usint l = sizeQ - 1; l > 0; l--) {
+        for (uint32_t l = sizeQ - 1; l > 0; l--) {
             if (l < sizeQ - 1)
                 modulusQ = modulusQ / BigInteger(moduliQ[l + 1]);
             m_multipartyAlphaQModq0[l - 1].resize(l + 1);
             NativeInteger QlModq0 = modulusQ.Mod(moduliQ[0]).ConvertToInt();
-            for (usint j = 0; j < l + 1; ++j) {
+            for (uint32_t j = 0; j < l + 1; ++j) {
                 m_multipartyAlphaQModq0[l - 1][j] = {QlModq0.ModMul(NativeInteger(j), moduliQ[0])};
             }
         }

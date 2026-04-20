@@ -257,7 +257,7 @@ public:
    * size as input or a throw of error occurs.
    * @see NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    */
-    void ForwardTransformToBitReverse(const VecType& element, const IntType& rootOfUnity, const usint CycloOrder,
+    void ForwardTransformToBitReverse(const VecType& element, const IntType& rootOfUnity, const uint32_t CycloOrder,
                                       VecType* result);
 
     /**
@@ -273,7 +273,7 @@ public:
    * @return none
    * @see NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    */
-    void ForwardTransformToBitReverseInPlace(const IntType& rootOfUnity, const usint CycloOrder, VecType* element);
+    void ForwardTransformToBitReverseInPlace(const IntType& rootOfUnity, const uint32_t CycloOrder, VecType* element);
 
     /**
    * Copies \p element into \p result and calls NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
@@ -292,7 +292,7 @@ public:
    * @return none
    * @see NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
    */
-    void InverseTransformFromBitReverse(const VecType& element, const IntType& rootOfUnity, const usint CycloOrder,
+    void InverseTransformFromBitReverse(const VecType& element, const IntType& rootOfUnity, const uint32_t CycloOrder,
                                         VecType* result);
 
     /**
@@ -308,7 +308,7 @@ public:
    * @return none
    * @see NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
    */
-    void InverseTransformFromBitReverseInPlace(const IntType& rootOfUnity, const usint CycloOrder, VecType* element);
+    void InverseTransformFromBitReverseInPlace(const IntType& rootOfUnity, const uint32_t CycloOrder, VecType* element);
 
     /**
    * Precomputation of root of unity tables for transforms in the ring
@@ -320,7 +320,7 @@ public:
    * @param CycloOrder is a power-of-two, equal to 2n.
    * @param modulus is q, the prime modulus
    */
-    void PreCompute(const IntType& rootOfUnity, const usint CycloOrder, const IntType& modulus);
+    void PreCompute(const IntType& rootOfUnity, const uint32_t CycloOrder, const IntType& modulus);
 
     /**
    * Precomputation of root of unity tables for transforms in the ring
@@ -332,7 +332,7 @@ public:
    * @param CycloOrder is a power-of-two, equal to 2n.
    * @param &moduliChain is the vector of prime moduli qi such that 2n|qi-1
    */
-    void PreCompute(std::vector<IntType>& rootOfUnity, const usint CycloOrder, std::vector<IntType>& moduliChain);
+    void PreCompute(std::vector<IntType>& rootOfUnity, const uint32_t CycloOrder, std::vector<IntType>& moduliChain);
 
     /**
    * Reset cached values for the root of unity tables to empty.
@@ -383,8 +383,8 @@ public:
    * @param cycloOrder is the cyclotomic order.
    * @return is the output result of the transform.
    */
-    VecType ForwardTransform(const VecType& element, const IntType& root, const usint cycloOrder);
-    VecType ForwardTransform(const VecType& element, const IntType& root, const usint cycloOrder,
+    VecType ForwardTransform(const VecType& element, const IntType& root, const uint32_t cycloOrder);
+    VecType ForwardTransform(const VecType& element, const IntType& root, const uint32_t cycloOrder,
                              const ModulusRoot<IntType>& nttModulusRoot);
 
     /**
@@ -394,7 +394,7 @@ public:
    * @return output vector padded with (finalSize - initial size)additional
    * zeros.
    */
-    VecType PadZeros(const VecType& a, const usint finalSize);
+    VecType PadZeros(const VecType& a, const uint32_t finalSize);
 
     /**
    *
@@ -403,9 +403,9 @@ public:
    * @param hi is higher coefficient index.
    * @return output vector s.t output vector = a[lo]...a[hi].
    */
-    VecType Resize(const VecType& a, usint lo, usint hi);
+    VecType Resize(const VecType& a, uint32_t lo, uint32_t hi);
 
-    // void PreComputeNTTModulus(usint cycloOrder, const std::vector<IntType>
+    // void PreComputeNTTModulus(uint32_t cycloOrder, const std::vector<IntType>
     // &modulii);
 
     /**
@@ -414,7 +414,7 @@ public:
    * @param cycloOrder is the cyclotomic order of the polynomial.
    * @param modulus is the modulus of the polynomial.
    */
-    void PreComputeDefaultNTTModulusRoot(usint cycloOrder, const IntType& modulus);
+    void PreComputeDefaultNTTModulusRoot(uint32_t cycloOrder, const IntType& modulus);
 
     /**
    * @brief Precomputes the root of unity table needed for NTT operation in
@@ -422,7 +422,7 @@ public:
    * @param cycloOrder is the cyclotomic order of the polynomial ring.
    * @param modulus is the modulus of the polynomial.
    */
-    void PreComputeRootTableForNTT(usint cycloOrder, const ModulusRoot<IntType>& nttModulusRoot);
+    void PreComputeRootTableForNTT(uint32_t cycloOrder, const ModulusRoot<IntType>& nttModulusRoot);
 
     /**
    * @brief precomputes the powers of root used in forward Bluestein transform.
@@ -430,7 +430,7 @@ public:
    * @param modulus is the modulus of the polynomial ring.
    * @param root is the root of unity s.t. root^2m = 1.
    */
-    void PreComputePowers(usint cycloOrder, const ModulusRoot<IntType>& modulusRoot);
+    void PreComputePowers(uint32_t cycloOrder, const ModulusRoot<IntType>& modulusRoot);
 
     /**
    * @brief precomputes the NTT transform of the power of root of unity used in
@@ -441,7 +441,7 @@ public:
    * @param bigMod is the modulus required for the NTT transform.
    * @param bigRoot is the root of unity required for the NTT transform.
    */
-    void PreComputeRBTable(usint cycloOrder, const ModulusRootPair<IntType>& modulusRootPair);
+    void PreComputeRBTable(uint32_t cycloOrder, const ModulusRootPair<IntType>& modulusRootPair);
 
     /**
    * Reset cached values for the transform to empty.
@@ -493,7 +493,7 @@ public:
    * @return is the output result of the transform.
    */
     VecType ForwardTransform(const VecType& element, const IntType& root, const IntType& bigMod, const IntType& bigRoot,
-                             const usint cycloOrder);
+                             const uint32_t cycloOrder);
 
     /**
    * Inverse transform.
@@ -507,7 +507,7 @@ public:
    * @return is the output result of the transform.
    */
     VecType InverseTransform(const VecType& element, const IntType& root, const IntType& bigMod, const IntType& bigRoot,
-                             const usint cycloOrder);
+                             const uint32_t cycloOrder);
 
     /**
    * Reset cached values for the transform to empty.
@@ -520,7 +520,7 @@ public:
    * @param cycloOrder is the cyclotomic order of the polynomial ring.
    * @param modulus is the modulus of the polynomial ring.
    */
-    void PreCompute(const usint cyclotoOrder, const IntType& modulus);
+    void PreCompute(const uint32_t cyclotoOrder, const IntType& modulus);
 
     /**
    * @brief Sets the precomputed root of unity and modulus needed for NTT
@@ -532,7 +532,7 @@ public:
    * @param nttRoot is the root of unity needed for the NTT operation in forward
    * Bluestein transform.
    */
-    void SetPreComputedNTTModulus(usint cyclotoOrder, const IntType& modulus, const IntType& nttMod,
+    void SetPreComputedNTTModulus(uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod,
                                   const IntType& nttRoot);
 
     /**
@@ -546,7 +546,7 @@ public:
    * @param nttRoot is the root of unity needed for the NTT operation in forward
    * Bluestein transform.
    */
-    void SetPreComputedNTTDivisionModulus(usint cyclotoOrder, const IntType& modulus, const IntType& nttMod,
+    void SetPreComputedNTTDivisionModulus(uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod,
                                           const IntType& nttRoot);
 
     /**
@@ -556,7 +556,7 @@ public:
    * @param modulus is the modulus of the polynomial ring.
    * @return inverse polynomial.
    */
-    VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, usint power);
+    VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, uint32_t power);
 
 private:
     /**
@@ -566,7 +566,7 @@ private:
    * @param forward is a flag for forward/inverse transform padding.
    * @return is result vector with &element values with padded zeros to it
    */
-    VecType Pad(const VecType& element, const usint cycloOrder, bool forward);
+    VecType Pad(const VecType& element, const uint32_t cycloOrder, bool forward);
 
     /**
    * @brief Dropping elements from a vector
@@ -579,7 +579,7 @@ private:
    * tables if needed. The tables are used in the inverse dropping computations
    * @return is result vector with &element values with dropped elements from it
    */
-    VecType Drop(const VecType& element, const usint cycloOrder, bool forward, const IntType& bigMod,
+    VecType Drop(const VecType& element, const uint32_t cycloOrder, bool forward, const IntType& bigMod,
                  const IntType& bigRoot);
 
     // map to store the cyclotomic polynomial with polynomial ring's modulus as
@@ -608,7 +608,7 @@ private:
     static std::map<IntType, IntType> m_DivisionNTTRootOfUnity;
 
     // dimension of the NTT transform in NTT based polynomial division.
-    static std::map<usint, usint> m_nttDivisionDim;
+    static std::map<uint32_t, uint32_t> m_nttDivisionDim;
 };
 }  // namespace NTL
 

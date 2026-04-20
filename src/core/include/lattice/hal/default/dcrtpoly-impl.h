@@ -1517,7 +1517,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
         OPENFHE_THROW("Use of ScaleAndRound with NATIVEINT == 32 may lead to overflow");
 
     DCRTPolyImpl<VecType> ans(paramsOutput, m_format, true);
-    uint32_t ringDim   = m_params->GetRingDimension();
+    uint32_t ringDim     = m_params->GetRingDimension();
     uint32_t sizeQP      = m_vectors.size();
     uint32_t sizeO       = ans.m_vectors.size();
     uint32_t sizeI       = sizeQP - sizeO;
@@ -1697,7 +1697,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
     const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
     const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-    const uint64_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+    uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
     const std::vector<NativeInteger>& mtildeInvModbskPrecon) {
     constexpr uint64_t mtilde         = (uint64_t)1 << 16;
     constexpr uint64_t mtilde_half    = mtilde >> 1;

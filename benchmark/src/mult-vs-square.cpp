@@ -50,12 +50,12 @@
 
 using namespace lbcrypto;
 
-static std::vector<usint> depths({1, 2, 4, 8, 12});
+static std::vector<uint32_t> depths({1, 2, 4, 8, 12});
 
 /*
  * Context setup utility methods
  */
-CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm, usint multDepth) {
+CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t ptm, uint32_t multDepth) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(multDepth);
@@ -70,7 +70,7 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm, usint multDepth) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint multDepth) {
+CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t ptm, uint32_t multDepth) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(multDepth);
@@ -86,7 +86,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint multDepth) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateCKKSContext(usint multDepth) {
+CryptoContext<DCRTPoly> GenerateCKKSContext(uint32_t multDepth) {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetScalingModSize(48);
     parameters.SetBatchSize(8);
@@ -101,7 +101,7 @@ CryptoContext<DCRTPoly> GenerateCKKSContext(usint multDepth) {
 }
 
 static void DepthArguments(benchmark::internal::Benchmark* b) {
-    for (usint t : depths) {
+    for (uint32_t t : depths) {
         b->ArgName("depths")->Arg(t);
     }
 }
@@ -110,8 +110,8 @@ static void DepthArguments(benchmark::internal::Benchmark* b) {
  * EvalMult benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithMult_P2(benchmark::State& state) {
-    usint ptm                  = 2;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 2;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -126,7 +126,7 @@ void BGVrns_EvalPo2WithMult_P2(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalMult(ciphertext, ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalMult(ciphertextPo2, ciphertextPo2);
         }
     }
@@ -148,8 +148,8 @@ BENCHMARK(BGVrns_EvalPo2WithMult_P2)->Unit(benchmark::kMicrosecond)->Apply(Depth
  * EvalSquare benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
-    usint ptm                  = 2;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 2;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -164,7 +164,7 @@ void BGVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalSquare(ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalSquare(ciphertextPo2);
         }
     }
@@ -186,8 +186,8 @@ BENCHMARK(BGVrns_EvalPo2WithSquare_P2)->Unit(benchmark::kMicrosecond)->Apply(Dep
  * EvalMult benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithMult_P2(benchmark::State& state) {
-    usint ptm                  = 2;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 2;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -202,7 +202,7 @@ void BFVrns_EvalPo2WithMult_P2(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalMult(ciphertext, ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalMult(ciphertextPo2, ciphertextPo2);
         }
     }
@@ -224,8 +224,8 @@ BENCHMARK(BFVrns_EvalPo2WithMult_P2)->Unit(benchmark::kMicrosecond)->Apply(Depth
  * EvalSquare benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
-    usint ptm                  = 2;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 2;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -240,7 +240,7 @@ void BFVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalSquare(ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalSquare(ciphertextPo2);
         }
     }
@@ -262,8 +262,8 @@ BENCHMARK(BFVrns_EvalPo2WithSquare_P2)->Unit(benchmark::kMicrosecond)->Apply(Dep
  * EvalMult benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
-    usint ptm                  = 65537;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 65537;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -278,7 +278,7 @@ void BGVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalMult(ciphertext, ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalMult(ciphertextPo2, ciphertextPo2);
         }
     }
@@ -300,8 +300,8 @@ BENCHMARK(BGVrns_EvalPo2WithMult_P65537)->Unit(benchmark::kMicrosecond)->Apply(D
  * EvalSquare benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
-    usint ptm                  = 65537;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 65537;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -316,7 +316,7 @@ void BGVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalSquare(ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             cc->EvalSquareInPlace(ciphertextPo2);
         }
     }
@@ -338,8 +338,8 @@ BENCHMARK(BGVrns_EvalPo2WithSquare_P65537)->Unit(benchmark::kMicrosecond)->Apply
  * EvalMult benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
-    usint ptm                  = 65537;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 65537;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -354,7 +354,7 @@ void BFVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalMult(ciphertext, ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalMult(ciphertextPo2, ciphertextPo2);
         }
     }
@@ -376,8 +376,8 @@ BENCHMARK(BFVrns_EvalPo2WithMult_P65537)->Unit(benchmark::kMicrosecond)->Apply(D
  * EvalSquare benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
-    usint ptm                  = 65537;
-    usint depth                = state.range(0);
+    uint32_t ptm                  = 65537;
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -392,7 +392,7 @@ void BFVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalSquare(ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalSquare(ciphertextPo2);
         }
     }
@@ -414,7 +414,7 @@ BENCHMARK(BFVrns_EvalPo2WithSquare_P65537)->Unit(benchmark::kMicrosecond)->Apply
  * EvalMult benchmarks for Power of 2
  */
 void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
-    usint depth                = state.range(0);
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(depth);
 
     // KeyGen
@@ -429,7 +429,7 @@ void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalMult(ciphertext, ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalMult(ciphertextPo2, ciphertextPo2);
         }
     }
@@ -456,7 +456,7 @@ BENCHMARK(CKKSrns_EvalPo2WithMult)->Unit(benchmark::kMicrosecond)->Apply(DepthAr
  * EvalSquare benchmarks for Power of 2
  */
 void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
-    usint depth                = state.range(0);
+    uint32_t depth                = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(depth);
 
     // KeyGen
@@ -471,7 +471,7 @@ void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         ciphertextPo2 = cc->EvalSquare(ciphertext);
-        for (usint i = 2; i < depth; ++i) {
+        for (uint32_t i = 2; i < depth; ++i) {
             ciphertextPo2 = cc->EvalSquare(ciphertextPo2);
         }
     }

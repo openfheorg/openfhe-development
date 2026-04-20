@@ -116,9 +116,9 @@ public:
     myVecP(myVecP<myT>&& a);
 
     myVecP(const long n, const myT& q);  // NOLINT
-    myVecP(usint n, const myT& q, const myT& v) : Vec<myT>(INIT_SIZE, n) {
+    myVecP(uint32_t n, const myT& q, const myT& v) : Vec<myT>(INIT_SIZE, n) {
         this->SetModulus(q);
-        for (usint i{0}; i < n; ++i)
+        for (uint32_t i{0}; i < n; ++i)
             (*this)[i] = v;
     }
 
@@ -195,7 +195,7 @@ public:
     }
 
     // sets modulus and the NTL init function uint64_t argument
-    inline void SetModulus(const uint64_t& value) {
+    inline void SetModulus(uint64_t value) {
         if (value == 0) {
             OPENFHE_THROW("SetModulus(uint64_t) cannot be zero");
         }
@@ -299,7 +299,7 @@ public:
    */
     myVecP& ModAddEq(const myT& b) {
         ModulusCheck("Warning: myVecP::ModAdd");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModAddEq(b, this->m_modulus);
         }
         return *this;
@@ -344,14 +344,14 @@ public:
    */
     myVecP& ModAddEq(const myVecP& b) {
         ArgCheckVector(b, "myVecP ModAddEq()");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModAddEq(b[i], this->m_modulus);
         }
         return *this;
     }
 
     myVecP& ModAddNoCheckEq(const myVecP& b) {
-        for (usint i = 0; i < this->GetLength(); i++)
+        for (uint32_t i = 0; i < this->GetLength(); i++)
             this->operator[](i).ModAddEq(b[i], this->m_modulus);
         return *this;
     }
@@ -381,7 +381,7 @@ public:
    */
     myVecP& ModSubEq(const myT& b) {
         ModulusCheck("Warning: myVecP::ModSubEq");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModSubEq(b, this->m_modulus);
         }
         return (*this);
@@ -408,7 +408,7 @@ public:
    */
     myVecP& ModSubEq(const myVecP& b) {
         ArgCheckVector(b, "myVecP ModSubEq()");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModSubEq(b[i], this->m_modulus);
         }
         return (*this);
@@ -439,7 +439,7 @@ public:
    */
     myVecP& ModMulEq(const myT& b) {
         ModulusCheck("Warning: myVecP::ModMul");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModMulEq(b, this->m_modulus);
         }
         return (*this);
@@ -468,14 +468,14 @@ public:
    */
     myVecP& ModMulEq(const myVecP& b) {
         ArgCheckVector(b, "myVecP Mul()");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModMulEq(b[i], this->m_modulus);
         }
         return (*this);
     }
 
     myVecP& ModMulNoCheckEq(const myVecP& b) {
-        for (usint i = 0; i < this->GetLength(); i++)
+        for (uint32_t i = 0; i < this->GetLength(); i++)
             this->operator[](i).ModMulEq(b[i], this->m_modulus);
         return (*this);
     }
@@ -587,7 +587,7 @@ public:
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-    myVecP GetDigitAtIndexForBase(size_t index, usint base) const;
+    myVecP GetDigitAtIndexForBase(size_t index, uint32_t base) const;
 
     // STRINGS & STREAMS
 

@@ -68,7 +68,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // Pre-compute values [t^{-1}]_{q_i}, precomputations for  [t]_{q_i}
         m_tInvModq.resize(sizeQ);
         m_tInvModqPrecon.resize(sizeQ);
-        for (usint i = 0; i < sizeQ; i++) {
+        for (uint32_t i = 0; i < sizeQ; i++) {
             m_tInvModq[i]       = t.ModInverse(moduliQ[i]);
             m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
         }
@@ -76,7 +76,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // Pre-compute values [t^{-1}]_{p_i}, precomputations for [t]_{q_i}
         m_tInvModp.resize(sizeP);
         m_tInvModpPrecon.resize(sizeP);
-        for (usint j = 0; j < sizeP; j++) {
+        for (uint32_t j = 0; j < sizeP; j++) {
             m_tInvModp[j]       = t.ModInverse(moduliP[j]);
             m_tInvModpPrecon[j] = m_tInvModp[j].PrepModMulConst(moduliP[j]);
         }
@@ -87,14 +87,14 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     m_tModqPrecon.resize(sizeQ);
     m_qlInvModq.resize(sizeQ);
     m_qlInvModqPrecon.resize(sizeQ);
-    for (usint i = 0; i < sizeQ; i++) {
+    for (uint32_t i = 0; i < sizeQ; i++) {
         m_negtInvModq[i]       = moduliQ[i] - t.ModInverse(moduliQ[i]);
         m_negtInvModqPrecon[i] = m_negtInvModq[i].PrepModMulConst(moduliQ[i]);
         NativeInteger tModQi   = t.Mod(moduliQ[i]);
         m_tModqPrecon[i]       = tModQi.PrepModMulConst(moduliQ[i]);
         m_qlInvModq[i].resize(i);
         m_qlInvModqPrecon[i].resize(i);
-        for (usint j = 0; j < i; ++j) {
+        for (uint32_t j = 0; j < i; ++j) {
             m_qlInvModq[i][j]       = moduliQ[i].ModInverse(moduliQ[j]);
             m_qlInvModqPrecon[i][j] = m_qlInvModq[i][j].PrepModMulConst(moduliQ[j]);
         }
@@ -129,7 +129,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         // Moduli mod t
         m_qModt.resize(sizeQ);
-        for (usint i = 0; i < sizeQ; i++) {
+        for (uint32_t i = 0; i < sizeQ; i++) {
             m_qModt[i] = moduliQ[i].Mod(t);
         }
     }
@@ -145,9 +145,9 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
 uint64_t CryptoParametersBGVRNS::FindAuxPrimeStep() const {
     size_t n               = GetElementParams()->GetRingDimension();
-    usint plaintextModulus = GetPlaintextModulus();
-    usint cyclOrder        = 2 * n;
-    usint pow2ptm          = 1;
+    uint32_t plaintextModulus = GetPlaintextModulus();
+    uint32_t cyclOrder        = 2 * n;
+    uint32_t pow2ptm          = 1;
 
     // The largest power of 2 dividing ptm
     // Check whether it is larger than cyclOrder or not

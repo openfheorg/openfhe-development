@@ -94,7 +94,7 @@ template <class myT>
 myVecP<myT>::myVecP(const long n, const myT& q, std::initializer_list<uint64_t> rhs)  // NOLINT
     : Vec<myT>(INIT_SIZE, n) {                                                        // NOLINT
     this->SetModulus(q);
-    usint len = rhs.size();
+    uint32_t len = rhs.size();
     for (size_t i = 0; i < size_t(n); i++) {  // this loops over each entry
         if (i < len) {
             (*this)[i] = myT(*(rhs.begin() + i)) % m_modulus;
@@ -109,7 +109,7 @@ template <class myT>
 myVecP<myT>::myVecP(const long n, const myT& q, std::initializer_list<std::string> rhs)  // NOLINT
     : Vec<myT>(INIT_SIZE, n) {                                                           // NOLINT
     this->SetModulus(q);
-    usint len = rhs.size();
+    uint32_t len = rhs.size();
     for (size_t i = 0; i < size_t(n); i++) {  // this loops over each entry
         if (i < len) {
             (*this)[i] = myT(*(rhs.begin() + i)) % m_modulus;
@@ -156,7 +156,7 @@ myVecP<myT>::myVecP(const myVecP<myT>& a, const uint64_t q) : Vec<myT>(a) {
 // constructor specifying the myvec as a vector of strings
 template <class myT>
 myVecP<myT>::myVecP(std::vector<std::string>& s) {
-    usint len = s.size();
+    uint32_t len = s.size();
     this->resize(len);
     for (size_t i = 0; i < len; i++) {
         (*this)[i] = myT(s[i]);
@@ -167,7 +167,7 @@ myVecP<myT>::myVecP(std::vector<std::string>& s) {
 // constructor specifying the myvec as a vector of strings with modulus
 template <class myT>
 myVecP<myT>::myVecP(std::vector<std::string>& s, const myT& q) {
-    usint len = s.size();
+    uint32_t len = s.size();
     this->resize(len);
     this->SetModulus(q);
     for (size_t i = 0; i < len; i++) {
@@ -178,7 +178,7 @@ myVecP<myT>::myVecP(std::vector<std::string>& s, const myT& q) {
 // constructor specifying the myvec as a vector of strings with modulus
 template <class myT>
 myVecP<myT>::myVecP(std::vector<std::string>& s, const char* sq) {
-    usint len = s.size();
+    uint32_t len = s.size();
     this->resize(len);
     myT zzq(sq);
     this->SetModulus(zzq);
@@ -190,7 +190,7 @@ myVecP<myT>::myVecP(std::vector<std::string>& s, const char* sq) {
 // constructor specifying the myvec as a vector of strings with modulus
 template <class myT>
 myVecP<myT>::myVecP(std::vector<std::string>& s, const uint64_t q) {
-    usint len = s.size();
+    uint32_t len = s.size();
     this->resize(len);
     myT zzq(q);
     this->SetModulus(zzq);
@@ -651,7 +651,7 @@ myVecP<myT>& myVecP<myT>::DivideAndRoundEq(const myT& q) {
 
 // not sure what this does..
 template <class myT>
-myVecP<myT> myVecP<myT>::GetDigitAtIndexForBase(size_t index, usint base) const {
+myVecP<myT> myVecP<myT>::GetDigitAtIndexForBase(size_t index, uint32_t base) const {
     myVecP ans(*this);
     for (size_t i = 0; i < this->GetLength(); i++) {
         ans[i] = ans[i].GetDigitAtIndexForBase(index, base);

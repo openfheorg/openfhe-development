@@ -75,7 +75,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_qlInvModqPrecon[k].resize(l);
         BigInteger QlInvModql = modulusQ.ModInverse(moduliQ[l]);
         BigInteger result     = (QlInvModql * modulusQ) / BigInteger(moduliQ[l]);
-        for (usint i = 0; i < l; i++) {
+        for (uint32_t i = 0; i < l; i++) {
             m_QlQlInvModqlDivqlModq[k][i]       = result.Mod(moduliQ[i]).ConvertToInt();
             m_QlQlInvModqlDivqlModqPrecon[k][i] = m_QlQlInvModqlDivqlModq[k][i].PrepModMulConst(moduliQ[i]);
             m_qlInvModq[k][i]                   = moduliQ[l].ModInverse(moduliQ[i]);

@@ -185,7 +185,7 @@ class UTBGVRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS
 
     const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
     const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
-    const usint invalidIndexAutomorphism = 4;
+    const uint32_t invalidIndexAutomorphism = 4;
     const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 protected:
@@ -216,14 +216,14 @@ protected:
                         cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
                         cc->Encrypt(kp.publicKey, intArray);
 
-                std::vector<usint> indexList(testData.indexList);
+                std::vector<uint32_t> indexList(testData.indexList);
 
                 auto evalKeys =
                     (INVALID_PRIVATE_KEY == testData.error) ?
                         cc->EvalAutomorphismKeyGen(static_cast<const PrivateKey<Element>>(nullptr), indexList) :
                         cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
 
-                std::map<usint, EvalKey<Element>> emptyEvalKeys;
+                std::map<uint32_t, EvalKey<Element>> emptyEvalKeys;
                 Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testData.error) ?
                                              cc->EvalAutomorphism(ciphertext, index, emptyEvalKeys) :
                                              cc->EvalAutomorphism(ciphertext, index, *evalKeys);

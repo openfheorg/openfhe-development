@@ -338,7 +338,7 @@ struct fbt_config {
 
     auto exact(x);
     std::transform(x.begin(), x.end(), exact.begin(),
-                   [&](const int64_t& elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
+                   [&](int64_t elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
 
     std::vector<int64_t> coeffintMod;
     std::vector<std::complex<double>> coeffcompMod;

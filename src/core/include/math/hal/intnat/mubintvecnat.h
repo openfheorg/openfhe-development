@@ -149,7 +149,7 @@ public:
    * @param length is the length of the native vector, in terms of the number of
    * entries.
    */
-    explicit constexpr NativeVectorT(usint length) noexcept : m_data(length) {}
+    explicit constexpr NativeVectorT(uint32_t length) noexcept : m_data(length) {}
 
     /**
    * Basic constructor for specifying the length of the vector and the modulus.
@@ -158,14 +158,14 @@ public:
    * entries.
    * @param modulus is the modulus of the ring.
    */
-    constexpr NativeVectorT(usint length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length) {
+    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length) {
         // TODO: better performance if this check is done at poly level
         //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
         //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
         //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
     }
 
-    constexpr NativeVectorT(usint length, const IntegerType& modulus, const IntegerType& val) noexcept
+    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus, const IntegerType& val) noexcept
         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {
         // TODO: better performance if this check is done at poly level
         //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
@@ -198,7 +198,7 @@ public:
    * @param rhs is an initializer list of strings
    */
 
-    NativeVectorT(usint length, const IntegerType& modulus, std::initializer_list<std::string> rhs) noexcept;
+    NativeVectorT(uint32_t length, const IntegerType& modulus, std::initializer_list<std::string> rhs) noexcept;
 
     /**
    * Basic constructor for specifying the length of the vector
@@ -207,9 +207,9 @@ public:
    * @param length is the length of the native vector, in terms of the number of
    * entries.
    * @param modulus is the modulus of the ring.
-   * @param rhs is an initializer list of usint
+   * @param rhs is an initializer list of uint32_t
    */
-    NativeVectorT(usint length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs) noexcept;
+    NativeVectorT(uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs) noexcept;
 
     /**
    * Assignment operator to assign value from rhs
@@ -630,7 +630,7 @@ public:
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-    NativeVectorT GetDigitAtIndexForBase(usint index, usint base) const;
+    NativeVectorT GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // STRINGS & STREAMS
 
@@ -645,7 +645,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const NativeVectorT<IntegerType_c>& ptr_obj) {
         auto len = ptr_obj.m_data.size();
         os << "[";
-        for (usint i = 0; i < len; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             os << ptr_obj.m_data[i];
             os << ((i == (len - 1)) ? "]" : " ");
         }

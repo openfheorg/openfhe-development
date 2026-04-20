@@ -94,13 +94,13 @@ void DiscreteFourierTransform::PreComputeTable(uint32_t s) {
 }
 
 std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(std::vector<std::complex<double>>& A) {
-    usint m = A.size();
+    uint32_t m = A.size();
     std::vector<std::complex<double>> B(A);
-    usint l = std::floor(std::log2(m));
+    uint32_t l = std::floor(std::log2(m));
 
-    // static usint maxMCached(262144);
-    static usint LOGM_MAX(18);  // maximum supported is 2^18 = 262144
-    static std::vector<usint> cachedM(LOGM_MAX + 1, 0);
+    // static uint32_t maxMCached(262144);
+    static uint32_t LOGM_MAX(18);  // maximum supported is 2^18 = 262144
+    static std::vector<uint32_t> cachedM(LOGM_MAX + 1, 0);
     static std::vector<std::vector<double>> cosTable(LOGM_MAX + 1);
     static std::vector<std::vector<double>> sinTable(LOGM_MAX + 1);
 
@@ -119,7 +119,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
 
             sinTable[l].resize(m / 2);
             cosTable[l].resize(m / 2);
-            for (usint i = 0; i < m / 2; i++) {
+            for (uint32_t i = 0; i < m / 2; i++) {
                 cosTable[l][i] = cos(2 * M_PI * i / m);
                 sinTable[l][i] = sin(2 * M_PI * i / m);
             }
@@ -127,8 +127,8 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
     }
 
     // Bit-reversed addressing permutation
-    for (usint i = 0; i < m; i++) {
-        usint j = ReverseBits(i, 32) >> (32 - l);
+    for (uint32_t i = 0; i < m; i++) {
+        uint32_t j = ReverseBits(i, 32) >> (32 - l);
         if (j > i) {
             double temp = B[i].real();
             B[i].real(B[j].real());
@@ -140,11 +140,11 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
     }
 
     // Cooley-Tukey decimation-in-time radix-2 FFT
-    for (usint size = 2; size <= m; size *= 2) {
-        usint halfsize  = size / 2;
-        usint tablestep = m / size;
-        for (usint i = 0; i < m; i += size) {
-            for (usint j = i, k = 0; j < i + halfsize; j++, k += tablestep) {
+    for (uint32_t size = 2; size <= m; size *= 2) {
+        uint32_t halfsize  = size / 2;
+        uint32_t tablestep = m / size;
+        for (uint32_t i = 0; i < m; i += size) {
+            for (uint32_t j = i, k = 0; j < i + halfsize; j++, k += tablestep) {
                 double tpre = B[j + halfsize].real() * cosTable[l][k] + B[j + halfsize].imag() * sinTable[l][k];
                 double tpim = -B[j + halfsize].real() * sinTable[l][k] + B[j + halfsize].imag() * cosTable[l][k];
                 B[j + halfsize].real(B[j].real() - tpre);

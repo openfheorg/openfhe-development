@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     do {                                                                                                    \
         try {                                                                                               \
             TIC(t);                                                                                         \
-            for (usint j = 0; j < nloop; j++) {                                                             \
+            for (uint32_t j = 0; j < nloop; j++) {                                                          \
                 res = (fn);                                                                                 \
             }                                                                                               \
             time2 = TOC(t);                                                                                 \
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 // helper function that bulds BigVector from a vector of strings
 BigVector BBVfromStrvec(std::vector<std::string>& s) {
     BigVector a(s.size());
-    for (usint i = 0; i < s.size(); i++) {
+    for (uint32_t i = 0; i < s.size(); i++) {
         a[i] = s[i];
     }
     return a;
@@ -93,7 +93,7 @@ BigVector BBVfromStrvec(std::vector<std::string>& s) {
 
 // function to compare two BigVectors and print differing indicies
 void vec_diff(BigVector& a, BigVector& b) {
-    for (usint i = 0; i < a.GetLength(); ++i) {
+    for (uint32_t i = 0; i < a.GetLength(); ++i) {
         if (a.at(i) != b.at(i)) {
             std::cout << "i: " << i << std::endl;
             std::cout << "first vector " << std::endl;
@@ -254,7 +254,7 @@ void test_NTT() {
     b3.SetModulus(q3);
 
 #if 1
-    usint m = 32;
+    uint32_t m = 32;
 
     //  BigInteger modulus(q1);
 

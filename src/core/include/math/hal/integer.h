@@ -347,14 +347,14 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    T LShift(usshort shift) const;
-    T& LShiftEq(usshort shift);
+    T LShift(uint16_t shift) const;
+    T& LShiftEq(uint16_t shift);
 
     /// inline operators for the left shift operations.
-    friend T operator<<(const T& a, usshort shift) {
+    friend T operator<<(const T& a, uint16_t shift) {
         return a.LShift(shift);
     }
-    friend T& operator<<=(T& a, usshort shift) {
+    friend T& operator<<=(T& a, uint16_t shift) {
         return a.LShiftEq(shift);
     }
 
@@ -364,14 +364,14 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    T RShift(usshort shift) const;
-    T& RShiftEq(usshort shift);
+    T RShift(uint16_t shift) const;
+    T& RShiftEq(uint16_t shift);
 
     /// inline operators for the right shift operations.
-    friend T operator>>(const T& a, usshort shift) {
+    friend T operator>>(const T& a, uint16_t shift) {
         return a.RShift(shift);
     }
-    friend T& operator>>=(T& a, usshort shift) {
+    friend T& operator>>=(T& a, uint16_t shift) {
         return a.RShiftEq(shift);
     }
 
@@ -418,7 +418,7 @@ public:
    *
    * @return the index of the most significant bit.
    */
-    usint GetMSB() const;
+    uint32_t GetMSB() const;
 
     /**
    * Get the number of digits using a specific base - support for arbitrary base
@@ -427,7 +427,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-    usint GetLengthForBase(usint base) const;
+    uint32_t GetLengthForBase(uint32_t base) const;
 
     /**
    * Get the number of digits using a specific base - support for arbitrary base
@@ -442,7 +442,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-    usint GetDigitAtIndexForBase(usint index, usint base) const;
+    uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // STRINGS
 

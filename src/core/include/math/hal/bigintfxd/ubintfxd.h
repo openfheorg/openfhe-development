@@ -97,7 +97,7 @@ using U128BITS = uint128_t;
         #endif
 
 // forward declaration for aliases
-template <typename uint_type, usint BITLENGTH>
+template <typename uint_type, uint32_t BITLENGTH>
 class BigIntegerFixedT;
 
 // Create default type for the MATHBACKEND 2 integer
@@ -114,9 +114,9 @@ using BigInteger = BigIntegerFixedT<integral_dtype, BigIntegerBitLength>;
  *
  * @tparam N bitwidth.
  */
-template <usint N>
+template <uint32_t N>
 struct Log2 {
-    static const usint value = 1 + Log2<N / 2>::value;
+    static const uint32_t value = 1 + Log2<N / 2>::value;
 };
 
 /**
@@ -126,7 +126,7 @@ struct Log2 {
  */
 template <>
 struct Log2<2> {
-    static const usint value = 1;
+    static const uint32_t value = 1;
 };
 
 /**
@@ -137,7 +137,7 @@ struct Log2<2> {
  */
 template <typename U>
 struct LogDtype {
-    static const usint value = Log2<8 * sizeof(U)>::value;
+    static const uint32_t value = Log2<8 * sizeof(U)>::value;
 };
 
 /**
@@ -257,7 +257,7 @@ constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of L
  * @tparam uint_type native unsigned integer type
  * @tparam BITLENGTH maximum bitwidth supported for big integers
  */
-template <typename uint_type, usint BITLENGTH>
+template <typename uint_type, uint32_t BITLENGTH>
 class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<uint_type, BITLENGTH>> {
 public:
     // CONSTRUCTORS
@@ -405,7 +405,7 @@ public:
    *
    * @param index is the index of the int to set in the uint array.
    */
-    void SetIntAtIndex(usint idx, uint_type value);
+    void SetIntAtIndex(uint32_t idx, uint_type value);
 
     // ARITHMETIC OPERATIONS
 
@@ -487,7 +487,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    BigIntegerFixedT Exp(usint p) const;
+    BigIntegerFixedT Exp(uint32_t p) const;
 
     /**
    * Exponentiation operation. Returns x^p. In-place variant.
@@ -495,7 +495,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    BigIntegerFixedT& ExpEq(usint p);
+    BigIntegerFixedT& ExpEq(uint32_t p);
 
     /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -830,7 +830,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    BigIntegerFixedT LShift(usshort shift) const;
+    BigIntegerFixedT LShift(uint16_t shift) const;
 
     /**
    * Left shift operation. In-place variant.
@@ -838,7 +838,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    BigIntegerFixedT& LShiftEq(usshort shift);
+    BigIntegerFixedT& LShiftEq(uint16_t shift);
 
     /**
    * Right shift operation.
@@ -846,7 +846,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    BigIntegerFixedT RShift(usshort shift) const;
+    BigIntegerFixedT RShift(uint16_t shift) const;
 
     /**
    * Right shift operation. In-place variant.
@@ -854,7 +854,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    BigIntegerFixedT& RShiftEq(usshort shift);
+    BigIntegerFixedT& RShiftEq(uint16_t shift);
 
     // COMPARE
 
@@ -879,13 +879,13 @@ public:
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
     T ConvertToInt() const {
-        constexpr usint bits = sizeof(T) * CHAR_BIT;
+        constexpr uint32_t bits = sizeof(T) * CHAR_BIT;
         T result             = 0;
         // set num to number of equisized chunks
-        usint num     = bits / m_uintBitLength;
-        usint ceilInt = m_nSize - ceilIntByUInt(m_MSB);
+        uint32_t num     = bits / m_uintBitLength;
+        uint32_t ceilInt = m_nSize - ceilIntByUInt(m_MSB);
         // copy the values by shift and add
-        for (usint i = 0; i < num && (m_nSize - i - 1) >= ceilInt; i++) {
+        for (uint32_t i = 0; i < num && (m_nSize - i - 1) >= ceilInt; i++) {
             result += ((T)this->m_value[m_nSize - i - 1] << (m_uintBitLength * i));
         }
         if (this->m_MSB > bits) {
@@ -908,7 +908,7 @@ public:
    * @param m the value to convert from.
    * @return int represented as a big binary int.
    */
-    static BigIntegerFixedT intToBigInteger(usint m);
+    static BigIntegerFixedT intToBigInteger(uint32_t m);
 
     /**
    * Convert a string representation of a binary number to a decimal BigIntegerFixedT.
@@ -925,7 +925,7 @@ public:
    *
    * @return the index of the most significant bit.
    */
-    usint GetMSB() const;
+    uint32_t GetMSB() const;
 
     /**
    * Get the number of digits using a specific base - support for arbitrary base
@@ -934,7 +934,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-    usint GetLengthForBase(usint base) const {
+    uint32_t GetLengthForBase(uint32_t base) const {
         return GetMSB();
     }
 
@@ -952,7 +952,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return is the requested digit
    */
-    usint GetDigitAtIndexForBase(usint index, usint base) const;
+    uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     /**
    * Tests whether the BigIntegerFixedT is a power of 2.
@@ -968,7 +968,7 @@ public:
    * @param index is the index of the bit to get.
    * @return resulting bit.
    */
-    uschar GetBitAtIndex(usint index) const;
+    uint8_t GetBitAtIndex(uint32_t index) const;
 
     /**
    * A zero allocator that is called by the Matrix class. It is used to
@@ -1017,13 +1017,13 @@ public:
    * @param ptr_obj is BigIntegerFixedT to be printed.
    * @return is the ostream object.
    */
-    template <typename uint_type_c, usint BITLENGTH_c>
+    template <typename uint_type_c, uint32_t BITLENGTH_c>
     friend std::ostream& operator<<(std::ostream& os, const BigIntegerFixedT<uint_type_c, BITLENGTH_c>& ptr_obj) {
-        usint counter;
+        uint32_t counter;
         // initiate to object to be printed
         auto print_obj = new BigIntegerFixedT<uint_type_c, BITLENGTH_c>(ptr_obj);
         // print_VALUE array stores the decimal value in the array
-        uschar* print_VALUE = new uschar[ptr_obj.m_numDigitInPrintval];
+        uint8_t* print_VALUE = new uint8_t[ptr_obj.m_numDigitInPrintval];
         for (size_t i = 0; i < ptr_obj.m_numDigitInPrintval; i++) {
             // reset to zero
             *(print_VALUE + i) = 0;
@@ -1115,7 +1115,7 @@ protected:
    * Sets the MSB to the correct value from the BigIntegerFixedT.
    * @param guessIdxChar is the hint of the MSB position.
    */
-    void SetMSB(usint guessIdxChar);
+    void SetMSB(uint32_t guessIdxChar);
 
 private:
     // array storing the native integers.
@@ -1123,24 +1123,24 @@ private:
     uint_type m_value[(BITLENGTH + 8 * sizeof(uint_type) - 1) / (8 * sizeof(uint_type))];
 
     // variable that stores the MOST SIGNIFICANT BIT position in the number.
-    usshort m_MSB;
+    uint16_t m_MSB;
 
     // variable to store the bit width of the integral data type.
-    static const uschar m_uintBitLength;
+    static const uint8_t m_uintBitLength;
 
     // variable to store the maximum value of the integral data type.
     static const uint_type m_uintMax;
 
     // variable to store the log(base 2) of the number of bits in the integral
     // data type.
-    static const uschar m_logUintBitLength;
+    static const uint8_t m_logUintBitLength;
 
     // variable to store the size of the data array.
-    static const usint m_nSize;
+    static const uint32_t m_nSize;
 
     // The maximum number of digits in BigIntegerFixedT. It is used by the cout(ostream)
     // function for printing the bigbinarynumber.
-    static const usint m_numDigitInPrintval;
+    static const uint32_t m_numDigitInPrintval;
 
     /**
    * function to return the ceiling of the number divided by the number of bits
@@ -1159,7 +1159,7 @@ private:
    * @return the MSB position in the number x.
    */
 
-    static usint GetMSBUint_type(uint_type x);
+    static uint32_t GetMSBUint_type(uint_type x);
 
     // Duint_type is the data type that has twice as many bits in the integral
     // data type.
@@ -1170,7 +1170,7 @@ private:
    * @param x is the number.
    * @return the MSB position in the number x.
    */
-    static usint GetMSBDUint_type(Duint_type x);
+    static uint32_t GetMSBDUint_type(Duint_type x);
 
     /**
    * function that returns the BigIntegerFixedT after multiplication by a uint.
@@ -1191,20 +1191,20 @@ private:
    * @param a is a pointer to the binary array.
    * @return the decimal value.
    */
-    static uint_type UintInBinaryToDecimal(uschar* a);
+    static uint_type UintInBinaryToDecimal(uint8_t* a);
 
     /**
    * function that mutiplies by 2 to the binary array.
    * @param a is a pointer to the binary array.
    */
-    static void double_bitVal(uschar* a);
+    static void double_bitVal(uint8_t* a);
 
     /**
    * function that adds bit b to the binary array.
    * @param a is a pointer to the binary array.
    * @param b is a bit value to be added.
    */
-    static void add_bitVal(uschar* a, uschar b);
+    static void add_bitVal(uint8_t* a, uint8_t b);
 };
 
 }  // namespace bigintfxd

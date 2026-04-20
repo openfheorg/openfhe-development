@@ -230,13 +230,13 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     std::cerr << "]" << std::endl;
 
     auto exact(x);
-    std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+    std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
         return (func(elem) > POutput.ConvertToDouble() / 2.) ? func(elem) - POutput.ConvertToInt() : func(elem);
     });
 
     std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
     std::transform(exact.begin(), exact.end(), exact.begin(),
-                   [&](const int64_t& elem) { return (std::abs(elem)) % (POutput.ConvertToInt()); });
+                   [&](int64_t elem) { return (std::abs(elem)) % (POutput.ConvertToInt()); });
     auto max_error_it = std::max_element(exact.begin(), exact.end());
     std::cerr << "Max absolute error obtained: " << *max_error_it << std::endl << std::endl;
 }
@@ -393,12 +393,12 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;
 
     auto exact(x);
-    std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+    std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
         return (func1(elem) > POutput.ConvertToDouble() / 2.) ? func1(elem) - POutput.ConvertToInt() : func1(elem);
     });
 
     auto exact2(x);
-    std::transform(x.begin(), x.end(), exact2.begin(), [&](const int64_t& elem) {
+    std::transform(x.begin(), x.end(), exact2.begin(), [&](int64_t elem) {
         return (func2(elem) > POutput.ConvertToDouble() / 2.) ? func2(elem) - POutput.ConvertToInt() : func2(elem);
     });
 
@@ -459,7 +459,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
     std::transform(exact.begin(), exact.end(), exact.begin(),
-                   [&](const int64_t& elem) { return (std::abs(elem)) % (POutput.ConvertToInt()); });
+                   [&](int64_t elem) { return (std::abs(elem)) % (POutput.ConvertToInt()); });
     auto max_error_it = std::max_element(exact.begin(), exact.end());
     std::cerr << "Max absolute error obtained in the first LUT: " << *max_error_it << std::endl << std::endl;
 
@@ -473,7 +473,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     std::transform(exact2.begin(), exact2.end(), computed.begin(), exact2.begin(), std::minus<int64_t>());
     std::transform(exact2.begin(), exact2.end(), exact2.begin(),
-                   [&](const int64_t& elem) { return (std::abs(elem)) % (POutput.ConvertToInt()); });
+                   [&](int64_t elem) { return (std::abs(elem)) % (POutput.ConvertToInt()); });
     max_error_it = std::max_element(exact2.begin(), exact2.end());
     std::cerr << "Max absolute error obtained in the second LUT: " << *max_error_it << std::endl << std::endl;
 }
@@ -514,7 +514,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
     auto exact(x);
     std::transform(x.begin(), x.end(), exact.begin(),
-                   [&](const int64_t& elem) { return (elem >= PInput.ConvertToDouble() / 2.); });
+                   [&](int64_t elem) { return (elem >= PInput.ConvertToDouble() / 2.); });
 
     /* 4. The case of Boolean LUTs using the first order Trigonometric Hermite Interpolation
      * supports an optimized implementation.
@@ -691,7 +691,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
             std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
             std::transform(exact.begin(), exact.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (std::abs(elem)) % (pOrig.ConvertToInt()); });
+                           [&](int64_t elem) { return (std::abs(elem)) % (pOrig.ConvertToInt()); });
             auto max_error_it = std::max_element(exact.begin(), exact.end());
             std::cerr << "\nMax absolute error obtained: " << *max_error_it << std::endl << std::endl;
         }

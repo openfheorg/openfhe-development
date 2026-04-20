@@ -119,9 +119,9 @@ TEST(UTmubintvec, ctor_access_eq_neq) {
 
     m += n;
 
-    usint expectedResult[5] = {9872, 5888, 4620, 2376, 4631};
+    uint32_t expectedResult[5] = {9872, 5888, 4620, 2376, 4631};
 
-    for (usint i = 0; i < 5; ++i) {
+    for (uint32_t i = 0; i < 5; ++i) {
         EXPECT_EQ(expectedResult[i], (m.at(i)).ConvertToInt<uint32_t>()) << "Failure testing method_add_equals";
     }
 
@@ -141,7 +141,7 @@ TEST(UTmubintvec, ctor_access_eq_neq) {
     //  list";
 
     expectedvecint = {9872ULL, 5888ULL, 4620ULL, 2376ULL, 4631ULL};  // usints
-    EXPECT_EQ(expectedvecint, m) << "Failure usint initializer list";
+    EXPECT_EQ(expectedvecint, m) << "Failure uint32_t initializer list";
 
     expectedvecint = {9872, 5888, 4620, 2376, 4631};  // ints (compiler promotes)
     EXPECT_EQ(expectedvecint, m) << "Failure int initializer list";
@@ -158,21 +158,21 @@ TEST(UTmubintvec, ctor_access_eq_neq) {
     bigintdyn::xmubintvec eqtest(10);
     EXPECT_EQ(10U, eqtest.GetLength()) << "Failure create bigintdyn::xmubintvec of 10 zeros";
 
-    for (usint i = 0; i < eqtest.GetLength(); ++i) {
+    for (uint32_t i = 0; i < eqtest.GetLength(); ++i) {
         EXPECT_EQ(bigintdyn::xubint(0U), eqtest[i]) << "Failure create bigintdyn::xmubintvec of zeros";
     }
 
     // test assignment of single bigintdyn::xubint
     eqtest = bigintdyn::xubint(1);
     EXPECT_EQ(bigintdyn::xubint(1), eqtest[0]) << "Failure assign single bigintdyn::xubint 0 index";
-    for (usint i = 1; i < eqtest.GetLength(); i++) {
+    for (uint32_t i = 1; i < eqtest.GetLength(); i++) {
         EXPECT_EQ(bigintdyn::xubint(0U), eqtest[i]) << "Failure assign single bigintdyn::xubint nonzero index";
     }
 
-    // test assignment of single usint
+    // test assignment of single uint32_t
     eqtest = 5U;
     EXPECT_EQ(bigintdyn::xubint(5U), eqtest[0]) << "Failure assign single bigintdyn::xubint 0 index";
-    for (usint i = 1; i < eqtest.GetLength(); ++i) {
+    for (uint32_t i = 1; i < eqtest.GetLength(); ++i) {
         EXPECT_EQ(bigintdyn::xubint(0U), eqtest[i]) << "Failure assign single bigintdyn::xubint nonzero index";
     }
 
@@ -198,7 +198,7 @@ TEST(UTmubintvec, ctor_access_eq_neq) {
     EXPECT_FALSE(test1) << "Failure ==";
     EXPECT_TRUE(test2) << "Failure !=";
 
-    for (usint i = 0; i < m.GetLength(); ++i) {
+    for (uint32_t i = 0; i < m.GetLength(); ++i) {
         m[i] = n[i];  // test both lhs and rhs []
     }
 
@@ -227,14 +227,14 @@ TEST(UTmubintvec, constructorTest) {
                                    120, 79, 108, 60,  12};  // the expected values are stored as one dimensional
                                                             // integer array
 
-    for (usint i = 0; i < 10; i++) {
+    for (uint32_t i = 0; i < 10; i++) {
         OPENFHE_DEBUG("val " << i << " is " << m.at(i));
         EXPECT_EQ(expectedResult[i], (m.at(i)).ConvertToInt());
     }
 
     bigintdyn::xmubintvec binvect(m);
 
-    for (usint i = 0; i < 10; i++) {
+    for (uint32_t i = 0; i < 10; i++) {
         EXPECT_EQ(expectedResult[i], (binvect.at(i)).ConvertToInt());
     }
 }
@@ -261,7 +261,7 @@ TEST(UTmubintvec, mod) {
 
     bigintdyn::xmubintvec calculatedResult = m.Mod(q);
     // the expected values are stored as one dimensional integer array
-    usint expectedResult[10] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
+    uint32_t expectedResult[10] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
 
     for (size_t i = 0; i < 10; i++) {
         EXPECT_EQ(expectedResult[i], calculatedResult[i].ConvertToInt<uint32_t>());
@@ -372,21 +372,21 @@ TEST(UTmubintvec, basic_vector_scalar_mod_math_2_limb) {
 
     bigintdyn::xubint myone(1);
 
-    for (usint i = 0; i < a2.GetLength(); i++) {
+    for (uint32_t i = 0; i < a2.GetLength(); i++) {
         a2op1[i] = a2[i] + myone;
         a2op1[i] %= q2;
     }
     a2op1test = a2.ModAdd(myone);
     EXPECT_EQ(a2op1, a2op1test) << "Failure vector scalar ModAdd()";
 
-    for (usint i = 0; i < a2.GetLength(); i++) {
+    for (uint32_t i = 0; i < a2.GetLength(); i++) {
         a2op1[i] = a2[i] - myone;
         a2op1[i] %= q2;
     }
     a2op1test = a2.ModSub(myone);
     EXPECT_EQ(a2op1, a2op1test) << "Failure vector scalar ModSub()";
 
-    for (usint i = 0; i < a2.GetLength(); i++) {
+    for (uint32_t i = 0; i < a2.GetLength(); i++) {
         a2op1[i] = a2[i] * myone;
         a2op1[i] %= q2;
     }

@@ -88,9 +88,9 @@ void IterativeBootstrapExample() {
     // All modes are supported for 64-bit CKKS bootstrapping.
     // For this configuration, 3 words per level will be used
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    usint dcrtBits               = 61;
-    usint firstMod               = 66;
-    usint registerWordSize       = 27;
+    uint32_t dcrtBits               = 61;
+    uint32_t firstMod               = 66;
+    uint32_t registerWordSize       = 27;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -106,7 +106,7 @@ void IterativeBootstrapExample() {
 
     uint32_t levelsAvailableAfterBootstrap = 10;
     // Each extra iteration on top of 1 requires an extra level to be consumed.
-    usint depth =
+    uint32_t depth =
         levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
@@ -120,12 +120,12 @@ void IterativeBootstrapExample() {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(FHE);
 
-    usint ringDim = cryptoContext->GetRingDimension();
+    uint32_t ringDim = cryptoContext->GetRingDimension();
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
     const auto cryptoParamsCKKSRNS =
         std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
-    usint compositeDegree = cryptoParamsCKKSRNS->GetCompositeDegree();
+    uint32_t compositeDegree = cryptoParamsCKKSRNS->GetCompositeDegree();
     std::cout << "compositeDegree=" << cryptoParamsCKKSRNS->GetCompositeDegree()
               << " modBitWidth=" << static_cast<float>(dcrtBits) / compositeDegree
               << " targetHWArchWordSize=" << registerWordSize << std::endl;

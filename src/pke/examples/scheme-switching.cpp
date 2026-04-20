@@ -1489,14 +1489,14 @@ void PolyViaSchemeSwitching() {
     std::vector<int32_t> x1Rot(RotateInt(x1, 1));
     std::transform(x1Rot.begin(), x1Rot.end(), x1.begin(), x1Rot.begin(), std::plus<int>());
     std::vector<int32_t> x1Int(slots);
-    std::transform(x1Rot.begin(), x1Rot.end(), x1Int.begin(), [&](const int32_t& elem) {
+    std::transform(x1Rot.begin(), x1Rot.end(), x1Int.begin(), [&](int32_t elem) {
         return static_cast<int32_t>(static_cast<int32_t>(std::round(0.25 * elem * elem)) % pLWE1);
     });
 
     std::vector<int32_t> x2Rot(RotateInt(x2, 2));
     std::transform(x2Rot.begin(), x2Rot.end(), x2.begin(), x2Rot.begin(), std::plus<int>());
     std::vector<int32_t> x2Int(slots);
-    std::transform(x2Rot.begin(), x2Rot.end(), x2Int.begin(), [&](const int32_t& elem) {
+    std::transform(x2Rot.begin(), x2Rot.end(), x2Int.begin(), [&](int32_t elem) {
         return static_cast<int32_t>(static_cast<int32_t>(std::round(0.25 * elem * elem)) % pLWE2);
     });
 

@@ -201,7 +201,7 @@ public:
    *@brief Accessor function for ring size
    *@return Ring size
    */
-    usint GetN() {
+    uint32_t GetN() {
         return m_n;
     }
     /*
@@ -225,7 +225,7 @@ protected:
     int64_t m_base;
     size_t m_k;
     bool m_bal;
-    usint m_n;
+    uint32_t m_n;
     DggType m_dggLargeSigma;
     //    DggType m_dggLargeSigma = DggType(0);
 };

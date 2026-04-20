@@ -356,8 +356,8 @@ protected:
             ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext_a);
             firstCurrent = ciphertext->GetElements()[0];
             // Find the automorphism index that corresponds to rotation index index.
-            usint autoIndex = FindAutomorphismIndex2nComplex(1, 4096);
-            std::vector<usint> map(4096 / 2);
+            uint32_t autoIndex = FindAutomorphismIndex2nComplex(1, 4096);
+            std::vector<uint32_t> map(4096 / 2);
             PrecomputeAutoMap(4096 / 2, autoIndex, &map);
             firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
             digits       = cc->EvalFastRotationPrecompute(ciphertext);
