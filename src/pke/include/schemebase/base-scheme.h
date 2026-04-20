@@ -1147,6 +1147,11 @@ public:
         m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
     }
 
+    void ClearBootstrapPrecom() {
+        if (m_FHE)
+            m_FHE->ClearBootstrapPrecom();
+    }
+
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
                                                                               uint32_t slots) {
         VerifyFHEEnabled(__func__);

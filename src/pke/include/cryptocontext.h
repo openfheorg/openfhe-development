@@ -621,6 +621,19 @@ public:
     static void ClearStaticMapsAndVectors();
 
     /**
+    * @brief Release the scheme-level bootstrap precomputations held by this
+    * CryptoContext (e.g. FHECKKSRNS::m_bootPrecomMap). Lets callers free
+    * this memory without destroying the context itself, since the
+    * existing ClearEval*Keys / ReleaseAllContexts APIs leave scheme-level
+    * caches alive while any user reference keeps the context alive
+    * (issue #533). No-op for schemes without bootstrap caches.
+    */
+    void ClearBootstrapPrecom() {
+        if (m_scheme)
+            m_scheme->ClearBootstrapPrecom();
+    }
+
+    /**
     * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
     *
     * @param ser stream to serialize to

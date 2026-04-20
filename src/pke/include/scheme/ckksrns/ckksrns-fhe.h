@@ -139,6 +139,10 @@ private:
 public:
     virtual ~FHECKKSRNS() = default;
 
+    void ClearBootstrapPrecom() override {
+        m_bootPrecomMap.clear();
+    }
+
     //------------------------------------------------------------------------------
     // Bootstrap Wrapper
     //------------------------------------------------------------------------------
