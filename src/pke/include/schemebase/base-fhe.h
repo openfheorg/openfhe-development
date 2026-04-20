@@ -68,6 +68,15 @@ public:
     virtual ~FHEBase() = default;
 
     /**
+   * Release any scheme-level cached data produced by EvalBootstrapSetup /
+   * EvalBootstrapPrecompute (e.g. the FHECKKSRNS m_bootPrecomMap). The
+   * default is a no-op for schemes that do not cache bootstrap
+   * precomputations. Exposed so callers can free the memory held by a
+   * CryptoContext without destroying the context itself (issue #533).
+   */
+    virtual void ClearBootstrapPrecom() {}
+
+    /**
    * Bootstrap functionality:
    * There are three methods that have to be called in this specific order:
    * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
