@@ -63,6 +63,27 @@ void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
  */
 void secure_memset(volatile void* mem, uint8_t c, size_t len);
 
+/**
+ * @brief Ask the C allocator to return as many free pages to the OS as it can.
+ *
+ * Calling the cache-clear APIs (ClearBootstrapPrecom, ClearSchemeSwitchPrecom,
+ * ClearAllCKKSCaches, ReleaseAllContexts) frees memory back to the allocator,
+ * but whether that translates into RSS shrinking is allocator-dependent:
+ * glibc malloc keeps freed pages in its arena, mimalloc and jemalloc have
+ * their own purge policies. This helper calls the allocator's trim/purge
+ * primitive where available so the drop is visible at the OS level.
+ *
+ * Implementations:
+ *   - glibc:    malloc_trim(0)
+ *   - Apple:    malloc_zone_pressure_relief on every default zone
+ *   - MSVC:     _heapmin()
+ *   - others:   no-op
+ *
+ * Safe to call at any time. Returns true if the platform has a trim primitive,
+ * false if the call was a no-op on this build (issue #533).
+ */
+bool TrimAllocator();
+
 }  // namespace lbcrypto
 
 #endif  // LBCRYPTO_UTILS_MEMORY_H

@@ -35,6 +35,7 @@
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 #include "scheme/scheme-id.h"
+#include "utils/memory.h"
 
 #include <memory>
 #include <string>
@@ -55,6 +56,12 @@ class CryptoParametersBase;
 template <typename Element>
 class CryptoContextFactory {
     static std::vector<CryptoContext<Element>> AllContexts;
+    // When AutoReleaseMode is true, newly built contexts are NOT tracked in
+    // AllContexts. Dropping the caller's last handle then runs the context
+    // destructor immediately, which releases every scheme-level cache and
+    // static eval-key ref without needing a manual ReleaseAllContexts call
+    // (issue #533). Default is false to preserve pre-fix semantics.
+    static bool s_autoReleaseMode;
 
 protected:
     static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
@@ -62,10 +69,60 @@ protected:
     static void AddContext(CryptoContext<Element>);
 
 public:
+    /**
+     * Enable or disable AutoRelease mode. When enabled, the factory no longer
+     * holds a strong reference to newly created contexts; the caller becomes
+     * the sole owner and cache memory is reclaimed automatically when they
+     * drop the last reference. Existing tracked contexts are released when
+     * the switch is flipped so the behavior is consistent (issue #533).
+     *
+     * Trade-off: FindContext / GetContext deduplication only inspects the
+     * tracked list, so two identical parameter sets created in AutoRelease
+     * mode will produce two distinct contexts instead of aliasing. Enable
+     * this only if you don't rely on factory-level deduplication.
+     */
+    static void SetAutoReleaseMode(bool enabled) {
+        if (enabled && !AllContexts.empty()) {
+            // Flush tracked contexts so the semantics are consistent: from
+            // now on, no context is tracked by the factory.
+            ReleaseAllContexts();
+        }
+        s_autoReleaseMode = enabled;
+    }
+
+    static bool IsAutoReleaseMode() noexcept {
+        return s_autoReleaseMode;
+    }
+
+
     static void ReleaseAllContexts() {
+        // Drop scheme-level caches (bootstrap + scheme-switch) on every live
+        // context before clearing the static maps. This ensures memory held
+        // by FHECKKSRNS::m_bootPrecomMap and SWITCHCKKSRNS state is freed
+        // even when users still hold CryptoContext shared pointers after
+        // this call returns (issue #533).
+        for (auto& cc : AllContexts) {
+            if (cc)
+                cc->ClearAllCKKSCaches();
+        }
         if (AllContexts.size() > 0)
             AllContexts[0]->ClearStaticMapsAndVectors();
         AllContexts.clear();
+    }
+
+    /**
+     * Release every live context's scheme-level caches, clear the static key
+     * maps, and ask the C allocator to return freed pages to the OS. Behaves
+     * like ReleaseAllContexts() followed by TrimAllocator() (issue #533).
+     *
+     * Use this when heap usage drops after clearing but RSS doesn't — the C
+     * allocator is holding freed pages in its arena. On platforms without a
+     * trim primitive (non-glibc Linux, FreeBSD, WASM), this degrades into the
+     * plain ReleaseAllContexts() path.
+     */
+    static void ReleaseAllContextsAndTrim() {
+        ReleaseAllContexts();
+        TrimAllocator();
     }
 
     static int GetContextCount() {
@@ -88,6 +145,9 @@ public:
 
 template <>
 std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts;
+
+template <>
+bool CryptoContextFactory<DCRTPoly>::s_autoReleaseMode;
 
 }  // namespace lbcrypto
 
