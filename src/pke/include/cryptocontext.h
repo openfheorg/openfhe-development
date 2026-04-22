@@ -628,9 +628,72 @@ public:
     * caches alive while any user reference keeps the context alive
     * (issue #533). No-op for schemes without bootstrap caches.
     */
-    void ClearBootstrapPrecom() {
+    void ClearBootstrapPrecom() noexcept {
         if (m_scheme)
             m_scheme->ClearBootstrapPrecom();
+    }
+
+    /**
+    * @brief Release the bootstrap precomputation entry associated with a
+    * specific number of slots. Useful for callers who re-use a CryptoContext
+    * with multiple slot counts and want to free only the stale ones
+    * (issue #533). No-op if no entry exists for the given slot count or the
+    * scheme does not cache per-slot bootstrap data.
+    */
+    void ClearBootstrapPrecom(uint32_t slots) noexcept {
+        if (m_scheme)
+            m_scheme->ClearBootstrapPrecom(slots);
+    }
+
+    /**
+    * @brief Release every bootstrap precomputation entry except the one keyed
+    * by @p keepSlots. Handy for workloads that repeatedly bootstrap a fixed
+    * slot count but occasionally bootstrap transient slot counts — reclaims
+    * the transient caches without invalidating the hot path (issue #533).
+    */
+    void ClearBootstrapPrecomExcept(uint32_t keepSlots) noexcept {
+        if (m_scheme)
+            m_scheme->ClearBootstrapPrecomExcept(keepSlots);
+    }
+
+    /**
+    * @brief Release scheme-switch precomputations (intermediate CKKS/FHEW
+    * contexts, switching keys, and linear-transform plaintexts) held by this
+    * CryptoContext (issue #533). No-op for schemes that do not support
+    * CKKS<->FHEW switching.
+    */
+    void ClearSchemeSwitchPrecom() noexcept {
+        if (m_scheme)
+            m_scheme->ClearSchemeSwitchPrecom();
+    }
+
+    /**
+    * @brief Convenience: release all scheme-level caches held by this
+    * CryptoContext (bootstrap + scheme-switch). This does NOT touch the
+    * static eval-key maps — call ClearEvalMultKeys / ClearEvalAutomorphismKeys
+    * for those (issue #533).
+    */
+    void ClearAllCKKSCaches() noexcept {
+        ClearBootstrapPrecom();
+        ClearSchemeSwitchPrecom();
+    }
+
+    /**
+    * @brief Inspectors for scheme-level caches. Return false for schemes that
+    * do not maintain the corresponding cache, and whenever the cache is empty
+    * (issue #533). Intended for callers that need to reason about memory
+    * without reaching into internal types.
+    */
+    bool HasBootstrapPrecom() const noexcept {
+        return m_scheme && m_scheme->HasBootstrapPrecom();
+    }
+
+    bool HasBootstrapPrecom(uint32_t slots) const noexcept {
+        return m_scheme && m_scheme->HasBootstrapPrecom(slots);
+    }
+
+    bool HasSchemeSwitchPrecom() const noexcept {
+        return m_scheme && m_scheme->HasSchemeSwitchPrecom();
     }
 
     /**

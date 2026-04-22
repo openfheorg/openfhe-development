@@ -139,8 +139,29 @@ private:
 public:
     virtual ~FHECKKSRNS() = default;
 
-    void ClearBootstrapPrecom() override {
+    void ClearBootstrapPrecom() noexcept override {
         m_bootPrecomMap.clear();
+    }
+
+    void ClearBootstrapPrecom(uint32_t slots) noexcept override {
+        m_bootPrecomMap.erase(slots);
+    }
+
+    void ClearBootstrapPrecomExcept(uint32_t keepSlots) noexcept override {
+        for (auto it = m_bootPrecomMap.begin(); it != m_bootPrecomMap.end();) {
+            if (it->first != keepSlots)
+                it = m_bootPrecomMap.erase(it);
+            else
+                ++it;
+        }
+    }
+
+    bool HasBootstrapPrecom() const noexcept override {
+        return !m_bootPrecomMap.empty();
+    }
+
+    bool HasBootstrapPrecom(uint32_t slots) const noexcept override {
+        return m_bootPrecomMap.find(slots) != m_bootPrecomMap.end();
     }
 
     //------------------------------------------------------------------------------
