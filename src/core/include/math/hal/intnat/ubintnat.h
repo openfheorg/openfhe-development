@@ -41,6 +41,7 @@
 #include "math/hal/integer.h"
 #include "math/nbtheory.h"
 
+#include "utils/constanttime.h"
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
@@ -735,11 +736,7 @@ public:
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT ModAddFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
-        auto r{m_value + b.m_value};
-        auto& mv{modulus.m_value};
-        if (r >= mv)
-            r -= mv;
-        return {r};
+        return {lbcrypto::ct::SubIfGE(static_cast<NativeInt>(m_value + b.m_value), modulus.m_value)};
     }
     /**
    * Modulus addition where operands are < modulus. In-place variant.
@@ -749,10 +746,7 @@ public:
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT& ModAddFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
-        auto& mv{modulus.m_value};
-        m_value += b.m_value;
-        if (m_value >= mv)
-            m_value -= mv;
+        m_value = lbcrypto::ct::SubIfGE(static_cast<NativeInt>(m_value + b.m_value), modulus.m_value);
         return *this;
     }
 
@@ -909,9 +903,7 @@ public:
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT ModSubFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
-        if (m_value < b.m_value)
-            return {m_value + modulus.m_value - b.m_value};
-        return {m_value - b.m_value};
+        return {lbcrypto::ct::ModSubFast(m_value, b.m_value, modulus.m_value)};
     }
 
     /**
@@ -922,9 +914,8 @@ public:
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT& ModSubFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
-        if (m_value < b.m_value)
-            return *this = m_value + modulus.m_value - b.m_value;
-        return *this = m_value - b.m_value;
+        m_value = lbcrypto::ct::ModSubFast(m_value, b.m_value, modulus.m_value);
+        return *this;
     }
 
     /**
@@ -1463,9 +1454,9 @@ public:
    */
     NativeIntegerT ModMulFastConst(const NativeIntegerT& b, const NativeIntegerT& modulus,
                                    const NativeIntegerT& bInv) const {
-        NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
-        auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
-        return {yprime >= 0 ? yprime : yprime + modulus.m_value};
+        NativeInt q       = MultDHi(m_value, bInv.m_value) + 1;
+        SignedNativeInt y = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
+        return {static_cast<NativeInt>(lbcrypto::ct::AddIfNeg(y, static_cast<SignedNativeInt>(modulus.m_value)))};
     }
 
     /**
@@ -1479,25 +1470,9 @@ public:
    */
     NativeIntegerT& ModMulFastConstEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
                                       const NativeIntegerT& bInv) {
-        NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
-        auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
-        // Branch-free sign correction: arithmetic right shift replicates the
-        // sign bit across the word, yielding an all-ones mask when yprime < 0
-        // and all-zeros otherwise. Equivalent to the prior ternary but avoids
-        // a data-dependent branch on the secret-key-derived value of yprime,
-        // which could otherwise leak timing information on decrypt paths where
-        // this primitive is called via ScaleAndRound.
-        constexpr int kSignShift           = sizeof(SignedNativeInt) * 8 - 1;
-        const SignedNativeInt signmask     = yprime >> kSignShift;
-        const SignedNativeInt modSigned    = static_cast<SignedNativeInt>(modulus.m_value);
-        SignedNativeInt corrected          = yprime + (signmask & modSigned);
-#if defined(__GNUC__) || defined(__clang__)
-        // Opaque the corrected value to the optimizer so that aggressive
-        // passes (notably -Ofast) cannot reconstruct the original branch via
-        // value-range folding.
-        __asm__ volatile("" : "+r"(corrected));
-#endif
-        m_value = static_cast<NativeInt>(corrected);
+        NativeInt q       = MultDHi(m_value, bInv.m_value) + 1;
+        SignedNativeInt y = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
+        m_value = static_cast<NativeInt>(lbcrypto::ct::AddIfNeg(y, static_cast<SignedNativeInt>(modulus.m_value)));
         return *this;
     }
 

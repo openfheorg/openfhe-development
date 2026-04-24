@@ -160,16 +160,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(const VecTy
 
                 omegaFactor = omega.ModMul(oddVal, modulus, mu);
                 evenVal     = (*result)[indexEven];
-                oddVal      = evenVal;
-                oddVal += omegaFactor;
-                if (oddVal >= modulus) {
-                    oddVal -= modulus;
-                }
-
-                if (evenVal < omegaFactor) {
-                    evenVal += modulus;
-                }
-                evenVal -= omegaFactor;
+                oddVal      = evenVal.ModAddFast(omegaFactor, modulus);
+                evenVal     = evenVal.ModSubFast(omegaFactor, modulus);
 
                 (*result)[indexEven] = oddVal;
                 (*result)[indexOdd]  = evenVal;
@@ -220,15 +212,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                 omegaFactor = (*element)[indexHi];
                 omegaFactor.ModMulFastEq(omega, modulus, mu);
 
-                hiVal = loVal + omegaFactor;
-                if (hiVal >= modulus) {
-                    hiVal -= modulus;
-                }
-
-                if (loVal < omegaFactor) {
-                    loVal += modulus;
-                }
-                loVal -= omegaFactor;
+                hiVal = loVal.ModAddFast(omegaFactor, modulus);
+                loVal = loVal.ModSubFast(omegaFactor, modulus);
 
                 (*element)[indexLo] = hiVal;
                 (*element)[indexHi] = loVal;
@@ -254,7 +239,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const Ve
     result->SetModulus(modulus);
 
     uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    IntType omega, omegaFactor, loVal, hiVal;
 
     for (i = 0; i < n; ++i) {
         (*result)[i] = element[i];
@@ -272,25 +257,12 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const Ve
                 indexHi     = indexLo + t;
                 loVal       = (*result)[indexLo];
                 omegaFactor = (*result)[indexHi];
-                if (omegaFactor != zero) {
-                    omegaFactor.ModMulFastEq(omega, modulus, mu);
-
-                    hiVal = loVal + omegaFactor;
-                    if (hiVal >= modulus) {
-                        hiVal -= modulus;
-                    }
-
-                    if (loVal < omegaFactor) {
-                        loVal += modulus;
-                    }
-                    loVal -= omegaFactor;
-
-                    (*result)[indexLo] = hiVal;
-                    (*result)[indexHi] = loVal;
-                }
-                else {
-                    (*result)[indexHi] = loVal;
-                }
+                // Unconditional compute avoids the data-dependent `!= zero` skip.
+                omegaFactor.ModMulFastEq(omega, modulus, mu);
+                hiVal              = loVal.ModAddFast(omegaFactor, modulus);
+                loVal              = loVal.ModSubFast(omegaFactor, modulus);
+                (*result)[indexLo] = hiVal;
+                (*result)[indexHi] = loVal;
             }
         }
         t >>= 1;
@@ -329,22 +301,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                 auto omegaFactor{(*element)[j1 + t]};
                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
                 auto loVal{(*element)[j1 + 0]};
-#if defined(__GNUC__) && !defined(__clang__)
-                auto hiVal{loVal + omegaFactor};
-                if (hiVal >= modulus)
-                    hiVal -= modulus;
-                if (loVal < omegaFactor)
-                    loVal += modulus;
-                loVal -= omegaFactor;
-                (*element)[j1 + 0] = hiVal;
-                (*element)[j1 + t] = loVal;
-#else
-                // fixes Clang slowdown issue, but requires lowVal be less than modulus
-                (*element)[j1 + 0] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
-                if (omegaFactor > loVal)
-                    loVal += modulus;
-                (*element)[j1 + t] = loVal - omegaFactor;
-#endif
+                (*element)[j1 + 0] = loVal.ModAddFast(omegaFactor, modulus);
+                (*element)[j1 + t] = loVal.ModSubFast(omegaFactor, modulus);
             }
         }
     }
@@ -355,21 +313,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         auto preconOmega{preconRootOfUnityTable[(i >> 1) + n]};
         omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
         auto loVal{(*element)[i + 0]};
-#if defined(__GNUC__) && !defined(__clang__)
-        auto hiVal{loVal + omegaFactor};
-        if (hiVal >= modulus)
-            hiVal -= modulus;
-        if (loVal < omegaFactor)
-            loVal += modulus;
-        loVal -= omegaFactor;
-        (*element)[i + 0] = hiVal;
-        (*element)[i + 1] = loVal;
-#else
-        (*element)[i + 0] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
-        if (omegaFactor > loVal)
-            loVal += modulus;
-        (*element)[i + 1] = loVal - omegaFactor;
-#endif
+        (*element)[i + 0] = loVal.ModAddFast(omegaFactor, modulus);
+        (*element)[i + 1] = loVal.ModSubFast(omegaFactor, modulus);
     }
 }
 
@@ -394,7 +339,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const Ve
 
     uint32_t indexOmega, indexHi;
     NativeInteger preconOmega;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    IntType omega, omegaFactor, loVal, hiVal;
 
     uint32_t t     = (n >> 1);
     uint32_t logt1 = GetMSB(t);
@@ -410,25 +355,11 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const Ve
                 indexHi     = indexLo + t;
                 loVal       = (*result)[indexLo];
                 omegaFactor = (*result)[indexHi];
-                if (omegaFactor != zero) {
-                    omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-
-                    hiVal = loVal + omegaFactor;
-                    if (hiVal >= modulus) {
-                        hiVal -= modulus;
-                    }
-
-                    if (loVal < omegaFactor) {
-                        loVal += modulus;
-                    }
-                    loVal -= omegaFactor;
-
-                    (*result)[indexLo] = hiVal;
-                    (*result)[indexHi] = loVal;
-                }
-                else {
-                    (*result)[indexHi] = loVal;
-                }
+                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
+                hiVal              = loVal.ModAddFast(omegaFactor, modulus);
+                loVal              = loVal.ModSubFast(omegaFactor, modulus);
+                (*result)[indexLo] = hiVal;
+                (*result)[indexHi] = loVal;
             }
         }
     }
@@ -461,17 +392,8 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
                 hiVal = (*element)[indexHi];
                 loVal = (*element)[indexLo];
 
-                omegaFactor = loVal;
-                if (omegaFactor < hiVal) {
-                    omegaFactor += modulus;
-                }
-
-                omegaFactor -= hiVal;
-
-                loVal += hiVal;
-                if (loVal >= modulus) {
-                    loVal -= modulus;
-                }
+                omegaFactor = loVal.ModSubFast(hiVal, modulus);
+                loVal       = loVal.ModAddFast(hiVal, modulus);
 
                 omegaFactor.ModMulFastEq(omega, modulus, mu);
 
@@ -545,24 +467,11 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             auto preconOmega{preconRootOfUnityInverseTable[(i + n) >> 1]};
             auto loVal{(*element)[i + 0]};
             auto hiVal{(*element)[i + 1]};
-#if defined(__GNUC__) && !defined(__clang__)
-            auto omegaFactor{loVal};
-            if (omegaFactor < hiVal)
-                omegaFactor += modulus;
-            omegaFactor -= hiVal;
-            loVal += hiVal;
-            if (loVal >= modulus)
-                loVal -= modulus;
+            auto omegaFactor{loVal.ModSubFast(hiVal, modulus)};
+            loVal = loVal.ModAddFast(hiVal, modulus);
             omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
             (*element)[i + 0] = loVal;
             (*element)[i + 1] = omegaFactor;
-#else
-            auto omegaFactor{loVal + (hiVal > loVal ? modulus : 0) - hiVal};
-            loVal += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-            (*element)[i + 0] = loVal;
-            omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-            (*element)[i + 1] = omegaFactor;
-#endif
         }
     }
     // inner stages
@@ -573,23 +482,11 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             for (uint32_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
                 auto loVal{(*element)[j1 + 0]};
                 auto hiVal{(*element)[j1 + t]};
-#if defined(__GNUC__) && !defined(__clang__)
-                auto omegaFactor{loVal};
-                if (omegaFactor < hiVal)
-                    omegaFactor += modulus;
-                omegaFactor -= hiVal;
-                loVal += hiVal;
-                if (loVal >= modulus)
-                    loVal -= modulus;
+                auto omegaFactor{loVal.ModSubFast(hiVal, modulus)};
+                loVal = loVal.ModAddFast(hiVal, modulus);
                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
                 (*element)[j1 + 0] = loVal;
                 (*element)[j1 + t] = omegaFactor;
-#else
-                (*element)[j1 + 0] += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-                auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
-                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-                (*element)[j1 + t] = omegaFactor;
-#endif
             }
         }
     }
@@ -601,23 +498,11 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     for (uint32_t j1{0}; j1 < j2; ++j1) {
         auto loVal{(*element)[j1]};
         auto hiVal{(*element)[j1 + j2]};
-#if defined(__GNUC__) && !defined(__clang__)
-        auto omegaFactor{loVal};
-        if (omegaFactor < hiVal)
-            omegaFactor += modulus;
-        omegaFactor -= hiVal;
-        loVal += hiVal;
-        if (loVal >= modulus)
-            loVal -= modulus;
+        auto omegaFactor{loVal.ModSubFast(hiVal, modulus)};
+        loVal = loVal.ModAddFast(hiVal, modulus);
         omegaFactor.ModMulFastConstEq(omega1Inv, modulus, preconOmega1Inv);
         (*element)[j1 + 0]  = loVal;
         (*element)[j1 + j2] = omegaFactor;
-#else
-        (*element)[j1] += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-        auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
-        omegaFactor.ModMulFastConstEq(omega1Inv, modulus, preconOmega1Inv);
-        (*element)[j1 + j2] = omegaFactor;
-#endif
     }
     // perform remaining n/2 scalar multiplies by (n inverse)
     for (uint32_t i = 0; i < j2; ++i)
