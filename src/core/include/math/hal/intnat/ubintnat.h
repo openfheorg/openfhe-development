@@ -1481,7 +1481,23 @@ public:
                                       const NativeIntegerT& bInv) {
         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
-        m_value     = static_cast<NativeInt>(yprime >= 0 ? yprime : yprime + modulus.m_value);
+        // Branch-free sign correction: arithmetic right shift replicates the
+        // sign bit across the word, yielding an all-ones mask when yprime < 0
+        // and all-zeros otherwise. Equivalent to the prior ternary but avoids
+        // a data-dependent branch on the secret-key-derived value of yprime,
+        // which could otherwise leak timing information on decrypt paths where
+        // this primitive is called via ScaleAndRound.
+        constexpr int kSignShift           = sizeof(SignedNativeInt) * 8 - 1;
+        const SignedNativeInt signmask     = yprime >> kSignShift;
+        const SignedNativeInt modSigned    = static_cast<SignedNativeInt>(modulus.m_value);
+        SignedNativeInt corrected          = yprime + (signmask & modSigned);
+#if defined(__GNUC__) || defined(__clang__)
+        // Opaque the corrected value to the optimizer so that aggressive
+        // passes (notably -Ofast) cannot reconstruct the original branch via
+        // value-range folding.
+        __asm__ volatile("" : "+r"(corrected));
+#endif
+        m_value = static_cast<NativeInt>(corrected);
         return *this;
     }
 
