@@ -132,7 +132,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Print parameters passed to .github/actions
       run: |
@@ -162,7 +162,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -186,7 +186,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -210,7 +210,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -234,7 +234,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -258,7 +258,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -282,7 +282,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -306,7 +306,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -330,7 +330,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
@@ -354,7 +354,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ${{ github.job }}
       uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
