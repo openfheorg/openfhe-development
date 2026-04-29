@@ -7,7 +7,7 @@ on:
 
 jobs:
   call_with_gcc:
-    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@1165-migrate-to-nodejs-24-actions-ci
     with:
       runner: ${{ vars.RUNNER }}
       compiler: "GCC-11"
@@ -32,7 +32,7 @@ jobs:
 
   call_with_clang:
     needs: call_with_gcc
-    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@1165-migrate-to-nodejs-24-actions-ci
     with:
       runner: ${{ vars.RUNNER }}
       compiler: "CLANG-14"
