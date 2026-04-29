@@ -1,7 +1,7 @@
 .. code-block:: py
 
    # Tell Sphinx to use both the `breathe` and `exhale` extensions
-   
+
    extensions = [
        'sphinx.ext.autodoc',
        "sphinx.ext.autosectionlabel",
@@ -15,14 +15,14 @@
        'exhale',
        'sphinxcontrib.mermaid'
    ]
-   
+
    # Setup the `breathe` extension
    breathe_projects = { "OpenFHE": "./doxyoutput/xml" }
    breathe_default_project = "OpenFHE"
-   
+
    # Setup the `exhale` extension
    import textwrap
-   
+
    __exhale_base = "../src"
    __exhale_path = {
        # Binfhe
@@ -37,12 +37,12 @@
        f"{__exhale_base}/pke/include",
        f"{__exhale_base}/pke/lib",
    }
-   
+
    container = "INPUT = "
    for path in __exhale_path:
        container += f"{path} "
-   
-   
+
+
    def specificationsForKind(kind):
        '''
        For a given input ``kind``, return the list of reStructuredText specifications
@@ -62,7 +62,7 @@
        # An empty list signals to Exhale to use the defaults
        else:
            return []
-   
+
    exhale_args = {
        ############################################################################
        # These arguments are required.                                            #
@@ -84,13 +84,21 @@
            # not for yours.
            PREDEFINED += NAMESPACE_BEGIN(arbitrary)="namespace arbitrary {"
            PREDEFINED += NAMESPACE_END(arbitrary)="}"
+           PREDEFINED += WITH_NTL
+           EXTRACT_ANON_NSPACES = NO
+           HIDE_UNDOC_NAMESPACES = YES
            EXCLUDE_PATTERNS += *.md
-           
-           WARN_IF_UNDOCUMENTED = NO,
-           WARNINGS" = NO,
-           WARN_IF_DOC_ERROR: NO,
-           WARN_IF_INCOMPLETE_DOC: NO,
-           WARN_NO_PARAMDOC: NO
+           EXCLUDE_SYMBOLS += @*
+           EXCLUDE_SYMBOLS += *::@*
+           EXCLUDE_SYMBOLS += std
+           EXCLUDE_SYMBOLS += std::*
+           # WITH_NTL keeps OpenFHE's NTL namespace extensions visible to Doxygen.
+
+           WARN_IF_UNDOCUMENTED = NO
+           WARNINGS = NO
+           WARN_IF_DOC_ERROR = NO
+           WARN_IF_INCOMPLETE_DOC = NO
+           WARN_NO_PARAMDOC = NO
        '''),
        ############################################################################
        # HTML Theme specific configurations.                                      #
@@ -104,12 +112,12 @@
        ############################################################################
        "afterTitleDescription": textwrap.dedent(u'''
            Welcome to the user-facing documentation for OpenFHE.
-   
+
            .. tip::
-   
-               OpenFHE is a large library so we recommend using the sidebar to navigate around across the 
-               ``namespaces``, ``classes``, ``structs``, ``enums``, ``functions``, ``variables``, ``defines`` and the ``typedefs``. 
-               
+
+               OpenFHE is a large library so we recommend using the sidebar to navigate around across the
+               ``namespaces``, ``classes``, ``structs``, ``enums``, ``functions``, ``variables``, ``defines`` and the ``typedefs``.
+
                We also recommend using the search functionality
        '''),
        "fullApiSubSectionTitle": "OpenFHE Documentation",
@@ -125,10 +133,9 @@
        # useful to see ;)
        "verboseBuild": False
    }
-   
+
    # Tell sphinx what the primary language being documented is.
    primary_domain = 'cpp'
-   
+
    # Tell sphinx what the pygments highlight language should be.
    highlight_language = 'cpp'
-
