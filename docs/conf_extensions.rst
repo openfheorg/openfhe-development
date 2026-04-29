@@ -86,10 +86,15 @@
            PREDEFINED += NAMESPACE_END(arbitrary)="}"
            PREDEFINED += WITH_NTL
            EXTRACT_ANON_NSPACES = NO
-           HIDE_UNDOC_NAMESPACES = YES
+           EXTRACT_LOCAL_CLASSES = NO
+           EXTRACT_LOCAL_METHODS = NO
            EXCLUDE_PATTERNS += *.md
            EXCLUDE_SYMBOLS += @*
            EXCLUDE_SYMBOLS += *::@*
+           EXCLUDE_SYMBOLS += *@*
+           EXCLUDE_SYMBOLS += *::*@*
+           EXCLUDE_SYMBOLS += lbcrypto::@*
+           EXCLUDE_SYMBOLS += lbcrypto::*@*
            EXCLUDE_SYMBOLS += std
            EXCLUDE_SYMBOLS += std::*
            # WITH_NTL keeps OpenFHE's NTL namespace extensions visible to Doxygen.

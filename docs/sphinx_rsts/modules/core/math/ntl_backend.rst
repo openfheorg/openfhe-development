@@ -14,11 +14,8 @@ Namespace
 ---------
 
 .. doxygennamespace:: NTL
-   :members:
-   :protected-members:
-   :undoc-members:
 
-Integer And Vector Types
+Integer and Vector Types
 ------------------------
 
 .. doxygenclass:: NTL::myZZ
