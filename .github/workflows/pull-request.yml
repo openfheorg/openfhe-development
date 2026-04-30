@@ -8,7 +8,7 @@ on:
 
 jobs:
   call:
-    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@1165-migrate-to-nodejs-24-actions-ci
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
     with:
       runner: ${{ vars.RUNNER }}
       compiler: "GCC-14"
