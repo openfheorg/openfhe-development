@@ -311,25 +311,24 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::PowersOfBase(uint32_t 
 }
 
 template <typename VecType>
-DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::AutomorphismTransform(uint32_t i) const {
-    DCRTPolyImpl<VecType> result;
-    result.m_params = m_params;
-    result.m_format = m_format;
-    result.m_vectors.reserve(m_vectors.size());
-    for (const auto& v : m_vectors)
-        result.m_vectors.emplace_back(v.AutomorphismTransform(i));
-    return result;
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::AutomorphismTransform(uint32_t idx) const {
+    DCRTPolyImpl<VecType> tmp(m_params, m_format);
+    uint32_t size(m_vectors.size());
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+    for (uint32_t i = 0; i < size; ++i)
+        tmp.m_vectors[i] = m_vectors[i].AutomorphismTransform(idx);
+    return tmp;
 }
 
 template <typename VecType>
-DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const {
-    DCRTPolyImpl<VecType> result;
-    result.m_params = m_params;
-    result.m_format = m_format;
-    result.m_vectors.reserve(m_vectors.size());
-    for (const auto& v : m_vectors)
-        result.m_vectors.emplace_back(v.AutomorphismTransform(i, vec));
-    return result;
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::AutomorphismTransform(uint32_t idx,
+                                                                   const std::vector<uint32_t>& vec) const {
+    DCRTPolyImpl<VecType> tmp(m_params, m_format);
+    uint32_t size(m_vectors.size());
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+    for (uint32_t i = 0; i < size; ++i)
+        tmp.m_vectors[i] = m_vectors[i].AutomorphismTransform(idx, vec);
+    return tmp;
 }
 
 template <typename VecType>
@@ -970,7 +969,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
     const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
     const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const {
-    DCRTPolyImpl<VecType> partP(paramsP, m_format, true);
+    DCRTPolyImpl<VecType> partP(paramsP, m_format);
     uint32_t sizeP = paramsP->GetParams().size();
     uint32_t sizeQ = m_vectors.size() - sizeP;
 
@@ -983,23 +982,19 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
             partP.m_vectors[j] *= tInvModp[j];
     }
     partP.OverrideFormat(Format::COEFFICIENT);
+    partP = partP.ApproxSwitchCRTBasis(paramsP, paramsQ, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
 
-    auto partPSwitchedToQ =
-        partP.ApproxSwitchCRTBasis(paramsP, paramsQ, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
-
-    // Combine the switched DCRTPoly with the Q part of this to get the result
-    DCRTPolyImpl<VecType> ans(paramsQ, Format::EVALUATION, true);
-    uint32_t diffQ = paramsQ->GetParams().size() - sizeQ;
-    if (diffQ > 0)
+    DCRTPolyImpl<VecType> ans(paramsQ, Format::EVALUATION);
+    if (uint32_t diffQ = paramsQ->GetParams().size() - sizeQ; diffQ != 0)
         ans.DropLastElements(diffQ);
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQ))
     for (uint32_t i = 0; i < sizeQ; ++i) {
         // Multiply everything by t mod Q (BGVrns only)
         if (t > 0)
-            partPSwitchedToQ.m_vectors[i] *= t;
-        partPSwitchedToQ.m_vectors[i].SetFormat(Format::EVALUATION);
-        ans.m_vectors[i] = (m_vectors[i] - partPSwitchedToQ.m_vectors[i]) * PInvModq[i];
+            partP.m_vectors[i] *= t;
+        partP.m_vectors[i].SetFormat(Format::EVALUATION);
+        ans.m_vectors[i] = (m_vectors[i] - partP.m_vectors[i]) * PInvModq[i];
     }
     return ans;
 }

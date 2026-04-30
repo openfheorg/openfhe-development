@@ -216,7 +216,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::
         OPENFHE_THROW("Matrix summation of column-vectors is only supported for CKKSPackedEncoding.");
 
     const auto cryptoParams = privateKey->GetCryptoParameters();
-    uint32_t M                 = cryptoParams->GetElementParams()->GetCyclotomicOrder();
+    uint32_t M              = cryptoParams->GetElementParams()->GetCyclotomicOrder();
     if (!IsPowerOfTwo(M))
         OPENFHE_THROW("Matrix summation of column-vectors is not supported for arbitrary cyclotomics.");
 
@@ -266,8 +266,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
 
             uint32_t g = encodingParams->GetPlaintextGenerator();
             for (int i = 0; i < std::floor(std::log2(batchSize)); i++) {
-                auto ea       = algo->EvalAutomorphism(newCiphertext, g, evalKeyMap);
-                newCiphertext = algo->EvalAdd(newCiphertext, ea);
+                newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, g, evalKeyMap));
                 g             = (g * g) % m;
             }
         }
@@ -340,10 +339,9 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
 }
 
 template <class Element>
-Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(ConstCiphertext<Element> ciphertext1,
-                                                               ConstCiphertext<Element> ciphertext2, uint32_t batchSize,
-                                                               const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
-                                                               const EvalKey<Element> evalMultKey) const {
+Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(
+    ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2, uint32_t batchSize,
+    const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap, const EvalKey<Element> evalMultKey) const {
     auto algo = ciphertext1->GetCryptoContext()->GetScheme();
 
     Ciphertext<Element> result = algo->EvalMult(ciphertext1, ciphertext2, evalMultKey);
@@ -412,7 +410,7 @@ std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices_2n(uint32_t batchSi
     std::set<uint32_t> indices;
     if (batchSize > 1) {
         auto isize = static_cast<size_t>(std::ceil(std::log2(batchSize)) - 1);
-        uint32_t g    = 5;
+        uint32_t g = 5;
         for (size_t i = 0; i < isize; ++i) {
             indices.insert(g);
             g = (g * g) % m;

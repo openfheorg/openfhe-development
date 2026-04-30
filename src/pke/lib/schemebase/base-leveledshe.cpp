@@ -409,11 +409,11 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
     //    OPENFHE_THROW(
     //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
 
-    auto result = ciphertext->Clone();
-    ciphertext->GetCryptoContext()->GetScheme()->KeySwitchInPlace(result, evalKeyIterator->second);
-
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, i, &vec);
+
+    auto result = ciphertext->Clone();
+    result->GetCryptoContext()->GetScheme()->KeySwitchInPlace(result, evalKeyIterator->second);
 
     auto& rcv = result->GetElements();
     rcv[0]    = rcv[0].AutomorphismTransform(i, vec);
@@ -442,18 +442,15 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
     auto evalKeyIterator = evalKeyMap.find(autoIndex);
     if (evalKeyIterator == evalKeyMap.end())
         OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
-    auto evalKey = evalKeyIterator->second;
 
-    const auto cryptoParams = ciphertext->GetCryptoParameters();
-
-    const uint32_t N = cryptoParams->GetElementParams()->GetRingDimension();
+    const uint32_t N = cc->GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, autoIndex, &vec);
 
-    const auto& cv = ciphertext->GetElements();
+    const auto& cv0 = ciphertext->GetElements()[0];
 
-    auto ba = *cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
-    ba[0] += cv[0];
+    auto ba = *cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKeyIterator->second, cv0.GetParams());
+    ba[0] += cv0;
     ba[0] = ba[0].AutomorphismTransform(autoIndex, vec);
     ba[1] = ba[1].AutomorphismTransform(autoIndex, vec);
 
