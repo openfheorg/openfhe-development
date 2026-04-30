@@ -129,9 +129,17 @@ CryptoContext<DCRTPoly> MakeBGVContext() {
 CryptoContext<DCRTPoly> MakeSchemeSwitchCC() {
     CCParams<CryptoContextCKKSRNS> params;
     params.SetMultiplicativeDepth(3);
+#if NATIVEINT == 128
+    // FLEXIBLE* scaling is unsupported on the 128-bit backend; use the
+    // FIXED* path with the larger moduli that UnitTestSchemeSwitch uses.
+    params.SetFirstModSize(89);
+    params.SetScalingModSize(78);
+    params.SetScalingTechnique(FIXEDAUTO);
+#else
     params.SetFirstModSize(60);
     params.SetScalingModSize(50);
     params.SetScalingTechnique(FLEXIBLEAUTOEXT);
+#endif
     params.SetSecurityLevel(HEStd_NotSet);
     params.SetRingDim(1 << 12);
     params.SetBatchSize(16);
