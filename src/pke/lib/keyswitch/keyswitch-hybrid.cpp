@@ -45,19 +45,18 @@ namespace lbcrypto {
 
 namespace {
 
-// Builds params for the first sizeQl towers of Q from extended params QlP (fallback when cache absent).
-std::shared_ptr<KeySwitchHYBRID::ParmType> MakeParamsQlFromQlP(
-    const std::shared_ptr<KeySwitchHYBRID::ParmType>& paramsQlP, uint32_t sizeQl) {
-    std::vector<NativeInteger> moduliQ(sizeQl);
-    std::vector<NativeInteger> rootsQ(sizeQl);
-    for (uint32_t i = 0; i < sizeQl; ++i) {
-        moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-        rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
+    std::shared_ptr<DCRTPoly::Params> MakeParamsQlFromQlP(
+        const std::shared_ptr<DCRTPoly::Params>& paramsQlP, uint32_t sizeQl) {
+        std::vector<NativeInteger> moduliQ(sizeQl);
+        std::vector<NativeInteger> rootsQ(sizeQl);
+        for (uint32_t i = 0; i < sizeQl; ++i) {
+            moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
+            rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
+        }
+        return std::make_shared<DCRTPoly::Params>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
     }
-    return std::make_shared<KeySwitchHYBRID::ParmType>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
-}
-
-}  // namespace
+    
+    }  // namespace
 
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                         const PrivateKey<DCRTPoly> newKey) const {
