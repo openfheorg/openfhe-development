@@ -66,9 +66,13 @@ struct BinFHEContextParams {
     uint32_t baseKS;
 
     // for Ring GSW + LWE parameters
-    uint32_t gadgetBase;  // gadget base used in the bootstrapping
+    std::vector<uint32_t> gadgetBaseVector; // gadget bases used in the bootstrapping
 
-    uint32_t baseRK;      // base for the refreshing key
+    // base for automorphism
+    uint32_t baseAuto; 
+
+    // base for the refreshing key
+    uint32_t baseRK;
 
     // number of Automorphism keys for LMKCDEY (> 0)
     uint32_t numAutoKeys;

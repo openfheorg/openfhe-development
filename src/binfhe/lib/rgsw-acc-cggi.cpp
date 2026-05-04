@@ -52,8 +52,8 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (uint32_t i = 0; i < n; ++i) {
         auto s  = sv[i].ConvertToInt();
-        ek00[i] = KeyGenCGGI(params, skNTT, s == 1 ? 1 : 0);
-        ek01[i] = KeyGenCGGI(params, skNTT, s == neg ? 1 : 0);
+        ek00[i] = KeyGenCGGI(params, skNTT, s == 1 ? 1 : 0, i);
+        ek01[i] = KeyGenCGGI(params, skNTT, s == neg ? 1 : 0, i);
     }
     return ek;
 }
@@ -65,21 +65,26 @@ void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>&
     auto MbyMod{NativeInteger(2 * params->GetN()) / mod};
     for (uint32_t i = 0; i < n; ++i) {
         // handles -a*E(1) and handles -a*E(-1) = a*E(1)
-        AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc);
+        AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc, i);
     }
 }
 
 // Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/086
 RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                  const NativePoly& skNTT, LWEPlaintext m) const {
-    const auto& Gpow       = params->GetGPower();
+                                                  const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
+    const auto& Gpows      = params->GetGPowers();
     const auto& polyParams = params->GetPolyParams();
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
+    uint32_t digitsG2{(params->GetVectorDigitsG()[index] - 1) << 1};
+    uint32_t BaseG = params->GetVectorBaseG()[index];
+    auto it = Gpows.find(BaseG);
+    if(it == Gpows.end())
+        OPENFHE_THROW("No Gpower found for the given baseG");
+    auto Gpow = it->second;
 
     RingGSWEvalKeyImpl result(digitsG2, 2);
     NativePoly tmp;
@@ -102,16 +107,16 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
 void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                                          ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc) const {
+                                          ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const {
     std::vector<NativePoly> ct(acc->GetElements());
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
+    uint32_t digitsG2{(params->GetVectorDigitsG()[index] - 1) << 1};
     std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
-    SignedDigitDecompose(params, ct, dct);
+    SignedDigitDecompose(params, ct, dct, index);
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
     for (uint32_t i = 0; i < digitsG2; ++i)

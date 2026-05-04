@@ -85,6 +85,8 @@ public:
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
                               std::vector<NativePoly>& output) const;
+    void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
+                              std::vector<NativePoly>& output, uint32_t index) const;
 
     /**
    * The signed digit decomposition which takes a ring element input and outputs a vector of its digits, i.e.,

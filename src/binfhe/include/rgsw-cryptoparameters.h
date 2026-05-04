@@ -94,6 +94,33 @@ public:
         PreCompute(signEval);
     }
 
+    explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, std::vector<uint32_t> vectorBaseG, uint32_t baseR, uint32_t baseAuto,
+                                 BINFHE_METHOD method, double std, SecretKeyDist keyDist = UNIFORM_TERNARY,
+                                 bool signEval = false, uint32_t numAutoKeys = 10)
+        : m_Q(Q),
+          m_q(q),
+          m_N(N),
+          m_vectorBaseG(vectorBaseG),
+          m_baseR(baseR),
+          m_baseAuto(baseAuto),
+          m_polyParams{std::make_shared<ILNativeParams>(2 * N, Q)},
+          m_method(method),
+          m_keyDist(keyDist),
+          m_numAutoKeys(numAutoKeys) {
+        if (!std::all_of(vectorBaseG.begin(), vectorBaseG.end(), [](auto base) { return IsPowerOfTwo(base); }))
+            OPENFHE_THROW("Gadget base should be a power of two.");
+        if ((method == LMKCDEY) && (numAutoKeys == 0))
+            OPENFHE_THROW("numAutoKeys should be greater than 0.");
+        auto logQ{std::log(m_Q.ConvertToDouble())};
+        for (size_t i=0; i<m_vectorBaseG.size(); i++){
+            auto digitsG = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_vectorBaseG[i]))));
+            m_vectorDigitsG.push_back(digitsG);
+        }
+        m_digitsAuto = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_baseAuto))));
+        m_dgg.SetStd(std);
+        PreCompute(signEval);
+    }
+
     /**
    * Performs precomputations based on the supplied parameters
    */
@@ -114,13 +141,24 @@ public:
     uint32_t GetBaseG() const {
         return m_baseG;
     }
+    std::vector<uint32_t> GetVectorBaseG() const {
+        return m_vectorBaseG;
+    }
 
     uint32_t GetDigitsG() const {
         return m_digitsG;
     }
 
+    std::vector<uint32_t> GetVectorDigitsG() const {
+        return m_vectorDigitsG;
+    }
+
     uint32_t GetBaseR() const {
         return m_baseR;
+    }
+
+    uint32_t GetBaseAuto() const {
+        return m_baseAuto;
     }
 
     uint32_t GetNumAutoKeys() const {
@@ -131,12 +169,24 @@ public:
         return m_digitsR;
     }
 
+    uint32_t GetDigitsAuto() const {
+        return m_digitsAuto;
+    }
+
     const std::shared_ptr<ILNativeParams> GetPolyParams() const {
         return m_polyParams;
     }
 
     const std::vector<NativeInteger>& GetGPower() const {
         return m_Gpower;
+    }
+
+    const std::map<uint32_t, std::vector<NativeInteger>>& GetGPowers() const {
+        return m_Gpowers;
+    }
+
+    const std::vector<NativeInteger>& GetAutoPower() const {
+        return m_autoPower;
     }
 
     const std::vector<int32_t>& GetLogGen() const {
@@ -238,20 +288,32 @@ private:
     // ring dimension for RingGSW/RingLWE scheme
     uint32_t m_N;
 
-    // gadget base used in bootstrapping
+    // gadget bases used in bootstrapping
     uint32_t m_baseG;
+    std::vector<uint32_t> m_vectorBaseG;
 
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;
 
-    // number of digits in decomposing integers mod Q
+    // base used for the automorphism key (used only for LMKCDEY bootstrapping)
+    uint32_t m_baseAuto;
+
+    // number of digits in decomposing integers mod Q for given baseG
     uint32_t m_digitsG;
+    std::vector<uint32_t> m_vectorDigitsG;
 
     // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
 
+    // number of digits in decomposing integers mod Q for given baseAuto
+    uint32_t m_digitsAuto;
+
     // A vector of powers of baseG
     std::vector<NativeInteger> m_Gpower;
+    std::map<uint32_t, std::vector<NativeInteger>> m_Gpowers;
+
+    // A vector of powers of baseAuto
+    std::vector<NativeInteger> m_autoPower;
 
     // A vector of log by generator g (=5) (only for LMKCDEY)
     // Not exactly log, but a mapping similar to logarithm for efficiency

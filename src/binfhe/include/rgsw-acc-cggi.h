@@ -78,7 +78,7 @@ private:
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                              LWEPlaintext m) const;
+                              LWEPlaintext m, uint32_t index) const;
 
     /**
    * CGGI Accumulation as described in https://eprint.iacr.org/2020/086
@@ -90,7 +90,7 @@ private:
    * @param acc previous value of the accumulator
    */
     void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                      ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc) const;
+                      ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const;
 };
 
 }  // namespace lbcrypto

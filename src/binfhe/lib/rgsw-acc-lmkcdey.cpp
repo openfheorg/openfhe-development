@@ -51,7 +51,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (size_t i = 0; i < n; ++i) {
         auto s{sv[i].ConvertToInt<int32_t>()};
-        (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s);
+        (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s, i);
     }
 
     NativeInteger gen = NativeInteger(5);
@@ -105,7 +105,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
             }
             auto& indexVec = permuteMap[-i];
             for (size_t j = 0; j < indexVec.size(); j++) {
-                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
             }
         }
         nSkips++;
@@ -120,7 +120,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     if (permuteMap.find(M) != permuteMap.end()) {
         auto& indexVec = permuteMap[M];
         for (size_t j = 0; j < indexVec.size(); j++) {
-            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
         }
     }
 
@@ -135,7 +135,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 
             auto& indexVec = permuteMap[i];
             for (size_t j = 0; j < indexVec.size(); j++) {
-                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
             }
         }
         nSkips++;
@@ -150,7 +150,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     if (permuteMap.find(0) != permuteMap.end()) {
         auto& indexVec = permuteMap[0];
         for (size_t j = 0; j < indexVec.size(); j++) {
-            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
         }
     }
 }
@@ -159,9 +159,9 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 // Same as KeyGenAP, but only for X^{s_i}
 // skNTT corresponds to the secret key z
 RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                        const NativePoly& skNTT, LWEPlaintext m) const {
+                                                        const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
     auto polyParams = params->GetPolyParams();
-    auto Gpow       = params->GetGPower();
+    const auto& Gpows      = params->GetGPowers();
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     NativeInteger Q{params->GetQ()};
@@ -177,7 +177,13 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<Ri
     }
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
+    uint32_t digitsG2{(params->GetVectorDigitsG()[index] - 1) << 1};
+    uint32_t BaseG = params->GetVectorBaseG()[index];
+    auto it = Gpows.find(BaseG);
+    if(it == Gpows.end())
+        OPENFHE_THROW("No Gpower found for the given baseG");
+    auto Gpow = it->second;
+
     RingGSWEvalKeyImpl result(digitsG2, 2);
     NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
@@ -200,16 +206,16 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<Ri
 RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                      const NativePoly& skNTT, LWEPlaintext k) const {
     auto polyParams{params->GetPolyParams()};
-    auto Gpow{params->GetGPower()};
+    auto autoPow{params->GetAutoPower()};
     auto skAuto{skNTT.AutomorphismTransform(k)};
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG{params->GetDigitsG() - 1};
-    RingGSWEvalKeyImpl result(digitsG, 2);
+    uint32_t digitsAuto{params->GetDigitsAuto() - 1};
+    RingGSWEvalKeyImpl result(digitsAuto, 2);
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    for (uint32_t i = 0; i < digitsG; ++i) {
+    for (uint32_t i = 0; i < digitsAuto; ++i) {
         result[i][0] = NativePoly(dug, polyParams, EVALUATION);
-        result[i][1] = NativePoly(params->GetDgg(), polyParams, EVALUATION) - skAuto * Gpow[i + 1];
+        result[i][1] = NativePoly(params->GetDgg(), polyParams, EVALUATION) - skAuto * autoPow[i + 1];
         result[i][1] += result[i][0] * skNTT;
     }
     return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
@@ -218,17 +224,17 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingG
 // LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198
 // Same as AP, but multiplied once
 void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                ConstRingGSWEvalKey& ek, RLWECiphertext& acc) const {
+                                                ConstRingGSWEvalKey& ek, RLWECiphertext& acc, uint32_t index) const {
     std::vector<NativePoly> ct(acc->GetElements());
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
+    uint32_t digitsG2{(params->GetVectorDigitsG()[index] - 1) << 1};
 
     std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
-    SignedDigitDecompose(params, ct, dct);
+    SignedDigitDecompose(params, ct, dct, index);
 
     // calls digitsG2 NTTs
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
@@ -261,20 +267,20 @@ void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCrypto
     cta.SetFormat(COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG{params->GetDigitsG() - 1};
-    std::vector<NativePoly> dcta(digitsG, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
+    uint32_t digitsAuto{params->GetDigitsAuto() - 1};
+    std::vector<NativePoly> dcta(digitsAuto, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
     SignedDigitDecompose(params, cta, dcta);
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG))
-    for (uint32_t d = 0; d < digitsG; ++d)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsAuto))
+    for (uint32_t d = 0; d < digitsAuto; ++d)
         dcta[d].SetFormat(Format::EVALUATION);
 
     // acc = dct * input (matrix product);
     const auto& ev = ak->GetElements();
-    for (uint32_t d = 0; d < digitsG; ++d)
+    for (uint32_t d = 0; d < digitsAuto; ++d)
         acc->GetElements()[0] += (dcta[d] * ev[d][0]);
-    for (uint32_t d = 0; d < digitsG; ++d)
+    for (uint32_t d = 0; d < digitsAuto; ++d)
         acc->GetElements()[1] += (dcta[d] *= ev[d][1]);
 }
 

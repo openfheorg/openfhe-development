@@ -78,7 +78,7 @@ private:
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                                 LWEPlaintext m) const;
+                                 LWEPlaintext m, uint32_t index) const;
 
     /**
    * Automorphism keys generation for internal Ring GSW as described in https://eprint.iacr.org/2022/198
@@ -100,7 +100,7 @@ private:
    * @return
    */
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
-                         RLWECiphertext& acc) const;
+                         RLWECiphertext& acc, uint32_t index) const;
 
     /**
    * LMKCDEY Accumulation automorphism evaluation as described in https://eprint.iacr.org/2022/198
