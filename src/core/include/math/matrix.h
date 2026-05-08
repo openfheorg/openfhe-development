@@ -693,7 +693,7 @@ public:
     std::string SerializedObjectName() const override {
         return "Matrix";
     }
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 

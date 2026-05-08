@@ -609,8 +609,8 @@ protected:
             }
             //====================================================================
             if (BGVRNS_TEST == testData.testCaseType && testData.star) {  // TODO (dsuponit): is this necessary???
-                uint32_t targetTowers = (testData.params.scalTech == FIXEDMANUAL) ? 1 : 2;
-                targetTowers   = (testData.params.multipartyMode == NOISE_FLOODING_MULTIPARTY) ? 3 : targetTowers;
+                uint32_t targetTowers = (testData.params.scalTech == static_cast<double>(FIXEDMANUAL)) ? 1 : 2;
+                targetTowers   = (testData.params.multipartyMode == static_cast<double>(NOISE_FLOODING_MULTIPARTY)) ? 3 : targetTowers;
                 ciphertextMult = cc->Compress(ciphertextMult, targetTowers);
             }
             Plaintext plaintextMultipartyMult;

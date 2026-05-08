@@ -226,7 +226,7 @@ public:
         return *this;
     }
 
-    size_t GetLength() const {
+    constexpr size_t GetLength() const {
         return m_data.size();
     }
 
@@ -260,7 +260,7 @@ public:
    * checks the vector modulus state.
    * always returns true
    */
-    bool isModulusSet() const {
+    constexpr bool isModulusSet() const {
         return m_modulus_state == State::INITIALIZED;
     }
 
@@ -626,7 +626,7 @@ public:
         return "ExpVector";
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 
