@@ -227,23 +227,19 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 void KeySwitchBV::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek) const {
     auto& cv = ciphertext->GetElements();
     auto ba  = KeySwitchCore(cv.back(), ek);
-
     cv[0].SetFormat(Format::EVALUATION);
-    cv[0] += (*ba)[0];
-
+    cv[0] += ba[0];
     if (cv.size() > 2) {
         cv[1].SetFormat(Format::EVALUATION);
-        cv[1] += (*ba)[1];
+        cv[1] += ba[1];
     }
     else {
-        cv[1] = (*ba)[1];
+        cv[1] = ba[1];
     }
-
     cv.resize(2);
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::KeySwitchCore(const DCRTPoly& a,
-                                                                  const EvalKey<DCRTPoly> evalKey) const {
+std::vector<DCRTPoly> KeySwitchBV::KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const {
     return EvalFastKeySwitchCore(EvalKeySwitchPrecomputeCore(a, evalKey->GetCryptoParameters()), evalKey,
                                  a.GetParams());
 }
@@ -254,9 +250,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
     return std::make_shared<std::vector<DCRTPoly>>(c.CRTDecompose(cryptoParams->GetDigitSize()));
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(
-    const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
-    const std::shared_ptr<ParmType> paramsQl) const {
+std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
+                                                         const EvalKey<DCRTPoly> evalKey,
+                                                         const std::shared_ptr<ParmType> paramsQl) const {
     std::vector<DCRTPoly> bv(evalKey->GetBVector());
     std::vector<DCRTPoly> av(evalKey->GetAVector());
     const auto diffQl    = bv[0].GetParams()->GetParams().size() - paramsQl->GetParams().size();
@@ -268,13 +264,14 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(
         av[i].DropLastElements(diffQl);
         av[i] *= (*digits)[i];
     }
-
-    std::vector<DCRTPoly> res{std::move(bv[0]), std::move(av[0])};
     for (uint32_t i = 1; i < limit; ++i) {
-        res[0] += bv[i];
-        res[1] += av[i];
+        bv[0] += bv[i];
+        av[0] += av[i];
     }
-    return std::make_shared<std::vector<DCRTPoly>>(std::move(res));
+    std::vector<DCRTPoly> res;
+    res.emplace_back(std::move(bv[0]));
+    res.emplace_back(std::move(av[0]));
+    return res;
 }
 
 }  // namespace lbcrypto
