@@ -556,7 +556,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
     const auto paramsQl = cv[0].GetParams();
 
     const auto cc = ciphertext->GetCryptoContext();
-    auto cTilda   = *cc->GetScheme()->EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
+    auto cTilda   = cc->GetScheme()->EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
 
     if (addFirst) {
         DCRTPoly psiC0(cTilda[0].GetParams(), Format::EVALUATION, true);

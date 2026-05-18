@@ -113,8 +113,7 @@ public:
     // CORE OPERATIONS
     /////////////////////////////////////////
 
-    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(const Element& a,
-                                                                const EvalKey<Element> evalKey) const {
+    virtual std::vector<Element> KeySwitchCore(const Element& a, const EvalKey<Element> evalKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -123,15 +122,15 @@ public:
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
-    virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
-        const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
-        const std::shared_ptr<ParmType> paramsQl) const {
+    virtual std::vector<Element> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<Element>> digits,
+                                                       const EvalKey<Element> evalKey,
+                                                       const std::shared_ptr<ParmType> paramsQl) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
-    virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
-        const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
-        const std::shared_ptr<ParmType> paramsQl) const {
+    virtual std::vector<Element> EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<Element>> digits,
+                                                          const EvalKey<Element> evalKey,
+                                                          const std::shared_ptr<ParmType> paramsQl) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 };

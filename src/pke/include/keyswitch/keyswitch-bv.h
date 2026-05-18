@@ -80,15 +80,14 @@ public:
     // CORE OPERATIONS
     /////////////////////////////////////////
 
-    std::shared_ptr<std::vector<DCRTPoly>> KeySwitchCore(const DCRTPoly& a,
-                                                         const EvalKey<DCRTPoly> evalKey) const override;
+    std::vector<DCRTPoly> KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
         const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
-    std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCore(
-        const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
-        const std::shared_ptr<ParmType> paramsQl) const override;
+    std::vector<DCRTPoly> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
+                                                const EvalKey<DCRTPoly> evalKey,
+                                                const std::shared_ptr<ParmType> paramsQl) const override;
 
     /////////////////////////////////////////
     // SERIALIZATION

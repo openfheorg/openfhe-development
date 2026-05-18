@@ -199,18 +199,15 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek) const {
     auto& cv = ciphertext->GetElements();
     auto ba  = KeySwitchCore(cv.back(), ek);
-
     cv[0].SetFormat(Format::EVALUATION);
-    cv[0] += (*ba)[0];
-
+    cv[0] += ba[0];
     if (cv.size() > 2) {
         cv[1].SetFormat(Format::EVALUATION);
-        cv[1] += (*ba)[1];
+        cv[1] += ba[1];
     }
     else {
-        cv[1] = (*ba)[1];
+        cv[1] = ba[1];
     }
-
     cv.resize(2);
 }
 
@@ -305,8 +302,7 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
                             cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(const DCRTPoly& a,
-                                                                      const EvalKey<DCRTPoly> evalKey) const {
+std::vector<DCRTPoly> KeySwitchHYBRID::KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const {
     return EvalFastKeySwitchCore(EvalKeySwitchPrecomputeCore(a, evalKey->GetCryptoParameters()), evalKey,
                                  a.GetParams());
 }
@@ -378,30 +374,30 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     return result;
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
-    const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
-    const std::shared_ptr<ParmType> paramsQl) const {
+std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
+                                                             const EvalKey<DCRTPoly> evalKey,
+                                                             const std::shared_ptr<ParmType> paramsQl) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    auto result  = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
-    (*result)[0] = (*result)[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                              cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                              cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                              cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                              cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-    (*result)[1] = (*result)[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                              cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                              cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                              cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                              cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+    auto result = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
+    result[0]   = result[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                          cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                          cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                          cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                          cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+    result[1]   = result[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                          cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                          cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                          cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                          cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
     return result;
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
-    const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
-    const std::shared_ptr<ParmType> paramsQl) const {
+std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<DCRTPoly>> digits,
+                                                                const EvalKey<DCRTPoly> evalKey,
+                                                                const std::shared_ptr<ParmType> paramsQl) const {
     const auto paramsQlP   = (*digits)[0].GetParams();
     const uint32_t sizeQlP = paramsQlP->GetParams().size();
 
@@ -413,11 +409,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
     const auto& av = evalKey->GetAVector();
     const auto& bv = evalKey->GetBVector();
 
-    auto result = std::make_shared<std::vector<DCRTPoly>>();
-    result->reserve(2);
-    result->emplace_back(paramsQlP, Format::EVALUATION, true);
-    result->emplace_back(paramsQlP, Format::EVALUATION, true);
-    auto& elements = (*result);
+    std::vector<DCRTPoly> result;
+    result.emplace_back(paramsQlP, Format::EVALUATION, true);
+    result.emplace_back(paramsQlP, Format::EVALUATION, true);
 
     for (uint32_t j = 0; j < limit; ++j) {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
@@ -426,8 +420,8 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
             const auto& cji = (*digits)[j].GetElementAtIndex(i);
             const auto& bji = bv[j].GetElementAtIndex(idx);
             const auto& aji = av[j].GetElementAtIndex(idx);
-            elements[0].SetElementAtIndex(i, elements[0].GetElementAtIndex(i) + cji * bji);
-            elements[1].SetElementAtIndex(i, elements[1].GetElementAtIndex(i) + cji * aji);
+            result[0].SetElementAtIndex(i, result[0].GetElementAtIndex(i) + cji * bji);
+            result[1].SetElementAtIndex(i, result[1].GetElementAtIndex(i) + cji * aji);
         }
     }
 

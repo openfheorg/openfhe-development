@@ -291,9 +291,9 @@ public:
         return m_KeySwitch->EvalKeySwitchPrecomputeCore(c, cryptoParamsBase);
     }
 
-    virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
-        const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
-        const std::shared_ptr<ParmType> params) const {
+    virtual std::vector<Element> EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<Element>> digits,
+                                                          const EvalKey<Element> evalKey,
+                                                          const std::shared_ptr<ParmType> params) const {
         VerifyKeySwitchEnabled(__func__);
         if (nullptr == digits)
             OPENFHE_THROW("Input digits is nullptr");
@@ -306,9 +306,9 @@ public:
         return m_KeySwitch->EvalFastKeySwitchCoreExt(digits, evalKey, params);
     }
 
-    virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
-        const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
-        const std::shared_ptr<ParmType> params) const {
+    virtual std::vector<Element> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<Element>> digits,
+                                                       const EvalKey<Element> evalKey,
+                                                       const std::shared_ptr<ParmType> params) const {
         VerifyKeySwitchEnabled(__func__);
         if (nullptr == digits)
             OPENFHE_THROW("Input digits is nullptr");
@@ -321,8 +321,7 @@ public:
         return m_KeySwitch->EvalFastKeySwitchCore(digits, evalKey, params);
     }
 
-    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(const Element& a,
-                                                                const EvalKey<Element> evalKey) const {
+    virtual std::vector<Element> KeySwitchCore(const Element& a, const EvalKey<Element> evalKey) const {
         VerifyKeySwitchEnabled(__func__);
         if (!evalKey)
             OPENFHE_THROW("Input evaluation key is nullptr");

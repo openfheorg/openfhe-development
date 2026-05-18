@@ -186,12 +186,6 @@ using namespace lbcrypto;
     state.SetComplexityN(state.range(0));
 }
 
-// BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 1<<16)->Complexity(benchmark::oAuto);
-BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);          // ->Complexity(benchmark::oAuto);
-BENCHMARK(NativeINTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);         // ->Complexity(benchmark::oAuto);
-BENCHMARK(NativeNTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);   // ->Complexity(benchmark::oAuto);
-BENCHMARK(NativeINTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);  // ->Complexity(benchmark::oAuto);
-
 /*
  * BFVrns benchmarks
  */
@@ -206,8 +200,6 @@ BENCHMARK(NativeINTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);  /
     }
 }
 
-BENCHMARK(BFVrns_KeyGen)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BFVrns_MultKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
 
@@ -218,8 +210,6 @@ BENCHMARK(BFVrns_KeyGen)->Unit(benchmark::kMicrosecond);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
-
-BENCHMARK(BFVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
 
 // TODO: revisit this?
 [[maybe_unused]] void BFVrns_EvalAtIndexKeyGen(benchmark::State& state) {
@@ -238,8 +228,6 @@ BENCHMARK(BFVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BFVrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BFVrns_Encryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext();
 
@@ -252,8 +240,6 @@ BENCHMARK(BFVrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
         auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
     }
 }
-
-BENCHMARK(BFVrns_Encryption)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BFVrns_Decryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext();
@@ -270,8 +256,6 @@ BENCHMARK(BFVrns_Encryption)->Unit(benchmark::kMicrosecond);
         cryptoContext->Decrypt(keyPair.secretKey, ciphertext1, &plaintextDec1);
     }
 }
-
-BENCHMARK(BFVrns_Decryption)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BFVrns_Add(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
@@ -292,8 +276,6 @@ BENCHMARK(BFVrns_Decryption)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BFVrns_Add)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BFVrns_AddInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
 
@@ -312,8 +294,6 @@ BENCHMARK(BFVrns_Add)->Unit(benchmark::kMicrosecond);
         cc->EvalAddInPlace(ciphertext1, ciphertext2);
     }
 }
-
-BENCHMARK(BFVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BFVrns_MultNoRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext(state.range(0));
@@ -336,8 +316,6 @@ BENCHMARK(BFVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
     state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
-
 [[maybe_unused]] void BFVrns_MultRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext = GenerateBFVrnsContext(state.range(0));
 
@@ -359,8 +337,6 @@ BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs); 
 
     state.SetComplexityN(state.range(0));
 }
-
-BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 [[maybe_unused]] void BFVrns_EvalAtIndex(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
@@ -391,8 +367,6 @@ BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  /
     }
 }
 
-BENCHMARK(BFVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BFVrns_EvalFastRotation(benchmark::State& state) {
     auto cc = GenerateBFVrnsContext(state.range(0));
 
@@ -411,8 +385,6 @@ BENCHMARK(BFVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BFVrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
-
 /*
  * CKKS benchmarks
  * */
@@ -427,8 +399,6 @@ BENCHMARK(BFVrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthAr
     }
 }
 
-BENCHMARK(CKKSrns_KeyGen)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void CKKSrns_MultKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
@@ -439,8 +409,6 @@ BENCHMARK(CKKSrns_KeyGen)->Unit(benchmark::kMicrosecond);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
-
-BENCHMARK(CKKSrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_EvalAtIndexKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -457,8 +425,6 @@ BENCHMARK(CKKSrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
-
-BENCHMARK(CKKSrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_Encryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -477,8 +443,6 @@ BENCHMARK(CKKSrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
         auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
     }
 }
-
-BENCHMARK(CKKSrns_Encryption)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_Decryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -501,8 +465,6 @@ BENCHMARK(CKKSrns_Encryption)->Unit(benchmark::kMicrosecond);
         cc->Decrypt(keyPair.secretKey, ciphertext1, &plaintextDec1);
     }
 }
-
-BENCHMARK(CKKSrns_Decryption)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_Add(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -527,8 +489,6 @@ BENCHMARK(CKKSrns_Decryption)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(CKKSrns_Add)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void CKKSrns_AddInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
@@ -551,8 +511,6 @@ BENCHMARK(CKKSrns_Add)->Unit(benchmark::kMicrosecond);
         cc->EvalAddInPlace(ciphertext1, ciphertext2);
     }
 }
-
-BENCHMARK(CKKSrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_MultNoRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
@@ -578,8 +536,6 @@ BENCHMARK(CKKSrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
     state.SetComplexityN(state.range(0));
 }
-
-BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 [[maybe_unused]] void CKKSrns_MultRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
@@ -607,8 +563,6 @@ BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
     state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(CKKSrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
-
 [[maybe_unused]] void CKKSrns_Relin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
@@ -634,8 +588,6 @@ BENCHMARK(CKKSrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  
         auto ciphertext3 = cc->Relinearize(ciphertextMul);
     }
 }
-
-BENCHMARK(CKKSrns_Relin)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_RelinInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -667,8 +619,6 @@ BENCHMARK(CKKSrns_Relin)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(CKKSrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void CKKSrns_Rescale(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
@@ -695,8 +645,6 @@ BENCHMARK(CKKSrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(CKKSrns_Rescale)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void CKKSrns_RescaleInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
@@ -721,8 +669,6 @@ BENCHMARK(CKKSrns_Rescale)->Unit(benchmark::kMicrosecond);
         state.ResumeTiming();
     }
 }
-
-BENCHMARK(CKKSrns_RescaleInPlace)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void CKKSrns_EvalAtIndex(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
@@ -757,8 +703,6 @@ BENCHMARK(CKKSrns_RescaleInPlace)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(CKKSrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void CKKSrns_EvalFastRotation(benchmark::State& state) {
     auto cc = GenerateCKKSContext(state.range(0));
 
@@ -777,8 +721,6 @@ BENCHMARK(CKKSrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(CKKSrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
-
 /*
  * BGVrns benchmarks
  * */
@@ -793,8 +735,6 @@ BENCHMARK(CKKSrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthA
     }
 }
 
-BENCHMARK(BGVrns_KeyGen)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BGVrns_MultKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
@@ -805,8 +745,6 @@ BENCHMARK(BGVrns_KeyGen)->Unit(benchmark::kMicrosecond);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
-
-BENCHMARK(BGVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BGVrns_EvalAtIndexKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
@@ -824,8 +762,6 @@ BENCHMARK(BGVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BGVrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BGVrns_Encryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext = GenerateBGVrnsContext();
 
@@ -838,8 +774,6 @@ BENCHMARK(BGVrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
         auto ciphertext = cryptoContext->Encrypt(keyPair.publicKey, plaintext);
     }
 }
-
-BENCHMARK(BGVrns_Encryption)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BGVrns_Decryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
@@ -858,8 +792,6 @@ BENCHMARK(BGVrns_Encryption)->Unit(benchmark::kMicrosecond);
         cc->Decrypt(keyPair.secretKey, ciphertext, &plaintextDec);
     }
 }
-
-BENCHMARK(BGVrns_Decryption)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BGVrns_Add(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
@@ -880,8 +812,6 @@ BENCHMARK(BGVrns_Decryption)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BGVrns_Add)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BGVrns_AddInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
@@ -900,8 +830,6 @@ BENCHMARK(BGVrns_Add)->Unit(benchmark::kMicrosecond);
         cc->EvalAddInPlace(ciphertext1, ciphertext2);
     }
 }
-
-BENCHMARK(BGVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BGVrns_MultNoRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(state.range(0));
@@ -923,8 +851,6 @@ BENCHMARK(BGVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
     state.SetComplexityN(state.range(0));
 }
-
-BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
 
 [[maybe_unused]] void BGVrns_MultRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(state.range(0));
@@ -948,8 +874,6 @@ BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs); 
     state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
-
 [[maybe_unused]] void BGVrns_Relin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
@@ -971,8 +895,6 @@ BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  /
         auto ciphertext3 = cc->Relinearize(ciphertextMul);
     }
 }
-
-BENCHMARK(BGVrns_Relin)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BGVrns_RelinInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
@@ -1000,8 +922,6 @@ BENCHMARK(BGVrns_Relin)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BGVrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BGVrns_ModSwitch(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
@@ -1024,8 +944,6 @@ BENCHMARK(BGVrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BGVrns_ModSwitch)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BGVrns_ModSwitchInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
 
@@ -1046,8 +964,6 @@ BENCHMARK(BGVrns_ModSwitch)->Unit(benchmark::kMicrosecond);
         state.ResumeTiming();
     }
 }
-
-BENCHMARK(BGVrns_ModSwitchInPlace)->Unit(benchmark::kMicrosecond);
 
 [[maybe_unused]] void BGVrns_EvalAtIndex(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext();
@@ -1078,8 +994,6 @@ BENCHMARK(BGVrns_ModSwitchInPlace)->Unit(benchmark::kMicrosecond);
     }
 }
 
-BENCHMARK(BGVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
-
 [[maybe_unused]] void BGVrns_EvalFastRotation(benchmark::State& state) {
     auto cc = GenerateBGVrnsContext(state.range(0));
 
@@ -1098,6 +1012,54 @@ BENCHMARK(BGVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
     }
 }
 
+// BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 1<<16)->Complexity(benchmark::oAuto);
+BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);          // ->Complexity(benchmark::oAuto);
+BENCHMARK(NativeINTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);         // ->Complexity(benchmark::oAuto);
+BENCHMARK(NativeNTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);   // ->Complexity(benchmark::oAuto);
+BENCHMARK(NativeINTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);  // ->Complexity(benchmark::oAuto);
+
+BENCHMARK(BFVrns_KeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_Encryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_Decryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_Add)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(BFVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);    // ->Complexity(benchmark::oAuto);
+BENCHMARK(BFVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BFVrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
+
+BENCHMARK(CKKSrns_KeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Encryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Decryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Add)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_AddInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(CKKSrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);    // ->Complexity(benchmark::oAuto);
+BENCHMARK(CKKSrns_Relin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Rescale)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_RescaleInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
+
+BENCHMARK(BGVrns_KeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_Encryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_Decryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_Add)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_AddInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);
+BENCHMARK(BGVrns_MultRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);    // ->Complexity(benchmark::oAuto);
+BENCHMARK(BGVrns_Relin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_ModSwitch)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_ModSwitchInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BGVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
 BENCHMARK(BGVrns_EvalFastRotation)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
 
 BENCHMARK_MAIN();
