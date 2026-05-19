@@ -391,6 +391,18 @@ public:
     }
 
     /**
+   * Gets cached params for the first sizeQl towers of Q, used in KeySwitchDown.
+   * Only populated when key switching technique is HYBRID.
+   * @param sizeQl number of Q towers (1 to GetElementParams()->GetParams().size()).
+   * @return shared_ptr to ILDCRTParams for the first sizeQl moduli, or nullptr if not cached.
+   */
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlHybrid(uint32_t sizeQl) const {
+        if (m_paramsQlHybrid.empty() || sizeQl == 0 || sizeQl > m_paramsQlHybrid.size())
+            return nullptr;
+        return m_paramsQlHybrid[sizeQl - 1];
+    }
+
+    /**
    * Method that returns the number of towers within every digit.
    * This is the alpha parameter from the paper (see documentation
    * for KeySwitchHHybrid).
@@ -1445,6 +1457,10 @@ protected:
     // Params for Extended CRT basis {QP} = {q_1...q_l,p_1,...,p_k}
     // used in GHS key switching
     std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQP;
+
+    // Cached params for Q_l (first sizeQl towers of Q) used in KeySwitchDown.
+    // m_paramsQlHybrid[l] = params for first (l+1) Q towers; index by sizeQl-1 when looking up.
+    std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQlHybrid;
 
     // Stores the partition size {PartQ} = {Q_1,...,Q_l}
     // where each Q_i is the product of q_j
