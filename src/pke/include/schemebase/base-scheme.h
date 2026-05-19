@@ -1146,6 +1146,38 @@ public:
         m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
     }
 
+    void ClearBootstrapPrecom() noexcept {
+        if (m_FHE)
+            m_FHE->ClearBootstrapPrecom();
+    }
+
+    void ClearBootstrapPrecom(uint32_t slots) noexcept {
+        if (m_FHE)
+            m_FHE->ClearBootstrapPrecom(slots);
+    }
+
+    void ClearBootstrapPrecomExcept(uint32_t keepSlots) noexcept {
+        if (m_FHE)
+            m_FHE->ClearBootstrapPrecomExcept(keepSlots);
+    }
+
+    void ClearSchemeSwitchPrecom() noexcept {
+        if (m_SchemeSwitch)
+            m_SchemeSwitch->ClearSchemeSwitchPrecom();
+    }
+
+    bool HasBootstrapPrecom() const noexcept {
+        return m_FHE && m_FHE->HasBootstrapPrecom();
+    }
+
+    bool HasBootstrapPrecom(uint32_t slots) const noexcept {
+        return m_FHE && m_FHE->HasBootstrapPrecom(slots);
+    }
+
+    bool HasSchemeSwitchPrecom() const noexcept {
+        return m_SchemeSwitch && m_SchemeSwitch->HasSchemeSwitchPrecom();
+    }
+
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
                                                                               uint32_t slots) {
         VerifyFHEEnabled(__func__);
