@@ -89,17 +89,6 @@ void Deserialize(CryptoContext<T>& obj, std::istream& stream, const SerType::SER
 }
 
 template <typename T>
-bool SerializeToFile(const std::string& filename, const CryptoContext<T>& obj, const SerType::SERJSON& sertype) {
-    std::ofstream file(filename, std::ios::out | std::ios::binary);
-    if (file.is_open()) {
-        Serial::Serialize(obj, file, sertype);
-        file.close();
-        return true;
-    }
-    return false;
-}
-
-template <typename T>
 bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, const SerType::SERJSON& sertype) {
     std::ifstream file(filename, std::ios::in | std::ios::binary);
     if (file.is_open()) {
@@ -158,17 +147,6 @@ void Deserialize(CryptoContext<T>& obj, std::istream& stream, const SerType::SER
 }
 
 template <typename T>
-bool SerializeToFile(const std::string& filename, const CryptoContext<T>& obj, const SerType::SERBINARY& sertype) {
-    std::ofstream file(filename, std::ios::out | std::ios::binary);
-    if (file.is_open()) {
-        Serial::Serialize(obj, file, sertype);
-        file.close();
-        return true;
-    }
-    return false;
-}
-
-template <typename T>
 bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, const SerType::SERBINARY& sertype) {
     std::ifstream file(filename, std::ios::in | std::ios::binary);
     if (file.is_open()) {
@@ -177,13 +155,6 @@ bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, con
         return true;
     }
     return false;
-}
-
-template <typename T>
-std::string SerializeToString(const CryptoContext<T>& obj) {
-    std::stringstream s;
-    Serial::Serialize(obj, s, SerType::JSON);
-    return s.str();
 }
 
 template <typename T>
