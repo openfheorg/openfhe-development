@@ -136,6 +136,8 @@ class CryptoContextImpl : public Serializable {
     Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
                             uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        if (!cryptoParams)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
         if (level > 0) {
             size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
@@ -365,6 +367,8 @@ protected:
                                                       const std::shared_ptr<ParmType> params, uint32_t slots) const {
         VerifyCKKSScheme(__func__);
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        if (!cryptoParams)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
         if (level > 0) {
             // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
             // readily available. so, what we get is numModuli and use it for calculations
@@ -451,10 +455,8 @@ protected:
     */
     uint32_t GetCompositeDegreeFromCtxt() const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
-        if (!cryptoParams) {
-            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
-            OPENFHE_THROW(errorMsg);
-        }
+        if (!cryptoParams)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
         return cryptoParams->GetCompositeDegree();
     }
@@ -1053,10 +1055,8 @@ public:
      */
     CKKSDataType GetCKKSDataType() const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
-        if (!cryptoParams) {
-            std::string errorMsg(std::string("std::dynamic_pointer_cast<CryptoParametersRNS>() failed"));
-            OPENFHE_THROW(errorMsg);
-        }
+        if (!cryptoParams)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
         return cryptoParams->GetCKKSDataType();
     }
@@ -3766,7 +3766,7 @@ public:
     void SetParamsFromCKKSCryptocontext(SchSwchParams& params) {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(GetCryptoParameters());
         if (!cryptoParams)
-            OPENFHE_THROW("std::dynamic_pointer_cast<CryptoParametersCKKSRNS>() failed");
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
         params.SetInitialCKKSModulus(cryptoParams->GetElementParams()->GetParams()[0]->GetModulus());
         params.SetRingDimension(GetRingDimension());
         // TODO (dsuponit): is this correct - PlaintextModulus used as scalingModSize?

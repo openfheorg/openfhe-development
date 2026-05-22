@@ -69,13 +69,13 @@ template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = std::dynamic_pointer_cast<SchemeRNS>(m_scheme);
-    if (schemeRNSPtr == nullptr)
-        OPENFHE_THROW("The scheme is not RNS-based");
+    if (!schemeRNSPtr)
+        OPENFHE_THROW("Invalid scheme: expected SchemeRNS");
 
     // check if the parameter object is RNS-based
     auto elPtr = std::dynamic_pointer_cast<const CryptoParametersRNS>(m_params);
-    if (elPtr == nullptr)
-        OPENFHE_THROW("The parameter object is not RNS-based");
+    if (!elPtr)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
     schemeRNSPtr->SetKeySwitchingTechnique(elPtr->GetKeySwitchTechnique());
 }
@@ -478,12 +478,16 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element>& ciph
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+        if (!decryptedCKKS)
+            OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
         decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
+        if (!cryptoParamsCKKS)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
         decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
@@ -584,12 +588,16 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ci
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+        if (!decryptedCKKS)
+            OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
         decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+        if (!cryptoParamsCKKS)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
         decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
@@ -636,8 +644,12 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
     if (partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+        if (!decryptedCKKS)
+            OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+        if (!cryptoParamsCKKS)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
         decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
     }
@@ -658,8 +670,8 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCipher
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
-    if (cryptoParamsCKKS == nullptr)
-        OPENFHE_THROW("The parameter object is not of the CryptoParametersCKKSRNS type");
+    if (!cryptoParamsCKKS)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
     return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
 }
@@ -667,8 +679,8 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(ConstCiphertext<Element>& ciphertext) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-    if (cryptoParamsCKKS == nullptr)
-        OPENFHE_THROW("The parameter object is not of the CryptoParametersCKKSRNS type");
+    if (!cryptoParamsCKKS)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
     return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, ciphertext);
 }
