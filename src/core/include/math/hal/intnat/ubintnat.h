@@ -1856,7 +1856,7 @@ public:
         return "NATInteger";
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 

@@ -348,7 +348,7 @@ public:
     std::string SerializedObjectName() const override {
         return "Field2n";
     }
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 };

@@ -78,7 +78,7 @@ struct UnitTestCCParams {
 std::ostream& operator<<(std::ostream& os, const UnitTestCCParams& params);
 //===========================================================================================================
 inline bool isDefaultValue(double val) {
-    return (DFLT == std::round(val));
+    return (static_cast<double>(DFLT) == std::round(val));
 }
 //===========================================================================================================
 

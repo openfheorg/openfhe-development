@@ -893,7 +893,7 @@ protected:
             Plaintext result;
             Plaintext resultCompressed;
             auto algo           = cc->GetScheme();
-            size_t targetTowers = (testData.params.scalTech == FLEXIBLEAUTOEXT) ? 2 : 1;
+            size_t targetTowers = (testData.params.scalTech == static_cast<double>(FLEXIBLEAUTOEXT)) ? 2 : 1;
             auto ctCompressed   = cc->Compress(ct, targetTowers);
 
             size_t towersLeft = ctCompressed->GetElements()[0].GetNumOfElements();

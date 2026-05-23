@@ -358,7 +358,7 @@ public:
         return "Poly";
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
 
