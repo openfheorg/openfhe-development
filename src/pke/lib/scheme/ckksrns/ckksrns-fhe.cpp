@@ -310,22 +310,18 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const PrivateKey<DC
     slots                         = (slots == 0) ? M / 4 : slots;
     const auto bootstrapRotations = FindBootstrapRotationIndices(slots, M);
 
-    std::vector<uint32_t> indexList;
-    indexList.reserve(bootstrapRotations.size() + 3);
+    std::set<uint32_t> indexList;
     for (const auto rotation : bootstrapRotations)
-        indexList.push_back(FindAutomorphismIndex2nComplex(rotation, M));
+        indexList.insert(FindAutomorphismIndex2nComplex(rotation, M));
 
-    indexList.push_back(M - 1);
+    indexList.insert(M - 1);
 
     if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
-        indexList.push_back(M - 2);
-        indexList.push_back(M - 4);
+        indexList.insert(M - 2);
+        indexList.insert(M - 4);
     }
 
-    std::sort(indexList.begin(), indexList.end());
-    indexList.erase(std::unique(indexList.begin(), indexList.end()), indexList.end());
-
-    return indexList;
+    return std::vector<uint32_t>(indexList.begin(), indexList.end());
 }
 
 void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots) {

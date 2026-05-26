@@ -899,7 +899,7 @@ public:
     }
 
     /**
-    * @brief Serializes EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+    * @brief Serializes bootstrap EvalAutomorphism keys associated with the private key tag
     *
     * @param ser stream to serialize to
     * @param sertype type of serialization
@@ -920,7 +920,7 @@ public:
         return true;
     }
     /**
-    * @brief Deserializes EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+    * @brief Deserializes bootstrap EvalAutomorphism keys for an array of specific indices associated with the given keyTag
     *
     * @param ser stream to deserialize from
     * @param sertype type of serialization
@@ -931,6 +931,24 @@ public:
     template <typename ST>
     static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype, const std::string& keyTag,
                                             const std::vector<uint32_t>& indexList) {
+        return CryptoContextImpl<Element>::DeserializeEvalAutomorphismKey(ser, sertype, keyTag, indexList);
+    }
+
+    /**
+    * @brief Deserializes bootstrap EvalAutomorphism keys derived from the given private key and slots count
+    *
+    * @param ser stream to deserialize from
+    * @param sertype type of serialization
+    * @param privateKey secret key (used to derive keyTag and index list)
+    * @param slots number of slots for which the bootstrapping was performed
+    * @return true on success
+    */
+    template <typename ST>
+    static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype,
+                                            const PrivateKey<DCRTPoly>& privateKey, uint32_t slots) {
+        auto cc              = privateKey->GetCryptoContext();
+        const auto& keyTag   = privateKey->GetKeyTag();
+        const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(privateKey, slots);
         return CryptoContextImpl<Element>::DeserializeEvalAutomorphismKey(ser, sertype, keyTag, indexList);
     }
 
@@ -954,18 +972,6 @@ public:
             CryptoContextImpl<Element>::InsertEvalAutomorphismKey(k.second, k.first);
         }
         return true;
-    }
-
-    /**
-    * @brief Deserializes all bootstrap (and possibly all other EvalAutomorphism) keys from the stream
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @return true on success
-    */
-    template <typename ST>
-    static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype) {
-        return CryptoContextImpl<Element>::DeserializeEvalAutomorphismKey(ser, sertype);
     }
 
     /**
