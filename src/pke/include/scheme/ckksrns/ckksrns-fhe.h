@@ -150,6 +150,8 @@ public:
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
                                                                                uint32_t slots) override;
 
+    std::vector<uint32_t> EvalBootstrapKeyMapIndices(const PrivateKey<DCRTPoly> privateKey, uint32_t slots) override;
+
     void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots) override;
 
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,

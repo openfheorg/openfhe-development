@@ -108,6 +108,17 @@ public:
     }
 
     /**
+   * Returns the eval-key map indices required to serialize bootstrap keys.
+   *
+   * @param privateKey private key.
+   * @param slots - number of slots to be bootstrapped
+   * @return the list of eval-key map indices.
+   */
+    virtual std::vector<uint32_t> EvalBootstrapKeyMapIndices(const PrivateKey<Element> privateKey, uint32_t slots) {
+        OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
+    }
+
+    /**
    * Computes the plaintexts for encoding and decoding for both linear and FFT-like methods. Supported in CKKS only.
    *
    * @param slots - number of slots to be bootstrapped

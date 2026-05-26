@@ -299,6 +299,35 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
     return evalKeys;
 }
 
+std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const PrivateKey<DCRTPoly> privateKey, uint32_t slots) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
+    if (!cryptoParams)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
+
+    auto cc = privateKey->GetCryptoContext();
+    auto M  = cc->GetCyclotomicOrder();
+
+    slots                         = (slots == 0) ? M / 4 : slots;
+    const auto bootstrapRotations = FindBootstrapRotationIndices(slots, M);
+
+    std::vector<uint32_t> indexList;
+    indexList.reserve(bootstrapRotations.size() + 3);
+    for (const auto rotation : bootstrapRotations)
+        indexList.push_back(FindAutomorphismIndex2nComplex(rotation, M));
+
+    indexList.push_back(M - 1);
+
+    if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+        indexList.push_back(M - 2);
+        indexList.push_back(M - 4);
+    }
+
+    std::sort(indexList.begin(), indexList.end());
+    indexList.erase(std::unique(indexList.begin(), indexList.end()), indexList.end());
+
+    return indexList;
+}
+
 void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t numSlots) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
