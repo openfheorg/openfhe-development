@@ -791,7 +791,7 @@ public:
 
     // TODO hardcoded for base 2?
     uint32_t GetLengthForBase(uint32_t base) const {
-        return GetMSB();
+        return m_MSB;
     }
 
     /**
@@ -864,8 +864,6 @@ public:
 
     /**
    * ostream output << operator
-   * Algorithm used is double and add
-   * http://www.wikihow.com/Convert-from-Binary-to-Decimal
    *
    * @param os is the std ostream object.
    * @param ptr_obj is ubint to be printed.
@@ -875,11 +873,6 @@ public:
         os << ptr_obj.ToString();
         return os;
     }
-
-    /**
-   * documentation function, prints sizes of constats.
-   */
-    static void PrintIntegerConstants();
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

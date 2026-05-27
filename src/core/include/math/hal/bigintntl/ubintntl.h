@@ -417,7 +417,6 @@ public:
         myZZ temp(1);
         temp <<= (2 * this->GetMSB() + 3);
         return temp.DividedBy(*this);
-        return temp;
     }
 
     /**

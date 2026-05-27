@@ -61,8 +61,7 @@ SecurityLevel convertToSecurityLevel(const std::string& str) {
     else if (str == "HEStd_NotSet")
         return HEStd_NotSet;
 
-    std::string errMsg(std::string("Unknown SecurityLevel ") + str);
-    OPENFHE_THROW(errMsg);
+    OPENFHE_THROW(std::string("Unknown SecurityLevel ") + str);
 }
 SecurityLevel convertToSecurityLevel(uint32_t num) {
     auto secLevel = static_cast<SecurityLevel>(num);
@@ -79,8 +78,7 @@ SecurityLevel convertToSecurityLevel(uint32_t num) {
             break;
     }
 
-    std::string errMsg(std::string("Unknown value for SecurityLevel ") + std::to_string(num));
-    OPENFHE_THROW(errMsg);
+    OPENFHE_THROW(std::string("Unknown value for SecurityLevel ") + std::to_string(num));
 }
 
 std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {

@@ -49,7 +49,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ             = GetElementParams()->GetParams().size();
-    uint32_t compositeDegree = this->GetCompositeDegree();
+    uint32_t compositeDegree = m_compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);

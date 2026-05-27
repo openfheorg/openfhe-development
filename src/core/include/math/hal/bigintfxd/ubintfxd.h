@@ -886,9 +886,9 @@ public:
         uint32_t ceilInt = m_nSize - ceilIntByUInt(m_MSB);
         // copy the values by shift and add
         for (uint32_t i = 0; i < num && (m_nSize - i - 1) >= ceilInt; i++) {
-            result += ((T)this->m_value[m_nSize - i - 1] << (m_uintBitLength * i));
+            result += ((T)m_value[m_nSize - i - 1] << (m_uintBitLength * i));
         }
-        if (this->m_MSB > bits) {
+        if (m_MSB > bits) {
             OPENFHE_THROW(std::string("MSB cannot be bigger than ") + std::to_string(bits));
         }
         return result;
@@ -925,7 +925,10 @@ public:
    *
    * @return the index of the most significant bit.
    */
-    uint32_t GetMSB() const;
+    uint32_t GetMSB() const {
+        return m_MSB;
+    }
+
 
     /**
    * Get the number of digits using a specific base - support for arbitrary base
@@ -935,7 +938,7 @@ public:
    * @return the length of the representation in a specific base.
    */
     uint32_t GetLengthForBase(uint32_t base) const {
-        return GetMSB();
+        return m_MSB;
     }
 
     /**
@@ -999,7 +1002,7 @@ public:
    */
     std::string GetInternalRepresentation(void) const {
         std::string ret("");
-        size_t ceilInt  = ceilIntByUInt(this->m_MSB);  // max limb used
+        size_t ceilInt  = ceilIntByUInt(m_MSB);  // max limb used
         size_t minIndex = static_cast<size_t>(m_nSize - ceilInt);
 
         for (size_t i = m_nSize - 1; i >= minIndex; i--) {

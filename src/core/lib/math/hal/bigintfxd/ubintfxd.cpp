@@ -857,9 +857,8 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ComputeMu() const {
     BigIntegerFixedT temp(1);
-    temp <<= (2 * this->GetMSB() + 3);
+    temp <<= (2 * m_MSB + 3);
     return temp.DividedBy(*this);
-    return temp;
 }
 
 /*
@@ -1617,11 +1616,6 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::i
 }
 
 // OTHER OPERATIONS
-
-template <typename uint_type, uint32_t BITLENGTH>
-uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::GetMSB() const {
-    return m_MSB;
-}
 
 template <typename uint_type, uint32_t BITLENGTH>
 bool BigIntegerFixedT<uint_type, BITLENGTH>::CheckIfPowerOfTwo(const BigIntegerFixedT& m_numToCheck) {

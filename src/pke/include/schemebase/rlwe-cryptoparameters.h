@@ -591,9 +591,9 @@ protected:
     void PrintParameters(std::ostream& os) const override {
         CryptoParametersBase<Element>::PrintParameters(os);
 
-        os << "Distrib parm " << GetDistributionParameter() << ", Assurance measure " << GetAssuranceMeasure()
-           << ", Noise scale " << GetNoiseScale() << ", Digit Size " << GetDigitSize() << ", SecretKeyDist "
-           << GetSecretKeyDist() << ", Standard security level " << GetStdLevel() << std::endl;
+        os << "Distrib parm " << m_distributionParameter << ", Assurance measure " << m_assuranceMeasure
+           << ", Noise scale " << m_noiseScale << ", Digit Size " << m_digitSize << ", SecretKeyDist "
+           << m_secretKeyDist << ", Standard security level " << m_stdLevel << std::endl;
     }
 };
 

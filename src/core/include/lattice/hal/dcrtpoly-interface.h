@@ -508,9 +508,7 @@ public:
    */
     DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT)
-            OPENFHE_THROW(
-                "DCRTPolyInterface element transposition is currently "
-                "implemented only in the Evaluation representation.");
+            OPENFHE_THROW("Transposition is currently implemented only in the Evaluation representation.");
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
 

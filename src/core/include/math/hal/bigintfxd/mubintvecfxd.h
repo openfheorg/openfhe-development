@@ -173,12 +173,12 @@ public:
    * @return Assigned BigVectorFixedT.
    */
     BigVectorFixedT& operator=(uint64_t val) {
-        this->m_data[0] = val;
-        if (this->m_modulus != 0) {
-            this->m_data[0] %= this->m_modulus;
+        m_data[0] = val;
+        if (m_modulus != 0) {
+            m_data[0] %= m_modulus;
         }
-        for (size_t i = 1; i < GetLength(); ++i) {
-            this->m_data[i] = 0;
+        for (size_t i = 1; i < m_length; ++i) {
+            m_data[i] = 0;
         }
         return *this;
     }
@@ -192,17 +192,17 @@ public:
    * @param index is the index to set a value at.
    */
     IntegerType& at(size_t i) {
-        if (!this->IndexCheck(i)) {
+        if (!IndexCheck(i)) {
             OPENFHE_THROW("BigVector index out of range");
         }
-        return this->m_data[i];
+        return m_data[i];
     }
 
     const IntegerType& at(size_t i) const {
-        if (!this->IndexCheck(i)) {
+        if (!IndexCheck(i)) {
             OPENFHE_THROW("BigVector index out of range");
         }
-        return this->m_data[i];
+        return m_data[i];
     }
 
     /**
@@ -211,11 +211,11 @@ public:
    * @return is the value at the index.
    */
     IntegerType& operator[](size_t idx) {
-        return (this->m_data[idx]);
+        return m_data[idx];
     }
 
     const IntegerType& operator[](size_t idx) const {
-        return (this->m_data[idx]);
+        return m_data[idx];
     }
 
     /**
@@ -224,7 +224,9 @@ public:
    * @param value is the value to set.
    * @param value is the modulus value to set.
    */
-    void SetModulus(const IntegerType& value);
+    void SetModulus(const IntegerType& value) {
+        m_modulus = value;
+    }
 
     /**
    * Sets the vector modulus and changes the values to match the new modulus.
@@ -244,7 +246,7 @@ public:
    * @return the vector modulus.
    */
     const IntegerType& GetModulus() const {
-        return this->m_modulus;
+        return m_modulus;
     }
 
     /**
@@ -253,7 +255,7 @@ public:
    * @return vector length.
    */
     size_t GetLength() const {
-        return this->m_length;
+        return m_length;
     }
 
     // MODULAR ARITHMETIC OPERATIONS

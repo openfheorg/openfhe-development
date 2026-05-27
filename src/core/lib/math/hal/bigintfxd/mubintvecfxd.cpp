@@ -188,11 +188,6 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initi
 
 // ACCESSORS
 
-template <class IntegerType>
-void BigVectorFixedT<IntegerType>::SetModulus(const IntegerType& value) {
-    this->m_modulus = value;
-}
-
 /**Switches the integers in the vector to values corresponding to the new
  * modulus Algorithm: Integer i, Old Modulus om, New Modulus nm, delta =
  * abs(om-nm): Case 1: om < nm if i > i > om/2 i' = i + delta Case 2: om > nm i
@@ -223,14 +218,14 @@ void BigVectorFixedT<IntegerType>::SwitchModulus(const IntegerType& newModulus) 
             }
         }
     }
-    this->SetModulus(newModulus);
+    m_modulus = newModulus;
 }
 
 template <class IntegerType>
 void BigVectorFixedT<IntegerType>::LazySwitchModulus(const IntegerType& modulus) {
     for (uint32_t i = 0; i < m_length; ++i)
         this->m_data[i].ModEq(modulus);
-    this->SetModulus(modulus);
+    m_modulus = modulus;
 }
 
 // MODULAR ARITHMETIC OPERATIONS
@@ -248,10 +243,10 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModEq(const IntegerT
         return this->ModByTwoEq();
     }
     else {
-        IntegerType halfQ(this->GetModulus() >> 1);
-        for (uint32_t i = 0; i < this->GetLength(); i++) {
+        IntegerType halfQ(m_modulus >> 1);
+        for (uint32_t i = 0; i < m_length; i++) {
             if (this->m_data[i] > halfQ) {
-                this->m_data[i].ModSubEq(this->GetModulus(), modulus);
+                this->m_data[i].ModSubEq(m_modulus, modulus);
             }
             else {
                 this->m_data[i].ModEq(modulus);
@@ -286,7 +281,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModAddAtIndex(uint32_
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddAtIndexEq(uint32_t i, const IntegerType& b) {
-    if (i > this->GetLength() - 1) {
+    if (i > m_length - 1) {
         OPENFHE_THROW("mubintvecfxd::ModAddAtIndex. Index is out of range. i = " + std::to_string(i));
     }
     this->m_data[i].ModAddEq(b, this->m_modulus);
@@ -482,8 +477,8 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModByTwo() const {
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModByTwoEq() {
-    IntegerType halfQ(this->GetModulus() >> 1);
-    for (uint32_t i = 0; i < this->GetLength(); i++) {
+    IntegerType halfQ(m_modulus >> 1);
+    for (uint32_t i = 0; i < m_length; i++) {
         if (this->m_data[i] > halfQ) {
             if (this->m_data[i].Mod(2) == 1) {
                 this->m_data[i] = IntegerType(0);
