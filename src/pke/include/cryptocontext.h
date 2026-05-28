@@ -899,19 +899,18 @@ public:
     }
 
     /**
-    * @brief Serializes bootstrap EvalAutomorphism keys associated with the private key tag
+    * @brief Serializes bootstrap EvalAutomorphism keys associated with the given key tag
     *
     * @param ser stream to serialize to
     * @param sertype type of serialization
-    * @param privateKey secret key
+    * @param cc crypto context
+    * @param keyTag secret key tag
     * @param slots number of slots for which the bootstrapping is performed
     */
     template <typename ST>
-    static bool SerializeEvalBootstrapKey(std::ostream& ser, const ST& sertype, const PrivateKey<DCRTPoly>& privateKey,
-                                          uint32_t slots) {
-        auto cc              = privateKey->GetCryptoContext();
-        const auto& keyTag   = privateKey->GetKeyTag();
-        const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(privateKey, slots);
+    static bool SerializeEvalBootstrapKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element>& cc,
+                                          const std::string& keyTag, uint32_t slots) {
+        const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, slots);
         std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> keyMap = {
             {keyTag, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyTag, indexList)}};
 
@@ -935,20 +934,19 @@ public:
     }
 
     /**
-    * @brief Deserializes bootstrap EvalAutomorphism keys derived from the given private key and slots count
+    * @brief Deserializes bootstrap EvalAutomorphism keys derived from the given crypto context, key tag, and slots count
     *
     * @param ser stream to deserialize from
     * @param sertype type of serialization
-    * @param privateKey secret key (used to derive keyTag and index list)
+    * @param cc crypto context
+    * @param keyTag secret key tag
     * @param slots number of slots for which the bootstrapping was performed
     * @return true on success
     */
     template <typename ST>
-    static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype,
-                                            const PrivateKey<DCRTPoly>& privateKey, uint32_t slots) {
-        auto cc              = privateKey->GetCryptoContext();
-        const auto& keyTag   = privateKey->GetKeyTag();
-        const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(privateKey, slots);
+    static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype, const CryptoContext<Element>& cc,
+                                            const std::string& keyTag, uint32_t slots) {
+        const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, slots);
         return CryptoContextImpl<Element>::DeserializeEvalAutomorphismKey(ser, sertype, keyTag, indexList);
     }
 

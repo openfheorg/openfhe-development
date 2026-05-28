@@ -599,7 +599,7 @@ protected:
 
     // Tests SerializeEvalBootstrapKey / DeserializeEvalBootstrapKey.
     // For testData.slots: uses the (keyTag, indexList) overload of DeserializeEvalBootstrapKey.
-    // For testData.slots/2: uses the (privateKey, slots) overload of DeserializeEvalBootstrapKey.
+    // For testData.slots/2: uses the (cc, keyTag, slots) overload of DeserializeEvalBootstrapKey.
     void UnitTest_Bootstrap_SerializeBootstrapKey(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
                                                   const std::string& failmsg = std::string()) {
         try {
@@ -632,11 +632,13 @@ protected:
 
             std::stringstream bootstrapKey_stream1;
             CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY,
-                                                                   keyPairInit.secretKey, testData.slots);
+                                                                   ccInit, keyPairInit.secretKey->GetKeyTag(),
+                                                                   testData.slots);
 
             std::stringstream bootstrapKey_stream2;
             CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream2, SerType::BINARY,
-                                                                   keyPairInit.secretKey, testData.slots / 2);
+                                                                   ccInit, keyPairInit.secretKey->GetKeyTag(),
+                                                                   testData.slots / 2);
             //==============================================================
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -654,13 +656,15 @@ protected:
 
             // (keyTag, indexList) overload for testData.slots
             const auto& keyTag   = keyPair.secretKey->GetKeyTag();
-            const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(keyPair.secretKey, testData.slots);
-            CryptoContextImpl<DCRTPoly>::DeserializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY, keyTag,
-                                                                     indexList);
+            const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, testData.slots);
+            EXPECT_TRUE(CryptoContextImpl<DCRTPoly>::DeserializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY,
+                                                                                 keyTag, indexList))
+                << failmsg + " DeserializeEvalBootstrapKey(keyTag, indexList) failed";
 
-            // (privateKey, slots) overload for testData.slots / 2
-            CryptoContextImpl<DCRTPoly>::DeserializeEvalBootstrapKey(bootstrapKey_stream2, SerType::BINARY,
-                                                                     keyPair.secretKey, testData.slots / 2);
+            // (cc, keyTag, slots) overload for testData.slots / 2
+            EXPECT_TRUE(CryptoContextImpl<DCRTPoly>::DeserializeEvalBootstrapKey(bootstrapKey_stream2, SerType::BINARY,
+                                                                                 cc, keyTag, testData.slots / 2))
+                << failmsg + " DeserializeEvalBootstrapKey(cc, keyTag, slots) failed";
 
             cc->EvalBootstrapPrecompute(testData.slots);
             cc->EvalBootstrapPrecompute(testData.slots / 2);

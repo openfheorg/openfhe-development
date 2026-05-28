@@ -1152,9 +1152,9 @@ public:
         return m_FHE->EvalBootstrapKeyGen(privateKey, slots);
     }
 
-    std::vector<uint32_t> EvalBootstrapKeyMapIndices(const PrivateKey<Element> privateKey, uint32_t slots) {
+    std::vector<uint32_t> EvalBootstrapKeyMapIndices(const CryptoContext<Element>& cc, uint32_t slots) {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalBootstrapKeyMapIndices(privateKey, slots);
+        return m_FHE->EvalBootstrapKeyMapIndices(cc, slots);
     }
 
     void EvalBootstrapPrecompute(const CryptoContextImpl<Element>& cc, uint32_t slots = 0) {
