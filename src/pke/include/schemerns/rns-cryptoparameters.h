@@ -391,16 +391,14 @@ public:
     }
 
     /**
-   * Gets cached params for the first sizeQl towers of Q, used in KeySwitchDown.
-   * Only populated when key switching technique is HYBRID.
-   * @param sizeQl number of Q towers (1 to GetElementParams()->GetParams().size()).
-   * @return shared_ptr to ILDCRTParams for the first sizeQl moduli, or nullptr if not cached.
+   * Gets params for the first sizeQl towers of Q, used in HYBRID KeySwitchDown.
+   * Returns a cached entry when available; otherwise builds params from the Q towers in paramsQlP.
+   * @param paramsQlP params for the extended Q_lP basis used as the fallback source.
+   * @param sizeQl number of Q towers to include (1 to GetElementParams()->GetParams().size()).
+   * @return shared_ptr to ILDCRTParams for the first sizeQl Q moduli.
    */
-    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlHybrid(uint32_t sizeQl) const {
-        if (m_paramsQlHybrid.empty() || sizeQl == 0 || sizeQl > m_paramsQlHybrid.size())
-            return nullptr;
-        return m_paramsQlHybrid[sizeQl - 1];
-    }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlHybrid(
+        const std::shared_ptr<DCRTPoly::Params>& paramsQlP, uint32_t sizeQl) const;
 
     /**
    * Method that returns the number of towers within every digit.

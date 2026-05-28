@@ -43,21 +43,6 @@
 
 namespace lbcrypto {
 
-namespace {
-
-    std::shared_ptr<DCRTPoly::Params> MakeParamsQlFromQlP(
-        const std::shared_ptr<DCRTPoly::Params>& paramsQlP, uint32_t sizeQl) {
-        std::vector<NativeInteger> moduliQ(sizeQl);
-        std::vector<NativeInteger> rootsQ(sizeQl);
-        for (uint32_t i = 0; i < sizeQl; ++i) {
-            moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-            rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
-        }
-        return std::make_shared<DCRTPoly::Params>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
-    }
-    
-    }  // namespace
-
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                         const PrivateKey<DCRTPoly> newKey) const {
     return KeySwitchHYBRID::KeySwitchGenInternal(oldKey, newKey, nullptr);
@@ -263,9 +248,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
     const auto paramsP     = cryptoParams->GetParamsP();
 
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
-    if (!paramsQl)
-        paramsQl = MakeParamsQlFromQlP(paramsQlP, sizeQl);
+    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(paramsQlP, sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
@@ -294,9 +277,7 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
     const auto paramsP      = cryptoParams->GetParamsP();
 
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
-    if (!paramsQl)
-        paramsQl = MakeParamsQlFromQlP(paramsQlP, sizeQl);
+    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(paramsQlP, sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
