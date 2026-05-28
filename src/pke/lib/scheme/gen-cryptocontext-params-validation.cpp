@@ -38,6 +38,14 @@ namespace lbcrypto {
 void validateParametersForCryptocontext(const Params& parameters) {
     SCHEME scheme = parameters.GetScheme();
     if (isCKKS(scheme)) {
+#if NATIVEINT == 128
+        if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
+            parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+            parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+            OPENFHE_THROW(
+                "128-bit CKKS is not supported with the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL scaling technique.");
+        }
+#endif
         if (NORESCALE == parameters.GetScalingTechnique()) {
             OPENFHE_THROW("NORESCALE is not supported in CKKSRNS");
         }
@@ -90,6 +98,12 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
         if (parameters.GetFirstModSize() < parameters.GetScalingModSize()) {
             OPENFHE_THROW("firstModSize cannot be less than scalingModSize");
+        }
+        if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT && parameters.GetExecutionMode() == EXEC_EVALUATION) {
+            if (parameters.GetNoiseEstimate() == 0) {
+                OPENFHE_THROW(
+                    "Noise estimate must be set for the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
+            }
         }
     }
     else if (isBFVRNS(scheme)) {

@@ -54,14 +54,6 @@ class CCParams;
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     const CCParams<ContextGeneratorType>& parameters) {
-#if NATIVEINT == 128
-    if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
-        parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-        parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        OPENFHE_THROW(
-            "128-bit CKKS is not supported for the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL methods.");
-    }
-#endif
     using ParmType                   = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
@@ -72,10 +64,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
-        if (parameters.GetNoiseEstimate() == 0) {
-            OPENFHE_THROW(
-                "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
-        }
         double logstd =
             parameters.GetStatisticalSecurity() / 2 + std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = std::pow(2, logstd + parameters.GetNoiseEstimate());
