@@ -479,20 +479,4 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 }
 
 
-const std::shared_ptr<ILDCRTParams<BigInteger>> CryptoParametersRNS::GetParamsQlHybrid(
-    const std::shared_ptr<DCRTPoly::Params>& paramsQlP, uint32_t sizeQl) const {
-    if (m_paramsQlHybrid.empty() || sizeQl == 0 || sizeQl > m_paramsQlHybrid.size()) {
-            std::vector<NativeInteger> moduliQ(sizeQl);
-            std::vector<NativeInteger> rootsQ(sizeQl);
-            for (uint32_t i = 0; i < sizeQl; ++i) {
-                moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-                rootsQ[i]  = paramsQlP->GetParams()[i]->GetRootOfUnity();
-            }
-            return std::make_shared<ILDCRTParams<BigInteger>>(paramsQlP->GetCyclotomicOrder(), moduliQ, rootsQ);
-    }
-
-    return m_paramsQlHybrid[sizeQl - 1];
-}
-
-
 }  // namespace lbcrypto

@@ -248,7 +248,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
     const auto paramsP     = cryptoParams->GetParamsP();
 
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(paramsQlP, sizeQl);
+    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
@@ -277,7 +277,7 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
     const auto paramsP      = cryptoParams->GetParamsP();
 
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(paramsQlP, sizeQl);
+    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
