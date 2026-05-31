@@ -38,9 +38,6 @@ namespace lbcrypto {
 template <>
 std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts = {};
 
-template <>
-bool CryptoContextFactory<DCRTPoly>::s_autoReleaseMode = false;
-
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                                                   std::shared_ptr<SchemeBase<Element>> scheme) {
@@ -58,8 +55,7 @@ CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_pt
 
 template <typename Element>
 void CryptoContextFactory<Element>::AddContext(CryptoContext<Element> cc) {
-    if (!CryptoContextFactory<Element>::s_autoReleaseMode)
-        CryptoContextFactory<Element>::AllContexts.push_back(cc);
+    CryptoContextFactory<Element>::AllContexts.push_back(cc);
 
     if (cc->GetEncodingParams()->GetPlaintextRootOfUnity() != 0) {
         PackedEncoding::SetParams(cc->GetCyclotomicOrder(), cc->GetEncodingParams());

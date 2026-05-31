@@ -79,12 +79,6 @@ public:
         m_ctxtKS.reset();
     }
 
-    bool HasSchemeSwitchPrecom() const noexcept override {
-        return !m_U0Pre.empty() || static_cast<bool>(m_ccLWE) || static_cast<bool>(m_ccKS) ||
-               static_cast<bool>(m_CKKStoFHEWswk) || static_cast<bool>(m_FHEWtoCKKSswk) ||
-               static_cast<bool>(m_ctxtKS);
-    }
-
     //------------------------------------------------------------------------------
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------

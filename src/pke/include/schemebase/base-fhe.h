@@ -77,21 +77,6 @@ public:
     virtual void ClearBootstrapPrecom() noexcept {}
 
     /**
-   * Release only the bootstrap precomputation entry associated with the given
-   * number of slots. No-op if no entry exists or the scheme does not cache
-   * per-slot bootstrap data (issue #533).
-   */
-    virtual void ClearBootstrapPrecom(uint32_t slots) noexcept {}
-
-    /**
-   * Release all bootstrap precomputation entries except the one keyed by
-   * @p keepSlots. Handy for callers that oscillate between a fixed slot count
-   * and transient ones — reclaims every transient cache without throwing away
-   * the hot entry (issue #533).
-   */
-    virtual void ClearBootstrapPrecomExcept(uint32_t /*keepSlots*/) noexcept {}
-
-    /**
    * Release any scheme-switch cached data produced by the CKKS<->FHEW scheme
    * switching setup (switching keys, intermediate CKKS/LWE contexts,
    * precomputed linear-transform plaintexts). Default is a no-op; overridden
@@ -99,21 +84,6 @@ public:
    * destroying the context (issue #533).
    */
     virtual void ClearSchemeSwitchPrecom() noexcept {}
-
-    /**
-   * Inspectors used by tests and memory-diagnostic code to check whether the
-   * scheme currently holds any cached data. Default: false. Overridden by
-   * FHECKKSRNS (bootstrap) and SWITCHCKKSRNS (scheme-switch).
-   */
-    virtual bool HasBootstrapPrecom() const noexcept {
-        return false;
-    }
-    virtual bool HasBootstrapPrecom(uint32_t /*slots*/) const noexcept {
-        return false;
-    }
-    virtual bool HasSchemeSwitchPrecom() const noexcept {
-        return false;
-    }
 
     /**
    * Bootstrap functionality:
