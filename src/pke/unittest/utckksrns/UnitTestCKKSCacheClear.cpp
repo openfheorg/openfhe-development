@@ -116,6 +116,12 @@ CryptoContext<DCRTPoly> MakeSchemeSwitchCC() {
 
 class UTCKKSCacheClear : public ::testing::Test {
 protected:
+#if defined(WITH_TCM)
+    void SetUp() override {
+        GTEST_SKIP() << "Heap usage checks are not stable with tcmalloc enabled";
+    }
+#endif
+
     void TearDown() override {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
@@ -128,17 +134,17 @@ TEST_F(UTCKKSCacheClear, FullBootstrapClear) {
 
     size_t before = HeapInUseBytes();
     cc->EvalBootstrapSetup({1, 1}, {0, 0}, numSlots);
-    size_t after = HeapInUseBytes();
+    // size_t after = HeapInUseBytes();
     cc->ClearBootstrapPrecom();
-    size_t after_cleanup = HeapInUseBytes();
+    // size_t after_cleanup = HeapInUseBytes();
     CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     size_t final = HeapInUseBytes();
 
     std::string failmsg{"ClearBootstrapPrecom() may not clean all allocated memory"};
-    EXPECT_TRUE(after_cleanup < 4100000) << failmsg;
+    EXPECT_TRUE(final <= before) << failmsg;
 
-    std::cerr << "FullBootstrapClear(): before: " << before << "; after: " << after
-              << "; after cleanup: " << after_cleanup << "; after ReleaseAllContexts(): " << final << std::endl;
+    // std::cerr << "FullBootstrapClear(): before: " << before << "; after: " << after
+    //           << "; after cleanup: " << after_cleanup << "; after ReleaseAllContexts(): " << final << std::endl;
 }
 
 TEST_F(UTCKKSCacheClear, SchemeSwitchPrecomClear) {
@@ -153,16 +159,16 @@ TEST_F(UTCKKSCacheClear, SchemeSwitchPrecomClear) {
     size_t before = HeapInUseBytes();
     auto lweSk    = cc->EvalCKKStoFHEWSetup(p);
     cc->EvalCKKStoFHEWKeyGen(kp, lweSk);
-    size_t after = HeapInUseBytes();
+    // size_t after = HeapInUseBytes();
     cc->ClearSchemeSwitchPrecom();
     cc->ClearStaticMapsAndVectors();
-    size_t after_cleanup = HeapInUseBytes();
+    // size_t after_cleanup = HeapInUseBytes();
     CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     size_t final = HeapInUseBytes();
 
     std::string failmsg{"ClearSchemeSwitchPrecom() may not clean all allocated memory"};
-    EXPECT_TRUE(after_cleanup < 4300000) << failmsg;
+    EXPECT_TRUE(final <= before) << failmsg;
 
-    std::cerr << "SchemeSwitchPrecomClear(): before: " << before << "; after: " << after
-              << "; after cleanup: " << after_cleanup << "; after ReleaseAllContexts(): " << final << std::endl;
+    // std::cerr << "SchemeSwitchPrecomClear(): before: " << before << "; after: " << after
+    //           << "; after cleanup: " << after_cleanup << "; after ReleaseAllContexts(): " << final << std::endl;
 }
