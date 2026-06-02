@@ -396,10 +396,7 @@ public:
    * @return shared_ptr to ILDCRTParams for the first sizeQl Q moduli.
    */
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlHybrid(uint32_t sizeQl) const {
-        if (sizeQl != 0 && sizeQl <= m_paramsQlHybrid.size())
-            return m_paramsQlHybrid[sizeQl - 1];
-
-        OPENFHE_THROW("Index out of bounds.");
+        return m_paramsQlHybrid.at(sizeQl - 1);
     }
 
     /**

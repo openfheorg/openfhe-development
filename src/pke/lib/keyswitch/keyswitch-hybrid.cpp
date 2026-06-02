@@ -245,24 +245,24 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
     const auto paramsQlP = cv[0].GetParams();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-    const auto paramsP     = cryptoParams->GetParamsP();
+    const auto paramsP      = cryptoParams->GetParamsP();
 
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
+    const auto paramsQl   = cryptoParams->GetParamsQlHybrid(sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    std::vector<DCRTPoly> elements(2);
-    elements[0] = cv[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                      cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                      cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                      cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                      cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-    elements[1] = cv[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                      cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                      cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                      cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                      cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+    std::vector<DCRTPoly> elements;
+    elements.emplace_back(cv[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                              cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                              cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                              cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                              cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon()));
+    elements.emplace_back(cv[1].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                              cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                              cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                              cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                              cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon()));
 
     auto result = ciphertext->CloneEmpty();
     result->SetElements(std::move(elements));
@@ -277,7 +277,7 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
     const auto paramsP      = cryptoParams->GetParamsP();
 
     const uint32_t sizeQl = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-    std::shared_ptr<ParmType> paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
+    const auto paramsQl   = cryptoParams->GetParamsQlHybrid(sizeQl);
 
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
