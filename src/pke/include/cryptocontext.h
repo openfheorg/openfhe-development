@@ -623,38 +623,19 @@ public:
     static void ClearStaticMapsAndVectors();
 
     /**
-    * @brief Release the scheme-level bootstrap precomputations held by this
-    * CryptoContext (e.g. FHECKKSRNS::m_bootPrecomMap). Lets callers free
-    * this memory without destroying the context itself, since the
-    * existing ClearEval*Keys / ReleaseAllContexts APIs leave scheme-level
-    * caches alive while any user reference keeps the context alive
-    * (issue #533). No-op for schemes without bootstrap caches.
+    * @brief Clear CKKS bootstrap precomputations cached by this context's scheme.
     */
     void ClearBootstrapPrecom() noexcept {
-        if (m_scheme)
-            m_scheme->ClearBootstrapPrecom();
+        VerifyCKKSScheme(__func__);
+        m_scheme->ClearBootstrapPrecom();
     }
 
     /**
-    * @brief Release scheme-switch precomputations (intermediate CKKS/FHEW
-    * contexts, switching keys, and linear-transform plaintexts) held by this
-    * CryptoContext (issue #533). No-op for schemes that do not support
-    * CKKS<->FHEW switching.
+    * @brief Clear CKKS/FHEW scheme-switch precomputations cached by this context's scheme.
     */
     void ClearSchemeSwitchPrecom() noexcept {
-        if (m_scheme)
-            m_scheme->ClearSchemeSwitchPrecom();
-    }
-
-    /**
-    * @brief Convenience: release all scheme-level caches held by this
-    * CryptoContext (bootstrap + scheme-switch). This does NOT touch the
-    * static eval-key maps — call ClearEvalMultKeys / ClearEvalAutomorphismKeys
-    * for those (issue #533).
-    */
-    void ClearAllCKKSCaches() noexcept {
-        ClearBootstrapPrecom();
-        ClearSchemeSwitchPrecom();
+        VerifyCKKSScheme(__func__);
+        m_scheme->ClearSchemeSwitchPrecom();
     }
 
     /**

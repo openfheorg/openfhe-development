@@ -30,21 +30,15 @@
 //==================================================================================
 
 /*
-  Releasing CKKS scheme-level memory without destroying the CryptoContext
-  (issue #533).
+  Releasing CKKS bootstrap memory.
 
-  CKKS bootstrap caches (FHECKKSRNS::m_bootPrecomMap) and scheme-switch caches
-  (SWITCHCKKSRNS: ccLWE, ccKS, switching keys, decoding-matrix plaintexts) are
-  owned by the scheme, which lives as long as the CryptoContext. Before these
-  APIs, the only way to free them was to drop every CryptoContext handle plus
-  call CryptoContextFactory::ReleaseAllContexts() — if any caller kept a
-  context ref alive, the caches survived.
+  EvalBootstrapSetup() stores precomputed data in the CKKS scheme attached to
+  the CryptoContext. This example measures that memory and shows two ways to
+  release it while the local CryptoContext handle remains alive:
 
-  This example demonstrates the three common patterns:
-
-    1. Clear one slot's bootstrap precom and reuse the context
-    2. Clear all bootstrap precom except a hot slot count
-    3. Full release + allocator trim at shutdown
+    1. Clear the context's bootstrap precomputations directly.
+    2. Call CryptoContextFactory::ReleaseAllContexts(), which now clears
+       per-context CKKS caches before unregistering factory contexts.
 */
 
 #include "openfhe.h"
@@ -54,6 +48,26 @@
 
 using namespace lbcrypto;
 
+#include <cstddef>
+#if defined(__GLIBC__)
+    #include <malloc.h>
+#elif defined(__APPLE__)
+    #include <malloc/malloc.h>
+#endif
+
+std::size_t HeapInUseBytes() {
+#if defined(__GLIBC__)
+    auto info = mallinfo2();
+    return info.uordblks;
+#elif defined(__APPLE__)
+    malloc_statistics_t s{};
+    malloc_zone_statistics(malloc_default_zone(), &s);
+    return s.size_in_use;
+#else
+    OPENFHE_THROW("heap probe unavailable on this allocator");
+#endif
+}
+
 static CryptoContext<DCRTPoly> BuildBootstrapContext() {
     CCParams<CryptoContextCKKSRNS> parameters;
     SecretKeyDist skDist = UNIFORM_TERNARY;
@@ -61,18 +75,12 @@ static CryptoContext<DCRTPoly> BuildBootstrapContext() {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
 
-#if NATIVEINT == 128
-    parameters.SetScalingModSize(78);
-    parameters.SetFirstModSize(89);
-    parameters.SetScalingTechnique(FIXEDAUTO);
-#else
     parameters.SetScalingModSize(59);
     parameters.SetFirstModSize(60);
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
-#endif
 
     std::vector<uint32_t> levelBudget = {4, 4};
-    uint32_t depth = 10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
+    uint32_t depth                    = 10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -87,35 +95,28 @@ static CryptoContext<DCRTPoly> BuildBootstrapContext() {
 int main() {
     auto cc           = BuildBootstrapContext();
     uint32_t ringDim  = cc->GetRingDimension();
-    uint32_t hotSlots = ringDim / 2;
-    uint32_t tmpSlots = ringDim / 4;
+    uint32_t numSlots = ringDim / 2;
 
     std::cout << "ring dim = " << ringDim << "\n";
 
-    // Pattern 1: transient slot count, then clear just that entry.
-    cc->EvalBootstrapSetup({4, 4}, {0, 0}, tmpSlots);
-    std::cout << "after transient setup: "
-              << "bootstrap cache present? " << std::boolalpha << cc->HasBootstrapPrecom(tmpSlots) << "\n";
-    cc->ClearBootstrapPrecom(tmpSlots);
-    std::cout << "after per-slot clear:   " << cc->HasBootstrapPrecom(tmpSlots) << "\n";
+    size_t before = HeapInUseBytes();
+    cc->EvalBootstrapSetup({4, 4}, {0, 0}, numSlots);
+    size_t after = HeapInUseBytes();
+    cc->ClearBootstrapPrecom();
+    size_t after_cleanup = HeapInUseBytes();
+    std::cerr << "EvalBootstrapSetup(): before: " << before << "; after: " << after
+              << "; after ClearBootstrapPrecom(): " << after_cleanup << std::endl;
 
-    // Pattern 2: hot-slot workload with occasional transient bootstraps.
-    cc->EvalBootstrapSetup({4, 4}, {0, 0}, hotSlots);
-    cc->EvalBootstrapSetup({4, 4}, {0, 0}, tmpSlots);
-    std::cout << "with two entries, keep-except hot slots:\n";
-    cc->ClearBootstrapPrecomExcept(hotSlots);
-    std::cout << "  hot still present? " << cc->HasBootstrapPrecom(hotSlots) << "\n";
-    std::cout << "  tmp gone?          " << !cc->HasBootstrapPrecom(tmpSlots) << "\n";
-
-    // Pattern 3: shutdown — release everything and ask the allocator to
-    // return pages to the OS. Useful right before a memory-sensitive phase
-    // of the surrounding application (e.g. forking a child process).
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContextsAndTrim();
-    // After this call, static eval-key maps are empty, every context's
-    // scheme-level caches are released, and the allocator has been asked to
-    // trim. `cc` is still a valid handle but its caches are gone.
-    std::cout << "after ReleaseAllContextsAndTrim:\n";
-    std::cout << "  cc bootstrap caches? " << cc->HasBootstrapPrecom() << "\n";
+    before = HeapInUseBytes();
+    cc->EvalBootstrapSetup({4, 4}, {0, 0}, numSlots);
+    after = HeapInUseBytes();
+    cc->ClearBootstrapPrecom();
+    after_cleanup = HeapInUseBytes();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    size_t final = HeapInUseBytes();
+    std::cerr << "EvalBootstrapSetup(): before: " << before << "; after: " << after
+              << "; after ClearBootstrapPrecom(): " << after_cleanup << "; after ReleaseAllContexts(): " << final
+              << std::endl;
 
     return 0;
 }

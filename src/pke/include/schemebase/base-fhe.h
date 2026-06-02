@@ -68,20 +68,14 @@ public:
     virtual ~FHEBase() = default;
 
     /**
-   * Release any scheme-level cached data produced by EvalBootstrapSetup /
-   * EvalBootstrapPrecompute (e.g. the FHECKKSRNS m_bootPrecomMap). The
-   * default is a no-op for schemes that do not cache bootstrap
-   * precomputations. Exposed so callers can free the memory held by a
-   * CryptoContext without destroying the context itself (issue #533).
+   * Clear scheme-level bootstrap precomputations, if this FHE component
+   * caches any. The default implementation is a no-op.
    */
     virtual void ClearBootstrapPrecom() noexcept {}
 
     /**
-   * Release any scheme-switch cached data produced by the CKKS<->FHEW scheme
-   * switching setup (switching keys, intermediate CKKS/LWE contexts,
-   * precomputed linear-transform plaintexts). Default is a no-op; overridden
-   * by SWITCHCKKSRNS. Exposed so callers can free this memory without
-   * destroying the context (issue #533).
+   * Clear scheme-switch precomputations, if this FHE component owns any.
+   * The default implementation is a no-op.
    */
     virtual void ClearSchemeSwitchPrecom() noexcept {}
 

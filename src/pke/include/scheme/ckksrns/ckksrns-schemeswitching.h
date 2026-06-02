@@ -58,19 +58,10 @@ public:
     virtual ~SWITCHCKKSRNS() = default;
 
     /**
-     * Release cached scheme-switch state so it can be freed without destroying
-     * the CryptoContext (issue #533). Resets the intermediate CKKS and BinFHE
-     * contexts, the CKKS<->FHEW switching keys, the auxiliary ciphertext, and
-     * the precomputed decoding matrix.
-     *
-     * Only drops our own references. If the caller also retained a
-     * BinFHEContext handle via GetBinCCForSchemeSwitch(), their copy and its
-     * bootstrap keys are left untouched — memory is reclaimed only when the
-     * last owner releases it.
+     * Clear cached CKKS/FHEW scheme-switch data held by this object.
+     * Any shared object already returned to the caller stays alive until released.
      */
     void ClearSchemeSwitchPrecom() noexcept override {
-        // Swap with a temporary to guarantee capacity is released. shrink_to_fit
-        // is non-binding on some standard library implementations.
         std::vector<ReadOnlyPlaintext>().swap(m_U0Pre);
         m_ccLWE.reset();
         m_ccKS.reset();

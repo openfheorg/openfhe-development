@@ -63,11 +63,6 @@ protected:
 
 public:
     static void ReleaseAllContexts() {
-        // Release per-context CKKS caches before unregistering contexts;
-        // callers may still hold CryptoContext pointers afterward.
-        for (auto& cc : AllContexts)
-            cc->ClearAllCKKSCaches();
-
         if (!AllContexts.empty())
             AllContexts[0]->ClearStaticMapsAndVectors();
 
