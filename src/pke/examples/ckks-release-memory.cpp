@@ -30,15 +30,11 @@
 //==================================================================================
 
 /*
-  Releasing CKKS bootstrap memory.
+  Example for checking CKKS bootstrap memory cleanup.
 
-  EvalBootstrapSetup() stores precomputed data in the CKKS scheme attached to
-  the CryptoContext. This example measures that memory and shows two ways to
-  release it while the local CryptoContext handle remains alive:
-
-    1. Clear the context's bootstrap precomputations directly.
-    2. Call CryptoContextFactory::ReleaseAllContexts(), which now clears
-       per-context CKKS caches before unregistering factory contexts.
+  EvalBootstrapSetup() caches precomputed data in the CKKS scheme. This example
+  compares ClearBootstrapPrecom() with ReleaseAllContexts() while keeping the
+  local CryptoContext handle alive.
 */
 
 #include "openfhe.h"
