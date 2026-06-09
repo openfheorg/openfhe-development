@@ -44,7 +44,7 @@
 namespace lbcrypto {
 
 class StringEncoding : public PlaintextImpl {
-    std::string ptx;
+    std::string m_ptx;
     // enum EncodingType { CHAR7bit } encoding = CHAR7bit;
 
 public:
@@ -60,7 +60,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     StringEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::string& str)
-        : PlaintextImpl(vp, ep, STRING_ENCODING), ptx(str) {}
+        : PlaintextImpl(vp, ep, STRING_ENCODING), m_ptx(str) {}
 
     // TODO provide wide-character version (for unicode); right now this class
     // only supports strings of 7-bit ASCII characters
@@ -72,7 +72,7 @@ public:
    * @return the un-encoded string
    */
     const std::string& GetStringValue() const override {
-        return ptx;
+        return m_ptx;
     }
 
     /**
@@ -80,7 +80,7 @@ public:
    * @param val to initialize the Plaintext
    */
     void SetStringValue(const std::string& value) override {
-        ptx = value;
+        m_ptx = value;
     }
 
     /**
@@ -101,7 +101,7 @@ public:
    * @return number of elements in this plaintext
    */
     size_t GetLength() const override {
-        return ptx.size();
+        return m_ptx.size();
     }
 
 protected:
@@ -117,7 +117,7 @@ protected:
             return false;
 
         const auto& el = static_cast<const StringEncoding&>(rhs);
-        return ptx == el.ptx;
+        return m_ptx == el.m_ptx;
     }
 
     /**
@@ -125,7 +125,7 @@ protected:
     * @param out
     */
     void PrintValue(std::ostream& out) const override {
-        out << ptx;
+        out << m_ptx;
     }
 };
 

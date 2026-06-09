@@ -62,7 +62,7 @@ using ModulusM = std::pair<NativeInteger, uint64_t>;
  */
 
 class PackedEncoding : public PlaintextImpl {
-    std::vector<int64_t> value;
+    std::vector<int64_t> m_value;
 
 public:
     // these two constructors are used inside of Decrypt
@@ -77,14 +77,14 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
-        : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
+        : PlaintextImpl(vp, ep, PACKED_ENCODING), m_value(coeffs) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::initializer_list<int64_t> coeffs)
-        : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
+        : PlaintextImpl(vp, ep, PACKED_ENCODING), m_value(coeffs) {}
 
     /**
    * @brief Constructs a container with a copy of each of the elements in rhs,
@@ -92,7 +92,7 @@ public:
    * @param rhs - The input object to copy.
    */
     explicit PackedEncoding(const std::vector<int64_t>& rhs)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(rhs) {}
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), m_value(rhs) {}
 
     /**
    * @brief Constructs a container with a copy of each of the elements in il, in
@@ -100,12 +100,12 @@ public:
    * @param arr the list to copy.
    */
     PackedEncoding(std::initializer_list<int64_t> arr)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(arr) {}
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), m_value(arr) {}
 
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value() {}
+    PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), m_value() {}
 
     static uint32_t GetAutomorphismGenerator(uint32_t m) {
         return m_automorphismGenerator[m];
@@ -116,7 +116,7 @@ public:
     bool Decode() override;
 
     const std::vector<int64_t>& GetPackedValue() const override {
-        return value;
+        return m_value;
     }
 
     /**
@@ -124,7 +124,7 @@ public:
    * @param val integer vector to initialize the plaintext
    */
     void SetIntVectorValue(const std::vector<int64_t>& val) override {
-        value = val;
+        m_value = val;
     }
 
     /**
@@ -133,7 +133,7 @@ public:
    * @return the length of the plaintext in terms of the number of bits.
    */
     size_t GetLength() const override {
-        return value.size();
+        return m_value.size();
     }
 
     /**
@@ -157,7 +157,7 @@ public:
    * @param siz
    */
     void SetLength(size_t siz) override {
-        value.resize(siz);
+        m_value.resize(siz);
     }
 
     /**
@@ -173,11 +173,11 @@ protected:
     void PrintValue(std::ostream& out) const override {
         out << "(";
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i       = m_value.size();
         bool allZeroes = true;
         while (i > 0) {
             --i;
-            if (value[i] != 0) {
+            if (m_value[i] != 0) {
                 allZeroes = false;
                 break;
             }
@@ -185,7 +185,7 @@ protected:
 
         if (allZeroes == false) {
             for (size_t j = 0; j <= i; ++j)
-                out << value[j] << ", ";
+                out << m_value[j] << ", ";
         }
         out << "... )";
     }
@@ -202,7 +202,7 @@ protected:
             return false;
 
         const auto& el = static_cast<const PackedEncoding&>(rhs);
-        return value == el.value;
+        return m_value == el.m_value;
     }
 
 private:

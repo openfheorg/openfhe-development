@@ -242,9 +242,9 @@ class CryptoContextImpl : public Serializable {
         const std::string& keyTag, const std::vector<uint32_t>& indexList);
 
     // cached evalmult keys, by secret key UID
-    static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
+    static std::map<std::string, std::vector<EvalKey<Element>>> m_evalMultKeyMap;
     // cached evalautomorphism keys, by secret key UID
-    static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
+    static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> m_evalAutomorphismKeyMap;
 
 protected:
     // crypto parameters
@@ -3613,15 +3613,14 @@ public:
                       const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
                       uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1) {
         m_scheme->EvalFBTSetup(*this, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                                  depthLeveledComputation, order);
+                               depthLeveledComputation, order);
     }
 
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
                                 uint32_t levelToReduce = 0, size_t order = 1) {
-        return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce,
-                                    order);
+        return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order);
     }
 
     template <typename VectorDataType>
@@ -3892,7 +3891,7 @@ public:
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
         return m_scheme->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
-                                                       unit);
+                                                    unit);
     }
 
     /**

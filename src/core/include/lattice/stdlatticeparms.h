@@ -56,8 +56,8 @@ namespace lbcrypto {
 // given ring dimension, and you can get the ring dimension given a maxQ
 
 // The code below is very specific to the layout of the DistributionType and
-// SecurityLevel enums IF you change them, go look at and change byRing and
-// byLogQ
+// SecurityLevel enums IF you change them, go look at and change m_byRing and
+// m_byLogQ
 
 enum DistributionType {
     HEStd_uniform,
@@ -80,10 +80,10 @@ SecurityLevel convertToSecurityLevel(uint32_t num);
 std::ostream& operator<<(std::ostream& s, SecurityLevel sl);
 
 class StdLatticeParm {
-    DistributionType distType;
-    uint32_t ringDim;
-    SecurityLevel minSecLev;
-    uint32_t maxLogQ;
+    DistributionType m_distType;
+    uint32_t m_ringDim;
+    SecurityLevel m_minSecLev;
+    uint32_t m_maxLogQ;
 
     // NOTE!!! the declaration below relies upon there being three possible values
     // for the first index (the distribution type), and six possible values for
@@ -96,45 +96,45 @@ class StdLatticeParm {
     // will suffer MAKE SURE that the number of entries in the DistributionType
     // enum is == the first index, and MAKE SURE that the number of entries in the
     // SecurityLevel enum is == the second index
-    static std::map<uint32_t, StdLatticeParm*> byRing[3][6];
-    static std::map<uint32_t, StdLatticeParm*> byLogQ[3][6];
+    static std::map<uint32_t, StdLatticeParm*> m_byRing[3][6];
+    static std::map<uint32_t, StdLatticeParm*> m_byLogQ[3][6];
 
-    static std::vector<StdLatticeParm> StandardLatticeParmSets;
-    static bool initialized;
+    static std::vector<StdLatticeParm> m_StandardLatticeParmSets;
+    static bool m_initialized;
 
 public:
     StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
-        : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}
+        : m_distType(distType), m_ringDim(ringDim), m_minSecLev(minSecLev), m_maxLogQ(maxLogQ) {}
 
     static void initializeLookups() {
-        for (size_t i = 0; i < StandardLatticeParmSets.size(); i++) {
-            StdLatticeParm& s                                                              = StandardLatticeParmSets[i];
-            byRing[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.ringDim] = &s;
-            byLogQ[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.maxLogQ] = &s;
+        for (size_t i = 0; i < m_StandardLatticeParmSets.size(); i++) {
+            StdLatticeParm& s = m_StandardLatticeParmSets[i];
+            m_byRing[static_cast<int>(s.m_distType)][static_cast<int>(s.m_minSecLev)][s.m_ringDim] = &s;
+            m_byLogQ[static_cast<int>(s.m_distType)][static_cast<int>(s.m_minSecLev)][s.m_maxLogQ] = &s;
         }
-        initialized = true;
+        m_initialized = true;
     }
 
     static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
         int distTypeIdx  = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
-        if (!initialized)
+        if (!m_initialized)
             initializeLookups();
-        auto it = byRing[distTypeIdx][minSecLevIdx].find(ringDim);
-        if (it == byRing[distTypeIdx][minSecLevIdx].end())
+        auto it = m_byRing[distTypeIdx][minSecLevIdx].find(ringDim);
+        if (it == m_byRing[distTypeIdx][minSecLevIdx].end())
             return 0;
         return it->second->getMaxLogQ();
     }
 
     static uint32_t FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
-        if (!initialized)
+        if (!m_initialized)
             initializeLookups();
         uint32_t prev = 0;
 
         int distTypeIdx  = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
-        uint32_t n          = 0;
-        for (std::pair<const unsigned int, StdLatticeParm*>& it : byLogQ[distTypeIdx][minSecLevIdx]) {
+        uint32_t n       = 0;
+        for (std::pair<const unsigned int, StdLatticeParm*>& it : m_byLogQ[distTypeIdx][minSecLevIdx]) {
             if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
                 return it.second->getRingDim();
             prev = it.second->getMaxLogQ();
@@ -144,16 +144,16 @@ public:
     }
 
     DistributionType getDistType() const {
-        return distType;
+        return m_distType;
     }
     uint32_t getRingDim() const {
-        return ringDim;
+        return m_ringDim;
     }
     SecurityLevel getMinSecLev() const {
-        return minSecLev;
+        return m_minSecLev;
     }
     uint32_t getMaxLogQ() const {
-        return maxLogQ;
+        return m_maxLogQ;
     }
 };
 

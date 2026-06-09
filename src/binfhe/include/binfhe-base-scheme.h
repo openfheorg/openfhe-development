@@ -67,11 +67,11 @@ public:
 
     explicit BinFHEScheme(BINFHE_METHOD method) {
         if (method == AP)
-            ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
+            m_ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
         else if (method == GINX)
-            ACCscheme = std::make_shared<RingGSWAccumulatorCGGI>();
+            m_ACCscheme = std::make_shared<RingGSWAccumulatorCGGI>();
         else if (method == LMKCDEY)
-            ACCscheme = std::make_shared<RingGSWAccumulatorLMKCDEY>();
+            m_ACCscheme = std::make_shared<RingGSWAccumulatorLMKCDEY>();
         else
             OPENFHE_THROW("method is invalid");
     }
@@ -145,8 +145,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                           ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT,
-                           NativeInteger beta) const;
+                           ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT, NativeInteger beta) const;
 
     /**
    * Evaluate a round down function
@@ -172,8 +171,8 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
-                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                           NativeInteger beta, bool schemeSwitch = false) const;
+                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta,
+                           bool schemeSwitch = false) const;
 
     /**
    * Evaluate digit decomposition over a large precision LWE ciphertext
@@ -232,8 +231,8 @@ private:
                                 ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
 
 protected:
-    std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};
-    std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};
+    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme{std::make_shared<LWEEncryptionScheme>()};
+    std::shared_ptr<RingGSWAccumulator> m_ACCscheme{nullptr};
 
     /**
    * Checks type of input function

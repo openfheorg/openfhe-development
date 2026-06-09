@@ -119,10 +119,10 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         m_correctionFactor = correctionFactor;
     }
 
-    m_bootPrecomMap[slots]  = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom            = m_bootPrecomMap[slots];
-    precom->m_slots         = slots;
-    precom->BTSlotsEncoding = BTSlotsEncoding;
+    m_bootPrecomMap[slots]    = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom              = m_bootPrecomMap[slots];
+    precom->m_slots           = slots;
+    precom->m_BTSlotsEncoding = BTSlotsEncoding;
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -205,7 +205,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
         uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
         uint32_t lDec;
-        if (precom->BTSlotsEncoding) {
+        if (precom->m_BTSlotsEncoding) {
             lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
         }
         else {
@@ -230,7 +230,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
                         U1hatT[j][i] = std::conj(U1[i][j]);
                     }
                 }
-                if (cc.GetCKKSDataType() == REAL || !precom->BTSlotsEncoding) {
+                if (cc.GetCKKSDataType() == REAL || !precom->m_BTSlotsEncoding) {
                     precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
                     precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
                 }
@@ -253,7 +253,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             }
         }
         else {
-            bool flagPack      = !(cc.GetCKKSDataType() == REAL || !precom->BTSlotsEncoding);
+            bool flagPack      = !(cc.GetCKKSDataType() == REAL || !precom->m_BTSlotsEncoding);
             precom->m_U0PreFFT = EvalSlotsToCoeffsPrecompute(cc, ksiPows, rotGroup, false, scaleDec, lDec, flagPack);
             precom->m_U0hatTPreFFT =
                 EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc, flagPack);
@@ -304,9 +304,9 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
     if (!cryptoParams)
         OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
-    auto M  = cc->GetCyclotomicOrder();
+    auto M = cc->GetCyclotomicOrder();
 
-    slots                         = (slots == 0) ? M / 4 : slots;
+    slots                                = (slots == 0) ? M / 4 : slots;
     const auto bootstrapRotationsIndices = FindBootstrapRotationIndices(slots, M);
 
     std::set<uint32_t> indexList;
@@ -395,7 +395,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
 
     uint32_t lEnc = L0 - compositeDegree * (p.m_paramsEnc.lvlb + 1);
     uint32_t lDec;
-    if (p.BTSlotsEncoding) {
+    if (p.m_BTSlotsEncoding) {
         lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
     }
     else {
@@ -444,7 +444,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
         }
     }
     else {
-        bool flagPack    = !(cc.GetCKKSDataType() == REAL || !p.BTSlotsEncoding);
+        bool flagPack    = !(cc.GetCKKSDataType() == REAL || !p.m_BTSlotsEncoding);
         p.m_U0PreFFT     = EvalSlotsToCoeffsPrecompute(cc, ksiPows, rotGroup, false, scaleDec, lDec, flagPack);
         p.m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc, flagPack);
     }
@@ -455,7 +455,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     uint32_t slots = ciphertext->GetSlots();
     auto& p        = GetBootPrecom(slots);
 
-    if (p.BTSlotsEncoding) {
+    if (p.m_BTSlotsEncoding) {
         return EvalBootstrapStCFirst(ciphertext, numIterations, precision);
         // AA: Note that in the FIXEDMANUAL case, EvalBootstrap and EvalBootstrapStCFirst return ciphertexts with different NoiseDeg.
     }

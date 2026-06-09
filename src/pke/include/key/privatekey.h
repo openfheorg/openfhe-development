@@ -97,7 +97,7 @@ public:
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(std::move(rhs.m_sk)) {}
 
     operator bool() const {
-        return this->context != nullptr;
+        return this->m_context != nullptr;
     }
 
     /**

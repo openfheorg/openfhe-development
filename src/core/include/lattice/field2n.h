@@ -57,7 +57,7 @@ namespace lbcrypto {
 class Field2n : public std::vector<std::complex<double>>, public Serializable {
 private:
     // Format of the field element
-    Format format{Format::COEFFICIENT};
+    Format m_format{Format::COEFFICIENT};
 
 public:
     /**
@@ -65,7 +65,7 @@ public:
    */
     Field2n() noexcept = default;
 
-    explicit Field2n(Format f) : format(f) {}
+    explicit Field2n(Format f) : m_format(f) {}
 
     /**
    * @brief Constructor for field element
@@ -77,7 +77,7 @@ public:
    */
     Field2n(uint32_t size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
         : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()),
-          format(f) {}
+          m_format(f) {}
 
     /**
    * @brief Constructor from ring element
@@ -109,7 +109,7 @@ public:
    * @return format/representation of the field element
    */
     Format GetFormat() const {
-        return format;
+        return m_format;
     }
 
     /**
@@ -224,7 +224,7 @@ public:
    * representation
    */
     inline void SetFormat(Format f) {
-        if (format != f)
+        if (m_format != f)
             SwitchFormat();
     }
 
@@ -332,7 +332,7 @@ public:
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<std::vector<std::complex<double>>>(this));
-        ar(::cereal::make_nvp("f", format));
+        ar(::cereal::make_nvp("f", m_format));
     }
 
     template <class Archive>
@@ -342,7 +342,7 @@ public:
                           " is from a later version of the library");
         }
         ar(::cereal::base_class<std::vector<std::complex<double>>>(this));
-        ar(::cereal::make_nvp("f", format));
+        ar(::cereal::make_nvp("f", m_format));
     }
 
     std::string SerializedObjectName() const override {

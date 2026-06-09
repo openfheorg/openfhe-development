@@ -74,7 +74,7 @@ public:
    *@param &rhs key to copy from
    */
     EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
-        : EvalKeyImpl<Element>(rhs.context), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
+        : EvalKeyImpl<Element>(rhs.m_context), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
 
     /**
    * Move constructor
@@ -82,10 +82,10 @@ public:
    *@param &rhs key to move from
    */
     EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
-        : EvalKeyImpl<Element>(rhs.context), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
+        : EvalKeyImpl<Element>(rhs.m_context), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
 
     operator bool() const {
-        return (this->context != nullptr) && (m_AKey.size() != 0) && (m_BKey.size() != 0);
+        return (this->m_context != nullptr) && (m_AKey.size() != 0) && (m_BKey.size() != 0);
     }
 
     /**
@@ -94,9 +94,9 @@ public:
    * @param &rhs key to copy from
    */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
-        this->context = rhs.context;
-        m_AKey        = rhs.m_AKey;
-        m_BKey        = rhs.m_BKey;
+        this->m_context = rhs.m_context;
+        m_AKey          = rhs.m_AKey;
+        m_BKey          = rhs.m_BKey;
         return *this;
     }
 
@@ -106,9 +106,9 @@ public:
    * @param &rhs key to move from
    */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
-        this->context = std::move(rhs.context);
-        m_AKey        = std::move(rhs.m_AKey);
-        m_BKey        = std::move(rhs.m_BKey);
+        this->m_context = std::move(rhs.m_context);
+        m_AKey          = std::move(rhs.m_AKey);
+        m_BKey          = std::move(rhs.m_BKey);
         return *this;
     }
 

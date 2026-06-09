@@ -36,12 +36,12 @@
 namespace lbcrypto {
 
 template <>
-std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts = {};
+std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::m_AllContexts = {};
 
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                                                   std::shared_ptr<SchemeBase<Element>> scheme) {
-    for (CryptoContext<Element> cc : CryptoContextFactory<Element>::AllContexts) {
+    for (CryptoContext<Element> cc : CryptoContextFactory<Element>::m_AllContexts) {
         if (*cc->GetScheme().get() == *scheme.get() && *cc->GetCryptoParameters().get() == *params.get()) {
             if (cc->GetEncodingParams()->GetPlaintextRootOfUnity() != 0) {
                 PackedEncoding::SetParams(cc->GetCyclotomicOrder(), cc->GetEncodingParams());
@@ -55,7 +55,7 @@ CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_pt
 
 template <typename Element>
 void CryptoContextFactory<Element>::AddContext(CryptoContext<Element> cc) {
-    CryptoContextFactory<Element>::AllContexts.push_back(cc);
+    CryptoContextFactory<Element>::m_AllContexts.push_back(cc);
 
     if (cc->GetEncodingParams()->GetPlaintextRootOfUnity() != 0) {
         PackedEncoding::SetParams(cc->GetCyclotomicOrder(), cc->GetEncodingParams());

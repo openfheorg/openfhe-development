@@ -64,22 +64,22 @@ class PlaintextImpl {
 protected:
     enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
 
-    bool isEncoded{false};
-    PtxtPolyType typeFlag;
-    EncodingParams encodingParams;
+    bool m_isEncoded{false};
+    PtxtPolyType m_typeFlag;
+    EncodingParams m_encodingParams;
 
-    Poly encodedVector;
-    NativePoly encodedNativeVector;
-    DCRTPoly encodedVectorDCRT;
+    Poly m_encodedVector;
+    NativePoly m_encodedNativeVector;
+    DCRTPoly m_encodedVectorDCRT;
 
-    PlaintextEncodings ptxtEncoding{INVALID_ENCODING};
-    SCHEME schemeID{SCHEME::INVALID_SCHEME};
-    CKKSDataType ckksDataType{REAL};
-    double scalingFactor{1.0};
-    NativeInteger scalingFactorInt{1};
-    size_t level{0};
-    size_t noiseScaleDeg{1};
-    uint32_t slots{0};
+    PlaintextEncodings m_ptxtEncoding{INVALID_ENCODING};
+    SCHEME m_schemeID{SCHEME::INVALID_SCHEME};
+    CKKSDataType m_ckksDataType{REAL};
+    double m_scalingFactor{1.0};
+    NativeInteger m_scalingFactorInt{1};
+    size_t m_level{0};
+    size_t m_noiseScaleDeg{1};
+    uint32_t m_slots{0};
 
     /**
     * @brief PrintValue() is called by operator<<
@@ -99,29 +99,29 @@ protected:
 public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
                   SCHEME schemeTag = SCHEME::INVALID_SCHEME)
-        : typeFlag(IsPoly),
-          encodingParams(std::move(ep)),
-          encodedVector(vp, Format::COEFFICIENT),
-          ptxtEncoding(encoding),
-          schemeID(schemeTag) {}
+        : m_typeFlag(IsPoly),
+          m_encodingParams(std::move(ep)),
+          m_encodedVector(vp, Format::COEFFICIENT),
+          m_ptxtEncoding(encoding),
+          m_schemeID(schemeTag) {}
 
     PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
                   SCHEME schemeTag = SCHEME::INVALID_SCHEME)
-        : typeFlag(IsNativePoly),
-          encodingParams(std::move(ep)),
-          encodedNativeVector(vp, Format::COEFFICIENT),
-          ptxtEncoding(encoding),
-          schemeID(schemeTag) {}
+        : m_typeFlag(IsNativePoly),
+          m_encodingParams(std::move(ep)),
+          m_encodedNativeVector(vp, Format::COEFFICIENT),
+          m_ptxtEncoding(encoding),
+          m_schemeID(schemeTag) {}
 
-    // TODO: eliminate use of encodedVector in coefpackedencoding to remove encodedVector init here
+    // TODO: eliminate use of m_encodedVector in coefpackedencoding to remove m_encodedVector init here
     PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
                   SCHEME schemeTag = SCHEME::INVALID_SCHEME)
-        : typeFlag(IsDCRTPoly),
-          encodingParams(std::move(ep)),
-          encodedVector(vp, Format::COEFFICIENT),
-          encodedVectorDCRT(vp, Format::COEFFICIENT),
-          ptxtEncoding(encoding),
-          schemeID(schemeTag) {}
+        : m_typeFlag(IsDCRTPoly),
+          m_encodingParams(std::move(ep)),
+          m_encodedVector(vp, Format::COEFFICIENT),
+          m_encodedVectorDCRT(vp, Format::COEFFICIENT),
+          m_ptxtEncoding(encoding),
+          m_schemeID(schemeTag) {}
 
     PlaintextImpl(const PlaintextImpl& rhs) = default;
 
@@ -134,42 +134,42 @@ public:
    * @return Encoding type used by this plaintext
    */
     PlaintextEncodings GetEncodingType() const {
-        return ptxtEncoding;
+        return m_ptxtEncoding;
     }
 
     /**
    * Get the scaling factor of the plaintext for CKKS-based plaintexts.
    */
     double GetScalingFactor() const {
-        return scalingFactor;
+        return m_scalingFactor;
     }
 
     /**
    * Set the scaling factor of the plaintext for CKKS-based plaintexts.
    */
     void SetScalingFactor(double sf) {
-        scalingFactor = sf;
+        m_scalingFactor = sf;
     }
 
     /**
    * Get the scaling factor of the plaintext for BGV-based plaintexts.
    */
     NativeInteger GetScalingFactorInt() const {
-        return scalingFactorInt;
+        return m_scalingFactorInt;
     }
 
     /**
    * Set the scaling factor of the plaintext for BGV-based plaintexts.
    */
     void SetScalingFactorInt(NativeInteger sf) {
-        scalingFactorInt = sf;
+        m_scalingFactorInt = sf;
     }
 
     /**
    * Get the encryption technique of the plaintext for BFV-based plaintexts.
    */
     SCHEME GetSchemeID() const {
-        return schemeID;
+        return m_schemeID;
     }
 
     /**
@@ -177,7 +177,7 @@ public:
    * @return true when encoding is done
    */
     bool IsEncoded() const {
-        return isEncoded;
+        return m_isEncoded;
     }
 
     /**
@@ -185,7 +185,7 @@ public:
    * @return Encoding params used with this plaintext
    */
     EncodingParams GetEncodingParams() const {
-        return encodingParams;
+        return m_encodingParams;
     }
 
     /**
@@ -193,7 +193,7 @@ public:
    * @return CKKS data type with this plaintext
    */
     CKKSDataType GetCKKSDataType() const {
-        return ckksDataType;
+        return m_ckksDataType;
     }
 
     /**
@@ -201,7 +201,7 @@ public:
    * @return Set CKKS data type to be used with this plaintext
    */
     void SetCKKSDataType(CKKSDataType cdt) {
-        ckksDataType = cdt;
+        m_ckksDataType = cdt;
     }
 
     /**
@@ -244,12 +244,12 @@ public:
    * @param fmt
    */
     void SetFormat(Format fmt) {
-        if (typeFlag == IsPoly)
-            encodedVector.SetFormat(fmt);
-        else if (typeFlag == IsNativePoly)
-            encodedNativeVector.SetFormat(fmt);
+        if (m_typeFlag == IsPoly)
+            m_encodedVector.SetFormat(fmt);
+        else if (m_typeFlag == IsNativePoly)
+            m_encodedNativeVector.SetFormat(fmt);
         else
-            encodedVectorDCRT.SetFormat(fmt);
+            m_encodedVectorDCRT.SetFormat(fmt);
     }
 
     /**
@@ -271,9 +271,9 @@ public:
    * @return ring dimension on the underlying element
    */
     uint32_t GetElementRingDimension() const {
-        return typeFlag == IsPoly ? encodedVector.GetRingDimension() :
-                                    (typeFlag == IsNativePoly ? encodedNativeVector.GetRingDimension() :
-                                                                encodedVectorDCRT.GetRingDimension());
+        return m_typeFlag == IsPoly ? m_encodedVector.GetRingDimension() :
+                                      (m_typeFlag == IsNativePoly ? m_encodedNativeVector.GetRingDimension() :
+                                                                    m_encodedVectorDCRT.GetRingDimension());
     }
 
     /**
@@ -281,9 +281,9 @@ public:
    * @return modulus on the underlying elemenbt
    */
     BigInteger GetElementModulus() const {
-        return typeFlag == IsPoly ? encodedVector.GetModulus() :
-                                    (typeFlag == IsNativePoly ? BigInteger(encodedNativeVector.GetModulus()) :
-                                                                encodedVectorDCRT.GetModulus());
+        return m_typeFlag == IsPoly ? m_encodedVector.GetModulus() :
+                                      (m_typeFlag == IsNativePoly ? BigInteger(m_encodedNativeVector.GetModulus()) :
+                                                                    m_encodedVectorDCRT.GetModulus());
     }
 
     /**
@@ -308,46 +308,46 @@ public:
    * @return the degree of the scaling factor of the plaintext
    */
     size_t GetNoiseScaleDeg() const {
-        return noiseScaleDeg;
+        return m_noiseScaleDeg;
     }
 
     /*
    * Method to set the degree of the scaling factor of a plaintext.
    */
     void SetNoiseScaleDeg(size_t d) {
-        noiseScaleDeg = d;
+        m_noiseScaleDeg = d;
     }
 
     /*
-   * Method to get the level of a plaintext.
+   * Method to get the m_level of a plaintext.
    *
-   * @return the level of the plaintext
+   * @return the m_level of the plaintext
    */
     size_t GetLevel() const {
-        return level;
+        return m_level;
     }
 
     /*
-   * Method to set the level of a plaintext.
+   * Method to set the m_level of a plaintext.
    */
     void SetLevel(size_t l) {
-        level = l;
+        m_level = l;
     }
 
     /*
-   * Method to get the level of a plaintext.
+   * Method to get the m_level of a plaintext.
    *
-   * @return the level of the plaintext
+   * @return the m_level of the plaintext
    */
     uint32_t GetSlots() const {
-        return slots;
+        return m_slots;
     }
 
     /*
-   * Method to set the level of a plaintext.
+   * Method to set the m_level of a plaintext.
    */
     void SetSlots(uint32_t l) {
-        slots = l;
+        m_slots = l;
     }
 
     virtual double GetLogError() const {
@@ -435,12 +435,12 @@ inline bool operator!=(const Plaintext& p1, const Plaintext& p2) {
  */
 template <>
 inline const Poly& PlaintextImpl::GetElement<Poly>() const {
-    return encodedVector;
+    return m_encodedVector;
 }
 
 template <>
 inline Poly& PlaintextImpl::GetElement<Poly>() {
-    return encodedVector;
+    return m_encodedVector;
 }
 
 /**
@@ -449,12 +449,12 @@ inline Poly& PlaintextImpl::GetElement<Poly>() {
  */
 template <>
 inline const NativePoly& PlaintextImpl::GetElement<NativePoly>() const {
-    return encodedNativeVector;
+    return m_encodedNativeVector;
 }
 
 template <>
 inline NativePoly& PlaintextImpl::GetElement<NativePoly>() {
-    return encodedNativeVector;
+    return m_encodedNativeVector;
 }
 
 /**
@@ -463,12 +463,12 @@ inline NativePoly& PlaintextImpl::GetElement<NativePoly>() {
  */
 template <>
 inline const DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() const {
-    return encodedVectorDCRT;
+    return m_encodedVectorDCRT;
 }
 
 template <>
 inline DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() {
-    return encodedVectorDCRT;
+    return m_encodedVectorDCRT;
 }
 
 }  // namespace lbcrypto

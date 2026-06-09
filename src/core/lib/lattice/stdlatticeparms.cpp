@@ -111,15 +111,15 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     return s;
 }
 
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byRing[3][6];
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byLogQ[3][6];
+std::map<uint32_t, StdLatticeParm*> StdLatticeParm::m_byRing[3][6];
+std::map<uint32_t, StdLatticeParm*> StdLatticeParm::m_byLogQ[3][6];
 
-bool StdLatticeParm::initialized = false;
+bool StdLatticeParm::m_initialized = false;
 
 // this is a collection of all of the parameter sets
 // the constructor for each one saves and indexes it so that you can search for
 // it with static methods in the StdLatticeParm class
-std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
+std::vector<StdLatticeParm> StdLatticeParm::m_StandardLatticeParmSets({
     StdLatticeParm(HEStd_uniform, 1024, HEStd_128_classic, 29),
     StdLatticeParm(HEStd_uniform, 1024, HEStd_192_classic, 21),
     StdLatticeParm(HEStd_uniform, 1024, HEStd_256_classic, 16),

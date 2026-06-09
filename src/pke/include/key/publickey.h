@@ -87,7 +87,7 @@ public:
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_h(std::move(rhs.m_h)) {}
 
     operator bool() const {
-        return static_cast<bool>(this->context) && m_h.size() != 0;
+        return static_cast<bool>(this->m_context) && m_h.size() != 0;
     }
 
     /**

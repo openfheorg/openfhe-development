@@ -54,7 +54,7 @@ class CryptoParametersBase;
  */
 template <typename Element>
 class CryptoContextFactory {
-    static std::vector<CryptoContext<Element>> AllContexts;
+    static std::vector<CryptoContext<Element>> m_AllContexts;
 
 protected:
     static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
@@ -63,13 +63,13 @@ protected:
 
 public:
     static void ReleaseAllContexts() {
-        if (AllContexts.size() > 0)
-            AllContexts[0]->ClearStaticMapsAndVectors();
-        AllContexts.clear();
+        if (m_AllContexts.size() > 0)
+            m_AllContexts[0]->ClearStaticMapsAndVectors();
+        m_AllContexts.clear();
     }
 
     static int GetContextCount() {
-        return AllContexts.size();
+        return m_AllContexts.size();
     }
 
     static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
@@ -82,12 +82,12 @@ public:
     static CryptoContext<Element> GetFullContextByDeserializedContext(const CryptoContext<Element> context);
 
     static const std::vector<CryptoContext<Element>>& GetAllContexts() {
-        return AllContexts;
+        return m_AllContexts;
     }
 };
 
 template <>
-std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts;
+std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::m_AllContexts;
 
 }  // namespace lbcrypto
 

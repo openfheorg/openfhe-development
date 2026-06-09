@@ -47,7 +47,7 @@ namespace lbcrypto {
 
 class CoefPackedEncoding : public PlaintextImpl {
 private:
-    std::vector<int64_t> value;
+    std::vector<int64_t> m_value;
 
 protected:
     /**
@@ -58,11 +58,11 @@ protected:
         out << "(";
 
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i       = m_value.size();
         bool allZeroes = true;
         while (i > 0) {
             --i;
-            if (value[i] != 0) {
+            if (m_value[i] != 0) {
                 allZeroes = false;
                 break;
             }
@@ -70,7 +70,7 @@ protected:
 
         if (allZeroes == false) {
             for (size_t j = 0; j <= i; ++j)
-                out << value[j] << ", ";
+                out << m_value[j] << ", ";
         }
         out << "... )";
     }
@@ -87,7 +87,7 @@ protected:
             return false;
 
         const auto& el = static_cast<const CoefPackedEncoding&>(rhs);
-        return value == el.value;
+        return m_value == el.m_value;
     }
 
 public:
@@ -104,7 +104,7 @@ public:
                                                   bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs,
                        SCHEME schemeId = SCHEME::INVALID_SCHEME)
-        : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId), value(coeffs) {}
+        : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId), m_value(coeffs) {}
 
     ~CoefPackedEncoding() override = default;
 
@@ -113,7 +113,7 @@ public:
    * @return the un-encoded scalar
    */
     const std::vector<int64_t>& GetCoefPackedValue() const override {
-        return value;
+        return m_value;
     }
 
     /**
@@ -121,7 +121,7 @@ public:
    * @param val integer vector to initialize the plaintext
    */
     void SetIntVectorValue(const std::vector<int64_t>& val) override {
-        value = val;
+        m_value = val;
     }
 
     /**
@@ -142,7 +142,7 @@ public:
    * @return number of elements in this plaintext
    */
     size_t GetLength() const override {
-        return value.size();
+        return m_value.size();
     }
 
     /**
@@ -150,7 +150,7 @@ public:
    * @param siz
    */
     void SetLength(size_t siz) override {
-        value.resize(siz);
+        m_value.resize(siz);
     }
 };
 

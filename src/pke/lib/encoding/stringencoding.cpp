@@ -41,41 +41,41 @@ static const size_t charPtm      = (1 << 8);
 static const uint32_t CHARMARKER = (1 << 7);
 
 bool StringEncoding::Encode() {
-    if (this->isEncoded)
+    if (m_isEncoded)
         return true;
-    auto mod = this->encodingParams->GetPlaintextModulus();
+    auto mod = m_encodingParams->GetPlaintextModulus();
 
     if (mod != 256) {
         OPENFHE_THROW("Plaintext modulus must be " + std::to_string(charPtm) + " for string encoding");
     }
 
-    if (this->typeFlag == IsNativePoly) {
-        this->encodedNativeVector.SetValuesToZero();
+    if (m_typeFlag == IsNativePoly) {
+        m_encodedNativeVector.SetValuesToZero();
         size_t i = 0;
-        for (; i < ptx.size() && i < this->encodedNativeVector.GetLength(); i++) {
-            this->encodedNativeVector[i] = static_cast<uint32_t>(ptx[i]);
+        for (; i < m_ptx.size() && i < m_encodedNativeVector.GetLength(); i++) {
+            m_encodedNativeVector[i] = static_cast<uint32_t>(m_ptx[i]);
         }
-        for (; i < this->encodedNativeVector.GetLength(); i++) {
-            this->encodedNativeVector[i] = CHARMARKER;
+        for (; i < m_encodedNativeVector.GetLength(); i++) {
+            m_encodedNativeVector[i] = CHARMARKER;
         }
     }
     else {
-        this->encodedVector.SetValuesToZero();
+        m_encodedVector.SetValuesToZero();
         size_t i = 0;
-        for (; i < ptx.size() && i < this->encodedVector.GetLength(); i++) {
-            this->encodedVector[i] = static_cast<uint32_t>(ptx[i]);
+        for (; i < m_ptx.size() && i < m_encodedVector.GetLength(); i++) {
+            m_encodedVector[i] = static_cast<uint32_t>(m_ptx[i]);
         }
-        for (; i < this->encodedVector.GetLength(); i++) {
-            this->encodedVector[i] = CHARMARKER;
+        for (; i < m_encodedVector.GetLength(); i++) {
+            m_encodedVector[i] = CHARMARKER;
         }
     }
 
-    if (this->typeFlag == IsDCRTPoly) {
-        this->encodedVectorDCRT = this->encodedVector;
-        this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+    if (m_typeFlag == IsDCRTPoly) {
+        m_encodedVectorDCRT = m_encodedVector;
+        m_encodedVectorDCRT.SetFormat(Format::EVALUATION);
     }
 
-    this->isEncoded = true;
+    m_isEncoded = true;
     return true;
 }
 
@@ -91,17 +91,17 @@ static void fillPlaintext(const P& poly, std::string& str, const PlaintextModulu
 }
 
 bool StringEncoding::Decode() {
-    auto mod = this->encodingParams->GetPlaintextModulus();
+    auto mod = m_encodingParams->GetPlaintextModulus();
 
-    if (this->typeFlag == IsNativePoly) {
-        fillPlaintext(this->encodedNativeVector, this->ptx, mod);
+    if (m_typeFlag == IsNativePoly) {
+        fillPlaintext(m_encodedNativeVector, m_ptx, mod);
         // clears the values containing information about the noise
-        this->encodedNativeVector.SetValuesToZero();
+        m_encodedNativeVector.SetValuesToZero();
     }
     else {
-        fillPlaintext(this->encodedVector, this->ptx, mod);
+        fillPlaintext(m_encodedVector, m_ptx, mod);
         // clears the values containing information about the noise
-        this->encodedVector.SetValuesToZero();
+        m_encodedVector.SetValuesToZero();
     }
 
     return true;

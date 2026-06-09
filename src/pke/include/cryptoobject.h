@@ -52,14 +52,15 @@ namespace lbcrypto {
 template <typename Element>
 class CryptoObject {
 protected:
-    CryptoContext<Element> context;  // crypto context belongs to the tag used to find the evaluation key needed
-                                     // for SHE/FHE operations
-    std::string keyTag;
+    CryptoContext<Element> m_context;  // crypto context belongs to the tag used to find the evaluation key needed
+                                       // for SHE/FHE operations
+    std::string m_keyTag;
 
 public:
     CryptoObject() = default;
 
-    explicit CryptoObject(const CryptoContext<Element>& cc, const std::string& tag = "") : context(cc), keyTag(tag) {}
+    explicit CryptoObject(const CryptoContext<Element>& cc, const std::string& tag = "")
+        : m_context(cc), m_keyTag(tag) {}
 
     CryptoObject(const CryptoObject& rhs) = default;
 
@@ -68,23 +69,23 @@ public:
     virtual ~CryptoObject() = default;
 
     CryptoObject& operator=(const CryptoObject& rhs) {
-        context = rhs.context;
-        keyTag  = rhs.keyTag;
+        m_context = rhs.m_context;
+        m_keyTag  = rhs.m_keyTag;
         return *this;
     }
 
     CryptoObject& operator=(CryptoObject&& rhs) noexcept {
-        context = std::move(rhs.context);
-        keyTag  = std::move(rhs.keyTag);
+        m_context = std::move(rhs.m_context);
+        m_keyTag  = std::move(rhs.m_keyTag);
         return *this;
     }
 
     bool operator==(const CryptoObject& rhs) const {
-        return context.get() == rhs.context.get() && keyTag == rhs.keyTag;
+        return m_context.get() == rhs.m_context.get() && m_keyTag == rhs.m_keyTag;
     }
 
     CryptoContext<Element> GetCryptoContext() const {
-        return context;
+        return m_context;
     }
 
     const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const;
@@ -92,17 +93,17 @@ public:
     const EncodingParams GetEncodingParameters() const;
 
     const std::string& GetKeyTag() const {
-        return keyTag;
+        return m_keyTag;
     }
 
     void SetKeyTag(const std::string& tag) {
-        keyTag = tag;
+        m_keyTag = tag;
     }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("cc", context));
-        ar(::cereal::make_nvp("kt", keyTag));
+        ar(::cereal::make_nvp("cc", m_context));
+        ar(::cereal::make_nvp("kt", m_keyTag));
     }
 
     template <class Archive>
@@ -110,9 +111,9 @@ public:
         if (version > SerializedVersion())
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
-        ar(::cereal::make_nvp("cc", context));
-        ar(::cereal::make_nvp("kt", keyTag));
-        context = CryptoContextFactory<Element>::GetFullContextByDeserializedContext(context);
+        ar(::cereal::make_nvp("cc", m_context));
+        ar(::cereal::make_nvp("kt", m_keyTag));
+        m_context = CryptoContextFactory<Element>::GetFullContextByDeserializedContext(m_context);
     }
 
     std::string SerializedObjectName() const {

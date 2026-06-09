@@ -49,40 +49,40 @@ std::map<uint32_t, std::vector<uint32_t>> PackedEncoding::m_toCRTPerm;
 std::map<uint32_t, std::vector<uint32_t>> PackedEncoding::m_fromCRTPerm;
 
 bool PackedEncoding::Encode() {
-    if (this->isEncoded)
+    if (m_isEncoded)
         return true;
-    auto mod = this->encodingParams->GetPlaintextModulus();
+    auto mod = m_encodingParams->GetPlaintextModulus();
 
-    if ((this->typeFlag == IsNativePoly) || (this->typeFlag == IsDCRTPoly)) {
+    if ((m_typeFlag == IsNativePoly) || (m_typeFlag == IsDCRTPoly)) {
         NativeVector tempVector = NativeVector(this->GetElementRingDimension(), mod);
 
-        NativeInteger originalSF = scalingFactorInt;
-        for (size_t j = 1; j < noiseScaleDeg; j++) {
-            scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
+        NativeInteger originalSF = m_scalingFactorInt;
+        for (size_t j = 1; j < m_noiseScaleDeg; j++) {
+            m_scalingFactorInt = m_scalingFactorInt.ModMul(originalSF, mod);
         }
 
-        for (size_t i = 0; i < value.size(); i++) {
-            if ((PlaintextModulus)llabs(value[i]) >= mod) {
-                OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
+        for (size_t i = 0; i < m_value.size(); i++) {
+            if ((PlaintextModulus)llabs(m_value[i]) >= mod) {
+                OPENFHE_THROW("Cannot encode integer " + std::to_string(m_value[i]) + " at position " +
                               std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
             }
 
-            if (value[i] < 0) {
+            if (m_value[i] < 0) {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
-                tempVector[i] = NativeInteger(mod) - NativeInteger((uint64_t)llabs(value[i]));
+                tempVector[i] = NativeInteger(mod) - NativeInteger((uint64_t)llabs(m_value[i]));
             }
             else {
-                tempVector[i] = NativeInteger(value[i]);
+                tempVector[i] = NativeInteger(m_value[i]);
             }
         }
 
         // no need to do extra multiplications for many scenarios when the scaling factor is 1, e.g., in BFV
-        if (scalingFactorInt != 1) {
-            tempVector.ModMulEq(scalingFactorInt);
+        if (m_scalingFactorInt != 1) {
+            tempVector.ModMulEq(m_scalingFactorInt);
         }
 
-        if (this->typeFlag == IsNativePoly) {
+        if (m_typeFlag == IsNativePoly) {
             PlaintextModulus q = this->GetElementModulus().ConvertToInt();
             if (q < mod) {
                 OPENFHE_THROW(
@@ -91,13 +91,13 @@ bool PackedEncoding::Encode() {
             }
 
             // Calls the inverse NTT mod plaintext modulus
-            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                                   this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
+            this->PackNativeVector(m_encodingParams->GetPlaintextModulus(), m_encodedNativeVector.GetCyclotomicOrder(),
+                                   &tempVector);
             tempVector.SetModulus(q);
-            this->encodedNativeVector.SetValues(std::move(tempVector), Format::COEFFICIENT);
+            m_encodedNativeVector.SetValues(std::move(tempVector), Format::COEFFICIENT);
         }
         else {
-            PlaintextModulus q = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
+            PlaintextModulus q = m_encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
             if (q < mod) {
                 OPENFHE_THROW(
                     "the plaintext modulus size is larger than the size of "
@@ -106,14 +106,14 @@ bool PackedEncoding::Encode() {
             }
 
             // Calls the inverse NTT mod plaintext modulus
-            this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                                   this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
+            this->PackNativeVector(m_encodingParams->GetPlaintextModulus(), m_encodedVectorDCRT.GetCyclotomicOrder(),
+                                   &tempVector);
             // Switches from plaintext modulus to the modulus of the first RNS limb
             tempVector.SetModulus(q);
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
             firstElement.SetValues(std::move(tempVector), Format::COEFFICIENT);
 
-            const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
+            const std::shared_ptr<ILDCRTParams<BigInteger>> params           = m_encodedVectorDCRT.GetParams();
             const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
             // Sets the values for all other RNS limbs
@@ -123,11 +123,11 @@ bool PackedEncoding::Encode() {
                 tempPoly.SwitchModulus(nativeParams[j]->GetModulus(), nativeParams[j]->GetRootOfUnity(),
                                        nativeParams[j]->GetBigModulus(), nativeParams[j]->GetBigRootOfUnity());
 
-                this->encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
+                m_encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
             }
             // Setting the first limb at the end make sure firstElement is available during the main loop
-            this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
-            this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+            m_encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
+            m_encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
     }
     else {
@@ -135,25 +135,25 @@ bool PackedEncoding::Encode() {
 
         BigInteger q = this->GetElementModulus();
 
-        for (size_t i = 0; i < value.size(); ++i) {
+        for (size_t i = 0; i < m_value.size(); ++i) {
             BigInteger entry;
 
-            if ((PlaintextModulus)llabs(value[i]) >= mod)
-                OPENFHE_THROW("Cannot encode integer " + std::to_string(value[i]) + " at position " +
+            if ((PlaintextModulus)llabs(m_value[i]) >= mod)
+                OPENFHE_THROW("Cannot encode integer " + std::to_string(m_value[i]) + " at position " +
                               std::to_string(i) + " that is > plaintext modulus " + std::to_string(mod));
 
-            if (value[i] < 0) {
+            if (m_value[i] < 0) {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
-                entry = BigInteger(mod) - BigInteger((uint64_t)llabs(value[i]));
+                entry = BigInteger(mod) - BigInteger((uint64_t)llabs(m_value[i]));
             }
             else {
-                entry = BigInteger(value[i]);
+                entry = BigInteger(m_value[i]);
             }
 
             temp[i] = entry;
         }
-        for (size_t j = value.size(); j < this->GetElementRingDimension(); ++j)
+        for (size_t j = m_value.size(); j < this->GetElementRingDimension(); ++j)
             temp[j] = BigInteger(0);
 
         // the input plaintext data is in the evaluation format
@@ -161,10 +161,10 @@ bool PackedEncoding::Encode() {
 
         // ilVector coefficients are packed and resulting ilVector is in COEFFICIENT
         // form.
-        this->Pack(&this->GetElement<Poly>(), this->encodingParams->GetPlaintextModulus());
+        this->Pack(&this->GetElement<Poly>(), m_encodingParams->GetPlaintextModulus());
     }
 
-    this->isEncoded = true;
+    m_isEncoded = true;
     return true;
 }
 
@@ -190,16 +190,16 @@ static void fillVec(const T& poly, const PlaintextModulus& mod, std::vector<int6
 }
 
 bool PackedEncoding::Decode() {
-    auto ptm = this->encodingParams->GetPlaintextModulus();
+    auto ptm = m_encodingParams->GetPlaintextModulus();
 
-    if ((this->typeFlag == IsNativePoly) || (this->typeFlag == IsDCRTPoly)) {
-        NativeInteger scfInv = scalingFactorInt.ModInverse(ptm);
-        if (this->typeFlag == IsNativePoly) {
+    if ((m_typeFlag == IsNativePoly) || (m_typeFlag == IsDCRTPoly)) {
+        NativeInteger scfInv = m_scalingFactorInt.ModInverse(ptm);
+        if (m_typeFlag == IsNativePoly) {
             this->Unpack(&this->GetElement<NativePoly>(), ptm);
-            NativePoly firstElement = encodedNativeVector;
+            NativePoly firstElement = m_encodedNativeVector;
             firstElement            = firstElement.Times(scfInv);
             firstElement            = firstElement.Mod(ptm);
-            fillVec(firstElement, ptm, this->value);
+            fillVec(firstElement, ptm, m_value);
             // clears the values containing information about the noise
             this->GetElement<NativePoly>().SetValuesToZero();
         }
@@ -208,14 +208,14 @@ bool PackedEncoding::Decode() {
             this->Unpack(&firstElement, ptm);
             firstElement = firstElement.Times(scfInv);
             firstElement = firstElement.Mod(ptm);
-            fillVec(firstElement, ptm, this->value);
+            fillVec(firstElement, ptm, m_value);
             // clears the values containing information about the noise
             this->GetElement<DCRTPoly>().SetValuesToZero();
         }
     }
     else {
         this->Unpack(&this->GetElement<Poly>(), ptm);
-        fillVec(this->encodedVector, ptm, this->value);
+        fillVec(m_encodedVector, ptm, m_value);
         // clears the values containing information about the noise
         this->GetElement<Poly>().SetValuesToZero();
     }
@@ -242,7 +242,9 @@ void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
     try {
         if (IsPowerOfTwo(m)) {
 #pragma omp critical
-            { SetParams_2n(m, params); }
+            {
+                SetParams_2n(m, params);
+            }
         }
         else {
 #pragma omp critical

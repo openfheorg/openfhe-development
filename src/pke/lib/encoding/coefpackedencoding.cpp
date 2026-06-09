@@ -68,30 +68,30 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, i
 }
 
 bool CoefPackedEncoding::Encode() {
-    if (this->isEncoded)
+    if (m_isEncoded)
         return true;
 
-    PlaintextModulus mod     = this->encodingParams->GetPlaintextModulus();
-    NativeInteger originalSF = scalingFactorInt;
-    for (size_t j = 1; j < noiseScaleDeg; j++) {
-        scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
+    PlaintextModulus mod     = m_encodingParams->GetPlaintextModulus();
+    NativeInteger originalSF = m_scalingFactorInt;
+    for (size_t j = 1; j < m_noiseScaleDeg; j++) {
+        m_scalingFactorInt = m_scalingFactorInt.ModMul(originalSF, mod);
     }
 
-    if (this->typeFlag == IsNativePoly) {
-        encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
-        encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
+    if (m_typeFlag == IsNativePoly) {
+        encodeVec(m_encodedNativeVector, mod, LowBound(), HighBound(), m_value, this->GetSchemeID());
+        m_encodedNativeVector = m_encodedNativeVector.Times(m_scalingFactorInt);
     }
     else {
-        encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
+        encodeVec(m_encodedVector, mod, LowBound(), HighBound(), m_value, this->GetSchemeID());
 
-        if (this->typeFlag == IsDCRTPoly) {
-            this->encodedVectorDCRT = this->encodedVector;
-            encodedVectorDCRT       = encodedVectorDCRT.Times(scalingFactorInt);
-            this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+        if (m_typeFlag == IsDCRTPoly) {
+            m_encodedVectorDCRT = m_encodedVector;
+            m_encodedVectorDCRT = m_encodedVectorDCRT.Times(m_scalingFactorInt);
+            m_encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
     }
 
-    this->isEncoded = true;
+    m_isEncoded = true;
     return true;
 }
 
@@ -117,19 +117,19 @@ inline static void fillVec(const P& poly, const PlaintextModulus& mod, std::vect
 }
 
 bool CoefPackedEncoding::Decode() {
-    PlaintextModulus mod = this->encodingParams->GetPlaintextModulus();
+    PlaintextModulus mod = m_encodingParams->GetPlaintextModulus();
 
-    if (this->typeFlag == IsNativePoly) {
-        NativeInteger scfInv = scalingFactorInt.ModInverse(mod);
-        NativePoly temp      = encodedNativeVector.Times(scfInv).Mod(mod);
-        fillVec(temp, mod, this->value);
+    if (m_typeFlag == IsNativePoly) {
+        NativeInteger scfInv = m_scalingFactorInt.ModInverse(mod);
+        NativePoly temp      = m_encodedNativeVector.Times(scfInv).Mod(mod);
+        fillVec(temp, mod, m_value);
         // clears the values containing information about the noise
-        encodedNativeVector.SetValuesToZero();
+        m_encodedNativeVector.SetValuesToZero();
     }
     else {
-        fillVec(this->encodedVector, mod, this->value);
+        fillVec(m_encodedVector, mod, m_value);
         // clears the values containing information about the noise
-        this->encodedVector.SetValuesToZero();
+        m_encodedVector.SetValuesToZero();
     }
 
     return true;

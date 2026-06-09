@@ -36,12 +36,12 @@ namespace lbcrypto {
 
 template <typename Element>
 const std::shared_ptr<CryptoParametersBase<Element>> CryptoObject<Element>::GetCryptoParameters() const {
-    return context->GetCryptoParameters();
+    return m_context->GetCryptoParameters();
 }
 
 template <typename Element>
 const EncodingParams CryptoObject<Element>::GetEncodingParameters() const {
-    return context->GetCryptoParameters()->GetEncodingParams();
+    return m_context->GetCryptoParameters()->GetEncodingParams();
 }
 
 template class CryptoObject<DCRTPoly>;

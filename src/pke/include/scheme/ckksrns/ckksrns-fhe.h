@@ -98,7 +98,7 @@ public:
     Ciphertext<DCRTPoly> m_precompExpI;
 
     // flag indicating whether we perform StC before ModRaise
-    bool BTSlotsEncoding;
+    bool m_BTSlotsEncoding{};
 
     template <class Archive>
     void save(Archive& ar) const {
@@ -107,7 +107,7 @@ public:
         ar(cereal::make_nvp("slots", m_slots));
         ar(cereal::make_nvp("lEnc", m_paramsEnc.lvlb));
         ar(cereal::make_nvp("lDec", m_paramsDec.lvlb));
-        ar(cereal::make_nvp("BTSlotsEncoding", BTSlotsEncoding));
+        ar(cereal::make_nvp("m_BTSlotsEncoding", m_BTSlotsEncoding));
     }
 
     template <class Archive>
@@ -117,11 +117,9 @@ public:
         ar(cereal::make_nvp("slots", m_slots));
         ar(cereal::make_nvp("lEnc", m_paramsEnc.lvlb));
         ar(cereal::make_nvp("lDec", m_paramsDec.lvlb));
-        ar(cereal::make_nvp("BTSlotsEncoding", BTSlotsEncoding));
+        ar(cereal::make_nvp("m_BTSlotsEncoding", m_BTSlotsEncoding));
     }
 };
-
-using namespace std::literals::complex_literals;
 
 class FHECKKSRNS : public FHERNS {
 private:

@@ -60,7 +60,7 @@ namespace lbcrypto {
 
 class CKKSPackedEncoding : public PlaintextImpl {
 private:
-    std::vector<std::complex<double>> value;
+    std::vector<std::complex<double>> m_value;
     double m_logError = 0.;
 
 public:
@@ -71,8 +71,8 @@ public:
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
-        ckksDataType = ckksdt;
-        slots        = GetDefaultSlotSize();
+        m_ckksDataType = ckksdt;
+        m_slots        = GetDefaultSlotSize();
     }
 
     /*
@@ -87,16 +87,16 @@ public:
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& v,
                        size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL)
-        : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
-        ckksDataType  = ckksdt;
-        scalingFactor = scFact;
-        level         = lvl;
-        noiseScaleDeg = nsdeg;
-        slots         = GetDefaultSlotSize(slts, v.size());
+        : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), m_value(v) {
+        m_ckksDataType  = ckksdt;
+        m_scalingFactor = scFact;
+        m_level         = lvl;
+        m_noiseScaleDeg = nsdeg;
+        m_slots         = GetDefaultSlotSize(slts, v.size());
 
-        if (ckksDataType == REAL) {
-            auto* rvptr = reinterpret_cast<double*>(value.data()) + 1;
-            auto* limit = rvptr + 2 * value.size();
+        if (m_ckksDataType == REAL) {
+            auto* rvptr = reinterpret_cast<double*>(m_value.data()) + 1;
+            auto* limit = rvptr + 2 * m_value.size();
             for (; rvptr < limit; rvptr += 2)
                 *rvptr = 0;
         }
@@ -108,12 +108,12 @@ public:
    * @param v - The input object to copy.
    */
     explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& v, uint32_t s)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
-        slots = GetDefaultSlotSize(s, v.size());
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), m_value(v) {
+        m_slots = GetDefaultSlotSize(s, v.size());
 
-        // Assumes ckksDataType = REAL
-        auto* rvptr = reinterpret_cast<double*>(value.data()) + 1;
-        auto* limit = rvptr + 2 * value.size();
+        // Assumes m_ckksDataType = REAL
+        auto* rvptr = reinterpret_cast<double*>(m_value.data()) + 1;
+        auto* limit = rvptr + 2 * m_value.size();
         for (; rvptr < limit; rvptr += 2)
             *rvptr = 0;
     }
@@ -123,14 +123,14 @@ public:
    */
     CKKSPackedEncoding()
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
-        slots = GetDefaultSlotSize();
+        m_slots = GetDefaultSlotSize();
     }
 
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
-        : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
+        : PlaintextImpl(rhs), m_value(rhs.m_value), m_logError(rhs.m_logError) {}
 
     CKKSPackedEncoding(CKKSPackedEncoding&& rhs) noexcept
-        : PlaintextImpl(std::move(rhs)), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
+        : PlaintextImpl(std::move(rhs)), m_value(std::move(rhs.m_value)), m_logError(rhs.m_logError) {}
 
     bool Encode() override;
 
@@ -141,13 +141,13 @@ public:
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) override;
 
     const std::vector<std::complex<double>>& GetCKKSPackedValue() const override {
-        return value;
+        return m_value;
     }
 
     std::vector<double> GetRealPackedValue() const override {
-        std::vector<double> realValue(value.size());
+        std::vector<double> realValue(m_value.size());
         auto* rvptr = realValue.data();
-        for (auto vit = value.cbegin(); vit != value.cend(); ++vit, ++rvptr)
+        for (auto vit = m_value.cbegin(); vit != m_value.cend(); ++vit, ++rvptr)
             *rvptr = vit->real();
         return realValue;
     }
@@ -180,7 +180,7 @@ public:
    * @return the length of the plaintext in terms of the number of bits.
    */
     size_t GetLength() const override {
-        return value.size();
+        return m_value.size();
     }
 
     /**
@@ -195,9 +195,9 @@ public:
    * Get method to return log2 of estimated precision
    */
     double GetLogPrecision() const override {
-        if (ckksDataType == COMPLEX)
+        if (m_ckksDataType == COMPLEX)
             OPENFHE_THROW("GetLogPrecision for complex numbers is not implemented.");
-        return encodingParams->GetPlaintextModulus() - m_logError;
+        return m_encodingParams->GetPlaintextModulus() - m_logError;
     }
 
     /**
@@ -205,7 +205,7 @@ public:
    * @param siz
    */
     void SetLength(size_t siz) override {
-        value.resize(siz);
+        m_value.resize(siz);
     }
 
     /**
@@ -223,23 +223,24 @@ public:
         ss << "(";
 
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i       = m_value.size();
         bool allZeroes = true;
         while (i > 0) {
-            if (value[--i] != std::complex<double>(0, 0)) {
+            if (m_value[--i] != std::complex<double>(0, 0)) {
                 allZeroes = false;
                 break;
             }
         }
         if (!allZeroes) {
-            if (ckksDataType == REAL) {
+            if (m_ckksDataType == REAL) {
                 for (size_t j = 0; j <= i; ++j)
-                    ss << std::setprecision(precision) << value[j].real() << ", ";
+                    ss << std::setprecision(precision) << m_value[j].real() << ", ";
                 ss << "... ); Estimated precision: " << GetLogPrecision() << " bits";
             }
             else {
                 for (size_t j = 0; j <= i; ++j)
-                    ss << std::setprecision(precision) << " (" << value[j].real() << ", " << value[j].imag() << "), ";
+                    ss << std::setprecision(precision) << " (" << m_value[j].real() << ", " << m_value[j].imag()
+                       << "), ";
                 ss << "... )";
             }
         }
@@ -277,7 +278,7 @@ protected:
             return false;
 
         const auto& el = static_cast<const CKKSPackedEncoding&>(rhs);
-        return value == el.value;
+        return m_value == el.m_value;
     }
 
     /**
