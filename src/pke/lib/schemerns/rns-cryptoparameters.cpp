@@ -138,9 +138,10 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // Select number of primes in auxiliary CRT basis
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
         // For COMPOSITE scaling, auxBits = registerWordSize-1 (e.g. 31 for regWS=32). The ceil
-        // formula can leave P with only 1-4 bits of margin over the largest digit, causing the
-        // HYBRID fast-basis-conversion roundoff to degrade bootstrapping precision by 3-4 bits.
-        // Ensure margin >= auxBits/5 + 1 bits (e.g. >= 7 bits for auxBits=31) to avoid this.
+        // formula can leave P with only 1-4 bits of margin over the largest digit. HYBRID key
+        // switching noise is proportional to digit/P (Q_j/P ratio); when this ratio approaches 1,
+        // the key switching error degrades bootstrapping precision by 3-4 bits.
+        // Ensure margin >= auxBits/5 + 1 bits (e.g. >= 7 bits for auxBits=31) to keep Q_j/P small.
         if ((m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) &&
             static_cast<uint64_t>(sizeP) * auxBits - maxBits < static_cast<uint64_t>(auxBits) / 5 + 1)
             ++sizeP;
