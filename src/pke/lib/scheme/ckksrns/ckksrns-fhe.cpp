@@ -2545,9 +2545,17 @@ void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const Crypto
     for (uint32_t i = 0; i < sizeQ; ++i)
         qInv[i] = 1.0 / moduliQ[i].ConvertToDouble();
 
-    for (auto& dcrt : ctxtDCRTs)
+    for (auto& dcrt : ctxtDCRTs) {
+        // CKKS modulus raise only uses the bottom (level-0) modulus q0 = product of the first compositeDegree
+        // primes (analogous to the single-prime path, which keeps only index 0). If the input ciphertext still
+        // carries more towers, keep just the bottom sizeQ before extending, so the source basis matches the
+        // precomputed tables (otherwise ExpandCRTBasis would index QHatInvModq/QHatModp/alphaQModp/qInv out of
+        // bounds, corrupting memory).
+        if (dcrt.GetNumOfElements() > sizeQ)
+            dcrt.DropLastElements(dcrt.GetNumOfElements() - sizeQ);
         dcrt.ExpandCRTBasis(elementParamsRaisedPtr, paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, alphaQModp,
                             modpBarrettMu, qInv, Format::EVALUATION);
+    }
 }
 
 void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIter) const {
