@@ -54,6 +54,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #ifdef BOOTSTRAPTIMING
     #include <ostream>
@@ -2486,83 +2487,67 @@ void FHECKKSRNS::AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double co
 
 void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const CryptoContextImpl<DCRTPoly>& cc,
                                   const std::shared_ptr<DCRTPoly::Params> elementParamsRaisedPtr) const {
-    // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
-
-    // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
-    // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
-    // CompositeDegree = 4: [a]_q0q1q2q3 = [a*q1q2q3^-1]_q0 * q1q2q3 + [a*q0q2q3^-1]_q1 * q0q2q3 + [a*q0q1q3^-1]_q2 * q0q1q3 + [a*q0q1q2^-1]_q3 * q0q1q2
+    // Raise each ciphertext polynomial from the bottom RNS basis Q = {q_0, ..., q_{compositeDegree-1}} (the
+    // moduli remaining in the depleted ciphertext) to the full raised basis QP. We use the exact
+    // DCRTPoly::ExpandCRTBasis (CRT reconstruction with the integer-overflow / "alpha" correction), which
+    // produces the balanced representative of [c]_Q in (-Q/2, Q/2]. The previous hand-rolled reconstruction
+    // returned the positive representative in [0, compositeDegree*Q), whose larger coefficients inflate the
+    // q*I term that CKKS bootstrapping has to remove through the sine, degrading the precision (by 2-3 bits
+    // for compositeDegree = 2) relative to the single-prime (FLEXIBLEAUTO) modulus raise.
 
     const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
-    const auto& raisedParams       = elementParamsRaisedPtr->GetParams();
-    const uint32_t numRaisedTowers = raisedParams.size();
+    const auto& paramsQP   = elementParamsRaisedPtr->GetParams();
+    const uint32_t sizeQP  = paramsQP.size();
+    const uint32_t sizeQ   = compositeDegree;  // bottom moduli: source basis Q
+    const uint32_t sizeP   = sizeQP - sizeQ;   // remaining moduli: extension basis P
+    const uint32_t cyclOrd = elementParamsRaisedPtr->GetCyclotomicOrder();
 
-    std::vector<NativeInteger> qj(compositeDegree);
-    for (uint32_t j = 0; j < compositeDegree; ++j) {
-        qj[j] = raisedParams[j]->GetModulus().ConvertToInt();
+    std::vector<NativeInteger> moduliQ(sizeQ), moduliP(sizeP), rootsP(sizeP);
+    for (uint32_t i = 0; i < sizeQ; ++i)
+        moduliQ[i] = paramsQP[i]->GetModulus();
+    for (uint32_t j = 0; j < sizeP; ++j) {
+        moduliP[j] = paramsQP[sizeQ + j]->GetModulus();
+        rootsP[j]  = paramsQP[sizeQ + j]->GetRootOfUnity();
+    }
+    auto paramsP = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cyclOrd, moduliP, rootsP);
+
+    BigInteger modulusQ(1);
+    for (uint32_t i = 0; i < sizeQ; ++i)
+        modulusQ *= BigInteger(moduliQ[i]);
+
+    // QHatInvModq[i] = [(Q/q_i)^{-1}]_{q_i}
+    std::vector<NativeInteger> QHatInvModq(sizeQ), QHatInvModqPrecon(sizeQ);
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        BigInteger qi(moduliQ[i]);
+        QHatInvModq[i]       = (modulusQ / qi).ModInverse(qi).Mod(qi).ConvertToInt();
+        QHatInvModqPrecon[i] = QHatInvModq[i].PrepModMulConst(moduliQ[i]);
     }
 
-    std::vector<NativeInteger> qhat_modqj(compositeDegree);
-    qhat_modqj[0] = qj[1].Mod(qj[0]);
-    qhat_modqj[1] = qj[0].Mod(qj[1]);
-    for (uint32_t d = 2; d < compositeDegree; d++) {
-        for (uint32_t j = 0; j < d; ++j)
-            qhat_modqj[j] = qj[d].ModMul(qhat_modqj[j], qj[j]);
-        qhat_modqj[d] = qj[1].ModMul(qj[0], qj[d]);
-        for (uint32_t j = 2; j < d; ++j)
-            qhat_modqj[d] = qj[j].ModMul(qhat_modqj[d], qj[d]);
+    // QHatModp[j][i] = [Q/q_i]_{p_j}
+    std::vector<std::vector<NativeInteger>> QHatModp(sizeP, std::vector<NativeInteger>(sizeQ));
+    // alphaQModp[a][j] = [a*Q]_{p_j} for the overflow correction, 0 <= a <= sizeQ
+    std::vector<std::vector<NativeInteger>> alphaQModp(sizeQ + 1, std::vector<NativeInteger>(sizeP));
+    const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+    std::vector<DoubleNativeInt> modpBarrettMu(sizeP);
+    for (uint32_t j = 0; j < sizeP; ++j) {
+        BigInteger pj(moduliP[j]);
+        for (uint32_t i = 0; i < sizeQ; ++i)
+            QHatModp[j][i] = (modulusQ / BigInteger(moduliQ[i])).Mod(pj).ConvertToInt();
+        NativeInteger QModpj = modulusQ.Mod(pj).ConvertToInt();
+        for (uint32_t a = 0; a <= sizeQ; ++a)
+            alphaQModp[a][j] = QModpj.ModMul(NativeInteger(a), moduliP[j]);
+        modpBarrettMu[j] = (BarrettBase128Bit / pj).ConvertToInt<DoubleNativeInt>();
     }
 
-    std::vector<NativeInteger> qhat_inv_modqj(compositeDegree);
-    for (uint32_t j = 0; j < compositeDegree; ++j)
-        qhat_inv_modqj[j] = qhat_modqj[j].ModInverse(qj[j]);
+    std::vector<double> qInv(sizeQ);
+    for (uint32_t i = 0; i < sizeQ; ++i)
+        qInv[i] = 1.0 / moduliQ[i].ConvertToDouble();
 
-    NativeInteger qjProduct =
-        std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
-    uint32_t init_element_index = compositeDegree;
-
-    for (auto& dcrt : ctxtDCRTs) {
-        dcrt.SetFormat(COEFFICIENT);
-
-        std::vector<DCRTPoly> tmp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-        std::vector<DCRTPoly> ctxtDCRTs_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-
-        const size_t numEl = dcrt.GetNumOfElements();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numEl))
-        for (size_t j = 0; j < numEl; ++j) {
-            const auto& ej = dcrt.GetElementAtIndex(j);
-            for (uint32_t k = 0; k < compositeDegree; ++k)
-                ctxtDCRTs_modq[k].SetElementAtIndex(j, ej * qhat_inv_modqj[k]);
-        }
-
-        tmp[0] = ctxtDCRTs_modq[0].GetElementAtIndex(0);
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(tmp[0].GetAllElements().size()))
-        for (auto& el : tmp[0].GetAllElements())
-            el *= qjProduct;
-
-        for (uint32_t d = 1; d < compositeDegree; ++d) {
-            tmp[init_element_index] = ctxtDCRTs_modq[d].GetElementAtIndex(d);
-
-            NativeInteger qjProductD{1};
-            for (uint32_t k = 0; k < compositeDegree; ++k) {
-                if (k != d) {
-                    qjProductD *= qj[k];
-                    tmp[d].SetElementAtIndex(k, tmp[0].GetElementAtIndex(k) * qj[k]);
-                }
-            }
-
-            for (uint32_t j = compositeDegree; j < numRaisedTowers; ++j)
-                tmp[d].SetElementAtIndex(j, tmp[init_element_index].GetElementAtIndex(j) * qjProductD);
-
-            tmp[d].SetElementAtIndex(d, tmp[init_element_index].GetElementAtIndex(d) * qjProductD);
-            tmp[0] += tmp[d];
-        }
-
-        tmp[0].SetFormat(EVALUATION);
-        dcrt = std::move(tmp[0]);
-    }
+    for (auto& dcrt : ctxtDCRTs)
+        dcrt.ExpandCRTBasis(elementParamsRaisedPtr, paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, alphaQModp,
+                            modpBarrettMu, qInv, Format::EVALUATION);
 }
 
 void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIter) const {
