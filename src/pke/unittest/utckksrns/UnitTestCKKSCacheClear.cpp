@@ -116,9 +116,13 @@ CryptoContext<DCRTPoly> MakeSchemeSwitchCC() {
 
 class UTCKKSCacheClear : public ::testing::Test {
 protected:
-#if defined(WITH_TCM)
+#if defined(WITH_TCM) || defined(__EMSCRIPTEN__)
     void SetUp() override {
+#if defined(WITH_TCM)
         GTEST_SKIP() << "Heap usage checks are not stable with tcmalloc enabled";
+#else
+        GTEST_SKIP() << "Heap probe unavailable under Emscripten";
+#endif
     }
 #endif
 
