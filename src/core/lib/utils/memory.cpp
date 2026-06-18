@@ -31,7 +31,12 @@
 #include "config_core.h"
 #include "utils/memory.h"
 
-#if defined(__GLIBC__)
+#if defined(__APPLE__)
+    #include <mach/mach.h>
+    #include <malloc/malloc.h>
+#elif defined(__GLIBC__)
+    #include <malloc.h>
+#elif defined(_MSC_VER)
     #include <malloc.h>
 #endif
 
@@ -129,8 +134,22 @@ constexpr MemPolicyWord OPENFHE_MAXNODE   = 1024;
 // Not async-signal-safe and acquires allocator locks; call only from normal execution context,
 // never from a signal handler. Returns true if a trim was attempted, false on unsupported builds.
 bool AllocTrim() {
-#if defined(__GLIBC__)
+#if defined(__APPLE__)
+    vm_address_t* zones = nullptr;
+    unsigned count      = 0;
+    if (malloc_get_all_zones(mach_task_self(), nullptr, &zones, &count) == KERN_SUCCESS && zones) {
+        for (unsigned i = 0; i < count; ++i) {
+            auto* z = reinterpret_cast<malloc_zone_t*>(zones[i]);
+            if (z)
+                malloc_zone_pressure_relief(z, 0);
+        }
+    }
+    return true;
+#elif defined(__GLIBC__)
     malloc_trim(0);
+    return true;
+#elif defined(_MSC_VER)
+    _heapmin();
     return true;
 #else
     return false;

@@ -64,6 +64,10 @@ protected:
 
 public:
     static void ReleaseAllContexts() {
+        for (auto& cc : AllContexts) {
+            if (cc)
+                cc->ClearAllCKKSCaches();
+        }
         if (!AllContexts.empty())
             AllContexts[0]->ClearStaticMapsAndVectors();
         AllContexts.clear();
