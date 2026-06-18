@@ -622,20 +622,22 @@ public:
     */
     static void ClearStaticMapsAndVectors();
 
-    /**
-    * @brief Clear CKKS bootstrap precomputations cached by this context's scheme.
-    */
+    /// Clear CKKS bootstrap precomputations. Safe on any scheme.
     void ClearBootstrapPrecom() noexcept {
-        VerifyCKKSScheme(__func__);
-        m_scheme->ClearBootstrapPrecom();
+        if (m_scheme)
+            m_scheme->ClearBootstrapPrecom();
     }
 
-    /**
-    * @brief Clear CKKS/FHEW scheme-switch precomputations cached by this context's scheme.
-    */
+    /// Clear CKKS/FHEW scheme-switch precomputations. Safe on any scheme.
     void ClearSchemeSwitchPrecom() noexcept {
-        VerifyCKKSScheme(__func__);
-        m_scheme->ClearSchemeSwitchPrecom();
+        if (m_scheme)
+            m_scheme->ClearSchemeSwitchPrecom();
+    }
+
+    /// Release all scheme-level caches (bootstrap + scheme-switch).
+    void ClearAllCKKSCaches() noexcept {
+        ClearBootstrapPrecom();
+        ClearSchemeSwitchPrecom();
     }
 
     /**

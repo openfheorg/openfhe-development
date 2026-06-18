@@ -35,6 +35,7 @@
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 #include "scheme/scheme-id.h"
+#include "utils/memory.h"
 
 #include <memory>
 #include <string>
@@ -63,10 +64,23 @@ protected:
 
 public:
     static void ReleaseAllContexts() {
-        if (!AllContexts.empty())
+        // Drop scheme-level caches on every live context so memory held by
+        // m_bootPrecomMap / scheme-switch state is freed even if callers
+        // still hold a CryptoContext (issue #533).
+        for (auto& cc : AllContexts) {
+            if (cc)
+                cc->ClearAllCKKSCaches();
+        }
+        if (AllContexts.size() > 0)
             AllContexts[0]->ClearStaticMapsAndVectors();
 
         AllContexts.clear();
+    }
+
+    /// Like ReleaseAllContexts() but also trims the C allocator so RSS drops.
+    static void ReleaseAllContextsAndTrim() {
+        ReleaseAllContexts();
+        TrimAllocator();
     }
 
     static int GetContextCount() {

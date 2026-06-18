@@ -1147,13 +1147,13 @@ public:
     }
 
     void ClearBootstrapPrecom() noexcept {
-        VerifyFHEEnabled(__func__);
-        m_FHE->ClearBootstrapPrecom();
+        if (m_FHE)
+            m_FHE->ClearBootstrapPrecom();
     }
 
     void ClearSchemeSwitchPrecom() noexcept {
-        VerifySchemeSwitchEnabled(__func__);
-        m_SchemeSwitch->ClearSchemeSwitchPrecom();
+        if (m_SchemeSwitch)
+            m_SchemeSwitch->ClearSchemeSwitchPrecom();
     }
 
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
