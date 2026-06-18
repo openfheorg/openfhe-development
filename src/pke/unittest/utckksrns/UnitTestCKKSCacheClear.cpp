@@ -30,13 +30,12 @@
 //==================================================================================
 
 #include "binfhecontext.h"
+#include "gtest/gtest.h"
 #include "openfhe.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
 #include "scheme/scheme-swch-params.h"
 #include "utils/memory.h"
-
-#include "gtest/gtest.h"
 
 #include <vector>
 
@@ -116,9 +115,13 @@ CryptoContext<DCRTPoly> MakeSchemeSwitchCC() {
 
 class UTCKKSCacheClear : public ::testing::Test {
 protected:
-#if defined(WITH_TCM)
+#if defined(WITH_TCM) || defined(__EMSCRIPTEN__)
     void SetUp() override {
+#if defined(WITH_TCM)
         GTEST_SKIP() << "Heap usage checks are not stable with tcmalloc enabled";
+#else
+        GTEST_SKIP() << "Heap probe unavailable under Emscripten";
+#endif
     }
 #endif
 
