@@ -244,15 +244,21 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
             sf *= moduliQ[numPrimes - d].ConvertToDouble();
         }
 
-        bool flag = true;
+        // Nominal scaling factor Delta_L = 2^dcrtBits. Pinning the per-level prime product to
+        // sf^2/Delta_L (instead of sf) forces the resulting scaling factor sf^2/product back to
+        // Delta_L each level, so the discreteness error does not accumulate across levels.
+        const double deltaL = std::pow(2.0, static_cast<double>(dcrtBits));
+        bool flag           = true;
         for (uint32_t i = numPrimes - compositeDegree; i >= 2 * compositeDegree; i -= compositeDegree) {
-            // Compute initial scaling factor
+            // Running scaling factor from the actually-chosen primes (self-correcting recurrence)
             sf = std::pow(sf, 2);
             for (uint32_t d = 0; d < compositeDegree; ++d) {
                 sf /= moduliQ[i + d].ConvertToDouble();
             }
 
-            auto sf_sqrt = std::pow(sf, 1.0 / compositeDegree);
+            // Target product for this level's primes pins the next scaling factor to Delta_L
+            double targetProduct = sf * sf / deltaL;
+            auto sf_sqrt         = std::pow(targetProduct, 1.0 / compositeDegree);
 
             NativeInteger sfInt = std::llround(sf_sqrt);
             NativeInteger sfRem = sfInt.Mod(cyclOrder);
@@ -303,7 +309,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
 
             if (flag == false) {
                 NativeInteger qPrevNext = NativeInteger(qNext[qNext.size() - 1].ConvertToInt());
-                while (primeProduct > sf) {
+                while (primeProduct > targetProduct) {
                     do {
                         qCurrentRecord.erase(qPrevNext.ConvertToInt());  // constant time
                         try {
@@ -340,7 +346,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
             else {
                 NativeInteger qNextPrev = NativeInteger(qPrev[qPrev.size() - 1].ConvertToInt());
                 fitsRegister            = true;
-                while (primeProduct < sf) {
+                while (primeProduct < targetProduct) {
                     do {
                         qCurrentRecord.erase(qNextPrev.ConvertToInt());  // constant time
                         try {
