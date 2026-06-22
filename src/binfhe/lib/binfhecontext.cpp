@@ -111,51 +111,52 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
 
     // clang-format off
     static const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap{
-    //  { BINFHE_PARAMSET      { bits, cycOrder, latParam, modq,   modKS, Bks,        Bg, Brk, autoKeys,         keyDist, stdDev } },
-        { TOY,                 {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19 } },
-        { MEDIUM,              {   28,     2048,      422, 1024,   16384, 128,      1024,  32,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128_AP,           {   27,     2048,      559, 2048,   32768,  32,       512,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128,              {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128_3,            {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128_4,            {   27,     2048,      635, 2048,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128Q,             {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128Q_3,           {   25,     2048,      641, 2048,   65536,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128Q_4,           {   50,     4096,      683, 4096,  131072,  64,    131072,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192,              {   37,     4096,      821, 2048,   32768,  32,      8192,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192_3,            {   37,     4096,      876, 2048,   65536,  64,      8192,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192_4,            {   37,     4096,      932, 4096,  131072,  64,      8192,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192Q,             {   34,     4096,      890, 2048,   32768,  32,      4096,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192Q_3,           {   34,     4096,      948, 2048,   65536,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192Q_4,           {   34,     4096,     1009, 4096,  131072,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256,              {   29,     4096,     1299, 2048,  262144,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256_3,            {   29,     4096,     1241, 2048,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256_4,            {   29,     4096,     1218, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256Q,             {   26,     4096,     1242, 2048,   65536,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256Q_3,           {   26,     4096,     1319, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256Q_4,           {   26,     4096,     1319, 4096,  131072,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128_LMKCDEY,      {   27,     2048,      581, 1024,   32768,  32,       512,  32,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128_3_LMKCDEY,    {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128_4_LMKCDEY,    {   27,     2048,      635, 2048,  131072,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128Q_LMKCDEY,     {   25,     2048,      640, 1024,   32768,  32,       128,  32,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128Q_3_LMKCDEY,   {   25,     2048,      641, 2048,   65536,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD128Q_4_LMKCDEY,   {   25,     2048,      685, 2048,  131072,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192_LMKCDEY,      {   39,     4096,      716, 4096,   32768,  32,   1048576,  64,       10,        GAUSSIAN,   3.19 } },
-        { STD192_3_LMKCDEY,    {   37,     4096,      876, 2048,   65536,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192_4_LMKCDEY,    {   37,     4096,      932, 4096,  131072,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192Q_LMKCDEY,     {   36,     4096,      778, 4096,   32768,  32,      4096,  64,       10,        GAUSSIAN,   3.19 } },
-        { STD192Q_3_LMKCDEY,   {   34,     4096,      948, 2048,   65536,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD192Q_4_LMKCDEY,   {   34,     4096,     1009, 4096,  131072,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256_LMKCDEY,      {   29,     4096,     1079, 2048,   32768,  32,      1024,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256_3_LMKCDEY,    {   29,     4096,     1218, 2048,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256_4_LMKCDEY,    {   29,     4096,     1218, 4096,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256Q_LMKCDEY,     {   26,     4096,     1242, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256Q_3_LMKCDEY,   {   26,     4096,     1319, 4096,  131072,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { STD256Q_4_LMKCDEY,   {   26,     4096,     1319, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { LPF_STD128,          {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { LPF_STD128Q,         {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { LPF_STD128_LMKCDEY,  {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { LPF_STD128Q_LMKCDEY, {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19 } },
-        { SIGNED_MOD_TEST,     {   28,     2048,      512, 1024,   PRIME,  25,       128,  23,       10, UNIFORM_TERNARY,   3.19 } },
+    //  { BINFHE_PARAMSET      { bits, cycOrder, latParam, modq,   modKS, Bks,        Bg, Brk, autoKeys,         keyDist, stdDev, gadgetBaseMap } },
+        { TOY,                 {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19, {{512, 64}} } },
+        { TOY_MULTI_BASE,      {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19, {{128, 32}, {512, 32}} } },
+        { MEDIUM,              {   28,     2048,      422, 1024,   16384, 128,      1024,  32,       10, UNIFORM_TERNARY,   3.19, {{1024, 422}} } },
+        { STD128_AP,           {   27,     2048,      559, 2048,   32768,  32,       512,  64,       10, UNIFORM_TERNARY,   3.19, {{512, 559}} } },
+        { STD128,              {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 556}} } },
+        { STD128_3,            {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 595}} } },
+        { STD128_4,            {   27,     2048,      635, 2048,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 635}} } },
+        { STD128Q,             {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 601}} } },
+        { STD128Q_3,           {   25,     2048,      641, 2048,   65536,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 641}} } },
+        { STD128Q_4,           {   50,     4096,      683, 4096,  131072,  64,    131072,  64,       10, UNIFORM_TERNARY,   3.19, {{131072, 683}} } },
+        { STD192,              {   37,     4096,      821, 2048,   32768,  32,      8192,  64,       10, UNIFORM_TERNARY,   3.19, {{8192, 821}} } },
+        { STD192_3,            {   37,     4096,      876, 2048,   65536,  64,      8192,  64,       10, UNIFORM_TERNARY,   3.19, {{8192, 876}} } },
+        { STD192_4,            {   37,     4096,      932, 4096,  131072,  64,      8192,  64,       10, UNIFORM_TERNARY,   3.19, {{8192, 932}} } },
+        { STD192Q,             {   34,     4096,      890, 2048,   32768,  32,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 890}} } },
+        { STD192Q_3,           {   34,     4096,      948, 2048,   65536,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 948}} } },
+        { STD192Q_4,           {   34,     4096,     1009, 4096,  131072,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 1009}} } },
+        { STD256,              {   29,     4096,     1299, 2048,  262144,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 1299}} } },
+        { STD256_3,            {   29,     4096,     1241, 2048,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19, {{256, 1241}} } },
+        { STD256_4,            {   29,     4096,     1218, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 1218}} } },
+        { STD256Q,             {   26,     4096,     1242, 2048,   65536,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 1242}} } },
+        { STD256Q_3,           {   26,     4096,     1319, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 1319}} } },
+        { STD256Q_4,           {   26,     4096,     1319, 4096,  131072,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 1319}} } },
+        { STD128_LMKCDEY,      {   27,     2048,      581, 1024,   32768,  32,       512,  32,       10, UNIFORM_TERNARY,   3.19, {{512, 581}} } },
+        { STD128_3_LMKCDEY,    {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 595}} } },
+        { STD128_4_LMKCDEY,    {   27,     2048,      635, 2048,  131072,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 635}} } },
+        { STD128Q_LMKCDEY,     {   25,     2048,      640, 1024,   32768,  32,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 640}} } },
+        { STD128Q_3_LMKCDEY,   {   25,     2048,      641, 2048,   65536,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 641}} } },
+        { STD128Q_4_LMKCDEY,   {   25,     2048,      685, 2048,  131072,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 685}} } },
+        { STD192_LMKCDEY,      {   39,     4096,      716, 4096,   32768,  32,   1048576,  64,       10,        GAUSSIAN,   3.19, {{1048576, 716}} } },
+        { STD192_3_LMKCDEY,    {   37,     4096,      876, 2048,   65536,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 876}} } },
+        { STD192_4_LMKCDEY,    {   37,     4096,      932, 4096,  131072,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 932}} } },
+        { STD192Q_LMKCDEY,     {   36,     4096,      778, 4096,   32768,  32,      4096,  64,       10,        GAUSSIAN,   3.19, {{4096, 778}} } },
+        { STD192Q_3_LMKCDEY,   {   34,     4096,      948, 2048,   65536,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 948}} } },
+        { STD192Q_4_LMKCDEY,   {   34,     4096,     1009, 4096,  131072,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 1009}} } },
+        { STD256_LMKCDEY,      {   29,     4096,     1079, 2048,   32768,  32,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 1079}} } },
+        { STD256_3_LMKCDEY,    {   29,     4096,     1218, 2048,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19, {{256, 1218}} } },
+        { STD256_4_LMKCDEY,    {   29,     4096,     1218, 4096,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19, {{256, 1218}} } },
+        { STD256Q_LMKCDEY,     {   26,     4096,     1242, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 1242}} } },
+        { STD256Q_3_LMKCDEY,   {   26,     4096,     1319, 4096,  131072,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 1319}} } },
+        { STD256Q_4_LMKCDEY,   {   26,     4096,     1319, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 1319}} } },
+        { LPF_STD128,          {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 547}, {512, 9}} } },
+        { LPF_STD128Q,         {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 581}, {32, 20}} } },
+        { LPF_STD128_LMKCDEY,  {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 392}, {512, 164}} } },
+        { LPF_STD128Q_LMKCDEY, {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 567}, {32, 34}} } },
+        { SIGNED_MOD_TEST,     {   28,     2048,      512, 1024,   PRIME,  25,       128,  23,       10, UNIFORM_TERNARY,   3.19, {{128, 512}} } },
     };
     // clang-format on
 
@@ -171,7 +172,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,
                                                        params.baseKS, params.keyDist);
     auto rgswparams =
-        std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
+        std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.gadgetBaseMap, params.baseRK, method,
                                               params.stdDev, params.keyDist, false, params.numAutoKeys);
     m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
 
@@ -186,9 +187,23 @@ void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BIN
     auto lweparams = std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q,
                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,
                                                        params.baseKS, params.keyDist);
-    auto rgswparams =
-        std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
-                                              params.stdDev, params.keyDist, false, params.numAutoKeys);
+    std::shared_ptr<RingGSWCryptoParams> rgswparams;
+    if (params.gadgetBaseMap.empty()) {
+        rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase,
+                                                           params.baseRK, method, params.stdDev, params.keyDist,
+                                                           false, params.numAutoKeys);
+    }
+    else {
+        uint32_t count{0};
+        for (const auto& item : params.gadgetBaseMap)
+            count += item.second;
+        if (count != params.latticeParam)
+            OPENFHE_THROW("Gadget base map should cover the LWE dimension.");
+
+        rgswparams = std::make_shared<RingGSWCryptoParams>(
+            ringDim, Q, params.mod, params.gadgetBase, params.gadgetBaseMap, params.baseRK, method, params.stdDev,
+            params.keyDist, false, params.numAutoKeys);
+    }
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }

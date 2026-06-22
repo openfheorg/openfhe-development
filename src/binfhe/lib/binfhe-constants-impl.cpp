@@ -41,6 +41,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case TOY:
             s << "TOY";
             break;
+        case TOY_MULTI_BASE:
+            s << "TOY_MULTI_BASE";
+            break;
         case MEDIUM:
             s << "MEDIUM";
             break;
@@ -267,6 +270,7 @@ void isMethodCompatible(BINFHE_METHOD m, BINFHE_PARAMSET p) {
     if (m == LMKCDEY) {
         switch (p) {
             case TOY:
+            case TOY_MULTI_BASE:
             case MEDIUM:
             case STD128_LMKCDEY:
             case STD128_3_LMKCDEY:
@@ -296,6 +300,7 @@ void isMethodCompatible(BINFHE_METHOD m, BINFHE_PARAMSET p) {
     else if (m == AP || m == GINX) {
         switch (p) {
             case TOY:
+            case TOY_MULTI_BASE:
             case MEDIUM:
             case STD128_AP:
             case STD128:

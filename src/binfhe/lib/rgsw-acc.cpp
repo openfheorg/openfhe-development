@@ -54,14 +54,16 @@ namespace lbcrypto {
 
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const std::vector<NativePoly>& input,
-                                              std::vector<NativePoly>& output) const {
+                                              std::vector<NativePoly>& output,
+                                              std::optional<uint32_t> index) const {
     auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
     auto QHalf{Q >> 1};
-    auto gBits{static_cast<uint32_t>(__builtin_ctz(params->GetBaseG()))};
-    auto gHalf{static_cast<BasicInteger>(params->GetBaseG() >> 1)};
-    auto gMask{static_cast<BasicInteger>(params->GetBaseG() - 1)};
+    auto baseG{params->GetBaseG(index)};
+    auto gBits{static_cast<uint32_t>(__builtin_ctz(baseG))};
+    auto gHalf{static_cast<BasicInteger>(baseG >> 1)};
+    auto gMask{static_cast<BasicInteger>(baseG - 1)};
     auto QmHalf{Q - gHalf};
-    uint32_t digitsG{params->GetDigitsG()};
+    uint32_t digitsG{params->GetDigitsG(index)};
     // Biasing by H (gHalf in every digit position) turns balanced-digit extraction into
     // independent unsigned windows: digit_k(x) = (((x + H) >> k*gBits) & gMask) - gHalf.
     // Requires digitsG*gBits < MaxBits, which holds for all supported parameter sets.
@@ -98,9 +100,10 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
                                               const NativePoly& input, std::vector<NativePoly>& output) const {
     auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
     auto QHalf{Q >> 1};
-    auto gBits{static_cast<uint32_t>(__builtin_ctz(params->GetBaseG()))};
-    auto gHalf{static_cast<BasicInteger>(params->GetBaseG() >> 1)};
-    auto gMask{static_cast<BasicInteger>(params->GetBaseG() - 1)};
+    auto baseG{params->GetBaseG()};
+    auto gBits{static_cast<uint32_t>(__builtin_ctz(baseG))};
+    auto gHalf{static_cast<BasicInteger>(baseG >> 1)};
+    auto gMask{static_cast<BasicInteger>(baseG - 1)};
     auto QmHalf{Q - gHalf};
     uint32_t digitsG{params->GetDigitsG()};
     // see the ciphertext overload above for the excess-H digit-extraction identity

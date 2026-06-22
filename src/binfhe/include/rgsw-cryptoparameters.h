@@ -44,6 +44,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -95,6 +96,51 @@ public:
     }
 
     /**
+   * Constructor for using multiple gadget bases in bootstrapping
+   *
+   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+   * @param Q modulus for RingGSW/RLWE used in bootstrapping
+   * @param q ciphertext modulus for additive LWE
+   * @param baseG the default gadget base, also used for automorphism keys
+   * @param baseGMap number of LWE secret-key coefficients assigned to each gadget base
+   * @param baseR the base for the refreshing key
+   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
+   * @param std standard deviation
+   * @param keyDist secret key distribution
+   * @param signEval flag if sign evaluation is needed
+   * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
+   */
+    explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG,
+                                 const std::map<uint32_t, uint32_t>& baseGMap, uint32_t baseR, BINFHE_METHOD method,
+                                 double std, SecretKeyDist keyDist = UNIFORM_TERNARY, bool signEval = false,
+                                 uint32_t numAutoKeys = 10)
+        : m_Q(Q),
+          m_q(q),
+          m_N(N),
+          m_baseG(baseG),
+          m_baseG_map(baseGMap),
+          m_baseR(baseR),
+          m_polyParams{std::make_shared<ILNativeParams>(2 * N, Q)},
+          m_method(method),
+          m_keyDist(keyDist),
+          m_numAutoKeys(numAutoKeys) {
+        if (baseGMap.empty())
+            OPENFHE_THROW("Gadget base map should not be empty.");
+        if (!IsPowerOfTwo(baseG))
+            OPENFHE_THROW("Gadget base should be a power of two.");
+        for (const auto& [baseG, count] : baseGMap) {
+            if (count == 0 || baseG <= 1 || !IsPowerOfTwo(baseG))
+                OPENFHE_THROW("Gadget base should be a power of two and its count should be greater than zero.");
+        }
+        if ((method == LMKCDEY) && (numAutoKeys == 0))
+            OPENFHE_THROW("numAutoKeys should be greater than 0.");
+        auto logQ{std::log(m_Q.ConvertToDouble())};
+        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_baseG))));
+        m_dgg.SetStd(std);
+        PreCompute(signEval);
+    }
+
+    /**
    * Performs precomputations based on the supplied parameters
    */
     void PreCompute(bool signEval = false);
@@ -111,12 +157,27 @@ public:
         return m_q;
     }
 
-    uint32_t GetBaseG() const {
-        return m_baseG;
+    uint32_t GetBaseG(std::optional<uint32_t> index = std::nullopt) const {
+        if (!index.has_value() || m_baseG_map.empty())
+            return m_baseG;
+
+        uint32_t count{0};
+        for (const auto& [baseG, baseGCount] : m_baseG_map) {
+            count += baseGCount;
+            if (*index < count)
+                return baseG;
+        }
+
+        OPENFHE_THROW("Gadget base map does not cover the LWE dimension.");
     }
 
-    uint32_t GetDigitsG() const {
-        return m_digitsG;
+    uint32_t GetDigitsG(std::optional<uint32_t> index = std::nullopt) const {
+        if (!index.has_value() || m_baseG_map.empty())
+            return m_digitsG;
+
+        auto baseG{GetBaseG(index)};
+        return static_cast<uint32_t>(
+            std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(baseG))));
     }
 
     uint32_t GetBaseR() const {
@@ -137,6 +198,13 @@ public:
 
     const std::vector<NativeInteger>& GetGPower() const {
         return m_Gpower;
+    }
+
+    const std::vector<NativeInteger>& GetGPower(uint32_t baseG) const {
+        auto it = m_Gpower_map.find(baseG);
+        if (it == m_Gpower_map.end())
+            OPENFHE_THROW("No GPower found for the requested gadget base.");
+        return it->second;
     }
 
     const std::vector<int32_t>& GetLogGen() const {
@@ -168,7 +236,8 @@ public:
     }
 
     bool operator==(const RingGSWCryptoParams& other) const {
-        return m_N == other.m_N && m_Q == other.m_Q && m_baseR == other.m_baseR && m_baseG == other.m_baseG;
+        return m_N == other.m_N && m_Q == other.m_Q && m_baseR == other.m_baseR && m_baseG == other.m_baseG &&
+               m_baseG_map == other.m_baseG_map;
     }
 
     bool operator!=(const RingGSWCryptoParams& other) const {
@@ -187,6 +256,7 @@ public:
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
         ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
+        ar(::cereal::make_nvp("baseGMap", m_baseG_map));
     }
 
     template <class Archive>
@@ -207,7 +277,7 @@ public:
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
         ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
-
+        ar(::cereal::make_nvp("baseGMap", m_baseG_map));
         PreCompute();
     }
 
@@ -241,10 +311,13 @@ private:
     // gadget base used in bootstrapping
     uint32_t m_baseG;
 
+    // number of LWE secret-key coefficients assigned to each gadget base, in ascending base order
+    std::map<uint32_t, uint32_t> m_baseG_map;
+
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;
 
-    // number of digits in decomposing integers mod Q
+    // number of digits in decomposing integers mod Q for given baseG
     uint32_t m_digitsG;
 
     // powers of m_baseR (used only for DM bootstrapping)
@@ -264,7 +337,7 @@ private:
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
 
-    // A map of vectors of powers of baseG for sign evaluation
+    // A map of vectors of powers for each gadget base
     std::map<uint32_t, std::vector<NativeInteger>> m_Gpower_map;
 
     // Parameters for polynomials in RingGSW/RingLWE

@@ -64,14 +64,26 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
                 m_Gpower = tempvec;
             m_Gpower_map[baseGlist[j]] = std::move(tempvec);
         }
-    }
-    else {
-        m_Gpower.reserve(m_digitsG);
-        NativeInteger vTemp{1};
-        for (uint32_t i = 0; i < m_digitsG; ++i) {
-            m_Gpower.push_back(vTemp);
-            vTemp = vTemp.ModMulFast(NativeInteger(m_baseG), m_Q);
-        }
+    } else {
+        auto precomputeGPower = [&](uint32_t baseG) {
+            if (m_Gpower_map.find(baseG) != m_Gpower_map.end())
+                return;
+
+            auto digitsG{static_cast<uint32_t>(
+                std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(baseG))))};
+            NativeInteger vTemp{1};
+            std::vector<NativeInteger> tempvec(digitsG);
+            for (uint32_t i = 0; i < digitsG; ++i) {
+                tempvec[i] = vTemp;
+                vTemp      = vTemp.ModMulFast(NativeInteger(baseG), m_Q);
+            }
+            m_Gpower_map[baseG] = std::move(tempvec);
+        };
+
+        precomputeGPower(m_baseG);
+        for (const auto& item : m_baseG_map)
+            precomputeGPower(item.first);
+        m_Gpower = m_Gpower_map.at(m_baseG);
     }
 
     // Sets the gate constants for supported binary operations
