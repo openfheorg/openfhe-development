@@ -254,15 +254,22 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         // mirrors the FLEXIBLEAUTO scaling structure and avoids the precision loss of folding a tiny
         // non-power-of-two constant into a single plaintext multiply.
         double pre;
+        double post = 1.0;
         if (compositeDegree > 1) {
             double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
-            double post = std::pow(2, std::round(std::log2(qDouble / powP)));
+            post        = std::pow(2, std::round(std::log2(qDouble / powP)));
             pre         = cryptoParams->GetScalingFactorReal(0) * post / qDouble;
         }
         else {
             pre = qDouble / factor;
         }
-        double scaleEnc = pre / k;
+        // For composite scaling, fold the exact power-of-two 2^-deg = 1/post shrink into the
+        // CoeffsToSlots matrix (scaleEnc) instead of applying it as a scalar before CoeffsToSlots (see
+        // EvalBootstrap). This keeps the CtS rotations operating on the full-magnitude message, so the
+        // key-switch noise they add scales down together with the signal (2^deg is restored by the
+        // integer "scalar" after the sine) rather than being amplified by 2^deg. scaleDec inverts the
+        // residual c1 only; the exact 2^deg telescopes against the integer restore.
+        double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
         double scaleDec = 1.0 / pre;
 
         // compute # of levels to remain when encoding the coefficients
@@ -454,15 +461,20 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     // close to 1, SF0*post/qDouble, encoded at full precision in the CoeffsToSlots/SlotsToCoeffs matrices
     // and telescoped away; the exact power-of-two 1/post is applied as the shrink/scalar (see EvalBootstrap).
     double pre;
+    double post = 1.0;
     if (compositeDegree > 1) {
         double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
-        double post = std::pow(2, std::round(std::log2(qDouble / powP)));
+        post        = std::pow(2, std::round(std::log2(qDouble / powP)));
         pre         = cryptoParams->GetScalingFactorReal(0) * post / qDouble;
     }
     else {
         pre = qDouble / factor;
     }
-    double scaleEnc = pre / k;
+    // For composite scaling, fold the exact power-of-two 2^-deg = 1/post shrink into the CoeffsToSlots
+    // matrix (scaleEnc) instead of applying it as a scalar before CoeffsToSlots (see EvalBootstrap), so
+    // the CtS rotations act on the full-magnitude message and their key-switch noise scales down with
+    // the signal rather than being amplified by 2^deg. scaleDec inverts the residual c1 only.
+    double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
     double scaleDec = 1.0 / pre;
 
     // compute # of levels to remain when encoding the coefficients
@@ -819,10 +831,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     double post         = std::pow(2, static_cast<double>(deg));
 
     // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-    // 1/post is an exact power of two for all scaling techniques. For composite scaling the residual
-    // (inexact) part of the overflow normalization is carried by the CoeffsToSlots/SlotsToCoeffs matrix
-    // coefficients (see EvalBootstrapSetup), so the shrink below stays an exact power-of-two multiply.
-    double pre      = 1. / post;
+    // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
+    // restored by the integer "scalar" after the sine. For composite scaling the entire overflow
+    // normalization (the exact 2^-deg = 1/post AND the residual c1) is carried by the CoeffsToSlots/
+    // SlotsToCoeffs matrix coefficients (see EvalBootstrapSetup), so no shrink is applied here; this
+    // keeps the CtS rotations on the full-magnitude message and avoids amplifying their noise by 2^deg.
+    double pre      = (compositeDegree > 1) ? 1.0 : 1. / post;
     uint64_t scalar = std::llround(post);
 
     //------------------------------------------------------------------------------
@@ -1226,10 +1240,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     double post         = std::pow(2, static_cast<double>(deg));
 
     // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-    // 1/post is an exact power of two for all scaling techniques. For composite scaling the residual
-    // (inexact) part of the overflow normalization is carried by the CoeffsToSlots/SlotsToCoeffs matrix
-    // coefficients (see EvalBootstrapSetup), so the shrink below stays an exact power-of-two multiply.
-    double pre      = 1. / post;
+    // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
+    // restored by the integer "scalar" after the sine. For composite scaling the entire overflow
+    // normalization (the exact 2^-deg = 1/post AND the residual c1) is carried by the CoeffsToSlots/
+    // SlotsToCoeffs matrix coefficients (see EvalBootstrapSetup), so no shrink is applied here; this
+    // keeps the CtS rotations on the full-magnitude message and avoids amplifying their noise by 2^deg.
+    double pre      = (compositeDegree > 1) ? 1.0 : 1. / post;
     uint64_t scalar = std::llround(post);
 
     //------------------------------------------------------------------------------

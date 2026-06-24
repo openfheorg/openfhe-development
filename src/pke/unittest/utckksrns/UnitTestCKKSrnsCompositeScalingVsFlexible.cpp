@@ -45,8 +45,12 @@
        scaling the same way as FA. The bug only triggers when firstModSize > scalingModSize + 1
        (modraise headroom deg > 1); FA at 64 bits caps firstMod at 60, so we expose deg = 4 with
        scalingModSize = 56, firstModSize = 60 at 8 slots / ring 2^12. Pre-fix gap ~7 bits.
-       (NOTE: the fix closes deg <= 4 cleanly; deg >= 6 still leaves CS ~10 bits below FA - a
-       separate, currently-unfixed large-headroom limitation - so this test stays at deg = 4.)
+    2b. SparseBootstrapLargeModRaiseHeadroom - same fix at the larger headroom deg = 6
+       (scalingModSize = 54, firstModSize = 60). This regime was only half-fixed by the original
+       decomposition (it depended on the chosen primes - "good" at some ring dimensions, ~10 bits
+       below FA at others). It is fully closed by folding the exact 2^-deg shrink into the
+       CoeffsToSlots matrix so the CtS rotations stay on the full-magnitude message (their key-switch
+       noise then scales down with the signal instead of being amplified by 2^deg). Pre-fix gap ~10 bits.
     3. DeepComputationWithFillers - the canonical-scaling-factor fix for plaintext multiplication.
        A deep filler chain followed by a sharp Chebyshev impulse makes CS diverge from FA by many
        orders of magnitude. Pre-fix gap ~18 bits at D = 20.
@@ -247,6 +251,29 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapModRaiseHeadroom) {
     EXPECT_GT(csBits, 6.0) << "CS 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
                                     << ") - bootstrap pre/post scaling (deg>1) regression";
+}
+
+//===========================================================================================================
+// Scenario 2b: sparse (8-slot) bootstrapping with the larger modraise headroom deg = 6 (scalingModSize = 54,
+// firstModSize = 60) at ring 2^12 - the case from issue-1181. The original decomposition fix only half-closed
+// this regime (prime-dependent: CS landed ~10 bits below FA at this ring); folding the exact 2^-deg shrink
+// into the CoeffsToSlots matrix closes it (CS now within ~1.5 bits of FA, ~17 vs ~18.5). Pre-fix: CS ~8 bits
+// (gap ~10).
+TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
+    const uint32_t ringDim                  = 1 << 12;
+    const std::vector<uint32_t> levelBudget = {3, 3};
+    const uint32_t numSlots                 = 8;
+    const uint32_t levelsAfterBootstrap     = 2;
+
+    double faBits =
+        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
+    double csBits =
+        BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
+
+    std::cout << "[ cs-vs-fa ] 8-slot deg=6 bootstrap: FA=" << faBits << " bits, CS=" << csBits << " bits\n";
+    EXPECT_GT(csBits, 12.0) << "CS 8-slot deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
+    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
+                                    << ") - large modraise headroom (deg=6) regression";
 }
 
 //===========================================================================================================
