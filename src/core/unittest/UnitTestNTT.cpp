@@ -91,6 +91,27 @@ TEST(UTNTT, switch_format_simple_single_crt) {
 }
 
 template <typename Element>
+void switch_format_sparse_zeros(const std::string& msg) {
+    using ParmType = typename Element::Params;
+
+    uint32_t m    = 16;
+    uint32_t bits = 16;
+    auto params   = std::make_shared<ParmType>(m, bits);
+
+    Element x(params, Format::COEFFICIENT);
+    x = {1234, 5678, 0, 0, 0, 0, 0, 0};
+
+    Element xClone(x);
+    x.SwitchFormat();
+    x.SwitchFormat();
+    EXPECT_EQ(x, xClone) << msg;
+}
+
+TEST(UTNTT, switch_format_sparse_zeros) {
+    RUN_ALL_POLYS(switch_format_sparse_zeros, "switch_format_sparse_zeros")
+}
+
+template <typename Element>
 void switch_format_simple_double_crt(const std::string& msg) {
     uint32_t init_m    = 16;
     uint32_t init_size = 2;
