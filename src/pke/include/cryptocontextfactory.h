@@ -35,6 +35,7 @@
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 #include "scheme/scheme-id.h"
+#include "utils/memory.h"
 
 #include <memory>
 #include <string>
@@ -65,8 +66,8 @@ public:
     static void ReleaseAllContexts() {
         if (!AllContexts.empty())
             AllContexts[0]->ClearStaticMapsAndVectors();
-
         AllContexts.clear();
+        AllocTrim();
     }
 
     static int GetContextCount() {

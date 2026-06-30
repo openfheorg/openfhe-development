@@ -39,6 +39,7 @@
 #include "math/chebyshev.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "schemerns/rns-scheme.h"
+#include "utils/memory.h"
 
 namespace lbcrypto {
 
@@ -63,6 +64,7 @@ void CryptoContextImpl<Element>::ClearStaticMapsAndVectors() {
 #ifdef WITH_NTL
     NTL::ChineseRemainderTransformFTTNtl<M6Vector>().Reset();
 #endif
+    AllocTrim();
 }
 
 template <typename Element>
