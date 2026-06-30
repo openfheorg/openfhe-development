@@ -276,13 +276,13 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
     // 128-bit integers
     for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
         NativeInteger::DNativeInt x128 =
-            (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt() * q[1].ConvertToInt();
-        x128 += (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt() * q[0].ConvertToInt();
+            (poly[0][k].ModMulFastConstCT(qInv[0], q[0], precon[0])).ConvertToInt() * q[1].ConvertToInt();
+        x128 += (poly[1][k].ModMulFastConstCT(qInv[1], q[1], precon[1])).ConvertToInt() * q[0].ConvertToInt();
         if (x128 > Q)
             x128 %= Q;
         if ((x128 > Q1quart) && (x128 <= Q3quart)) {
-            poly[0][k].ModAddFastEq(qHalf[0], q[0]);
-            poly[1][k].ModAddFastEq(qHalf[1], q[1]);
+            poly[0][k].ModAddFastEqCT(qHalf[0], q[0]);
+            poly[1][k].ModAddFastEqCT(qHalf[1], q[1]);
         }
     }
 
