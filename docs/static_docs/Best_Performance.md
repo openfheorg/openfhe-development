@@ -47,8 +47,8 @@ If an alternative parallelization mechanism is used, e.g., pthreads, C++11 threa
 
 # Memory Allocation Policy
 
-OpenFHE allocates and frees many large polynomial buffers (~0.5–30 MB each) throughout normal operation. Under the default allocator policy, freed buffers of this size are returned to the OS as soon as they are released, resulting in many re-faults when new buffers are requested in subsequent operations.
-When operations run back-toback, this allocate / return / re-fault churn adds substantial page-fault and kernel overhead, resulting in reduced performance.
+OpenFHE allocates and frees many large polynomial buffers (~0.5–30 MB each) throughout normal operation. Under the default allocator policy, freed buffers of this size are returned to the OS as soon as they are released, resulting in many page faults when new buffers are requested in subsequent operations.
+When operations run back to back, this allocate / return / re-fault churn adds substantial page-fault and kernel overhead, resulting in reduced performance.
 
 To combat this, OpenFHE modifies the default policy at library load to keep large allocations on the heap and never return them to the OS. Freed buffers stay resident and are reused by subsequent allocation requests instead of being re-acquired from the OS (similar behaviour to a memory pool), which minimizes page faults and the associated performance penalty. This is applied automatically and requires no user action.
 
