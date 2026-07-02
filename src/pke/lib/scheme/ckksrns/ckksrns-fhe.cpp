@@ -1333,6 +1333,7 @@ std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t sl
     const auto& p    = GetBootPrecom(slots);
     const uint32_t g = (p.m_paramsEnc.g == 0) ? std::ceil(std::sqrt(slots)) : p.m_paramsEnc.g;
 
+    // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices
     std::vector<uint32_t> indexList;
     indexList.reserve(g + 32);
 
@@ -1354,6 +1355,8 @@ std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t sl
 std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots).m_paramsEnc;
 
+    // lvlb*(g+1)+gRem sizes the per-level baby/giant rotations
+    // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices + correction key
     std::vector<uint32_t> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
@@ -1391,6 +1394,8 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
 std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots).m_paramsDec;
 
+    // lvlb*(g+1)+gRem sizes the per-level baby/giant rotations
+    // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices
     std::vector<uint32_t> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 

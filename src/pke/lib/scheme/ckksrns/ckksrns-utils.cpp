@@ -734,82 +734,40 @@ uint32_t getRatioBSGSLT(uint32_t slots) {  // returns powers of two
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
-    uint32_t slots;
     // Set slots depending on packing mode (fully-packed or sparsely-packed)
-    if ((blockDimension == 0) || (blockDimension == m / 4))
-        slots = m / 4;
-    else
-        slots = blockDimension;
+    const uint32_t slots = ((blockDimension == 0) || (blockDimension == m / 4)) ? m / 4 : blockDimension;
 
     // Computing the baby-step bStep
-    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
+    const uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
 
-    // The Horner form of the LT transforms uses a single giant stride (bStep,
-    // already contained in {1..bStep}), so the giant-step keys
-    // {2*bStep, ..., (gStep-1)*bStep} the forward form needed are no longer generated.
+    // The Horner form of the LT transforms uses a single giant stride bStep (already contained in {1..bStep})
     std::vector<int32_t> indexList;
     indexList.reserve(bStep);
-    for (uint32_t i = 1; i <= bStep; i++)
+    for (uint32_t i = 1; i <= bStep; ++i)
         indexList.emplace_back(i);
-
-    // Remove possible duplicates
-    sort(indexList.begin(), indexList.end());
-    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
-
-    // Remove automorphisms corresponding to 0
-    auto it = std::find(indexList.begin(), indexList.end(), 0);
-    if (it != indexList.end())
-        indexList.erase(it);
     return indexList;
 }
 
 std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols) {
-    uint32_t slots;
     // Set slots depending on packing mode (fully-packed or sparsely-packed)
-    if ((blockDimension == 0) || (blockDimension == m / 4))
-        slots = m / 4;
-    else
-        slots = blockDimension;
+    const uint32_t slots = ((blockDimension == 0) || (blockDimension == m / 4)) ? m / 4 : blockDimension;
 
-    // Computing the baby-step g and the giant-step h
-    uint32_t bStep = getRatioBSGSLT(slots);
-    uint32_t gStep = std::ceil(static_cast<double>(slots) / bStep);
-    uint32_t logl  = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
+    // The argmin routine descends a binary tree, halving the slot count at each level. Each level needs
+    // the baby steps {1..getRatioBSGSLT(level slots)}; getRatioBSGSLT is monotonic non-decreasing in
+    // slots, so the union of the baby steps over every level collapses to {1, 2, ..., bStep} for bStep
+    // at the (largest) top-level slot count. The Horner form emits no giant-step keys.
+    const uint32_t bStep = getRatioBSGSLT(slots);
 
-    // There will be a lot of intersection between the rotations, provide an upper bound
+    // Wide (cols > slots) transforms additionally need power-of-two rotations up to cols/2; summed over
+    // the halving levels these collapse to exactly {1, 2, 4, ..., cols/2}. The powers <= bStep are
+    // already in the baby-step range, so only those in (bStep, cols/2] are appended -- and since bStep
+    // is itself a power of two, appending 2*bStep, 4*bStep, ... keeps the list sorted with no dedup pass.
     std::vector<int32_t> indexList;
-    indexList.reserve(bStep + gStep + cols);
-
-    while (slots >= 1) {
-        // Computing all indices for baby-step giant-step procedure. The Horner form
-        // uses a single giant stride bStep (already in {1..bStep}), so the giant-step
-        // keys {2*bStep, ..., (gStep-1)*bStep} are no longer generated.
-        for (uint32_t i = 1; i <= bStep; i++)
-            indexList.emplace_back(i);
-
-        // If the linear transform is wide instead of tall, we need extra rotations
-        if (slots < cols) {
-            logl = std::log2(cols / slots);  // These are powers of two, so log(l) is integer
-            for (uint32_t j = 1; j <= logl; ++j) {
-                indexList.emplace_back(slots * (1U << (j - 1)));
-            }
-        }
-
-        // Go deeper into the binary tree
-        slots /= 2;
-
-        // Recompute the baby-step for the next (halved) tree level
-        bStep = getRatioBSGSLT(slots);
-    }
-
-    // Remove possible duplicates
-    sort(indexList.begin(), indexList.end());
-    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
-
-    // Remove automorphisms corresponding to 0
-    auto it = std::find(indexList.begin(), indexList.end(), 0);
-    if (it != indexList.end())
-        indexList.erase(it);
+    indexList.reserve(bStep + 32);  // +32 bounds the (<= log2(cols)) wide power-of-two rotations
+    for (uint32_t i = 1; i <= bStep; ++i)
+        indexList.emplace_back(i);
+    for (uint32_t p = bStep << 1; p <= cols / 2; p <<= 1)
+        indexList.emplace_back(static_cast<int32_t>(p));
     return indexList;
 }
 
