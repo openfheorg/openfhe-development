@@ -10,6 +10,7 @@
 #cmakedefine WITH_REDUCED_NOISE
 #cmakedefine WITH_NTL
 #cmakedefine WITH_TCM
+#cmakedefine WITH_MALLOC_TUNING
 #cmakedefine WITH_OPENMP
 #cmakedefine WITH_NATIVEOPT
 #cmakedefine WITH_NUMA_INTERLEAVE
