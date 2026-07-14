@@ -158,6 +158,24 @@ public:
     Ciphertext<DCRTPoly> EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const override;
 
+    void EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
+                                  std::vector<uint32_t> dim1, uint32_t numSlots) override;
+
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly> ciphertext,
+                                             std::vector<std::complex<double>> coefficients) const override;
+
+    static const std::vector<std::complex<double>>& GetFEExpCoefficients() {
+        return coeff_exp_2_double_29;
+    }
+
+    static const std::vector<std::complex<double>>& GetFESigmoidCoefficients() {
+        return coeff_sigmoid_8_double_34;
+    }
+
+    static const std::vector<std::complex<double>>& GetFEGeluCoefficients() {
+        return coeff_gelu_8_double_44;
+    }
+
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
@@ -429,6 +447,13 @@ private:
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     // same value is used for both SPARSE and ENCAPSULATED_SPARSE
     static constexpr uint32_t R_SPARSE = 3;
+    // number of double-angle iterations in CKKS functional bootstrapping. Must be static because it is used in a static function.
+    // for SPARSE_TERNARY secret key distribution
+    static const uint32_t R_func_25_double_48 = 3;
+    // for SPARSE_ENCAPSULATED secret key distribution
+    static const uint32_t R_func_16_double_23 = 4;
+    // for UNIFORM_TERNARY secret key distribution
+    static const uint32_t R_func_512_double_23 = 9;
 
     // TODO: regenerate these as hexfloat
 
@@ -619,6 +644,114 @@ private:
         1.7533962434723710773e-9,    std::complex<double>(0, 5.8131873597716769476e-10),
         -2.1319283919649474434e-10};
 
+    // Coefficients for the function std::exp(1i * Pi/4.0 * x) in [-25, 25] of degree 48
+    // Need three double-angle iterations to get std::exp(1i * 2Pi * x)
+    static const inline std::vector<std::complex<double>> coeff_exp_25_double_48{
+        std::complex<double>(0.36006111549028069208, 1.5407176668267478369e-16),
+        std::complex<double>(3.8064789415719650702e-16, 0.0068730655086546438293),
+        std::complex<double>(0.35936103078634734631, 1.6766633433114607871e-16),
+        std::complex<double>(2.2204460492503130808e-16, 0.080081493546089704827),
+        std::complex<double>(0.33488992893410690632, -8.60989284403182593e-17),
+        std::complex<double>(2.129815598260504283e-16, 0.21652792575487456173),
+        std::complex<double>(0.22461316188987273668, 2.1751308237554086819e-16),
+        std::complex<double>(-3.8971093925617738679e-16, 0.35380137854824461607),
+        std::complex<double>(-0.027652225553813664094, 1.9938699217757913329e-16),
+        std::complex<double>(4.8940443534496691646e-16, 0.33126831802021117213),
+        std::complex<double>(-0.33133664969710419079, 6.1628706673069913477e-16),
+        std::complex<double>(-9.063045098980869919e-17, -0.0062284219913202867533),
+        std::complex<double>(-0.32435800929813457527, 4.9846748044394783322e-17),
+        std::complex<double>(-1.1781958628675131388e-16, -0.40269444831768314019),
+        std::complex<double>(0.20887754658698393095, 4.9393595789445740565e-16),
+        std::complex<double>(5.3018813829038092477e-16, -0.10482915771725637155),
+        std::complex<double>(0.36904470144325118852, 2.582967853209547779e-16),
+        std::complex<double>(7.0691751772050783396e-16, 0.49662019607798191245),
+        std::complex<double>(-0.49090570096718810778, 5.9816097653273737521e-16),
+        std::complex<double>(-6.2535011182968001455e-16, -0.40343819766061411736),
+        std::complex<double>(0.28987796905243695678, -6.2081858928018962396e-16),
+        std::complex<double>(-2.6282830787044521779e-16, 0.18709635169151128675),
+        std::complex<double>(-0.11032906667840432224, -3.7158484905821567654e-16),
+        std::complex<double>(-4.5315225494904349595e-17, -0.060140230214942781706),
+        std::complex<double>(0.030565104905615321507, -2.1751308237554086819e-16),
+        std::complex<double>(2.6962559169468085297e-16, 0.014579834274289332416),
+        std::complex<double>(-0.0065621382018050088136, 5.4831422848834258573e-16),
+        std::complex<double>(-4.9846748044394783322e-17, -0.0027989273473462343393),
+        std::complex<double>(0.0011354645581948190174, -8.8364689715063479245e-17),
+        std::complex<double>(2.7189135296942608524e-17, 0.00043948181744440814557),
+        std::complex<double>(-0.00016272770146243998885, 6.7972838242356521311e-18),
+        std::complex<double>(-4.7807562897124084139e-16, -5.777740941812674005e-05),
+        std::complex<double>(1.9712215047321747133e-05, 8.3833167165573039355e-17),
+        std::complex<double>(5.1206204809241916521e-16, 6.4744221625011791609e-06),
+        std::complex<double>(-2.0505994190931986269e-06, 6.0722402163171825499e-16),
+        std::complex<double>(2.1751308237554086819e-16, -6.2723745447466013712e-07),
+        std::complex<double>(1.85546461836717559e-07, 3.874451779814321915e-16),
+        std::complex<double>(-4.8260715152073133058e-16, 5.3148414241072875968e-08),
+        std::complex<double>(-1.4758699587843641424e-08, 1.5588437570247095472e-15),
+        std::complex<double>(4.6787970323488741327e-16, -3.9773206225100803379e-09),
+        std::complex<double>(1.0412323905578555975e-09, -5.0526476426818348073e-16),
+        std::complex<double>(6.7406397923670215708e-16, 2.6504463929722061763e-10),
+        std::complex<double>(-6.5656890355375697305e-11, -7.2844224983058743576e-16),
+        std::complex<double>(9.2896212264553914204e-16, -1.5841310123076310453e-11),
+        std::complex<double>(3.7243694522961547267e-12, 7.6072934799570673986e-16),
+        std::complex<double>(-6.9615515166546803306e-16, 8.5433587641989330045e-13),
+        std::complex<double>(-1.92541560926255158e-13, 1.1391114808781580023e-15),
+        std::complex<double>(-9.0488840910137115856e-16, -4.1407353736287535729e-14),
+        std::complex<double>(8.0649772574556009893e-15, 4.7226961570470625996e-16)};
+
+    // Coefficients for the function std::exp(1i * Pi/8.0 * x) in [-16, 16] of degree 23
+    // Need four double-angle iterations to get std::exp(1i * 2Pi * x)
+    static const inline std::vector<std::complex<double>> coeff_exp_16_double_23{
+        std::complex<double>(0.44055381707986857043, -2.2522493129765547086e-16),
+        std::complex<double>(2.2204460492503130808e-16, -0.42476506015273823857),
+        std::complex<double>(0.5757607350319376982, -2.168404344971008868e-17),
+        std::complex<double>(2.1279274638648834513e-16, -0.058224392078514659865),
+        std::complex<double>(0.63136093387883518435, 1.331400267812199445e-16),
+        std::complex<double>(7.2164496600635175128e-16, 0.74564931593694050438),
+        std::complex<double>(-0.55537681056570964433, -5.3068082335923826983e-16),
+        std::complex<double>(3.9782991715734777675e-16, -0.31504226022478565294),
+        std::complex<double>(0.14659065140093999191, -1.3111618272591366134e-16),
+        std::complex<double>(3.7007434154171886324e-16, 0.058247768279542422309),
+        std::complex<double>(-0.020276913022748938725, 3.3407882941520011603e-16),
+        std::complex<double>(3.2381504884900397452e-16, -0.0062956504847548480988),
+        std::complex<double>(0.0017667326590585323825, 4.813857645835639687e-17),
+        std::complex<double>(7.0314124892926577607e-16, 0.00045277117471014590583),
+        std::complex<double>(-0.00010684737510145241024, 8.2543925398563075018e-17),
+        std::complex<double>(4.9034850254277750489e-16, -2.3376886594863650919e-05),
+        std::complex<double>(4.7690365669779870709e-06, -4.5731647635438577026e-16),
+        std::complex<double>(-2.3129646346357428953e-17, 9.1161719769832763422e-07),
+        std::complex<double>(-1.6396846620747584922e-07, 9.9168358710007468122e-17),
+        std::complex<double>(1.5265566588595902431e-16, -2.7852909912067652654e-08),
+        std::complex<double>(4.4828133381284258415e-09, -5.0234700658495041344e-18),
+        std::complex<double>(1.0894063429134348553e-15, 6.8557357458132878181e-10),
+        std::complex<double>(-9.9853771085012255071e-11, -3.7301975744363780052e-16),
+        std::complex<double>(6.9504587270804074203e-16, -1.4132101422613974449e-11)};
+
+    // Coefficients for the function std::exp(1i * Pi/256.0 * x) in [-512, 512] of degree 23
+    // Need nine double-angle iterations to get std::exp(1i * 2Pi * x)
+    static const inline std::vector<std::complex<double>> coeff_exp_512_double_23{
+        std::complex<double>(0.44055381707986857043, -2.2522493129765547086e-16),
+        std::complex<double>(2.2204460492503130808e-16, -0.42476506015273823857),
+        std::complex<double>(0.5757607350319376982, -2.168404344971008868e-17),
+        std::complex<double>(2.1279274638648834513e-16, -0.058224392078514659865),
+        std::complex<double>(0.63136093387883518435, 1.331400267812199445e-16),
+        std::complex<double>(7.2164496600635175128e-16, 0.74564931593694050438),
+        std::complex<double>(-0.55537681056570964433, -5.3068082335923826983e-16),
+        std::complex<double>(3.9782991715734777675e-16, -0.31504226022478565294),
+        std::complex<double>(0.14659065140093999191, -1.3111618272591366134e-16),
+        std::complex<double>(3.7007434154171886324e-16, 0.058247768279542422309),
+        std::complex<double>(-0.020276913022748938725, 3.3407882941520011603e-16),
+        std::complex<double>(3.2381504884900397452e-16, -0.0062956504847548480988),
+        std::complex<double>(0.0017667326590585323825, 4.813857645835639687e-17),
+        std::complex<double>(7.0314124892926577607e-16, 0.00045277117471014590583),
+        std::complex<double>(-0.00010684737510145241024, 8.2543925398563075018e-17),
+        std::complex<double>(4.9034850254277750489e-16, -2.3376886594863650919e-05),
+        std::complex<double>(4.7690365669779870709e-06, -4.5731647635438577026e-16),
+        std::complex<double>(-2.3129646346357428953e-17, 9.1161719769832763422e-07),
+        std::complex<double>(-1.6396846620747584922e-07, 9.9168358710007468122e-17),
+        std::complex<double>(1.5265566588595902431e-16, -2.7852909912067652654e-08),
+        std::complex<double>(4.4828133381284258415e-09, -5.0234700658495041344e-18),
+        std::complex<double>(1.0894063429134348553e-15, 6.8557357458132878181e-10),
+        std::complex<double>(-9.9853771085012255071e-11, -3.7301975744363780052e-16),
+        std::complex<double>(6.9504587270804074203e-16, -1.4132101422613974449e-11)};
     // Coefficients for the function std::cos(Pi/2.0 * x) in [-25, 25] of degree 58
     // Need one double-angle iteration to get std::cos(Pi x)
     static const inline std::vector<double> coeff_cos_25_double{
@@ -645,6 +778,125 @@ private:
         0.00021144315086655356181, 0, -0.000030941853901365542544, 0, 3.9566690159249453134e-6,  0,
         -4.4681499226586877671e-7, 0, 4.4954022829997224556e-8,    0, -4.0598440976489881572e-9, 0,
         3.3135648780960312982e-10, 0, -2.6219749998085732829e-11};
+
+    // Fourier coefficients for the function std::exp(x) in [-2, 2] of degree 29
+    static const inline std::vector<std::complex<double>> coeff_exp_2_double_29{
+        std::complex<double>(3.222093706013e+00, 0.000000000000e+00),
+        std::complex<double>(-3.847497325992e+00, -3.036911315182e+00),
+        std::complex<double>(1.613269565467e+00, 2.561562635536e+00),
+        std::complex<double>(-7.142688329459e-01, -1.718044084361e+00),
+        std::complex<double>(3.343375256712e-01, 1.087677253934e+00),
+        std::complex<double>(-1.590083748525e-01, -6.591856314553e-01),
+        std::complex<double>(7.444125399842e-02, 3.797240558554e-01),
+        std::complex<double>(-3.347789249240e-02, -2.057416664390e-01),
+        std::complex<double>(1.415639337190e-02, 1.036151378646e-01),
+        std::complex<double>(-5.504078824289e-03, -4.782261609566e-02),
+        std::complex<double>(1.912943397918e-03, 1.985252654576e-02),
+        std::complex<double>(-5.690043709362e-04, -7.207032810727e-03),
+        std::complex<double>(1.328669037822e-04, 2.177453328757e-03),
+        std::complex<double>(-1.854630094550e-05, -4.890711403220e-04),
+        std::complex<double>(-1.453596732859e-06, 5.053417952833e-05),
+        std::complex<double>(1.572743922262e-06, 1.548627313317e-05),
+        std::complex<double>(-2.838788709181e-07, -8.312159353832e-06),
+        std::complex<double>(-7.562004956940e-08, 8.274522508133e-07),
+        std::complex<double>(4.633880680387e-08, 6.598799631857e-07),
+        std::complex<double>(-5.869467412101e-10, -2.528773346321e-07),
+        std::complex<double>(-6.055031566421e-09, -3.204665662698e-08),
+        std::complex<double>(1.190783888161e-09, 4.385916878681e-08),
+        std::complex<double>(7.747582545133e-10, -3.358504294115e-09),
+        std::complex<double>(-3.348892690935e-10, -7.088429287982e-09),
+        std::complex<double>(-9.585399054352e-11, 1.863929871559e-09),
+        std::complex<double>(8.204146390023e-11, 1.136804343802e-09),
+        std::complex<double>(9.573941899682e-12, -5.803840255614e-10),
+        std::complex<double>(-2.013818972690e-11, -1.764939479287e-10),
+        std::complex<double>(1.533040187851e-13, 1.657178907988e-10),
+        std::complex<double>(5.134323521894e-12, 2.323787581630e-11)};
+
+    // Fourier coefficients for the function 1 / (1 + std::exp(-x)) in [-8, 8] of degree 34
+    static const inline std::vector<std::complex<double>> coeff_sigmoid_8_double_34{
+        std::complex<double>(2.500000000000e-01, 0.000000000000e+00),
+        std::complex<double>(1.276756478319e-15, -2.986114677117e-01),
+        std::complex<double>(-2.711798613355e-15, -1.305833657358e-03),
+        std::complex<double>(2.012279232133e-15, -6.069910606535e-02),
+        std::complex<double>(-3.874233833051e-17, -3.496972005070e-03),
+        std::complex<double>(-5.065392549852e-16, -1.436915534313e-02),
+        std::complex<double>(-4.025501720156e-16, -3.090757902275e-03),
+        std::complex<double>(6.661338147751e-16, -3.011048528323e-03),
+        std::complex<double>(9.549219054383e-17, -1.395169741000e-03),
+        std::complex<double>(-4.406197628981e-16, -7.358936474771e-04),
+        std::complex<double>(-2.137022113088e-16, -4.185575122752e-04),
+        std::complex<double>(4.614364446098e-16, -2.239585471946e-04),
+        std::complex<double>(4.897883314203e-19, -1.182545527493e-04),
+        std::complex<double>(-4.024558464266e-16, -6.447113701542e-05),
+        std::complex<double>(-1.695114860110e-16, -3.521198006050e-05),
+        std::complex<double>(3.903127820948e-16, -1.881494613389e-05),
+        std::complex<double>(1.909467050622e-16, -1.006822281208e-05),
+        std::complex<double>(-9.540979117872e-17, -5.490602888772e-06),
+        std::complex<double>(-6.585471100731e-17, -2.983401096265e-06),
+        std::complex<double>(1.040834085586e-16, -1.590510122180e-06),
+        std::complex<double>(1.641151407480e-16, -8.526983863427e-07),
+        std::complex<double>(-6.938893903907e-17, -4.673955051855e-07),
+        std::complex<double>(-1.931861246494e-16, -2.539297722240e-07),
+        std::complex<double>(3.035766082959e-16, -1.341034123884e-07),
+        std::complex<double>(7.532874064103e-17, -7.180768169489e-08),
+        std::complex<double>(-1.049507702966e-16, -4.002071006315e-08),
+        std::complex<double>(-8.495889538759e-17, -2.179193493192e-08),
+        std::complex<double>(1.587271980519e-16, -1.117364778916e-08),
+        std::complex<double>(5.298577332100e-17, -5.959189144748e-09),
+        std::complex<double>(-3.009745230820e-16, -3.501207830137e-09),
+        std::complex<double>(-9.186228167035e-17, -1.915294608676e-09),
+        std::complex<double>(2.055647319033e-16, -8.879601871852e-10),
+        std::complex<double>(4.123369939761e-16, -4.698662414010e-10),
+        std::complex<double>(-3.139849491518e-16, -3.309931637583e-10),
+        std::complex<double>(5.506066522859e-17, -1.816820400721e-10)};
+
+    // Fourier coefficients for the GELU approximation in [-8, 8] of degree 44
+    static const inline std::vector<std::complex<double>> coeff_gelu_8_double_44{
+        std::complex<double>(1.970461314322e+00, 0.000000000000e+00),
+        std::complex<double>(-1.593875111273e+00, -2.423646025475e+00),
+        std::complex<double>(-5.332570094236e-02, 1.043627310063e+00),
+        std::complex<double>(-1.570391974449e-01, -5.402873054677e-01),
+        std::complex<double>(-3.940694771457e-02, 2.819289867863e-01),
+        std::complex<double>(-4.716127625363e-02, -1.391268773786e-01),
+        std::complex<double>(-2.418730432251e-02, 6.233923043025e-02),
+        std::complex<double>(-1.941167643365e-02, -2.432937320475e-02),
+        std::complex<double>(-1.260556521786e-02, 7.763676253796e-03),
+        std::complex<double>(-8.664960605021e-03, -1.754420766855e-03),
+        std::complex<double>(-5.704614002479e-03, 1.292565051534e-04),
+        std::complex<double>(-3.651093482904e-03, 8.792842531399e-05),
+        std::complex<double>(-2.270560959509e-03, -3.329062052015e-05),
+        std::complex<double>(-1.367226398367e-03, -2.302378982580e-06),
+        std::complex<double>(-7.979823621962e-04, 4.854603433774e-06),
+        std::complex<double>(-4.528446723700e-04, -5.500080713671e-07),
+        std::complex<double>(-2.508556888546e-04, -7.491453056646e-07),
+        std::complex<double>(-1.363438350097e-04, 2.239517241233e-07),
+        std::complex<double>(-7.312414261638e-05, 1.280298946860e-07),
+        std::complex<double>(-3.885704183314e-05, -6.935818435338e-08),
+        std::complex<double>(-2.045210744808e-05, -2.372215028579e-08),
+        std::complex<double>(-1.059289000752e-05, 2.148573735963e-08),
+        std::complex<double>(-5.323541994507e-06, 4.532466957308e-09),
+        std::complex<double>(-2.534606159357e-06, -7.005649868379e-09),
+        std::complex<double>(-1.095525020071e-06, -8.007947707722e-10),
+        std::complex<double>(-3.890401084408e-07, 2.430954434496e-09),
+        std::complex<double>(-7.123273537061e-08, 8.161443049159e-11),
+        std::complex<double>(5.044242802621e-08, -8.975149646921e-10),
+        std::complex<double>(8.120772961289e-08, 3.455961905541e-11),
+        std::complex<double>(7.542928368715e-08, 3.512492108152e-10),
+        std::complex<double>(5.884712616061e-08, -3.699939660207e-11),
+        std::complex<double>(4.212943410103e-08, -1.450199807245e-10),
+        std::complex<double>(2.870135674255e-08, 2.446543662105e-11),
+        std::complex<double>(1.893829504329e-08, 6.286847323116e-11),
+        std::complex<double>(1.220565836477e-08, -1.443831859627e-11),
+        std::complex<double>(7.712072154498e-09, -2.849185102259e-11),
+        std::complex<double>(4.784403550098e-09, 8.229923686986e-12),
+        std::complex<double>(2.915358732203e-09, 1.344066297062e-11),
+        std::complex<double>(1.744536184240e-09, -4.655373309070e-12),
+        std::complex<double>(1.025253257292e-09, -6.579332131190e-12),
+        std::complex<double>(5.922139609217e-10, 2.655362041359e-12),
+        std::complex<double>(3.364076621437e-10, 3.327796968110e-12),
+        std::complex<double>(1.878152045237e-10, -1.529273235823e-12),
+        std::complex<double>(1.029586971235e-10, -1.737237252924e-12),
+        std::complex<double>(5.538532214236e-11, 8.929038064487e-13)};
 };
 
 }  // namespace lbcrypto
