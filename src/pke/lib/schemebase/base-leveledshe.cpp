@@ -391,59 +391,17 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
     if (evalKeyIterator == evalKeyMap.end())
         OPENFHE_THROW("EvalKey for index [" + std::to_string(i) + "] is not found." + CALLER_INFO);
 
-    // we already have checks on higher level?
-    //  if (cv.size() < 2) {
-    //    std::string errorMsg(
-    //        std::string("Insufficient number of elements in ciphertext: ") +
-    //        std::to_string(cv.size()) + CALLER_INFO);
-    //    OPENFHE_THROW( errorMsg);
-    //  }
-
-    uint32_t N = ciphertext->GetElements()[0].GetRingDimension();
-
-    //  if (i == 2 * N - 1)
-    //    OPENFHE_THROW(
-    //                   "conjugation is disabled " + CALLER_INFO);
-
-    //  if (i > 2 * N - 1)
-    //    OPENFHE_THROW(
-    //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
-
-    std::vector<uint32_t> vec(N);
-    PrecomputeAutoMap(N, i, &vec);
-
-    auto result = ciphertext->Clone();
-    result->GetCryptoContext()->GetScheme()->KeySwitchInPlace(result, evalKeyIterator->second);
-
-    auto& rcv = result->GetElements();
-    rcv[0]    = rcv[0].AutomorphismTransform(i, vec);
-    rcv[1]    = rcv[1].AutomorphismTransform(i, vec);
-    return result;
+    // Delegate to the shared automorphism core so that EvalAutomorphism/EvalAtIndex
+    // produce ciphertexts bit-identical to EvalFastRotation with fresh digits
+    return EvalAutomorphismCore(ciphertext, i, EvalFastRotationPrecompute(ciphertext), evalKeyIterator->second);
 }
 
 template <class Element>
-std::shared_ptr<std::vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
-    ConstCiphertext<Element>& ciphertext) const {
-    const auto& cv = ciphertext->GetElements();
-    auto& algo     = ciphertext->GetCryptoContext()->GetScheme();
-    return algo->EvalKeySwitchPrecomputeCore(cv[1], ciphertext->GetCryptoParameters());
-}
-
-template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
-    ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
-    const std::shared_ptr<std::vector<Element>> digits) const {
-    if (index == 0)
-        return ciphertext->Clone();
-
-    uint32_t autoIndex   = FindAutomorphismIndex(index, m);
-    const auto cc        = ciphertext->GetCryptoContext();
-    auto evalKeyMap      = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    auto evalKeyIterator = evalKeyMap.find(autoIndex);
-    if (evalKeyIterator == evalKeyMap.end())
-        OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
-    auto& evalKey = evalKeyIterator->second;
-
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphismCore(ConstCiphertext<Element>& ciphertext,
+                                                                  uint32_t autoIndex,
+                                                                  const std::shared_ptr<std::vector<Element>>& digits,
+                                                                  const EvalKey<Element>& evalKey) const {
+    const auto cc    = ciphertext->GetCryptoContext();
     const uint32_t N = cc->GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, autoIndex, &vec);
@@ -494,6 +452,30 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
         result->SetElements(std::move(ba));
         return result;
     }
+}
+
+template <class Element>
+std::shared_ptr<std::vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
+    ConstCiphertext<Element>& ciphertext) const {
+    const auto& cv = ciphertext->GetElements();
+    auto& algo     = ciphertext->GetCryptoContext()->GetScheme();
+    return algo->EvalKeySwitchPrecomputeCore(cv[1], ciphertext->GetCryptoParameters());
+}
+
+template <class Element>
+Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
+    ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
+    const std::shared_ptr<std::vector<Element>> digits) const {
+    if (index == 0)
+        return ciphertext->Clone();
+
+    uint32_t autoIndex   = FindAutomorphismIndex(index, m);
+    const auto cc        = ciphertext->GetCryptoContext();
+    auto evalKeyMap      = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
+    auto evalKeyIterator = evalKeyMap.find(autoIndex);
+    if (evalKeyIterator == evalKeyMap.end())
+        OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+    return EvalAutomorphismCore(ciphertext, autoIndex, digits, evalKeyIterator->second);
 }
 
 template <class Element>

@@ -582,6 +582,23 @@ public:
                                                  CALLER_INFO_ARGS_HDR) const;
 
     /**
+   * Shared core for evaluating an automorphism from precomputed key-switch digits.
+   * Both EvalAutomorphism and EvalFastRotation delegate here, so every rotation
+   * entry point (EvalRotate/EvalAtIndex, hoisted fast rotations, conjugation)
+   * applies the same operation sequence and produces bit-identical ciphertexts.
+   *
+   * @param ciphertext the input ciphertext.
+   * @param autoIndex automorphism index.
+   * @param digits the digit decomposition of the second ciphertext element,
+   * as produced by EvalFastRotationPrecompute.
+   * @param evalKey the automorphism key for autoIndex.
+   * @return resulting ciphertext
+   */
+    virtual Ciphertext<Element> EvalAutomorphismCore(ConstCiphertext<Element>& ciphertext, uint32_t autoIndex,
+                                                     const std::shared_ptr<std::vector<Element>>& digits,
+                                                     const EvalKey<Element>& evalKey) const;
+
+    /**
    * Virtual function for the automorphism and key switching step of
    * hoisted automorphisms.
    *
