@@ -503,26 +503,30 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     }
 }
 
-void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) const {
-    const auto cc        = raised->GetCryptoContext();
-    const uint32_t N     = cc->GetRingDimension();
-    const uint32_t M     = cc->GetCyclotomicOrder();
-    const uint32_t limit = N / (2 * slots);
+void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) {
+    const uint32_t N = raised->GetCryptoContext()->GetRingDimension();
+    EvalPartialSumInPlace(raised, slots, N / (2 * slots));
+}
 
-    if (limit <= 1)
+void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size) {
+    if (size <= 1)
         return;
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(raised->GetCryptoParameters());
+    const auto cc    = ct->GetCryptoContext();
+    const uint32_t N = cc->GetRingDimension();
+    const uint32_t M = cc->GetCyclotomicOrder();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID) {
-        for (uint32_t j = 1; j < limit; j <<= 1)
-            cc->EvalAddInPlace(raised, cc->EvalRotate(raised, j * slots));
+        for (uint32_t s = 1; s < size; s <<= 1)
+            cc->EvalAddInPlace(ct, cc->EvalRotate(ct, stride * s));
         return;
     }
 
     const auto algo = cc->GetScheme();
-    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(raised->GetKeyTag());
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
 
-    std::vector<DCRTPoly>& cv = raised->GetElements();
+    std::vector<DCRTPoly>& cv = ct->GetElements();
     const auto paramsQl       = cv[0].GetParams();
     const auto paramsP        = cryptoParams->GetParamsP();
     const auto paramsQlP      = cv[0].GetExtendedCRTBasis(paramsP);
@@ -537,8 +541,8 @@ void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t sl
         acc.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
 
     std::vector<uint32_t> vec(N);
-    for (uint32_t j = 1; j < limit; j <<= 1) {
-        uint32_t autoIndex   = FindAutomorphismIndex2nComplex(j * slots, M);
+    for (uint32_t s = 1; s < size; s <<= 1) {
+        uint32_t autoIndex   = FindAutomorphismIndex2nComplex(stride * s, M);
         auto evalKeyIterator = evalKeyMap.find(autoIndex);
         if (evalKeyIterator == evalKeyMap.end())
             OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
@@ -564,6 +568,100 @@ void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t sl
         cv[1] += ba[1]
                      .AutomorphismTransform(autoIndex, vec)
                      .ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                                    cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                                    cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(),
+                                    cryptoParams->GettInvModp(), cryptoParams->GettInvModpPrecon(), t,
+                                    cryptoParams->GettModqPrecon());
+    }
+
+    cv[0] =
+        acc.ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                          cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                          cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                          cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+}
+
+void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix) {
+    if (size <= 1)
+        return;
+    if (radix == 2)
+        return EvalPartialSumInPlace(ct, stride, size);
+
+    const auto cc    = ct->GetCryptoContext();
+    const uint32_t N = cc->GetRingDimension();
+    const uint32_t M = cc->GetCyclotomicOrder();
+
+    const uint32_t logRadix = lbcrypto::GetMSB(radix) - 1;
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
+    if (cryptoParams->GetKeySwitchTechnique() != HYBRID) {
+        for (uint32_t s = 1; s < size; s <<= logRadix) {
+            auto base = ct->Clone();
+            for (uint32_t idx = stride * s; idx < stride * size && idx < radix * stride * s; idx += stride * s)
+                cc->EvalAddInPlace(ct, cc->EvalRotate(base, idx));
+        }
+        return;
+    }
+
+    const auto algo = cc->GetScheme();
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
+
+    std::vector<DCRTPoly>& cv = ct->GetElements();
+    const auto paramsQl       = cv[0].GetParams();
+    const auto paramsP        = cryptoParams->GetParamsP();
+    const auto paramsQlP      = cv[0].GetExtendedCRTBasis(paramsP);
+    const uint32_t sizeQl     = paramsQl->GetParams().size();
+    const uint32_t sizeQlP    = paramsQlP->GetParams().size();
+
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
+
+    DCRTPoly acc(paramsQlP, Format::EVALUATION, true);
+    auto cMult = cv[0].TimesNoCheck(cryptoParams->GetPModq());
+    for (uint32_t i = 0; i < sizeQl; ++i)
+        acc.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
+
+    std::vector<uint32_t> vec(N);
+    for (uint32_t s = 1; s < size; s <<= logRadix) {
+        // One digit decomposition per level, shared by all of the level's rotations.
+        auto digits = algo->EvalKeySwitchPrecomputeCore(cv[1], cryptoParams);
+
+        // Per-level sums; the pre-level accumulator is folded into every rotation of the level.
+        DCRTPoly lvl0(paramsQlP, Format::EVALUATION, true);
+        DCRTPoly lvl1(paramsQlP, Format::EVALUATION, true);
+
+        for (uint32_t idx = stride * s; idx < stride * size && idx < radix * stride * s; idx += stride * s) {
+            uint32_t autoIndex   = FindAutomorphismIndex2nComplex(idx, M);
+            auto evalKeyIterator = evalKeyMap.find(autoIndex);
+            if (evalKeyIterator == evalKeyMap.end())
+                OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+
+            PrecomputeAutoMap(N, autoIndex, &vec);
+
+            auto ba = algo->EvalFastKeySwitchCoreExt(digits, evalKeyIterator->second, paramsQl);
+
+            // ba[0] += acc;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+            for (uint32_t i = 0; i < sizeQlP; ++i)
+                ba[0].GetAllElements()[i] += acc.GetAllElements()[i];
+
+            ba[0] = ba[0].AutomorphismTransform(autoIndex, vec);
+            ba[1] = ba[1].AutomorphismTransform(autoIndex, vec);
+
+            // lvl0 += ba[0]; lvl1 += ba[1];
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+            for (uint32_t i = 0; i < sizeQlP; ++i) {
+                lvl0.GetAllElements()[i] += ba[0].GetAllElements()[i];
+                lvl1.GetAllElements()[i] += ba[1].GetAllElements()[i];
+            }
+        }
+
+        // acc += lvl0;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+        for (uint32_t i = 0; i < sizeQlP; ++i)
+            acc.GetAllElements()[i] += lvl0.GetAllElements()[i];
+
+        // Element 1 settles once per level from the level's extended sum: the next level's
+        // rotations need its digit decomposition.
+        cv[1] += lvl1.ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
                                     cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
                                     cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(),
                                     cryptoParams->GettInvModp(), cryptoParams->GettInvModpPrecon(), t,

@@ -296,7 +296,30 @@ public:
    * @param raised input/output ciphertext at the raised level
    * @param slots number of plaintext slots (sparse packing; slots < N / 2)
    */
-    void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) const;
+    static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots);
+
+    /**
+   * Rotation fold: ct = sum_{j=0}^{size-1} Rotate(ct, j * stride), evaluated as a doubling
+   * (radix-2) loop. For HYBRID key switching, element 0 accumulates in the extended (QlP)
+   * basis with a single deferred ApproxModDown; element 1 settles once per level.
+   * @param ct input/output ciphertext
+   * @param stride slot distance between consecutive summands
+   * @param size number of summands (power of two)
+   */
+    static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size);
+
+    /**
+   * Generalized rotation fold: ct = sum_{j=0}^{size-1} Rotate(ct, j * stride), evaluated in
+   * radix-bStep levels so each level shares one digit decomposition across its (up to
+   * bStep - 1) rotations. For HYBRID key switching, element 0 accumulates in the extended
+   * (QlP) basis with a single deferred ApproxModDown. Higher radix trades more rotation keys
+   * for fewer digit decompositions. Entry point for callers that carry a runtime radix;
+   * @param ct input/output ciphertext
+   * @param stride slot distance between consecutive summands
+   * @param size number of summands (power of two)
+   * @param radix accumulation branching factor (power of two; 2 = plain doubling)
+   */
+    static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix);
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
