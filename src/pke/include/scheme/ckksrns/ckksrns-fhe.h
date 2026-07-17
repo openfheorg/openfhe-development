@@ -289,6 +289,15 @@ public:
     Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt) const;
 
+    /**
+   * Bootstrapping PartialSum: raised += Rotate(raised, j * slots) for j = 1, 2, 4, ...
+   * while j < N / (2 * slots). For HYBRID key switching, element 0 accumulates in the
+   * extended (QlP) basis with a single deferred ApproxModDown instead of one per level.
+   * @param raised input/output ciphertext at the raised level
+   * @param slots number of plaintext slots (sparse packing; slots < N / 2)
+   */
+    void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) const;
+
     //------------------------------------------------------------------------------
     // SERIALIZATION
     //------------------------------------------------------------------------------
