@@ -41,6 +41,7 @@
 
 #include <complex>
 #include <vector>
+#include "utils/openfhe_log.h"
 
 namespace lbcrypto {
 
@@ -114,7 +115,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
             //  cosTable.resize(l);
             //  maxMCached = m;
             // }
-            // std::cout<<"miss m "<<m<<" != M "<<cachedM[l]<<std::endl;
+            // OPENFHE_LOG_OUT<<"miss m "<<m<<" != M "<<cachedM[l]<<std::endl;
             cachedM[l] = m;
 
             sinTable[l].resize(m / 2);

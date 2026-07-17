@@ -39,6 +39,7 @@
 #include "utils/exception.h"
 
 #include <iostream>
+#include "utils/openfhe_log.h"
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
     #include <dlfcn.h>
 #endif
@@ -61,7 +62,7 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
         genPRNGEngine = default_prng::createEngineInstance;
         if (!genPRNGEngine)
             OPENFHE_THROW("Cannot find symbol: default_prng::createEngineInstance");
-        // std::cerr << "InitPRNGEngine: using local PRNG" << std::endl;
+        // OPENFHE_LOG_ERR << "InitPRNGEngine: using local PRNG" << std::endl;
     }
     else {
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
@@ -83,7 +84,7 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
             dlclose(libraryHandle);
             OPENFHE_THROW(errMsg);
         }
-        std::cerr << __FUNCTION__ << ": using external PRNG" << std::endl;
+        OPENFHE_LOG_ERR << __FUNCTION__ << ": using external PRNG" << std::endl;
 #else
         OPENFHE_THROW("OpenFHE may use an external PRNG library linked with g++ on Linux only");
 #endif

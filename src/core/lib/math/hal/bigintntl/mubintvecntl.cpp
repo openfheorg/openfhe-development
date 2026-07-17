@@ -38,6 +38,7 @@
 //==================================================================================
 
 #include "config_core.h"
+#include "utils/openfhe_log.h"
 #ifdef WITH_NTL
 
     #define FASTNLOOSE
@@ -63,7 +64,7 @@ myVecP<myT>::myVecP(const myVecP<myT>& a) : Vec<myT>(INIT_SIZE, a.length()) {
     int rv = this->CopyModulus(a);
     if (rv == -1) {
     #ifdef WARN_BAD_MODULUS
-        std::cerr << "in myVecP(myVecP) Bad CopyModulus" << std::endl;
+        OPENFHE_LOG_ERR << "in myVecP(myVecP) Bad CopyModulus" << std::endl;
     #endif
     }
     *this = a;
@@ -75,7 +76,7 @@ myVecP<myT>::myVecP(myVecP<myT>&& a) : Vec<myT>(INIT_SIZE, a.length()) {
     int rv = this->CopyModulus(a);
     if (rv == -1) {
     #ifdef WARN_BAD_MODULUS
-        std::cerr << "in myVecP(myVecP &&) Bad CopyModulus" << std::endl;
+        OPENFHE_LOG_ERR << "in myVecP(myVecP &&) Bad CopyModulus" << std::endl;
     #endif
     }
     this->move(a);
@@ -240,7 +241,7 @@ myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<int32_t> rhs) {
         if (i < len) {
             int tmp = *(rhs.begin() + i);
             if (tmp < 0) {
-                std::cout << "warning trying to assign negative integer value" << std::endl;
+                OPENFHE_LOG_OUT << "warning trying to assign negative integer value" << std::endl;
             }
     #ifdef FORCE_NORMALIZATION
             if (isModulusSet())
@@ -306,7 +307,7 @@ myVecP<myT>& myVecP<myT>::operator=(const myVecP<myT>& rhs) {
     int rv = this->CopyModulus(rhs);
     if (rv == -1) {
     #ifdef WARN_BAD_MODULUS
-        std::cerr << "in operator=(myVecP) Bad CopyModulus" << std::endl;
+        OPENFHE_LOG_ERR << "in operator=(myVecP) Bad CopyModulus" << std::endl;
     #endif
     }
     for (size_t i = 0; i < rhs.GetLength(); i++) {
@@ -323,7 +324,7 @@ myVecP<myT>& myVecP<myT>::operator=(myVecP<myT>&& rhs) {
         int rv = this->CopyModulus(rhs);
         if (rv == -1) {
     #ifdef WARN_BAD_MODULUS
-            std::cerr << "in operator=(myVecP) Bad CopyModulus" << std::endl;
+            OPENFHE_LOG_ERR << "in operator=(myVecP) Bad CopyModulus" << std::endl;
     #endif
         }
         this->move(rhs);
