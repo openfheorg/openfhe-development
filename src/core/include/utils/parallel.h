@@ -108,10 +108,23 @@ public:
 #endif
     }
 
-    // @Brief returns min of int n and machineThreads
+    // @Brief returns the thread count a parallel region should use: the
+    // minimum of the requested n, machineThreads, and the live OpenMP limit
+    // omp_get_max_threads().
+    //
+    // The live-limit clamp is what makes runtime thread control effective.
+    // machineThreads is latched once from omp_get_max_threads() at static
+    // init and never refreshed, yet every hot region emits
+    // num_threads(GetThreadLimit(...)) -- a clause that overrides the runtime
+    // ICV. Clamping only by machineThreads therefore ignores a subsequent
+    // omp_set_num_threads() (including one made through SetNumThreads() below),
+    // so the library cannot be capped in-process. Also clamping by the live
+    // omp_get_max_threads() restores that.
     int GetThreadLimit(int n) const {
 #ifdef PARALLEL
-        return n > machineThreads ? machineThreads : n;
+        int lim  = n > machineThreads ? machineThreads : n;
+        int live = omp_get_max_threads();
+        return lim > live ? live : lim;
 #else
         return 1;
 #endif
