@@ -1141,9 +1141,9 @@ public:
 
     void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, const std::vector<uint32_t>& levelBudget = {5, 4},
                             const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
-                            uint32_t correctionFactor = 0, bool precompute = true, bool BTSlotsEncoding = false) {
+                            uint32_t correctionFactor = 0, bool precompute = true, bool BTSlotsEncoding = false, int32_t modevallevels = -1) {
         VerifyFHEEnabled(__func__);
-        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
+        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding, modevallevels);
     }
 
     void ClearBootstrapPrecom() noexcept {
@@ -1571,7 +1571,9 @@ protected:
     std::shared_ptr<LeveledSHEBase<Element>> m_LeveledSHE;
     std::shared_ptr<AdvancedSHEBase<Element>> m_AdvancedSHE;
     std::shared_ptr<MultipartyBase<Element>> m_Multiparty;
+public:
     std::shared_ptr<FHEBase<Element>> m_FHE;
+protected:
     std::shared_ptr<FHEBase<Element>> m_SchemeSwitch;
 
     inline void CheckMultipartyDecryptCompatibility(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {

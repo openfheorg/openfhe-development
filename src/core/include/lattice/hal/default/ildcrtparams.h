@@ -362,7 +362,8 @@ protected:
         return out << std::endl;
     }
 
-private:
+//private:
+public:
     // array of smaller ILParams
     std::vector<std::shared_ptr<ILNativeParams>> m_params;
 };

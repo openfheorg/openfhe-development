@@ -102,7 +102,7 @@ public:
    */
     virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
                                     std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor,
-                                    bool precompute, bool BTSlotsEncoding) {
+                                    bool precompute, bool BTSlotsEncoding, uint32_t modevallevels = -1) {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 

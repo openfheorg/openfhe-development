@@ -125,12 +125,13 @@ using namespace std::literals::complex_literals;
 
 class FHECKKSRNS : public FHERNS {
 private:
+public:
     // correction factor, which we scale the message by to improve precision
     uint32_t m_correctionFactor;
 
     // key tuple is dim1, levelBudgetEnc, levelBudgetDec
     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
-
+private:
     using ParmType = typename DCRTPoly::Params;
     using DugType  = typename DCRTPoly::DugType;
     using DggType  = typename DCRTPoly::DggType;
@@ -149,7 +150,7 @@ public:
 
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor, bool precompute,
-                            bool BTSlotsEncoding) override;
+                            bool BTSlotsEncoding, uint32_t modevallevels = std::numeric_limits<uint32_t>::max()) override;
 
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
                                                                                uint32_t slots) override;
@@ -413,8 +414,9 @@ private:
     //------------------------------------------------------------------------------
     // Find Rotation Indices
     //------------------------------------------------------------------------------
+public:
     std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
-
+private:
     // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
     // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
     // These methods completely depend on FindBootstrapRotationIndices() to do that.
@@ -435,7 +437,7 @@ private:
 
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
                           const std::shared_ptr<DCRTPoly::Params> params) const;
-
+public:
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
     /**
@@ -487,7 +489,7 @@ private:
                                                    uint32_t digitBitSize, size_t order = 1);
 
     // upper bound for the number of overflows in the sparse secret case
-
+public:
     // TODO: unify this
     static constexpr uint32_t K_SPARSE     = 28;
     static constexpr uint32_t K_SPARSE_ALT = 25;

@@ -25,6 +25,9 @@ endif()
 #
 # TODO: for now, we use CLang for Mac
 
+set(CMAKE_C_COMPILER "gcc")
+set(CMAKE_CXX_COMPILER "g++")
+
 project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
@@ -75,10 +78,10 @@ if (EMSCRIPTEN)
     message("OpenMP is not supported by Emscripten")
 else()
     option(BUILD_SHARED "Set to ON to build shared versions of the library"            ON  )
-    option(BUILD_STATIC "Set to ON to build static versions of the library"            OFF )
-    option(BUILD_UNITTESTS "Set to ON to build unit tests for the library"             ON  )
-    option(BUILD_EXAMPLES "Set to ON to build examples for the library"                ON  )
-    option(BUILD_BENCHMARKS "Set to ON to build benchmarks for the library"            ON  )
+    option(BUILD_STATIC "Set to ON to build static versions of the library"            ON  )
+    option(BUILD_UNITTESTS "Set to ON to build unit tests for the library"             OFF )
+    option(BUILD_EXAMPLES "Set to ON to build examples for the library"                OFF )
+    option(BUILD_BENCHMARKS "Set to ON to build benchmarks for the library"            OFF )
     option(WITH_OPENMP "Use OpenMP to enable <omp.h>"                                  ON  )
 endif()
 
@@ -88,7 +91,7 @@ option(WITH_BE2 "Include MATHBACKEND 2 in build by setting WITH_BE2 to ON"      
 option(WITH_BE4 "Include MATHBACKEND 4 in build by setting WITH_BE4 to ON"             OFF )
 option(WITH_NTL "Include MATHBACKEND 6 and NTL in build by setting WITH_NTL to ON"     OFF )
 option(WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                          OFF )
-option(WITH_NATIVEOPT "Use machine-specific optimizations"                             OFF )
+option(WITH_NATIVEOPT "Use machine-specific optimizations"                             ON  )
 option(WITH_COVTEST "Turn on to enable coverage testing (can be used with g++ only)"   OFF )
 option(WITH_NOISE_DEBUG "Use only when running lattice estimator; not for production"  OFF )
 option(WITH_REDUCED_NOISE "Enable reduced noise within HKS and BFV HPSPOVERQ modes"    OFF )

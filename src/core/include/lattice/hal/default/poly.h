@@ -364,8 +364,10 @@ public:
 
 protected:
     Format m_format{Format::EVALUATION};
+public:
     std::shared_ptr<Params> m_params{nullptr};
     std::unique_ptr<VecType> m_values{nullptr};
+protected:
     void ArbitrarySwitchFormat();
 };
 

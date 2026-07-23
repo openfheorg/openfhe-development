@@ -136,7 +136,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHornerGiantRotate(ConstCiphertext<DCRTPoly>
 
 void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
                                     std::vector<uint32_t> dim1, uint32_t numSlots, uint32_t correctionFactor,
-                                    bool precompute, bool BTSlotsEncoding) {
+                                    bool precompute, bool BTSlotsEncoding, uint32_t modevallevels) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -262,7 +262,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
         }
         else {
-            uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + precom->m_paramsEnc.lvlb +
+	    uint32_t approxModDepth = modevallevels == std::numeric_limits<uint32_t>::max() ? GetModDepthInternal(cryptoParams->GetSecretKeyDist()) : modevallevels;
+            uint32_t depthBT = approxModDepth + precom->m_paramsEnc.lvlb +
                                precom->m_paramsDec.lvlb;
             lDec = L0 - compositeDegree * depthBT;
         }

@@ -224,8 +224,9 @@ protected:
     }
 
     // element-specific parameters
+public:
     std::shared_ptr<typename Element::Params> m_params;
-
+protected:
     // encoding-specific parameters
     EncodingParams m_encodingParams;
 };

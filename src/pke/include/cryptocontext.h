@@ -3580,8 +3580,8 @@ public:
     */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
                             uint32_t slots = 0, uint32_t correctionFactor = 0, bool precompute = true,
-                            bool BTSlotsEncoding = false) {
-        m_scheme->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
+                            bool BTSlotsEncoding = false, int32_t modevallevels = -1) {
+        m_scheme->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding, modevallevels);
     }
 
     /**
