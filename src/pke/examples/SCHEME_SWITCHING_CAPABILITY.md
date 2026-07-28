@@ -133,10 +133,15 @@ respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain 
 **Current limitations**
 - Scheme switching is currently supported only for CKKS and FHEW/TFHE.
 - Switching from CKKS to FHEW is only supported for the first consecutive slots in the CKKS ciphertext.
-- Switching to CKKS the result of an arbitrary function evaluation in FHEW is not yet supported. Only functions with binary outputs or small outputs with respect to the FHEW plaintext space are supported.
+- Switching to CKKS the result of an arbitrary function evaluation in FHEW is not yet supported. Only functions with binary outputs or small 
+outputs with respect to the FHEW plaintext space are supported.
 - Computing the min/max via scheme switching is only implemented for vectors of size a power of two.
-- Large memory consumption for large number of slots (because of the linear transform required in the switching and that the keys are created with the maximum number of levels)
+- Large memory consumption for large number of slots (because of the linear transform required in the switching and that the keys are created 
+with the maximum number of levels)
 - Only GINX with uniform ternary secrets is currently supported for scheme switching.
+- MULTIPARTY is not currently supported for scheme switching. The multiparty key generation in OpenFHE introduces more noise than the single-key 
+version, which is not accounted for by the scheme switching parameters. If multiparty-computation techniques are used to generate a joint key with 
+the same properties as the single key, then the scheme switching results should be correct.
 
 
 Additional example demonstrating serialization
