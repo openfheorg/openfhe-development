@@ -31,6 +31,8 @@ A later version of the clang compiler can also be used.
 
 Typically, the default configuration for schemes in the `pke` module is only to a small degree less performant than the optimal one (in contrast to DM-like schemes). Setting `WITH_NATIVEOPT` to ON may sometimes lead to a decrease in runtime (especially when using clang).
 
+For CKKS bootstrapping, the `CKKS_PARTIAL_SUM_RADIX` CMake variable sets the radix of the partial-sum rotation fold (default 4; any power of two). Higher radices reduce the number of digit decompositions at the raised level — the widest and most expensive modulus raises of the bootstrap — at the cost of generating and storing more rotation keys (radix 4 needs roughly 1.5x the partial-sum keys of radix 2, and its non-power-of-two indices are not shared with other operations). If minimizing rotation-key storage matters more than bootstrapping runtime, build with `-DCKKS_PARTIAL_SUM_RADIX=2`, which only uses the power-of-two rotation indices that bootstrapping key generation produces anyway. Key generation automatically creates the rotation keys matching the configured radix.
+
 # Multithreading Configuration using OpenMP
 
 OpenFHE uses loop parallelization via OpenMP to speed up some lower-level (mostly polynomial) operations. From a bird's eye view, built-in OpenFHE loop parallelization is applied at the following levels:
