@@ -641,7 +641,7 @@ public:
             return m_scalingFactorsRealBig[l];
         }
 
-        return m_approxSF;
+        return m_approxSF * m_approxSF;
     }
 
     /**

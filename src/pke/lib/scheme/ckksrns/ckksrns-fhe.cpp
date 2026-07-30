@@ -976,7 +976,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         }
 
         // Step 6 and 7: Calculate the bootstrapping error by subtracting the original ciphertext from the bootstrapped ciphertext. Mod down to q is done implicitly.
-        // cc->GetScheme()->AdjustLevelsAndDepthInPlace(ctBootstrappedScaledDown, ctScaledUp);
         auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
 
         // Step 8: Bootstrap the error.
@@ -3028,7 +3027,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     // because the message doesn't have to be scaled down.
     // Instead, we need to correct the encoding if it originates from a different ciphertext
     // (not typical CKKS).
-    double correction = cryptoParams->GetScalingFactorRealBig(0) / initialScaling.ConvertToDouble();
+    double correction = cryptoParams->GetScalingFactorReal(0) / initialScaling.ConvertToDouble();
 
     //------------------------------------------------------------------------------
     // RAISING THE MODULUS
