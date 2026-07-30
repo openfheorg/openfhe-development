@@ -635,13 +635,14 @@ public:
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
-                return m_approxSF;
+                OPENFHE_THROW("invalid level");
+                return m_approxSF * m_approxSF;
             }
 
             return m_scalingFactorsRealBig[l];
         }
 
-        return m_approxSF;
+        return m_approxSF * m_approxSF;
     }
 
     /**

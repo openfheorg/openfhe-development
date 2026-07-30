@@ -601,24 +601,27 @@ public:
         m_LeveledSHE->MultByMonomialInPlace(ciphertext, power);
     }
 
-    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double constant) const {
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double constant,
+                                         int32_t target_level) const {
         VerifyLeveledSHEEnabled(__func__);
-        return m_LeveledSHE->EvalMult(ciphertext, constant);
+        return m_LeveledSHE->EvalMult(ciphertext, constant, target_level);
     }
 
-    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant, int32_t target_level = -1) const {
         VerifyLeveledSHEEnabled(__func__);
-        m_LeveledSHE->EvalMultInPlace(ciphertext, constant);
+        m_LeveledSHE->EvalMultInPlace(ciphertext, constant, target_level);
     }
 
-    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> constant) const {
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> constant,
+                                         int32_t target_level = -1) const {
         VerifyLeveledSHEEnabled(__func__);
-        return m_LeveledSHE->EvalMult(ciphertext, constant);
+        return m_LeveledSHE->EvalMult(ciphertext, constant, target_level);
     }
 
-    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant) const {
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> constant,
+                                 int32_t target_level = -1) const {
         VerifyLeveledSHEEnabled(__func__);
-        m_LeveledSHE->EvalMultInPlace(ciphertext, constant);
+        m_LeveledSHE->EvalMultInPlace(ciphertext, constant, target_level);
     }
 
     virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element>& ciphertext, uint64_t integer) const {
@@ -839,20 +842,22 @@ public:
 
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
-                                       const std::vector<VectorDataType>& constantVec) const {
+                                       const std::vector<VectorDataType>& constantVec,
+                                       int32_t target_level = -1) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW("Input ciphertext vector is empty");
-        return m_AdvancedSHE->EvalLinearWSum(ciphertextVec, constantVec);
+        return m_AdvancedSHE->EvalLinearWSum(ciphertextVec, constantVec, target_level);
     }
 
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
-                                              const std::vector<VectorDataType>& constantVec) const {
+                                              const std::vector<VectorDataType>& constantVec,
+                                              int32_t target_level = -1) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW("Input ciphertext vector is empty");
-        return m_AdvancedSHE->EvalLinearWSumMutable(ciphertextVec, constantVec);
+        return m_AdvancedSHE->EvalLinearWSumMutable(ciphertextVec, constantVec, target_level);
     }
 
     /////////////////////////////////////

@@ -55,6 +55,7 @@
 #include <utility>
 #include <vector>
 
+#define BOOTSTRAPTIMING
 #ifdef BOOTSTRAPTIMING
     #include <ostream>
     #define PROFILE

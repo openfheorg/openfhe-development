@@ -439,19 +439,22 @@ public:
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double scalar) const {
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double scalar,
+                                         int32_t target_level = -1) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar, int32_t target_level = -1) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar,
+                                         int32_t target_level = -1) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar,
+                                 int32_t target_level = -1) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
