@@ -2664,21 +2664,19 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Homomorphic addition of multiple ciphertexts using a binary tree approach.
+    * @brief Homomorphic addition of multiple ciphertexts (null entries are skipped).
     *
     * @param ciphertextVec  Vector of ciphertexts.
-    * @return Resulting ciphertext.
+    * @return Resulting ciphertext; never aliases an input, so it is always safe to mutate.
     */
     Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
         if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
-        if (ciphertextVec.size() == 1)
-            return ciphertextVec[0];
         return m_scheme->EvalAddMany(ciphertextVec);
     }
 
     /**
-    * @brief In-place homomorphic addition of multiple ciphertexts using a binary tree approach.
+    * @brief In-place homomorphic addition of multiple ciphertexts (null entries are skipped; the result is also left in slot 0 of the vector).
     *
     * @param ciphertextVec  Vector of ciphertexts (modified in place to store intermediate results).
     * @return Resulting ciphertext.
@@ -2704,7 +2702,7 @@ public:
         if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
         if (ciphertextVec.size() == 1)
-            return ciphertextVec[0];
+            return ciphertextVec[0]->Clone();
         const auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
         if (evalKeyVec.size() < (ciphertextVec[0]->NumberCiphertextElements() - 2))
             OPENFHE_THROW("Insufficient value was used for maxRelinSkDeg to generate keys");
@@ -3629,15 +3627,14 @@ public:
                       const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
                       uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1) {
         m_scheme->EvalFBTSetup(*this, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                                  depthLeveledComputation, order);
+                               depthLeveledComputation, order);
     }
 
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
                                 uint32_t levelToReduce = 0, size_t order = 1) {
-        return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce,
-                                    order);
+        return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order);
     }
 
     template <typename VectorDataType>
@@ -3908,7 +3905,7 @@ public:
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
         return m_scheme->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
-                                                       unit);
+                                                    unit);
     }
 
     /**

@@ -98,7 +98,7 @@ The table below shows the current list of options, definition for the option, an
   WITH_NATIVEOPT         Use machine-specific optimizations (major speedup for clang)                                                                                                          OFF
   NATIVE_SIZE            Set default word size for native integer arithmetic to 64 or 128 bits                                                                                                 64
   CKKS_M_FACTOR          Parameter used to strengthen the CKKS adversarial model in scenarios where decryption results are shared among multiple parties (See Security.md for more details)    1
-  CKKS_PARTIAL_SUM_RADIX Radix of the CKKS bootstrapping partial-sum rotation fold (power of two); higher values reduce digit decompositions but require more rotation keys                    4
+  PARTIAL_SUM_RADIX      Radix of the rotation-fold accumulations (bootstrap partial sums, EvalSum); higher powers of two reduce digit decompositions but need more keys                       4
  ======================= ===================================================================================================================================================================== =======
 
 .. note:: More Options will be added as development progresses

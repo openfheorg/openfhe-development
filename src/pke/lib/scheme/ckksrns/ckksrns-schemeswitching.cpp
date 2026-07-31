@@ -1005,7 +1005,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWto
     // Compute indices for rotations to bring back the final CKKS ciphertext encoding to slots
     // (the radix-configured EvalPartialSumInPlace fold)
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        constexpr uint32_t radix = CKKS_PARTIAL_SUM_RADIX;
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size      = ringDim / (2 * slots);
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
@@ -1159,7 +1159,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 
     // Go back to the sparse encoding if needed
     if (isSparse) {
-        FHECKKSRNS::EvalPartialSumInPlace(BminusAdotSres, slots, N / (2 * slots), CKKS_PARTIAL_SUM_RADIX);
+        FHECKKSRNS::EvalPartialSumInPlace(BminusAdotSres, slots, N / (2 * slots), PARTIAL_SUM_RADIX);
         BminusAdotSres->SetSlots(slots);
     }
 
@@ -1303,7 +1303,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     // Compute indices for rotations to bring back the final CKKS ciphertext encoding to slots
     // (the radix-configured EvalPartialSumInPlace fold)
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        constexpr uint32_t radix = CKKS_PARTIAL_SUM_RADIX;
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size      = ringDim / (2 * slots);
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)

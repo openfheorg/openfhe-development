@@ -503,12 +503,12 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     }
 }
 
-static_assert(CKKS_PARTIAL_SUM_RADIX >= 2 && (CKKS_PARTIAL_SUM_RADIX & (CKKS_PARTIAL_SUM_RADIX - 1)) == 0,
-              "CKKS_PARTIAL_SUM_RADIX must be a power of two >= 2");
+static_assert(PARTIAL_SUM_RADIX >= 2 && (PARTIAL_SUM_RADIX & (PARTIAL_SUM_RADIX - 1)) == 0,
+              "PARTIAL_SUM_RADIX must be a power of two >= 2");
 
 void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) {
     const uint32_t N = raised->GetCryptoContext()->GetRingDimension();
-    EvalPartialSumInPlace(raised, slots, N / (2 * slots), CKKS_PARTIAL_SUM_RADIX);
+    EvalPartialSumInPlace(raised, slots, N / (2 * slots), PARTIAL_SUM_RADIX);
 }
 
 void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size) {
@@ -598,9 +598,10 @@ void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID) {
         for (uint32_t s = 1; s < size; s <<= logRadix) {
-            auto base = ct->Clone();
+            auto base   = ct->Clone();
+            auto digits = cc->EvalFastRotationPrecompute(base);
             for (uint32_t idx = stride * s; idx < stride * size && idx < radix * stride * s; idx += stride * s)
-                cc->EvalAddInPlace(ct, cc->EvalRotate(base, idx));
+                cc->EvalAddInPlace(ct, cc->EvalFastRotation(base, idx, M, digits));
         }
         return;
     }
@@ -1516,7 +1517,7 @@ std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t sl
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
     // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
-        constexpr uint32_t radix = CKKS_PARTIAL_SUM_RADIX;
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size      = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
@@ -1540,7 +1541,7 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
     // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
-        constexpr uint32_t radix = CKKS_PARTIAL_SUM_RADIX;
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size      = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
@@ -1583,7 +1584,7 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
     // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
-        constexpr uint32_t radix = CKKS_PARTIAL_SUM_RADIX;
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size      = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
