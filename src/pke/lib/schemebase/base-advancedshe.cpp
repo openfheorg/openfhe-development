@@ -453,14 +453,7 @@ std::set<uint32_t> AdvancedSHEBase<Element>::GenerateIndices_2n(uint32_t batchSi
         if (2 * batchSize < m)
             return GenerateEvalSumIndices(5, batchSize, m);
 
-        // Fully packed: the last fold step is the conjugation-like automorphism m-1,
-        // which has no radix generalization; keep the doubling structure.
-        auto isize = static_cast<size_t>(std::ceil(std::log2(batchSize)) - 1);
-        uint32_t g = 5;
-        for (size_t i = 0; i < isize; ++i) {
-            indices.insert(g);
-            g = (g * g) % m;
-        }
+        indices = GenerateEvalSumIndices(5, batchSize / 2, m);
         indices.insert(m - 1);
     }
 
@@ -518,7 +511,7 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRadixFold(
     ConstCiphertext<Element>& ciphertext, uint32_t g0, uint32_t size, uint32_t m,
     const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
-    Ciphertext<Element> result(std::make_shared<CiphertextImpl<Element>>(*ciphertext));
+    Ciphertext<Element> result = ciphertext->Clone();
     if (size <= 1)
         return result;
 
@@ -629,22 +622,15 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum_2n(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
                                                          uint32_t m,
                                                          const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
-    if (batchSize > 1 && 2 * batchSize < m)
+    if (batchSize <= 1)
+        return ciphertext->Clone();
+
+    if (2 * batchSize < m)
         return EvalSumRadixFold(ciphertext, 5, batchSize, m, evalKeys);
 
-    Ciphertext<Element> newCiphertext(std::make_shared<CiphertextImpl<Element>>(*ciphertext));
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
-
-    if (batchSize > 1) {
-        uint32_t g = 5;
-        for (size_t i = 0; i < static_cast<size_t>(std::ceil(std::log2(batchSize))) - 1; ++i) {
-            newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, g, evalKeys));
-            g             = (g * g) % m;
-        }
-        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, m - 1, evalKeys));
-    }
-
-    return newCiphertext;
+    auto result = EvalSumRadixFold(ciphertext, 5, batchSize / 2, m, evalKeys);
+    auto algo   = ciphertext->GetCryptoContext()->GetScheme();
+    return algo->EvalAdd(result, algo->EvalAutomorphism(result, m - 1, evalKeys));
 }
 
 template <class Element>
