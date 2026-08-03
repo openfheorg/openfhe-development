@@ -208,7 +208,8 @@ private:
 
     Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                     ConstCiphertext<DCRTPoly> ctxt,
-                                                    const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1) const;
+                                                    const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1,
+                                                    bool ext = false) const;
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                         const std::vector<std::vector<std::complex<double>>>& A,

@@ -47,16 +47,11 @@
 #include <string>
 #include <vector>
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
 namespace lbcrypto {
 
-/**
- * @brief Abstract base class for derived HE algorithms
- * @tparam Element a ring element.
- */
+template <class Element>
+class MultipartyBase;
+
 template <class Element>
 class AdvancedSHEBase {
     using ParmType = typename Element::Params;
@@ -66,6 +61,8 @@ class AdvancedSHEBase {
     using TugType  = typename Element::TugType;
 
     constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
+
+    friend class MultipartyBase<Element>;
 
 public:
     virtual ~AdvancedSHEBase() = default;
@@ -490,15 +487,31 @@ public:
     //------------------------------------------------------------------------------
 
 protected:
-    std::set<uint32_t> GenerateIndices_2n(uint32_t batchSize, uint32_t m) const;
+    static std::set<uint32_t> GenerateIndices_2n(uint32_t batchSize, uint32_t m);
 
-    std::set<uint32_t> GenerateIndices2nComplex(uint32_t batchSize, uint32_t m) const;
+    static std::set<uint32_t> GenerateIndices2nComplex(uint32_t batchSize, uint32_t m);
 
-    std::set<uint32_t> GenerateIndices2nComplexRows(uint32_t rowSize, uint32_t m) const;
+    static std::set<uint32_t> GenerateIndices2nComplexRows(uint32_t rowSize, uint32_t m);
 
-    std::set<uint32_t> GenerateIndices2nComplexCols(uint32_t batchSize, uint32_t m) const;
+    static std::set<uint32_t> GenerateIndices2nComplexCols(uint32_t batchSize, uint32_t m);
 
-    std::set<uint32_t> GenerateIndexListForEvalSum(const PrivateKey<Element>& privateKey) const;
+    /**
+   * Automorphism-index set of the radix-configured EvalSum fold (compile-time
+   * PARTIAL_SUM_RADIX): {g0^(i*radix^level) mod m : i in [1, radix)}, bounded so the
+   * fold covers size slots. Power-of-two m only.
+   */
+    static std::set<uint32_t> GenerateEvalSumIndices(uint32_t g0, uint32_t size, uint32_t m);
+
+    /**
+   * Radix-configured EvalSum rotation fold (compile-time PARTIAL_SUM_RADIX): per level,
+   * one hoisted digit decomposition is shared by the level's up to radix-1 automorphisms
+   * of the running sum. Generator g0 selects the flavor (5, 5^rowSize, or 5^-1 mod m);
+   * covers size slots. Power-of-two m only.
+   */
+    Ciphertext<Element> EvalSumRadixFold(ConstCiphertext<Element>& ciphertext, uint32_t g0, uint32_t size, uint32_t m,
+                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+
+    static std::set<uint32_t> GenerateIndexListForEvalSum(const PrivateKey<Element>& privateKey);
 
     Ciphertext<Element> EvalSum_2n(ConstCiphertext<Element> ciphertext, uint32_t batchSize, uint32_t m,
                                    const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;

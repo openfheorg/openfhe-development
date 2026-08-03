@@ -33,8 +33,6 @@
 	CKKS to FHEW scheme switching implementation.
  */
 
-#define PROFILE
-
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
 #include "math/dftransform.h"
@@ -496,8 +494,8 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                                ConstCiphertext<DCRTPoly> ctxt,
-                                                               const std::vector<ReadOnlyPlaintext>& A,
-                                                               uint32_t dim1) const {
+                                                               const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1,
+                                                               bool ext) const {
     // Computing the baby-step bStep and the giant-step gStep
     uint32_t slots = A.size();
     uint32_t bStep = dim1;
@@ -535,7 +533,8 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTWithPrecomputeSwitch(const CryptoConte
             FHECKKSRNS::EvalAddExtInPlace(inner, FHECKKSRNS::EvalMultExt(fastRotation[i - 1], A[G + i]));
         FHECKKSRNS::EvalAddExtInPlace(result, inner);
     }
-    return cc.KeySwitchDown(result);
+
+    return ext ? result : cc.KeySwitchDown(result);
 }
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
@@ -634,20 +633,20 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
         }
         FHECKKSRNS::EvalAddExtInPlace(result, inner);
     }
-    result = cc.KeySwitchDown(result);
 
     // A represents the diagonals, which lose the information whether the initial matrix is tall or wide
     if (wide) {
         uint32_t logl = lbcrypto::GetMSB(A[0].size() / A.size()) - 1;  // These are powers of two, so log(l) is integer
-        std::vector<Ciphertext<DCRTPoly>> ctxt(logl + 1);
-        ctxt[0] = result;
         for (uint32_t j = 1; j <= logl; ++j) {
-            ctxt[j] = cc.EvalAdd(ctxt[j - 1], cc.EvalAtIndex(ctxt[j - 1], A.size() * (1 << (j - 1))));
+            uint32_t autoIndex = 0;
+            std::vector<uint32_t> map;
+            auto evalKey = FHECKKSRNS::GetGiantStepRotation(result, static_cast<int32_t>(A.size() * (1 << (j - 1))),
+                                                            autoIndex, map);
+            FHECKKSRNS::EvalAddExtInPlace(result, FHECKKSRNS::EvalHornerGiantRotate(result, autoIndex, map, evalKey));
         }
-        result = ctxt[logl];
     }
 
-    return result;
+    return cc.KeySwitchDown(result);
 }
 
 Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
@@ -688,8 +687,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
         ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF);
     }
     else {  // sparsely packed
-        ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF);
-        cc.EvalAddInPlace(ctxtDecoded, cc.EvalAtIndex(ctxtDecoded, m_numSlotsCKKS));
+        auto ctxtExt       = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF, true);
+        uint32_t autoIndex = 0;
+        std::vector<uint32_t> map;
+        auto evalKey = FHECKKSRNS::GetGiantStepRotation(ctxtExt, m_numSlotsCKKS, autoIndex, map);
+        FHECKKSRNS::EvalAddExtInPlace(ctxtExt, FHECKKSRNS::EvalHornerGiantRotate(ctxtExt, autoIndex, map, evalKey));
+        ctxtDecoded = cc.KeySwitchDown(ctxtExt);
     }
     return ctxtDecoded;
 }
@@ -1000,10 +1003,13 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWto
 
     uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
     // Compute indices for rotations to bring back the final CKKS ciphertext encoding to slots
+    // (the radix-configured EvalPartialSumInPlace fold)
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        indexRotationHomDec.reserve(indexRotationHomDec.size() + GetMSB(ringDim) - 2);
-        for (uint32_t j = 1; j < ringDim / (2 * slots); j <<= 1)
-            indexRotationHomDec.emplace_back(j * slots);
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
+        const uint32_t size      = ringDim / (2 * slots);
+        for (uint32_t s = 1; s < size; s *= radix)
+            for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
+                indexRotationHomDec.emplace_back(static_cast<int32_t>(idx));
     }
 
     // Remove possible duplicates and zero
@@ -1153,10 +1159,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
 
     // Go back to the sparse encoding if needed
     if (isSparse) {
-        for (uint32_t j = 1; j < N / (2 * slots); j <<= 1) {
-            auto temp = ccCKKS->EvalAtIndex(BminusAdotSres, j * slots);
-            ccCKKS->EvalAddInPlace(BminusAdotSres, temp);
-        }
+        FHECKKSRNS::EvalPartialSumInPlace(BminusAdotSres, slots, N / (2 * slots), PARTIAL_SUM_RADIX);
         BminusAdotSres->SetSlots(slots);
     }
 
@@ -1298,11 +1301,13 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     }
 
     // Compute indices for rotations to bring back the final CKKS ciphertext encoding to slots
+    // (the radix-configured EvalPartialSumInPlace fold)
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        indexRotationHomDec.reserve(indexRotationHomDec.size() + GetMSB(ringDim) - 2);
-        for (uint32_t j = 1; j < ringDim / (2 * slots); j <<= 1) {
-            indexRotationHomDec.emplace_back(j * slots);
-        }
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
+        const uint32_t size      = ringDim / (2 * slots);
+        for (uint32_t s = 1; s < size; s *= radix)
+            for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
+                indexRotationHomDec.emplace_back(static_cast<int32_t>(idx));
     }
 
     // Combine the indices lists

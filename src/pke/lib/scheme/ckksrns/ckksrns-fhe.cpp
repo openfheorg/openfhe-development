@@ -94,36 +94,38 @@ EvalKey<DCRTPoly> FHECKKSRNS::GetGiantStepRotation(ConstCiphertext<DCRTPoly> ct,
     return evalKeyIt->second;
 }
 
-// Inlined giant-step rotation for the Horner accumulation: equivalent to
-// EvalFastRotationExt(KeySwitchDown(outer), stride, precompute(.), addFirst=true) but reusing the
-// caller-supplied loop-invariant (autoIndex, map, giantKey) instead of having EvalFastRotationExt
-// re-derive the automorphism index and O(N) map every call.
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalHornerGiantRotate(ConstCiphertext<DCRTPoly> outer, uint32_t autoIndex,
                                                        const std::vector<uint32_t>& map,
                                                        const EvalKey<DCRTPoly>& giantKey) {
-    auto cc                 = outer->GetCryptoContext();
-    auto algo               = cc->GetScheme();
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(outer->GetCryptoParameters());
+    auto cc                  = outer->GetCryptoContext();
+    auto algo                = cc->GetScheme();
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(outer->GetCryptoParameters());
+    const auto& cvExt        = outer->GetElements();
+    const auto paramsP       = cryptoParams->GetParamsP();
+    const auto paramsQlP     = cvExt[0].GetParams();
+    const uint32_t sizeQlP   = paramsQlP->GetParams().size();
+    const uint32_t sizeQl    = sizeQlP - paramsP->GetParams().size();
+    const auto paramsQl      = cryptoParams->GetParamsQlHybrid(sizeQl);
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    auto outerStd       = cc->KeySwitchDown(outer);
-    const auto& cvStd   = outerStd->GetElements();
-    const auto paramsQl = cvStd[0].GetParams();
+    DCRTPoly c1Std = cvExt[1].ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(),
+                                            cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                            cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                            cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                            cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 
-    auto digits = algo->EvalKeySwitchPrecomputeCore(cvStd[1], cryptoParams);
+    auto digits = algo->EvalKeySwitchPrecomputeCore(c1Std, cryptoParams);
     auto cTilda = algo->EvalFastKeySwitchCoreExt(digits, giantKey, paramsQl);
 
-    // addFirst: lift element 0 into the extended basis (c0 * P) and fold it in.
-    DCRTPoly psiC0(cTilda[0].GetParams(), Format::EVALUATION, true);
-    auto cMult            = cvStd[0].TimesNoCheck(cryptoParams->GetPModq());
-    const uint32_t sizeQl = paramsQl->GetParams().size();
-    for (uint32_t i = 0; i < sizeQl; ++i)
-        psiC0.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
-    cTilda[0] += psiC0;
+    // cTilda[0] += cvExt[0]; element 0 is already extended, fold it in directly.
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+    for (uint32_t i = 0; i < sizeQlP; ++i)
+        cTilda[0].GetAllElements()[i] += cvExt[0].GetAllElements()[i];
 
     cTilda[0] = cTilda[0].AutomorphismTransform(autoIndex, map);
     cTilda[1] = cTilda[1].AutomorphismTransform(autoIndex, map);
 
-    auto rotated = outerStd->CloneEmpty();
+    auto rotated = outer->CloneEmpty();
     rotated->SetElements(std::move(cTilda));
     return rotated;
 }
@@ -501,6 +503,182 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     }
 }
 
+static_assert(PARTIAL_SUM_RADIX >= 2 && (PARTIAL_SUM_RADIX & (PARTIAL_SUM_RADIX - 1)) == 0,
+              "PARTIAL_SUM_RADIX must be a power of two >= 2");
+
+void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) {
+    const uint32_t N = raised->GetCryptoContext()->GetRingDimension();
+    EvalPartialSumInPlace(raised, slots, N / (2 * slots), PARTIAL_SUM_RADIX);
+}
+
+void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size) {
+    if (size <= 1)
+        return;
+
+    const auto cc    = ct->GetCryptoContext();
+    const uint32_t N = cc->GetRingDimension();
+    const uint32_t M = cc->GetCyclotomicOrder();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
+    if (cryptoParams->GetKeySwitchTechnique() != HYBRID) {
+        for (uint32_t s = 1; s < size; s <<= 1)
+            cc->EvalAddInPlace(ct, cc->EvalRotate(ct, stride * s));
+        return;
+    }
+
+    const auto algo = cc->GetScheme();
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
+
+    std::vector<DCRTPoly>& cv = ct->GetElements();
+    const auto paramsQl       = cv[0].GetParams();
+    const auto paramsP        = cryptoParams->GetParamsP();
+    const auto paramsQlP      = cv[0].GetExtendedCRTBasis(paramsP);
+    const uint32_t sizeQl     = paramsQl->GetParams().size();
+    const uint32_t sizeQlP    = paramsQlP->GetParams().size();
+
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
+
+    DCRTPoly acc(paramsQlP, Format::EVALUATION, true);
+    auto cMult = cv[0].TimesNoCheck(cryptoParams->GetPModq());
+    for (uint32_t i = 0; i < sizeQl; ++i)
+        acc.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
+
+    std::vector<uint32_t> vec(N);
+    for (uint32_t s = 1; s < size; s <<= 1) {
+        uint32_t autoIndex   = FindAutomorphismIndex2nComplex(stride * s, M);
+        auto evalKeyIterator = evalKeyMap.find(autoIndex);
+        if (evalKeyIterator == evalKeyMap.end())
+            OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+
+        PrecomputeAutoMap(N, autoIndex, &vec);
+
+        auto digits = algo->EvalKeySwitchPrecomputeCore(cv[1], cryptoParams);
+        auto ba     = algo->EvalFastKeySwitchCoreExt(digits, evalKeyIterator->second, paramsQl);
+
+        // ba[0] += acc;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+        for (uint32_t i = 0; i < sizeQlP; ++i)
+            ba[0].GetAllElements()[i] += acc.GetAllElements()[i];
+
+        ba[0] = ba[0].AutomorphismTransform(autoIndex, vec);
+
+        // acc += ba[0];
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+        for (uint32_t i = 0; i < sizeQlP; ++i)
+            acc.GetAllElements()[i] += ba[0].GetAllElements()[i];
+
+        // Element 1 is settled every level: the next rotation needs its digit decomposition.
+        cv[1] += ba[1]
+                     .AutomorphismTransform(autoIndex, vec)
+                     .ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                                    cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                                    cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(),
+                                    cryptoParams->GettInvModp(), cryptoParams->GettInvModpPrecon(), t,
+                                    cryptoParams->GettModqPrecon());
+    }
+
+    cv[0] =
+        acc.ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                          cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                          cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                          cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+}
+
+void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix) {
+    if (size <= 1)
+        return;
+    if (radix == 2)
+        return EvalPartialSumInPlace(ct, stride, size);
+
+    const auto cc    = ct->GetCryptoContext();
+    const uint32_t N = cc->GetRingDimension();
+    const uint32_t M = cc->GetCyclotomicOrder();
+
+    const uint32_t logRadix = lbcrypto::GetMSB(radix) - 1;
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
+    if (cryptoParams->GetKeySwitchTechnique() != HYBRID) {
+        for (uint32_t s = 1; s < size; s <<= logRadix) {
+            auto base   = ct->Clone();
+            auto digits = cc->EvalFastRotationPrecompute(base);
+            for (uint32_t idx = stride * s; idx < stride * size && idx < radix * stride * s; idx += stride * s)
+                cc->EvalAddInPlace(ct, cc->EvalFastRotation(base, idx, M, digits));
+        }
+        return;
+    }
+
+    const auto algo = cc->GetScheme();
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
+
+    std::vector<DCRTPoly>& cv = ct->GetElements();
+    const auto paramsQl       = cv[0].GetParams();
+    const auto paramsP        = cryptoParams->GetParamsP();
+    const auto paramsQlP      = cv[0].GetExtendedCRTBasis(paramsP);
+    const uint32_t sizeQl     = paramsQl->GetParams().size();
+    const uint32_t sizeQlP    = paramsQlP->GetParams().size();
+
+    const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
+
+    DCRTPoly acc(paramsQlP, Format::EVALUATION, true);
+    auto cMult = cv[0].TimesNoCheck(cryptoParams->GetPModq());
+    for (uint32_t i = 0; i < sizeQl; ++i)
+        acc.SetElementAtIndex(i, std::move(cMult.GetElementAtIndex(i)));
+
+    std::vector<uint32_t> vec(N);
+    for (uint32_t s = 1; s < size; s <<= logRadix) {
+        // One digit decomposition per level, shared by all of the level's rotations.
+        auto digits = algo->EvalKeySwitchPrecomputeCore(cv[1], cryptoParams);
+
+        // Per-level sums; the pre-level accumulator is folded into every rotation of the level.
+        DCRTPoly lvl0(paramsQlP, Format::EVALUATION, true);
+        DCRTPoly lvl1(paramsQlP, Format::EVALUATION, true);
+
+        for (uint32_t idx = stride * s; idx < stride * size && idx < radix * stride * s; idx += stride * s) {
+            uint32_t autoIndex   = FindAutomorphismIndex2nComplex(idx, M);
+            auto evalKeyIterator = evalKeyMap.find(autoIndex);
+            if (evalKeyIterator == evalKeyMap.end())
+                OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+
+            PrecomputeAutoMap(N, autoIndex, &vec);
+
+            auto ba = algo->EvalFastKeySwitchCoreExt(digits, evalKeyIterator->second, paramsQl);
+
+            // ba[0] += acc;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+            for (uint32_t i = 0; i < sizeQlP; ++i)
+                ba[0].GetAllElements()[i] += acc.GetAllElements()[i];
+
+            ba[0] = ba[0].AutomorphismTransform(autoIndex, vec);
+            ba[1] = ba[1].AutomorphismTransform(autoIndex, vec);
+
+            // lvl0 += ba[0]; lvl1 += ba[1];
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+            for (uint32_t i = 0; i < sizeQlP; ++i) {
+                lvl0.GetAllElements()[i] += ba[0].GetAllElements()[i];
+                lvl1.GetAllElements()[i] += ba[1].GetAllElements()[i];
+            }
+        }
+
+        // acc += lvl0;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
+        for (uint32_t i = 0; i < sizeQlP; ++i)
+            acc.GetAllElements()[i] += lvl0.GetAllElements()[i];
+
+        // Element 1 settles once per level from the level's extended sum: the next level's
+        // rotations need its digit decomposition.
+        cv[1] += lvl1.ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                                    cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                                    cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(),
+                                    cryptoParams->GettInvModp(), cryptoParams->GettInvModpPrecon(), t,
+                                    cryptoParams->GettModqPrecon());
+    }
+
+    cv[0] =
+        acc.ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                          cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                          cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                          cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+}
+
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const {
     uint32_t slots = ciphertext->GetSlots();
@@ -815,9 +993,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Running PartialSum
         //------------------------------------------------------------------------------
 
-        const auto limit = N / (2 * slots);
-        for (uint32_t j = 1; j < limit; j <<= 1)
-            cc->EvalAddInPlace(raised, cc->EvalRotate(raised, j * slots));
+        EvalPartialSumInPlace(raised, slots);
 
 #ifdef BOOTSTRAPTIMING
         TIC(t);
@@ -1197,9 +1373,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         // Running PartialSum
         //------------------------------------------------------------------------------
 
-        const auto limit = N / (2 * slots);
-        for (uint32_t j = 1; j < limit; j <<= 1)
-            cc->EvalAddInPlace(raised, cc->EvalRotate(raised, j * slots));
+        EvalPartialSumInPlace(raised, slots);
     }
 
 #ifdef BOOTSTRAPTIMING
@@ -1340,10 +1514,14 @@ std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t sl
     for (uint32_t i = 1; i <= g; ++i)
         indexList.emplace_back(i);
 
-    // additional automorphisms are needed for sparse bootstrapping
+    // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
-        for (uint32_t j = 1; j < M / m; j <<= 1)
-            indexList.emplace_back(j * slots);
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
+        const uint32_t size      = M / m;
+        for (uint32_t s = 1; s < size; s *= radix)
+            for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
+                indexList.emplace_back(idx);
     }
 
     return indexList;
@@ -1360,10 +1538,14 @@ std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slot
     std::vector<uint32_t> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
-    // additional automorphisms are needed for sparse bootstrapping
+    // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
-        for (uint32_t j = 1; j < M / m; j <<= 1)
-            indexList.emplace_back(j * slots);
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
+        const uint32_t size      = M / m;
+        for (uint32_t s = 1; s < size; s *= radix)
+            for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
+                indexList.emplace_back(idx);
     }
 
     M >>= 2;
@@ -1399,10 +1581,14 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     std::vector<uint32_t> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
-    // additional automorphisms are needed for sparse bootstrapping
+    // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
-        for (uint32_t j = 1; j < M / m; j <<= 1)
-            indexList.emplace_back(j * slots);
+        constexpr uint32_t radix = PARTIAL_SUM_RADIX;
+        const uint32_t size      = M / m;
+        for (uint32_t s = 1; s < size; s *= radix)
+            for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
+                indexList.emplace_back(idx);
     }
 
     M >>= 2;
@@ -1980,6 +2166,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
     const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
+    // the per-level accumulated rotation to undo so the output is in standard slot ordering;
+    // folded into the final level's Horner output while it is still in the extended basis
+    const int32_t CtSDelta = ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod);
+
     // hoisted automorphisms
     const int32_t smax = -1 + p.lvlb;
     for (int32_t s = smax; s > stop; --s) {
@@ -2022,6 +2212,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                 EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j], A[s][G + j]));
             EvalAddExtInPlace(outer, inner);
         }
+        if (s == stop + 1 && flagRem == 0 && CtSDelta != 0) {
+            uint32_t deltaAutoIndex = 0;
+            std::vector<uint32_t> deltaMap;
+            auto deltaKey = GetGiantStepRotation(result, CtSDelta, deltaAutoIndex, deltaMap);
+            outer         = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
+        }
         result = cc->KeySwitchDown(outer);
     }
 
@@ -2062,13 +2258,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                 EvalAddExtInPlace(inner, EvalMultExt(fastRotationRem[j], A[stop][GRem + j]));
             EvalAddExtInPlace(outer, inner);
         }
+        if (CtSDelta != 0) {
+            uint32_t deltaAutoIndex = 0;
+            std::vector<uint32_t> deltaMap;
+            auto deltaKey = GetGiantStepRotation(result, CtSDelta, deltaAutoIndex, deltaMap);
+            outer         = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
+        }
         result = cc->KeySwitchDown(outer);
     }
-
-    // undo the per-level accumulated rotation so the output is in standard slot ordering.
-    const int32_t CtSDelta = ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod);
-    if (CtSDelta != 0)
-        result = cc->EvalAtIndex(result, CtSDelta);
 
     return result;
 }
@@ -2092,6 +2289,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
     auto algo                = cc->GetScheme();
     const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    // the StC accumulated correction Aut_{-Delta} where Delta = slots-1; folded into the
+    // final level's Horner output while it is still in the extended basis
+    const int32_t StCDelta = ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod);
 
     for (int32_t s = 0; s < smax; ++s) {
         if (s != 0)
@@ -2132,6 +2333,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
             for (uint32_t j = 1; j < p.g; ++j)
                 EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j], A[s][G + j]));
             EvalAddExtInPlace(outer, inner);
+        }
+        if (s == smax - 1 && flagRem == 0 && StCDelta != 0) {
+            uint32_t deltaAutoIndex = 0;
+            std::vector<uint32_t> deltaMap;
+            auto deltaKey = GetGiantStepRotation(result, StCDelta, deltaAutoIndex, deltaMap);
+            outer         = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
         }
         result = cc->KeySwitchDown(outer);
     }
@@ -2175,13 +2382,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                 EvalAddExtInPlace(inner, EvalMultExt(fastRotationRem[j], A[smax][GRem + j]));
             EvalAddExtInPlace(outer, inner);
         }
+        if (StCDelta != 0) {
+            uint32_t deltaAutoIndex = 0;
+            std::vector<uint32_t> deltaMap;
+            auto deltaKey = GetGiantStepRotation(result, StCDelta, deltaAutoIndex, deltaMap);
+            outer         = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
+        }
         result = cc->KeySwitchDown(outer);
     }
-
-    // apply StC accumulated correction Aut_{-Delta} where Delta = slots-1
-    const int32_t Delta = ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod);
-    if (Delta != 0)
-        result = cc->EvalAtIndex(result, Delta);
 
     return result;
 }
@@ -2755,18 +2963,8 @@ EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> private
 Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                            const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap) {
     uint32_t N = ciphertext->GetElements()[0].GetRingDimension();
-    std::vector<uint32_t> vec(N);
-    PrecomputeAutoMap(N, 2 * N - 1, &vec);
-
-    auto result = ciphertext->Clone();
-
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
-    algo->KeySwitchInPlace(result, evalKeyMap.at(2 * N - 1));
-
-    auto& rcv = result->GetElements();
-    rcv[0]    = rcv[0].AutomorphismTransform(2 * N - 1, vec);
-    rcv[1]    = rcv[1].AutomorphismTransform(2 * N - 1, vec);
-    return result;
+    auto algo  = ciphertext->GetCryptoContext()->GetScheme();
+    return algo->EvalAutomorphism(ciphertext, 2 * N - 1, evalKeyMap);
 }
 
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
@@ -3204,9 +3402,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         // Running PartialSum
         //------------------------------------------------------------------------------
 
-        const uint32_t limit = N / (2 * slots);
-        for (uint32_t j = 1; j < limit; j <<= 1)
-            cc->EvalAddInPlace(raised, cc->EvalRotate(raised, j * slots));
+        EvalPartialSumInPlace(raised, slots);
 
         //------------------------------------------------------------------------------
         // Running CoeffsToSlots
