@@ -52,6 +52,11 @@
 
 namespace lbcrypto {
 
+static inline NativeInteger::SignedNativeInt SignExtend(NativeInteger::SignedNativeInt d,
+                                                        NativeInteger::SignedNativeInt bits) {
+    return static_cast<NativeInteger::SignedNativeInt>(static_cast<NativeInteger::Integer>(d) << bits) >> bits;
+}
+
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const std::vector<NativePoly>& input,
                                               std::vector<NativePoly>& output) const {
@@ -69,20 +74,20 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
         auto t1{input[1][k].ConvertToInt<BasicInteger>()};
         auto d1{static_cast<NativeInteger::SignedNativeInt>(t1 < QHalf ? t1 : t1 - Q_int)};
 
-        auto r0{(d0 << gBitsMaxBits) >> gBitsMaxBits};
+        auto r0{SignExtend(d0, gBitsMaxBits)};
         d0 = (d0 - r0) >> gBits;
 
-        auto r1{(d1 << gBitsMaxBits) >> gBitsMaxBits};
+        auto r1{SignExtend(d1, gBitsMaxBits)};
         d1 = (d1 - r1) >> gBits;
 
         for (uint32_t d{0}; d < digitsG2; d += 2) {
-            r0 = (d0 << gBitsMaxBits) >> gBitsMaxBits;
+            r0 = SignExtend(d0, gBitsMaxBits);
             d0 = (d0 - r0) >> gBits;
             if (r0 < 0)
                 r0 += Q_int;
             output[d + 0][k] += r0;
 
-            r1 = (d1 << gBitsMaxBits) >> gBitsMaxBits;
+            r1 = SignExtend(d1, gBitsMaxBits);
             d1 = (d1 - r1) >> gBits;
             if (r1 < 0)
                 r1 += Q_int;
@@ -106,11 +111,11 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
         auto t0{input[k].ConvertToInt<BasicInteger>()};
         auto d0{static_cast<NativeInteger::SignedNativeInt>(t0 < QHalf ? t0 : t0 - Q_int)};
 
-        auto r0{(d0 << gBitsMaxBits) >> gBitsMaxBits};
+        auto r0{SignExtend(d0, gBitsMaxBits)};
         d0 = (d0 - r0) >> gBits;
 
         for (uint32_t d{0}; d < digitsG; ++d) {
-            r0 = (d0 << gBitsMaxBits) >> gBitsMaxBits;
+            r0 = SignExtend(d0, gBitsMaxBits);
             d0 = (d0 - r0) >> gBits;
             if (r0 < 0)
                 r0 += Q_int;
