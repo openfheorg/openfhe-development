@@ -37,6 +37,7 @@
 #define SRC_CORE_LIB_UTILS_PARALLEL_H_
 
 #ifdef PARALLEL
+    #include <atomic>
     #include <omp.h>
 #endif
 
@@ -44,38 +45,31 @@ namespace lbcrypto {
 
 class ParallelControls {
 public:
-    // @Brief CTOR, enables parallel operations as default
-    // Cache the number of machine threads the system reports (can be
-    // overridden by environment variables)
-    // enable on startup by default
+    // @Brief CTOR, latches the number of machine threads the system reports
+    // (can be overridden by environment variables) and allows all of them by default.
     ParallelControls() {
 #ifdef PARALLEL
         machineThreads = omp_get_max_threads();
-        Enable();
-            // omp_set_dynamic(0);
-            // omp_set_nested(0);
-            // omp_set_max_active_levels(1);
+        threadLimit.store(machineThreads, std::memory_order_relaxed);
 #endif
     }
 
     // @Brief Enable() enables parallel operation
-    void Enable() const {
-#ifdef PARALLEL
-        omp_set_num_threads(machineThreads);
-#endif
+    void Enable() {
+        SetNumThreads(machineThreads);
     }
 
     // @Brief Disable() disables parallel operation
-    void Disable() const {
-#ifdef PARALLEL
-        omp_set_num_threads(1);
-#endif
+    void Disable() {
+        SetNumThreads(1);
     }
 
+    // @Brief returns the number of threads latched at construction
     int GetMachineThreads() const {
         return machineThreads;
     }
 
+    // @Brief returns the number of processors available to the process
     static int GetNumProcs() {
 #ifdef PARALLEL
         return omp_get_num_procs();
@@ -85,60 +79,56 @@ public:
     }
 
     // @Brief returns current number of threads that are usable
-    // @return int # threads
     int GetNumThreads() const {
 #ifdef PARALLEL
-        int nthreads = 1;
-        int tid      = 1;
-            // Fork a team of threads giving them their own copies of variables
-            // so we can see how many threads we have to work with
-    #pragma omp parallel private(tid)
-        {
-            /* Obtain thread number */
-            tid = omp_get_thread_num();
-
-            /* Only main thread does this */
-            if (tid == 0) {
-                nthreads = omp_get_num_threads();
-            }
-        }
-        return nthreads;
+        return threadLimit.load(std::memory_order_relaxed);
 #else
         return 1;
 #endif
     }
 
-    // @Brief returns min of int n and machineThreads
+    // @Brief returns min of int n and the current thread limit
     int GetThreadLimit(int n) const {
 #ifdef PARALLEL
-        return n > machineThreads ? machineThreads : n;
+        int lim = threadLimit.load(std::memory_order_relaxed);
+        return n > lim ? lim : n;
 #else
         return 1;
 #endif
     }
 
-    // @Brief sets number of threads to use (limited by system value)
+    // @Brief sets number of threads to use (clamped to [1, machineThreads])
     void SetNumThreads(int nthreads) {
 #ifdef PARALLEL
-        // set number of thread, but limit to the system set number of machine threads...
-        omp_set_num_threads(nthreads > machineThreads ? machineThreads : nthreads);
+        if (nthreads < 1)
+            nthreads = 1;
+        else if (nthreads > machineThreads)
+            nthreads = machineThreads;
+        threadLimit.store(nthreads, std::memory_order_relaxed);
+        omp_set_num_threads(nthreads);
 #endif
     }
 
+    // @Brief caps unit tests at half the processors; restored by UnitTestStop()
     void UnitTestStart() {
 #ifdef PARALLEL
-        int nthreads = omp_get_max_threads() >> 1;
-        omp_set_num_threads(nthreads > machineThreads ? machineThreads : nthreads);
+        savedLimit = threadLimit.load(std::memory_order_relaxed);
+        SetNumThreads(GetNumProcs() / 2);
 #endif
     }
 
+    // @Brief restores the thread limit saved by UnitTestStart()
     void UnitTestStop() {
 #ifdef PARALLEL
-        omp_set_num_threads(machineThreads);
+        SetNumThreads(savedLimit);
 #endif
     }
 
 private:
+#ifdef PARALLEL
+    std::atomic<int> threadLimit{1};
+    int savedLimit{1};
+#endif
     int machineThreads{1};
 };
 

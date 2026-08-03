@@ -91,7 +91,7 @@ void LatticeGaussSampUtility<Element>::GaussSampGq(const Element& syndrome, doub
     for (size_t i = 1; i < k; i++)
         c(i, 0) = (c(i - 1, 0) + m_digits[i]) / base;
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(u.GetLength()))
     for (size_t j = 0; j < u.GetLength(); j++) {
         typename Element::Integer v(u.at(j));
 
@@ -167,7 +167,7 @@ void LatticeGaussSampUtility<Element>::GaussSampGqArbBase(const Element& syndrom
     for (size_t i = 1; i < k; i++)
         c(i, 0) = (c(i - 1, 0) + (int64_t)m_digits[i]) / static_cast<double>(base);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(u.GetLength()))
     for (size_t j = 0; j < u.GetLength(); j++) {
         typename Element::Integer v(u.at(j));
 

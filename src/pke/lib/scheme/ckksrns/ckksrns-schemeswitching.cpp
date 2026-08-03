@@ -41,6 +41,7 @@
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "utils/parallel.h"
 
 #include <algorithm>
 #include <cmath>
@@ -464,7 +465,7 @@ std::vector<std::vector<std::complex<double>>> EvalLTRectPrecomputeSwitch(
             A_slices[i] = std::vector<std::vector<std::complex<double>>>(A.begin() + i * A[0].size(),
                                                                          A.begin() + (i + 1) * A[0].size());
         }
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(gStep))
         for (uint32_t j = 0; j < gStep; j++) {
             for (uint32_t i = 0; i < bStep; i++) {
                 if (bStep * j + i < n) {

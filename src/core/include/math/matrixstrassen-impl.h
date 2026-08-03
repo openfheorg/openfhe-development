@@ -147,7 +147,7 @@ MatrixStrassen<Element>& MatrixStrassen<Element>::operator+=(MatrixStrassen<Elem
     if (rows != other.rows || cols != other.cols) {
         OPENFHE_THROW("Addition operands have incompatible dimensions");
     }
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
     for (size_t j = 0; j < cols; ++j) {
         for (size_t i = 0; i < rows; ++i) {
             data[i][j] += other.data[i][j];
@@ -161,7 +161,7 @@ inline MatrixStrassen<Element>& MatrixStrassen<Element>::operator-=(MatrixStrass
     if (rows != other.rows || cols != other.cols) {
         OPENFHE_THROW("Subtraction operands have incompatible dimensions");
     }
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
     for (size_t j = 0; j < cols; ++j) {
         for (size_t i = 0; i < rows; ++i) {
             data[i][j] -= other.data[i][j];
@@ -624,7 +624,7 @@ template <class Element>
 MatrixStrassen<Element> MatrixStrassen<Element>::Mult(MatrixStrassen<Element> const& other, int nrec, int pad) const {
     int allrows = rows;
 
-    NUM_THREADS = ParallelControls().GetMachineThreads();
+    NUM_THREADS = OpenFHEParallelControls.GetNumThreads();
 
     if (pad == -1) {
         // int allcols = cols;
@@ -773,7 +773,8 @@ void MatrixStrassen<Element>::multiplyInternalCAPS(it_lineardata_t A, it_lineard
 template <class Element>
 void MatrixStrassen<Element>::addMatricesCAPS(int numEntries, it_lineardata_t C, it_lineardata_t A,
                                               it_lineardata_t B) const {
-#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS)
+#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS) \
+    num_threads(OpenFHEParallelControls.GetThreadLimit(numEntries))
     for (int i = 0; i < numEntries; i++) {
         smartAdditionCAPS(C + i, A + i, B + i);
     }
@@ -782,7 +783,8 @@ void MatrixStrassen<Element>::addMatricesCAPS(int numEntries, it_lineardata_t C,
 template <class Element>
 void MatrixStrassen<Element>::subMatricesCAPS(int numEntries, it_lineardata_t C, it_lineardata_t A,
                                               it_lineardata_t B) const {
-#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS)
+#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS) \
+    num_threads(OpenFHEParallelControls.GetThreadLimit(numEntries))
     for (int i = 0; i < numEntries; i++) {
         smartSubtractionCAPS(C + i, A + i, B + i);
     }
@@ -840,7 +842,8 @@ void MatrixStrassen<Element>::tripleSubMatricesCAPS(int numEntries, it_lineardat
                                                     it_lineardata_t S12, it_lineardata_t T2, it_lineardata_t S21,
                                                     it_lineardata_t S22, it_lineardata_t T3, it_lineardata_t S31,
                                                     it_lineardata_t S32) const {
-#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS)
+#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS) \
+    num_threads(OpenFHEParallelControls.GetThreadLimit(numEntries))
     for (int i = 0; i < numEntries; i++) {
         smartSubtractionCAPS(T1 + i, S11 + i, S12 + i);
 
@@ -855,7 +858,8 @@ void MatrixStrassen<Element>::tripleAddMatricesCAPS(int numEntries, it_lineardat
                                                     it_lineardata_t S12, it_lineardata_t T2, it_lineardata_t S21,
                                                     it_lineardata_t S22, it_lineardata_t T3, it_lineardata_t S31,
                                                     it_lineardata_t S32) const {
-#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS)
+#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS) \
+    num_threads(OpenFHEParallelControls.GetThreadLimit(numEntries))
     for (int i = 0; i < numEntries; i++) {
         smartAdditionCAPS(T1 + i, S11 + i, S12 + i);
 
@@ -869,7 +873,8 @@ template <class Element>
 void MatrixStrassen<Element>::addSubMatricesCAPS(int numEntries, it_lineardata_t T1, it_lineardata_t S11,
                                                  it_lineardata_t S12, it_lineardata_t T2, it_lineardata_t S21,
                                                  it_lineardata_t S22) const {
-#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS)
+#pragma omp parallel for schedule(static, (numEntries + NUM_THREADS - 1) / NUM_THREADS) \
+    num_threads(OpenFHEParallelControls.GetThreadLimit(numEntries))
     for (int i = 0; i < numEntries; i++) {
         smartAdditionCAPS(T1 + i, S11 + i, S12 + i);
 
@@ -967,7 +972,7 @@ void MatrixStrassen<Element>::strassenDFSCAPS(it_lineardata_t A, it_lineardata_t
 template <class Element>
 void MatrixStrassen<Element>::block_multiplyCAPS(it_lineardata_t A, it_lineardata_t B, it_lineardata_t C,
                                                  MatDescriptor d, it_lineardata_t work) const {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(d.lda))
     for (int32_t row = 0; row < d.lda; row++) {
         Element Aval;
         Element Bval;
@@ -1164,7 +1169,7 @@ void MatrixStrassen<Element>::getData(const data_t& Adata, const data_t& Bdata, 
     printf("Cdata[3][0] = %d\n", static_cast<int>(*Cdata[3][0]));
     printf("row = %d inner = %d col = %d\n", row, inner, col);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(row))
     for (int i = 0; i < row; i++) {
         for (int k = 0; k < inner; k++) {
             for (int j = 0; j < col; j++) {
@@ -1183,7 +1188,7 @@ template <class Element>
 MatrixStrassen<Element> MatrixStrassen<Element>::MultByUnityVector() const {
     MatrixStrassen<Element> result(allocZero, rows, 1);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.rows))
     for (int32_t row = 0; row < result.rows; ++row) {
         for (int32_t col = 0; col < cols; ++col) {
             *result.data[row][0] += *data[row][col];
@@ -1201,7 +1206,7 @@ MatrixStrassen<Element> MatrixStrassen<Element>::MultByUnityVector() const {
 template <class Element>
 MatrixStrassen<Element> MatrixStrassen<Element>::MultByRandomVector(std::vector<int> ranvec) const {
     MatrixStrassen<Element> result(allocZero, rows, 1);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.rows))
     for (int32_t row = 0; row < result.rows; ++row) {
         for (int32_t col = 0; col < cols; ++col) {
             if (ranvec[col] == 1)
