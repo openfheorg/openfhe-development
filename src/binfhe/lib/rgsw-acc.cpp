@@ -64,6 +64,7 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     auto Q_int{params->GetQ().ConvertToInt<NativeInteger::SignedNativeInt>()};
     auto gBits{static_cast<NativeInteger::SignedNativeInt>(__builtin_ctz(params->GetBaseG()))};
     auto gBitsMaxBits{static_cast<NativeInteger::SignedNativeInt>(NativeInteger::MaxBits() - gBits)};
+    auto gHalf{static_cast<NativeInteger::SignedNativeInt>(params->GetBaseG() >> 1)};
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
     uint32_t N{params->GetN()};
@@ -74,21 +75,18 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
         auto t1{input[1][k].ConvertToInt<BasicInteger>()};
         auto d1{static_cast<NativeInteger::SignedNativeInt>(t1 < QHalf ? t1 : t1 - Q_int)};
 
-        auto r0{SignExtend(d0, gBitsMaxBits)};
-        d0 = (d0 - r0) >> gBits;
-
-        auto r1{SignExtend(d1, gBitsMaxBits)};
-        d1 = (d1 - r1) >> gBits;
+        d0 = (d0 + gHalf) >> gBits;
+        d1 = (d1 + gHalf) >> gBits;
 
         for (uint32_t d{0}; d < digitsG2; d += 2) {
-            r0 = SignExtend(d0, gBitsMaxBits);
-            d0 = (d0 - r0) >> gBits;
+            auto r0{SignExtend(d0, gBitsMaxBits)};
+            d0 = (d0 + gHalf) >> gBits;
             if (r0 < 0)
                 r0 += Q_int;
             output[d + 0][k] += r0;
 
-            r1 = SignExtend(d1, gBitsMaxBits);
-            d1 = (d1 - r1) >> gBits;
+            auto r1{SignExtend(d1, gBitsMaxBits)};
+            d1 = (d1 + gHalf) >> gBits;
             if (r1 < 0)
                 r1 += Q_int;
             output[d + 1][k] += r1;
@@ -103,6 +101,7 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     auto Q_int{params->GetQ().ConvertToInt<NativeInteger::SignedNativeInt>()};
     auto gBits{static_cast<NativeInteger::SignedNativeInt>(__builtin_ctz(params->GetBaseG()))};
     auto gBitsMaxBits{static_cast<NativeInteger::SignedNativeInt>(NativeInteger::MaxBits() - gBits)};
+    auto gHalf{static_cast<NativeInteger::SignedNativeInt>(params->GetBaseG() >> 1)};
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG{params->GetDigitsG() - 1};
     uint32_t N{params->GetN()};
@@ -111,12 +110,11 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
         auto t0{input[k].ConvertToInt<BasicInteger>()};
         auto d0{static_cast<NativeInteger::SignedNativeInt>(t0 < QHalf ? t0 : t0 - Q_int)};
 
-        auto r0{SignExtend(d0, gBitsMaxBits)};
-        d0 = (d0 - r0) >> gBits;
+        d0 = (d0 + gHalf) >> gBits;
 
         for (uint32_t d{0}; d < digitsG; ++d) {
-            r0 = SignExtend(d0, gBitsMaxBits);
-            d0 = (d0 - r0) >> gBits;
+            auto r0{SignExtend(d0, gBitsMaxBits)};
+            d0 = (d0 + gHalf) >> gBits;
             if (r0 < 0)
                 r0 += Q_int;
             output[d][k] += r0;
