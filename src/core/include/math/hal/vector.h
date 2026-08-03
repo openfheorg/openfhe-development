@@ -370,16 +370,22 @@ public:
 
     /**
    * Scalar modulus exponentiation operation.
+   * Computes this[i]^b mod modulus for each component. The exponent is used
+   * as given and is not reduced by the vector modulus, matching the scalar
+   * ModExp semantics.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param &b is the scalar exponent to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     T ModExp(const I& b) const;
 
     /**
    * Scalar modulus exponentiation operation. In-place variant.
+   * Computes this[i]^b mod modulus for each component. The exponent is used
+   * as given and is not reduced by the vector modulus, matching the scalar
+   * ModExp semantics.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param &b is the scalar exponent to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     T& ModExpEq(const I& b);

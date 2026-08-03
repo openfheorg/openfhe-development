@@ -515,8 +515,9 @@ template <class myT>
 myVecP<myT> myVecP<myT>::ModExp(const myT& b) const {
     myVecP ans(*this);
     ModulusCheck("myVecP::ModExp");
+    myT bLocal(b);
     for (size_t i = 0; i < this->GetLength(); i++) {
-        ans[i] = ans[i].ModExp(b % m_modulus, ans.m_modulus);
+        ans[i] = ans[i].ModExp(bLocal, ans.m_modulus);
     }
     return ans;
 }
@@ -524,8 +525,9 @@ myVecP<myT> myVecP<myT>::ModExp(const myT& b) const {
 template <class myT>
 myVecP<myT>& myVecP<myT>::ModExpEq(const myT& b) {
     ModulusCheck("myVecP::ModExp");
+    myT bLocal(b);
     for (size_t i = 0; i < this->GetLength(); i++) {
-        (*this)[i] = (*this)[i].ModExp(b % m_modulus, this->m_modulus);
+        (*this)[i] = (*this)[i].ModExp(bLocal, this->m_modulus);
     }
     return *this;
 }

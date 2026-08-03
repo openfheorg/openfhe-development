@@ -1239,10 +1239,10 @@ void GetInternalRepresentation(const std::string& msg) {
     // define what is correct based on math backend selected
     std::string correct("2 0 0 16");
 
-// TODO: clean this up
 #ifdef WITH_BE4
     #if (NATIVEINT >= 64 && defined(HAVE_INT128))
-    correct = "2 68719476736";
+    if (typeid(T) == typeid(M4Integer))
+        correct = "2 68719476736";
     #endif
 #endif
 
