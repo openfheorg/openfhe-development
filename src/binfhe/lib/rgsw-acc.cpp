@@ -69,27 +69,33 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
     uint32_t N{params->GetN()};
 
+    // digit-major order: carry0/carry1 hold the running quotient for every coefficient so
+    // that each inner loop is unit-stride and vectorizable
+    std::vector<NativeInteger::SignedNativeInt> carry0(N), carry1(N);
     for (uint32_t k{0}; k < N; ++k) {
         auto t0{input[0][k].ConvertToInt<BasicInteger>()};
         auto d0{static_cast<NativeInteger::SignedNativeInt>(t0 < QHalf ? t0 : t0 - Q_int)};
+        carry0[k] = (d0 + gHalf) >> gBits;
         auto t1{input[1][k].ConvertToInt<BasicInteger>()};
         auto d1{static_cast<NativeInteger::SignedNativeInt>(t1 < QHalf ? t1 : t1 - Q_int)};
+        carry1[k] = (d1 + gHalf) >> gBits;
+    }
 
-        d0 = (d0 + gHalf) >> gBits;
-        d1 = (d1 + gHalf) >> gBits;
-
-        for (uint32_t d{0}; d < digitsG2; d += 2) {
-            auto r0{SignExtend(d0, gBitsMaxBits)};
-            d0 = (d0 + gHalf) >> gBits;
+    for (uint32_t d{0}; d < digitsG2; d += 2) {
+        auto& out0{output[d + 0]};
+        auto& out1{output[d + 1]};
+        for (uint32_t k{0}; k < N; ++k) {
+            auto r0{SignExtend(carry0[k], gBitsMaxBits)};
+            carry0[k] = (carry0[k] + gHalf) >> gBits;
             if (r0 < 0)
                 r0 += Q_int;
-            output[d + 0][k] += r0;
+            out0[k] += r0;
 
-            auto r1{SignExtend(d1, gBitsMaxBits)};
-            d1 = (d1 + gHalf) >> gBits;
+            auto r1{SignExtend(carry1[k], gBitsMaxBits)};
+            carry1[k] = (carry1[k] + gHalf) >> gBits;
             if (r1 < 0)
                 r1 += Q_int;
-            output[d + 1][k] += r1;
+            out1[k] += r1;
         }
     }
 }
@@ -106,18 +112,23 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     uint32_t digitsG{params->GetDigitsG() - 1};
     uint32_t N{params->GetN()};
 
+    // digit-major order: carry holds the running quotient for every coefficient so that
+    // each inner loop is unit-stride and vectorizable
+    std::vector<NativeInteger::SignedNativeInt> carry(N);
     for (uint32_t k{0}; k < N; ++k) {
         auto t0{input[k].ConvertToInt<BasicInteger>()};
         auto d0{static_cast<NativeInteger::SignedNativeInt>(t0 < QHalf ? t0 : t0 - Q_int)};
+        carry[k] = (d0 + gHalf) >> gBits;
+    }
 
-        d0 = (d0 + gHalf) >> gBits;
-
-        for (uint32_t d{0}; d < digitsG; ++d) {
-            auto r0{SignExtend(d0, gBitsMaxBits)};
-            d0 = (d0 + gHalf) >> gBits;
+    for (uint32_t d{0}; d < digitsG; ++d) {
+        auto& out{output[d]};
+        for (uint32_t k{0}; k < N; ++k) {
+            auto r0{SignExtend(carry[k], gBitsMaxBits)};
+            carry[k] = (carry[k] + gHalf) >> gBits;
             if (r0 < 0)
                 r0 += Q_int;
-            output[d][k] += r0;
+            out[k] += r0;
         }
     }
 }
