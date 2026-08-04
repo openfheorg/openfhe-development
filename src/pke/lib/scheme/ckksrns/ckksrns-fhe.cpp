@@ -2665,7 +2665,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             re = re64 >> (-pRemaining);
         }
         else {
-            int128_t pPowRemaining = ((int128_t)1) << pRemaining;
+            if (pRemaining > 126)
+                OPENFHE_THROW("Invalid CKKS scaling shift");
+
+            int128_t pPowRemaining = static_cast<int128_t>(1) << pRemaining;
             re                     = pPowRemaining * re64;
         }
 
@@ -2676,6 +2679,9 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             im = im64 >> (-pRemaining);
         }
         else {
+            if (pRemaining > 126)
+                OPENFHE_THROW("Invalid CKKS scaling shift");
+
             int128_t pPowRemaining = static_cast<int128_t>(1) << pRemaining;
             im                     = pPowRemaining * im64;
         }
