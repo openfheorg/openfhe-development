@@ -1717,15 +1717,12 @@ public:
    * @return is the requested digit
    */
 
-    // TODO: * i to << i
     uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
-        uint32_t DigitLen = std::ceil(std::log2(base));
-        uint32_t digit    = 0;
-        uint32_t newIndex = 1 + (index - 1) * DigitLen;
-        for (uint32_t i = 1; i < base; i <<= 1) {
-            digit += GetBitAtIndex(newIndex++) * i;
-        }
-        return digit;
+        auto digitLen = lbcrypto::GetMSB(base - 1);  // == ceil(log2(base))
+        uint32_t shift{(index - 1) * digitLen};
+        if (shift >= m_uintBitLength)
+            return 0;
+        return static_cast<uint32_t>((m_value >> shift) & ((uint64_t{1} << digitLen) - 1));
     }
 
     /**

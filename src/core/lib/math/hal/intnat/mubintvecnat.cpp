@@ -457,9 +457,14 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::DivideAndRoundEq(const I
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
+    auto digitLen = lbcrypto::GetMSB(base - 1);  // == ceil(log2(base))
+    uint32_t shift{(index - 1) * digitLen};
+    if (shift >= IntegerType::MaxBits())
+        return NativeVectorT(m_data.size(), m_modulus);
     auto ans(*this);
+    const auto mask = static_cast<BasicInt>((uint64_t{1} << digitLen) - 1);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = static_cast<BasicInt>(ans[i].GetDigitAtIndexForBase(index, base));
+        ans[i].m_value = (ans[i].m_value >> shift) & mask;
     return ans;
 }
 
