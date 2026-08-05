@@ -186,7 +186,7 @@ public:
    */
     inline MatrixStrassen<Element> ScalarMult(Element const& other) const {
         MatrixStrassen<Element> result(*this);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.cols))
         for (int32_t col = 0; col < result.cols; ++col) {
             for (int32_t row = 0; row < result.rows; ++row) {
                 *result.data[row][col] = *result.data[row][col] * other;
@@ -302,7 +302,7 @@ public:
             OPENFHE_THROW("Addition operands have incompatible dimensions");
         }
         MatrixStrassen<Element> result(*this);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
         for (int32_t j = 0; j < cols; ++j) {
             for (int32_t i = 0; i < rows; ++i) {
                 *result.data[i][j] += *other.data[i][j];
@@ -341,7 +341,7 @@ public:
             OPENFHE_THROW("Subtraction operands have incompatible dimensions");
         }
         MatrixStrassen<Element> result(allocZero, rows, other.cols);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
         for (int32_t j = 0; j < cols; ++j) {
             for (int32_t i = 0; i < rows; ++i) {
                 *result.data[i][j] = *data[i][j] - *other.data[i][j];
