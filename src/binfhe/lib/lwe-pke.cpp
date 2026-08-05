@@ -322,8 +322,18 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
 // https://eprint.iacr.org/2014/816
 LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey& K,
                                              ConstLWECiphertext& ctQN) const {
+    if (K == nullptr)
+        OPENFHE_THROW("SwitchingKey is empty");
+    if (ctQN == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
     const uint32_t n(params->Getn());
     const uint32_t N(params->GetN());
+    if (ctQN->GetLength() != N)
+        OPENFHE_THROW("Ciphertext dimension must be equal to N for key switching");
+    if (K->GetElementsA().size() != N || K->GetElementsB().size() != N)
+        OPENFHE_THROW("Switching key dimension must be equal to N");
+
     NativeInteger Q(params->GetqKS());
     NativeInteger::Integer baseKS(params->GetBaseKS());
     const uint32_t digitCount = std::ceil(std::log(Q.ConvertToDouble()) / std::log(static_cast<double>(baseKS)));

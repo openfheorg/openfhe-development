@@ -135,10 +135,32 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
 
+    uint32_t expectedSize = 0;
+    switch (gate) {
+        case AND3:
+        case OR3:
+        case MAJORITY:
+        case CMUX:
+            expectedSize = 3;
+            break;
+        case AND4:
+        case OR4:
+            expectedSize = 4;
+            break;
+        default:
+            OPENFHE_THROW("This gate is not supported for vector of ciphertexts");
+    }
+    if (ctvector.size() != expectedSize)
+        OPENFHE_THROW("Invalid number of input ciphertexts");
+
+    for (const auto& ct : ctvector) {
+        if (ct == nullptr)
+            OPENFHE_THROW("Input ciphertext is empty");
+    }
+
     // check if the ciphertexts are all independent
-    uint32_t length = ctvector.size();
-    for (uint32_t i = 0; i < length; ++i) {
-        for (uint32_t j = i + 1; j < length; ++j) {
+    for (uint32_t i = 0; i < expectedSize; ++i) {
+        for (uint32_t j = i + 1; j < expectedSize; ++j) {
             if (ctvector[i] == ctvector[j]) {
                 OPENFHE_THROW("Input ciphertexts should be independent");
             }
@@ -151,7 +173,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
         // input cts expected with SMALL_DIM
         auto ct = (Q == ctvector[0]->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ctvector[0]) : std::make_shared<LWECiphertextImpl>(*ctvector[0]);
-        for (uint32_t i = 1; i < length; ++i) {
+        for (uint32_t i = 1; i < expectedSize; ++i) {
             LWEscheme->EvalAddEq(ct, (Q == ctvector[i]->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ctvector[i]) : ctvector[i]);
         }
 
@@ -177,9 +199,6 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
         return ctExt;
     }
     else if (gate == CMUX) {
-        if (length != 3)
-            OPENFHE_THROW("CMUX gate implemented for ciphertext vectors of size 3");
-
         auto&& ctNAND1 = EvalBinGate(params, NAND, EK, ctvector[0], EvalNOT(params, ctvector[2]));
         auto&& ctNAND2 = EvalBinGate(params, NAND, EK, ctvector[1], ctvector[2]);
         return EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
