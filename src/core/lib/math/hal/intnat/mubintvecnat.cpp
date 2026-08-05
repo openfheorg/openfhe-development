@@ -360,8 +360,6 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModExp(const IntegerType&
     auto mv{m_modulus};
     auto bv{b};
     auto ans(*this);
-    if (bv.m_value >= mv.m_value)
-        bv.ModEq(mv);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i] = ans[i].ModExp(bv, mv);
     return ans;
@@ -371,8 +369,6 @@ template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModExpEq(const IntegerType& b) {
     auto mv{m_modulus};
     auto bv{b};
-    if (bv.m_value >= mv.m_value)
-        bv.ModEq(mv);
     for (size_t i = 0; i < m_data.size(); ++i)
         m_data[i] = m_data[i].ModExp(bv, mv);
     return *this;

@@ -344,11 +344,11 @@ void ModExpTest(const std::string& msg) {
     V m(5, q);
     typename V::Integer n("3");
 
-    m.at(0) = typename V::Integer("968");
-    m.at(1) = typename V::Integer("579");
-    m.at(2) = typename V::Integer("4");
-    m.at(3) = typename V::Integer("2343");
-    m.at(4) = typename V::Integer("97");
+    m[0] = typename V::Integer("968");
+    m[1] = typename V::Integer("579");
+    m[2] = typename V::Integer("4");
+    m[3] = typename V::Integer("2343");
+    m[4] = typename V::Integer("97");
     OPENFHE_DEBUG("m's modulus " << m.GetModulus());
 
     V calculatedResult = m.ModExp(n);
@@ -356,12 +356,53 @@ void ModExpTest(const std::string& msg) {
     uint64_t expectedResult[5] = {2792, 3123, 64, 159, 901};
 
     for (uint32_t i = 0; i < 5; i++) {
-        EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
+        EXPECT_EQ(expectedResult[i], calculatedResult[i].ConvertToInt()) << msg;
     }
 }
 
 TEST(UTBinVect, ModExpTest) {
-    RUN_BIG_BACKENDS(ModExpTest, "ModExpTest")
+    RUN_ALL_BACKENDS(ModExpTest, "ModExpTest")
+}
+
+template <typename V>
+void ModExpLargeExponentTest(const std::string& msg) {
+    typename V::Integer q("7919");  // prime modulus
+    typename V::Integer n = q + typename V::Integer(1);
+
+    V m(5, q);
+    m[0] = typename V::Integer("2");
+    m[1] = typename V::Integer("3");
+    m[2] = typename V::Integer("968");
+    m[3] = typename V::Integer("0");
+    m[4] = typename V::Integer("7918");
+
+    V calculatedResult = m.ModExp(n);
+
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(m[i].ModExp(n, q), calculatedResult[i]) << msg << " vector ModExp disagrees with scalar ModExp";
+    }
+    EXPECT_EQ(typename V::Integer(4), calculatedResult[0]) << msg << " 2^(q+1) mod q";
+    EXPECT_EQ(typename V::Integer(9), calculatedResult[1]) << msg << " 3^(q+1) mod q";
+    EXPECT_EQ(typename V::Integer(0), calculatedResult[3]) << msg << " 0^(q+1) mod q";
+    EXPECT_EQ(typename V::Integer(1), calculatedResult[4]) << msg << " (q-1)^(q+1) mod q";
+
+    V inPlaceResult(m);
+    inPlaceResult.ModExpEq(n);
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(calculatedResult[i], inPlaceResult[i]) << msg << " ModExpEq disagrees with ModExp";
+    }
+
+    // an exponent aliasing a vector element must be read at its pre-call value
+    V aliasedResult(m);
+    V expectedAliased = m.ModExp(m[2]);
+    aliasedResult.ModExpEq(aliasedResult[2]);
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(expectedAliased[i], aliasedResult[i]) << msg << " ModExpEq with aliased exponent";
+    }
+}
+
+TEST(UTBinVect, ModExpLargeExponentTest) {
+    RUN_ALL_BACKENDS(ModExpLargeExponentTest, "ModExpLargeExponentTest")
 }
 
 // --------------- TESTING METHOD MODINVERSE FOR ALL CONDITIONS ---------------

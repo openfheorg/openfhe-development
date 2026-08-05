@@ -86,7 +86,7 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType
     this->m_length  = length;
     this->m_modulus = modulus;
     this->m_data    = new IntegerType[m_length]();
-    uint32_t len       = rhs.size();
+    uint32_t len    = rhs.size();
     for (uint32_t i = 0; i < m_length; i++) {  // this loops over each entry
         if (i < len) {
             m_data[i] = IntegerType(*(rhs.begin() + i)) % m_modulus;
@@ -103,7 +103,7 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType
     this->m_length  = length;
     this->m_modulus = modulus;
     this->m_data    = new IntegerType[m_length]();
-    uint32_t len       = rhs.size();
+    uint32_t len    = rhs.size();
     for (uint32_t i = 0; i < m_length; i++) {  // this loops over each entry
         if (i < len) {
             m_data[i] = IntegerType(*(rhs.begin() + i)) % m_modulus;
@@ -447,8 +447,9 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModExp(const IntegerT
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModExpEq(const IntegerType& b) {
+    IntegerType bLocal(b);
     for (uint32_t i = 0; i < this->m_length; i++) {
-        this->m_data[i].ModExpEq(b, this->m_modulus);
+        this->m_data[i].ModExpEq(bLocal, this->m_modulus);
     }
     return *this;
 }

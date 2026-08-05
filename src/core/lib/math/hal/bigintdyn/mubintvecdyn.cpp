@@ -61,7 +61,8 @@ mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
 }
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
+                                 std::initializer_list<uint64_t> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
@@ -420,8 +421,6 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModExp(const ubint_el_t& b) const {
     auto ans(*this);
     auto modulus{m_modulus};
     auto bLocal{b};
-    if (bLocal >= modulus)
-        bLocal.ModEq(modulus);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i].ModExpEq(bLocal, modulus);
     return ans;
@@ -431,8 +430,6 @@ template <class ubint_el_t>
 mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModExpEq(const ubint_el_t& b) {
     auto modulus{m_modulus};
     auto bLocal{b};
-    if (bLocal >= modulus)
-        bLocal.ModEq(modulus);
     for (size_t i = 0; i < m_data.size(); ++i)
         m_data[i].ModExpEq(bLocal, modulus);
     return *this;
