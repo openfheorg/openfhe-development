@@ -164,7 +164,10 @@ bool CKKSPackedEncoding::Encode() {
             re = re64 >> (-pRemaining);
         }
         else {
-            int128_t pPowRemaining = ((int128_t)1) << pRemaining;
+            if (pRemaining > 126)
+                OPENFHE_THROW("Invalid CKKS scaling shift");
+
+            int128_t pPowRemaining = static_cast<int128_t>(1) << pRemaining;
             re                     = pPowRemaining * re64;
         }
 
@@ -175,7 +178,10 @@ bool CKKSPackedEncoding::Encode() {
             im = im64 >> (-pRemaining);
         }
         else {
-            int128_t pPowRemaining = (static_cast<int64_t>(1)) << pRemaining;
+            if (pRemaining > 126)
+                OPENFHE_THROW("Invalid CKKS scaling shift");
+
+            int128_t pPowRemaining = static_cast<int128_t>(1) << pRemaining;
             im                     = pPowRemaining * im64;
         }
 
