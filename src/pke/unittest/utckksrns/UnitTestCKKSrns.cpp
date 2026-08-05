@@ -1027,6 +1027,8 @@ protected:
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsAddAfterMult2(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult2(VECTOR_SIZE);
+            std::vector<std::complex<double>> vectorOfIntsAddDiffLevels(VECTOR_SIZE);
+            std::vector<std::complex<double>> vectorOfIntsAddMixedDegree(VECTOR_SIZE);
             for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 vectorOfIntsMult[i]          = i * VECTOR_SIZE - i * i - i;
                 vectorOfIntsAddAfterMult[i]  = vectorOfIntsMult[i] + std::complex<double>(10, 0);
@@ -1034,6 +1036,8 @@ protected:
                 vectorOfIntsMult2[i]         = vectorOfIntsMult[i] * vectorOfInts1[i];
                 vectorOfIntsAddAfterMult2[i] = vectorOfIntsMult2[i] + constantInts[i];  // complex<double>({11,0});
                 vectorOfIntsSubAfterMult2[i] = vectorOfIntsMult2[i] - constantInts[i];  // complex<double>({11,0});
+                vectorOfIntsAddDiffLevels[i] = vectorOfInts1[i] + vectorOfInts7_0[i];
+                vectorOfIntsAddMixedDegree[i] = vectorOfIntsMult[i] + vectorOfInts1[i];
             }
             // The vector values should be:
             // vectorOfIntsMult = { 0,6,10,12,12,10,6,0 };
@@ -1042,6 +1046,8 @@ protected:
             // vectorOfIntsSubAfterMult = { -10,-4,0,2,2,0,-4,-10 };
             // vectorOfIntsAddAfterMult2 = { 11,17,31,47,59,61,47,11 };
             // vectorOfIntsSubAfterMult2 = { -11,-5,9,25,37,39,25,-11 };
+            // vectorOfIntsAddDiffLevels = { 7,7,7,7,7,7,7,7 };
+            // vectorOfIntsAddMixedDegree = { 0,7,12,15,16,15,12,7 };
             Plaintext plaintextMult          = cc->MakeCKKSPackedPlaintext(vectorOfIntsMult);
             Plaintext plaintexAddAfterMult   = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult);
             Plaintext plaintexSubAfterMult   = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult);
@@ -1050,6 +1056,8 @@ protected:
             Plaintext plaintexSubAfterMult2  = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult2);
             Plaintext plaintex2AddAfterMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult2);
             Plaintext plaintex2SubAfterMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult2);
+            Plaintext plaintexAddDiffLevels  = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddDiffLevels);
+            Plaintext plaintexAddMixedDegree = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddMixedDegree);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -1079,6 +1087,14 @@ protected:
             auto cDeepSub          = cc->EvalSub(cMultRs2, plaintextConstDeep);
             auto c2DeepAdd         = cc->EvalAdd(cMultRs2, plaintextConst2Deep);
             auto c2DeepSub         = cc->EvalSub(cMultRs2, plaintextConst2Deep);
+
+            const auto sizeQl     = ciphertext1->GetElements()[0].GetNumOfElements();
+            auto cCompressed      = cc->Compress(ciphertext1, sizeQl - 1);
+            auto cAddDiffLevels   = cc->EvalAdd(cCompressed, ciphertext2);
+            auto cAddDiffLevels2  = cc->EvalAdd(ciphertext2, cCompressed);
+            auto cCompressed2     = cc->Compress(ciphertext1, sizeQl - 2);
+            auto cAddMixedDegree  = cc->EvalAdd(cMult, cCompressed2);
+            auto cAddMixedDegree2 = cc->EvalAdd(cCompressed2, cMult);
 
             Plaintext results;
             cc->Decrypt(kp.secretKey, cAddAfterMult, &results);
@@ -1152,6 +1168,26 @@ protected:
             results->SetLength(plaintex2SubAfterMult2->GetLength());
             checkEquality(plaintex2SubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                           failmsg + " subtract with deep negative plaintext fails");
+
+            cc->Decrypt(kp.secretKey, cAddDiffLevels, &results);
+            results->SetLength(plaintexAddDiffLevels->GetLength());
+            checkEquality(plaintexAddDiffLevels->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " add with same noise degree and different levels fails");
+
+            cc->Decrypt(kp.secretKey, cAddDiffLevels2, &results);
+            results->SetLength(plaintexAddDiffLevels->GetLength());
+            checkEquality(plaintexAddDiffLevels->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " add (reversed) with same noise degree and different levels fails");
+
+            cc->Decrypt(kp.secretKey, cAddMixedDegree, &results);
+            results->SetLength(plaintexAddMixedDegree->GetLength());
+            checkEquality(plaintexAddMixedDegree->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " add with mixed noise degrees and different levels fails");
+
+            cc->Decrypt(kp.secretKey, cAddMixedDegree2, &results);
+            results->SetLength(plaintexAddMixedDegree->GetLength());
+            checkEquality(plaintexAddMixedDegree->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " add (reversed) with mixed noise degrees and different levels fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
