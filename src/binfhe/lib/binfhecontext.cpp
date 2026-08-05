@@ -255,8 +255,8 @@ LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECip
     if (ct == nullptr)
         OPENFHE_THROW("Ciphertext is empty");
     auto&& LWEParams = m_params->GetLWEParams();
-    if ((ct->GetLength() != LWEParams->GetN()) && (ct->GetModulus() != LWEParams->GetQ()))
-        OPENFHE_THROW("ciphertext dimension and modulus are not large N and Q");
+    if (ct->GetLength() != LWEParams->GetN() || ct->GetModulus() != LWEParams->GetQ())
+        OPENFHE_THROW("ciphertext must have large dimension N and modulus Q");
     return m_LWEscheme->SwitchCTtoqn(LWEParams, ksk, ct);
 }
 
