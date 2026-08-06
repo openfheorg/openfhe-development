@@ -452,6 +452,65 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::DivideAndRoundEq(const I
 }
 
 template <class IntegerType>
+std::vector<NativeVectorT<IntegerType>> NativeVectorT<IntegerType>::BaseDecompose(uint32_t digitLen) const {
+    const BasicInt q  = m_modulus.m_value;
+    const uint32_t nW = (m_modulus.GetMSB() + digitLen - 1) / digitLen;
+    const auto mask   = static_cast<BasicInt>((uint64_t{1} << digitLen) - 1);
+    const uint32_t n  = m_data.size();
+    std::vector<NativeVectorT> result;
+    result.reserve(nW);
+
+    if (nW * digitLen + 1 > IntegerType::MaxBits() || q <= 1) {
+        // not enough headroom for the bias: plain unsigned digit windows
+        for (uint32_t w = 0; w < nW; ++w) {
+            NativeVectorT d(n, m_modulus);
+            const uint32_t shift = w * digitLen;
+            for (uint32_t i = 0; i < n; ++i)
+                d[i].m_value = (m_data[i].m_value >> shift) & mask;
+            result.push_back(std::move(d));
+        }
+        return result;
+    }
+
+    // bias by H (gHalf in every digit position) once; every balanced digit is then an
+    // independent window: digit_w = (((x~ + H) >> w*digitLen) & mask) - h, x~ centered.
+    const BasicInt h     = BasicInt{1} << (digitLen - 1);
+    const BasicInt qHalf = q >> 1;
+    BasicInt H{0};
+    for (uint32_t i = 0; i < nW; ++i)
+        H += h << (i * digitLen);
+    std::vector<BasicInt> biased(n);
+    for (uint32_t i = 0; i < n; ++i) {
+        // borrow of (qHalf - x) is 1 exactly when x > qHalf, i.e. x is negative centered
+        const BasicInt borrow = (qHalf - m_data[i].m_value) >> (IntegerType::MaxBits() - 1);
+        biased[i]             = m_data[i].m_value + H - (q & (0 - borrow));
+    }
+
+    for (uint32_t w = 0; w < nW; ++w) {
+        NativeVectorT d(n, m_modulus);
+        const uint32_t shift = w * digitLen;
+        if (w + 1 < nW) {
+            for (uint32_t i = 0; i < n; ++i) {
+                const BasicInt v    = (biased[i] >> shift) & mask;
+                const BasicInt addq = q & ((v >> (digitLen - 1)) - 1);  // q exactly when v < h
+                d[i].m_value        = v - h + addq;
+            }
+        }
+        else {  // the top window is unmasked so it absorbs the remaining quotient (v < 3h)
+            for (uint32_t i = 0; i < n; ++i) {
+                const BasicInt v    = biased[i] >> shift;
+                BasicInt s          = v >> (digitLen - 1);  // in {0, 1, 2}
+                s                   = (s | (s >> 1)) & 0x1;
+                const BasicInt addq = q & (s - 1);
+                d[i].m_value        = v - h + addq;
+            }
+        }
+        result.push_back(std::move(d));
+    }
+    return result;
+}
+
+template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
     auto digitLen = lbcrypto::GetMSB(base - 1);  // == ceil(log2(base))
     uint32_t shift{(index - 1) * digitLen};

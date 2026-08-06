@@ -269,13 +269,15 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
         auto decomposed               = (*coef).m_vectors[i].BaseDecompose(baseBits, false);
         const uint32_t decomposedsize = decomposed.size();
         for (uint32_t j = 0; j < decomposedsize; ++j) {
-            DCRTPolyImpl<VecType> currentDCRTPoly(*coef);
+            DCRTPolyImpl<VecType> currentDCRTPoly((*coef).m_params, Format::COEFFICIENT, false);
             for (uint32_t k = 0; k < size; ++k) {
-                DCRTPolyImpl::PolyType tmp(decomposed[j]);
-                if (i != k)
+                if (i != k) {
+                    DCRTPolyImpl::PolyType tmp(decomposed[j]);
                     tmp.SwitchModulus((*coef).m_vectors[k].GetModulus(), (*coef).m_vectors[k].GetRootOfUnity(), 0, 0);
-                currentDCRTPoly.m_vectors[k] = std::move(tmp);
+                    currentDCRTPoly.m_vectors[k] = std::move(tmp);
+                }
             }
+            currentDCRTPoly.m_vectors[i] = std::move(decomposed[j]);
             currentDCRTPoly.SwitchFormat();
             result[j + arrWindows[i]] = std::move(currentDCRTPoly);
         }
