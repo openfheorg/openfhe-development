@@ -246,7 +246,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
         double qDouble = GetBigModulus(cryptoParams);
-        double factor   = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
+        double factor  = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
         // For composite scaling, capture the (inexact) overflow normalization SF0/qDouble as a coefficient
         // close to 1, SF0*post/qDouble, which the CoeffsToSlots/SlotsToCoeffs matrices encode at full
         // precision and telescope away (scaleDec = 1/scaleEnc*1/k cancels it). The exact power-of-two part
@@ -456,7 +456,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     double qDouble = GetBigModulus(cryptoParams);
-    double factor   = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
+    double factor  = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
     // For composite scaling, capture the (inexact) overflow normalization SF0/qDouble as a coefficient
     // close to 1, SF0*post/qDouble, encoded at full precision in the CoeffsToSlots/SlotsToCoeffs matrices
     // and telescoped away; the exact power-of-two 1/post is applied as the shrink/scalar (see EvalBootstrap).
@@ -2531,74 +2531,34 @@ void FHECKKSRNS::AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double co
 
 void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const CryptoContextImpl<DCRTPoly>& cc,
                                   const std::shared_ptr<DCRTPoly::Params> elementParamsRaisedPtr) const {
-    // Raise each ciphertext polynomial from the bottom RNS basis Q = {q_0, ..., q_{compositeDegree-1}} (the
-    // moduli remaining in the depleted ciphertext) to the full raised basis QP. We use the exact
+    // Raise each ciphertext polynomial from the small bottom RNS basis Ql = {q_0, ..., q_{compositeDegree-1}}
+    // (the moduli remaining in the depleted ciphertext) to the full raised basis Q. We use the exact
     // DCRTPoly::ExpandCRTBasis (CRT reconstruction with the integer-overflow / "alpha" correction), which
-    // produces the balanced representative of [c]_Q in (-Q/2, Q/2]. The previous hand-rolled reconstruction
-    // returned the positive representative in [0, compositeDegree*Q), whose larger coefficients inflate the
-    // q*I term that CKKS bootstrapping has to remove through the sine, degrading the precision (by 2-3 bits
-    // for compositeDegree = 2) relative to the single-prime (FLEXIBLEAUTO) modulus raise.
+    // produces the balanced representative of [c]_Ql in (-Ql/2, Ql/2].
+    // All CRT tables are precomputed in CryptoParametersCKKSRNS::PrecomputeCRTTables (at cryptocontext
+    // instantiation), so this function stays in full RNS.
 
-    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
-    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    const uint32_t sizeQl   = cryptoParams->GetCompositeDegree();  // bottom moduli: source basis Ql
 
-    const auto& paramsQP   = elementParamsRaisedPtr->GetParams();
-    const uint32_t sizeQP  = paramsQP.size();
-    const uint32_t sizeQ   = compositeDegree;  // bottom moduli: source basis Q
-    const uint32_t sizeP   = sizeQP - sizeQ;   // remaining moduli: extension basis P
-    const uint32_t cyclOrd = elementParamsRaisedPtr->GetCyclotomicOrder();
-
-    std::vector<NativeInteger> moduliQ(sizeQ), moduliP(sizeP), rootsP(sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i)
-        moduliQ[i] = paramsQP[i]->GetModulus();
-    for (uint32_t j = 0; j < sizeP; ++j) {
-        moduliP[j] = paramsQP[sizeQ + j]->GetModulus();
-        rootsP[j]  = paramsQP[sizeQ + j]->GetRootOfUnity();
-    }
-    auto paramsP = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cyclOrd, moduliP, rootsP);
-
-    BigInteger modulusQ(1);
-    for (uint32_t i = 0; i < sizeQ; ++i)
-        modulusQ *= BigInteger(moduliQ[i]);
-
-    // QHatInvModq[i] = [(Q/q_i)^{-1}]_{q_i}
-    std::vector<NativeInteger> QHatInvModq(sizeQ), QHatInvModqPrecon(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        BigInteger qi(moduliQ[i]);
-        QHatInvModq[i]       = (modulusQ / qi).ModInverse(qi).Mod(qi).ConvertToInt();
-        QHatInvModqPrecon[i] = QHatInvModq[i].PrepModMulConst(moduliQ[i]);
-    }
-
-    // QHatModp[j][i] = [Q/q_i]_{p_j}
-    std::vector<std::vector<NativeInteger>> QHatModp(sizeP, std::vector<NativeInteger>(sizeQ));
-    // alphaQModp[a][j] = [a*Q]_{p_j} for the overflow correction, 0 <= a <= sizeQ
-    std::vector<std::vector<NativeInteger>> alphaQModp(sizeQ + 1, std::vector<NativeInteger>(sizeP));
-    const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
-    std::vector<DoubleNativeInt> modpBarrettMu(sizeP);
-    for (uint32_t j = 0; j < sizeP; ++j) {
-        BigInteger pj(moduliP[j]);
-        for (uint32_t i = 0; i < sizeQ; ++i)
-            QHatModp[j][i] = (modulusQ / BigInteger(moduliQ[i])).Mod(pj).ConvertToInt();
-        NativeInteger QModpj = modulusQ.Mod(pj).ConvertToInt();
-        for (uint32_t a = 0; a <= sizeQ; ++a)
-            alphaQModp[a][j] = QModpj.ModMul(NativeInteger(a), moduliP[j]);
-        modpBarrettMu[j] = (BarrettBase128Bit / pj).ConvertToInt<DoubleNativeInt>();
-    }
-
-    std::vector<double> qInv(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; ++i)
-        qInv[i] = 1.0 / moduliQ[i].ConvertToDouble();
+    const auto& paramsComplQl = cryptoParams->GetParamsModRaiseComplQl();
+    if (nullptr == paramsComplQl)
+        OPENFHE_THROW("The modulus-raise tables are not available (they are precomputed for compositeDegree > 1).");
+    if (elementParamsRaisedPtr->GetParams().size() != sizeQl + paramsComplQl->GetParams().size())
+        OPENFHE_THROW("The raised element parameters do not match the precomputed modulus-raise tables.");
 
     for (auto& dcrt : ctxtDCRTs) {
         // CKKS modulus raise only uses the bottom (level-0) modulus q0 = product of the first compositeDegree
         // primes (analogous to the single-prime path, which keeps only index 0). If the input ciphertext still
-        // carries more towers, keep just the bottom sizeQ before extending, so the source basis matches the
-        // precomputed tables (otherwise ExpandCRTBasis would index QHatInvModq/QHatModp/alphaQModp/qInv out of
-        // bounds, corrupting memory).
-        if (dcrt.GetNumOfElements() > sizeQ)
-            dcrt.DropLastElements(dcrt.GetNumOfElements() - sizeQ);
-        dcrt.ExpandCRTBasis(elementParamsRaisedPtr, paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, alphaQModp,
-                            modpBarrettMu, qInv, Format::EVALUATION);
+        // carries more towers, keep just the bottom sizeQl before extending, so the source basis matches the
+        // precomputed tables (otherwise ExpandCRTBasis would index the tables out of bounds, corrupting
+        // memory).
+        if (dcrt.GetNumOfElements() > sizeQl)
+            dcrt.DropLastElements(dcrt.GetNumOfElements() - sizeQl);
+        dcrt.ExpandCRTBasis(elementParamsRaisedPtr, paramsComplQl, cryptoParams->GetModRaiseQlHatInvModq(),
+                            cryptoParams->GetModRaiseQlHatInvModqPrecon(), cryptoParams->GetModRaiseQlHatModComplq(),
+                            cryptoParams->GetModRaiseAlphaQlModComplq(), cryptoParams->GetModRaiseModComplqBarrettMu(),
+                            cryptoParams->GetModRaiseqInv(), Format::EVALUATION);
     }
 }
 
