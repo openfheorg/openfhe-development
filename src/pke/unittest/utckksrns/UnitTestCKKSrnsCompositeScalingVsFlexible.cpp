@@ -65,7 +65,6 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -226,7 +225,6 @@ TEST_F(UTCKKSRNSCSvsFA, FullPackingBootstrap_HybridKeySwitch) {
     double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
                                            levelsAfterBootstrap, numLargeDigits);
 
-    std::cout << "[ cs-vs-fa ] hybrid-keyswitch bootstrap: FA=" << faBits << " bits, CS=" << csBits << " bits\n";
     EXPECT_GT(csBits, 6.0) << "CS bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - 2.0) << "CS lags FA by >2 bits (CS=" << csBits << ", FA=" << faBits
                                     << ") - HYBRID key-switching regression";
@@ -247,7 +245,6 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapModRaiseHeadroom) {
     double csBits =
         BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 56, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
 
-    std::cout << "[ cs-vs-fa ] 8-slot deg=4 bootstrap: FA=" << faBits << " bits, CS=" << csBits << " bits\n";
     EXPECT_GT(csBits, 6.0) << "CS 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
                                     << ") - bootstrap pre/post scaling (deg>1) regression";
@@ -270,7 +267,6 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
     double csBits =
         BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
 
-    std::cout << "[ cs-vs-fa ] 8-slot deg=6 bootstrap: FA=" << faBits << " bits, CS=" << csBits << " bits\n";
     EXPECT_GT(csBits, 12.0) << "CS 8-slot deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
                                     << ") - large modraise headroom (deg=6) regression";
@@ -282,13 +278,16 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
 // CS used to diverge from FA by many orders of magnitude as the filler depth grows. Pre-fix: CS ~18 bits
 // below FA at D = 20. (D = 30 is excluded - its residual is approximate-keyswitch noise, not this fix.)
 TEST_F(UTCKKSRNSCSvsFA, DeepComputationWithFillers) {
+    if (MATHBACKEND == 2)
+        GTEST_SKIP() << "Disabled for MATHBACKEND 2: the coefficient modulus at filler depth D = 20 is too large "
+                        "for the default BACKEND 2 configuration.";
+
     const uint32_t ringDim = 1 << 12;
     const uint32_t D       = 20;
 
     double faBits = DeepComputationBgPrecisionBits(FLEXIBLEAUTO, ringDim, D);
     double csBits = DeepComputationBgPrecisionBits(COMPOSITESCALINGAUTO, ringDim, D);
 
-    std::cout << "[ cs-vs-fa ] deep computation D=" << D << ": FA=" << faBits << " bits, CS=" << csBits << " bits\n";
     // CS background-leak precision must stay within 5 bits of FA (pre-fix the gap was ~18 bits).
     EXPECT_GE(csBits, faBits - 5.0) << "CS background leakage worse than FA by >5 bits at filler depth D=" << D
                                     << " (CS=" << csBits << " bits, FA=" << faBits << " bits)";
