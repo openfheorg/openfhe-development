@@ -822,7 +822,7 @@ public:
    * @brief Drops the last element in the double-CRT representation and scales
    * down by the last CRT modulus, computing round(x/q_l) as
    * (x - [x]_{q_l}) * [q_l^{-1}]_{q_i}. The resulting DCRTPoly element will
-   * have one less tower.
+   * have one less tower and is always in EVALUATION format.
    * @param &qlInvModq precomputed values for [q_l^{-1}]_{q_i}
    */
     virtual void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) = 0;

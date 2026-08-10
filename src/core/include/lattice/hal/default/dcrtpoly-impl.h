@@ -694,7 +694,7 @@ void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
 // divisible by q_l, so one scalar multiplication per tower suffices.
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) {
-    auto lastPoly(m_vectors.back());
+    auto lastPoly(std::move(m_vectors.back()));
     lastPoly.SetFormat(Format::COEFFICIENT);
     this->DropLastElement();
     uint32_t size(m_vectors.size());
@@ -710,6 +710,7 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
         if (m_format == Format::COEFFICIENT)
             m_vectors[i].SwitchFormat();
     }
+    this->OverrideFormat(Format::EVALUATION);
 }
 
 /**
