@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#ifdef BOOTSTRAPTIMING
+    #define PROFILE
+#endif
+
 #include "ciphertext.h"
 #include "cryptocontext.h"
 #include "key/evalkeyrelin.h"
@@ -47,6 +51,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
@@ -54,12 +59,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
-
-#ifdef BOOTSTRAPTIMING
-    #include <ostream>
-    #define PROFILE
-#endif
 
 namespace {
 // GetBigModulus() calculates the big modulus as the product of
@@ -2551,8 +2550,7 @@ void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const Crypto
         // CKKS modulus raise only uses the bottom (level-0) modulus q0 = product of the first compositeDegree
         // primes (analogous to the single-prime path, which keeps only index 0). If the input ciphertext still
         // carries more towers, keep just the bottom sizeQl before extending, so the source basis matches the
-        // precomputed tables (otherwise ExpandCRTBasis would index the tables out of bounds, corrupting
-        // memory).
+        // precomputed tables (otherwise ExpandCRTBasis would index the tables out of bounds, corrupting memory).
         if (dcrt.GetNumOfElements() > sizeQl)
             dcrt.DropLastElements(dcrt.GetNumOfElements() - sizeQl);
         dcrt.ExpandCRTBasis(elementParamsRaisedPtr, paramsComplQl, cryptoParams->GetModRaiseQlHatInvModq(),
