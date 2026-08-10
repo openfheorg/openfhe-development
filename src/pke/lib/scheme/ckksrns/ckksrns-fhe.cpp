@@ -3758,48 +3758,50 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
                                                  const PrivateKey<DCRTPoly>& newPrivateKey) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(newPrivateKey->GetCryptoParameters());
 
-    const auto paramsQ = cryptoParams->GetElementParams();
-    const auto paramsP = cryptoParams->GetParamsP();
+    // Params for q0*P', where P' is the auxiliary modulus for sparse encapsulation (two
+    // primes generated in CryptoParametersCKKSRNS::PrecomputeCRTTables)
+    const auto& paramsqp = cryptoParams->GetSparseKSParamsQP();
+    if (nullptr == paramsqp)
+        OPENFHE_THROW("The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED.");
 
-    // Build params for p*q (used for sparse encapsulation)
-    std::vector<NativeInteger> moduli{paramsQ->GetParams()[0]->GetModulus(), paramsP->GetParams()[0]->GetModulus()};
-    std::vector<NativeInteger> roots{paramsQ->GetParams()[0]->GetRootOfUnity(),
-                                     paramsP->GetParams()[0]->GetRootOfUnity()};
-
-    auto paramsqp = std::make_shared<typename DCRTPoly::Params>(2 * paramsQ->GetRingDimension(), moduli, roots);
+    size_t sizeQP = paramsqp->GetParams().size();
 
     const DCRTPoly& sOld = oldPrivateKey->GetPrivateElement();
     const DCRTPoly& sNew = newPrivateKey->GetPrivateElement();
 
-    // creates the old key in pq
-    auto polysOld = sOld.GetElementAtIndex(0);
-    polysOld.SetFormat(COEFFICIENT);
-    DCRTPoly sOldExt(paramsqp, Format::COEFFICIENT, true);
-    sOldExt.SetElementAtIndex(0, polysOld);
-    polysOld.SwitchModulus(moduli[1], roots[1], 0, 0);
-    sOldExt.SetElementAtIndex(1, std::move(polysOld));
-    sOldExt.SetFormat(Format::EVALUATION);
+    // extends a secret key from q0 to q0*P'; the source basis has a single limb, so the
+    // centered lift (SwitchModulus) is the exact CRT basis extension
+    auto ExtendToQP = [&paramsqp, sizeQP](const DCRTPoly& s) {
+        auto poly = s.GetElementAtIndex(0);
+        poly.SetFormat(Format::COEFFICIENT);
+        DCRTPoly sExt(paramsqp, Format::COEFFICIENT, true);
+        sExt.SetElementAtIndex(0, poly);
+        for (size_t j = 1; j < sizeQP; ++j) {
+            auto polyP = poly;
+            polyP.SwitchModulus(paramsqp->GetParams()[j]->GetModulus(), paramsqp->GetParams()[j]->GetRootOfUnity(), 0,
+                                0);
+            sExt.SetElementAtIndex(j, std::move(polyP));
+        }
+        sExt.SetFormat(Format::EVALUATION);
+        return sExt;
+    };
 
-    // creates the new key in pq
-    auto polysNew = sNew.GetElementAtIndex(0);
-    polysNew.SetFormat(COEFFICIENT);
-    DCRTPoly sNewExt(paramsqp, Format::COEFFICIENT, true);
-    sNewExt.SetElementAtIndex(0, polysNew);
-    polysNew.SwitchModulus(moduli[1], roots[1], 0, 0);
-    sNewExt.SetElementAtIndex(1, std::move(polysNew));
-    sNewExt.SetFormat(Format::EVALUATION);
+    // creates the old and new keys in q0*P'
+    DCRTPoly sOldExt = ExtendToQP(sOld);
+    DCRTPoly sNewExt = ExtendToQP(sNew);
 
     DugType dug;
     DCRTPoly a(dug, paramsqp, Format::EVALUATION);
     DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), paramsqp, Format::EVALUATION);
     DCRTPoly b(paramsqp, Format::EVALUATION, true);
 
-    NativeInteger pModq = moduli[1].Mod(moduli[0]);
-
-    // computes the switching key for the GHS case
-    b.SetElementAtIndex(0, -a.GetElementAtIndex(0) * sNewExt.GetElementAtIndex(0) + pModq * sOld.GetElementAtIndex(0) +
+    // computes the switching key for the GHS case: b = -a*sNew + P'*sOld + e over q0*P';
+    // as [P']_{p'_j} = 0, the P'*sOld term only contributes modulo q0
+    b.SetElementAtIndex(0, -a.GetElementAtIndex(0) * sNewExt.GetElementAtIndex(0) +
+                               cryptoParams->GetSparseKSPModq() * sOldExt.GetElementAtIndex(0) +
                                e.GetElementAtIndex(0));
-    b.SetElementAtIndex(1, -a.GetElementAtIndex(1) * sNewExt.GetElementAtIndex(1) + e.GetElementAtIndex(1));
+    for (size_t j = 1; j < sizeQP; ++j)
+        b.SetElementAtIndex(j, -a.GetElementAtIndex(j) * sNewExt.GetElementAtIndex(j) + e.GetElementAtIndex(j));
 
     auto ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPrivateKey->GetCryptoContext()));
     ek->SetAVector({std::move(a)});
@@ -3809,39 +3811,60 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly>& ek) {
-    auto paramsqp = ek->GetAVector()[0].GetParams();
-    auto modulusq = paramsqp->GetParams()[0]->GetModulus();
-    auto rootq    = paramsqp->GetParams()[0]->GetRootOfUnity();
-    auto modulusp = paramsqp->GetParams()[1]->GetModulus();
-    auto rootp    = paramsqp->GetParams()[1]->GetRootOfUnity();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+
+    const auto paramsqp = ek->GetAVector()[0].GetParams();
+    const auto& paramsP = cryptoParams->GetSparseKSParamsP();
+    if (nullptr == paramsP)
+        OPENFHE_THROW("The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED.");
+
+    size_t sizeP = paramsP->GetParams().size();
 
     auto& cv = ciphertext->GetElements();
-    // extend cv[1] from q to qp
+
+    // extend cv[1] from q0 to q0*P'; the source basis has a single limb, so the centered
+    // lift (SwitchModulus) is the exact CRT basis extension
     DCRTPoly c1Ext(paramsqp, Format::EVALUATION, true);
     c1Ext.SetElementAtIndex(0, cv[1].GetElementAtIndex(0));
     auto poly = cv[1].GetElementAtIndex(0);
     poly.SetFormat(Format::COEFFICIENT);
-    poly.SwitchModulus(modulusp, rootp, 0, 0);
-    poly.SetFormat(Format::EVALUATION);
-    c1Ext.SetElementAtIndex(1, std::move(poly));
+    for (size_t j = 0; j < sizeP; ++j) {
+        auto polyP = poly;
+        polyP.SwitchModulus(paramsP->GetParams()[j]->GetModulus(), paramsP->GetParams()[j]->GetRootOfUnity(), 0, 0);
+        polyP.SetFormat(Format::EVALUATION);
+        c1Ext.SetElementAtIndex(j + 1, std::move(polyP));
+    }
 
     // multiply by the evaluation key
     std::vector<DCRTPoly> cvRes{c1Ext * ek->GetBVector()[0], c1Ext * ek->GetAVector()[0]};
 
-    NativeInteger pModInvq = modulusp.ModInverse(modulusq);
-
-    // modswitch cvRes from p*q to q, i.e., compute round(cvRes/p) mod q
-    // In RNS, we use the technique described in Appendix B.2.2 of https://eprint.iacr.org/2021/204 for the BFV case, i.e., for t=1.
+    // modswitch cvRes from q0*P' to q0, i.e., compute round(cvRes/P') mod q0.
+    // In RNS, we use the technique described in Appendix B.2.2 of https://eprint.iacr.org/2021/204
+    // for the BFV case, i.e., for t=1. The balanced representative of [cvRes]_{P'} is computed
+    // with the exact (HPS-style) CRT basis switch, which applies the floating-point overflow
+    // correction instead of dropping the alpha*P' term, so the modulus switch only adds the
+    // centered rounding noise.
 
     for (uint32_t i = 0; i < 2; ++i) {
-        auto polyP = cvRes[i].GetElementAtIndex(1);
-        polyP.SetFormat(Format::COEFFICIENT);
-        polyP.SwitchModulus(modulusq, rootq, 0, 0);
+        DCRTPoly partP(paramsP, Format::COEFFICIENT, true);
+        for (size_t j = 0; j < sizeP; ++j) {
+            auto polyP = cvRes[i].GetElementAtIndex(j + 1);
+            polyP.SetFormat(Format::COEFFICIENT);
+            partP.SetElementAtIndex(j, std::move(polyP));
+        }
+        // exact switch of the balanced [cvRes]_{P'} to the basis {q0}
+        auto partPModq =
+            partP.SwitchCRTBasis(cryptoParams->GetSparseKSParamsQ(), cryptoParams->GetSparseKSPHatInvModp(),
+                                 cryptoParams->GetSparseKSPHatInvModpPrecon(), cryptoParams->GetSparseKSPHatModq(),
+                                 cryptoParams->GetSparseKSAlphaPModq(), cryptoParams->GetSparseKSModqBarrettMu(),
+                                 cryptoParams->GetSparseKSpInv());
+        auto polyP = partPModq.GetElementAtIndex(0);
         polyP.SetFormat(Format::EVALUATION);
-        cvRes[i].DropLastElement();
+
+        cvRes[i].DropLastElements(sizeP);
         auto polyQ = cvRes[i].GetElementAtIndex(0);
         polyQ -= polyP;
-        polyQ *= pModInvq;
+        polyQ *= cryptoParams->GetSparseKSPInvModq();
         cvRes[i].SetElementAtIndex(0, std::move(polyQ));
     }
 
