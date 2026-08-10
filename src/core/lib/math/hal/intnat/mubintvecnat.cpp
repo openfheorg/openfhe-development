@@ -41,6 +41,46 @@
 
 namespace intnat {
 
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 12
+    #define OPENFHE_COMPARE_SELECT_LANES 1
+#endif
+
+template <typename T>
+static inline T topBitMask(T x) {
+    return static_cast<T>(0) - static_cast<T>(x >> (sizeof(T) * 8 - 1));
+}
+
+template <typename T>
+static inline T modAddLane(T a, T b, T m) {
+#if defined(OPENFHE_COMPARE_SELECT_LANES) || defined(__clang__)
+    T t = a + b;
+    return t >= m ? t - m : t;
+#else
+    T t = a + b - m;
+    return t + (m & topBitMask(t));
+#endif
+}
+
+template <typename T>
+static inline T modSubLane(T a, T b, T m) {
+#ifdef OPENFHE_COMPARE_SELECT_LANES
+    T t = a - b;
+    return a < b ? t + m : t;
+#else
+    T t = a - b;
+    return t + (m & topBitMask(t));
+#endif
+}
+
+template <typename T>
+static inline T centeredCorrectionLane(T v, T halfQ, T diff) {
+#ifdef OPENFHE_COMPARE_SELECT_LANES
+    return v > halfQ ? diff : static_cast<T>(0);
+#else
+    return diff & topBitMask(halfQ - v);
+#endif
+}
+
 template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<std::string> rhs) noexcept
@@ -108,15 +148,34 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
 template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
     // TODO: #ifdef NATIVEINT_BARRET_MOD
-    IntegerType halfQ{m_modulus >> 1};
-    IntegerType diff{(m_modulus > modulus) ? (m_modulus - modulus) : (modulus - m_modulus)};
-    if (modulus > m_modulus) {
-        for (auto& v : m_data)
-            v.AddEqFast((v > halfQ) ? diff : 0);
+    const auto ov{m_modulus.m_value};
+    const auto nv{modulus.m_value};
+    const auto halfQ{ov >> 1};
+    const size_t size{m_data.size()};
+    if (nv > ov) {
+        const auto diff{nv - ov};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].m_value += centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
+    }
+    else if (nv > halfQ) {
+        // new modulus within 2x of the old one: a single conditional subtract fully
+        // reduces every value (v <= halfQ < nv, and v > halfQ maps into [0, nv))
+        const auto diff{ov - nv};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].m_value -= centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
     }
     else {
-        for (auto& v : m_data)
-            v.ModSubEq((v > halfQ) ? diff : 0, modulus);
+        // general shrink: values need full reduction; the subtrahend only takes the
+        // values {diff, 0}, so reduce it once instead of per element inside ModSubEq
+        const auto diffR{(ov - nv) % nv};
+        for (size_t i = 0; i < size; ++i) {
+            const auto v{m_data[i].m_value};
+            auto av{v};
+            if (av >= nv)
+                av %= nv;
+            const auto bv{(v > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
+            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
+        }
     }
     this->SetModulus(modulus);
 }
@@ -144,19 +203,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const N
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::Mod(const IntegerType& modulus) const {
     auto ans(*this);
-    if (modulus.m_value == 2)
-        return ans.ModByTwoEq();
-    IntegerType halfQ{m_modulus >> 1};
-    IntegerType diff{(m_modulus > modulus) ? (m_modulus - modulus) : (modulus - m_modulus)};
-
-    if (modulus > m_modulus) {
-        for (auto& v : ans.m_data)
-            v.AddEqFast((v > halfQ) ? diff : 0);
-    }
-    else {
-        for (auto& v : ans.m_data)
-            v.ModSubEq((v > halfQ) ? diff : 0, modulus);
-    }
+    ans.ModEq(modulus);
     return ans;
 }
 
@@ -164,16 +211,25 @@ template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModEq(const IntegerType& modulus) {
     if (modulus.m_value == 2)
         return this->NativeVectorT::ModByTwoEq();
-    IntegerType halfQ{m_modulus >> 1};
-    IntegerType diff{(m_modulus > modulus) ? (m_modulus - modulus) : (modulus - m_modulus)};
-
-    if (modulus > m_modulus) {
-        for (auto& v : m_data)
-            v.AddEqFast((v > halfQ) ? diff : 0);
+    const auto ov{m_modulus.m_value};
+    const auto nv{modulus.m_value};
+    const auto halfQ{ov >> 1};
+    const size_t size{m_data.size()};
+    if (nv > ov) {
+        const auto diff{nv - ov};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].m_value += centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
     }
     else {
-        for (auto& v : m_data)
-            v.ModSubEq((v > halfQ) ? diff : 0, modulus);
+        const auto diffR{(ov - nv) % nv};
+        for (size_t i = 0; i < size; ++i) {
+            const auto v{m_data[i].m_value};
+            auto av{v};
+            if (av >= nv)
+                av %= nv;
+            const auto bv{(v > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
+            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
+        }
     }
     return *this;
 }
@@ -181,23 +237,19 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModEq(const IntegerType&
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const IntegerType& b) const {
     auto ans(*this);
-    auto mv{m_modulus};
-    auto bv{b};
-    if (bv.m_value >= mv.m_value)
-        bv.ModEq(mv);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i] = ans.m_data[i].ModAddFast(bv, mv);
+    ans.ModAddEq(b);
     return ans;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const IntegerType& b) {
-    auto mv{m_modulus};
+    auto mv{m_modulus.m_value};
     auto bv{b};
-    if (bv.m_value >= mv.m_value)
-        bv.ModEq(mv);
-    for (size_t i = 0; i < m_data.size(); ++i)
-        m_data[i] = m_data[i].ModAddFast(bv, mv);
+    if (bv.m_value >= mv)
+        bv.ModEq(m_modulus);
+    const size_t size{m_data.size()};
+    for (size_t i = 0; i < size; ++i)
+        m_data[i].m_value = modAddLane(m_data[i].m_value, bv.m_value, mv);
     return *this;
 }
 
@@ -216,12 +268,8 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddAtIndexEq(size_t i
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVectorT& b) const {
-    if (m_modulus != b.m_modulus || m_data.size() != b.m_data.size())
-        OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto mv{m_modulus};
     auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModAddFastEq(b[i], mv);
+    ans.ModAddEq(b);
     return ans;
 }
 
@@ -229,43 +277,36 @@ template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto mv{m_modulus};
-    for (size_t i = 0; i < m_data.size(); ++i)
-        m_data[i].ModAddFastEq(b[i], mv);
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    for (size_t i = 0; i < size; ++i)
+        m_data[i].m_value = modAddLane(m_data[i].m_value, b.m_data[i].m_value, mv);
     return *this;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const IntegerType& b) const {
-    auto mv{m_modulus};
-    auto bv{b};
     auto ans(*this);
-    if (bv.m_value >= mv.m_value)
-        bv.ModEq(mv);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].ModSubFastEq(bv, mv);
+    ans.ModSubEq(b);
     return ans;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const IntegerType& b) {
-    auto mv{m_modulus};
+    auto mv{m_modulus.m_value};
     auto bv{b};
-    if (bv.m_value >= mv.m_value)
-        bv.ModEq(mv);
-    for (size_t i = 0; i < m_data.size(); ++i)
-        m_data[i].ModSubFastEq(bv, mv);
+    if (bv.m_value >= mv)
+        bv.ModEq(m_modulus);
+    const size_t size{m_data.size()};
+    for (size_t i = 0; i < size; ++i)
+        m_data[i].m_value = modSubLane(m_data[i].m_value, bv.m_value, mv);
     return *this;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVectorT& b) const {
-    if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
-        OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto mv{m_modulus};
     auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].ModSubFastEq(b[i], mv);
+    ans.ModSubEq(b);
     return ans;
 }
 
@@ -273,8 +314,10 @@ template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    for (size_t i = 0; i < m_data.size(); ++i)
-        m_data[i].ModSubFastEq(b[i], m_modulus);
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    for (size_t i = 0; i < size; ++i)
+        m_data[i].m_value = modSubLane(m_data[i].m_value, b.m_data[i].m_value, mv);
     return *this;
 }
 

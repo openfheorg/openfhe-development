@@ -59,27 +59,16 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
     }
 
-    BigInteger modulusQ = GetElementParams()->GetModulus();
     // Pre-compute values for rescaling
-    // modulusQ holds Q^(l) = \prod_{i=0}^{i=l}(q_i).
-    m_QlQlInvModqlDivqlModq.resize(sizeQ - 1);
-    m_QlQlInvModqlDivqlModqPrecon.resize(sizeQ - 1);
     m_qlInvModq.resize(sizeQ - 1);
     m_qlInvModqPrecon.resize(sizeQ - 1);
     for (size_t k = 0; k < sizeQ - 1; k++) {
         size_t l = sizeQ - (k + 1);
-        modulusQ = modulusQ / BigInteger(moduliQ[l]);
-        m_QlQlInvModqlDivqlModq[k].resize(l);
-        m_QlQlInvModqlDivqlModqPrecon[k].resize(l);
         m_qlInvModq[k].resize(l);
         m_qlInvModqPrecon[k].resize(l);
-        BigInteger QlInvModql = modulusQ.ModInverse(moduliQ[l]);
-        BigInteger result     = (QlInvModql * modulusQ) / BigInteger(moduliQ[l]);
         for (uint32_t i = 0; i < l; i++) {
-            m_QlQlInvModqlDivqlModq[k][i]       = result.Mod(moduliQ[i]).ConvertToInt();
-            m_QlQlInvModqlDivqlModqPrecon[k][i] = m_QlQlInvModqlDivqlModq[k][i].PrepModMulConst(moduliQ[i]);
-            m_qlInvModq[k][i]                   = moduliQ[l].ModInverse(moduliQ[i]);
-            m_qlInvModqPrecon[k][i]             = m_qlInvModq[k][i].PrepModMulConst(moduliQ[i]);
+            m_qlInvModq[k][i]       = moduliQ[l].ModInverse(moduliQ[i]);
+            m_qlInvModqPrecon[k][i] = m_qlInvModq[k][i].PrepModMulConst(moduliQ[i]);
         }
     }
 

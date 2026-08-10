@@ -183,8 +183,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
 
     for (size_t i = 0; i < levels; ++i) {
         for (auto& dcrtpoly : cv)
-            dcrtpoly.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + i),
-                                             cryptoParams->GetqlInvModq(diffQl + i));
+            dcrtpoly.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + i));
         double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
         ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / modReduceFactor);
     }

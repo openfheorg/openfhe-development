@@ -306,26 +306,6 @@ public:
     /////////////////////////////////////
 
     /**
-   * Q^(l) = \prod_{j=0}^{l-1}
-   * Gets the precomputed table of [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
-   *
-   * @return the precomputed table
-   */
-    const std::vector<NativeInteger>& GetQlQlInvModqlDivqlModq(size_t i) const {
-        return m_QlQlInvModqlDivqlModq[i];
-    }
-
-    /**
-   * Q^(l) = \prod_{j=0}^{l-1}
-   * Gets the NTL precomputions for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
-   *
-   * @return the precomputed table
-   */
-    const std::vector<NativeInteger>& GetQlQlInvModqlDivqlModqPrecon(size_t i) const {
-        return m_QlQlInvModqlDivqlModqPrecon[i];
-    }
-
-    /**
    * Gets the precomputed table of [q_i^{-1}]_{q_j}
    *
    * @return the precomputed table
@@ -1432,14 +1412,6 @@ protected:
     /////////////////////////////////////
     // CKKSrns/BFVrns DropLastElementAndScale
     /////////////////////////////////////
-
-    // Q^(l) = \prod_{j=0}^{l-1}
-    // Stores [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
-    std::vector<std::vector<NativeInteger>> m_QlQlInvModqlDivqlModq;
-
-    // Q^(l) = \prod_{j=0}^{l-1}
-    // Stores NTL precomputations for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
-    std::vector<std::vector<NativeInteger>> m_QlQlInvModqlDivqlModqPrecon;
 
     // Stores [q_l^{-1}]_{q_i}
     std::vector<std::vector<NativeInteger>> m_qlInvModq;

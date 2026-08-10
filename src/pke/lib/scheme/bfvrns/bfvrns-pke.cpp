@@ -248,8 +248,7 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
         size_t diffQl = sizeQ - sizeQl;
         size_t levels = sizeQl - 1;
         for (size_t l = 0; l < levels; ++l) {
-            b.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
-                                      cryptoParams->GetqlInvModq(diffQl + l));
+            b.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + l));
         }
 
         b.SetFormat(Format::COEFFICIENT);

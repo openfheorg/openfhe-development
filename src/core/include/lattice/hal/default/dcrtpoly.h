@@ -206,8 +206,7 @@ public:
     void AddILElementOne() override;
     void DropLastElement() override;
     void DropLastElements(size_t i) override;
-    void DropLastElementAndScale(const std::vector<NativeInteger>& QlQlInvModqlDivqlModq,
-                                 const std::vector<NativeInteger>& qlInvModq) override;
+    void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) override;
 
     void ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
                    const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,
