@@ -139,12 +139,15 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
 
         // We want to make sure that P exceeds the maximum digit in Q by a safe margin.
-        // In the case of composite scaling, this margin needs to be larger as the
-        // number of RNS limbs is increased proportionally to the composite degree.
         // The safe margin is chosen to make hybrid key switching error closer to the modulus switching error.
-        // The concrete margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
-        // in Section B.2 of https://eprint.iacr.org/2021/204 for more details.
-        if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < 4 * m_compositeDegree)
+        // The margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
+        // in Section B.2.3 of https://eprint.iacr.org/2021/204 for more details.
+        // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
+        // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
+        uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                              6 + GetMSB64(m_compositeDegree - 1) :
+                              4;
+        if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
             ++sizeP;
         // validate the estimated sizeP value
         if (sizeP_estimate_global > 0) {
@@ -483,12 +486,15 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
 
     // We want to make sure that P exceeds the maximum digit in Q by a safe margin.
-    // In the case of composite scaling, this margin needs to be larger as the
-    // number of RNS limbs is increased proportionally to the composite degree.
     // The safe margin is chosen to make hybrid key switching error closer to the modulus switching error.
-    // The concrete margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
-    // in Section B.2 of https://eprint.iacr.org/2021/204 for more details.
-    if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < 4 * compositeDegree)
+    // The margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
+    // in Section B.2.3 of https://eprint.iacr.org/2021/204 for more details.
+    // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
+    // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
+    uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                          6 + GetMSB64(compositeDegree - 1) :
+                          4;
+    if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
         ++sizeP;
 
     sizeP_estimate_global = sizeP;
