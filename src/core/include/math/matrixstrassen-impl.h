@@ -37,6 +37,7 @@
 #define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_IMPL_H
 
 #include "math/matrixstrassen.h"
+#include "math/matrix-utils.h"
 
 #include "utils/parallel.h"
 
@@ -520,16 +521,10 @@ MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input) {
 MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& input, const BigInteger& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    BigInteger negativeThreshold(modulus / BigInteger(2));
     MatrixStrassen<int32_t> result([]() { return 0; }, rows, cols);
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
-            if (input(i, j) > negativeThreshold) {
-                result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
-            }
-            else {
-                result(i, j) = input(i, j).ConvertToInt();
-            }
+            result(i, j) = ConvertCenteredToInt32(input(i, j), modulus);
         }
     }
     return result;
@@ -538,17 +533,11 @@ MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& input, 
 MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& input, const BigInteger& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    BigInteger negativeThreshold(modulus / BigInteger(2));
     MatrixStrassen<int32_t> result([]() { return 0; }, rows, cols);
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
             const BigInteger& elem = input(i, j).at(0);
-            if (elem > negativeThreshold) {
-                result(i, j) = -1 * (modulus - elem).ConvertToInt();
-            }
-            else {
-                result(i, j) = elem.ConvertToInt();
-            }
+            result(i, j)           = ConvertCenteredToInt32(elem, modulus);
         }
     }
     return result;

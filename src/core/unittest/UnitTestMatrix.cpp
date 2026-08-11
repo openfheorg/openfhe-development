@@ -40,6 +40,7 @@
 #include "utils/utilities.h"
 
 #include <iostream>
+#include <limits>
 
 using namespace lbcrypto;
 
@@ -71,6 +72,46 @@ static std::function<Element()> fastUniformIL2nAlloc() {
 
 TEST(UTMatrix, serializer) {
     Matrix<int32_t> m([]() { return 0; }, 3, 5);
+}
+
+TEST(UTMatrix, convert_to_int32_checks_centered_range) {
+    constexpr uint64_t int32MaxValue     = static_cast<uint64_t>(std::numeric_limits<int32_t>::max());
+    constexpr uint64_t int32MinMagnitude = int32MaxValue + 1;
+    const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = BigInteger(int32MaxValue);
+    EXPECT_EQ(std::numeric_limits<int32_t>::max(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = BigInteger(int32MinMagnitude);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    input(0, 0) = modulus - BigInteger(int32MinMagnitude);
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(int32MinMagnitude + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+}
+
+TEST(UTMatrix, convert_to_int32_checks_all_matrix_overloads) {
+    constexpr uint64_t int32MinMagnitude = static_cast<uint64_t>(std::numeric_limits<int32_t>::max()) + 1;
+    const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
+    const BigInteger unrepresentable(int32MinMagnitude);
+    auto vectorAllocator = [&modulus]() {
+        return BigVector(1, modulus);
+    };
+
+    Matrix<BigVector> vectorInput(vectorAllocator, 1, 1);
+    vectorInput(0, 0).at(0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(vectorInput, modulus), OpenFHEException);
+
+    MatrixStrassen<BigInteger> strassenInput([]() { return BigInteger(0); }, 1, 1);
+    strassenInput(0, 0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(strassenInput, modulus), OpenFHEException);
+
+    MatrixStrassen<BigVector> strassenVectorInput(vectorAllocator, 1, 1);
+    strassenVectorInput(0, 0).at(0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(strassenVectorInput, modulus), OpenFHEException);
 }
 
 template <typename Element>

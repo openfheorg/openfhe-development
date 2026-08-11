@@ -782,6 +782,7 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result);
  * @param &input the input matrix
  * @param &modulus the ring modulus
  * @return the resulting matrix of int32_t
+ * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger& modulus);
 
@@ -792,6 +793,7 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger
  * @param &input the input matrix
  * @param &modulus the ring modulus
  * @return the resulting matrix of int32_t
+ * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger& modulus);
 
