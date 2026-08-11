@@ -690,10 +690,13 @@ void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
 }
 
 // used for CKKS rescaling
+// Computes round(x/q_l) as (x - [x]_{q_l}) * [q_l^{-1}]_{q_i}, where [x]_{q_l} is the
+// centered representative produced by SwitchModulus (see RS(ct) in Sec. 3.2 of
+// https://eprint.iacr.org/2018/931). The subtraction makes (x - [x]_{q_l}) exactly
+// divisible by q_l, so one scalar multiplication per tower suffices.
 template <typename VecType>
-void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInteger>& QlQlInvModqlDivqlModq,
-                                                    const std::vector<NativeInteger>& qlInvModq) {
-    auto lastPoly(m_vectors.back());
+void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) {
+    auto lastPoly(std::move(m_vectors.back()));
     lastPoly.SetFormat(Format::COEFFICIENT);
     this->DropLastElement();
     uint32_t size(m_vectors.size());
@@ -702,14 +705,14 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
     for (uint32_t i = 0; i < size; ++i) {
         auto tmp = lastPoly;
         tmp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
-        tmp *= QlQlInvModqlDivqlModq[i];
         if (m_format == Format::EVALUATION)
             tmp.SwitchFormat();
+        m_vectors[i] -= tmp;
         m_vectors[i] *= qlInvModq[i];
-        m_vectors[i] += tmp;
         if (m_format == Format::COEFFICIENT)
             m_vectors[i].SwitchFormat();
     }
+    this->OverrideFormat(Format::EVALUATION);
 }
 
 /**

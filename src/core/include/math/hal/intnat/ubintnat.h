@@ -735,8 +735,8 @@ public:
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT ModAddFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
-        auto r{m_value + b.m_value};
         auto& mv{modulus.m_value};
+        auto r{m_value + b.m_value};
         if (r >= mv)
             r -= mv;
         return {r};
@@ -909,9 +909,8 @@ public:
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT ModSubFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
-        if (m_value < b.m_value)
-            return {m_value + modulus.m_value - b.m_value};
-        return {m_value - b.m_value};
+        auto mask{static_cast<NativeInt>(0) - static_cast<NativeInt>(m_value < b.m_value)};
+        return {m_value - b.m_value + (modulus.m_value & mask)};
     }
 
     /**
@@ -922,9 +921,9 @@ public:
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT& ModSubFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
-        if (m_value < b.m_value)
-            return *this = m_value + modulus.m_value - b.m_value;
-        return *this = m_value - b.m_value;
+        auto mask{static_cast<NativeInt>(0) - static_cast<NativeInt>(m_value < b.m_value)};
+        m_value = m_value - b.m_value + (modulus.m_value & mask);
+        return *this;
     }
 
     /**
