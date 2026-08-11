@@ -519,7 +519,6 @@ double PolyImpl<VecType>::Norm() const {
 // \log q / base } \rceil }; used as a subroutine in the relinearization
 // procedure baseBits is the number of bits in the base, i.e., base = 2^baseBits
 
-// TODO: optimize this
 template <typename VecType>
 std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const {
     uint32_t nBits = m_params->GetModulus().GetLengthForBase(2);
@@ -528,23 +527,37 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(uint32_t baseBit
     if (nBits % baseBits > 0)
         nWindows++;
 
-    PolyImpl<VecType> xDigit(m_params);
-
     std::vector<PolyImpl<VecType>> result;
     result.reserve(nWindows);
 
-    PolyImpl<VecType> x(*this);
-    x.SetFormat(Format::COEFFICIENT);
+    PolyImpl<VecType> xcopy;
+    if (m_format != Format::COEFFICIENT) {
+        xcopy = *this;
+        xcopy.SetFormat(Format::COEFFICIENT);
+    }
+    const PolyImpl<VecType>& x = (m_format != Format::COEFFICIENT) ? xcopy : *this;
 
-    // TP: x is same for BACKEND 2 and 6
-    for (uint32_t i = 0; i < nWindows; ++i) {
-        xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, 1 << baseBits), x.GetFormat());
+    if constexpr (std::is_same_v<VecType, NativeVector>) {
+        for (auto&& dv : x.GetValues().BaseDecompose(baseBits)) {
+            PolyImpl<VecType> xDigit(m_params);
+            xDigit.SetValues(std::move(dv), Format::COEFFICIENT);
+            if (evalModeAnswer)
+                xDigit.SwitchFormat();
+            result.push_back(std::move(xDigit));
+        }
+    }
+    else {
+        // TP: x is same for BACKEND 2 and 6
+        for (uint32_t i = 0; i < nWindows; ++i) {
+            PolyImpl<VecType> xDigit(m_params);
+            xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, 1 << baseBits), Format::COEFFICIENT);
 
-        // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
-        // *********************************************************
-        if (evalModeAnswer)
-            xDigit.SwitchFormat();
-        result.push_back(xDigit);
+            // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
+            // *********************************************************
+            if (evalModeAnswer)
+                xDigit.SwitchFormat();
+            result.push_back(std::move(xDigit));
+        }
     }
     return result;
 }

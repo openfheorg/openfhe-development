@@ -632,6 +632,19 @@ public:
    */
     NativeVectorT GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
+    /**
+   * Decomposes every entry into all of its base-2^digitLen digits at once. Digits are
+   * balanced, i.e. in [-2^(digitLen-1), 2^(digitLen-1)) of the centered representative
+   * and returned mod q, which halves the digit bound of BV key switching; the top digit
+   * absorbs the remaining quotient so that the digits reconstruct the value exactly
+   * (mod q). Falls back to plain unsigned digit windows when the bias does not fit the
+   * native word (ceil(qBits/digitLen)*digitLen + 1 > MaxBits).
+   *
+   * @param digitLen is the bit width of one digit.
+   * @return one vector per digit position, least significant first.
+   */
+    std::vector<NativeVectorT> BaseDecompose(uint32_t digitLen) const;
+
     // STRINGS & STREAMS
 
     /**
