@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#ifdef BOOTSTRAPTIMING
+    #define PROFILE
+#endif
+
 #include "ciphertext.h"
 #include "cryptocontext.h"
 #include "key/evalkeyrelin.h"
@@ -47,6 +51,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
@@ -54,11 +59,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#ifdef BOOTSTRAPTIMING
-    #include <ostream>
-    #define PROFILE
-#endif
 
 namespace {
 // GetBigModulus() calculates the big modulus as the product of
@@ -244,12 +244,32 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
         uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
-        double qDouble  = GetBigModulus(cryptoParams);
-        double factor   = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
-        double pre      = (compositeDegree > 1) ? 1.0 : qDouble / factor;
-        double scaleEnc = pre / k;
-        // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-        double scaleDec = (compositeDegree > 1) ? qDouble / cryptoParams->GetScalingFactorReal(0) : 1.0 / pre;
+        double qDouble = GetBigModulus(cryptoParams);
+        double factor  = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
+        // For composite scaling, capture the (inexact) overflow normalization SF0/qDouble as a coefficient
+        // close to 1, SF0*post/qDouble, which the CoeffsToSlots/SlotsToCoeffs matrices encode at full
+        // precision and telescope away (scaleDec = 1/scaleEnc*1/k cancels it). The exact power-of-two part
+        // 1/post is applied as the shrink and restored by the integer "scalar" in EvalBootstrap. This
+        // mirrors the FLEXIBLEAUTO scaling structure and avoids the precision loss of folding a tiny
+        // non-power-of-two constant into a single plaintext multiply.
+        double pre;
+        double post = 1.0;
+        if (compositeDegree > 1) {
+            double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
+            post        = std::pow(2, std::round(std::log2(qDouble / powP)));
+            pre         = cryptoParams->GetScalingFactorReal(0) * post / qDouble;
+        }
+        else {
+            pre = qDouble / factor;
+        }
+        // For composite scaling, fold the exact power-of-two 2^-deg = 1/post shrink into the
+        // CoeffsToSlots matrix (scaleEnc) instead of applying it as a scalar before CoeffsToSlots (see
+        // EvalBootstrap). This keeps the CtS rotations operating on the full-magnitude message, so the
+        // key-switch noise they add scales down together with the signal (2^deg is restored by the
+        // integer "scalar" after the sine) rather than being amplified by 2^deg. scaleDec inverts the
+        // residual c1 only; the exact 2^deg telescopes against the integer restore.
+        double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
+        double scaleDec = 1.0 / pre;
 
         // compute # of levels to remain when encoding the coefficients
         // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
@@ -434,12 +454,27 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
 
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
-    double qDouble  = GetBigModulus(cryptoParams);
-    double factor   = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
-    double pre      = (compositeDegree > 1) ? 1.0 : qDouble / factor;
-    double scaleEnc = pre / k;
-    // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-    double scaleDec = (compositeDegree > 1) ? qDouble / cryptoParams->GetScalingFactorReal(0) : 1.0 / pre;
+    double qDouble = GetBigModulus(cryptoParams);
+    double factor  = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
+    // For composite scaling, capture the (inexact) overflow normalization SF0/qDouble as a coefficient
+    // close to 1, SF0*post/qDouble, encoded at full precision in the CoeffsToSlots/SlotsToCoeffs matrices
+    // and telescoped away; the exact power-of-two 1/post is applied as the shrink/scalar (see EvalBootstrap).
+    double pre;
+    double post = 1.0;
+    if (compositeDegree > 1) {
+        double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
+        post        = std::pow(2, std::round(std::log2(qDouble / powP)));
+        pre         = cryptoParams->GetScalingFactorReal(0) * post / qDouble;
+    }
+    else {
+        pre = qDouble / factor;
+    }
+    // For composite scaling, fold the exact power-of-two 2^-deg = 1/post shrink into the CoeffsToSlots
+    // matrix (scaleEnc) instead of applying it as a scalar before CoeffsToSlots (see EvalBootstrap), so
+    // the CtS rotations act on the full-magnitude message and their key-switch noise scales down with
+    // the signal rather than being amplified by 2^deg. scaleDec inverts the residual c1 only.
+    double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
+    double scaleDec = 1.0 / pre;
 
     // compute # of levels to remain when encoding the coefficients
     // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
@@ -795,7 +830,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     double post         = std::pow(2, static_cast<double>(deg));
 
     // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-    double pre      = (compositeDegree > 1) ? cryptoParams->GetScalingFactorReal(0) / qDouble : 1. / post;
+    // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
+    // restored by the integer "scalar" after the sine. For composite scaling the entire overflow
+    // normalization (the exact 2^-deg = 1/post AND the residual c1) is carried by the CoeffsToSlots/
+    // SlotsToCoeffs matrix coefficients (see EvalBootstrapSetup), so no shrink is applied here; this
+    // keeps the CtS rotations on the full-magnitude message and avoids amplifying their noise by 2^deg.
+    double pre      = (compositeDegree > 1) ? 1.0 : 1. / post;
     uint64_t scalar = std::llround(post);
 
     //------------------------------------------------------------------------------
@@ -960,10 +1000,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         algo->MultByMonomialInPlace(ctxtEncI, slots);
         cc->EvalAddInPlaceNoCheck(ctxtEnc, ctxtEncI);
 
-        if (st != COMPOSITESCALINGAUTO && st != COMPOSITESCALINGMANUAL) {
-            // scale the message back up after Chebyshev interpolation
-            algo->MultByIntegerInPlace(ctxtEnc, scalar);
-        }
+        // scale the message back up after Chebyshev interpolation; for composite scaling this restores
+        // the exact power-of-two 2^deg via an integer multiply (the residual ~1 coefficient lives in the
+        // StC matrix, see EvalBootstrapSetup)
+        algo->MultByIntegerInPlace(ctxtEnc, scalar);
 
 #ifdef BOOTSTRAPTIMING
         timeModReduce = TOC(t);
@@ -1043,10 +1083,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         ApplyDoubleAngleIterations(ctxtEnc, numIter);
 
         // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-        if (st != COMPOSITESCALINGAUTO && st != COMPOSITESCALINGMANUAL) {
-            // scale the message back up after Chebyshev interpolation
-            algo->MultByIntegerInPlace(ctxtEnc, scalar);
-        }
+        // scale the message back up after Chebyshev interpolation; for composite scaling this restores
+        // the exact power-of-two 2^deg via an integer multiply (the residual ~1 coefficient lives in the
+        // StC matrix, see EvalBootstrapSetup)
+        algo->MultByIntegerInPlace(ctxtEnc, scalar);
 
 #ifdef BOOTSTRAPTIMING
         timeModReduce = TOC(t);
@@ -1199,7 +1239,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     double post         = std::pow(2, static_cast<double>(deg));
 
     // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-    double pre      = (compositeDegree > 1) ? cryptoParams->GetScalingFactorReal(0) / qDouble : 1. / post;
+    // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
+    // restored by the integer "scalar" after the sine. For composite scaling the entire overflow
+    // normalization (the exact 2^-deg = 1/post AND the residual c1) is carried by the CoeffsToSlots/
+    // SlotsToCoeffs matrix coefficients (see EvalBootstrapSetup), so no shrink is applied here; this
+    // keeps the CtS rotations on the full-magnitude message and avoids amplifying their noise by 2^deg.
+    double pre      = (compositeDegree > 1) ? 1.0 : 1. / post;
     uint64_t scalar = std::llround(post);
 
     //------------------------------------------------------------------------------
@@ -1447,11 +1492,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         cc->EvalAddInPlaceNoCheck(ctxtEnc, ctxtEncI);
     }
 
-    // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
-    if (st != COMPOSITESCALINGAUTO && st != COMPOSITESCALINGMANUAL) {
-        // scale the message back up after Chebyshev interpolation
-        algo->MultByIntegerInPlace(ctxtEnc, scalar);
-    }
+    // scale the message back up after Chebyshev interpolation; for composite scaling this restores
+    // the exact power-of-two 2^deg via an integer multiply (the residual ~1 coefficient lives in the
+    // StC matrix, see EvalBootstrapSetup)
+    algo->MultByIntegerInPlace(ctxtEnc, scalar);
 
 #ifdef BOOTSTRAPTIMING
     timeModReduce = TOC(t);
@@ -2486,82 +2530,33 @@ void FHECKKSRNS::AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double co
 
 void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const CryptoContextImpl<DCRTPoly>& cc,
                                   const std::shared_ptr<DCRTPoly::Params> elementParamsRaisedPtr) const {
-    // TODO: YSP We should be able to use one of the DCRTPoly methods for this; If not, we can define a new method there and use it here
+    // Raise each ciphertext polynomial from the small bottom RNS basis Ql = {q_0, ..., q_{compositeDegree-1}}
+    // (the moduli remaining in the depleted ciphertext) to the full raised basis Q. We use the exact
+    // DCRTPoly::ExpandCRTBasis (CRT reconstruction with the integer-overflow / "alpha" correction), which
+    // produces the balanced representative of [c]_Ql in (-Ql/2, Ql/2].
+    // All CRT tables are precomputed in CryptoParametersCKKSRNS::PrecomputeCRTTables (at cryptocontext
+    // instantiation), so this function stays in full RNS.
 
-    // CompositeDegree = 2: [a]_q0q1     =     [a*q1^-1]_q0 *     q1 + [a*q0^-1]_q1 *q0
-    // CompositeDegree = 3: [a]_q0q1q2   =   [a*q1q2^-1]_q0 *   q1q2 + [a*q0q2^-1]_q1 *q0q2 + [a*q0q1^-1]_q2 *q0q1
-    // CompositeDegree = 4: [a]_q0q1q2q3 = [a*q1q2q3^-1]_q0 * q1q2q3 + [a*q0q2q3^-1]_q1 * q0q2q3 + [a*q0q1q3^-1]_q2 * q0q1q3 + [a*q0q1q2^-1]_q3 * q0q1q2
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    const uint32_t sizeQl   = cryptoParams->GetCompositeDegree();  // bottom moduli: source basis Ql
 
-    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
-    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-
-    const auto& raisedParams       = elementParamsRaisedPtr->GetParams();
-    const uint32_t numRaisedTowers = raisedParams.size();
-
-    std::vector<NativeInteger> qj(compositeDegree);
-    for (uint32_t j = 0; j < compositeDegree; ++j) {
-        qj[j] = raisedParams[j]->GetModulus().ConvertToInt();
-    }
-
-    std::vector<NativeInteger> qhat_modqj(compositeDegree);
-    qhat_modqj[0] = qj[1].Mod(qj[0]);
-    qhat_modqj[1] = qj[0].Mod(qj[1]);
-    for (uint32_t d = 2; d < compositeDegree; d++) {
-        for (uint32_t j = 0; j < d; ++j)
-            qhat_modqj[j] = qj[d].ModMul(qhat_modqj[j], qj[j]);
-        qhat_modqj[d] = qj[1].ModMul(qj[0], qj[d]);
-        for (uint32_t j = 2; j < d; ++j)
-            qhat_modqj[d] = qj[j].ModMul(qhat_modqj[d], qj[d]);
-    }
-
-    std::vector<NativeInteger> qhat_inv_modqj(compositeDegree);
-    for (uint32_t j = 0; j < compositeDegree; ++j)
-        qhat_inv_modqj[j] = qhat_modqj[j].ModInverse(qj[j]);
-
-    NativeInteger qjProduct =
-        std::accumulate(qj.begin() + 1, qj.end(), NativeInteger{1}, std::multiplies<NativeInteger>());
-    uint32_t init_element_index = compositeDegree;
+    const auto& paramsComplQl = cryptoParams->GetParamsModRaiseComplQl();
+    if (nullptr == paramsComplQl)
+        OPENFHE_THROW("The modulus-raise tables are not available (they are precomputed for compositeDegree > 1).");
+    if (elementParamsRaisedPtr->GetParams().size() != sizeQl + paramsComplQl->GetParams().size())
+        OPENFHE_THROW("The raised element parameters do not match the precomputed modulus-raise tables.");
 
     for (auto& dcrt : ctxtDCRTs) {
-        dcrt.SetFormat(COEFFICIENT);
-
-        std::vector<DCRTPoly> tmp(compositeDegree + 1, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-        std::vector<DCRTPoly> ctxtDCRTs_modq(compositeDegree, DCRTPoly(elementParamsRaisedPtr, COEFFICIENT));
-
-        const size_t numEl = dcrt.GetNumOfElements();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numEl))
-        for (size_t j = 0; j < numEl; ++j) {
-            const auto& ej = dcrt.GetElementAtIndex(j);
-            for (uint32_t k = 0; k < compositeDegree; ++k)
-                ctxtDCRTs_modq[k].SetElementAtIndex(j, ej * qhat_inv_modqj[k]);
-        }
-
-        tmp[0] = ctxtDCRTs_modq[0].GetElementAtIndex(0);
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(tmp[0].GetAllElements().size()))
-        for (auto& el : tmp[0].GetAllElements())
-            el *= qjProduct;
-
-        for (uint32_t d = 1; d < compositeDegree; ++d) {
-            tmp[init_element_index] = ctxtDCRTs_modq[d].GetElementAtIndex(d);
-
-            NativeInteger qjProductD{1};
-            for (uint32_t k = 0; k < compositeDegree; ++k) {
-                if (k != d) {
-                    qjProductD *= qj[k];
-                    tmp[d].SetElementAtIndex(k, tmp[0].GetElementAtIndex(k) * qj[k]);
-                }
-            }
-
-            for (uint32_t j = compositeDegree; j < numRaisedTowers; ++j)
-                tmp[d].SetElementAtIndex(j, tmp[init_element_index].GetElementAtIndex(j) * qjProductD);
-
-            tmp[d].SetElementAtIndex(d, tmp[init_element_index].GetElementAtIndex(d) * qjProductD);
-            tmp[0] += tmp[d];
-        }
-
-        tmp[0].SetFormat(EVALUATION);
-        dcrt = std::move(tmp[0]);
+        // CKKS modulus raise only uses the bottom (level-0) modulus q0 = product of the first compositeDegree
+        // primes (analogous to the single-prime path, which keeps only index 0). If the input ciphertext still
+        // carries more towers, keep just the bottom sizeQl before extending, so the source basis matches the
+        // precomputed tables (otherwise ExpandCRTBasis would index the tables out of bounds, corrupting memory).
+        if (dcrt.GetNumOfElements() > sizeQl)
+            dcrt.DropLastElements(dcrt.GetNumOfElements() - sizeQl);
+        dcrt.ExpandCRTBasis(elementParamsRaisedPtr, paramsComplQl, cryptoParams->GetModRaiseQlHatInvModq(),
+                            cryptoParams->GetModRaiseQlHatInvModqPrecon(), cryptoParams->GetModRaiseQlHatModComplq(),
+                            cryptoParams->GetModRaiseAlphaQlModComplq(), cryptoParams->GetModRaiseModComplqBarrettMu(),
+                            cryptoParams->GetModRaiseqInv(), Format::EVALUATION);
     }
 }
 

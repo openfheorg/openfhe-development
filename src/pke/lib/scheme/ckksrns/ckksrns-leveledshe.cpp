@@ -157,8 +157,20 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::c
 void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     LeveledSHERNS::EvalMultInPlace(ciphertext, plaintext);
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() != NORESCALE)
+    auto scalTech           = cryptoParams->GetScalingTechnique();
+    if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
+        scalTech == COMPOSITESCALINGMANUAL) {
+        // For FLEXIBLE*/COMPOSITESCALING*, set the post-multiply scaling factor from the precomputed table
+        // (the canonical "big" scaling factor for this level) rather than squaring the ciphertext's tracked
+        // scaling factor on the fly. The plaintext was encoded at the canonical GetScalingFactorReal(level),
+        // so the product's scale is that canonical value squared; squaring the *tracked* SF instead compounds
+        // any accumulated drift (composite scaling) into a multiplicative value error that grows with depth.
+        ciphertext->SetScalingFactor(cryptoParams->GetScalingFactorRealBig(ciphertext->GetLevel()));
+    }
+    else if (scalTech != NORESCALE) {
+        // FIXEDMANUAL / FIXEDAUTO use a fixed scaling factor; keep the original on-the-fly behavior.
         ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ciphertext->GetScalingFactor());
+    }
 }
 
 /////////////////////////////////////////

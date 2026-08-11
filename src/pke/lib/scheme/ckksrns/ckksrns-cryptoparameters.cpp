@@ -37,12 +37,13 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
+#include <memory>
+#include <string>
 #include <vector>
 
 namespace lbcrypto {
 
-// Precomputation of CRT tables encryption, decryption, and  homomorphic
-// multiplication
+// Precomputation of CRT tables encryption, decryption, and  homomorphic multiplication
 void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                                   EncryptionTechnique encTech, MultiplicationTechnique multTech,
                                                   uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
@@ -168,6 +169,72 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         for (uint32_t i = 0; i < sizeQ; i++) {
             m_modqBarrettMu[i] = (BarrettBase128Bit / BigInteger(moduliQ[i])).ConvertToInt<DoubleNativeInt>();
         }
+    }
+
+    /////////////////////////////////////
+    // Composite scaling : bootstrapping modulus raise (ExtendCiphertext)
+    // Tables for the exact CRT basis extension (DCRTPoly::ExpandCRTBasis) from the small
+    // bottom basis Ql = {q_0, ..., q_{d-1}}, d = compositeDegree (the towers remaining in
+    // the depleted ciphertext), to the full basis Q. ComplQl = {q_d, ..., q_{L-1}} is the
+    // complement of Ql in Q. Precomputing these here keeps ExtendCiphertext in full RNS
+    // (no multiprecision arithmetic at runtime).
+    /////////////////////////////////////
+    if (compositeDegree > 1 && sizeQ > compositeDegree) {
+        uint32_t sizeQl      = compositeDegree;
+        uint32_t sizeComplQl = sizeQ - sizeQl;
+
+        std::vector<NativeInteger> moduliComplQl(moduliQ.begin() + sizeQl, moduliQ.end());
+        std::vector<NativeInteger> rootsComplQl(rootsQ.begin() + sizeQl, rootsQ.end());
+        m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(GetElementParams()->GetCyclotomicOrder(),
+                                                                             moduliComplQl, rootsComplQl);
+
+        BigInteger modulusQl(1);
+        for (uint32_t i = 0; i < sizeQl; ++i)
+            modulusQl *= BigInteger(moduliQ[i]);
+
+        // Ql/q_i, shared by the QlHatInvModq and QlHatModComplq tables below
+        std::vector<BigInteger> QlHat(sizeQl);
+        for (uint32_t i = 0; i < sizeQl; ++i)
+            QlHat[i] = modulusQl / BigInteger(moduliQ[i]);
+
+        // [(Ql/q_i)^{-1}]_{q_i}
+        m_modRaiseQlHatInvModq.resize(sizeQl);
+        m_modRaiseQlHatInvModqPrecon.resize(sizeQl);
+        for (uint32_t i = 0; i < sizeQl; ++i) {
+            m_modRaiseQlHatInvModq[i]       = QlHat[i].ModInverse(BigInteger(moduliQ[i])).ConvertToInt();
+            m_modRaiseQlHatInvModqPrecon[i] = m_modRaiseQlHatInvModq[i].PrepModMulConst(moduliQ[i]);
+        }
+
+        // [Ql/q_i]_{q_j} and the overflow correction [a*Ql]_{q_j}, 0 <= a <= sizeQl, q_j in ComplQl;
+        // the alpha table is a running sum whose a = 0 row keeps the zero value assign() gives it
+        m_modRaiseQlHatModComplq.assign(sizeComplQl, std::vector<NativeInteger>(sizeQl));
+        m_modRaiseAlphaQlModComplq.assign(sizeQl + 1, std::vector<NativeInteger>(sizeComplQl));
+        for (uint32_t j = 0; j < sizeComplQl; ++j) {
+            BigInteger qj(moduliComplQl[j]);
+            for (uint32_t i = 0; i < sizeQl; ++i)
+                m_modRaiseQlHatModComplq[j][i] = QlHat[i].Mod(qj).ConvertToInt();
+            NativeInteger QlModqj = modulusQl.Mod(qj).ConvertToInt();
+            for (uint32_t a = 1; a <= sizeQl; ++a)
+                m_modRaiseAlphaQlModComplq[a][j] =
+                    m_modRaiseAlphaQlModComplq[a - 1][j].ModAddFast(QlModqj, moduliComplQl[j]);
+        }
+
+        if (m_modqBarrettMu.size() == sizeQ) {
+            // reuse the Barrett constants computed for HYBRID above
+            m_modRaiseModComplqBarrettMu.assign(m_modqBarrettMu.begin() + sizeQl, m_modqBarrettMu.end());
+        }
+        else {
+            m_modRaiseModComplqBarrettMu.resize(sizeComplQl);
+            const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+            for (uint32_t j = 0; j < sizeComplQl; ++j)
+                m_modRaiseModComplqBarrettMu[j] =
+                    (BarrettBase128Bit / BigInteger(moduliComplQl[j])).ConvertToInt<DoubleNativeInt>();
+        }
+
+        // 1./q_i for q_i in Ql (used for the fractional part of the overflow correction)
+        m_modRaiseqInv.resize(sizeQl);
+        for (uint32_t i = 0; i < sizeQl; ++i)
+            m_modRaiseqInv[i] = 1.0 / moduliQ[i].ConvertToDouble();
     }
 }
 

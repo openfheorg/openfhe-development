@@ -137,6 +137,18 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
         // Select number of primes in auxiliary CRT basis
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+
+        // We want to make sure that P exceeds the maximum digit in Q by a safe margin.
+        // The safe margin is chosen to make hybrid key switching error closer to the modulus switching error.
+        // The margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
+        // in Section B.2.3 of https://eprint.iacr.org/2021/204 for more details.
+        // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
+        // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
+        uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                              6 + GetMSB64(m_compositeDegree - 1) :
+                              4;
+        if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
+            ++sizeP;
         // validate the estimated sizeP value
         if (sizeP_estimate_global > 0) {
             if (sizeP_estimate_global != sizeP) {
@@ -419,7 +431,8 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
                                                               double dcrtBits, double extraModulusSize,
                                                               uint32_t numPrimes, uint32_t auxBits,
                                                               ScalingTechnique scalTech, bool addOne,
-                                                              bool isNoiseFloodingMultiparty) {
+                                                              bool isNoiseFloodingMultiparty,
+                                                              uint32_t compositeDegree) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -470,7 +483,20 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
         maxBits++;
 
     // Select number of primes in auxiliary CRT basis
-    uint32_t sizeP        = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+    uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+
+    // We want to make sure that P exceeds the maximum digit in Q by a safe margin.
+    // The safe margin is chosen to make hybrid key switching error closer to the modulus switching error.
+    // The margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
+    // in Section B.2.3 of https://eprint.iacr.org/2021/204 for more details.
+    // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
+    // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
+    uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                          6 + GetMSB64(compositeDegree - 1) :
+                          4;
+    if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
+        ++sizeP;
+
     sizeP_estimate_global = sizeP;
 
     return std::make_pair(sizeP * auxBits, sizeP);

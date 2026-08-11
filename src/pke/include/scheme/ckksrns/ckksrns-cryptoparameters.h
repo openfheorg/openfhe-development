@@ -37,6 +37,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -114,6 +115,79 @@ public:
     }
 
     /////////////////////////////////////
+    // Composite scaling : bootstrapping modulus raise (ExtendCiphertext)
+    // Tables for the exact CRT basis extension (DCRTPoly::ExpandCRTBasis) from the small
+    // bottom basis Ql = {q_0, ..., q_{d-1}}, d = compositeDegree (the towers remaining in
+    // the depleted ciphertext), to the full basis Q. ComplQl = {q_d, ..., q_{L-1}} denotes
+    // the complement of Ql in Q (the extension moduli).
+    // Only populated when compositeDegree > 1; see PrecomputeCRTTables.
+    /////////////////////////////////////
+
+    /**
+   * Gets the element parameters of the extension basis ComplQl = {q_d, ..., q_{L-1}}
+   *
+   * @return the precomputed parameters
+   */
+    const std::shared_ptr<ParmType>& GetParamsModRaiseComplQl() const {
+        return m_paramsModRaiseComplQl;
+    }
+
+    /**
+   * Gets the precomputed table of [(Ql/q_i)^{-1}]_{q_i}, q_i in Ql
+   *
+   * @return the precomputed table
+   */
+    const std::vector<NativeInteger>& GetModRaiseQlHatInvModq() const {
+        return m_modRaiseQlHatInvModq;
+    }
+
+    /**
+   * Gets the modular multiplication precomputations for [(Ql/q_i)^{-1}]_{q_i}, q_i in Ql
+   *
+   * @return the precomputed table
+   */
+    const std::vector<NativeInteger>& GetModRaiseQlHatInvModqPrecon() const {
+        return m_modRaiseQlHatInvModqPrecon;
+    }
+
+    /**
+   * Gets the precomputed table of [Ql/q_i]_{q_j}, q_i in Ql, q_j in ComplQl
+   *
+   * @return the precomputed table
+   */
+    const std::vector<std::vector<NativeInteger>>& GetModRaiseQlHatModComplq() const {
+        return m_modRaiseQlHatModComplq;
+    }
+
+    /**
+   * Gets the precomputed table of [a*Ql]_{q_j}, 0 <= a <= d, q_j in ComplQl (the overflow
+   * correction used in the exact CRT reconstruction)
+   *
+   * @return the precomputed table
+   */
+    const std::vector<std::vector<NativeInteger>>& GetModRaiseAlphaQlModComplq() const {
+        return m_modRaiseAlphaQlModComplq;
+    }
+
+    /**
+   * Gets the Barrett modulo reduction precomputations for q_j in ComplQl
+   *
+   * @return the precomputed table
+   */
+    const std::vector<DoubleNativeInt>& GetModRaiseModComplqBarrettMu() const {
+        return m_modRaiseModComplqBarrettMu;
+    }
+
+    /**
+   * Gets the precomputed table of 1./q_i for q_i in Ql
+   *
+   * @return the precomputed table
+   */
+    const std::vector<double>& GetModRaiseqInv() const {
+        return m_modRaiseqInv;
+    }
+
+    /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////
 
@@ -144,6 +218,22 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
+
+private:
+    // Params for the extension basis ComplQl
+    std::shared_ptr<ParmType> m_paramsModRaiseComplQl;
+    // [(Ql/q_i)^{-1}]_{q_i}, q_i in Ql
+    std::vector<NativeInteger> m_modRaiseQlHatInvModq;
+    // modular multiplication precomputations for [(Ql/q_i)^{-1}]_{q_i}
+    std::vector<NativeInteger> m_modRaiseQlHatInvModqPrecon;
+    // [Ql/q_i]_{q_j}, q_i in Ql, q_j in ComplQl
+    std::vector<std::vector<NativeInteger>> m_modRaiseQlHatModComplq;
+    // [a*Ql]_{q_j}, 0 <= a <= d, q_j in ComplQl
+    std::vector<std::vector<NativeInteger>> m_modRaiseAlphaQlModComplq;
+    // Barrett modulo reduction precomputations for q_j in ComplQl
+    std::vector<DoubleNativeInt> m_modRaiseModComplqBarrettMu;
+    // 1./q_i for q_i in Ql
+    std::vector<double> m_modRaiseqInv;
 };
 
 }  // namespace lbcrypto
