@@ -214,10 +214,9 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         }
 
         for (uint32_t j = sizeQ; j < sizeQP; j++) {
-            NativeInteger pj    = paramsQP->GetParams()[j]->GetModulus();
-            NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
-            auto sNew0          = s.GetElementAtIndex(0);
-            sNew0.SwitchModulus(pj, rooti, 0, 0);
+            const auto& pj = paramsQP->GetParams()[j];
+            NativePoly sNew0(pj, Format::COEFFICIENT);
+            sNew0.SetValues(NativeVector(s.GetElementAtIndex(0).GetValues(), pj->GetModulus()), Format::COEFFICIENT);
             sExt.SetElementAtIndex(j, std::move(sNew0));
         }
         sExt.SetFormat(Format::EVALUATION);
@@ -300,9 +299,9 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     }
 
     const auto paramsQ = dcrtpoly.GetParams();
-    uint32_t sizeQP       = paramsQP->GetParams().size();
-    uint32_t sizeQ        = paramsQ->GetParams().size();
-    uint32_t sizeP        = sizeQP - sizeQ;
+    uint32_t sizeQP    = paramsQP->GetParams().size();
+    uint32_t sizeQ     = paramsQ->GetParams().size();
+    uint32_t sizeP     = sizeQP - sizeQ;
 
     // Loads all moduli and roots of unity
     std::vector<NativeInteger> moduliQ(sizeQ);

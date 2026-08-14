@@ -118,11 +118,9 @@ bool PackedEncoding::Encode() {
 
             // Sets the values for all other RNS limbs
             for (size_t j = 1; j < nativeParams.size(); j++) {
-                NativePoly tempPoly(firstElement);
-
-                tempPoly.SwitchModulus(nativeParams[j]->GetModulus(), nativeParams[j]->GetRootOfUnity(),
-                                       nativeParams[j]->GetBigModulus(), nativeParams[j]->GetBigRootOfUnity());
-
+                NativePoly tempPoly(nativeParams[j], Format::COEFFICIENT);
+                tempPoly.SetValues(NativeVector(firstElement.GetValues(), nativeParams[j]->GetModulus()),
+                                   Format::COEFFICIENT);
                 this->encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
             }
             // Setting the first limb at the end make sure firstElement is available during the main loop

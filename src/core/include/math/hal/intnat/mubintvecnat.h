@@ -181,6 +181,16 @@ public:
     constexpr NativeVectorT(const NativeVectorT& v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}
 
     /**
+   * Constructor from a vector under a different modulus: the values of v switched to the
+   * new modulus, equivalent to a copy followed by SwitchModulus(modulus) but fused into
+   * one pass over the data.
+   *
+   * @param v is the source vector.
+   * @param modulus is the modulus to switch the copied values to.
+   */
+    NativeVectorT(const NativeVectorT& v, const IntegerType& modulus);
+
+    /**
    * Basic move constructor for moving a vector
    *
    * @param &&bigVector is the native vector to be moved.

@@ -146,6 +146,42 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
  *    i > om/2 i' = i-delta
  */
 template <class IntegerType>
+NativeVectorT<IntegerType>::NativeVectorT(const NativeVectorT& v, const IntegerType& modulus)
+    : m_data(v.m_data.size()) {
+    // same three branches as SwitchModulus below, reading from v instead of in place
+    this->SetModulus(modulus);
+    const auto ov{v.m_modulus.m_value};
+    const auto nv{modulus.m_value};
+    const auto halfQ{ov >> 1};
+    const size_t size{m_data.size()};
+    if (nv > ov) {
+        const auto diff{nv - ov};
+        for (size_t i = 0; i < size; ++i) {
+            const auto x{v.m_data[i].m_value};
+            m_data[i].m_value = x + centeredCorrectionLane(x, halfQ, diff);
+        }
+    }
+    else if (nv > halfQ) {
+        const auto diff{ov - nv};
+        for (size_t i = 0; i < size; ++i) {
+            const auto x{v.m_data[i].m_value};
+            m_data[i].m_value = x - centeredCorrectionLane(x, halfQ, diff);
+        }
+    }
+    else {
+        const auto diffR{(ov - nv) % nv};
+        for (size_t i = 0; i < size; ++i) {
+            const auto x{v.m_data[i].m_value};
+            auto av{x};
+            if (av >= nv)
+                av %= nv;
+            const auto bv{(x > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
+            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
+        }
+    }
+}
+
+template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
     // TODO: consider Barrett reduction for the general shrink path
     const auto ov{m_modulus.m_value};

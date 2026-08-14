@@ -100,8 +100,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     if (q % p != 0 && q.ConvertToInt() & (1 == 0))
         OPENFHE_THROW("plaintext modulus p must divide ciphertext modulus q");
 
-    NativeVector s = sk->GetElement();
-    s.SwitchModulus(q);
+    NativeVector s(sk->GetElement(), q);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     const uint32_t n = s.GetLength();
@@ -122,7 +121,7 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
     if (q % p != 0 && q.ConvertToInt() & (1 == 0))
         OPENFHE_THROW("plaintext modulus p must divide ciphertext modulus q");
 
-    auto bp    = pk->Getv();
+    auto bp = pk->Getv();
     bp.SwitchModulus(q);  // todo : this is probably not required
     uint32_t N = bp.GetLength();
 

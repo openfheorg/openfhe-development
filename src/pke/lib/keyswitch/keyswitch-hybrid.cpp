@@ -75,8 +75,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
             sNewExt.SetElementAtIndex(i, std::move(tmp));
         }
         else {
-            auto tmp = sNew0;
-            tmp.SwitchModulus(pparamsQP[i]->GetModulus(), pparamsQP[i]->GetRootOfUnity(), 0, 0);
+            NativePoly tmp(pparamsQP[i], Format::COEFFICIENT);
+            tmp.SetValues(NativeVector(sNew0.GetValues(), pparamsQP[i]->GetModulus()), Format::COEFFICIENT);
             tmp.SetFormat(Format::EVALUATION);
             sNewExt.SetElementAtIndex(i, std::move(tmp));
         }

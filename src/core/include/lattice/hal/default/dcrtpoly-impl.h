@@ -85,23 +85,37 @@ DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyLargeType& rhs
 
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(const PolyType& rhs, const std::shared_ptr<DCRTPolyImpl::Params>& params) noexcept
-    : m_params{params}, m_format{rhs.GetFormat()}, m_vectors(params->GetParams().size(), rhs) {
-    const uint32_t size = m_vectors.size();
+    : m_params{params}, m_format{rhs.GetFormat()} {
     const auto& p       = params->GetParams();
-    for (uint32_t i = 1; i < size; ++i)
-        m_vectors[i].SwitchModulus(p[i]->GetModulus(), p[i]->GetRootOfUnity(), 0, 0);
+    const uint32_t size = p.size();
+    if (rhs.IsEmpty()) {
+        m_vectors.resize(size, rhs);
+        return;
+    }
+    m_vectors.reserve(size);
+    m_vectors.push_back(rhs);
+    for (uint32_t i = 1; i < size; ++i) {
+        PolyType tmp(p[i], m_format);
+        tmp.SetValues(NativeVector(rhs.GetValues(), p[i]->GetModulus()), m_format);
+        m_vectors.push_back(std::move(tmp));
+    }
 }
 
 template <typename VecType>
 DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyType& rhs) noexcept {
     m_vectors.clear();
-    m_vectors.reserve(m_params->GetParams().size());
-    bool first{true};
-    for (const auto& p : m_params->GetParams()) {
-        m_vectors.emplace_back(rhs);
-        if (!first)
-            m_vectors.back().SwitchModulus(p->GetModulus(), p->GetRootOfUnity(), 0, 0);
-        first = false;
+    const auto& p       = m_params->GetParams();
+    const uint32_t size = p.size();
+    if (rhs.IsEmpty()) {
+        m_vectors.resize(size, rhs);
+        return *this;
+    }
+    m_vectors.reserve(size);
+    m_vectors.push_back(rhs);
+    for (uint32_t i = 1; i < size; ++i) {
+        PolyType tmp(p[i], rhs.GetFormat());
+        tmp.SetValues(NativeVector(rhs.GetValues(), p[i]->GetModulus()), rhs.GetFormat());
+        m_vectors.push_back(std::move(tmp));
     }
     return *this;
 }
@@ -241,8 +255,9 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
             result[i] = DCRTPolyType((*eval).m_params, Format::EVALUATION, false);
             for (uint32_t k = 0; k < size; ++k) {
                 if (i != k) {
-                    DCRTPolyImpl::PolyType tmp((*coef).m_vectors[i]);
-                    tmp.SwitchModulus((*coef).m_vectors[k].GetModulus(), (*coef).m_vectors[k].GetRootOfUnity(), 0, 0);
+                    DCRTPolyImpl::PolyType tmp((*coef).m_vectors[k].GetParams(), Format::COEFFICIENT);
+                    tmp.SetValues(NativeVector((*coef).m_vectors[i].GetValues(), (*coef).m_vectors[k].GetModulus()),
+                                  Format::COEFFICIENT);
                     tmp.SetFormat(Format::EVALUATION);
                     result[i].m_vectors[k] = std::move(tmp);
                 }
@@ -274,8 +289,9 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
             DCRTPolyImpl<VecType> currentDCRTPoly((*coef).m_params, Format::COEFFICIENT, false);
             for (uint32_t k = 0; k < size; ++k) {
                 if (i != k) {
-                    DCRTPolyImpl::PolyType tmp(decomposed[j]);
-                    tmp.SwitchModulus((*coef).m_vectors[k].GetModulus(), (*coef).m_vectors[k].GetRootOfUnity(), 0, 0);
+                    DCRTPolyImpl::PolyType tmp((*coef).m_vectors[k].GetParams(), Format::COEFFICIENT);
+                    tmp.SetValues(NativeVector(decomposed[j].GetValues(), (*coef).m_vectors[k].GetModulus()),
+                                  Format::COEFFICIENT);
                     currentDCRTPoly.m_vectors[k] = std::move(tmp);
                 }
             }
@@ -705,8 +721,8 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
     for (uint32_t i = 0; i < size; ++i) {
-        auto tmp = lastPoly;
-        tmp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
+        PolyType tmp(m_vectors[i].GetParams(), Format::COEFFICIENT);
+        tmp.SetValues(NativeVector(lastPoly.GetValues(), m_vectors[i].GetModulus()), Format::COEFFICIENT);
         if (m_format == Format::EVALUATION)
             tmp.SwitchFormat();
         m_vectors[i] -= tmp;
@@ -751,8 +767,8 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
     for (uint32_t i = 0; i < size; ++i) {
-        auto tmp{delta};
-        tmp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
+        PolyType tmp(m_vectors[i].GetParams(), Format::COEFFICIENT);
+        tmp.SetValues(NativeVector(delta.GetValues(), m_vectors[i].GetModulus()), Format::COEFFICIENT);
         if (m_format == Format::EVALUATION)
             tmp.SwitchFormat();
         m_vectors[i] += (tmp *= t);
