@@ -282,8 +282,8 @@ DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler**
     for (int i = 1; i < MAX_LEVELS; ++i) {
         x1               = static_cast<int>(std::floor(std::sqrt(wide_variance / (2 * N * N))));
         x2               = std::max(x1 - 1, 1);
-        wide_sampler     = new SamplerCombiner(wide_sampler, wide_sampler, x1, x2);
-        combiners[i - 1] = wide_sampler;
+        combiners[i - 1] = std::make_unique<SamplerCombiner>(wide_sampler, wide_sampler, x1, x2);
+        wide_sampler     = combiners[i - 1].get();
         wide_variance    = (x1 * x1 + x2 * x2) * wide_variance;
     }
 
@@ -301,11 +301,7 @@ DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler**
     sampler_variance *= base_variance;
 }
 
-DiscreteGaussianGeneratorGeneric::~DiscreteGaussianGeneratorGeneric() {
-    for (int i = 1; i < MAX_LEVELS; ++i) {
-        delete combiners[i - 1];
-    }
-}
+DiscreteGaussianGeneratorGeneric::~DiscreteGaussianGeneratorGeneric() = default;
 
 // SampleZ
 int64_t DiscreteGaussianGeneratorGeneric::GenerateInteger(double center, double std) {
