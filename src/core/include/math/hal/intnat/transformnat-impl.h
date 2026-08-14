@@ -303,7 +303,6 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
-    //
     // NTT based on the Cooley-Tukey (CT) butterfly
     // Inputs: element (vector of size n in standard ordering)
     //         rootOfUnityTable (precomputed roots of unity in bit-reversed ordering)
@@ -319,57 +318,44 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
     //             element[j1 + t] = (loVal - hiVal) mod modulus
     //
 
-    const auto modulus{element->GetModulus()};
+    // Harvey lazy-reduction butterflies (https://arxiv.org/abs/1205.2926): values stay in
+    // [0, 4*modulus) between stages (requires modulus < 2^(MaxBits-2), which
+    // MAX_MODULUS_SIZE guarantees); the full reduction to [0, modulus) is folded into the
+    // peeled final stage. Loops work on the raw word values so they stay vectorizable.
+    using NInt = typename IntType::Integer;
+    const NInt mv{element->GetModulus().m_value};
+    const NInt mv2{static_cast<NInt>(mv + mv)};
     const uint32_t n(element->GetLength() >> 1);
     for (uint32_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
         for (uint32_t i{0}; i < m; ++i) {
-            auto omega{rootOfUnityTable[i + m]};
-            auto preconOmega{preconRootOfUnityTable[i + m]};
+            const NInt omega{rootOfUnityTable[i + m].m_value};
+            const NInt preconOmega{preconRootOfUnityTable[i + m].m_value};
             for (uint32_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
-                auto omegaFactor{(*element)[j1 + t]};
-                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-                auto loVal{(*element)[j1 + 0]};
-#if defined(__GNUC__) && !defined(__clang__)
-                auto hiVal{loVal + omegaFactor};
-                if (hiVal >= modulus)
-                    hiVal -= modulus;
-                if (loVal < omegaFactor)
-                    loVal += modulus;
-                loVal -= omegaFactor;
-                (*element)[j1 + 0] = hiVal;
-                (*element)[j1 + t] = loVal;
-#else
-                // fixes Clang slowdown issue, but requires lowVal be less than modulus
-                (*element)[j1 + 0] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
-                if (omegaFactor > loVal)
-                    loVal += modulus;
-                (*element)[j1 + t] = loVal - omegaFactor;
-#endif
+                NInt hi{(*element)[j1 + t].m_value};
+                NInt of{static_cast<NInt>(hi * omega - IntType::MultDHi(hi, preconOmega) * mv)};
+                NInt lo{(*element)[j1 + 0].m_value};
+                lo -= mv2 & (NInt(0) - static_cast<NInt>(lo >= mv2));
+                (*element)[j1 + 0].m_value = lo + of;
+                (*element)[j1 + t].m_value = lo - of + mv2;
             }
         }
     }
-    // peeled off last ntt stage for performance
+    // peeled final stage, reducing the outputs to [0, modulus)
     for (uint32_t i{0}; i < (n << 1); i += 2) {
-        auto omegaFactor{(*element)[i + 1]};
-        auto omega{rootOfUnityTable[(i >> 1) + n]};
-        auto preconOmega{preconRootOfUnityTable[(i >> 1) + n]};
-        omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-        auto loVal{(*element)[i + 0]};
-#if defined(__GNUC__) && !defined(__clang__)
-        auto hiVal{loVal + omegaFactor};
-        if (hiVal >= modulus)
-            hiVal -= modulus;
-        if (loVal < omegaFactor)
-            loVal += modulus;
-        loVal -= omegaFactor;
-        (*element)[i + 0] = hiVal;
-        (*element)[i + 1] = loVal;
-#else
-        (*element)[i + 0] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
-        if (omegaFactor > loVal)
-            loVal += modulus;
-        (*element)[i + 1] = loVal - omegaFactor;
-#endif
+        const NInt omega{rootOfUnityTable[(i >> 1) + n].m_value};
+        const NInt preconOmega{preconRootOfUnityTable[(i >> 1) + n].m_value};
+        NInt hi{(*element)[i + 1].m_value};
+        NInt of{static_cast<NInt>(hi * omega - IntType::MultDHi(hi, preconOmega) * mv)};
+        NInt lo{(*element)[i + 0].m_value};
+        lo -= mv2 & (NInt(0) - static_cast<NInt>(lo >= mv2));
+        NInt s{static_cast<NInt>(lo + of)};
+        s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+        s -= mv & (NInt(0) - static_cast<NInt>(s >= mv));
+        NInt d{static_cast<NInt>(lo - of + mv2)};
+        d -= mv2 & (NInt(0) - static_cast<NInt>(d >= mv2));
+        d -= mv & (NInt(0) - static_cast<NInt>(d >= mv));
+        (*element)[i + 0].m_value = s;
+        (*element)[i + 1].m_value = d;
     }
 }
 
@@ -378,61 +364,11 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const Ve
                                                                         const VecType& rootOfUnityTable,
                                                                         const VecType& preconRootOfUnityTable,
                                                                         VecType* result) {
-    uint32_t n = element.GetLength();
-
-    if (result->GetLength() != n) {
+    if (result->GetLength() != element.GetLength()) {
         OPENFHE_THROW("size of input element and size of output element not of same size");
     }
-
-    IntType modulus = element.GetModulus();
-
-    result->SetModulus(modulus);
-
-    for (uint32_t i = 0; i < n; ++i) {
-        (*result)[i] = element[i];
-    }
-
-    uint32_t indexOmega, indexHi;
-    NativeInteger preconOmega;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
-
-    uint32_t t     = (n >> 1);
-    uint32_t logt1 = GetMSB(t);
-    for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
-        uint32_t j1, j2;
-        for (uint32_t i = 0; i < m; ++i) {
-            j1          = i << logt1;
-            j2          = j1 + t;
-            indexOmega  = m + i;
-            omega       = rootOfUnityTable[indexOmega];
-            preconOmega = preconRootOfUnityTable[indexOmega];
-            for (uint32_t indexLo = j1; indexLo < j2; ++indexLo) {
-                indexHi     = indexLo + t;
-                loVal       = (*result)[indexLo];
-                omegaFactor = (*result)[indexHi];
-                if (omegaFactor != zero) {
-                    omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-
-                    hiVal = loVal + omegaFactor;
-                    if (hiVal >= modulus) {
-                        hiVal -= modulus;
-                    }
-
-                    if (loVal < omegaFactor) {
-                        loVal += modulus;
-                    }
-                    loVal -= omegaFactor;
-
-                    (*result)[indexLo] = hiVal;
-                    (*result)[indexHi] = loVal;
-                }
-                else {
-                    (*result)[indexHi] = loVal;
-                }
-            }
-        }
-    }
-    return;
+    *result = element;
+    ForwardTransformToBitReverseInPlace(rootOfUnityTable, preconRootOfUnityTable, result);
 }
 
 template <typename VecType>
@@ -531,97 +467,76 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     //     element[i] = element[i]*cycloOrderInv mod modulus
     //
 
-    auto modulus{element->GetModulus()};
-    uint32_t n(element->GetLength());
+    // Harvey lazy-reduction GS butterflies: values stay in [0, 2*modulus) between stages;
+    // the full reduction to [0, modulus) is folded into the peeled final stage and the
+    // trailing n/2 scalar multiplies by (n inverse). Loops work on the raw word values so
+    // they stay vectorizable.
+    using NInt = typename IntType::Integer;
+    const auto modulus{element->GetModulus()};
+    const NInt mv{modulus.m_value};
+    const NInt mv2{static_cast<NInt>(mv + mv)};
+    const uint32_t n(element->GetLength());
 
     // precomputed omega[bitreversed(1)] * (n inverse). used in final stage of intt.
-    auto omega1Inv{rootOfUnityInverseTable[1].ModMulFastConst(cycloOrderInv, modulus, preconCycloOrderInv)};
-    auto preconOmega1Inv{omega1Inv.PrepModMulConst(modulus)};
+    // Please see https://github.com/openfheorg/openfhe-development/issues/872 for details.
+    const auto omega1Inv{rootOfUnityInverseTable[1].ModMulFastConst(cycloOrderInv, modulus, preconCycloOrderInv)};
+    const NInt o1{omega1Inv.m_value};
+    const NInt preconO1{omega1Inv.PrepModMulConst(modulus).m_value};
 
     if (n > 2) {
         // peeled off first stage for performance
         for (uint32_t i{0}; i < n; i += 2) {
-            auto omega{rootOfUnityInverseTable[(i + n) >> 1]};
-            auto preconOmega{preconRootOfUnityInverseTable[(i + n) >> 1]};
-            auto loVal{(*element)[i + 0]};
-            auto hiVal{(*element)[i + 1]};
-#if defined(__GNUC__) && !defined(__clang__)
-            auto omegaFactor{loVal};
-            if (omegaFactor < hiVal)
-                omegaFactor += modulus;
-            omegaFactor -= hiVal;
-            loVal += hiVal;
-            if (loVal >= modulus)
-                loVal -= modulus;
-            omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-            (*element)[i + 0] = loVal;
-            (*element)[i + 1] = omegaFactor;
-#else
-            auto omegaFactor{loVal + (hiVal > loVal ? modulus : 0) - hiVal};
-            loVal += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-            (*element)[i + 0] = loVal;
-            omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-            (*element)[i + 1] = omegaFactor;
-#endif
+            const NInt omega{rootOfUnityInverseTable[(i + n) >> 1].m_value};
+            const NInt preconOmega{preconRootOfUnityInverseTable[(i + n) >> 1].m_value};
+            NInt lo{(*element)[i + 0].m_value};
+            NInt hi{(*element)[i + 1].m_value};
+            NInt s{static_cast<NInt>(lo + hi)};
+            s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+            NInt d{static_cast<NInt>(lo - hi + mv2)};
+            (*element)[i + 0].m_value = s;
+            (*element)[i + 1].m_value = d * omega - IntType::MultDHi(d, preconOmega) * mv;
         }
     }
     // inner stages
     for (uint32_t m{n >> 2}, t{2}, logt{2}; m > 1; m >>= 1, t <<= 1, ++logt) {
         for (uint32_t i{0}; i < m; ++i) {
-            auto omega{rootOfUnityInverseTable[i + m]};
-            auto preconOmega{preconRootOfUnityInverseTable[i + m]};
+            const NInt omega{rootOfUnityInverseTable[i + m].m_value};
+            const NInt preconOmega{preconRootOfUnityInverseTable[i + m].m_value};
             for (uint32_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
-                auto loVal{(*element)[j1 + 0]};
-                auto hiVal{(*element)[j1 + t]};
-#if defined(__GNUC__) && !defined(__clang__)
-                auto omegaFactor{loVal};
-                if (omegaFactor < hiVal)
-                    omegaFactor += modulus;
-                omegaFactor -= hiVal;
-                loVal += hiVal;
-                if (loVal >= modulus)
-                    loVal -= modulus;
-                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-                (*element)[j1 + 0] = loVal;
-                (*element)[j1 + t] = omegaFactor;
-#else
-                (*element)[j1 + 0] += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-                auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
-                omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
-                (*element)[j1 + t] = omegaFactor;
-#endif
+                NInt lo{(*element)[j1 + 0].m_value};
+                NInt hi{(*element)[j1 + t].m_value};
+                NInt s{static_cast<NInt>(lo + hi)};
+                s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+                NInt d{static_cast<NInt>(lo - hi + mv2)};
+                (*element)[j1 + 0].m_value = s;
+                (*element)[j1 + t].m_value = d * omega - IntType::MultDHi(d, preconOmega) * mv;
             }
         }
     }
 
-    // peeled off final stage to implement optimization where n/2 scalar multiplies
-    // by (n inverse) are incorporated into the omegaFactor calculation.
-    // Please see https://github.com/openfheorg/openfhe-development/issues/872 for details.
+    // peeled off final stage where n/2 of the scalar multiplies by (n inverse) are
+    // incorporated into the omegaFactor calculation; outputs reduced to [0, modulus)
     uint32_t j2{n >> 1};
     for (uint32_t j1{0}; j1 < j2; ++j1) {
-        auto loVal{(*element)[j1]};
-        auto hiVal{(*element)[j1 + j2]};
-#if defined(__GNUC__) && !defined(__clang__)
-        auto omegaFactor{loVal};
-        if (omegaFactor < hiVal)
-            omegaFactor += modulus;
-        omegaFactor -= hiVal;
-        loVal += hiVal;
-        if (loVal >= modulus)
-            loVal -= modulus;
-        omegaFactor.ModMulFastConstEq(omega1Inv, modulus, preconOmega1Inv);
-        (*element)[j1 + 0]  = loVal;
-        (*element)[j1 + j2] = omegaFactor;
-#else
-        (*element)[j1] += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-        auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
-        omegaFactor.ModMulFastConstEq(omega1Inv, modulus, preconOmega1Inv);
-        (*element)[j1 + j2] = omegaFactor;
-#endif
+        NInt lo{(*element)[j1 + 0].m_value};
+        NInt hi{(*element)[j1 + j2].m_value};
+        NInt s{static_cast<NInt>(lo + hi)};
+        s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+        NInt d{static_cast<NInt>(lo - hi + mv2)};
+        NInt y{static_cast<NInt>(d * o1 - IntType::MultDHi(d, preconO1) * mv)};
+        y -= mv & (NInt(0) - static_cast<NInt>(y >= mv));
+        (*element)[j1 + 0].m_value  = s;
+        (*element)[j1 + j2].m_value = y;
     }
-    // perform remaining n/2 scalar multiplies by (n inverse)
-    for (uint32_t i = 0; i < j2; ++i)
-        (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+    // perform remaining n/2 scalar multiplies by (n inverse), reducing to [0, modulus)
+    const NInt nInv{cycloOrderInv.m_value};
+    const NInt preconNInv{preconCycloOrderInv.m_value};
+    for (uint32_t i{0}; i < j2; ++i) {
+        NInt v{(*element)[i].m_value};
+        NInt r{static_cast<NInt>(v * nInv - IntType::MultDHi(v, preconNInv) * mv)};
+        r -= mv & (NInt(0) - static_cast<NInt>(r >= mv));
+        (*element)[i].m_value = r;
+    }
 }
 
 template <typename VecType>
@@ -837,10 +752,8 @@ void BluesteinFFTNat<VecType>::PreComputeRBTable(uint32_t cycloOrder, const Modu
 
     const auto& nttModulusRoot = modulusRootPair.second;
     const auto& nttModulus     = nttModulusRoot.first;
-    // const auto &nttRoot = nttModulusRoot.second;
-    // assumes rootTable is precomputed
-    const auto& rootTable = m_rootOfUnityTableByModulusRoot[nttModulusRoot];
-    uint32_t nttDim       = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
+    const auto& rootTable      = m_rootOfUnityTableByModulusRoot[nttModulusRoot];
+    uint32_t nttDim            = std::pow(2, std::ceil(std::log2(2 * cycloOrder - 1)));
 
     VecType b(2 * cycloOrder - 1, modulus);
     b[cycloOrder - 1] = 1;
@@ -1279,10 +1192,6 @@ void ChineseRemainderTransformArbNat<VecType>::Reset() {
     m_nttDivisionDim.clear();
     BluesteinFFTNat<VecType>().Reset();
 }
-
-// forced template instantiation
-// template class ChineseRemainderTransformFTTNat<NativeVector>;
-// template class ChineseRemainderTransformArbNat<NativeVector>;
 
 }  // namespace intnat
 

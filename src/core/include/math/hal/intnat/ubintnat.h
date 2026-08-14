@@ -77,6 +77,9 @@ using NativeInteger = NativeIntegerT<BasicInteger>;
 template <typename IntType>
 class NativeVectorT;
 
+template <typename VecType>
+class NumberTheoreticTransformNat;
+
 /**
  * @brief Struct to determine other datatyps based on utype.
  * @tparam utype primitive integer data type.
@@ -130,6 +133,7 @@ private:
     static constexpr uint32_t m_uintBitLength{std::numeric_limits<NativeInt>::digits};
 
     friend class NativeVectorT<NativeIntegerT<NativeInt>>;
+    friend class NumberTheoreticTransformNat<NativeVectorT<NativeIntegerT<NativeInt>>>;
 
 public:
     using Integer         = NativeInt;
