@@ -441,6 +441,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     uint32_t sizeQ                  = pk[0].GetParams()->GetParams().size();
 
     std::vector<DCRTPoly> cv;
+    cv.reserve(2);
     if (sizeQl != sizeQ) {
         // Clone public keys because we need to drop towers.
         DCRTPoly b = pk[0].Clone();

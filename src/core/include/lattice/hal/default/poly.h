@@ -235,7 +235,28 @@ public:
         tmp.m_values->ModAddNoCheckEq(*rhs.m_values);
         return tmp;
     }
+    PolyImpl& PlusNoCheckEq(const PolyImpl& rhs) {
+        m_values->ModAddNoCheckEq(*rhs.m_values);
+        return *this;
+    }
     PolyImpl& operator+=(const PolyImpl& element) override;
+
+    friend PolyImpl operator+(PolyImpl&& a, const PolyImpl& b) {
+        if (a.m_params->GetRingDimension() != b.m_params->GetRingDimension())
+            OPENFHE_THROW("RingDimension mismatch");
+        if (a.m_params->GetModulus() != b.m_params->GetModulus())
+            OPENFHE_THROW("Modulus mismatch");
+        if (a.m_format != b.m_format)
+            OPENFHE_THROW("Format mismatch");
+        a.m_values->ModAddNoCheckEq(*b.m_values);
+        return std::move(a);
+    }
+    friend PolyImpl operator+(const PolyImpl& a, PolyImpl&& b) {
+        return std::move(b) + a;
+    }
+    friend PolyImpl operator+(PolyImpl&& a, PolyImpl&& b) {
+        return std::move(a) + static_cast<const PolyImpl&>(b);
+    }
 
     PolyImpl Plus(const Integer& element) const override;
     PolyImpl& operator+=(const Integer& element) override {
@@ -266,6 +287,31 @@ public:
         auto tmp(*this);
         tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
         return tmp;
+    }
+    PolyImpl& TimesNoCheckEq(const PolyImpl& rhs) {
+        m_values->ModMulNoCheckEq(*rhs.m_values);
+        return *this;
+    }
+
+    friend PolyImpl operator*(PolyImpl&& a, const PolyImpl& b) {
+        if (a.m_params->GetRingDimension() != b.m_params->GetRingDimension())
+            OPENFHE_THROW("RingDimension mismatch");
+        if (a.m_params->GetModulus() != b.m_params->GetModulus())
+            OPENFHE_THROW("Modulus mismatch");
+        if (a.m_format != Format::EVALUATION || b.m_format != Format::EVALUATION)
+            OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
+        a.m_values->ModMulNoCheckEq(*b.m_values);
+        return std::move(a);
+    }
+    friend PolyImpl operator*(const PolyImpl& a, PolyImpl&& b) {
+        return std::move(b) * a;
+    }
+    friend PolyImpl operator*(PolyImpl&& a, PolyImpl&& b) {
+        return std::move(a) * static_cast<const PolyImpl&>(b);
+    }
+    friend PolyImpl operator-(PolyImpl&& a, const PolyImpl& b) {
+        a.m_values->ModSubEq(*b.m_values);
+        return std::move(a);
     }
     PolyImpl& operator*=(const PolyImpl& rhs) override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())

@@ -188,7 +188,7 @@ public:
    * @param v is the source vector.
    * @param modulus is the modulus to switch the copied values to.
    */
-    NativeVectorT(const NativeVectorT& v, const IntegerType& modulus);
+    NativeVectorT(const NativeVectorT& v, const IntegerType& modulus) noexcept;
 
     /**
    * Basic move constructor for moving a vector

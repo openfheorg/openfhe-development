@@ -392,6 +392,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Minus(const DCRTPolyImpl& rhs) cons
 template <typename VecType>
 DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator+=(const DCRTPolyImpl& rhs) {
     uint32_t size(m_vectors.size());
+    if (size > rhs.m_vectors.size())
+        OPENFHE_THROW("tower size mismatch; cannot add");
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
     for (uint32_t i = 0; i < size; ++i)
         m_vectors[i] += rhs.m_vectors[i];
@@ -420,6 +422,8 @@ DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator+=(const NativeInteger& rh
 template <typename VecType>
 DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator-=(const DCRTPolyImpl& rhs) {
     uint32_t size(m_vectors.size());
+    if (size > rhs.m_vectors.size())
+        OPENFHE_THROW("tower size mismatch; cannot subtract");
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
     for (uint32_t i = 0; i < size; ++i)
         m_vectors[i] -= rhs.m_vectors[i];

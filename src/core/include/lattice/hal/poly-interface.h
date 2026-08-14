@@ -144,23 +144,6 @@ public:
     }
 
     /**
-   * @brief Get method of the format.
-   *
-   * @return the format, either COEFFICIENT or EVALUATION
-   */
-    Format GetFormat() const override {
-        return this->GetDerived().GetFormat();
-    }
-
-    /**
-   * @brief returns the parameters of the element.
-   * @return the element parameter set.
-   */
-    const std::shared_ptr<Params>& GetParams() const {
-        return this->GetDerived().GetParams();
-    }
-
-    /**
    * @brief returns the element's ring dimension
    * @return returns the ring dimension of the element.
    */
@@ -262,16 +245,6 @@ public:
    */
     DerivedType Times(const DerivedType& element) const override = 0;
 
-    /**
-   * @brief Performs a modular multiplication operation for Poly's in
-   * any format and returns the result. Performs no runtime checks.
-   *
-   * @param &element is the element to multiply with.
-   * @return is the result of the multiplication.
-   */
-    DerivedType TimesNoCheck(const DerivedType& rhs) const {
-        return this->GetDerived().Times(rhs);
-    }
     /**
    * @brief Scalar addition - add an element to the first index of each tower.
    *
@@ -613,7 +586,7 @@ public:
     }
 
     DerivedType CloneWithNoise(const DggType& dgg, Format format) const final {
-        return DerivedType(dgg, this->GetDerived().GetParams(), this->GetDerived().GetFormat());
+        return DerivedType(dgg, this->GetDerived().GetParams(), format);
     }
 
     const std::string GetElementName() const {

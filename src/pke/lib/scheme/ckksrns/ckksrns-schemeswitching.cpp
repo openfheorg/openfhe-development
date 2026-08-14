@@ -212,6 +212,7 @@ void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, Nat
         OPENFHE_THROW("ModSwitch is implemented only for ciphertext with one tower.");
 
     std::vector<DCRTPoly> resultElements;
+    resultElements.reserve(ctxt->GetElements().size());
     const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
     for (const auto& elem : ctxt->GetElements()) {
         auto& ref = resultElements.emplace_back(paramsQlP, Format::COEFFICIENT, true);

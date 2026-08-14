@@ -146,7 +146,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
  *    i > om/2 i' = i-delta
  */
 template <class IntegerType>
-NativeVectorT<IntegerType>::NativeVectorT(const NativeVectorT& v, const IntegerType& modulus)
+NativeVectorT<IntegerType>::NativeVectorT(const NativeVectorT& v, const IntegerType& modulus) noexcept
     : m_data(v.m_data.size()) {
     // same three branches as SwitchModulus below, reading from v instead of in place
     this->SetModulus(modulus);

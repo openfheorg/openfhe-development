@@ -262,13 +262,9 @@ Matrix<Element>& Matrix<Element>::VStack(Matrix<Element> const& other) {
     if (cols != other.cols) {
         OPENFHE_THROW("VStack rows not equal size");
     }
-    for (size_t row = 0; row < other.rows; ++row) {
-        data_row_t rowElems;
-        for (auto elem = other.data[row].begin(); elem != other.data[row].end(); ++elem) {
-            rowElems.push_back(*elem);
-        }
-        data.push_back(std::move(rowElems));
-    }
+    data.reserve(rows + other.rows);
+    for (size_t row = 0; row < other.rows; ++row)
+        data.push_back(other.data[row]);
     rows += other.rows;
     return *this;
 }
@@ -280,10 +276,7 @@ inline Matrix<Element>& Matrix<Element>::HStack(Matrix<Element> const& other) {
         OPENFHE_THROW("HStack cols not equal size");
     }
     for (size_t row = 0; row < rows; ++row) {
-        data_row_t rowElems;
-        for (auto& elem : other.data[row]) {
-            rowElems.push_back(elem);
-        }
+        data_row_t rowElems(other.data[row]);
         MoveAppend(data[row], rowElems);
     }
     cols += other.cols;

@@ -253,6 +253,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
     std::vector<DCRTPoly> elements;
+    elements.reserve(2);
     elements.emplace_back(cv[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
                                               cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
                                               cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
@@ -396,6 +397,7 @@ std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::share
     const auto& bv = evalKey->GetBVector();
 
     std::vector<DCRTPoly> result;
+    result.reserve(2);
     result.emplace_back(paramsQlP, Format::EVALUATION, true);
     result.emplace_back(paramsQlP, Format::EVALUATION, true);
 

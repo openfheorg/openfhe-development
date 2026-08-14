@@ -269,6 +269,7 @@ std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<s
         av[0] += av[i];
     }
     std::vector<DCRTPoly> res;
+    res.reserve(2);
     res.emplace_back(std::move(bv[0]));
     res.emplace_back(std::move(av[0]));
     return res;

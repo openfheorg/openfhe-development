@@ -130,6 +130,8 @@ public:
     DCRTPolyType& operator-=(const NativeInteger& rhs) override;
     DCRTPolyType& operator*=(const DCRTPolyType& rhs) override {
         size_t size{m_vectors.size()};
+        if (size > rhs.m_vectors.size())
+            OPENFHE_THROW("tower size mismatch; cannot multiply");
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
             m_vectors[i] *= rhs.m_vectors[i];
@@ -167,7 +169,39 @@ public:
         return tmp;
     }
 
+    friend DCRTPolyType operator+(DCRTPolyType&& a, const DCRTPolyType& b) {
+        if (a.m_params->GetRingDimension() != b.m_params->GetRingDimension())
+            OPENFHE_THROW("RingDimension mismatch");
+        if (a.m_format != b.m_format)
+            OPENFHE_THROW("Format mismatch");
+        size_t size{a.m_vectors.size()};
+        if (size != b.m_vectors.size())
+            OPENFHE_THROW("tower size mismatch; cannot add");
+        if (a.m_vectors[0].GetModulus() != b.m_vectors[0].GetModulus())
+            OPENFHE_THROW("Modulus mismatch");
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+        for (size_t i = 0; i < size; ++i)
+            a.m_vectors[i].PlusNoCheckEq(b.m_vectors[i]);
+        return std::move(a);
+    }
+    friend DCRTPolyType operator+(const DCRTPolyType& a, DCRTPolyType&& b) {
+        return std::move(b) + a;
+    }
+    friend DCRTPolyType operator+(DCRTPolyType&& a, DCRTPolyType&& b) {
+        return std::move(a) + static_cast<const DCRTPolyType&>(b);
+    }
+
     DCRTPolyType Minus(const DCRTPolyType& rhs) const override;
+
+    friend DCRTPolyType operator-(DCRTPolyType&& a, const DCRTPolyType& b) {
+        size_t size{a.m_vectors.size()};
+        if (size != b.m_vectors.size())
+            OPENFHE_THROW("tower size mismatch; cannot subtract");
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+        for (size_t i = 0; i < size; ++i)
+            a.m_vectors[i] -= b.m_vectors[i];
+        return std::move(a);
+    }
     DCRTPolyType Minus(const Integer& rhs) const override;
     DCRTPolyType Minus(const std::vector<Integer>& rhs) const;
 
@@ -186,6 +220,28 @@ public:
         for (size_t i = 0; i < size; ++i)
             tmp.m_vectors[i] = m_vectors[i].TimesNoCheck(rhs.m_vectors[i]);
         return tmp;
+    }
+
+    friend DCRTPolyType operator*(DCRTPolyType&& a, const DCRTPolyType& b) {
+        if (a.m_params->GetRingDimension() != b.m_params->GetRingDimension())
+            OPENFHE_THROW("RingDimension mismatch");
+        if (a.m_format != Format::EVALUATION || b.m_format != Format::EVALUATION)
+            OPENFHE_THROW("operator* for DCRTPolyImpl supported only in Format::EVALUATION");
+        size_t size{a.m_vectors.size()};
+        if (size != b.m_vectors.size())
+            OPENFHE_THROW("tower size mismatch; cannot multiply");
+        if (a.m_vectors[0].GetModulus() != b.m_vectors[0].GetModulus())
+            OPENFHE_THROW("Modulus mismatch");
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+        for (size_t i = 0; i < size; ++i)
+            a.m_vectors[i].TimesNoCheckEq(b.m_vectors[i]);
+        return std::move(a);
+    }
+    friend DCRTPolyType operator*(const DCRTPolyType& a, DCRTPolyType&& b) {
+        return std::move(b) * a;
+    }
+    friend DCRTPolyType operator*(DCRTPolyType&& a, DCRTPolyType&& b) {
+        return std::move(a) * static_cast<const DCRTPolyType&>(b);
     }
     DCRTPolyType Times(const Integer& rhs) const override;
     DCRTPolyType Times(const std::vector<Integer>& rhs) const;
