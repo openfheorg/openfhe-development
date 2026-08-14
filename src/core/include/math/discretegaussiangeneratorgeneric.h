@@ -273,7 +273,7 @@ public:
    * @param z2 Coefficient for the second sampler
    */
     SamplerCombiner(BaseSampler* s1, BaseSampler* s2, int64_t z1, int64_t z2)
-        : sampler1(s1), sampler2(s1), x1(z1), x2(z2) {}
+        : sampler1(s1), sampler2(s2), x1(z1), x2(z2) {}
     /**
    * @brief Return the combined value for two samplers with given coefficients
    * @return Combined value of the samplers with given coefficents
