@@ -490,16 +490,7 @@ public:
    */
     NativeVectorT& ModMulEq(const NativeVectorT& b);
     NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b) {
-        size_t size{m_data.size()};
-        auto mv{m_modulus};
-#ifdef NATIVEINT_BARRET_MOD
-        auto mu{m_modulus.ComputeMu()};
-        for (size_t i = 0; i < size; ++i)
-            m_data[i].ModMulFastEq(b[i], mv, mu);
-#else
-        for (size_t i = 0; i < size; ++i)
-            m_data[i].ModMulFastEq(b[i], mv);
-#endif
+        BarrettModMulLoop(m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
         return *this;
     }
 
@@ -722,6 +713,41 @@ public:
 
     static uint32_t SerializedVersion() {
         return 1;
+    }
+
+private:
+    /**
+   * Generalized-Barrett multiply loop with the reduction constants hoisted out of the
+   * loop. Uses the same shift structure and validity domain (operands < modulus) as
+   * NativeIntegerT::ModMulFast(b, modulus, mu); falls back to the per-element path when
+   * no double-width integer type is available.
+   *
+   * @param a is the array to multiply in place.
+   * @param b is the array of second operands.
+   * @param size is the number of elements.
+   * @param &modulus is the modulus to perform operations with.
+   */
+    static void BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus) {
+        using NInt = decltype(modulus.m_value);
+        using DInt = typename IntegerType::DNativeInt;
+        if constexpr (sizeof(DInt) > sizeof(NInt)) {
+            const NInt mv{modulus.m_value};
+            const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+            const NInt mu{modulus.ComputeMu().m_value};
+            for (size_t i = 0; i < size; ++i) {
+                DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+                NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+                NInt r{static_cast<NInt>(prod) - qhat * mv};
+                if (r >= mv)
+                    r -= mv;
+                a[i].m_value = r;
+            }
+        }
+        else {
+            const auto mu{modulus.ComputeMu()};
+            for (size_t i = 0; i < size; ++i)
+                a[i].ModMulFastEq(b[i], modulus, mu);
+        }
     }
 };
 

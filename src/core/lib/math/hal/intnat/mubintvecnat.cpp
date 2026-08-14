@@ -147,7 +147,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
  */
 template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
-    // TODO: #ifdef NATIVEINT_BARRET_MOD
+    // TODO: consider Barrett reduction for the general shrink path
     const auto ov{m_modulus.m_value};
     const auto nv{modulus.m_value};
     const auto halfQ{ov >> 1};
@@ -351,16 +351,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVector
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
     auto ans(*this);
-    uint32_t size(m_data.size());
-    auto mv{m_modulus};
-#ifdef NATIVEINT_BARRET_MOD
-    auto mu{m_modulus.ComputeMu()};
-    for (uint32_t i = 0; i < size; ++i)
-        ans[i].ModMulFastEq(b[i], mv, mu);
-#else
-    for (uint32_t i = 0; i < size; ++i)
-        ans[i].ModMulFastEq(b[i], mv);
-#endif
+    BarrettModMulLoop(ans.m_data.data(), b.m_data.data(), ans.m_data.size(), m_modulus);
     return ans;
 }
 
@@ -368,16 +359,7 @@ template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto mv{m_modulus};
-    size_t size{m_data.size()};
-#ifdef NATIVEINT_BARRET_MOD
-    auto mu{m_modulus.ComputeMu()};
-    for (size_t i = 0; i < size; ++i)
-        m_data[i].ModMulFastEq(b[i], mv, mu);
-#else
-    for (size_t i = 0; i < size; ++i)
-        m_data[i].ModMulFastEq(b[i], mv);
-#endif
+    BarrettModMulLoop(m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
     return *this;
 }
 
