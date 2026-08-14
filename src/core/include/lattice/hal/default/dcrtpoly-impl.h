@@ -235,9 +235,10 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
     uint32_t size(m_vectors.size());
 
     if (baseBits == 0) {
-        std::vector<DCRTPolyType> result(size, *eval);
+        std::vector<DCRTPolyType> result(size);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (uint32_t i = 0; i < size; ++i) {
+            result[i] = DCRTPolyType((*eval).m_params, Format::EVALUATION, false);
             for (uint32_t k = 0; k < size; ++k) {
                 if (i != k) {
                     DCRTPolyImpl::PolyType tmp((*coef).m_vectors[i]);
@@ -246,6 +247,7 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
                     result[i].m_vectors[k] = std::move(tmp);
                 }
             }
+            result[i].m_vectors[i] = (*eval).m_vectors[i];
         }
         return result;
     }
