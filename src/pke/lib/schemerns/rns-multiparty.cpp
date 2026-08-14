@@ -207,7 +207,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         DCRTPoly s = privateKey->GetPrivateElement().Clone();
 
         s.SetFormat(Format::COEFFICIENT);
-        DCRTPoly sExt(paramsQP, Format::COEFFICIENT, true);
+        DCRTPoly sExt(paramsQP, Format::COEFFICIENT, false);
 
         for (uint32_t i = 0; i < sizeQ; i++) {
             sExt.SetElementAtIndex(i, s.GetElementAtIndex(i));

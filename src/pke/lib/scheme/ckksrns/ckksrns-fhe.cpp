@@ -3774,7 +3774,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
     auto ExtendToQP = [&paramsqp, sizeQP](const DCRTPoly& s) {
         auto poly = s.GetElementAtIndex(0);
         poly.SetFormat(Format::COEFFICIENT);
-        DCRTPoly sExt(paramsqp, Format::COEFFICIENT, true);
+        DCRTPoly sExt(paramsqp, Format::COEFFICIENT, false);
         sExt.SetElementAtIndex(0, poly);
         for (size_t j = 1; j < sizeQP; ++j) {
             auto polyP = poly;
@@ -3824,7 +3824,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
 
     // extend cv[1] from q0 to q0*P'; the source basis has a single limb, so the centered
     // lift (SwitchModulus) is the exact CRT basis extension
-    DCRTPoly c1Ext(paramsqp, Format::EVALUATION, true);
+    DCRTPoly c1Ext(paramsqp, Format::EVALUATION, false);
     c1Ext.SetElementAtIndex(0, cv[1].GetElementAtIndex(0));
     auto poly = cv[1].GetElementAtIndex(0);
     poly.SetFormat(Format::COEFFICIENT);
