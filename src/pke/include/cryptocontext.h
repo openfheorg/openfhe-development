@@ -3182,6 +3182,7 @@ public:
                                                            const PrivateKey<Element> privateKey) const {
         ValidateKey(privateKey);
         std::vector<Ciphertext<Element>> newCiphertextVec;
+        newCiphertextVec.reserve(ciphertextVec.size());
         for (const auto& ciphertext : ciphertextVec) {
             ValidateCiphertext(ciphertext);
             newCiphertextVec.push_back(m_scheme->MultipartyDecryptLead(ciphertext, privateKey));
@@ -3200,6 +3201,7 @@ public:
                                                            const PrivateKey<Element> privateKey) const {
         ValidateKey(privateKey);
         std::vector<Ciphertext<Element>> newCiphertextVec;
+        newCiphertextVec.reserve(ciphertextVec.size());
         for (const auto& ciphertext : ciphertextVec) {
             ValidateCiphertext(ciphertext);
             newCiphertextVec.push_back(m_scheme->MultipartyDecryptMain(ciphertext, privateKey));

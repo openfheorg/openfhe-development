@@ -666,6 +666,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         std::vector<std::shared_ptr<ILNativeParams>> params;
         params.reserve(2 * sizeQ + 1);
+        m_moduliB.reserve(m_numq);
+        m_rootsBsk.reserve(m_numq + 1);
         for (uint32_t i = 0; i < m_numq; ++i)
             params.emplace_back(std::make_shared<ILNativeParams>(2 * n, moduliQ[i]));
 
@@ -695,6 +697,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         }
         m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));
 
+        m_moduliBsk.reserve(m_numq + 1);
         m_moduliBsk = m_moduliB;
         m_moduliBsk.push_back(m_msk);
 

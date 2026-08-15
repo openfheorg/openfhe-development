@@ -134,7 +134,7 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
     auto& A         = pk->GetA();
     for (uint32_t j = 0; j < N; ++j) {
         // columnwise a = A_1s1 + ... + A_NsN
-        a.ModAddEq(A[j].ModMul(sp[j]));
+        a.MultAccEqNoCheck(A[j], sp[j]);
     }
 
     // compute b in ciphertext (a,b)

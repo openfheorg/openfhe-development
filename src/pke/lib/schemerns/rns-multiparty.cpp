@@ -323,7 +323,12 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     std::vector<NativeInteger> QHatInvModq(sizeQ);
     std::vector<NativeInteger> QHatInvModqPrecon(sizeQ);
     std::vector<std::vector<NativeInteger>> QHatModp(sizeP);
+    for (auto& v : QHatModp)
+        v.reserve(sizeQ);
 
+    // TODO: on builds without a double-width DNativeInt (no HAVE_INT128, or NATIVE_SIZE=128),
+    // this conversion silently truncates the two-limb modulus, corrupting every table
+    // computed below.
     NativeInteger::DNativeInt modulusQ = dcrtpoly.GetModulus().ConvertToInt<NativeInteger::DNativeInt>();
 
     for (uint32_t i = 0; i < sizeQ; i++) {
@@ -338,6 +343,8 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     }
 
     std::vector<std::vector<NativeInteger>> alphaQModp(sizeQ + 1);
+    for (auto& v : alphaQModp)
+        v.reserve(sizeP);
     for (uint32_t j = 0; j < sizeP; j++) {
         NativeInteger::DNativeInt pj(moduliP[j].ConvertToInt());
         NativeInteger QModpj = modulusQ % pj;

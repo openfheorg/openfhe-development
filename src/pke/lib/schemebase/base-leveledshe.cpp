@@ -421,7 +421,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphismCore(ConstCiphertex
         uint32_t sizeQ = cv0.GetNumOfElements();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQ))
         for (uint32_t i = 0; i < sizeQ; ++i)
-            ba[0].GetAllElements()[i] += (cv0.GetAllElements()[i] * cryptoParams->GetPModq()[i]);
+            ba[0].GetAllElements()[i].MultAccEqNoCheck(cv0.GetAllElements()[i], cryptoParams->GetPModq()[i]);
 
         ba[0] = ba[0]
                     .AutomorphismTransform(autoIndex, vec)

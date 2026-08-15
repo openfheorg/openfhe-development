@@ -3298,6 +3298,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
     std::vector<Ciphertext<DCRTPoly>> ctxtEnc;
+    ctxtEnc.reserve(2);
     std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers;
 
     if (slots == M / 4) {

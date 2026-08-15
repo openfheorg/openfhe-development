@@ -1254,7 +1254,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
 
     // Compute indices for rotations for sparse packing
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots) - 1);
+        indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots));
         for (uint32_t i = 1; i < ringDim / 2; i <<= 1) {
             indexRotationS2C.emplace_back(static_cast<int32_t>(i));
             if (i <= slots)

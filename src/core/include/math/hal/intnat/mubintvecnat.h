@@ -335,6 +335,17 @@ public:
     void SwitchModulus(const IntegerType& value);
     void LazySwitchModulus(const IntegerType& value);
 
+    /**
+   * Fused multiply-accumulate: *this += V * I (mod the vector modulus), without
+   * size/modulus validation. Operand contract: the values of *this must be reduced;
+   * the values of V need NOT be reduced (the Shoup multiplication is exact for any
+   * unreduced multiplicand, which ApproxSwitchCRTBasis relies on for its cross-basis
+   * accumulation); I is reduced internally. Alternative backends implementing this
+   * interface must honor the unreduced-V tolerance (see issue #1107).
+   *
+   * @param &V is the vector to multiply and accumulate.
+   * @param &I is the scalar multiplier.
+   */
     NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
 
     /**

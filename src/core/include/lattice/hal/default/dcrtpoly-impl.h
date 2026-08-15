@@ -775,7 +775,7 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
         tmp.SetValues(NativeVector(delta.GetValues(), m_vectors[i].GetModulus()), Format::COEFFICIENT);
         if (m_format == Format::EVALUATION)
             tmp.SwitchFormat();
-        m_vectors[i] += (tmp *= t);
+        m_vectors[i].MultAccEqNoCheck(tmp, t);
         m_vectors[i] *= qlInvModq[i];
     }
 }
@@ -947,7 +947,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     #if defined(WITH_REDUCED_NOISE)
             auto tmp = xQHatInvModqi;
             tmp.SwitchModulus(ans.m_vectors[j].GetModulus(), ans.m_vectors[j].GetRootOfUnity(), 0, 0);
-            ans.m_vectors[j] += (tmp *= QHatModp[i][j]);
+            ans.m_vectors[j].MultAccEqNoCheck(tmp, QHatModp[i][j]);
     #else
             ans.m_vectors[j].MultAccEqNoCheck(xQHatInvModqi, QHatModp[i][j]);
     #endif
@@ -1899,8 +1899,8 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
         const auto& bDivBiModBiPrecon = BHatInvModbPrecon[i];
         for (uint32_t k = 0; k < n; ++k) {
             m_vectors[sizeQ + i][k].ModMulFastConstEq(bDivBiModBi, moduliBski, bDivBiModBiPrecon);
-            alphaskxVector[k].ModAddEq(m_vectors[sizeQ + i][k].ModMul(bHatModmski, moduliBsk[sizeBskm1], muBsk),
-                                       moduliBsk[sizeBskm1]);
+            alphaskxVector[k].ModAddFastEq(m_vectors[sizeQ + i][k].ModMul(bHatModmski, moduliBsk[sizeBskm1], muBsk),
+                                           moduliBsk[sizeBskm1]);
         }
     }
     for (uint32_t k = 0; k < n; ++k) {
