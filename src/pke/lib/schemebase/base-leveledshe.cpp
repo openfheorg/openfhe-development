@@ -635,7 +635,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Elemen
     cvr.reserve(nr);
     if (n1 == 2 && n2 == 2) {
         cvr.emplace_back(cv1[0] * cv2[0]);
-        cvr.emplace_back((cv1[0] * cv2[1]) += (cv1[1] * cv2[0]));
+        cvr.emplace_back(cv1[0] * cv2[1]);
+        cvr.back().MultAccEqNoCheck(cv1[1], cv2[0]);
         cvr.emplace_back(cv1[1] * cv2[1]);
     }
     else {
@@ -648,7 +649,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Elemen
                     ++m;
                 }
                 else {
-                    cvr[k] += (cv1i * cv2[j]);
+                    cvr[k].MultAccEqNoCheck(cv1i, cv2[j]);
                 }
             }
         }
@@ -690,7 +691,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Elem
                         ++m;
                     }
                     else {
-                        cvr[k] += (cvi * cvi);
+                        cvr[k].MultAccEqNoCheck(cvi, cvi);
                     }
                 }
                 else {

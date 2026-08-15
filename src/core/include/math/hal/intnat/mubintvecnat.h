@@ -349,6 +349,20 @@ public:
     NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
 
     /**
+   * Fused multiply-accumulate: *this += a * b (mod the vector modulus), without
+   * size/modulus validation. Operand contract: STRICTER than the scalar overload —
+   * *this, a, and b must ALL hold reduced values (Barrett kernel, no unreduced-operand
+   * tolerance). Saves the full-vector temporary of *this += a * b.
+   *
+   * @param &a is the vector of first operands.
+   * @param &b is the vector of second operands.
+   */
+    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& a, const NativeVectorT& b) {
+        BarrettMultAccLoop(m_data.data(), a.m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
+        return *this;
+    }
+
+    /**
    * Gets the vector modulus.
    *
    * @return the vector modulus.
@@ -776,6 +790,54 @@ private:
             const auto mu{modulus.ComputeMu()};
             for (size_t i = 0; i < size; ++i)
                 a[i].ModMulFastEq(b[i], modulus, mu);
+        }
+    }
+
+    /**
+   * Fused multiply-accumulate loop: acc += a * b (mod modulus), with the same Barrett
+   * kernel and dispatch as BarrettModMulLoop and the modular addition fused into the
+   * same pass. Validity domain: ALL of acc, a, and b must hold reduced values — unlike
+   * the scalar MultAccEqNoCheck, the Barrett kernel has no tolerance for unreduced
+   * multiplicands.
+   *
+   * @param acc is the accumulator array.
+   * @param a is the array of first operands.
+   * @param b is the array of second operands.
+   * @param size is the number of elements.
+   * @param &modulus is the modulus to perform operations with.
+   */
+    static void BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size,
+                                   const IntegerType& modulus) {
+        using NInt = decltype(modulus.m_value);
+        using DInt = typename IntegerType::DNativeInt;
+        if constexpr (sizeof(DInt) > sizeof(NInt)) {
+            const NInt mv{modulus.m_value};
+            const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+            const NInt mu{modulus.ComputeMu().m_value};
+            for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+                DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+                NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+                NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+                typename IntegerType::typeD prod;
+                IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+                NInt r{prod.lo};
+                IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+                r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+                if (r >= mv)
+                    r -= mv;
+                NInt t{acc[i].m_value + r};
+                if (t >= mv)
+                    t -= mv;
+                acc[i].m_value = t;
+            }
+        }
+        else {
+            const auto mu{modulus.ComputeMu()};
+            for (size_t i = 0; i < size; ++i)
+                acc[i].ModAddFastEq(a[i].ModMulFast(b[i], modulus, mu), modulus);
         }
     }
 };

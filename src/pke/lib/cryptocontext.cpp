@@ -884,7 +884,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
             for (uint32_t i = 0; i < client_indexes_size; ++i) {
                 const auto& coeff = Lagrange_coeffs[i].GetAllElements()[k];
                 const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
-                lagrange_sum_of_elems_poly += coeff.TimesNoCheck(share);
+                lagrange_sum_of_elems_poly.MultAccEqNoCheck(coeff, share);
             }
             lagrange_sum_of_elems.SetElementAtIndex(k, std::move(lagrange_sum_of_elems_poly));
         }

@@ -180,6 +180,9 @@ public:
     void SwitchModulus(const myT& newModulus);
     void LazySwitchModulus(const myT& newModulus);
 
+    myVecP& MultAccEqNoCheck(const myVecP& a, const myVecP& b) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
+    }
     myT& MultAccEqNoCheck(const myVecP& v, const myT& i) {
         OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
     }

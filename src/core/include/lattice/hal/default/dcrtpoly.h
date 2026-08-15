@@ -254,6 +254,21 @@ public:
     DCRTPolyType Times(const std::vector<NativeInteger>& rhs) const;
     DCRTPolyType TimesNoCheck(const std::vector<NativeInteger>& rhs) const;
 
+    /**
+   * Fused multiply-accumulate: *this += a * b (mod each tower modulus), without
+   * parameter validation. All three operands must hold reduced values (see the
+   * NativeVectorT overload). Saves the full-element temporary of *this += a * b.
+   */
+    DCRTPolyType& MultAccEqNoCheck(const DCRTPolyType& a, const DCRTPolyType& b) {
+        size_t size{m_vectors.size()};
+        if (size > a.m_vectors.size() || size > b.m_vectors.size())
+            OPENFHE_THROW("tower size mismatch; cannot multiply-accumulate");
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+        for (size_t i = 0; i < size; ++i)
+            m_vectors[i].MultAccEqNoCheck(a.m_vectors[i], b.m_vectors[i]);
+        return *this;
+    }
+
     DCRTPolyType MultiplicativeInverse() const override;
     bool InverseExists() const override;
     bool IsEmpty() const override;

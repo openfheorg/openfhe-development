@@ -345,7 +345,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
                     isFirstAdd[i + j] = false;
                 }
                 else {
-                    cvMult[i + j] += cv1[i] * cv2[j];
+                    cvMult[i + j].MultAccEqNoCheck(cv1[i], cv2[j]);
                 }
             }
         }
@@ -359,7 +359,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
                 isFirstAdd[i + j] = false;
             }
             else {
-                cvMult[i + j] += cv1[i] * cv2[j];
+                cvMult[i + j].MultAccEqNoCheck(cv1[i], cv2[j]);
             }
         }
     }
@@ -587,7 +587,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
                     }
                     else {
                         if (j == i) {
-                            cvSquare[i + j] += cv[i] * cv[j];
+                            cvSquare[i + j].MultAccEqNoCheck(cv[i], cv[j]);
                         }
                         else {
                             cvtemp = cv[i] * cv[j];
@@ -606,7 +606,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
                         isFirstAdd[i + j] = false;
                     }
                     else {
-                        cvSquare[i + j] += cv[i] * cvPoverQ[j];
+                        cvSquare[i + j].MultAccEqNoCheck(cv[i], cvPoverQ[j]);
                     }
                 }
             }
@@ -632,7 +632,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
                 }
                 else {
                     if (j == i) {
-                        cvSquare[i + j] += cv[i] * cv[j];
+                        cvSquare[i + j].MultAccEqNoCheck(cv[i], cv[j]);
                     }
                     else {
                         cvtemp = cv[i] * cv[j];
@@ -651,7 +651,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
                     isFirstAdd[i + j] = false;
                 }
                 else {
-                    cvSquare[i + j] += cv[i] * cvPoverQ[j];
+                    cvSquare[i + j].MultAccEqNoCheck(cv[i], cvPoverQ[j]);
                 }
             }
         }

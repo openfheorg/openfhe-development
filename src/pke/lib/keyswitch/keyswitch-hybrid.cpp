@@ -408,8 +408,8 @@ std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::share
             const auto& cji = (*digits)[j].GetElementAtIndex(i);
             const auto& bji = bv[j].GetElementAtIndex(idx);
             const auto& aji = av[j].GetElementAtIndex(idx);
-            result[0].SetElementAtIndex(i, result[0].GetElementAtIndex(i) + cji * bji);
-            result[1].SetElementAtIndex(i, result[1].GetElementAtIndex(i) + cji * aji);
+            result[0].GetAllElements()[i].MultAccEqNoCheck(cji, bji);
+            result[1].GetAllElements()[i].MultAccEqNoCheck(cji, aji);
         }
     }
 

@@ -217,7 +217,7 @@ DCRTPoly PKERNS::DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<D
         ci = cv[i];
         ci.SetFormat(Format::EVALUATION);
 
-        b += sPower * ci;
+        b.MultAccEqNoCheck(sPower, ci);
         sPower *= scopy;
     }
     return b;

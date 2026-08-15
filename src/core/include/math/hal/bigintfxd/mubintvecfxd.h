@@ -236,6 +236,9 @@ public:
     void SwitchModulus(const IntegerType& value);
     void LazySwitchModulus(const IntegerType& value);
 
+    BigVectorFixedT& MultAccEqNoCheck(const BigVectorFixedT& a, const BigVectorFixedT& b) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecfxd");
+    }
     BigVectorFixedT& MultAccEqNoCheck(const BigVectorFixedT& v, const IntegerType& i) {
         OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecfxd");
     }

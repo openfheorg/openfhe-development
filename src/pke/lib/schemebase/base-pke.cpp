@@ -193,7 +193,7 @@ Element PKEBase<Element>::DecryptCore(const std::vector<Element>& cv, const Priv
     for (size_t i = 1; i < cv.size(); ++i) {
         ci = cv[i];
         ci.SetFormat(Format::EVALUATION);
-        b += sPower * ci;
+        b.MultAccEqNoCheck(sPower, ci);
         sPower *= s;
     }
 
