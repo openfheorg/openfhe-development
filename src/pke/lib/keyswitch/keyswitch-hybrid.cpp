@@ -401,15 +401,15 @@ std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::share
     result.emplace_back(paramsQlP, Format::EVALUATION, true);
     result.emplace_back(paramsQlP, Format::EVALUATION, true);
 
-    for (uint32_t j = 0; j < limit; ++j) {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
-        for (uint32_t i = 0; i < sizeQlP; ++i) {
-            const auto idx  = (i >= sizeQl) ? i + delta : i;
+    for (uint32_t i = 0; i < sizeQlP; ++i) {
+        const auto idx = (i >= sizeQl) ? i + delta : i;
+        auto& r0       = result[0].GetAllElements()[i];
+        auto& r1       = result[1].GetAllElements()[i];
+        for (uint32_t j = 0; j < limit; ++j) {
             const auto& cji = (*digits)[j].GetElementAtIndex(i);
-            const auto& bji = bv[j].GetElementAtIndex(idx);
-            const auto& aji = av[j].GetElementAtIndex(idx);
-            result[0].GetAllElements()[i].MultAccEqNoCheck(cji, bji);
-            result[1].GetAllElements()[i].MultAccEqNoCheck(cji, aji);
+            r0.MultAccEqNoCheck(cji, bv[j].GetElementAtIndex(idx));
+            r1.MultAccEqNoCheck(cji, av[j].GetElementAtIndex(idx));
         }
     }
 
