@@ -844,9 +844,9 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
         else {
             if (BASELINE) {
 
-                if constexpr (CHEBY_PRINT) std::cout << "s2: ";
-                if constexpr (CHEBY_PRINT) for (auto i : s2) std::cout << i << ", ";
-                if constexpr (CHEBY_PRINT) std::cout << std::endl;
+              //  if constexpr (CHEBY_PRINT) std::cout << "s2: ";
+              //  if constexpr (CHEBY_PRINT) for (auto i : s2) std::cout << i << ", ";
+              //  if constexpr (CHEBY_PRINT) std::cout << std::endl;
                 // the highest order coefficient will always be 1 because s2 is monic.
                 su = T[k - 1]->Clone();
                 if (!BASELINE) cc->EvalMultInPlace(su, 1.0, (int)T2[m-1]->GetLevel() - (T2[m-1]->GetNoiseScaleDeg() == 1) + level_offset + 1);
@@ -883,9 +883,9 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
             else {
                 cu = EvalPartialLinearWSum(T, divcs->q, n, BASELINE ? -1 : (int)T2[m-1]->GetLevel() - (T2[m-1]->GetNoiseScaleDeg() == 1) + level_offset);
             }
-            if constexpr (CHEBY_PRINT) std::cout << "divcs->q: ";
-            if constexpr (CHEBY_PRINT) for (auto i : divcs->q) std::cout << i << ", ";
-            if constexpr (CHEBY_PRINT) std::cout << std::endl;
+           // if constexpr (CHEBY_PRINT) std::cout << "divcs->q: ";
+           // if constexpr (CHEBY_PRINT) for (auto i : divcs->q) std::cout << i << ", ";
+           // if constexpr (CHEBY_PRINT) std::cout << std::endl;
 
             // adds the free term (at x^0)
             cc->EvalAddInPlace(cu, divcs->q.front() / 2.0);

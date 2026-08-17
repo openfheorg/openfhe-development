@@ -55,7 +55,6 @@
 #include <utility>
 #include <vector>
 
-#define BOOTSTRAPTIMING
 #ifdef BOOTSTRAPTIMING
     #include <ostream>
     #define PROFILE
@@ -968,7 +967,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeModReduce = TOC(t);
-        std::cerr << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s" << std::endl;
+        std::cerr << "Approximate modular reduction time: " << timeModReduce << " s" << std::endl;
         // Running SlotToCoeff
         TIC(t);
 #endif
@@ -1078,8 +1077,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
     timeDecode = TOC(t);
-
-    std::cout << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
+    std::cout << "Decoding time: " << timeDecode << " s" << std::endl;
 #endif
 
     // If we start with more towers, than we obtain from bootstrapping, return the original ciphertext.
