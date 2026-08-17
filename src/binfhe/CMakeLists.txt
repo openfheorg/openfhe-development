@@ -24,14 +24,20 @@ if(BUILD_SHARED)
     set_property(TARGET OPENFHEbinfhe PROPERTY VERSION ${BINFHE_VERSION})
     set_property(TARGET OPENFHEbinfhe PROPERTY SOVERSION ${BINFHE_VERSION_MAJOR})
     set_property(TARGET OPENFHEbinfhe PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEbinfhe EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEbinfhe
+        EXPORT OpenFHETargets
+        RUNTIME DESTINATION ${OpenFHE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${OpenFHE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
 if(BUILD_STATIC)
 add_dependencies(binfheobj OPENFHEcore_static)
     add_library(OPENFHEbinfhe_static STATIC $<TARGET_OBJECTS:binfheobj>)
     set_property(TARGET OPENFHEbinfhe_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEbinfhe_static EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEbinfhe_static
+        EXPORT OpenFHETargets
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
 install(DIRECTORY include/ DESTINATION include/openfhe/binfhe)
