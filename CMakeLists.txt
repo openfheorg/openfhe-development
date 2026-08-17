@@ -92,6 +92,7 @@ option(WITH_NATIVEOPT "Use machine-specific optimizations"                      
 option(WITH_COVTEST "Turn on to enable coverage testing (can be used with g++ only)"   OFF )
 option(WITH_NOISE_DEBUG "Use only when running lattice estimator; not for production"  OFF )
 option(WITH_REDUCED_NOISE "Enable reduced noise within HKS and BFV HPSPOVERQ modes"    OFF )
+option(WITH_NUMA_INTERLEAVE "Interleave memory across NUMA nodes at library load"      ON  )
 option(USE_MACPORTS "Use MacPorts installed packages"                                  OFF )
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
