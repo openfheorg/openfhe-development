@@ -245,9 +245,20 @@ set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 # Installation logic
 #--------------------------------------------------------------------
 # set up for install
-# include(GNUInstallDirs)
+# Seed the historical 'lib' default before GNUInstallDirs runs: it only derives
+# lib64/<arch-triplet> when CMAKE_INSTALL_LIBDIR is unset, so an explicit
+# -DCMAKE_INSTALL_LIBDIR from a packager is still honored.
+if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+    set(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Object code libraries")
+endif()
+include(GNUInstallDirs)
 
-set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+if(DEFINED INSTALL_LIB_DIR)
+    message(WARNING "INSTALL_LIB_DIR is deprecated and ignored; use -DCMAKE_INSTALL_LIBDIR instead.")
+endif()
+# Not cached: mirrors CMAKE_INSTALL_LIBDIR so a later -DCMAKE_INSTALL_LIBDIR is picked
+# up on reconfigure. Retained only to fill @INSTALL_LIB_DIR@ in OpenFHEConfig.cmake.in.
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR})
 set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH "Installation directory for headers")
 if(NOT IS_ABSOLUTE "${INSTALL_INCLUDE_DIR}")
     set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}")
@@ -259,6 +270,11 @@ else()
     set(DEF_INSTALL_CMAKE_DIR lib/OpenFHE)
 endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+
+# Relative copies for install(DESTINATION): the loop below rewrites the variables
+# above to absolute paths, and an absolute DESTINATION ignores CMAKE_INSTALL_PREFIX.
+set(OpenFHE_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}")
+set(OpenFHE_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
 
 foreach(p LIB INCLUDE CMAKE)
     set(var INSTALL_${p}_DIR)
