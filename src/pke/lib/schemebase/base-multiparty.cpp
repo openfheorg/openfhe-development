@@ -178,17 +178,11 @@ template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::MultiEvalAtIndexKeyGen(
     const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
     const std::vector<int32_t>& indexList) const {
-    const auto cc = privateKey->GetCryptoContext();
-
-    uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
-
     std::vector<uint32_t> autoIndices(indexList.size());
-
-    for (size_t i = 0; i < indexList.size(); i++) {
-        autoIndices[i] = (isCKKS(cc->getSchemeId())) ? FindAutomorphismIndex2nComplex(indexList[i], M) :
-                                                       FindAutomorphismIndex2n(indexList[i], M);
-    }
-
+    const auto cc    = privateKey->GetCryptoContext();
+    const uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
+    for (size_t i = 0; i < indexList.size(); i++)
+        autoIndices[i] = cc->GetScheme()->FindAutomorphismIndex(indexList[i], M);
     return MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap, autoIndices);
 }
 
@@ -196,27 +190,8 @@ template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::MultiEvalSumKeyGen(
     const PrivateKey<Element> privateKey,
     const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap) const {
-    const auto cryptoParams = privateKey->GetCryptoParameters();
-
-    uint32_t batchSize = cryptoParams->GetEncodingParams()->GetBatchSize();
-    uint32_t M         = cryptoParams->GetElementParams()->GetCyclotomicOrder();
-
-    std::vector<uint32_t> indices;
-
-    if (batchSize > 1) {
-        int isize = std::ceil(std::log2(batchSize)) - 1;
-        indices.reserve(isize + 1);
-        uint32_t g = 5;
-        for (int i = 0; i < isize; i++) {
-            indices.push_back(g);
-            g = (g * g) % M;
-        }
-        if (2 * batchSize < M)
-            indices.push_back(g);
-        else
-            indices.push_back(M - 1);
-    }
-
+    const std::set<uint32_t> indexSet{AdvancedSHEBase<Element>::GenerateIndexListForEvalSum(privateKey)};
+    std::vector<uint32_t> indices(indexSet.begin(), indexSet.end());
     return MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap, indices);
 }
 

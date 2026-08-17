@@ -677,6 +677,15 @@ public:
         return m_LeveledSHE->EvalFastRotationPrecompute(ciphertext);
     }
 
+    virtual Ciphertext<Element> EvalAutomorphismCore(ConstCiphertext<Element>& ciphertext, uint32_t autoIndex,
+                                                     const std::shared_ptr<std::vector<Element>>& digits,
+                                                     const EvalKey<Element>& evalKey) const {
+        VerifyLeveledSHEEnabled(__func__);
+        if (!ciphertext)
+            OPENFHE_THROW("Input ciphertext is nullptr");
+        return m_LeveledSHE->EvalAutomorphismCore(ciphertext, autoIndex, digits, evalKey);
+    }
+
     /**
    * Only supported for hybrid key switching.
    * Performs fast (hoisted) rotation and returns the results

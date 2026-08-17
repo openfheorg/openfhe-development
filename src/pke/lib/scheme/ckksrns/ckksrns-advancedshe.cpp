@@ -46,43 +46,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalMultMany(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                                      const std::vector<EvalKey<DCRTPoly>>& evalKeys) const {
-    const uint32_t inSize = ciphertextVec.size();
-
-    if (inSize == 0)
-        OPENFHE_THROW("Input ciphertext vector is empty.");
-
-    if (inSize == 1)
-        return ciphertextVec[0]->Clone();
-
-    const uint32_t lim = inSize * 2 - 2;
-    std::vector<Ciphertext<DCRTPoly>> ciphertextMultVec(inSize - 1);
-
-    auto algo               = ciphertextVec[0]->GetCryptoContext()->GetScheme();
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
-    uint32_t levelsToDrop   = cryptoParams->GetCompositeDegree();
-
-    uint32_t i = 0, j = 0;
-    for (; i < (inSize - 1); i += 2) {
-        ciphertextMultVec[j] = algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextVec[i + 1], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-    }
-    if (i < inSize) {
-        ciphertextMultVec[j] =
-            algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-        i += 2;
-    }
-    for (; i < lim; i += 2) {
-        ciphertextMultVec[j] =
-            algo->EvalMultAndRelinearize(ciphertextMultVec[i - inSize], ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-    }
-
-    return ciphertextMultVec.back();
-}
-
 //------------------------------------------------------------------------------
 // LINEAR WEIGHTED SUM
 //------------------------------------------------------------------------------

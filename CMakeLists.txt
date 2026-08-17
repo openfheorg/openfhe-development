@@ -106,11 +106,11 @@ if(NOT CKKS_M_FACTOR)
     set(CKKS_M_FACTOR 1)
 endif()
 
-# Radix of the CKKS rotation-fold accumulation (EvalPartialSumInPlace); power of two >= 2.
+# Radix of the rotation-fold accumulations (EvalPartialSumInPlace, EvalSum); power of two >= 2.
 # Higher radices reduce digit decompositions (log2(size)/log2(radix) per fold) at the cost of
 # more rotation keys ((radix-1)/log2(radix)*log2(size)).
-if(NOT CKKS_PARTIAL_SUM_RADIX)
-    set(CKKS_PARTIAL_SUM_RADIX 4)
+if(NOT PARTIAL_SUM_RADIX)
+    set(PARTIAL_SUM_RADIX 4)
 endif()
 
 # Print options
@@ -128,7 +128,7 @@ message(STATUS "WITH_TCM:               ${WITH_TCM}")
 message(STATUS "WITH_OPENMP:            ${WITH_OPENMP}")
 message(STATUS "NATIVE_SIZE:            ${NATIVE_SIZE}")
 message(STATUS "CKKS_M_FACTOR:          ${CKKS_M_FACTOR}")
-message(STATUS "CKKS_PARTIAL_SUM_RADIX: ${CKKS_PARTIAL_SUM_RADIX}")
+message(STATUS "PARTIAL_SUM_RADIX:      ${PARTIAL_SUM_RADIX}")
 message(STATUS "WITH_NATIVEOPT:         ${WITH_NATIVEOPT}")
 message(STATUS "WITH_COVTEST:           ${WITH_COVTEST}")
 message(STATUS "WITH_NOISE_DEBUG:       ${WITH_NOISE_DEBUG}")
