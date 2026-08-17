@@ -82,6 +82,45 @@ static inline T centeredCorrectionLane(T v, T halfQ, T diff) {
 }
 
 template <class IntegerType>
+void NativeVectorT<IntegerType>::GeneralShrinkLoop(IntegerType* dst, const IntegerType* src, size_t size, BasicInt ov,
+                                                   BasicInt nv) {
+    using DInt = typename IntegerType::DNativeInt;
+    const BasicInt halfQ{ov >> 1};
+    const BasicInt diffR{static_cast<BasicInt>((ov - nv) % nv)};
+    if constexpr (sizeof(DInt) > sizeof(BasicInt)) {
+        // e >= 1 is what bounds the quotient estimate to a single correction below
+        const int64_t e{static_cast<int64_t>(lbcrypto::GetMSB(nv)) - 2};
+        if (e >= 1) {
+            // mu = floor(2^(W+e) / nv) fits a word because nv >= 2^(e+1), which is also
+            // DivD's hi < divisor precondition; the estimate never exceeds the true
+            // quotient and falls short of it by at most one
+            const BasicInt mu{IntegerType::DivD(BasicInt(1) << e, 0, nv)};
+            for (size_t i = 0; i < size; ++i) {
+                const BasicInt v{src[i].m_value};
+                BasicInt av{v};
+                // kept as a branch, not folded into the reduction: callers are uniform in
+                // which way it goes (a near-equal shrink skips every element, a deep one
+                // reduces every element), so it predicts and the near-equal case pays nothing
+                if (av >= nv) {
+                    av -= static_cast<BasicInt>(IntegerType::MultDHi(v, mu) >> e) * nv;
+                    if (av >= nv)
+                        av -= nv;
+                }
+                dst[i].m_value = modSubLane(av, centeredCorrectionLane(v, halfQ, diffR), nv);
+            }
+            return;
+        }
+    }
+    for (size_t i = 0; i < size; ++i) {
+        const BasicInt v{src[i].m_value};
+        BasicInt av{v};
+        if (av >= nv)
+            av %= nv;
+        dst[i].m_value = modSubLane(av, centeredCorrectionLane(v, halfQ, diffR), nv);
+    }
+}
+
+template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<std::string> rhs) noexcept
     : m_modulus{modulus}, m_data(length) {
@@ -169,15 +208,7 @@ NativeVectorT<IntegerType>::NativeVectorT(const NativeVectorT& v, const IntegerT
         }
     }
     else {
-        const auto diffR{(ov - nv) % nv};
-        for (size_t i = 0; i < size; ++i) {
-            const auto x{v.m_data[i].m_value};
-            auto av{x};
-            if (av >= nv)
-                av %= nv;
-            const auto bv{(x > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
-            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
-        }
+        GeneralShrinkLoop(m_data.data(), v.m_data.data(), size, ov, nv);
     }
 }
 
@@ -201,17 +232,7 @@ void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
             m_data[i].m_value -= centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
     }
     else {
-        // general shrink: values need full reduction; the subtrahend only takes the
-        // values {diff, 0}, so reduce it once instead of per element inside ModSubEq
-        const auto diffR{(ov - nv) % nv};
-        for (size_t i = 0; i < size; ++i) {
-            const auto v{m_data[i].m_value};
-            auto av{v};
-            if (av >= nv)
-                av %= nv;
-            const auto bv{(v > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
-            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
-        }
+        GeneralShrinkLoop(m_data.data(), m_data.data(), size, ov, nv);
     }
     this->SetModulus(modulus);
 }
@@ -256,16 +277,41 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModEq(const IntegerType&
         for (size_t i = 0; i < size; ++i)
             m_data[i].m_value += centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
     }
+    else if (nv > halfQ) {
+        // new modulus within 2x of the old one: every value is below ov by the class
+        // invariant, so a single conditional subtract fully reduces it
+        const auto diff{ov - nv};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].m_value -= centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
+    }
     else {
-        const auto diffR{(ov - nv) % nv};
-        for (size_t i = 0; i < size; ++i) {
-            const auto v{m_data[i].m_value};
-            auto av{v};
-            if (av >= nv)
-                av %= nv;
-            const auto bv{(v > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
-            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
+        GeneralShrinkLoop(m_data.data(), m_data.data(), size, ov, nv);
+    }
+    return *this;
+}
+
+template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModReduceEq() {
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(BasicInt)) {
+        const int64_t e{static_cast<int64_t>(lbcrypto::GetMSB(mv)) - 2};
+        if (e >= 1) {
+            const BasicInt mu{IntegerType::DivD(BasicInt(1) << e, 0, mv)};
+            for (size_t i = 0; i < size; ++i) {
+                const BasicInt v{m_data[i].m_value};
+                if (v < mv)
+                    continue;
+                BasicInt av{v - static_cast<BasicInt>(IntegerType::MultDHi(v, mu) >> e) * mv};
+                m_data[i].m_value = (av >= mv) ? av - mv : av;
+            }
+            return *this;
         }
+    }
+    for (size_t i = 0; i < size; ++i) {
+        if (m_data[i].m_value >= mv)
+            m_data[i].m_value %= mv;
     }
     return *this;
 }

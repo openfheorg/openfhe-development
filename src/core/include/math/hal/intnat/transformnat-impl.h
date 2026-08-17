@@ -814,7 +814,7 @@ VecType BluesteinFFTNat<VecType>::ForwardTransform(const VecType& element, const
     NumberTheoreticTransformNat<VecType>().InverseTransformIterative(RC, rootTableInverse, &Rc);
     auto resizeRc = Resize(Rc, cycloOrder - 1, 2 * (cycloOrder - 1));
     resizeRc.SetModulus(modulus);
-    resizeRc.ModEq(modulus);
+    resizeRc.ModReduceEq();
     auto result = resizeRc.ModMul(powers);
 
     return result;
@@ -1157,7 +1157,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
             for (uint32_t i = 0; i < power; i++) {
                 quotient[i] = a[i];
             }
-            quotient.ModEq(modulus);
+            quotient.ModReduceEq();
             quotient.SetModulus(nttMod);
 
             VecType newQuotient(m_nttDivisionDim[cycloOrder]);
@@ -1168,7 +1168,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
             NumberTheoreticTransformNat<VecType>().InverseTransformIterative(newQuotient, rootTableInverse,
                                                                              &newQuotient2);
             newQuotient2.SetModulus(modulus);
-            newQuotient2.ModEq(modulus);
+            newQuotient2.ModReduceEq();
 
             IntType mu = modulus.ComputeMu();  // Precompute the Barrett mu parameter
 

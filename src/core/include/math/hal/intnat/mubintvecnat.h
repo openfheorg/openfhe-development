@@ -530,6 +530,13 @@ public:
     }
 
     /**
+   * Reduces every element modulo the vector's own modulus.
+   *
+   * @return is the reduced vector.
+   */
+    NativeVectorT& ModReduceEq();
+
+    /**
    * Vector multiplication without applying the modulus operation.
    *
    * @param &b is the vector to multiply.
@@ -792,6 +799,26 @@ private:
                 a[i].ModMulFastEq(b[i], modulus, mu);
         }
     }
+
+    /**
+   * General-shrink loop shared by SwitchModulus, ModEq and the copy-with-switch ctor:
+   * reduces every element modulo nv and applies the centered correction, whose subtrahend
+   * only takes the values {diffR, 0}.
+   *
+   * The reduction uses a reciprocal computed once for the whole loop instead of a divide
+   * per element. Note this is NOT the ComputeMu/ModMu Barrett used elsewhere: that one is
+   * scaled to the modulus (valid only for inputs below 2^(2*MSB(nv)+3)), whereas this one
+   * is scaled to the word width, so it is valid for any input the vector can hold. That
+   * matters because callers do not agree on a bound: the arbitrary-cyclotomic transform
+   * reduces values that are residues of a much larger modulus.
+   *
+   * @param dst is the destination array (may alias src for the in-place callers).
+   * @param src is the source array.
+   * @param size is the number of elements.
+   * @param ov is the old modulus, only used for the centered correction.
+   * @param nv is the modulus to reduce by.
+   */
+    static void GeneralShrinkLoop(IntegerType* dst, const IntegerType* src, size_t size, BasicInt ov, BasicInt nv);
 
     /**
    * Fused multiply-accumulate loop: acc += a * b (mod modulus), with the same Barrett
