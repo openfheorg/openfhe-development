@@ -54,6 +54,16 @@ namespace intnat {
 
 using namespace lbcrypto;
 
+template <typename NInt>
+static inline NInt condSubNoCmp(NInt v, NInt q) {
+#if defined(__clang__) && !defined(__AVX2__)
+    const NInt t{static_cast<NInt>(v - q)};
+    return static_cast<NInt>(t + (q & (NInt(0) - static_cast<NInt>(t >> (8 * sizeof(NInt) - 1)))));
+#else
+    return static_cast<NInt>(v - (q & (NInt(0) - static_cast<NInt>(v >= q))));
+#endif
+}
+
 template <typename VecType>
 std::map<typename VecType::Integer, VecType>
     ChineseRemainderTransformFTTNat<VecType>::m_cycloOrderInverseTableByModulus;
@@ -334,7 +344,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                 NInt hi{(*element)[j1 + t].m_value};
                 NInt of{static_cast<NInt>(hi * omega - IntType::MultDHi(hi, preconOmega) * mv)};
                 NInt lo{(*element)[j1 + 0].m_value};
-                lo -= mv2 & (NInt(0) - static_cast<NInt>(lo >= mv2));
+                lo                         = condSubNoCmp(lo, mv2);
                 (*element)[j1 + 0].m_value = lo + of;
                 (*element)[j1 + t].m_value = lo - of + mv2;
             }
@@ -347,13 +357,13 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         NInt hi{(*element)[i + 1].m_value};
         NInt of{static_cast<NInt>(hi * omega - IntType::MultDHi(hi, preconOmega) * mv)};
         NInt lo{(*element)[i + 0].m_value};
-        lo -= mv2 & (NInt(0) - static_cast<NInt>(lo >= mv2));
+        lo = condSubNoCmp(lo, mv2);
         NInt s{static_cast<NInt>(lo + of)};
-        s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
-        s -= mv & (NInt(0) - static_cast<NInt>(s >= mv));
+        s = condSubNoCmp(s, mv2);
+        s = condSubNoCmp(s, mv);
         NInt d{static_cast<NInt>(lo - of + mv2)};
-        d -= mv2 & (NInt(0) - static_cast<NInt>(d >= mv2));
-        d -= mv & (NInt(0) - static_cast<NInt>(d >= mv));
+        d                         = condSubNoCmp(d, mv2);
+        d                         = condSubNoCmp(d, mv);
         (*element)[i + 0].m_value = s;
         (*element)[i + 1].m_value = d;
     }
@@ -491,7 +501,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             NInt lo{(*element)[i + 0].m_value};
             NInt hi{(*element)[i + 1].m_value};
             NInt s{static_cast<NInt>(lo + hi)};
-            s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+            s = condSubNoCmp(s, mv2);
             NInt d{static_cast<NInt>(lo - hi + mv2)};
             (*element)[i + 0].m_value = s;
             (*element)[i + 1].m_value = d * omega - IntType::MultDHi(d, preconOmega) * mv;
@@ -506,7 +516,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
                 NInt lo{(*element)[j1 + 0].m_value};
                 NInt hi{(*element)[j1 + t].m_value};
                 NInt s{static_cast<NInt>(lo + hi)};
-                s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+                s = condSubNoCmp(s, mv2);
                 NInt d{static_cast<NInt>(lo - hi + mv2)};
                 (*element)[j1 + 0].m_value = s;
                 (*element)[j1 + t].m_value = d * omega - IntType::MultDHi(d, preconOmega) * mv;
@@ -521,10 +531,10 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         NInt lo{(*element)[j1 + 0].m_value};
         NInt hi{(*element)[j1 + j2].m_value};
         NInt s{static_cast<NInt>(lo + hi)};
-        s -= mv2 & (NInt(0) - static_cast<NInt>(s >= mv2));
+        s = condSubNoCmp(s, mv2);
         NInt d{static_cast<NInt>(lo - hi + mv2)};
         NInt y{static_cast<NInt>(d * o1 - IntType::MultDHi(d, preconO1) * mv)};
-        y -= mv & (NInt(0) - static_cast<NInt>(y >= mv));
+        y                           = condSubNoCmp(y, mv);
         (*element)[j1 + 0].m_value  = s;
         (*element)[j1 + j2].m_value = y;
     }
@@ -534,7 +544,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     for (uint32_t i{0}; i < j2; ++i) {
         NInt v{(*element)[i].m_value};
         NInt r{static_cast<NInt>(v * nInv - IntType::MultDHi(v, preconNInv) * mv)};
-        r -= mv & (NInt(0) - static_cast<NInt>(r >= mv));
+        r                     = condSubNoCmp(r, mv);
         (*element)[i].m_value = r;
     }
 }
