@@ -43,6 +43,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <map>
 #include <memory>
 #include <utility>
+#include <limits>
 #include <vector>
 
 namespace lbcrypto {
@@ -495,11 +496,11 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 
     DoubleInteger large     = static_cast<DoubleInteger>(operand / approxFactor * scFactor + 0.5);
     DoubleInteger large_abs = (large < 0 ? -large : large);
-    DoubleInteger bound     = static_cast<uint64_t>(1) << 63;
+    DoubleInteger bound     = static_cast<DoubleInteger>(std::numeric_limits<int64_t>::max());
 
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
-    if (large_abs >= bound) {
+    if (large_abs > bound) {
         for (uint32_t i = 0; i < numTowers; i++) {
             DoubleInteger reduced = large % moduli[i].ConvertToInt();
 

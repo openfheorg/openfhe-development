@@ -1098,7 +1098,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
             ans.m_vectors[j][ri] = curNativeValue.ModSubFast(alphaQModpri[j], pj);
 #else
             for (uint32_t i = 0; i < sizeQ; ++i)
-                ans.m_vectors[j][ri].ModAddFastEq(xQHatInvModq[i].ModMul(QHatModpj[i], pj, mu[j]), pj);
+                ans.m_vectors[j][ri].ModAddFastEq(xQHatInvModq[i].Mod(pj).ModMulFast(QHatModpj[i], pj, mu[j]), pj);
             ans.m_vectors[j][ri].ModSubFastEq(alphaQModpri[j], pj);
 #endif
         }
