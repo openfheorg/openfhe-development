@@ -308,6 +308,9 @@ public:
    */
     DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std, const int b, double N);
 
+    DiscreteGaussianGeneratorGeneric(const DiscreteGaussianGeneratorGeneric&) = delete;
+    DiscreteGaussianGeneratorGeneric& operator=(const DiscreteGaussianGeneratorGeneric&) = delete;
+
     /**
    * @ brief Returns a generated integer. Uses generic algorithm in UCSD paper,
    * based on Sample Z
@@ -338,7 +341,7 @@ private:
 
     BaseSampler* wide_sampler;
     BaseSampler** base_samplers;
-    BaseSampler* combiners[MAX_LEVELS];
+    std::unique_ptr<SamplerCombiner> combiners[MAX_LEVELS - 1];
     long double wide_variance, sampler_variance;
     double x, c, ci;
     int k, log_base;
