@@ -63,16 +63,13 @@ void DiscreteUniformGeneratorImpl<VecType>::SetModulus(const typename VecType::I
 }
 
 template <typename VecType>
-typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateInteger() const {
-    if (m_modulus == typename VecType::Integer(0))
-        OPENFHE_THROW("0 modulus?");
-
-    std::uniform_int_distribution<uint32_t> dist(DUG_CHUNK_MIN, DUG_CHUNK_MAX);
+typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateIntegerWith(
+    PRNG& prng, std::uniform_int_distribution<uint32_t>& dist) const {
     while (true) {
         typename VecType::Integer result{};
         for (uint32_t i{0}, shift{0}; i < m_chunksPerValue; ++i, shift += DUG_CHUNK_WIDTH)
-            result += typename VecType::Integer{dist(PseudoRandomNumberGenerator::GetPRNG())} << shift;
-        result += typename VecType::Integer{dist(PseudoRandomNumberGenerator::GetPRNG(), m_bound)} << m_shiftChunk;
+            result += typename VecType::Integer{dist(prng)} << shift;
+        result += typename VecType::Integer{dist(prng, m_bound)} << m_shiftChunk;
 
         if (result < m_modulus)
             return result;
@@ -80,10 +77,23 @@ typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateInteger
 }
 
 template <typename VecType>
+typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateInteger() const {
+    if (m_modulus == typename VecType::Integer(0))
+        OPENFHE_THROW("0 modulus?");
+
+    std::uniform_int_distribution<uint32_t> dist(DUG_CHUNK_MIN, DUG_CHUNK_MAX);
+    return this->GenerateIntegerWith(PseudoRandomNumberGenerator::GetPRNG(), dist);
+}
+
+template <typename VecType>
 VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t size) const {
+    if (m_modulus == typename VecType::Integer(0))
+        OPENFHE_THROW("0 modulus?");
     VecType v(size, m_modulus);
+    auto& prng = PseudoRandomNumberGenerator::GetPRNG();
+    std::uniform_int_distribution<uint32_t> dist(DUG_CHUNK_MIN, DUG_CHUNK_MAX);
     for (uint32_t i = 0; i < size; ++i)
-        v[i] = this->GenerateInteger();
+        v[i] = this->GenerateIntegerWith(prng, dist);
     return v;
 }
 
@@ -91,10 +101,7 @@ template <typename VecType>
 VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t size,
                                                               const typename VecType::Integer& modulus) {
     this->SetModulus(modulus);
-    VecType v(size, m_modulus);
-    for (uint32_t i = 0; i < size; ++i)
-        v[i] = this->GenerateInteger();
-    return v;
+    return this->GenerateVector(size);
 }
 
 }  // namespace lbcrypto

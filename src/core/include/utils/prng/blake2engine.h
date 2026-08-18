@@ -48,18 +48,20 @@ namespace default_prng {
  */
 class Blake2Engine : public PRNG {
  public:
-    enum {
-        MAX_SEED_GENS = 16,
-        // the buffer stores 1024 samples of 32-bit integers
-        PRNG_BUFFER_SIZE = 1024
-    };
+    // typed constants rather than an unscoped enum: these are compared against and used to
+    // initialise size_t, so an int-typed enumerator needed a cast at every use
+    static constexpr size_t MAX_SEED_GENS{16};
+    // number of PRNG::result_type samples held per blake2 invocation
+    static constexpr size_t PRNG_BUFFER_SIZE{1024};
+
     using blake2_seed_array_t = std::array<PRNG::result_type, MAX_SEED_GENS>;
+    using blake2_buff_array_t = std::array<PRNG::result_type, PRNG_BUFFER_SIZE>;
 
     /**
      * @brief Main constructor taking an array of integers as a seed and a counter.
      *        If there is no value for the counter, then pass zero as the counter value
      */
-    explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed(seed), m_counter(counter) {}
+    explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed{seed}, m_counter{counter} {}
 
     ~Blake2Engine();
 
@@ -67,18 +69,11 @@ class Blake2Engine : public PRNG {
      * @brief main call to the PRNG
      */
     PRNG::result_type operator()() override {
-        if (m_bufferIndex == static_cast<size_t>(PRNG_BUFFER_SIZE))
+        if (m_bufferIndex == PRNG_BUFFER_SIZE) {
             m_bufferIndex = 0;
-
-        // makes a call to the BLAKE2 generator only when the currently buffered values are all consumed precomputations and
-        // done only once for the current buffer
-        if (m_bufferIndex == 0)
             Generate();
-
-        PRNG::result_type result = m_buffer[m_bufferIndex];
-        m_bufferIndex++;
-
-        return result;
+        }
+        return m_buffer[m_bufferIndex++];
     }
 
  private:
@@ -88,16 +83,16 @@ class Blake2Engine : public PRNG {
     void Generate();
 
     // The vector to store random samples generated using the hash function
-    std::array<PRNG::result_type, PRNG_BUFFER_SIZE> m_buffer{};
+    blake2_buff_array_t m_buffer{};
 
     // Index in m_buffer corresponding to the current PRNG sample
-    size_t m_bufferIndex = 0;
+    size_t m_bufferIndex{PRNG_BUFFER_SIZE};
 
     // the seed for the hash function
     blake2_seed_array_t m_seed{};
 
     // counter used as input to the hash function; gets incremented after each call
-    uint64_t m_counter = 0;
+    uint64_t m_counter{0};
 };
 
 /**
