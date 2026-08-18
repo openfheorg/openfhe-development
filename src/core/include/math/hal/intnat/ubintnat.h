@@ -41,6 +41,7 @@
 #include "math/hal/integer.h"
 #include "math/nbtheory.h"
 
+#include "utils/constanttime.h"
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
@@ -756,6 +757,11 @@ public:
         return *this;
     }
 
+    NativeIntegerT& ModAddFastEqCT(const NativeIntegerT& b, const NativeIntegerT& modulus) {
+        m_value = ::lbcrypto::ct::SubIfGE(m_value + b.m_value, modulus.m_value);
+        return *this;
+    }
+
     /**
    * Barrett modulus addition operation.
    *
@@ -1465,6 +1471,13 @@ public:
         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
         return {yprime >= 0 ? yprime : yprime + modulus.m_value};
+    }
+
+    NativeIntegerT ModMulFastConstCT(const NativeIntegerT& b, const NativeIntegerT& modulus,
+                                     const NativeIntegerT& bInv) const {
+        NativeInt q            = MultDHi(m_value, bInv.m_value) + 1;
+        SignedNativeInt yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
+        return {static_cast<NativeInt>(::lbcrypto::ct::AddIfNeg(yprime, static_cast<SignedNativeInt>(modulus.m_value)))};
     }
 
     /**
