@@ -3801,7 +3801,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
     DugType dug;
     DCRTPoly a(dug, paramsqp, Format::EVALUATION);
     DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), paramsqp, Format::EVALUATION);
-    DCRTPoly b(paramsqp, Format::EVALUATION, true);
+    DCRTPoly b(paramsqp, Format::EVALUATION, false);
 
     // computes the switching key for the GHS case: b = -a*sNew + P'*sOld + e over q0*P';
     // as [P']_{p'_j} = 0, the P'*sOld term only contributes modulo q0
@@ -3854,7 +3854,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
     // centered rounding noise.
 
     for (uint32_t i = 0; i < 2; ++i) {
-        DCRTPoly partP(paramsP, Format::COEFFICIENT, true);
+        DCRTPoly partP(paramsP, Format::COEFFICIENT, false);
         for (size_t j = 0; j < sizeP; ++j) {
             auto polyP = cvRes[i].GetElementAtIndex(j + 1);
             polyP.SetFormat(Format::COEFFICIENT);
