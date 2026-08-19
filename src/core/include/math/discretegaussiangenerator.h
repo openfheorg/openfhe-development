@@ -124,6 +124,7 @@ public:
    * @return     a value generated with the distribution.
    */
     int64_t GenerateInt() const;
+    int64_t GenerateInt(PRNG& g) const;
 
     /**
    * @brief      Returns a generated integer vector. Uses Peikert's inversion method
@@ -186,6 +187,7 @@ public:
    * @return A random value within this Discrete Gaussian Distribution.
    */
     static int64_t GenerateIntegerKarney(double mean, double stddev);
+    static int64_t GenerateIntegerKarney(double mean, double stddev, PRNG& g);
 
 private:
     // Gyana to add precomputation methods and data members
