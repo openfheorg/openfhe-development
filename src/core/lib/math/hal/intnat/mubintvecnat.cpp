@@ -214,7 +214,6 @@ NativeVectorT<IntegerType>::NativeVectorT(const NativeVectorT& v, const IntegerT
 
 template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
-    // TODO: consider Barrett reduction for the general shrink path
     const auto ov{m_modulus.m_value};
     const auto nv{modulus.m_value};
     const auto halfQ{ov >> 1};

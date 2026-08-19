@@ -355,10 +355,22 @@ template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::MultiplicativeInverse() const {
     DCRTPolyImpl<VecType> tmp(m_params, m_format);
     uint32_t size(m_vectors.size());
-    // TODO: figure out why this segfaults
-    // #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
-    for (uint32_t i = 0; i < size; ++i)
-        tmp.m_vectors[i] = m_vectors[i].MultiplicativeInverse();
+    // MultiplicativeInverse throws on non-invertible elements, and an exception cannot leave
+    // an OpenMP region (the runtime terminates instead -- the "segfault" this pragma was once
+    // disabled over). Record the failure inside the region and throw after it, preserving the
+    // throwing contract the unit tests pin.
+    int fail = 0;
+#pragma omp parallel for reduction(| : fail) num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+    for (uint32_t i = 0; i < size; ++i) {
+        try {
+            tmp.m_vectors[i] = m_vectors[i].MultiplicativeInverse();
+        }
+        catch (...) {
+            fail = 1;
+        }
+    }
+    if (fail)
+        OPENFHE_THROW("MultiplicativeInverse: a tower has a non-invertible element");
     return tmp;
 }
 
