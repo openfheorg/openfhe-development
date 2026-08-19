@@ -40,7 +40,6 @@
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
 
-#include "utils/blockAllocator/xvector.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
@@ -52,19 +51,12 @@
 #include <utility>
 #include <vector>
 
-// the following should be set to 1 in order to have native vector use block
-// allocations then determine if you want dynamic or static allocations by
-// settingdefining STAIC_POOLS on line 24 of
-// xallocator.cpp
-#define BLOCK_VECTOR_ALLOCATION 0  // set to 1 to use block allocations
-
 /**
  * @namespace intnat
  * The namespace of intnat
  */
 namespace intnat {
 
-// Forward declare class and give it an alias for the expected type
 template <typename IntType>
 class NativeVectorT;
 using NativeVector = NativeVectorT<NativeInteger>;
@@ -72,64 +64,13 @@ using NativeVector = NativeVectorT<NativeInteger>;
 /**
  * @brief The class for representing vectors of native integers.
  */
-
-#if 0  // allocator that reports bytes used.
-template <class Tp>
-struct NAlloc {
-    typedef Tp value_type;
-    NAlloc() = default;
-    template <class T> NAlloc(const NAlloc<T>&) {}
-    Tp* allocate(std::size_t n) {
-        n *= sizeof(Tp);
-        return static_cast<Tp*>(::operator new(n));
-    }
-    void deallocate(Tp* p, std::size_t n) {
-        std::cout << "deallocating " << n*sizeof*p << " bytes\n";
-        ::operator delete(p);
-    }
-};
-template <class T, class U>
-bool operator==(const NAlloc<T>&, const NAlloc<U>&) { return true; }
-template <class T, class U>
-bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
-#endif
-
-#if 0  // allocator that reports bytes used.
-template <class Tp>
-struct NAlloc {
-    typedef Tp value_type;
-    NAlloc() = default;
-    template <class T> NAlloc(const NAlloc<T>&) {}
-    Tp* allocate(std::size_t n) {
-        n *= sizeof(Tp);
-        std::cout << "allocating   " << n << " bytes\n";
-        return static_cast<Tp*>(::operator new(n));
-    }
-    void deallocate(Tp* p, std::size_t n) {
-        std::cout << "deallocating " << n*sizeof*p << " bytes\n";
-        ::operator delete(p);
-    }
-};
-template <class T, class U>
-bool operator==(const NAlloc<T>&, const NAlloc<U>&) { return true; }
-template <class T, class U>
-bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
-#endif
-
 template <class IntegerType>
 class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
                             public lbcrypto::Serializable {
 private:
-    // m_modulus stores the internal modulus of the vector.
     IntegerType m_modulus{0};
-
-#if BLOCK_VECTOR_ALLOCATION != 1
     std::vector<IntegerType> m_data{};
-#else
-    xvector<IntegerType> m_data{};
-#endif
 
-    // function to check if the index is a valid index.
     bool IndexCheck(size_t length) const {
         return length < m_data.size();
     }
