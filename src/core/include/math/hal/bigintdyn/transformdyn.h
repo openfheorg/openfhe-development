@@ -610,6 +610,11 @@ private:
 
 }  // namespace bigintdyn
 
-        #include "math/hal/bigintdyn/transformdyn-impl.h"
+// Compiled once in be4-math-impl.cpp; these declarations suppress implicit instantiation in every
+// other TU so all users link the library's copy (same pattern as transformnat.h).
+extern template class bigintdyn::NumberTheoreticTransformDyn<bigintdyn::BigVector>;
+extern template class bigintdyn::ChineseRemainderTransformFTTDyn<bigintdyn::BigVector>;
+extern template class bigintdyn::BluesteinFFTDyn<bigintdyn::BigVector>;
+extern template class bigintdyn::ChineseRemainderTransformArbDyn<bigintdyn::BigVector>;
     #endif
 #endif

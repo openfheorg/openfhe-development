@@ -37,6 +37,7 @@
 #define LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
 
 #include "math/hal/transform.h"
+#include "math/hal/intnat/mubintvecnat.h"
 
 #include "utils/inttypes.h"
 
@@ -618,7 +619,20 @@ private:
 
 }  // namespace intnat
 
-// class implementations
-#include "math/hal/intnat/transformnat-impl.h"
+#define TRANSFORM_IMPLEMENTATION "math/hal/intnat/transformnat-impl.h"
+
+#define MAKE_TRANSFORM_TYPES                                                      \
+    template class intnat::NumberTheoreticTransformNat<intnat::NativeVector>;     \
+    template class intnat::ChineseRemainderTransformFTTNat<intnat::NativeVector>; \
+    template class intnat::BluesteinFFTNat<intnat::NativeVector>;                 \
+    template class intnat::ChineseRemainderTransformArbNat<intnat::NativeVector>;
+
+#define EXTERN_TRANSFORM_TYPES                                                           \
+    extern template class intnat::NumberTheoreticTransformNat<intnat::NativeVector>;     \
+    extern template class intnat::ChineseRemainderTransformFTTNat<intnat::NativeVector>; \
+    extern template class intnat::BluesteinFFTNat<intnat::NativeVector>;                 \
+    extern template class intnat::ChineseRemainderTransformArbNat<intnat::NativeVector>;
+
+EXTERN_TRANSFORM_TYPES
 
 #endif

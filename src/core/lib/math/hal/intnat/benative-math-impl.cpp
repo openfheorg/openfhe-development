@@ -43,6 +43,10 @@
 #include "math/nbtheory-impl.h"
 #include "math/ternaryuniformgenerator-impl.h"
 
+#ifdef TRANSFORM_IMPLEMENTATION
+    #include TRANSFORM_IMPLEMENTATION
+#endif
+
 namespace lbcrypto {
 
 template class DiscreteGaussianGeneratorImpl<NativeVector>;
@@ -85,3 +89,7 @@ template class Matrix<NativeVector>;
 
 CEREAL_CLASS_VERSION(NativeInteger, NativeInteger::SerializedVersion());
 CEREAL_CLASS_VERSION(NativeVector, NativeVector::SerializedVersion());
+
+#ifdef TRANSFORM_IMPLEMENTATION
+MAKE_TRANSFORM_TYPES
+#endif

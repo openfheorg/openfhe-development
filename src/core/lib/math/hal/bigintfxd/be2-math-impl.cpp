@@ -43,6 +43,12 @@
     #include "math/matrix-impl.h"
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
+    #include "math/hal/bigintfxd/transformfxd-impl.h"
+
+template class bigintfxd::NumberTheoreticTransformFxd<bigintfxd::BigVector>;
+template class bigintfxd::ChineseRemainderTransformFTTFxd<bigintfxd::BigVector>;
+template class bigintfxd::BluesteinFFTFxd<bigintfxd::BigVector>;
+template class bigintfxd::ChineseRemainderTransformArbFxd<bigintfxd::BigVector>;
 
 namespace lbcrypto {
 

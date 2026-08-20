@@ -612,7 +612,12 @@ private:
 };
 }  // namespace NTL
 
-        #include "math/hal/bigintntl/transformntl-impl.h"
+// Compiled once in be6-math-impl.cpp; these declarations suppress implicit instantiation in every
+// other TU so all users link the library's copy (same pattern as transformnat.h).
+extern template class NTL::NumberTheoreticTransformNtl<NTL::BigVector>;
+extern template class NTL::ChineseRemainderTransformFTTNtl<NTL::BigVector>;
+extern template class NTL::BluesteinFFTNtl<NTL::BigVector>;
+extern template class NTL::ChineseRemainderTransformArbNtl<NTL::BigVector>;
 
     #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
 

@@ -47,6 +47,12 @@
     #include "math/matrix-impl.h"
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
+    #include "math/hal/bigintntl/transformntl-impl.h"
+
+template class NTL::NumberTheoreticTransformNtl<NTL::BigVector>;
+template class NTL::ChineseRemainderTransformFTTNtl<NTL::BigVector>;
+template class NTL::BluesteinFFTNtl<NTL::BigVector>;
+template class NTL::ChineseRemainderTransformArbNtl<NTL::BigVector>;
 
 namespace lbcrypto {
 
