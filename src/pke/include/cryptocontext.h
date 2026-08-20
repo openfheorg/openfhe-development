@@ -3109,6 +3109,10 @@ public:
     EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
         ValidateKey(oldPrivateKey);
         ValidateKey(newPublicKey);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(GetCryptoParameters());
+        if (cryptoParams->GetPREMode() == NOT_SET)
+            OPENFHE_THROW(
+                "Set the PRE mode using SetPREMode() before using PRE. The default PRE mode is NOT_SET, which means PRE is disabled.");
         return m_scheme->ReKeyGen(oldPrivateKey, newPublicKey);
     }
 
@@ -3136,6 +3140,11 @@ public:
                                   const PublicKey<Element> publicKey = nullptr) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(evalKey);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(GetCryptoParameters());
+        if (cryptoParams->GetPREMode() == NOT_SET)
+            OPENFHE_THROW(
+                "Set the PRE mode using SetPREMode() before using PRE. The default PRE mode is NOT_SET, which means PRE is disabled.");
+
         return m_scheme->ReEncrypt(ciphertext, evalKey, publicKey);
     }
 
