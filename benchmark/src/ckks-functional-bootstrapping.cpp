@@ -220,7 +220,13 @@ struct fbt_config {
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
                          t.order);
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // the automorphism/mult key dedup would otherwise skip everything already stored
+        // after the first iteration, leaving only the conjugation key to generate
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }

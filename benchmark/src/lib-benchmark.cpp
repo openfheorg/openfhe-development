@@ -223,12 +223,14 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair;
     keyPair = cc->KeyGen();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
 
-// TODO: revisit this?
 [[maybe_unused]] void BFVrns_EvalAtIndexKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
 
@@ -240,7 +242,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
         indexList[i] = 1;
     }
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        state.ResumeTiming();
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
@@ -422,7 +427,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair;
     keyPair = cc->KeyGen();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
@@ -438,7 +446,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
         indexList[i] = 1;
     }
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        state.ResumeTiming();
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
@@ -782,7 +793,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair;
     keyPair = cc->KeyGen();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
@@ -798,7 +812,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
         indexList[i] = 1;
     }
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        state.ResumeTiming();
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
