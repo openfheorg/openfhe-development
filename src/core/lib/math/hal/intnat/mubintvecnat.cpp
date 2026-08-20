@@ -317,8 +317,14 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModReduceEq() {
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const IntegerType& b) const {
-    auto ans(*this);
-    ans.ModAddEq(b);
+    auto mv{m_modulus.m_value};
+    auto bv{b};
+    if (bv.m_value >= mv)
+        bv.ModEq(m_modulus);
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modAddLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
 }
 
@@ -349,9 +355,22 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddAtIndexEq(size_t i
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVectorT& b) const {
+    if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
+        OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
+#if defined(__clang__)
+    // clang fuses the copy into the op loop; the single-pass form pays the result's
+    // zero-init as a separate pass and loses 4-6% (gcc does not fuse and wins single-pass)
     auto ans(*this);
     ans.ModAddEq(b);
     return ans;
+#else
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modAddLane(m_data[i].m_value, b.m_data[i].m_value, mv);
+    return ans;
+#endif
 }
 
 template <class IntegerType>
@@ -367,8 +386,14 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const NativeVec
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const IntegerType& b) const {
-    auto ans(*this);
-    ans.ModSubEq(b);
+    auto mv{m_modulus.m_value};
+    auto bv{b};
+    if (bv.m_value >= mv)
+        bv.ModEq(m_modulus);
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modSubLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
 }
 
@@ -386,9 +411,20 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const IntegerTy
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVectorT& b) const {
+    if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
+        OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
+#if defined(__clang__)
     auto ans(*this);
     ans.ModSubEq(b);
     return ans;
+#else
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modSubLane(m_data[i].m_value, b.m_data[i].m_value, mv);
+    return ans;
+#endif
 }
 
 template <class IntegerType>
@@ -406,13 +442,21 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType& b) const {
     auto mv{m_modulus};
     auto bv{b};
-    auto ans(*this);
     if (bv.m_value >= mv.m_value)
         bv.ModEq(mv);
     auto bconst{bv.PrepModMulConst(mv)};
+#if defined(__clang__)
+    auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].ModMulFastConstEq(bv, mv, bconst);
+        ans.m_data[i].ModMulFastConstEq(bv, mv, bconst);
     return ans;
+#else
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i] = m_data[i].ModMulFastConst(bv, mv, bconst);
+    return ans;
+#endif
 }
 
 template <class IntegerType>
@@ -431,8 +475,9 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto ans(*this);
-    BarrettModMulLoop(ans.m_data.data(), b.m_data.data(), ans.m_data.size(), m_modulus);
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    BarrettModMulLoop(ans.m_data.data(), m_data.data(), b.m_data.data(), size, m_modulus);
     return ans;
 }
 
@@ -446,10 +491,11 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const NativeVec
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModByTwo() const {
-    auto ans(*this);
     auto halfQ{m_modulus.m_value >> 1};
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = 0x1 & (ans[i].m_value ^ (ans[i].m_value > halfQ));
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = 0x1 & (m_data[i].m_value ^ (m_data[i].m_value > halfQ));
     return ans;
 }
 
@@ -484,9 +530,10 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = ans[i].m_value * b[i].m_value;
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = m_data[i].m_value * b.m_data[i].m_value;
     return ans;
 }
 
@@ -622,10 +669,11 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(ui
     uint32_t shift{(index - 1) * digitLen};
     if (shift >= IntegerType::MaxBits())
         return NativeVectorT(m_data.size(), m_modulus);
-    auto ans(*this);
     const auto mask = static_cast<BasicInt>((uint64_t{1} << digitLen) - 1);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = (ans[i].m_value >> shift) & mask;
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = (m_data[i].m_value >> shift) & mask;
     return ans;
 }
 

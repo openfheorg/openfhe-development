@@ -705,7 +705,8 @@ private:
    * NativeIntegerT::ModMulFast(b, modulus, mu); falls back to the per-element path when
    * no double-width integer type is available.
    *
-   * @param a is the array to multiply in place.
+   * @param dst is the destination array (may alias a for the in-place callers).
+   * @param a is the array of first operands.
    * @param b is the array of second operands.
    * @param size is the number of elements.
    * @param &modulus is the modulus to perform operations with.
@@ -738,6 +739,38 @@ private:
             const auto mu{modulus.ComputeMu()};
             for (size_t i = 0; i < size; ++i)
                 a[i].ModMulFastEq(b[i], modulus, mu);
+        }
+    }
+
+    static void BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
+                                  const IntegerType& modulus) {
+        using NInt = decltype(modulus.m_value);
+        using DInt = typename IntegerType::DNativeInt;
+        if constexpr (sizeof(DInt) > sizeof(NInt)) {
+            const NInt mv{modulus.m_value};
+            const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+            const NInt mu{modulus.ComputeMu().m_value};
+            for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+                DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+                NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+                NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+                typename IntegerType::typeD prod;
+                IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+                NInt r{prod.lo};
+                IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+                r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+                if (r >= mv)
+                    r -= mv;
+                dst[i].m_value = r;
+            }
+        }
+        else {
+            const auto mu{modulus.ComputeMu()};
+            for (size_t i = 0; i < size; ++i)
+                dst[i] = a[i].ModMulFast(b[i], modulus, mu);
         }
     }
 
