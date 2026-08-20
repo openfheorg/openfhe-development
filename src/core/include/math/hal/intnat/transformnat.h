@@ -42,7 +42,9 @@
 #include "utils/inttypes.h"
 
 #include <map>
+#include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -97,6 +99,16 @@ public:
    * size as input or a throw if an error occurs.
    */
     void InverseTransformIterative(const VecType& element, const VecType& rootOfUnityInverseTable, VecType* result);
+
+    /**
+   * Cyclic-ring (X^n-1) variants of the two transforms above taking Shoup
+   * precomputations for the root tables; outputs are bit-identical to the
+   * two-table forms.
+   */
+    void ForwardTransformIterative(const VecType& element, const VecType& rootOfUnityTable,
+                                   const VecType& preconRootOfUnityTable, VecType* result);
+    void InverseTransformIterative(const VecType& element, const VecType& rootOfUnityInverseTable,
+                                   const VecType& preconRootOfUnityInverseTable, VecType* result);
 
     /**
    * Copies \p element into \p result and calls ForwardTransformToBitReverseInPlace()
@@ -348,25 +360,36 @@ public:
    */
     void Reset();
 
-    /// map to store the cyclo order inverse with modulus as a key
-    /// For inverse FTT, we also need #m_cycloOrderInversePreconTableByModulus (this is to use an N-size NTT for FTT instead of 2N-size NTT).
-    static std::map<IntType, VecType> m_cycloOrderInverseTableByModulus;
+    /**
+   * All precomputed tables for one modulus: the forward/inverse roots of unity in
+   * bit-reversed order with their Shoup precomputations, and the cyclotomic-order
+   * inverses (indexed by log2 of the transform size) with theirs. Published
+   * immutably through a shared_ptr so a transform running on one bundle is
+   * unaffected by a concurrent rebuild for the same modulus.
+   */
+    struct Tables {
+        VecType rootReverse;
+        VecType preconRootReverse;
+        VecType rootInverseReverse;
+        VecType preconRootInverseReverse;
+        VecType cycloOrderInverse;
+        VecType preconCycloOrderInverse;
+    };
 
-    /// map to store the cyclo order inverse preconditioned with modulus as a key
-    /// Shoup's precomputation of above #m_cycloOrderInverseTableByModulus
-    static std::map<IntType, VecType> m_cycloOrderInversePreconTableByModulus;
+    /**
+   * Single lookup-or-build entry for the tables of one modulus: one map traversal
+   * per transform instead of one per table, with reads and fills synchronized.
+   */
+    static std::shared_ptr<const Tables> GetTables(const IntType& rootOfUnity, uint32_t CycloOrder,
+                                                   const IntType& modulus);
 
-    /// map to store the forward roots of Unity for NTT, with bits reversed, with modulus as a key (aka twiddle factors)
-    static std::map<IntType, VecType> m_rootOfUnityReverseTableByModulus;
+private:
+    static std::map<IntType, std::shared_ptr<const Tables>> m_tablesByModulus;
 
-    /// map to store inverse roots of unity for iNTT, with bits reversed, with modulus as a key (aka inverse twiddle factors)
-    static std::map<IntType, VecType> m_rootOfUnityInverseReverseTableByModulus;
-
-    /// map to store Shoup's precomputations of forward roots of unity for NTT, with bits reversed, with modulus as a key
-    static std::map<IntType, VecType> m_rootOfUnityPreconReverseTableByModulus;
-
-    /// map to store Shoup's precomputations of inverse rou for iNTT, with bits reversed, with modulus as a key
-    static std::map<IntType, VecType> m_rootOfUnityInversePreconReverseTableByModulus;
+    static std::shared_mutex& TablesMutex() {
+        static std::shared_mutex m;
+        return m;
+    }
 };
 
 // struct used as a key in BlueStein transform
@@ -467,6 +490,18 @@ public:
     // map to store the forward transform of power table with modulus + root of
     // unity as key.
     static std::map<ModulusRootPair<IntType>, VecType> m_RBTableByModulusRootPair;
+
+    // Shoup precomputations matching the two root-of-unity tables above.
+    static std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityTableByModulusRoot;
+    static std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityInverseTableByModulusRoot;
+
+    // Guards every Bluestein/arbitrary-cyclotomic static cache: fills are lazy and the
+    // tower loops run in parallel, so lookups must lock as well (references into a
+    // std::map stay valid after the lock is released; the map structure does not).
+    static std::recursive_mutex& CacheMutex() {
+        static std::recursive_mutex m;
+        return m;
+    }
 
 private:
     // map to store the precomputed NTT modulus with modulus as key.
@@ -606,6 +641,10 @@ private:
     // map to store the root of unity table for computing forward NTT of inverse
     // cyclotomic polynomial used in NTT based polynomial division.
     static std::map<IntType, VecType> m_rootOfUnityDivisionInverseTableByModulus;
+
+    // Shoup precomputations matching the two division tables above.
+    static std::map<IntType, VecType> m_rootOfUnityDivisionPreconTableByModulus;
+    static std::map<IntType, VecType> m_rootOfUnityDivisionInversePreconTableByModulus;
 
     // modulus used in NTT based polynomial division.
     static std::map<IntType, IntType> m_DivisionNTTModulus;
