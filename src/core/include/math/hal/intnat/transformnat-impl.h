@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -42,6 +42,7 @@
 #include "math/hal/intnat/transformnat.h"
 #include "math/nbtheory.h"
 
+#include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"

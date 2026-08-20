@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -99,20 +99,11 @@ public:
    * entries.
    * @param modulus is the modulus of the ring.
    */
-    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length) {
-        // TODO: better performance if this check is done at poly level
-        //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
-        //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
-        //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
-    }
+    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept
+        : m_modulus{modulus}, m_data(length) {}
 
     constexpr NativeVectorT(uint32_t length, const IntegerType& modulus, const IntegerType& val) noexcept
-        : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {
-        // TODO: better performance if this check is done at poly level
-        //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
-        //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
-        //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
-    }
+        : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {}
 
     /**
    * Basic constructor for copying a vector
@@ -277,33 +268,6 @@ public:
     void LazySwitchModulus(const IntegerType& value);
 
     /**
-   * Fused multiply-accumulate: *this += V * I (mod the vector modulus), without
-   * size/modulus validation. Operand contract: the values of *this must be reduced;
-   * the values of V need NOT be reduced (the Shoup multiplication is exact for any
-   * unreduced multiplicand, which ApproxSwitchCRTBasis relies on for its cross-basis
-   * accumulation); I is reduced internally. Alternative backends implementing this
-   * interface must honor the unreduced-V tolerance (see issue #1107).
-   *
-   * @param &V is the vector to multiply and accumulate.
-   * @param &I is the scalar multiplier.
-   */
-    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
-
-    /**
-   * Fused multiply-accumulate: *this += a * b (mod the vector modulus), without
-   * size/modulus validation. Operand contract: STRICTER than the scalar overload —
-   * *this, a, and b must ALL hold reduced values (Barrett kernel, no unreduced-operand
-   * tolerance). Saves the full-vector temporary of *this += a * b.
-   *
-   * @param &a is the vector of first operands.
-   * @param &b is the vector of second operands.
-   */
-    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& a, const NativeVectorT& b) {
-        BarrettMultAccLoop(m_data.data(), a.m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
-        return *this;
-    }
-
-    /**
    * Gets the vector modulus.
    *
    * @return the vector modulus.
@@ -465,10 +429,31 @@ public:
    * @return is the result of the modulus multiplication operation.
    */
     NativeVectorT& ModMulEq(const NativeVectorT& b);
-    NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b) {
-        BarrettModMulLoop(m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
-        return *this;
-    }
+    NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b);
+
+    /**
+   * Fused multiply-accumulate: *this += V * I (mod the vector modulus), without
+   * size/modulus validation. Operand contract: the values of *this must be reduced;
+   * the values of V need NOT be reduced (the Shoup multiplication is exact for any
+   * unreduced multiplicand, which ApproxSwitchCRTBasis relies on for its cross-basis
+   * accumulation); I is reduced internally. Alternative backends implementing this
+   * interface must honor the unreduced-V tolerance (see issue #1107).
+   *
+   * @param &V is the vector to multiply and accumulate.
+   * @param &I is the scalar multiplier.
+   */
+    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
+
+    /**
+   * Fused multiply-accumulate: *this += a * b (mod the vector modulus), without
+   * size/modulus validation. Operand contract: STRICTER than the scalar overload —
+   * *this, a, and b must ALL hold reduced values (Barrett kernel, no unreduced-operand
+   * tolerance). Saves the full-vector temporary of *this += a * b.
+   *
+   * @param &a is the vector of first operands.
+   * @param &b is the vector of second operands.
+   */
+    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& a, const NativeVectorT& b);
 
     /**
    * Reduces every element modulo the vector's own modulus.
@@ -641,8 +626,8 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
+                                                                                  std::uint32_t const version) const {
         ::cereal::size_type size = m_data.size();
         ar(size);
         if (size > 0) {
@@ -652,15 +637,15 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
+                                                                                 std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
     }
 
     template <class Archive>
-    typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
+                                                                                  std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -680,8 +665,8 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
+                                                                                 std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -711,68 +696,10 @@ private:
    * @param size is the number of elements.
    * @param &modulus is the modulus to perform operations with.
    */
-    static void BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus) {
-        using NInt = decltype(modulus.m_value);
-        using DInt = typename IntegerType::DNativeInt;
-        if constexpr (sizeof(DInt) > sizeof(NInt)) {
-            const NInt mv{modulus.m_value};
-            const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
-            const NInt mu{modulus.ComputeMu().m_value};
-            for (size_t i = 0; i < size; ++i) {
-#if defined(__clang__) && defined(__AVX2__)
-                DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
-                NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
-                NInt r{static_cast<NInt>(prod) - qhat * mv};
-#else
-                typename IntegerType::typeD prod;
-                IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
-                NInt r{prod.lo};
-                IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
-                r -= IntegerType::RShiftD(prod, n + 7) * mv;
-#endif
-                if (r >= mv)
-                    r -= mv;
-                a[i].m_value = r;
-            }
-        }
-        else {
-            const auto mu{modulus.ComputeMu()};
-            for (size_t i = 0; i < size; ++i)
-                a[i].ModMulFastEq(b[i], modulus, mu);
-        }
-    }
+    static void BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
 
     static void BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
-                                  const IntegerType& modulus) {
-        using NInt = decltype(modulus.m_value);
-        using DInt = typename IntegerType::DNativeInt;
-        if constexpr (sizeof(DInt) > sizeof(NInt)) {
-            const NInt mv{modulus.m_value};
-            const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
-            const NInt mu{modulus.ComputeMu().m_value};
-            for (size_t i = 0; i < size; ++i) {
-#if defined(__clang__) && defined(__AVX2__)
-                DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
-                NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
-                NInt r{static_cast<NInt>(prod) - qhat * mv};
-#else
-                typename IntegerType::typeD prod;
-                IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
-                NInt r{prod.lo};
-                IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
-                r -= IntegerType::RShiftD(prod, n + 7) * mv;
-#endif
-                if (r >= mv)
-                    r -= mv;
-                dst[i].m_value = r;
-            }
-        }
-        else {
-            const auto mu{modulus.ComputeMu()};
-            for (size_t i = 0; i < size; ++i)
-                dst[i] = a[i].ModMulFast(b[i], modulus, mu);
-        }
-    }
+                                  const IntegerType& modulus);
 
     /**
    * General-shrink loop shared by SwitchModulus, ModEq and the copy-with-switch ctor:
@@ -808,39 +735,7 @@ private:
    * @param &modulus is the modulus to perform operations with.
    */
     static void BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size,
-                                   const IntegerType& modulus) {
-        using NInt = decltype(modulus.m_value);
-        using DInt = typename IntegerType::DNativeInt;
-        if constexpr (sizeof(DInt) > sizeof(NInt)) {
-            const NInt mv{modulus.m_value};
-            const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
-            const NInt mu{modulus.ComputeMu().m_value};
-            for (size_t i = 0; i < size; ++i) {
-#if defined(__clang__) && defined(__AVX2__)
-                DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
-                NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
-                NInt r{static_cast<NInt>(prod) - qhat * mv};
-#else
-                typename IntegerType::typeD prod;
-                IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
-                NInt r{prod.lo};
-                IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
-                r -= IntegerType::RShiftD(prod, n + 7) * mv;
-#endif
-                if (r >= mv)
-                    r -= mv;
-                NInt t{acc[i].m_value + r};
-                if (t >= mv)
-                    t -= mv;
-                acc[i].m_value = t;
-            }
-        }
-        else {
-            const auto mu{modulus.ComputeMu()};
-            for (size_t i = 0; i < size; ++i)
-                acc[i].ModAddFastEq(a[i].ModMulFast(b[i], modulus, mu), modulus);
-        }
-    }
+                                   const IntegerType& modulus);
 };
 
 }  // namespace intnat

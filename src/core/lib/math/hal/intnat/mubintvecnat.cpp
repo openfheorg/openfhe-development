@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -675,6 +675,121 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(ui
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = (m_data[i].m_value >> shift) & mask;
     return ans;
+}
+
+template <class IntegerType>
+void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size,
+                                                   const IntegerType& modulus) {
+    using NInt = decltype(modulus.m_value);
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+        const NInt mv{modulus.m_value};
+        const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+        const NInt mu{modulus.ComputeMu().m_value};
+        for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+            DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+            NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+            NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+            typename IntegerType::typeD prod;
+            IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+            NInt r{prod.lo};
+            IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+            r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+            if (r >= mv)
+                r -= mv;
+            a[i].m_value = r;
+        }
+    }
+    else {
+        const auto mu{modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            a[i].ModMulFastEq(b[i], modulus, mu);
+    }
+}
+
+template <class IntegerType>
+void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b,
+                                                   size_t size, const IntegerType& modulus) {
+    using NInt = decltype(modulus.m_value);
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+        const NInt mv{modulus.m_value};
+        const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+        const NInt mu{modulus.ComputeMu().m_value};
+        for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+            DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+            NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+            NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+            typename IntegerType::typeD prod;
+            IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+            NInt r{prod.lo};
+            IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+            r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+            if (r >= mv)
+                r -= mv;
+            dst[i].m_value = r;
+        }
+    }
+    else {
+        const auto mu{modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            dst[i] = a[i].ModMulFast(b[i], modulus, mu);
+    }
+}
+
+template <class IntegerType>
+void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b,
+                                                    size_t size, const IntegerType& modulus) {
+    using NInt = decltype(modulus.m_value);
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+        const NInt mv{modulus.m_value};
+        const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+        const NInt mu{modulus.ComputeMu().m_value};
+        for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+            DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+            NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+            NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+            typename IntegerType::typeD prod;
+            IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+            NInt r{prod.lo};
+            IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+            r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+            if (r >= mv)
+                r -= mv;
+            NInt t{acc[i].m_value + r};
+            if (t >= mv)
+                t -= mv;
+            acc[i].m_value = t;
+        }
+    }
+    else {
+        const auto mu{modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            acc[i].ModAddFastEq(a[i].ModMulFast(b[i], modulus, mu), modulus);
+    }
+}
+
+template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulNoCheckEq(const NativeVectorT& b) {
+    BarrettModMulLoop(m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
+    return *this;
+}
+
+template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const NativeVectorT& a,
+                                                                         const NativeVectorT& b) {
+    BarrettMultAccLoop(m_data.data(), a.m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
+    return *this;
 }
 
 template class NativeVectorT<NativeInteger>;

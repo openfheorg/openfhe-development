@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2024, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -1048,33 +1048,6 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
                                                             const std::vector<double>& qInv) const {
     uint32_t sizeQ = m_vectors.size();
     uint32_t sizeP = paramsP->GetParams().size();
-    /*
-    // TODO: do we really want/need all of these checks?
-    if (sizeQ == 0)
-        OPENFHE_THROW("sizeQ must be positive");
-    if (sizeP == 0)
-        OPENFHE_THROW("sizeP must be positive");
-    if (QHatInvModq.size() < sizeQ)
-        OPENFHE_THROW("Size of QHatInvModq " + std::to_string(QHatInvModq.size()) +
-                                        " is less than sizeQ " + std::to_string(sizeQ));
-    if (QHatInvModqPrecon.size() < sizeQ)
-        OPENFHE_THROW("Size of QHatInvModqPrecon " + std::to_string(QHatInvModqPrecon.size()) +
-                                        " is less than sizeQ " + std::to_string(sizeQ));
-    if (qInv.size() < sizeQ)
-        OPENFHE_THROW("Size of qInv " + std::to_string(qInv.size()) + " is less than sizeQ " + std::to_string(sizeQ));
-    if (alphaQModp.size() < sizeQ + 1)
-        OPENFHE_THROW("Size of alphaQModp " + std::to_string(alphaQModp.size()) +
-                                        " is less than sizeQ + 1 " + std::to_string(sizeQ + 1));
-    if (alphaQModp[0].size() < sizeP)
-        OPENFHE_THROW("Size of alphaQModp[0] " + std::to_string(alphaQModp[0].size()) +
-                                        " is less than sizeP " + std::to_string(sizeP));
-    if (QHatModp.size() < sizeP)
-        OPENFHE_THROW("Size of QHatModp " + std::to_string(QHatModp.size()) + " is less than sizeP " +
-                                        std::to_string(sizeP));
-    if (QHatModp[0].size() < sizeQ)
-        OPENFHE_THROW("Size of QHatModp[0] " + std::to_string(QHatModp[0].size()) +
-                                        " is less than sizeQ " + std::to_string(sizeQ));
-*/
 
     std::vector<NativeInteger> xQHatInvModq(sizeQ);
     [[maybe_unused]] std::vector<NativeInteger> mu;

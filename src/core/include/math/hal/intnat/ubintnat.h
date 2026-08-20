@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -41,20 +41,17 @@
 #include "math/hal/integer.h"
 #include "math/nbtheory.h"
 
-#include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-#include "utils/openfhebase64.h"
 #include "utils/serializable.h"
 
 #include <cstdint>
-#include <functional>
 #include <limits>
 #include <ostream>
 #include <string>
 #include <type_traits>
-#include <vector>
 #include <utility>
+#include <vector>
 
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
@@ -126,10 +123,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
 private:
     NativeInt m_value{0};
 
-    // variable to store the maximum value of the integral data type.
-    static constexpr NativeInt m_uintMax{std::numeric_limits<NativeInt>::max()};
-    // variable to store the bit width of the integral data type.
-    //    static constexpr uint32_t m_uintBitLength{sizeof(NativeInt) * 8};
+    // bit width of the integral data type
     static constexpr uint32_t m_uintBitLength{std::numeric_limits<NativeInt>::digits};
 
     friend class NativeVectorT<NativeIntegerT<NativeInt>>;
@@ -168,7 +162,6 @@ public:
     explicit NativeIntegerT(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
     }
-    // explicit NativeIntegerT(const char strval) : m_value{NativeInt(strval - '0')} {}
 
     template <typename T,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
@@ -338,8 +331,8 @@ public:
     /**
    * SubCheck is the subtraction operation with bounds checking.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     NativeIntegerT SubCheck(const NativeIntegerT& b) const {
         return {m_value <= b.m_value ? 0 : m_value - b.m_value};
@@ -348,8 +341,8 @@ public:
     /**
    * SubFast is the subtraction operation without bounds checking.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     // no saturated subtraction? functionality differs from BigInteger Backends
     NativeIntegerT SubFast(const NativeIntegerT& b) const {
@@ -370,8 +363,8 @@ public:
    * SubEqCheck is the subtraction in place operation with bounds checking.
    * In-place variant.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     NativeIntegerT& SubEqCheck(const NativeIntegerT& b) {
         if (m_value < b.m_value)
@@ -383,15 +376,13 @@ public:
    * SubEqFast is the subtraction in place operation without bounds checking.
    * In-place variant.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     NativeIntegerT& SubEqFast(const NativeIntegerT& b) {
         return *this = m_value - b.m_value;
     }
 
-    // overloaded binary operators based on integer arithmetic and comparison
-    // functions.
     NativeIntegerT operator-() const {
         return NativeIntegerT().Sub(*this);
     }
@@ -845,6 +836,14 @@ public:
         return {av.m_value - bv.m_value};
     }
 
+    /**
+   * Barrett modulus subtraction operation. In-place variant.
+   *
+   * @param &b is the scalar to subtract.
+   * @param &modulus is the modulus to perform operations with.
+   * @param &mu is the Barrett value.
+   * @return is the result of the modulus subtraction operation.
+   */
     NativeIntegerT& ModSubEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
         auto av{*this};
         auto bv{b};
@@ -1004,8 +1003,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    // TODO: find what in Matrix<DCRTPoly> is calling ModMulFastEq incorrectly
-    NativeIntegerT ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
+    NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
         if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
             if (modulus.GetMSB() <= MAX_MODULUS_SIZE)
                 return ModMulFastEq(b, modulus, modulus.ComputeMu());
@@ -1286,7 +1284,6 @@ public:
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
     constexpr T ConvertToInt() const noexcept {
-        // static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
         return static_cast<T>(m_value);
     }
 
@@ -1334,8 +1331,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-
-    // TODO: only base 2?
+    // the base argument is ignored: returns the bit count, which is the length only for base 2
     uint32_t GetLengthForBase(uint32_t base) const {
         return NativeIntegerT::GetMSB();
     }
@@ -1430,7 +1426,7 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-        // get an array with 2 unint64_t values for m_value
+        // get an array with 2 uint64_t values for m_value
         uint64_t vec[2];
         ar(::cereal::binary_data(vec, sizeof(vec)));  // 2*8 - size in bytes
         m_value = vec[1];                             // most significant word
@@ -1446,7 +1442,7 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-        // get an array with 2 unint64_t values for m_value
+        // get an array with 2 uint64_t values for m_value
         uint64_t vec[2];
         ar(::cereal::make_nvp("i", vec));
         m_value = vec[1];  // most significant word
@@ -1456,7 +1452,7 @@ public:
 #endif
 
     template <class Archive, typename T = void>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same<NativeInt, uint32_t>::value, T> save(
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> save(
         Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
@@ -1466,7 +1462,7 @@ public:
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
-        // save 2 unint64_t values instead of uint128_t
+        // save 2 uint64_t values instead of uint128_t
         constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
@@ -1478,7 +1474,7 @@ public:
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
-        // save 2 unint64_t values instead of uint128_t
+        // save 2 uint64_t values instead of uint128_t
         constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
@@ -1665,7 +1661,6 @@ private:
     }
 
 #if defined(HAVE_INT128)
-    // TODO
     static std::string toString(uint128_t value) noexcept {
         constexpr size_t maxChars = 15;
         constexpr uint128_t divisor{0x38d7ea4c68000};  // 10**15
@@ -1708,7 +1703,6 @@ private:
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "[";
-    //    for (const auto& i : v)
     for (auto&& i : v)
         os << " " << i;
     os << " ]";
